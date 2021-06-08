@@ -1,2 +1,8 @@
 site_name: Fides
 site_url: https://example.com/
+nav:
+  - Home: index.md
+  - CLI: cli.md
+  - Server: server.md
+  - Glossary: glossary.md
+theme: readthedocs
