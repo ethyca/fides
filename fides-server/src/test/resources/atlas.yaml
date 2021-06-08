@@ -1,0 +1,16 @@
+organizationId: 2
+name: atlas-demo
+systemType: system
+description: atlas demonstration instance
+processingPurposes:
+  - content_selection
+  - storage
+  - technical
+publishedFields:
+  - email
+  - username
+  - userid
+  - phone
+systemDependencies:
+  - ethyca-services
+  - mysql-atlas

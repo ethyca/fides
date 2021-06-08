@@ -1,0 +1,328 @@
+dataset:
+  - organizationId: 1
+    fidesKey: fidesdb
+    name: fidesdb
+    description: "Fides Generated Description for Dataset: fidesdb"
+    datasetType: "PostgreSQL"
+    location: fides-db:3306
+    tables:
+      - name: APPROVAL
+        description: "Fides Generated Description for Table: APPROVAL"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: system_id
+            description: "Fides Generated Description for Column: system_id"
+          - name: user_id
+            description: "Fides Generated Description for Column: user_id"
+          - name: stamp
+            description: "Fides Generated Description for Column: stamp"
+          - name: status
+            description: "Fides Generated Description for Column: status"
+          - name: errors
+            description: "Fides Generated Description for Column: errors"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+      - name: AUDIT_LOG
+        description: "Fides Generated Description for Table: AUDIT_LOG"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: object_id
+            description: "Fides Generated Description for Column: object_id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: user_id
+            description: "Fides Generated Description for Column: user_id"
+          - name: action
+            description: "Fides Generated Description for Column: action"
+          - name: type_name
+            description: "Fides Generated Description for Column: type_name"
+          - name: change
+            description: "Fides Generated Description for Column: change"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+      - name: DATASET
+        description: "Fides Generated Description for Table: DATASET"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: dataset_location
+            description: "Fides Generated Description for Column: dataset_location"
+          - name: dataset_type
+            description: "Fides Generated Description for Column: dataset_type"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: DATASET_FIELD
+        description: "Fides Generated Description for Table: DATASET_FIELD"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: dataset_table_id
+            description: "Fides Generated Description for Column: dataset_table_id"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: data_categories
+            description: "Fides Generated Description for Column: data_categories"
+          - name: data_qualifier
+            description: "Fides Generated Description for Column: data_qualifier"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: DATASET_TABLE
+        description: "Fides Generated Description for Table: DATASET_TABLE"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: dataset_id
+            description: "Fides Generated Description for Column: dataset_id"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: DATA_CATEGORY
+        description: "Fides Generated Description for Table: DATA_CATEGORY"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: parent_id
+            description: "Fides Generated Description for Column: parent_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: clause
+            description: "Fides Generated Description for Column: clause"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+      - name: DATA_QUALIFIER
+        description: "Fides Generated Description for Table: DATA_QUALIFIER"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: parent_id
+            description: "Fides Generated Description for Column: parent_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: clause
+            description: "Fides Generated Description for Column: clause"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+      - name: DATA_SUBJECT_CATEGORY
+        description: "Fides Generated Description for Table: DATA_SUBJECT_CATEGORY"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: parent_id
+            description: "Fides Generated Description for Column: parent_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+      - name: DATA_USE
+        description: "Fides Generated Description for Table: DATA_USE"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: parent_id
+            description: "Fides Generated Description for Column: parent_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: clause
+            description: "Fides Generated Description for Column: clause"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+      - name: ORGANIZATION
+        description: "Fides Generated Description for Table: ORGANIZATION"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: POLICY
+        description: "Fides Generated Description for Table: POLICY"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: POLICY_POLICY_RULE_MAP
+        description: "Fides Generated Description for Table: POLICY_POLICY_RULE_MAP"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: policy_id
+            description: "Fides Generated Description for Column: policy_id"
+          - name: policy_rule_id
+            description: "Fides Generated Description for Column: policy_rule_id"
+      - name: POLICY_RULE
+        description: "Fides Generated Description for Table: POLICY_RULE"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: data_categories
+            description: "Fides Generated Description for Column: data_categories"
+          - name: data_uses
+            description: "Fides Generated Description for Column: data_uses"
+          - name: data_subject_categories
+            description: "Fides Generated Description for Column: data_subject_categories"
+          - name: data_qualifier
+            description: "Fides Generated Description for Column: data_qualifier"
+          - name: action
+            description: "Fides Generated Description for Column: action"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: REGISTRY
+        description: "Fides Generated Description for Table: REGISTRY"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: REGISTRY_SYSTEM_MAP
+        description: "Fides Generated Description for Table: REGISTRY_SYSTEM_MAP"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: registry_id
+            description: "Fides Generated Description for Column: registry_id"
+          - name: system_id
+            description: "Fides Generated Description for Column: system_id"
+      - name: SYSTEM
+        description: "Fides Generated Description for Table: SYSTEM"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: fides_key
+            description: "Fides Generated Description for Column: fides_key"
+          - name: fides_system_type
+            description: "Fides Generated Description for Column: fides_system_type"
+          - name: name
+            description: "Fides Generated Description for Column: name"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: declarations
+            description: "Fides Generated Description for Column: declarations"
+          - name: system_dependencies
+            description: "Fides Generated Description for Column: system_dependencies"
+          - name: datasets
+            description: "Fides Generated Description for Column: datasets"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: USER
+        description: "Fides Generated Description for Table: USER"
+        fields:
+          - name: id
+            description: "Fides Generated Description for Column: id"
+          - name: organization_id
+            description: "Fides Generated Description for Column: organization_id"
+          - name: user_name
+            description: "Fides Generated Description for Column: user_name"
+          - name: first_name
+            description: "Fides Generated Description for Column: first_name"
+          - name: last_name
+            description: "Fides Generated Description for Column: last_name"
+          - name: role
+            description: "Fides Generated Description for Column: role"
+          - name: creation_time
+            description: "Fides Generated Description for Column: creation_time"
+          - name: last_update_time
+            description: "Fides Generated Description for Column: last_update_time"
+      - name: flyway_schema_history
+        description: "Fides Generated Description for Table: flyway_schema_history"
+        fields:
+          - name: installed_rank
+            description: "Fides Generated Description for Column: installed_rank"
+          - name: version
+            description: "Fides Generated Description for Column: version"
+          - name: description
+            description: "Fides Generated Description for Column: description"
+          - name: type
+            description: "Fides Generated Description for Column: type"
+          - name: script
+            description: "Fides Generated Description for Column: script"
+          - name: checksum
+            description: "Fides Generated Description for Column: checksum"
+          - name: installed_by
+            description: "Fides Generated Description for Column: installed_by"
+          - name: installed_on
+            description: "Fides Generated Description for Column: installed_on"
+          - name: execution_time
+            description: "Fides Generated Description for Column: execution_time"
+          - name: success
+            description: "Fides Generated Description for Column: success"

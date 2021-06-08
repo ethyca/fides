@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fides-deployment
+  namespace: dpcp
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fides
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: fides
+    spec:
+      containers:
+        - name: fides
+          image: registry.gitlab.com/ethyca/fides-server:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /organization
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 5
+            successThreshold: 1

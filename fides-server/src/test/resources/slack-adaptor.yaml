@@ -1,0 +1,12 @@
+organizationId: 2
+name: slack-adaptor
+systemType: api
+description: external adaptor
+processingPurposes:
+  - security
+  - content_selection
+publishedFields:
+  - email
+  - slack-user-id
+  - message
+  - message_id

@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  fides-cli:
+    build:
+      context: fides_cli
+      dockerfile: Dockerfile
+    command: /bin/bash
+    depends_on:
+      - fides-server
+    volumes:
+      - type: bind
+        source: ./fides_cli
+        target: /fides_cli
+        read_only: False
+    env_file:
+      - env_files/fides_cli.env
+
+  fides-server:
+    build:
+      context: fides-server
+      dockerfile: Dockerfile
+      target: local
+    command: sbt ~jetty:start
+    depends_on:
+      - fides-db
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./fides-server:/usr/src/fides-server
+    env_file:
+      - env_files/fides_server.env
+
+  fides-db:
+    image: mysql:8
+    volumes:
+      - mysql:/var/lib/mysql
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    env_file:
+      - env_files/mysql_db.env
+
+
+volumes:
+  mysql:

@@ -1,0 +1,73 @@
+<% escapeMarkup = false %>
+<%@ val registry: String %>
+<%@ val idMap: String %>
+<%@ val edgeMap: String %>
+<html>
+    <head>
+        <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+        <script type="text/javascript">
+            var r = ${registry};
+
+            var r3 = ${idMap};
+            console.log(r3);
+            var r4 = ${edgeMap};
+        console.log(r4);
+            for (var v in r3){
+                 r3[v]["font"] =  { face: "Monospace", align: "left" };
+
+            };
+            console.log(r4);
+
+
+            console.log(r4);
+        </script>
+        <style type="text/css">
+        #mynetwork {
+       // width: 800px;
+       // height: 800px;
+        border: 1px solid lightgray;
+        }
+        </style>
+    </head>
+    <body>
+        <div id="mynetwork"></div>
+
+        <script type="text/javascript">
+
+        var nodes = new vis.DataSet(r3);
+        // create an array with edges
+        // var edges = new vis.DataSet([
+        // {from: 1, to: 3},
+        // {from: 1, to: 2},
+        // {from: 2, to: 4},
+        // {from: 2, to: 5}
+        // ]);
+        var edges = new vis.DataSet(r4);
+        // create a network
+        var container = document.getElementById('mynetwork');
+
+        // provide the data in the vis format
+        var data = {
+        nodes: nodes,
+        edges: edges
+        };
+        var options = {
+        nodes:{
+        shape:"box"
+        },
+        physics:false
+        ,
+
+        edges:{
+            arrows:'to'
+        }
+
+        }
+
+        // initialize your network!
+        var network = new vis.Network(container, data, options);
+        </script>
+    </body>
+</html>
+

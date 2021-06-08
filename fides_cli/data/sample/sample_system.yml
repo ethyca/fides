@@ -1,0 +1,28 @@
+version: 1
+
+registry:
+  - organizationId: 1
+    fidesKey: "testRegistry"
+    name: "Test Registry"
+    description: "Widget Company Internal Data"
+    systems: [6]
+
+system:
+  - organizationId: 1
+    fidesOrganizationKey: "Ethyca"
+    registryId: 1
+    fidesKey: "demoSystem"
+    fidesSystemType: "SYSTEM"
+    name: "Demo System"
+    description: "A system used for demos."
+    declarations:
+      - dataCategories:
+          - "customer_content_data"
+        dataUse: "provide"
+        dataQualifier: "anonymized_data"
+        dataSubjectCategories:
+          - "anonymous_user"
+        dataSets:
+          - "user_data"
+    systemDependencies: []
+    datasets: []

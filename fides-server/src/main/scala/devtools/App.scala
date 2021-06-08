@@ -1,0 +1,128 @@
+package devtools
+
+import devtools.controller._
+import devtools.persist.dao._
+import devtools.persist.db.DB
+import devtools.persist.service._
+import devtools.rating.{PolicyRater, PolicyRuleRater, RegistryApprovalChecks}
+import devtools.util.{Caches, ConfigLoader}
+import devtools.validation._
+import org.slf4j.{Logger, LoggerFactory}
+import slick.jdbc.MySQLProfile
+
+import scala.concurrent.ExecutionContextExecutor
+
+/** App dependency management. */
+@SuppressWarnings(Array("org.wartremover.warts.PublicInference"))
+object App {
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+  //config
+  ConfigLoader.readEnv()
+  //ConfigLoader.logConfig()
+  //swagger
+  implicit val swagger: DevToolsSwagger = new DevToolsSwagger
+  val swaggerServlet: SwaggerServlet    = new SwaggerServlet
+  //context
+  implicit val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
+  //database
+  val database: MySQLProfile.api.Database = DB.db
+
+  //service
+  val approvalDAO            = new ApprovalDAO(database)
+  val auditLogDAO            = new AuditLogDAO(database)
+  val organizationDAO        = new OrganizationDAO(database)
+  val systemDAO              = new SystemDAO(database)
+  val policyDAO              = new PolicyDAO(database)
+  val policyRuleDAO          = new PolicyRuleDAO(database)
+  val dataCategoryDAO        = new DataCategoryDAO(database)
+  val dataQualifierDAO       = new DataQualifierDAO(database)
+  val dataSubjectCategoryDAO = new DataSubjectCategoryDAO(database)
+  val dataUseDAO             = new DataUseDAO(database)
+  val registryDAO            = new RegistryDAO(database)
+  val userDAO                = new UserDAO(database)
+  val datasetDAO             = new DatasetDAO(database)
+  val datasetTableDAO        = new DatasetTableDAO(database)
+  val datasetFieldDAO        = new DatasetFieldDAO(database)
+  /** Convenience grouping of all DAOs. */
+  val daos = new DAOs(
+    approvalDAO,
+    auditLogDAO,
+    dataCategoryDAO,
+    dataQualifierDAO,
+    dataUseDAO,
+    organizationDAO,
+    policyDAO,
+    policyRuleDAO,
+    registryDAO,
+    systemDAO,
+    dataSubjectCategoryDAO,
+    userDAO,
+    datasetDAO,
+    datasetTableDAO,
+    datasetFieldDAO
+  )
+  /** Convenience grouping of all caches. */
+  val caches = new Caches(dataSubjectCategoryDAO, dataCategoryDAO, dataUseDAO, dataQualifierDAO)
+
+  //validators
+  val datasetFieldValidator    = new DatasetFieldValidator(daos)
+  val datasetTableValidator    = new DatasetTableValidator(daos)
+  val datasetValidator         = new DatasetValidator(daos)
+  val systemValidator          = new SystemValidator(daos)
+  val policyValidator          = new PolicyValidator(daos)
+  val registryValidator        = new RegistryValidator(daos)
+  val policyRuleValidator      = new PolicyRuleValidator(daos)
+  val dataUseValidator         = new DataUseValidator(daos)
+  val dataQualifierValidator   = new DataQualifierValidator(daos)
+  val dataCategoryValidator    = new DataCategoryValidator(daos)
+  val subjectCategoryValidator = new DataSubjectCategoryValidator(daos)
+
+  val registryApprovalChecks = new RegistryApprovalChecks(daos)
+  val ruleRater              = new PolicyRuleRater(daos)
+  val policyRater            = new PolicyRater(ruleRater, registryApprovalChecks, daos)
+  //service
+  val approvalService     = new ApprovalService(approvalDAO)
+  val auditLogService     = new AuditLogService(auditLogDAO)
+  val organizationService = new OrganizationService(organizationDAO)
+  val policyRuleService   = new PolicyRuleService(policyRuleDAO)
+  val datasetFieldService = new DatasetFieldService(datasetFieldDAO, datasetFieldValidator)
+  val datasetTableService = new DatasetTableService(daos, datasetFieldService, datasetTableValidator)
+  val datasetService      = new DatasetService(daos, datasetTableService, datasetValidator)
+  val dataUseService      = new DataUseService(dataUseDAO, auditLogDAO, organizationDAO, dataUseValidator)
+  val dataCategoryService =
+    new DataCategoryService(dataCategoryDAO, auditLogDAO, organizationDAO, dataCategoryValidator)
+  val dataSubjectCategoryService =
+    new DataSubjectCategoryService(dataSubjectCategoryDAO, auditLogDAO, organizationDAO, subjectCategoryValidator)
+  val dataQualifierService =
+    new DataQualifierService(dataQualifierDAO, auditLogDAO, organizationDAO, dataQualifierValidator)
+
+  val policyService = new PolicyService(daos, policyRuleService, policyValidator)
+  val systemService = new SystemService(daos, policyService, systemValidator, policyRater)(executionContext)
+
+  val registryService = new RegistryService(daos, registryValidator, policyRater)(executionContext)
+  val userService     = new UserService(userDAO)
+  val reportService   = new ReportService(approvalDAO)(executionContext)
+  //controllers
+  val approvalController     = new ApprovalController(approvalService, userDAO, swagger)
+  val auditLogController     = new AuditLogController(auditLogService, userDAO, swagger)
+  val organizationController = new OrganizationController(organizationService, userDAO, swagger)
+  val systemController       = new SystemController(systemService, policyService, userDAO, swagger)
+  val datasetController      = new DatasetController(datasetService, userDAO, swagger)
+  val datasetTableController = new DatasetTableController(datasetTableService, userDAO, swagger)
+  val datasetFieldController = new DatasetFieldController(datasetFieldService, userDAO, swagger)
+
+  val dataUseController             = new DataUseController(dataUseService, userDAO, swagger)
+  val dataQualifierController       = new DataQualifierController(dataQualifierService, userDAO, swagger)
+  val dataCategoryController        = new DataCategoryController(dataCategoryService, userDAO, swagger)
+  val dataSubjectCategoryController = new DataSubjectCategoryController(dataSubjectCategoryService, userDAO, swagger)
+  val policyController              = new PolicyController(policyService, userDAO, swagger)
+  val policyRuleController          = new PolicyRuleController(policyRuleService, userDAO, swagger)
+  val registryController            = new RegistryController(registryService, userDAO, swagger)
+  val userController                = new UserController(userService, userDAO, swagger)
+  val adminController               = new AdminController(daos, swagger)
+  val reportController              = new ReportController(reportService, userDAO, swagger)
+  def stop(): Unit = {
+    logger.info("Shutting down")
+    DB.stop()
+  }
+}

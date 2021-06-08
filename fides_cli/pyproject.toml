@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+
+######
+# MyPy
+######
+# [tool.mypy] Waiting for new version of Mypy
+# warn_unused_configs = true
+# ignore_missing_imports = true
+# pretty = true
+
+#######
+# Black
+#######
+[tool.black]
+py39 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+
+    # The following are specific to Black, you probably don't want those.
+    | blib2to3
+    | tests/data
+)/
+'''
+
+########
+# Pylint
+########
+[tool.pylint.messages_control]
+disable=[
+    "line-too-long",
+    "too-few-public-methods",
+    "duplicate-code",
+    "import-error",
+    "unused-argument",
+    "no-self-use",
+    "import-outside-toplevel",
+    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "missing-module-docstring",
+    "raise-missing-from",
+    "fixme"]
+
+[tool.pylint.reports]
+reports="no"
+output-format="colorized"
+
+[tool.pylint.format]
+max-line-length="88"
+
+[tool.pylint.basic]
+good-names="_,i,j,k,e,qs,pk,setUp,tearDown,maxDiff,default_app_config"
+
+########
+# Pytest
+########
+[tool.pytest.ini_options]
+testpaths="tests"
+log_level = "DEBUG"
+addopts = ["--cov=fides",
+            "--cov-report=term-missing",
+            "-vv",
+            "--no-cov-on-fail",
+            "--disable-pytest-warnings"]

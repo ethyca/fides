@@ -1,0 +1,13 @@
+id: 0
+name: sample2
+version: 0.0.1
+description: some description
+purpose: security
+fields:
+    - name: myemail
+      pii: work_email
+    - name: myotheremail
+      pii: personal_email
+    - name: prefs
+      pii: preferences
+raw: none
