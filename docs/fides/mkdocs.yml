@@ -5,4 +5,5 @@ nav:
   - CLI: cli.md
   - Server: server.md
   - Glossary: glossary.md
+  - Contributing: contributing.md
 theme: readthedocs
