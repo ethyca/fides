@@ -24,52 +24,67 @@ We use four categories for describing how systems use privacy data, and for desc
 
 ### Data use
 
-	- personalize
-	- share
-		- share when required to provide the service
- 	- promote
-	 	- promote based on contextual information
-	 	- promote based on personalization
+```yaml
+- personalize
+- share
+  - share when required to provide the service
+- promote
+  - promote based on contextual information
+  - promote based on personalization
+```
 
-### Data subject category 
-	- customer
-	- supplier
-	- job applicant
-	- ...
-	 
+### Data Subject Category
+
+```yaml
+- customer
+- supplier
+- job applicant
+- ...
+```
+
 ### Data qualifier
-	- aggregated data
-		- anonymized data
-			- unlinked pseudonymized data
-				- pseudonymized data
-					- identified data
 
-	Data qualifiers are nested in order of increasing data exposure. 
+```yaml
+- aggregated data
+  - anonymized data
+    - unlinked pseudonymized data
+      - pseudonymized data
+        - identified data
+```
+
+Data qualifiers are nested in order of increasing data exposure.
+
 ## Systems
+
 A system represents the privacy useage of a single software project or codebase, made up of a few constituent parts:
+
 ### Datasets
+
 A dataset represents an annotated datastore (see below). It is ultimately made up of a collection of fields, each of which can declare a list of data categories it represents as well as a data qualifier.
 
 If the privacy range of datasets is wider than that declared by this system a warning will be generated.
 
-### Dependant systems
+### Dependent Systems
+
 Systems that are used by this system.
 
 (TBD) If the privacy range of a dependant system is wider than that declared by this system a warning will be generated.
 
 ### Declarations
+
 This systems privacy useage. Each declaration consists of
 
-	- A set of data categories	
-	- A set of data subject categories
-	- A data use
-	- A data qualifier
+```yaml
+- A set of data categories
+- A set of data subject categories
+- A data use
+- A data qualifier
+```
 
 And can be read as "This system uses data in categories [data categories] (for [data subject categories]) with the purpose of (data use) at a qualified privacy level of (data qualifier)"
 A system can have multiple declarations.
 
-
-```
+```json
 {
    "id":9,
    "organizationId":1,
@@ -127,24 +142,25 @@ A system can have multiple declarations.
 }
 ```
 
-
 ## Policy
 
- 	
 ### Policy rules
-Aside from some identifing data, a policy is made up of a collection of rules. Each rule specifies an action:
-a data qualifer as well as, for 
-each of 
 
-	- data uses
-	- data categories
-	- data subject categories
+Aside from some identifing data, a policy is made up of a collection of rules. Each rule specifies an action:
+a data qualifer as well as, for each of
+
+```yaml
+- data uses
+- data categories
+- data subject categories
 both
-	- a list of values
-	- a qualifier (ANY, ALL, or NONE)
-	
-where something like, e.g. 
+- a list of values
+- a qualifier (ANY, ALL, or NONE)
 ```
+
+where something like, e.g.
+
+```json
 {
    "dataCategories":{
       "inclusion":"ANY",
@@ -156,19 +172,19 @@ where something like, e.g.
 }
 ```
 
-
 means "this rule applies if the data categories being considered match ANY of "account_data", "derived_data" (child values are considered to be matching)
 
-
 #### Policy rule action
- Currently 
- 
- 	- ACCEPT (accept if the policy matches)
- 	- REJECT (reject if the policy matches)
- 	- MANUAL (trigger a manual review process, TBD)
 
+Currently
 
-The interaction of these rules can be confusing. Possibly "ACCEPT" is redundant, since it's what should take effect if there's no "REJECT" trigger. It will still be useful, I think, to have tags that trigger different levels of scrutiny, e.g. a manual approval workflow. 
+```yaml
+- ACCEPT (accept if the policy matches)
+- REJECT (reject if the policy matches)
+- MANUAL (trigger a manual review process, TBD)
+```
+
+The interaction of these rules can be confusing. Possibly "ACCEPT" is redundant, since it's what should take effect if there's no "REJECT" trigger. It will still be useful, I think, to have tags that trigger different levels of scrutiny, e.g. a manual approval workflow.
 
 Are there potentially other levels of scrutiny? e.g. who will be required to review?
 
@@ -177,15 +193,15 @@ Are there potentially other levels of scrutiny? e.g. who will be required to rev
 A policy rule _applies_ to a system if
 
 - the system matches the rule's categories  
-- the system matches the rule's uses 
+- the system matches the rule's uses
 - the system matches the rule's data subject categories
 - the system qualifier matches the rule's qualifier
 
 To evaluate a system against a policy, we evaluate all rules and take the _most_ restricive interpretation
 
-### A complete policy: 
+### A Complete Policy
 
-```
+```json
 {
    "id":2,
    "organizationId":1,
@@ -268,34 +284,36 @@ To evaluate a system against a policy, we evaluate all rules and take the _most_
 
 ## Registry
 
-A registry represents, basically, a collection of systems. Since systems can declare their dependencies on other systems, this is basically a system graph. 
+A registry represents, basically, a collection of systems. Since systems can declare their dependencies on other systems, this is basically a system graph.
 Validations of a registry validate all systems indidually, as well as validate their declarations in light of their dependencies
- 
 
 ## Approvals
 
 ### Approval validation checks
-Evaluations of systems and registries may optionally generate a list of errors and warnings. 
 
-- Any errors will result in a FAIL response. 
+Evaluations of systems and registries may optionally generate a list of errors and warnings.
+
+- Any errors will result in a FAIL response.
 - Warnings will have no effect.
 
 Some sources of errors, warnings:
 
+```yaml
 - errors
-	- dependency on a system that doesn't exist, or isn't part of the registry
-	- dependency on a dataset that doesn't exist
-	- dependency on self (loop)
-	- dependency loop between multiple systems
+ - dependency on a system that doesn't exist, or isn't part of the registry
+ - dependency on a dataset that doesn't exist
+ - dependency on self (loop)
+ - dependency loop between multiple systems
  
 - warnings.
-	- system declarations return narrower privacy range than included in datasets (i.e. dataset includes data that's "customer content data", at the "anonymized" level, but the system doesn't declare that it's exposing that).
-	- system A declares a dependency on system B, but system B has been more recently been validated (that is, the privacy declarations of system B may have been changed)
-	- system A declares a dependency on dataset B, but dataset B has been more recently been validated
-
+ - system declarations return narrower privacy range than included in datasets (i.e. dataset includes data that's "customer content data", at the "anonymized" level, but the system doesn't declare that it's exposing that).
+ - system A declares a dependency on system B, but system B has been more recently been validated (that is, the privacy declarations of system B may have been changed)
+ - system A declares a dependency on dataset B, but dataset B has been more recently been validated
+```
 
 ### A sample approval
-```
+
+```json
 {
   "id":48,
   "organizationId":1,
@@ -414,3 +432,4 @@ Some sources of errors, warnings:
     ]
   }
 }
+```
