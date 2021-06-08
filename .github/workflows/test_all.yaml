@@ -1,0 +1,10 @@
+name: "Test CLI & Server"
+
+on: [ push ]
+  
+jobs:
+  runs_on: ubuntu:latest
+  build_images:
+    name: build_images
+    
+  
