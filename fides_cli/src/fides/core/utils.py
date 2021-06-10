@@ -12,21 +12,6 @@ from fides.core import models
 
 logger = logging.getLogger("server_api")
 
-# A mapping of object names to their Endpoints
-MODEL_DICT = {
-    "data-category": models.DataCategory,
-    "data-qualifier": models.DataQualifier,
-    "dataset": models.Dataset,
-    "data-subject-category": models.DataSubjectCategory,
-    "data-use": models.DataUse,
-    "organization": models.Organization,
-    "policy": models.Policy,
-    "registry": models.Registry,
-    "system": models.System,
-}
-MODEL_LIST = list(MODEL_DICT.keys())
-
-
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
 

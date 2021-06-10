@@ -2,12 +2,13 @@
 from typing import Any, Dict, List, Tuple, Optional
 
 from fides.core import api, manifests, parse
+from fides.core.models import FidesModel
 from .utils import echo_green
 
 
 def sort_create_update_unchanged(
-    manifest_object_list: List[Any], server_object_list: List[Any]
-) -> Tuple[List[Any], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
+) -> Tuple[List[FidesModel], List[Dict[str, FidesModel]], List[Dict[str, FidesModel]]]:
     """
     Check if each object exists in the server_object_list.
     If it exists, compare it to the existing object and put it in a queue for updating
@@ -45,9 +46,9 @@ def sort_create_update_unchanged(
 def execute_create_update_unchanged(
     url: str,
     object_type: str,
-    create_list: Optional[List] = None,
-    update_list: Optional[List] = None,
-    unchanged_list: Optional[List] = None,
+    create_list: Optional[List[FidesModel]] = None,
+    update_list: Optional[List[FidesModel]] = None,
+    unchanged_list: Optional[List[FidesModel]] = None,
 ):
     """
     Create, update, or just log objects based on which list they're in.
@@ -114,7 +115,7 @@ def apply(url: str, manifests_dir: str):
         for key, value in ingested_manifests.items()
         if key not in excluded_keys
     }
-    parsed_manifests = {
+    parsed_manifests: Dict[str, List[FidesModel]] = {
         object_type: [
             parse.parse_manifest(object_type, _object) for _object in object_list
         ]
