@@ -36,7 +36,7 @@ class DatasetTable(BaseModel):
     fields: List[DatasetField]
 
     @validator("fields")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 
@@ -52,7 +52,7 @@ class Dataset(BaseModel):
     tables: List[DatasetTable]
 
     @validator("tables")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 
@@ -101,7 +101,7 @@ class Policy(BaseModel):
     rules: List[PolicyRule]
 
     @validator("rules")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 

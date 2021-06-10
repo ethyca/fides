@@ -49,7 +49,7 @@ def execute_create_update_unchanged(
     create_list: Optional[List[FidesModel]] = None,
     update_list: Optional[List[FidesModel]] = None,
     unchanged_list: Optional[List[FidesModel]] = None,
-):
+) -> None:
     """
     Create, update, or just log objects based on which list they're in.
     """
@@ -94,7 +94,9 @@ def get_server_objects(
     raw_server_object_list = [
         api.find(url, object_type, key).json().get("data") for key in existing_keys
     ]
-    filtered_server_object_list: List[Any] = list(filter(None, raw_server_object_list))
+    filtered_server_object_list: List[Optional[Dict]] = list(
+        filter(None, raw_server_object_list)
+    )
     server_object_list = [
         parse.parse_manifest(object_type, _object, from_server=True)
         for _object in filtered_server_object_list
@@ -102,7 +104,7 @@ def get_server_objects(
     return server_object_list
 
 
-def apply(url: str, manifests_dir: str):
+def apply(url: str, manifests_dir: str) -> None:
     """
     Compose functions to apply file changes to the server.
     """

@@ -1,5 +1,5 @@
 """Module that generates valid dataset manifest files from data sources."""
-from typing import Any, Dict, List
+from typing import Dict, List, Union
 
 import sqlalchemy
 from sqlalchemy.engine import Engine
@@ -23,7 +23,9 @@ def get_db_tables(engine: Engine) -> Dict[str, List[str]]:
     return db_tables
 
 
-def generate_table_manifests(db_tables: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+def generate_table_manifests(
+    db_tables: Dict[str, List[str]]
+) -> List[Dict[str, object]]:
     """
     Return an object of tables and columns formatted for a Fides manifest
     with dummy values where needed.
@@ -69,7 +71,7 @@ def generate_dataset_info(engine: Engine) -> Dict[str, List]:
     return dataset_info
 
 
-def generate_dataset(connection_string: str, file_name: str):
+def generate_dataset(connection_string: str, file_name: str) -> None:
     """
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest.

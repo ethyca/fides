@@ -1,10 +1,10 @@
 """Logic to make calling the API smoother across different modules."""
-from typing import Dict, Any
+from typing import Dict
 
 import requests
 
 
-def generate_request_headers() -> Dict[str, Any]:
+def generate_request_headers() -> Dict[str, str]:
     """
     Generate the headers for a request.
     """
@@ -13,7 +13,7 @@ def generate_request_headers() -> Dict[str, Any]:
 
 def generate_object_url(
     url: str, object_type: str = "", object_id: str = "", version: str = "v1"
-):
+) -> str:
     """
     Generate an object's URL using a base url, the object type and a version.
     """
@@ -49,7 +49,7 @@ def create(url: str, object_type: str, json_object: str) -> requests.Response:
     return requests.post(object_url, headers=headers, data=payload)
 
 
-def connect(url: str):
+def connect(url: str) -> requests.Response:
     """
     Pings the Server on the base url to make sure its available.
     """
@@ -75,7 +75,7 @@ def show(url: str, object_type: str) -> requests.Response:
 
 
 def update(
-    url: str, object_type: str, object_id: str, json_object: Dict[str, Any]
+    url: str, object_type: str, object_id: str, json_object: Dict
 ) -> requests.Response:
     """
     Update an existing object.
