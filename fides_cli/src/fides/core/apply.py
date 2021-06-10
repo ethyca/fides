@@ -87,7 +87,7 @@ def execute_create_update_unchanged(
 
 def get_server_objects(
     url: str, object_type: str, existing_keys: List[str]
-) -> List[Any]:
+) -> List[FidesModel]:
     """
     Get a list of objects from the server that match the provided keys.
     """

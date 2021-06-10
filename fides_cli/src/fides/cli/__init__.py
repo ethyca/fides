@@ -24,7 +24,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
-def cli():
+def cli() -> None:
     """
     The Fides CLI for managing Fides systems.
     """
@@ -37,7 +37,7 @@ def cli():
 @url_option
 @object_type_argument
 @manifest_option
-def create(url: str, object_type: str, manifest: str):
+def create(url: str, object_type: str, manifest: str) -> None:
     """
     Create a new object.
     """
@@ -49,7 +49,7 @@ def create(url: str, object_type: str, manifest: str):
 @url_option
 @object_type_argument
 @id_argument
-def delete(url: str, object_type: str, object_id: str):
+def delete(url: str, object_type: str, object_id: str) -> None:
     """
     Delete an object.
     """
@@ -60,7 +60,7 @@ def delete(url: str, object_type: str, object_id: str):
 @url_option
 @object_type_argument
 @id_argument
-def find(url: str, object_type: str, object_id: str):
+def find(url: str, object_type: str, object_id: str) -> None:
     """
     Get an object by its fidesKey
     """
@@ -71,7 +71,7 @@ def find(url: str, object_type: str, object_id: str):
 @url_option
 @object_type_argument
 @id_argument
-def get(url: str, object_type: str, object_id: str):
+def get(url: str, object_type: str, object_id: str) -> None:
     """
     Get an object by its id.
     """
@@ -81,7 +81,7 @@ def get(url: str, object_type: str, object_id: str):
 @cli.command()
 @url_option
 @object_type_argument
-def show(url: str, object_type: str):
+def show(url: str, object_type: str) -> None:
     """
     List all of the exiting objects of a certain type.
     """
@@ -93,7 +93,7 @@ def show(url: str, object_type: str):
 @manifest_option
 @object_type_argument
 @id_argument
-def update(url: str, object_type: str, object_id: str, manifest: str):
+def update(url: str, object_type: str, object_id: str, manifest: str) -> None:
     """
     Update an existing object.
     """
@@ -107,7 +107,7 @@ def update(url: str, object_type: str, object_id: str, manifest: str):
 @cli.command()
 @url_option
 @click.argument("manifest_dir", type=click.Path())
-def apply(url: str, manifest_dir: str):
+def apply(url: str, manifest_dir: str) -> None:
     """
     Update the state of database to match the state of the
     applied files.
@@ -121,7 +121,7 @@ def apply(url: str, manifest_dir: str):
 
 @cli.command()
 @url_option
-def audit_log(url):
+def audit_log(url: str) -> None:
     """
     Show the full audit-log.
     """
@@ -130,7 +130,7 @@ def audit_log(url):
 
 @cli.command()
 @url_option
-def connect(url: str):
+def connect(url: str) -> None:
     """
     Ping the Server.
     """
@@ -142,7 +142,7 @@ def connect(url: str):
 @cli.command()
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
-def generate_dataset(connection_string, output_filename):
+def generate_dataset(connection_string: str, output_filename: str) -> None:
     """
     Generates a dataset manifest from a database.
 
@@ -159,7 +159,7 @@ def generate_dataset(connection_string, output_filename):
 @url_option
 @click.argument("manifest_dir", type=click.Path())
 @click.argument("fides_key", type=str, default="")
-def evaluate(url: str, manifest_dir: str, fides_key: str = ""):
+def evaluate(url: str, manifest_dir: str, fides_key: str = "") -> None:
     """
     Evaluate a registry, either approving or denying
     based on organizational policies.
@@ -173,7 +173,7 @@ def evaluate(url: str, manifest_dir: str, fides_key: str = ""):
 @url_option
 @click.argument("manifest_dir", type=click.Path())
 @click.argument("fides_key", type=str, default="")
-def apply_eval(url: str, manifest_dir: str, fides_key: str = ""):
+def apply_eval(url: str, manifest_dir: str, fides_key: str = "") -> None:
     """
     Combines the `apply` and `evaluate` commands into a single command.
     """

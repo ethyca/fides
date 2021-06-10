@@ -5,6 +5,10 @@ on:
   pull_request:
     branches:
       - main
+    paths: # Only run tests when certain paths change
+      - fides-server/*
+      - fides_cli/*
+      - .github/workflows/test.yaml
 
 jobs:
   test:
