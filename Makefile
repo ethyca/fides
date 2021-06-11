@@ -31,7 +31,8 @@ help:
 ####################
 
 # Docs
-docs: compose-build
+.PHONY: docs
+docs:
 	@docker-compose up fides-docs
 
 # CLI
