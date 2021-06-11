@@ -30,7 +30,7 @@ all other sbt tasks are standard. For a list, `sbt tasks`
 1. Run `pip install -e .` to have a local installation of the Fides CLI
 1. Run `fidesctl` to see a list of commands and a help message
 
-## Python Tasks
+### Python Tasks
 
 There are a few different commands you can use to run tests and verify your project.
 
@@ -40,6 +40,6 @@ There are a few different commands you can use to run tests and verify your proj
 1. Pytest - `make cli-test
 1. All of the above ^ - `make cli-check-all`
 
-### Notes
+## Notes
 
 If you see the docker error `failed to authorize: rpc error: code = Unknown desc = failed to fetch oauth token: unexpected status: 401 Unauthorized` make sure you do not have buildkit enabled.
