@@ -87,45 +87,45 @@ def test_union_manifests(test_manifests):
 
 
 def test_ingest_manifests(populated_manifest_dir, tmp_path):
-    expected_result = {
-        "dataset": [
-            {
-                "name": "Test Dataset 2",
-                "description": "Test Dataset 2",
-                "fidesKey": "another_dataset",
-                "organizationId": 1,
-                "datasetType": {},
-                "datasetLocation": "somedb:3306",
-                "datasetTables": [],
-            },
-            {
-                "name": "Test Dataset 1",
-                "description": "Test Dataset 1",
-                "fidesKey": "some_dataset",
-                "organizationId": 1,
-                "datasetType": {},
-                "datasetLocation": "somedb:3306",
-                "datasetTables": [],
-            },
-        ],
-        "system": [
-            {
-                "name": "Test System 2",
-                "organizationId": 1,
-                "fidesSystemType": "mysql",
-                "description": "Test System 2",
-                "fidesKey": "another_system",
-            },
-            {
-                "name": "Test System 1",
-                "organizationId": 1,
-                "fidesSystemType": "mysql",
-                "description": "Test System 1",
-                "fidesKey": "some_system",
-            },
-        ],
-    }
     actual_result = manifests.ingest_manifests(str(tmp_path))
-    print(expected_result)
-    print(actual_result)
-    assert expected_result == actual_result
+
+    # Battery of assertions for consistency
+    assert sorted(actual_result) == ["dataset", "system"]
+    assert len(actual_result["dataset"]) == 2
+    assert len(actual_result["system"]) == 2
+    assert sorted(actual_result["dataset"], key=lambda x: x["name"]) == [
+        {
+            "name": "Test Dataset 1",
+            "organizationId": 1,
+            "datasetType": {},
+            "datasetLocation": "somedb:3306",
+            "description": "Test Dataset 1",
+            "fidesKey": "some_dataset",
+            "datasetTables": [],
+        },
+        {
+            "name": "Test Dataset 2",
+            "description": "Test Dataset 2",
+            "organizationId": 1,
+            "datasetType": {},
+            "datasetLocation": "somedb:3306",
+            "fidesKey": "another_dataset",
+            "datasetTables": [],
+        },
+    ]
+    assert sorted(actual_result["system"], key=lambda x: x["name"]) == [
+        {
+            "name": "Test System 1",
+            "organizationId": 1,
+            "fidesSystemType": "mysql",
+            "description": "Test System 1",
+            "fidesKey": "some_system",
+        },
+        {
+            "name": "Test System 2",
+            "organizationId": 1,
+            "fidesSystemType": "mysql",
+            "description": "Test System 2",
+            "fidesKey": "another_system",
+        },
+    ]

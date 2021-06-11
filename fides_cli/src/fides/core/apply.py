@@ -2,12 +2,13 @@
 from typing import Any, Dict, List, Tuple, Optional
 
 from fides.core import api, manifests, parse
+from fides.core.models import FidesModel
 from .utils import echo_green
 
 
 def sort_create_update_unchanged(
-    manifest_object_list: List[Any], server_object_list: List[Any]
-) -> Tuple[List[Any], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
+) -> Tuple[List[FidesModel], List[Dict[str, FidesModel]], List[Dict[str, FidesModel]]]:
     """
     Check if each object exists in the server_object_list.
     If it exists, compare it to the existing object and put it in a queue for updating
@@ -45,10 +46,10 @@ def sort_create_update_unchanged(
 def execute_create_update_unchanged(
     url: str,
     object_type: str,
-    create_list: Optional[List] = None,
-    update_list: Optional[List] = None,
-    unchanged_list: Optional[List] = None,
-):
+    create_list: Optional[List[FidesModel]] = None,
+    update_list: Optional[List[FidesModel]] = None,
+    unchanged_list: Optional[List[FidesModel]] = None,
+) -> None:
     """
     Create, update, or just log objects based on which list they're in.
     """
@@ -86,14 +87,16 @@ def execute_create_update_unchanged(
 
 def get_server_objects(
     url: str, object_type: str, existing_keys: List[str]
-) -> List[Any]:
+) -> List[FidesModel]:
     """
     Get a list of objects from the server that match the provided keys.
     """
     raw_server_object_list = [
         api.find(url, object_type, key).json().get("data") for key in existing_keys
     ]
-    filtered_server_object_list: List[Any] = list(filter(None, raw_server_object_list))
+    filtered_server_object_list: List[Optional[Dict]] = list(
+        filter(None, raw_server_object_list)
+    )
     server_object_list = [
         parse.parse_manifest(object_type, _object, from_server=True)
         for _object in filtered_server_object_list
@@ -101,7 +104,7 @@ def get_server_objects(
     return server_object_list
 
 
-def apply(url: str, manifests_dir: str):
+def apply(url: str, manifests_dir: str) -> None:
     """
     Compose functions to apply file changes to the server.
     """
@@ -114,7 +117,7 @@ def apply(url: str, manifests_dir: str):
         for key, value in ingested_manifests.items()
         if key not in excluded_keys
     }
-    parsed_manifests = {
+    parsed_manifests: Dict[str, List[FidesModel]] = {
         object_type: [
             parse.parse_manifest(object_type, _object) for _object in object_list
         ]

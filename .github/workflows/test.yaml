@@ -1,0 +1,35 @@
+name: Test CLI & Server
+
+# Only test on Pull Requests that target main
+on:
+  pull_request:
+    branches:
+      - main
+    paths: # Only run tests when certain paths change
+      - fides-server/*
+      - fides_cli/*
+      - .github/workflows/test.yaml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build the Docker Images
+        run: make compose-build
+
+      - name: Test the Server
+        run: make server-test
+
+      - name: Format the CLI
+        run: make cli-format
+
+      - name: Lint the CLI
+        run: make cli-lint
+
+      - name: TypeCheck the CLI
+        run: make cli-typecheck
+
+      - name: Test the CLI
+        run: make cli-test

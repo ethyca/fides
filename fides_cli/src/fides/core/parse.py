@@ -4,10 +4,13 @@ either from local files or the server.
 """
 from typing import Any, Dict
 
-from .utils import echo_red, MODEL_DICT
+from .models import MODEL_DICT, FidesModel
+from .utils import echo_red
 
 
-def parse_manifest(object_type: str, _object: Dict, from_server: bool = False) -> Any:
+def parse_manifest(
+    object_type: str, _object: Dict, from_server: bool = False
+) -> FidesModel:
     """
     Parse an individual object into its related model.
     Remove extra (unsupported) fields from the object prior to parsing if needed.

@@ -1,0 +1,29 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log In
+        run: echo "Docker Login"
+
+      - name: Build & Push the Server
+        run: make server-push
+
+  push-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log In
+        run: echo "Docker Login"
+
+      - name: Build & Push the CLI
+        run: make cli-push

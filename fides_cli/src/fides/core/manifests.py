@@ -1,12 +1,12 @@
 """This module handles anything related to working with raw manifest files."""
 import os
 from functools import reduce
-from typing import Any, Dict, List, Set
+from typing import Dict, List, Set
 
 import yaml
 
 
-def write_manifest(file_name: str, manifest: Dict):
+def write_manifest(file_name: str, manifest: Dict) -> None:
     """
     Write a Python dict out to a yaml file.
     """
@@ -14,7 +14,7 @@ def write_manifest(file_name: str, manifest: Dict):
         yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
 
 
-def load_yaml_into_dict(file_path: str) -> Dict[Any, Any]:
+def load_yaml_into_dict(file_path: str) -> Dict:
     """
     This loads yaml files into a dictionary to be used in API calls.
     """
@@ -22,7 +22,7 @@ def load_yaml_into_dict(file_path: str) -> Dict[Any, Any]:
         return yaml.load(yaml_file, Loader=yaml.FullLoader)
 
 
-def union_manifests(manifests: List[Dict[str, Any]]) -> Dict[str, List[Dict]]:
+def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
     """
     Combine all of the manifests into a single dictionary,
     appending object values with the same keys.

@@ -1,6 +1,6 @@
 """This module contains all of the models for the Fides API."""
 # pylint: skip-file
-from typing import List, Optional
+from typing import Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, validator
 
@@ -36,7 +36,7 @@ class DatasetTable(BaseModel):
     fields: List[DatasetField]
 
     @validator("fields")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 
@@ -52,7 +52,7 @@ class Dataset(BaseModel):
     tables: List[DatasetTable]
 
     @validator("tables")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 
@@ -101,7 +101,7 @@ class Policy(BaseModel):
     rules: List[PolicyRule]
 
     @validator("rules")
-    def sort_list_objects(cls, v):
+    def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
 
@@ -149,3 +149,41 @@ class Organization(BaseModel):
     fidesKey: str
     name: str
     description: str
+
+
+# A mapping of object names to their Endpoints
+FidesTypes = Union[
+    Type[DataCategory],
+    Type[DataQualifier],
+    Type[Dataset],
+    Type[DataSubjectCategory],
+    Type[DataUse],
+    Type[Organization],
+    Type[Policy],
+    Type[Registry],
+    Type[System],
+]
+MODEL_DICT: Dict[str, FidesTypes] = {
+    "data-category": DataCategory,
+    "data-qualifier": DataQualifier,
+    "dataset": Dataset,
+    "data-subject-category": DataSubjectCategory,
+    "data-use": DataUse,
+    "organization": Organization,
+    "policy": Policy,
+    "registry": Registry,
+    "system": System,
+}
+MODEL_LIST = list(MODEL_DICT.keys())
+
+FidesModel = Union[
+    DataCategory,
+    DataQualifier,
+    Dataset,
+    DataSubjectCategory,
+    DataUse,
+    Organization,
+    Policy,
+    Registry,
+    System,
+]

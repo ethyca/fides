@@ -1,15 +1,15 @@
 """Contains reusable utils for the CLI commands."""
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Callable
 
 import click
 import requests
 
-from fides.core.utils import MODEL_LIST
+from fides.core.models import MODEL_LIST
 
 
-def pretty_echo(dict_object: Dict[Any, Any], color: str = "white") -> None:
+def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     """
     Given a dict-like object and a color, pretty click echo it.
     """
@@ -28,7 +28,7 @@ def handle_cli_response(response: requests.Response) -> requests.Response:
     return response
 
 
-def url_option(command):
+def url_option(command: Callable) -> Callable:
     """
     Apply the url option.
     """
@@ -42,7 +42,7 @@ def url_option(command):
     return command
 
 
-def object_type_argument(command):
+def object_type_argument(command: Callable) -> Callable:
     """
     Apply the object_type option.
     """
@@ -52,7 +52,7 @@ def object_type_argument(command):
     return command
 
 
-def manifest_option(command):
+def manifest_option(command: Callable) -> Callable:
     """
     Apply the manifest option.
     """
@@ -67,7 +67,7 @@ def manifest_option(command):
     return command
 
 
-def id_argument(command):
+def id_argument(command: Callable) -> Callable:
     """
     Apply the id argument.
     """
