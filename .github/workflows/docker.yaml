@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Log In
-        run: docker login
+        run: echo "Docker Login"
 
       - name: Build & Push the Server
         run: make server-push
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Log In
-        run: docker login
+        run: echo "Docker Login"
 
       - name: Build & Push the CLI
-        run: make server-push
+        run: make cli-push

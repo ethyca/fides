@@ -3,7 +3,7 @@ name: Publish the CLI on PyPI
 on:
   push:
     tags:
-      - main
+      - v*
 
 jobs:
   push:
