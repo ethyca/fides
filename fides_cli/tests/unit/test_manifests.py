@@ -126,6 +126,20 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
         ],
     }
     actual_result = manifests.ingest_manifests(str(tmp_path))
+
+    # Sort for consistency
+    sorted(expected_result)
+    sorted(expected_result["dataset"][0])
+    sorted(expected_result["dataset"][1])
+    sorted(expected_result["system"][0])
+    sorted(expected_result["system"][1])
+
+    sorted(actual_result)
+    sorted(actual_result["dataset"][0])
+    sorted(actual_result["dataset"][1])
+    sorted(actual_result["system"][0])
+    sorted(actual_result["system"][1])
+
     print(expected_result)
     print(actual_result)
     assert expected_result == actual_result
