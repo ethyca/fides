@@ -123,11 +123,42 @@ system:
     datasets: ["user_data"]
 ```
 
-There is now a second data declaration within the system manifest, and it shows that identifiable user data is being used to personalize the user experience. Our policy defines that this is an illegal combination of categories and qualifiers, so this will fail the check.
+There is now a second data declaration within the system manifest, and it shows that identifiable user data is being used to personalize the user experience. Our policy defines that this is an illegal combination of categories and qualifiers, so this will fail its evaluation with the Fides server.
 
-* reaches out to compliance and explains change
+The next step is to reach out to compliance and collaborate on the technical needs of the feature, and how they can be potentially updated to fit within the confines of the existing privacy policies.
 
-* works with compliance to figure out a good solution
+After discussing with the compliance team, it is decided that the feature can be tweaked to comply with privacy laws while still adding value for the user, which is reflected in the following system manifest:
 
-* updates manifest again
-* passes, code can be merged
+```yaml
+system:
+  - organizationId: 1
+    fidesOrganizationKey: "Ethyca"
+    registryId: 1
+    fidesKey: "demoSystem"
+    fidesSystemType: "SYSTEM"
+    name: "Demo System"
+    description: "A system used for demos."
+    declarations:
+      - dataCategories:
+          - "customer_content_data"
+        dataUse: "provide"
+        dataQualifier: "anonymized_data"
+        dataSubjectCategories:
+          - "anonymous_user"
+        dataSets:
+          - "user_data"
+      - dataCategories:
+          - "connectivity_data"
+        dataUse: "personalize"
+        dataQualifier: "anonymized_data"
+        dataSubjectCategories:
+          - "user"
+        dataSets:
+          - "user_data"
+    systemDependencies: []
+    datasets: ["user_data"]
+```
+
+The dataQualifier for the new feature is now `anonymized_data` instead of `pseudonymized_data`, which complies with data privacy laws for this use and categories.
+
+For further info on how to use configure and use Fides, visit the [Getting Started](getting_started.md) page.
