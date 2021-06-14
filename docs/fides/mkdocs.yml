@@ -6,7 +6,7 @@ nav:
   - Getting Started: getting_started.md
   - Glossary: glossary.md
   - Tutorial: tutorial.md
-  - Fidesctl: cli.md
+  - Fidesctl: fidesctl.md
   - Fides Server: server.md
   - Deployment: deployment.md
   - Contributing: contributing.md

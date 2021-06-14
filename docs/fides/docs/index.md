@@ -6,10 +6,10 @@ When data governance is documented in the source code by engineers, it makes it 
 
 ## Principles
 
-* Data Governance as YAML
-* Compliance checks at the CI layer
+* Data Lineage as YAML
+* Compliance controls at the CI layer
 * Synergy between engineers and lawyers
 
 ## Example
 
-To make things more concrete, the following is a real-world example of how Fides supports proactive compliance with data privacy laws.
+To make things more concrete, the following is a realistic example of how Fides supports proactive compliance with data privacy laws.

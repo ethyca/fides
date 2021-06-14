@@ -2,7 +2,7 @@
 
 ## Privacy Classifiers
 
-We use four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
+Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
 
 ### Data category
 
