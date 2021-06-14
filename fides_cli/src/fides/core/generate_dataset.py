@@ -1,4 +1,4 @@
-"""Module that generates valid dataset manifest files from data sources."""
+"""Module that generates valid dataset manifest files from various data sources."""
 from typing import Dict, List, Union
 
 import sqlalchemy

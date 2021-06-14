@@ -1,4 +1,4 @@
-"""Contains all of the commands for the Fides CLI."""
+"""Contains all of the CLI commands for Fidesctl."""
 import json
 
 import click
@@ -39,7 +39,7 @@ def cli() -> None:
 @manifest_option
 def create(url: str, object_type: str, manifest: str) -> None:
     """
-    Create a new object.
+    Create a new object directly from a JSON object.
     """
     parsed_manifest = json.loads(manifest)
     handle_cli_response(_api.create(url, object_type, parsed_manifest))
@@ -51,7 +51,7 @@ def create(url: str, object_type: str, manifest: str) -> None:
 @id_argument
 def delete(url: str, object_type: str, object_id: str) -> None:
     """
-    Delete an object.
+    Delete an object by its id.
     """
     handle_cli_response(_api.delete(url, object_type, object_id))
 
@@ -62,7 +62,7 @@ def delete(url: str, object_type: str, object_id: str) -> None:
 @id_argument
 def find(url: str, object_type: str, object_id: str) -> None:
     """
-    Get an object by its fidesKey
+    Get an object by its fidesKey.
     """
     handle_cli_response(_api.find(url, object_type, object_id))
 
@@ -83,7 +83,7 @@ def get(url: str, object_type: str, object_id: str) -> None:
 @object_type_argument
 def show(url: str, object_type: str) -> None:
     """
-    List all of the exiting objects of a certain type.
+    List all of the objects of a certain type.
     """
     handle_cli_response(_api.show(url, object_type))
 
@@ -95,7 +95,7 @@ def show(url: str, object_type: str) -> None:
 @id_argument
 def update(url: str, object_type: str, object_id: str, manifest: str) -> None:
     """
-    Update an existing object.
+    Update an existing object by its id.
     """
     parsed_manifest = json.loads(manifest)
     handle_cli_response(_api.update(url, object_type, object_id, parsed_manifest))
@@ -109,8 +109,7 @@ def update(url: str, object_type: str, object_id: str, manifest: str) -> None:
 @click.argument("manifest_dir", type=click.Path())
 def apply(url: str, manifest_dir: str) -> None:
     """
-    Update the state of database to match the state of the
-    applied files.
+    Update the state of database to match the state of the manifest files.
 
     Args:
 
@@ -121,22 +120,13 @@ def apply(url: str, manifest_dir: str) -> None:
 
 @cli.command()
 @url_option
-def audit_log(url: str) -> None:
-    """
-    Show the full audit-log.
-    """
-    _api.show(url, "audit_log")
-
-
-@cli.command()
-@url_option
-def connect(url: str) -> None:
+def ping(url: str) -> None:
     """
     Ping the Server.
     """
     click.secho(f"Pinging {url}...", fg="green")
-    _api.connect(url)
-    click.secho("Connection Successful!", fg="green")
+    _api.ping(url)
+    click.secho("Ping Successful!", fg="green")
 
 
 @cli.command()
@@ -144,7 +134,7 @@ def connect(url: str) -> None:
 @click.argument("output_filename", type=str)
 def generate_dataset(connection_string: str, output_filename: str) -> None:
     """
-    Generates a dataset manifest from a database.
+    Generates a comprehensive dataset manifest from a database.
 
     Args:
 

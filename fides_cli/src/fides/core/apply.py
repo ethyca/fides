@@ -1,5 +1,5 @@
 """This module handles the logic required for applying manifest files to the server."""
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Iterable
 
 from fides.core import api, manifests, parse
 from fides.core.models import FidesModel
@@ -10,10 +10,8 @@ def sort_create_update_unchanged(
     manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
 ) -> Tuple[List[FidesModel], List[Dict[str, FidesModel]], List[Dict[str, FidesModel]]]:
     """
-    Check if each object exists in the server_object_list.
-    If it exists, compare it to the existing object and put it in a queue for updating
-    if there has been a change, otherwise put it in a queue for unchanged items.
-    If it doesn't exist, put it in a queue for creation.
+    Check the contents of the object lists and populate separate
+    new lists for object creation, updating, or no change.
     """
     server_object_dict = {
         server_object.fidesKey: server_object for server_object in server_object_list
@@ -28,9 +26,8 @@ def sort_create_update_unchanged(
         # Check if the object's fidesKey matches one from the server
         if object_key in server_object_dict.keys():
             server_object = server_object_dict[object_key]
-            server_object_id = server_object.id
-            # This hack has to happen otherwise they won't match when they should
-            manifest_object.id = server_object_id
+            # Copy the ID since manifest files don't have them
+            manifest_object.id = server_object.id
 
             if manifest_object == server_object:
                 unchanged_list.append(manifest_object)
@@ -91,22 +88,20 @@ def get_server_objects(
     """
     Get a list of objects from the server that match the provided keys.
     """
-    raw_server_object_list = [
-        api.find(url, object_type, key).json().get("data") for key in existing_keys
-    ]
-    filtered_server_object_list: List[Optional[Dict]] = list(
-        filter(None, raw_server_object_list)
+    raw_server_object_list: Iterable[Dict] = filter(
+        None,
+        [api.find(url, object_type, key).json().get("data") for key in existing_keys],
     )
-    server_object_list = [
+    server_object_list: List[FidesModel] = [
         parse.parse_manifest(object_type, _object, from_server=True)
-        for _object in filtered_server_object_list
+        for _object in raw_server_object_list
     ]
     return server_object_list
 
 
 def apply(url: str, manifests_dir: str) -> None:
     """
-    Compose functions to apply file changes to the server.
+    Apply the current manifest file(s) state to the server.
     """
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
 
@@ -124,10 +119,9 @@ def apply(url: str, manifests_dir: str) -> None:
         for object_type, object_list in filtered_manifests.items()
     }
 
-    # Loop through each type of object and run the proper operations
+    # Loop through each type of object and check for operations
     for object_type, manifest_object_list in parsed_manifests.items():
 
-        # Get a list of the local objects that already exist on the server
         existing_keys = [
             manifest_object.fidesKey for manifest_object in manifest_object_list
         ]

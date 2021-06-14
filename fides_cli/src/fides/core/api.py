@@ -1,4 +1,4 @@
-"""Logic to make calling the API smoother across different modules."""
+"""A wrapper to make calling the API consistent across Fidesctl."""
 from typing import Dict
 
 import requests
@@ -22,7 +22,7 @@ def generate_object_url(
 
 def find(url: str, object_type: str, object_key: str) -> requests.Response:
     """
-    Get a specific object by its fidesKey.
+    Get an object by its fidesKey.
     """
     object_url = generate_object_url(url, object_type)
     find_url = f"{object_url}find/{object_key}"
@@ -32,7 +32,7 @@ def find(url: str, object_type: str, object_key: str) -> requests.Response:
 
 def get(url: str, object_type: str, object_id: str) -> requests.Response:
     """
-    Get a specific object by its id.
+    Get an object by its id.
     """
     object_url = generate_object_url(url, object_type, object_id)
     headers = generate_request_headers()
@@ -49,9 +49,9 @@ def create(url: str, object_type: str, json_object: str) -> requests.Response:
     return requests.post(object_url, headers=headers, data=payload)
 
 
-def connect(url: str) -> requests.Response:
+def ping(url: str) -> requests.Response:
     """
-    Pings the Server on the base url to make sure its available.
+    Pings the Server on the base url to make sure it's available.
     """
     return requests.get(url)
 
@@ -67,7 +67,7 @@ def delete(url: str, object_type: str, object_id: str) -> requests.Response:
 
 def show(url: str, object_type: str) -> requests.Response:
     """
-    Get a list of all of the existing objects of a certain type.
+    Get a list of all of the objects of a certain type.
     """
     object_url = generate_object_url(url, object_type)
     headers = generate_request_headers()
