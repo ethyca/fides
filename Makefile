@@ -30,11 +30,6 @@ help:
 # Dev
 ####################
 
-# Docs
-.PHONY: docs
-docs:
-	@docker-compose up fides-docs
-
 # CLI
 cli: compose-build check-db
 	@docker-compose run $(CLI_IMAGE_NAME)
