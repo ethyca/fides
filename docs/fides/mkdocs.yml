@@ -4,8 +4,8 @@ nav:
   - Home: index.md
   - License: license.md
   - Getting Started: getting_started.md
-  - Glossary: glossary.md
   - Tutorial: tutorial.md
+  - Glossary: glossary.md
   - Fidesctl: fidesctl.md
   - Fides Server: server.md
   - Deployment: deployment.md

@@ -40,4 +40,3 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 1. `sbt ~jetty:start` -> You now have a Fides Server instance up and running powered by MySQL!
 1. In a new shell -> `pip install fidesctl`
 1. You can now run `fidesctl ping` to verify that your installation is set up properly
-1. See the `Tutorial` page for further usage guides

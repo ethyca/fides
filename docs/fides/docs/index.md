@@ -161,4 +161,4 @@ system:
 
 The dataQualifier for the new feature is now `anonymized_data` instead of `pseudonymized_data`, which complies with data privacy laws for this use and categories.
 
-For further info on how to use configure and use Fides, visit the [Getting Started](getting_started.md) page.
+For further info on how to use and configure Fides, visit the [Getting Started](getting_started.md) page.
