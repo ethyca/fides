@@ -1,7 +1,7 @@
 """Unit tests for the Commands module."""
 import pytest
 
-from fides.core import apply, models
+from fidesctl.core import apply, models
 
 
 @pytest.fixture()

@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 import requests
 
-from fides.core import api, apply, models
+from fidesctl.core import api, apply, models
 
 
 def test_apply(populated_manifest_dir):

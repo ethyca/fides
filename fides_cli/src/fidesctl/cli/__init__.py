@@ -2,9 +2,9 @@
 import json
 
 import click
-from click.decorators import version_option
 
-from fides.core import (
+import fidesctl
+from fidesctl.core import (
     api as _api,
     apply as _apply,
     evaluate as _evaluate,
@@ -23,11 +23,18 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option()
 def cli() -> None:
     """
     The Fides CLI for managing Fides systems.
     """
+
+
+@cli.command()
+def version():
+    """
+    Get the current Fidesctl version.
+    """
+    click.echo(fidesctl.__version__)
 
 
 ####################
@@ -109,11 +116,7 @@ def update(url: str, object_type: str, object_id: str, manifest: str) -> None:
 @click.argument("manifest_dir", type=click.Path())
 def apply(url: str, manifest_dir: str) -> None:
     """
-    Update the state of database to match the state of the manifest files.
-
-    Args:
-
-        manifest_dir (str): A path to a directory that contains only Fides manifest files.
+    Send the manifest files to the server.
     """
     _apply.apply(url, manifest_dir)
 

@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from fides.core import manifests
+from fidesctl.core import manifests
 
 
 @pytest.fixture()

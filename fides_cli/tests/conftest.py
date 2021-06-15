@@ -5,7 +5,7 @@ from typing import Any, Dict
 import pytest
 import yaml
 
-from fides.core import models
+from fidesctl.core import models
 
 
 @pytest.fixture()

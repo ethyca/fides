@@ -1,8 +1,8 @@
 """Integration tests for the API module."""
 import pytest
 
-from fides.core import api as _api, parse
-from fides.core.models import MODEL_LIST
+from fidesctl.core import api as _api, parse
+from fidesctl.core.models import MODEL_LIST
 
 
 # Helper Functions

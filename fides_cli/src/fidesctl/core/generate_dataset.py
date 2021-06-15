@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 import sqlalchemy
 from sqlalchemy.engine import Engine
 
-from fides.core import manifests
+from fidesctl.core import manifests
 from .utils import get_db_engine, echo_green
 
 
