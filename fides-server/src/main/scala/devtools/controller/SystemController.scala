@@ -48,31 +48,31 @@ class SystemController(
 
   /* Evaluate endpoints */
   get(
-    "/evaluate/:fides-key",
+    "/evaluate/:fidesKey",
     operation(
       apiOperation[Approval](s"evaluate a single system and return the approval value")
         .summary("run and store evaluation on the specified system.")
     )
   ) {
     asyncResponse {
-      service.findByUniqueKey(requestContext.organizationId, "fides-key").flatMap {
+      service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
         case Some(s) => policyEvaluator.systemEvaluate(s, requestContext.organizationId, requestContext.user.id)
-        case None    => Future.failed(NoSuchValueException("fides-key", params("fides-key")))
+        case None    => Future.failed(NoSuchValueException("fides-key", params("fidesKey")))
       }
     }
   }
 
   get(
-    "/evaluate/:fides-key/last",
+    "/evaluate/:fidesKey/last",
     operation(
       apiOperation[Approval](s"Current state of the system approval, if it exists")
         .summary("Return the current approval state of the specified system.")
     )
   ) {
     asyncOptionResponse {
-      service.findByUniqueKey(requestContext.organizationId, "fides-key").flatMap {
+      service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
         case Some(s) => approvalService.mostRecentSystem(s.id)
-        case None    => Future.failed(NoSuchValueException("fides-key", params("fides-key")))
+        case None    => Future.failed(NoSuchValueException("fides-key", params("fidesKey")))
       }
     }
   }

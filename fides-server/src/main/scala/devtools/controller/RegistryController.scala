@@ -33,9 +33,9 @@ class RegistryController(val service: RegistryService,
     )
   ) {
     asyncResponse {
-      service.findByUniqueKey(requestContext.organizationId, "fides-key").flatMap {
+      service.findByUniqueKey(requestContext.organizationId, "fidesKey").flatMap {
         case Some(s) => policyEvaluator.registryEvaluate(s, requestContext.organizationId, requestContext.user.id)
-        case None    => Future.failed(NoSuchValueException("fides-key", params("fides-key")))
+        case None    => Future.failed(NoSuchValueException("fidesKey", params("fidesKey")))
       }
     }
   }
@@ -48,9 +48,9 @@ class RegistryController(val service: RegistryService,
     )
   ) {
     asyncOptionResponse {
-      service.findByUniqueKey(requestContext.organizationId, "fides-key").flatMap {
+      service.findByUniqueKey(requestContext.organizationId, "fidesKey").flatMap {
         case Some(s) => approvalService.mostRecentRegistry(s.id)
-        case None    => Future.failed(NoSuchValueException("fides-key", params("fides-key")))
+        case None    => Future.failed(NoSuchValueException("fidesKey", params("fidesKey")))
       }
     }
   }

@@ -50,7 +50,9 @@ class SystemService(
       _ = previous.registryId.map(daos.registryDAO.setVersion(_, versionStamp))
     } yield deleted
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[SystemObject]] =
+  def findByUniqueKey(organizationId: Long, key: String): Future[Option[SystemObject]] = {
+    println("ALskdjALSkDJ $key")
     daos.systemDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
+  }
 
 }
