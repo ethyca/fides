@@ -10,7 +10,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class PolicyRulePolicyEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
-  val rater: PolicyRuleEvaluator = App.ruleRater
+  val rater: PolicyRuleEvaluator = App.policyRuleEvaluator
 
   //categories
   val p1   = "customer_content_data"

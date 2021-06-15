@@ -10,7 +10,9 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class PolicyEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
-  private val rater    = new PolicyEvaluator(App.ruleRater, App.registryApprovalChecks, App.daos)(App.executionContext)
+  private val rater = new PolicyEvaluator(App.policyRuleEvaluator, App.registryApprovalChecks, App.daos)(
+    App.executionContext
+  )
   private val testData = new RatingTestData()
 
   override def afterAll(): Unit = {

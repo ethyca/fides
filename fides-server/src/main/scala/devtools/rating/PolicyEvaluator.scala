@@ -29,14 +29,19 @@ class PolicyEvaluator(val policyRuleRater: PolicyRuleEvaluator, ratingsChecks: R
   // registry
   // --------------------------------------------
 
-  def registryEvaluate(registry: Registry,organizationId: Long, userId: Long): Future[Approval] =
+  def registryEvaluate(registry: Registry, organizationId: Long, userId: Long): Future[Approval] =
     runRegistryEvaluate(registry, "evaluate", organizationId, userId).flatMap(daos.approvalDAO.create)
 
-  def registryDryRun(registry: Registry,organizationId: Long, userId: Long): Future[Approval] =
+  def registryDryRun(registry: Registry, organizationId: Long, userId: Long): Future[Approval] =
     runRegistryEvaluate(registry, "dry-run", organizationId, userId)
 
   /** Rate a single registry, which is assumed to be fully populated */
-  private def runRegistryEvaluate(registry: Registry, action: String, organizationId: Long, userId: Long): Future[Approval] = {
+  private def runRegistryEvaluate(
+    registry: Registry,
+    action: String,
+    organizationId: Long,
+    userId: Long
+  ): Future[Approval] = {
 
     // retrieve systems from the registry (if hydrated) or retrieve directly from the db.
     val systems: Future[Seq[SystemObject]] = registry.systems match {

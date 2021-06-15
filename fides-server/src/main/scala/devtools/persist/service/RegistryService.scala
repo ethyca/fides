@@ -26,11 +26,6 @@ class RegistryService(
     for { ids <- daos.systemDAO.runAction(systemQuery.filter(_.registryId === r.id).map(_.id).result) } yield r
       .copy(systems = Some(Left(ids)))
 
-  /** rate the input system and return the result without saving */
-  def dryRun(r: Registry, ctx: RequestContext): Future[Approval] =
-    hydrate(r).flatMap(
-      policyRater.registryEvaluate(_, ctx.organizationId.getOrElse(ctx.user.organizationId), ctx.user.id)
-    )
 
   // -----------------------------------------------------------
   //                  Auditing service methods

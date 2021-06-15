@@ -14,16 +14,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class SystemService(
   daos: DAOs,
   val policyService: PolicyService,
-  val validator: SystemValidator,
-  val policyRater: PolicyEvaluator
+  val validator: SystemValidator
 )(implicit
   val ec: ExecutionContext
 ) extends AuditingService[SystemObject](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with LazyLogging with UniqueKeySearch[SystemObject] {
-
-  /** rate the input system and return the result without saving */
-  def dryRun(s: SystemObject, ctx: RequestContext): Future[Approval] =
-    policyRater.systemEvaluate(s, ctx.organizationId.getOrElse(ctx.user.organizationId), "dry-run", ctx.user.id)
 
   def searchInOrganization(organizationId: Long, value: String): Future[Seq[SystemObject]] =
     daos.systemDAO.searchInOrganization(organizationId, value)
