@@ -7,3 +7,4 @@ pyyaml==5.4.1
 requests==2.25.1
 sqlalchemy==1.4.14
 toml==0.10.2
+versioneer==0.19
