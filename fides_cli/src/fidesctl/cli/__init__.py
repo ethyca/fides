@@ -30,7 +30,7 @@ def cli() -> None:
 
 
 @cli.command()
-def version():
+def version() -> None:
     """
     Get the current Fidesctl version.
     """
