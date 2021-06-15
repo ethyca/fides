@@ -11,40 +11,49 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 /** Updated version of ratings */
-class PolicyRater(val policyRuleRater: PolicyRuleRater, ratingsChecks: RegistryApprovalChecks, val daos: DAOs)(implicit
-  val executionContext: ExecutionContext
+class PolicyEvaluator(val policyRuleRater: PolicyRuleEvaluator, ratingsChecks: RegistryApprovalChecks, val daos: DAOs)(
+  implicit val executionContext: ExecutionContext
 ) {
 
-  /** retrieve systems from the registry (if hydrated) or retrieve directly from the db. */
-  private def systemsForRegistry(registry: Registry): Future[Seq[SystemObject]] =
-    registry.systems match {
-      case Some(Left(ids)) =>
-        daos.systemDAO.db
-          .run(systemQuery.filter(s => s.id inSet ids).result)
-      case Some(Right(systems)) => Future.successful(systems)
-      case _ =>
-        daos.systemDAO.db
-          .run(systemQuery.filter(s => s.registryId === registry.id).result)
-    }
+// --------------------------------------------
+  // system
+  // --------------------------------------------
+
+  def systemEvaluate(sys: SystemObject, organizationId: Long, userId: Long): Future[Approval] =
+    runEvaluation(Seq(sys), Some(sys.id), None, "evaluate", organizationId, userId).flatMap(daos.approvalDAO.create)
+
+  def systemDryRun(sys: SystemObject, organizationId: Long, userId: Long): Future[Approval] =
+    runEvaluation(Seq(sys), Some(sys.id), None, "dry-run", organizationId, userId)
+
+  // --------------------------------------------
+  // registry
+  // --------------------------------------------
+
+  def registryEvaluate(registry: Registry,organizationId: Long, userId: Long): Future[Approval] =
+    runRegistryEvaluate(registry, "evaluate", organizationId, userId).flatMap(daos.approvalDAO.create)
+
+  def registryDryRun(registry: Registry,organizationId: Long, userId: Long): Future[Approval] =
+    runRegistryEvaluate(registry, "dry-run", organizationId, userId)
 
   /** Rate a single registry, which is assumed to be fully populated */
-  def rateRegistry(registry: Registry, organizationId: Long, userId: Long): Future[Approval] = {
-    systemsForRegistry(registry).flatMap(systems =>
-      rateSystems(
-        systems,
-        None,
-        Some(registry.id),
-        "rate",
-        organizationId,
-        userId
-      )
-    )
+  private def runRegistryEvaluate(registry: Registry, action: String, organizationId: Long, userId: Long): Future[Approval] = {
+
+    // retrieve systems from the registry (if hydrated) or retrieve directly from the db.
+    val systems: Future[Seq[SystemObject]] = registry.systems match {
+      case Some(Left(ids))      => daos.systemDAO.db.run(systemQuery.filter(s => s.id inSet ids).result)
+      case Some(Right(systems)) => Future.successful(systems)
+      case _                    => daos.systemDAO.db.run(systemQuery.filter(s => s.registryId === registry.id).result)
+    }
+
+    systems.flatMap(runEvaluation(_, None, Some(registry.id), action, organizationId, userId))
+
   }
 
-  def rateSystem(sys: SystemObject, organizationId: Long, actionType: String, userId: Long): Future[Approval] =
-    rateSystems(Seq(sys), Some(sys.id), None, actionType, organizationId, userId)
+  // --------------------------------------------
+  // evaluate
+  // --------------------------------------------
 
-  def rateSystems(
+  private def runEvaluation(
     systems: Seq[SystemObject],
     systemId: Option[Long],
     registryId: Option[Long],
@@ -67,20 +76,22 @@ class PolicyRater(val policyRuleRater: PolicyRuleRater, ratingsChecks: RegistryA
         val mappedApproval   = extractApprovalStatus(detailMap)
         val overallApproval = if (validationErrors.hasErrors) { ApprovalStatus.FAIL }
         else mappedApproval
-        val approval = Approval(
-          0,
-          organizationId,
-          systemId,
-          registryId,
-          userId,
-          version,
-          actionType,
-          overallApproval,
-          Some(detailMap),
-          Some(validationErrors.toMap),
-          None
+
+        Future.successful(
+          Approval(
+            0,
+            organizationId,
+            systemId,
+            registryId,
+            userId,
+            version,
+            actionType,
+            overallApproval,
+            Some(detailMap),
+            Some(validationErrors.toMap),
+            None
+          )
         )
-        daos.approvalDAO.create(approval)
     }
   }
 
@@ -97,7 +108,7 @@ class PolicyRater(val policyRuleRater: PolicyRuleRater, ratingsChecks: RegistryA
     *
     * (pass-> [r1, r2], fail=>
     */
-  private def rateByRule(policy: Policy, system: SystemObject): Map[ApprovalStatus, Map[String, Seq[Long]]] = {
+  private def evaluateByRule(policy: Policy, system: SystemObject): Map[ApprovalStatus, Map[String, Seq[Long]]] = {
 
     val v = for {
       (d, i) <- system.declarations.zipWithIndex
@@ -140,7 +151,7 @@ class PolicyRater(val policyRuleRater: PolicyRuleRater, ratingsChecks: RegistryA
     val v: Iterable[(ApprovalStatus, String, String, Iterable[Map[String, Seq[Long]]])] = for {
       s <- systems
       p <- policies
-      ratingsByRuleMap = rateByRule(p, s)
+      ratingsByRuleMap = evaluateByRule(p, s)
     } yield (extractApprovalStatus(ratingsByRuleMap), s.fidesKey, p.fidesKey, ratingsByRuleMap.values)
 
     /* Approval, system, policy, map

@@ -5,7 +5,7 @@ import devtools.controller.RequestContext
 import devtools.domain.{Approval, SystemObject}
 import devtools.persist.dao.DAOs
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.rating.PolicyRater
+import devtools.rating.PolicyEvaluator
 import devtools.validation.SystemValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -15,7 +15,7 @@ class SystemService(
   daos: DAOs,
   val policyService: PolicyService,
   val validator: SystemValidator,
-  val policyRater: PolicyRater
+  val policyRater: PolicyEvaluator
 )(implicit
   val ec: ExecutionContext
 ) extends AuditingService[SystemObject](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
@@ -23,7 +23,7 @@ class SystemService(
 
   /** rate the input system and return the result without saving */
   def dryRun(s: SystemObject, ctx: RequestContext): Future[Approval] =
-    policyRater.rateSystem(s, ctx.organizationId.getOrElse(ctx.user.organizationId), "dry-run", ctx.user.id)
+    policyRater.systemEvaluate(s, ctx.organizationId.getOrElse(ctx.user.organizationId), "dry-run", ctx.user.id)
 
   def searchInOrganization(organizationId: Long, value: String): Future[Seq[SystemObject]] =
     daos.systemDAO.searchInOrganization(organizationId, value)

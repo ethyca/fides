@@ -6,7 +6,7 @@ import devtools.domain.{Approval, Registry}
 import devtools.persist.dao._
 import devtools.persist.db.Queries.systemQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.rating.PolicyRater
+import devtools.rating.PolicyEvaluator
 import devtools.validation.RegistryValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistryService(
   val daos: DAOs,
   val validator: RegistryValidator,
-  val policyRater: PolicyRater
+  val policyRater: PolicyEvaluator
 )(implicit val ec: ExecutionContext)
   extends AuditingService[Registry](daos.registryDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with UniqueKeySearch[Registry] {
@@ -28,7 +28,9 @@ class RegistryService(
 
   /** rate the input system and return the result without saving */
   def dryRun(r: Registry, ctx: RequestContext): Future[Approval] =
-    hydrate(r).flatMap(policyRater.rateRegistry(_, ctx.organizationId.getOrElse(ctx.user.organizationId), ctx.user.id))
+    hydrate(r).flatMap(
+      policyRater.registryEvaluate(_, ctx.organizationId.getOrElse(ctx.user.organizationId), ctx.user.id)
+    )
 
   // -----------------------------------------------------------
   //                  Auditing service methods

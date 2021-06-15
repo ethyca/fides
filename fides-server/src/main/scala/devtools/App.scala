@@ -4,7 +4,7 @@ import devtools.controller._
 import devtools.persist.dao._
 import devtools.persist.db.DB
 import devtools.persist.service._
-import devtools.rating.{PolicyRater, PolicyRuleRater, RegistryApprovalChecks}
+import devtools.rating.{PolicyEvaluator, PolicyRuleEvaluator, RegistryApprovalChecks}
 import devtools.util.{Caches, ConfigLoader}
 import devtools.validation._
 import org.slf4j.{Logger, LoggerFactory}
@@ -78,8 +78,8 @@ object App {
   val subjectCategoryValidator = new DataSubjectCategoryValidator(daos)
 
   val registryApprovalChecks = new RegistryApprovalChecks(daos)
-  val ruleRater              = new PolicyRuleRater(daos)
-  val policyRater            = new PolicyRater(ruleRater, registryApprovalChecks, daos)
+  val ruleRater              = new PolicyRuleEvaluator(daos)
+  val policyRater            = new PolicyEvaluator(ruleRater, registryApprovalChecks, daos)
   //service
   val approvalService     = new ApprovalService(approvalDAO)
   val auditLogService     = new AuditLogService(auditLogDAO)

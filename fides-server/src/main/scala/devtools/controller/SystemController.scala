@@ -42,11 +42,31 @@ class SystemController(
     }
   }
 
-  post(
-    "/dry-run",
+  /* Ratings endpoints */
+  get(
+    "/evaluate/:id",
     operation(
-      apiOperation[Approval](s"rate system")
-        .summary(s"submit a system for approval")
+      apiOperation[Approval](s"evaluate a single system and return the approval value")
+        .summary("run and store evaluation on the specified system.")
+    )
+  ) {
+    asyncResponse {}
+  }
+  get(
+    "/evaluate/:id/last",
+    operation(
+      apiOperation[Approval](s"Current state of the system approval, if it exists")
+        .summary("Return the current approval state of the specified system.")
+    )
+  ) {
+    asyncResponse {}
+  }
+
+  post(
+    "/evaluate/dry-run",
+    operation(
+      apiOperation[Approval](s"evaluate a the posted system and return the approval value")
+        .summary("Evaluate the posted system as a 'dry-run' only.")
     )
   ) {
     asyncResponse {

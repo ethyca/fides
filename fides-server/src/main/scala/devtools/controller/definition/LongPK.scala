@@ -45,7 +45,7 @@ trait LongPK[T <: IdType[T, Long]] {
     "/",
     operation(
       apiOperation[T](s"create $typeName")
-        .summary(s"Create a new instance of $typeName")
+        .summary(s"Create a new instance of  $typeName")
     )
   ) {
     ingest(request.body, request.getHeader("Content-Type"), inputMergeMap) match {
