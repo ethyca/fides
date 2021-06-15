@@ -1,5 +1,5 @@
 """Module that generates valid dataset manifest files from various data sources."""
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import sqlalchemy
 from sqlalchemy.engine import Engine

@@ -8,8 +8,6 @@ import requests
 import sqlalchemy
 from sqlalchemy.engine import Engine
 
-from fidesctl.core import models
-
 logger = logging.getLogger("server_api")
 
 echo_red = partial(click.secho, fg="red", bold=True)
