@@ -20,7 +20,7 @@ class PolicyEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfter
   }
 
   test("test rate rating catch missing dataset") {
-    val v: Approval = waitFor(rater.systemEvaluate(testData.system3, 1, "test", 1))
+    val v: Approval = waitFor(rater.systemEvaluate(testData.system3, 1, 1))
     val messages    = v.messages.get
     messages("errors").toSeq should containMatchString(
       "These systems were declared as dependencies but were not found"
