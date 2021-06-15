@@ -15,6 +15,9 @@ tmp/*
 # java specific
 *.class
 
+# docs
+docs/fides/site/
+
 # python specific
 *.pyc
 
