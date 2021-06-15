@@ -2,7 +2,7 @@
 This module handles everything related to parsing models,
 either from local files or the server.
 """
-from typing import Any, Dict
+from typing import Dict
 
 from .models import MODEL_DICT, FidesModel
 from .utils import echo_red
@@ -12,8 +12,7 @@ def parse_manifest(
     object_type: str, _object: Dict, from_server: bool = False
 ) -> FidesModel:
     """
-    Parse an individual object into its related model.
-    Remove extra (unsupported) fields from the object prior to parsing if needed.
+    Parse an individual object into its Python model.
     """
     object_source = "server" if from_server else "manifest file"
 

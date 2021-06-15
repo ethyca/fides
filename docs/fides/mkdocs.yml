@@ -2,8 +2,12 @@ site_name: Fides
 site_url: https://example.com/
 nav:
   - Home: index.md
-  - CLI: cli.md
-  - Server: server.md
+  - License: license.md
+  - Getting Started: getting_started.md
+  - Tutorial: tutorial.md
   - Glossary: glossary.md
+  - Fidesctl: fidesctl.md
+  - Fides Server: server.md
+  - Deployment: deployment.md
   - Contributing: contributing.md
 theme: readthedocs

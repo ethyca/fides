@@ -44,16 +44,5 @@ services:
     env_file:
       - env_files/mysql_db.env
 
-  fides-docs:
-    build:
-      context: docs
-      dockerfile: Dockerfile
-    command: serve -a 0.0.0.0:8000
-    expose:
-      - 8000
-    ports:
-      - "8000:8000"
-
-
 volumes:
   mysql:

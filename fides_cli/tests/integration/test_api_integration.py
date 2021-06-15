@@ -16,8 +16,8 @@ def get_id_from_key(server_url: str, object_type: str, object_key: str) -> int:
 
 
 # Tests
-def test_api_connect(server_url):
-    assert _api.connect(server_url).status_code == 200
+def test_api_ping(server_url):
+    assert _api.ping(server_url).status_code == 200
 
 
 @pytest.mark.parametrize("endpoint", MODEL_LIST)

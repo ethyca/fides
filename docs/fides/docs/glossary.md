@@ -1,8 +1,8 @@
 # Fides Privacy Glossary
 
-## Privacy taxonomies
+## Privacy Classifiers
 
-We use four categories for describing how systems use privacy data, and for describing what privacy data is allowed. All of these types are initially populated but extensible with custom values. All of these types support organization into hierarchical trees.
+Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
 
 ### Data category
 
@@ -52,27 +52,25 @@ We use four categories for describing how systems use privacy data, and for desc
         - identified data
 ```
 
-Data qualifiers are nested in order of increasing data exposure.
+Data qualifiers are sorted in order of increasing data exposure.
 
 ## Systems
 
-A system represents the privacy useage of a single software project or codebase, made up of a few constituent parts:
+A system represents the privacy usage of a single software project or codebase, made up of a few constituent parts:
 
 ### Datasets
 
-A dataset represents an annotated datastore (see below). It is ultimately made up of a collection of fields, each of which can declare a list of data categories it represents as well as a data qualifier.
+A dataset represents an annotated datastore (see below). It is ultimately made up of a collection of tables and fields. Each field declares a list of data categories it represents as well as a data qualifier.
 
 If the privacy range of datasets is wider than that declared by this system a warning will be generated.
 
 ### Dependent Systems
 
-Systems that are used by this system.
-
-(TBD) If the privacy range of a dependant system is wider than that declared by this system a warning will be generated.
+System dependencies are a graph, giving users the ability to describe that system `A` is dependent on systems `B` and `C`. Fides will then merge all of the systems' declarations and ensure that not only does system `A` perform in a compliant manner, but that systems `B` and `C` do as well.
 
 ### Declarations
 
-This systems privacy useage. Each declaration consists of
+This individual system's privacy usage. Each declaration consists of
 
 ```yaml
 - A set of data categories
@@ -142,7 +140,7 @@ A system can have multiple declarations.
 }
 ```
 
-## Policy
+## Policies
 
 ### Policy rules
 
@@ -174,7 +172,7 @@ where something like, e.g.
 
 means "this rule applies if the data categories being considered match ANY of "account_data", "derived_data" (child values are considered to be matching)
 
-#### Policy rule action
+#### Policy Rule Actions
 
 Currently
 
@@ -184,11 +182,7 @@ Currently
 - MANUAL (trigger a manual review process, TBD)
 ```
 
-The interaction of these rules can be confusing. Possibly "ACCEPT" is redundant, since it's what should take effect if there's no "REJECT" trigger. It will still be useful, I think, to have tags that trigger different levels of scrutiny, e.g. a manual approval workflow.
-
-Are there potentially other levels of scrutiny? e.g. who will be required to review?
-
-#### Policy rule application
+#### Policy Rule Application
 
 A policy rule _applies_ to a system if
 
@@ -197,7 +191,7 @@ A policy rule _applies_ to a system if
 - the system matches the rule's data subject categories
 - the system qualifier matches the rule's qualifier
 
-To evaluate a system against a policy, we evaluate all rules and take the _most_ restricive interpretation
+To evaluate a system against a policy, we evaluate all rules and take the _most_ restricive interpretation.
 
 ### A Complete Policy
 
@@ -284,19 +278,19 @@ To evaluate a system against a policy, we evaluate all rules and take the _most_
 
 ## Registry
 
-A registry represents, basically, a collection of systems. Since systems can declare their dependencies on other systems, this is basically a system graph.
-Validations of a registry validate all systems indidually, as well as validate their declarations in light of their dependencies
+A registry represents a collection of systems. Since systems can declare their dependencies on other systems, this is essentially a system graph.
+Validations of a registry validate all systems indidually, as well as validate their declarations in light of their dependencies.
 
 ## Approvals
 
-### Approval validation checks
+### Approval Validation Checks
 
-Evaluations of systems and registries may optionally generate a list of errors and warnings.
+Evaluations of systems and registries may potentially generate a list of errors and warnings.
 
-- Any errors will result in a FAIL response.
+- Any errors will result in a `FAIL` response.
 - Warnings will have no effect.
 
-Some sources of errors, warnings:
+Some sources of errors or warnings:
 
 ```yaml
 - errors

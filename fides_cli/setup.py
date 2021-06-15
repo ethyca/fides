@@ -3,7 +3,7 @@ import pathlib
 from setuptools import setup, find_packages
 
 here = pathlib.Path(__file__).parent.resolve()
-long_description = "CLI for Fides"
+long_description = open("README.md").read()
 
 # Requirements
 install_requires = open("requirements.txt").read().strip().split("\n")
