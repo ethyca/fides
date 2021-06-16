@@ -41,7 +41,7 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
   def runAction[R](action: DBIOAction[R, NoStream, Nothing]): Future[R] = db.run(action)
 
   def findFirst[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
-  db.run(query.filter(expr).result.headOption)
+    db.run(query.filter(expr).result.headOption)
 
   def create(record: E): Future[E] = db.run(createAction(record))
 

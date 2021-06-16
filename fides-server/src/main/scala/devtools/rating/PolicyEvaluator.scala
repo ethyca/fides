@@ -49,7 +49,12 @@ class PolicyEvaluator(val policyRuleRater: PolicyRuleEvaluator, ratingsChecks: R
       case Some(Right(systems)) => Future.successful(systems)
       case _                    => daos.systemDAO.db.run(systemQuery.filter(s => s.registryId === registry.id).result)
     }
-
+    registry.systems match {
+      case Some(Left(ids))      => println("left")
+      case Some(Right(systems)) => println("right")
+      case _                    => println("other")
+    }
+    println(s"systems=${registry.systems}")
     systems.flatMap(runEvaluation(_, None, Some(registry.id), action, organizationId, userId))
 
   }

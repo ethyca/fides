@@ -26,7 +26,6 @@ class RegistryService(
     for { ids <- daos.systemDAO.runAction(systemQuery.filter(_.registryId === r.id).map(_.id).result) } yield r
       .copy(systems = Some(Left(ids)))
 
-
   // -----------------------------------------------------------
   //                  Auditing service methods
   // -----------------------------------------------------------

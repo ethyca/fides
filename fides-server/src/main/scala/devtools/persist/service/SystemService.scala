@@ -2,10 +2,9 @@ package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
-import devtools.domain.{Approval, SystemObject}
+import devtools.domain.SystemObject
 import devtools.persist.dao.DAOs
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.rating.PolicyEvaluator
 import devtools.validation.SystemValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -50,9 +49,7 @@ class SystemService(
       _ = previous.registryId.map(daos.registryDAO.setVersion(_, versionStamp))
     } yield deleted
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[SystemObject]] = {
-    println("ALskdjALSkDJ $key")
+  def findByUniqueKey(organizationId: Long, key: String): Future[Option[SystemObject]] =
     daos.systemDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
-  }
 
 }

@@ -106,7 +106,8 @@ object App {
   val approvalController     = new ApprovalController(approvalService, userDAO, swagger)
   val auditLogController     = new AuditLogController(auditLogService, userDAO, swagger)
   val organizationController = new OrganizationController(organizationService, userDAO, swagger)
-  val systemController       = new SystemController(systemService, policyService, approvalService, policyEvaluator, userDAO, swagger)
+  val systemController =
+    new SystemController(systemService, policyService, approvalService, policyEvaluator, userDAO, swagger)
   val datasetController      = new DatasetController(datasetService, userDAO, swagger)
   val datasetTableController = new DatasetTableController(datasetTableService, userDAO, swagger)
   val datasetFieldController = new DatasetFieldController(datasetFieldService, userDAO, swagger)

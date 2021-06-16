@@ -39,7 +39,7 @@ class SystemController(
     )
   ) {
     asyncResponse {
-      ingest(request.body, request.getHeader("Content-Type"), inputMergeMap) match {
+      ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
         case Success(t)         => service.validator.validateForCreate(t, requestContext).map(_ => t)
         case Failure(exception) => Future.failed(exception)
       }
@@ -85,7 +85,7 @@ class SystemController(
     )
   ) {
     asyncResponse {
-      ingest(request.body, request.getHeader("Content-Type"), inputMergeMap) match {
+      ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
         case Success(t)         => policyEvaluator.systemDryRun(t, requestContext.organizationId, requestContext.user.id)
         case Failure(exception) => Future.failed(exception)
       }

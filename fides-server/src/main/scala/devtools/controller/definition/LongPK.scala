@@ -48,7 +48,7 @@ trait LongPK[T <: IdType[T, Long]] {
         .summary(s"Create a new instance of  $typeName")
     )
   ) {
-    ingest(request.body, request.getHeader("Content-Type"), inputMergeMap) match {
+    ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
       case Success(t) => asyncResponse(service.create(t, requestContext))
 
       case Failure(exception) => failure(exception)
@@ -69,7 +69,7 @@ trait LongPK[T <: IdType[T, Long]] {
       request,
       (id, _) => {
 
-        val t = ingest(request.body, request.getHeader("Content-Type"), Map("id" -> id))
+        val t = ingest(request.body, Option(request.getHeader("Content-Type")), Map("id" -> id))
 
         t match {
           case Success(t) =>
