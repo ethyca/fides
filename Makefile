@@ -18,7 +18,7 @@ SERVER_IMAGE_NAME := fides-server
 SERVER_IMAGE := $(REGISTRY)/$(SERVER_IMAGE_NAME):$(IMAGE_TAG)
 SERVER_IMAGE_LATEST := $(REGISTRY)/$(SERVER_IMAGE_NAME):latest
 # CLI
-CLI_IMAGE_NAME := fides-cli
+CLI_IMAGE_NAME := fidesctl
 CLI_IMAGE := $(REGISTRY)/$(CLI_IMAGE_NAME):$(IMAGE_TAG)
 CLI_IMAGE_LATEST := $(REGISTRY)/$(CLI_IMAGE_NAME):latest
 
@@ -71,7 +71,7 @@ server-shell: check-db
 # CLI
 cli-build: 
 	@echo "Building the $(CLI_IMAGE) image..."
-	docker build --tag $(CLI_IMAGE) fides_cli/
+	docker build --tag $(CLI_IMAGE) fidesctl/
 
 cli-push: cli-build
 	@echo "Pushing the $(CLI_IMAGE) image to $(DOCKER_REGISTRY)..."

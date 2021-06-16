@@ -1,20 +1,20 @@
 version: "3.8"
 
 services:
-  fides-cli:
+  fidesctl:
     build:
-      context: fides_cli
+      context: fidesctl
       dockerfile: Dockerfile
     command: /bin/bash
     depends_on:
       - fides-server
     volumes:
       - type: bind
-        source: ./fides_cli
-        target: /fides_cli
+        source: ./fidesctl
+        target: /fidesctl
         read_only: False
     env_file:
-      - env_files/fides_cli.env
+      - env_files/fidesctl.env
 
   fides-server:
     build:
