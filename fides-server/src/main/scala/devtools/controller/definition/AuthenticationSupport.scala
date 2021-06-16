@@ -46,7 +46,7 @@ trait AuthenticationSupport extends ScalatraBase {
           case Success(id) =>
             waitFor(userDAO.findById(id)) match {
               case None       => halt(status = 401, headers = Map("WWW-Authenticate" -> "user-id"))
-              case Some(user) => requestContext.user = user; requestContext.organizationId = Some(user.organizationId)
+              case Some(user) => requestContext.user = user; requestContext.organizationId = user.organizationId
             }
         }
     }

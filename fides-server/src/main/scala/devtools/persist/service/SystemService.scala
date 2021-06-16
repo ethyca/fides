@@ -2,10 +2,9 @@ package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
-import devtools.domain.{Approval, SystemObject}
+import devtools.domain.SystemObject
 import devtools.persist.dao.DAOs
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.rating.PolicyRater
 import devtools.validation.SystemValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -14,16 +13,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class SystemService(
   daos: DAOs,
   val policyService: PolicyService,
-  val validator: SystemValidator,
-  val policyRater: PolicyRater
+  val validator: SystemValidator
 )(implicit
   val ec: ExecutionContext
 ) extends AuditingService[SystemObject](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with LazyLogging with UniqueKeySearch[SystemObject] {
-
-  /** rate the input system and return the result without saving */
-  def dryRun(s: SystemObject, ctx: RequestContext): Future[Approval] =
-    policyRater.rateSystem(s, ctx.organizationId.getOrElse(ctx.user.organizationId), "dry-run", ctx.user.id)
 
   def searchInOrganization(organizationId: Long, value: String): Future[Seq[SystemObject]] =
     daos.systemDAO.searchInOrganization(organizationId, value)

@@ -123,28 +123,28 @@ abstract class ControllerTestBase[T <: IdType[T, PK], PK](
     val defaultInputValues = controller.inputMergeMap
     // remove merge map values
     val inputString    = jdumps(jToAST(woMergeValues))
-    val parsed: Try[T] = controller.ingest(inputString, "application/json", defaultInputValues)
+    val parsed: Try[T] = controller.ingest(inputString, Some("application/json"), defaultInputValues)
     parsed should be(a[Success[_]]) //
     toMap[T](parsed.get).filter { t => !defaultInputValues.contains(t._1) } shouldEqual woMergeValues
     //parsing with missing fields should fail
-    val reducedParsed: Try[T] = controller.ingest("{}", "application/json", defaultInputValues)
+    val reducedParsed: Try[T] = controller.ingest("{}", Some("application/json"), defaultInputValues)
     reducedParsed should be(a[Failure[_]])
     // raw jvalue parseable should fail
-    controller.ingest("raw string", "application/json", defaultInputValues) should be(a[Failure[_]])
+    controller.ingest("raw string", Some("application/json"), defaultInputValues) should be(a[Failure[_]])
   }
 
   test(s"test parse yaml $typeName") {
     val defaultInputValues = controller.inputMergeMap
     // remove merge map values
     val inputString    = ydumps(yToAST(woMergeValues)(FidesYamlProtocols.MapAnyFormat))
-    val parsed: Try[T] = controller.ingest(inputString, "application/yaml", defaultInputValues)
+    val parsed: Try[T] = controller.ingest(inputString, Some("application/yaml"), defaultInputValues)
     parsed should be(a[Success[_]]) //
     toMap[T](parsed.get).filter { t => !defaultInputValues.contains(t._1) } shouldEqual woMergeValues
     //parsing with missing fields should fail
-    val reducedParsed: Try[T] = controller.ingest("{}", "application/yaml", defaultInputValues)
+    val reducedParsed: Try[T] = controller.ingest("{}", Some("application/yaml"), defaultInputValues)
     reducedParsed should be(a[Failure[_]])
     // raw jvalue parseable should fail
-    controller.ingest("raw string", "application/yaml", defaultInputValues) should be(a[Failure[_]])
+    controller.ingest("raw string", Some("application/yaml"), defaultInputValues) should be(a[Failure[_]])
   }
   override def header: Null = null
 }

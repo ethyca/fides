@@ -12,6 +12,7 @@ import org.json4s.JValue
 import org.json4s.JsonAST.JObject
 import org.scalatra.swagger.Swagger
 
+import javax.servlet.http.HttpServletRequest
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Try}
 
@@ -46,16 +47,16 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
   )
 
   /** read content type from header, digest either as yaml or json. */
-  def ingest(requestBody: String, contentTypeHeader: String, merge: Map[String, Any] = Map()): Try[T] = {
-    contentTypeHeader.toLowerCase match {
-      case "application/yaml" =>
+  def ingest(requestBody: String, contentTypeHeader: Option[String], merge: Map[String, Any] = Map()): Try[T] = {
+    contentTypeHeader.map(_.toLowerCase) match {
+      case Some("application/yaml") =>
         YamlSupport.loads(requestBody) flatMap {
           case y: YamlObject => YamlSupport.fromAST[T](y.mergeAfter(merge))(yamlFormat.asInstanceOf[YamlReader[T]])
           case y: YamlValue =>
             Failure(InvalidDataException(s"The value $y does not seem to be a complete yaml object."))
         }
 
-      case "application/json" =>
+      case Some("application/json") =>
         JsonSupport.loads(requestBody) flatMap {
           case j: JObject =>
             val mapJson = JsonSupport.toAST[Map[String, Any]](merge)
@@ -63,9 +64,10 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
 
           case j: JValue => Failure(InvalidDataException(s"The value $j  does not seem to be a complete json object."))
         }
-      case other => Failure(InvalidDataException(s"Don't understand content-type $other"))
-    }
+      case Some(other) => Failure(InvalidDataException(s"Don't understand content-type $other"))
 
+      case None => Failure(InvalidDataException(s"Requires Content-Type header"))
+    }
   }
 
 }

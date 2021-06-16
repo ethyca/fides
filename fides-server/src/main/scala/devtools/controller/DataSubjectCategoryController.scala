@@ -22,8 +22,8 @@ class DataSubjectCategoryController(
   val yamlFormat: YamlFormat[DataSubjectCategory] = FidesYamlProtocols.SubjectCategoryFormat
 
   override def taxonomyGetAll(): Iterable[DataSubjectCategoryTree] =
-    service.dao.cacheGetRoots(requestContext.organizationId.getOrElse(-1))
+    service.dao.cacheGetRoots(requestContext.organizationId)
 
   override def taxonomyGetById(id: Long): Option[DataSubjectCategoryTree] =
-    service.dao.cacheGet(requestContext.organizationId.getOrElse(-1), id)
+    service.dao.cacheGet(requestContext.organizationId, id)
 }

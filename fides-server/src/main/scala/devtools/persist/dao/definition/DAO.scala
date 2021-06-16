@@ -63,4 +63,8 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
 
   def findByIdAction(id: PK): DBIOAction[Option[E], NoStream, Effect.Read] = query.filter(_.id === id).result.headOption
 
+  /** find the most recent value matching expr, sorting by id column. */
+  def mostRecent[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
+    db.run(query.filter(expr).sorted(_.id.desc).take(1).result.headOption)
+
 }

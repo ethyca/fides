@@ -8,9 +8,9 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class PolicyRulePolicyRaterTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
+class PolicyRulePolicyEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
-  val rater: PolicyRuleRater = App.ruleRater
+  val rater: PolicyRuleEvaluator = App.policyRuleEvaluator
 
   //categories
   val p1   = "customer_content_data"

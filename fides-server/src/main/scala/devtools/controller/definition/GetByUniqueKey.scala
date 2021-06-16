@@ -24,7 +24,7 @@ trait GetByUniqueKey[T <: IdType[T, Long]] {
     asyncOptionResponse(
       service
         .asInstanceOf[UniqueKeySearch[T]]
-        .findByUniqueKey(requestContext.organizationId.getOrElse(-1), params("key"))
+        .findByUniqueKey(requestContext.organizationId, params("key"))
     )
   )
 

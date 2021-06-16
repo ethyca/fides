@@ -9,7 +9,7 @@ import devtools.exceptions.InvalidDataException
 import devtools.persist.dao.DAOs
 import devtools.util.TreeCache
 
-class PolicyRuleRater(val daos: DAOs) extends LazyLogging {
+class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  checks by taxonomy type ------------------
 
@@ -45,7 +45,7 @@ class PolicyRuleRater(val daos: DAOs) extends LazyLogging {
       case None => true
       case Some(q) =>
         daos.dataQualifierDAO.cacheFind(organizationId, q) match {
-          case None       => throw InvalidDataException(s"No dataQualifier found for the fidesKey(s) ${q}")
+          case None       => throw InvalidDataException(s"No dataQualifier found for the fidesKey(s) $q")
           case Some(tree) => tree.exists(_.fidesKey == declaration.dataQualifier)
         }
     }

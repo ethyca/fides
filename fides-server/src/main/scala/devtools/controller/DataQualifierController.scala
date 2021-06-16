@@ -18,9 +18,9 @@ class DataQualifierController(val service: DataQualifierService, val userDAO: Us
   val yamlFormat: YamlFormat[DataQualifier] = FidesYamlProtocols.DataQualifierFormat
 
   override def taxonomyGetAll(): Iterable[DataQualifierTree] =
-    service.dao.cacheGetRoots(requestContext.organizationId.getOrElse(-1))
+    service.dao.cacheGetRoots(requestContext.organizationId)
 
   override def taxonomyGetById(id: Long): Option[DataQualifierTree] =
-    service.dao.cacheGet(requestContext.organizationId.getOrElse(-1), id)
+    service.dao.cacheGet(requestContext.organizationId, id)
 
 }
