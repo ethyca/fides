@@ -152,7 +152,8 @@ def generate_dataset(connection_string: str, output_filename: str) -> None:
 @url_option
 @click.argument("manifest_dir", type=click.Path())
 @click.argument("fides_key", type=str)
-def evaluate(url: str, manifest_dir: str, fides_key: str = "") -> None:
+@click.argument("dryrun", type=bool, default=True)
+def evaluate(url: str, manifest_dir: str, fides_key: str, dryrun: bool) -> None:
     """
     Evaluate a registry or system, either approving or denying
     based on organizational policies.
