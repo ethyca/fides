@@ -40,7 +40,7 @@ def version() -> None:
 ####################
 ### Generic Commands
 ####################
-@cli.command()
+@cli.command(hidden=True)
 @url_option
 @object_type_argument
 @manifest_option
