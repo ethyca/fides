@@ -101,12 +101,13 @@ def get_server_objects(
 
 def apply(url: str, manifests_dir: str) -> None:
     """
-    Apply the current manifest file(s) state to the server.
+    Apply the current manifest file state to the server.
+    Excludes systems and registries.
     """
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
 
     # Parse all of the manifest objects into their Python models
-    excluded_keys = ["version"]
+    excluded_keys = ["version", "system", "registry"]
     filtered_manifests = {
         key: value
         for key, value in ingested_manifests.items()
