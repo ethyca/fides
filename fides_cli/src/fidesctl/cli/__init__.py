@@ -152,10 +152,23 @@ def generate_dataset(connection_string: str, output_filename: str) -> None:
 @url_option
 @click.argument("manifest_dir", type=click.Path())
 @click.argument("fides_key", type=str)
-@click.argument("dryrun", type=bool, default=True)
-def evaluate(url: str, manifest_dir: str, fides_key: str, dryrun: bool) -> None:
+def dry_evaluate(url: str, manifest_dir: str, fides_key: str) -> None:
+    """
+    Dry-Run evaluate a registry or system, either approving or denying
+    based on organizational policies.
+    """
+    handle_cli_response(_evaluate.dry_evaluate(url, manifest_dir, fides_key))
+
+
+@cli.command()
+@url_option
+@click.argument(
+    "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
+)
+@click.argument("fides_key", type=str)
+def evaluate(url: str, object_type: str, fides_key: str) -> None:
     """
     Evaluate a registry or system, either approving or denying
     based on organizational policies.
     """
-    handle_cli_response(_evaluate.evaluate(url, manifest_dir, fides_key))
+    handle_cli_response(_evaluate.evaluate(url, object_type, fides_key))

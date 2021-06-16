@@ -1,13 +1,15 @@
 """Module for evaluating systems and registries."""
-from typing import Dict, List, Tuple
+from typing import Dict
+
+import requests
 
 from fidesctl.core import api, manifests, parse
 from fidesctl.core.models import FidesModel
 
-from .utils import echo_green, echo_red
+from .utils import echo_red
 
 
-def evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
+def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
     """
     Rate a registry against all of the policies within an organization.
     """
@@ -27,7 +29,7 @@ def evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
             if _object["fidesKey"] == fides_key
         }
         assert eval_dict != {}
-    except AssertionError as err:
+    except AssertionError:
         echo_red(
             "Failed to find a system or registry with fidesKey: {}".format(fides_key)
         )
@@ -36,10 +38,16 @@ def evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
     object_type = list(eval_dict.keys())[0]
     _object = list(eval_dict.values())[0]
 
-    response = api.evaluate(
+    response = api.dry_evaluate(
         url=url,
         object_type=object_type,
         json_object=_object.json(exclude_none=True),
     )
 
+    return response
+
+
+def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
+    """Run an evaluation on an existing system."""
+    response = api.evaluate(url=url, object_type=object_type, fides_key=fides_key)
     return response

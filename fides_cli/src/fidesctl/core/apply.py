@@ -107,7 +107,7 @@ def apply(url: str, manifests_dir: str) -> None:
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
 
     # Parse all of the manifest objects into their Python models
-    excluded_keys = ["version", "system", "registry"]
+    excluded_keys = ["version"]
     filtered_manifests = {
         key: value
         for key, value in ingested_manifests.items()
