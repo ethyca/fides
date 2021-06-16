@@ -14,8 +14,8 @@ RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
 
 # Copy in the application files and install it locally
-COPY . /fides_cli
-WORKDIR /fides_cli
+COPY . /fidesctl
+WORKDIR /fidesctl
 RUN pip install -e .
 
 CMD ["/bin/bash"]

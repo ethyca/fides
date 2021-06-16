@@ -27,7 +27,7 @@ Fides ships with default data taxonomies that include standard examples, but in 
 
 #### Creating objects
 
-1. Create the necessary objects (reference the sample manifest files in the `fides_cli/data/samples/`)
+1. Create the necessary objects (reference the sample manifest files in the `fidesctl/data/samples/`)
 1. `fidesctl apply <manifest_dir>/` to create the objects defined in that directory. This will create all objects _except_ for any systems contained within the manifest files.
 
 ## Rating your Systems
