@@ -3,7 +3,7 @@ import pytest
 from unittest import mock
 
 
-from fides.core import generate_dataset
+from fidesctl.core import generate_dataset
 
 
 def test_generate_table_manifests():

@@ -6,7 +6,7 @@ from typing import Dict, Callable
 import click
 import requests
 
-from fides.core.models import MODEL_LIST
+from fidesctl.core.models import MODEL_LIST
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:

@@ -1,8 +1,8 @@
 """This module handles the logic required for applying manifest files to the server."""
 from typing import Dict, List, Tuple, Optional, Iterable
 
-from fides.core import api, manifests, parse
-from fides.core.models import FidesModel
+from fidesctl.core import api, manifests, parse
+from fidesctl.core.models import FidesModel
 from .utils import echo_green
 
 

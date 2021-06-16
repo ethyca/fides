@@ -1,7 +1,7 @@
 """Unit tests for the API module."""
 import pytest
 
-from fides.core import api as _api
+from fidesctl.core import api as _api
 
 
 def test_generate_object_urls_no_id(server_url):

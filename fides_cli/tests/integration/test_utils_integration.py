@@ -1,6 +1,6 @@
 import pytest
 
-from fides.core import utils
+from fidesctl.core import utils
 
 
 def test_get_db_engine():

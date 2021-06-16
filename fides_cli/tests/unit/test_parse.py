@@ -1,4 +1,4 @@
-from fides.core import models, parse
+from fidesctl.core import models, parse
 
 
 def test_parse_manifest():

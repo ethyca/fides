@@ -1,6 +1,6 @@
-import os
 import pathlib
 from setuptools import setup, find_packages
+import versioneer
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
@@ -8,16 +8,16 @@ long_description = open("README.md").read()
 # Requirements
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
-version = "0.0.9"
 
 setup(
     name="fidesctl",
-    version=version,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="CLI for Fides",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/ethyca/fides-core",
-    entry_points={"console_scripts": ["fidesctl=fides.cli:cli"]},
+    url="https://github.com/ethyca/fides",
+    entry_points={"console_scripts": ["fidesctl=fidesctl.cli:cli"]},
     python_requires=">=3.7, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),

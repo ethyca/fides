@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel"]  # PEP 508 specifications.
+requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 
 ######
 # MyPy
@@ -66,7 +66,8 @@ good-names="_,i,j,k,e,qs,pk,setUp,tearDown,maxDiff,default_app_config"
 [tool.pytest.ini_options]
 testpaths="tests"
 log_level = "DEBUG"
-addopts = ["--cov=fides",
+addopts = ["--cov=fidesctl.core",
+            "--cov=fidesctl.cli",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",
