@@ -1,1 +1,1 @@
-src/fides/_version.py export-subst
+src/fidesctl/_version.py export-subst
