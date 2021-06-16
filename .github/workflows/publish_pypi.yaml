@@ -11,14 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set Up
-        run: |
-          cd fides_cli/
-          pip install twine
-          python setup.py sdist
+      - name: Install Twine
+        run: pip install twine
 
       - name: Twine Upload
-        run: twine upload dist/*
+        run: |
+          cd fides_cli/
+          python setup.py sdist 
+          twine upload dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
