@@ -1,7 +1,8 @@
 # Fides
 
-[![License](https://img.shields.io/:license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Latest Version][pypi-image]][pypi-url]
+[![License][license-image]][license-url]
+[![Code style: black][black-image]][black-url]
 
 ## Getting Started With Fides
 
@@ -36,3 +37,10 @@ With your manifests defined, the next step is to “submit” your system for ap
 ## Contributing
 
 There are two components to the Fides project; the CLI and the Server. The CLI is a Python application and the Server is a Scala application powered by MySQL.
+
+[pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
+[pypi-url]: https://pypi.python.org/pypi/fidesctl/
+[license-image]: https://img.shields.io/:license-Apache%202-blue.svg
+[license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
+[black-image]: https://img.shields.io/badge/code%20style-black-000000.svg
+[black-url]: https://github.com/psf/black 

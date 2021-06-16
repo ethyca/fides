@@ -6,7 +6,7 @@ on:
       - "*"
 
 jobs:
-  push:
+  upload_to_pypi:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
