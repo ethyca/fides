@@ -257,9 +257,11 @@ object Generators {
     } yield DataSubjectCategory(id, None, 1, fidesKey, Some(name), Some(randomText()))
   val DeclarationGen: Gen[Declaration] =
     for {
+      name      <- genName
       use       <- Gen.oneOf(availableDataUses)
       qualifier <- Gen.oneOf(availableDataQualifiers)
     } yield Declaration(
+      name,
       smallSetOf(1, 4, availableDataCategories),
       use,
       qualifier,

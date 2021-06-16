@@ -177,7 +177,7 @@ class RegistryApprovalChecks(val daos: DAOs) {
         val categories = daos.dataCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataCategories).toSet)
         val subjectCategories =
           daos.dataSubjectCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjectCategories).toSet)
-        Declaration(categories, t._1._2, t._1._1, subjectCategories)
+        Declaration("merged", categories, t._1._2, t._1._1, subjectCategories)
       }
       .toSeq
   }
@@ -203,7 +203,7 @@ class RegistryApprovalChecks(val daos: DAOs) {
         val subjectCategoryDiff =
           daos.dataSubjectCategoryDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
-        Declaration(categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
+        Declaration("merged", categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
       }
       .toSeq
 

@@ -37,7 +37,9 @@ class RegistryApprovalChecksTest extends AnyFunSuite with TestUtils {
       .copy(dataCategories = Some(availableDataCategories.toSet), dataQualifier = Some("identified_data"))
     val dataset1 = datasetOf("d1", datasetTableOf("d1t1", fullyPopulatedField))
     val s2 =
-      systemOf("b").copy(declarations = Seq(Declaration(Set("credentials"), "provide", "identified_data", Set())))
+      systemOf("b").copy(declarations =
+        Seq(Declaration("test1", Set("credentials"), "provide", "identified_data", Set()))
+      )
     messages(e =>
       approvalChecks.validateDatasetsExist(Seq(s2), Seq(dataset1), e)
     ).warnings.toSeq should containMatchString(
@@ -87,36 +89,36 @@ class RegistryApprovalChecksTest extends AnyFunSuite with TestUtils {
 
     //Just different category
     testDependencies(
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration(Set(cat_root2), use_root1, q_root, Set(scat_root1)))
+      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("test3", Set(cat_root2), use_root1, q_root, Set(scat_root1)))
     ).warnings.toSeq should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //Just different subject category
     testDependencies(
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root2)))
+      Seq(Declaration("test4", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("test5", Set(cat_root1), use_root1, q_root, Set(scat_root2)))
     ).warnings.toSeq should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //child with child cat, same qualifier/use is ok
 
     testDependencies(
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration(Set(cat_root1_child), use_root1, q_root, Set(scat_root1)))
+      Seq(Declaration("test6", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("test7", Set(cat_root1_child), use_root1, q_root, Set(scat_root1)))
     ).warnings.size shouldEqual 0
 
     //child with parent cat, same qualifier/use -> message
 
     testDependencies(
-      Seq(Declaration(Set(cat_root1_child), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root1)))
+      Seq(Declaration("test8", Set(cat_root1_child), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("test9", Set(cat_root1), use_root1, q_root, Set(scat_root1)))
     ).warnings.toSeq should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //child with NEW (qualifier/use) pair
     testDependencies(
-      Seq(Declaration(Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("test10", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
       Seq(
-        Declaration(Set(cat_root1_child), use_root1, q_root, Set(scat_root1)),
-        Declaration(Set(cat_root2), use_root2, q_root, Set(scat_root1))
+        Declaration("test11", Set(cat_root1_child), use_root1, q_root, Set(scat_root1)),
+        Declaration("test12", Set(cat_root2), use_root2, q_root, Set(scat_root1))
       )
     ).warnings.toSeq should containMatchString("The system b includes privacy declarations that do not exist in a")
 

@@ -79,22 +79,23 @@ class RatingTestData extends TestUtils {
   //            Declarations
   // -----------------------------------------
   //r1 categories. all other values match
-  private val depMatchesOnlyR1 = Declaration(Set("credentials"), "provide", "identified_data", Set("prospect"))
+  private val depMatchesOnlyR1 = Declaration("test1", Set("credentials"), "provide", "identified_data", Set("prospect"))
 
   private val depMatchesOnlyR2 =
-    Declaration(Set("telemetry_data", "connectivity_data"), "share", "identified_data", Set("prospect"))
+    Declaration("test2", Set("telemetry_data", "connectivity_data"), "share", "identified_data", Set("prospect"))
 
   private val depMatchesOnlyR3 = Declaration(
+    "test3",
     Set("payment_instrument_data", "account_or_administration_contact_information"),
     "improvement_of_business_support_for_contracted_service",
     "identified_data",
     Set("prospect")
   )
 
-  private val depMatchesOnlyR4 = Declaration(Set("credentials"), "provide", "identified_data", Set("trainee"))
+  private val depMatchesOnlyR4 = Declaration("test4", Set("credentials"), "provide", "identified_data", Set("trainee"))
 
   private val depMatchesBothR1R2 =
-    Declaration(Set("operations_data"), "improve", "identified_data", Set("prospect", "employee", "trainee"))
+    Declaration("test5", Set("operations_data"), "improve", "identified_data", Set("prospect", "employee", "trainee"))
 
   // -----------------------------------------
   //            Datasets

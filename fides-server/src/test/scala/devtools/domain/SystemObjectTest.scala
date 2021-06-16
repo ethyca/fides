@@ -39,7 +39,9 @@ class SystemObjectTest
     waitFor(
       service.create(
         generator.sample.get
-          .copy(declarations = Seq(Declaration(Set("customer_content_data"), "provide", "identified_data", Set()))),
+          .copy(declarations =
+            Seq(Declaration("test", Set("customer_content_data"), "provide", "identified_data", Set()))
+          ),
         requestContext
       )
     )
