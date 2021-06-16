@@ -18,8 +18,8 @@ class DataCategoryController(val service: DataCategoryService, val userDAO: User
   val yamlFormat: YamlFormat[DataCategory] = FidesYamlProtocols.DataCategoryFormat
 
   override def taxonomyGetAll(): Iterable[DataCategoryTree] =
-    service.dao.cacheGetRoots(requestContext.organizationId.getOrElse(-1))
+    service.dao.cacheGetRoots(requestContext.organizationId)
 
   override def taxonomyGetById(id: Long): Option[DataCategoryTree] =
-    service.dao.cacheGet(requestContext.organizationId.getOrElse(-1), id)
+    service.dao.cacheGet(requestContext.organizationId, id)
 }

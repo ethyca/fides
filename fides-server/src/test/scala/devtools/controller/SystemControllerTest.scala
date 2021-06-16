@@ -1,10 +1,11 @@
 package devtools.controller
 
 import devtools.App
-import devtools.Generators.SystemObjectGen
-import devtools.domain.SystemObject
+import devtools.Generators.{SystemObjectGen, fidesKey}
+import devtools.domain.{Approval, SystemObject}
 import devtools.util.JsonSupport.{dumps => jdumps, parseToObj => jParseToObj, toAST => jToAST}
 import devtools.util.YamlSupport.{dumps => ydumps, toAST => yToAST}
+
 import scala.util.{Success, Try}
 
 class SystemControllerTest
@@ -16,8 +17,9 @@ class SystemControllerTest
   override def withoutMergeValues(t: SystemObject): Map[String, Any] =
     super.withoutMergeValues(t.copy(lastUpdateTime = None, creationTime = None, versionStamp = None))
 
+  var testInstance: SystemObject = generator.sample.get
+
   test("test find by unique key") {
-    var testInstance: SystemObject = generator.sample.get
 
     post(s"/$path", jdumps(withoutMergeValues(testInstance)), withTestHeaders("Content-Type" -> "application/json")) {
       shouldBe200(status, body)
@@ -33,8 +35,45 @@ class SystemControllerTest
       shouldBe200(status, body)
       val returned: Try[SystemObject] = parseBody[SystemObject](body)
       compareWithoutMergeValues(returned.get, testInstance)
-
     }
 
   }
+
+  test("test approval endpoints") {
+    def approval(body: String): Approval = parseBody[Approval](body).get
+
+    var apr: Approval = null
+
+    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
+      apr = approval(body)
+      apr.action shouldEqual "evaluate"
+    }
+
+    /* retrieving "last" returns the same approval we just created */
+    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
+      approval(body).id shouldEqual apr.id
+    }
+    /* create a new approval. Id should be greater.*/
+    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
+      var v = approval(body)
+      v.id should be > apr.id
+      apr = v
+      apr.action shouldEqual "evaluate"
+
+    }
+
+    /* last should now refer to most recent.*/
+    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
+      approval(body).id shouldEqual apr.id
+    }
+
+    post(
+      s"/$path/evaluate/dry-run",
+      jdumps(testInstance),
+      headers = withTestHeaders("Content-Type" -> "application/json")
+    ) {
+      approval(body).action shouldEqual "dry-run"
+    }
+  }
+
 }

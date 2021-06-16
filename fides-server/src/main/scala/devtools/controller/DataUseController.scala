@@ -18,8 +18,8 @@ class DataUseController(val service: DataUseService, val userDAO: UserDAO, val s
   val yamlFormat: YamlFormat[DataUse] = FidesYamlProtocols.DataUseFormat
 
   override def taxonomyGetAll(): Iterable[DataUseTree] =
-    service.dao.cacheGetRoots(requestContext.organizationId.getOrElse(-1))
+    service.dao.cacheGetRoots(requestContext.organizationId)
 
   override def taxonomyGetById(id: Long): Option[DataUseTree] =
-    service.dao.cacheGet(requestContext.organizationId.getOrElse(-1), id)
+    service.dao.cacheGet(requestContext.organizationId, id)
 }
