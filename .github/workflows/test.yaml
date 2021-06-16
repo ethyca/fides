@@ -1,4 +1,4 @@
-name: Test CLI & Server
+name: Test Fidesctl & Fides Server
 
 # Only test on Pull Requests that target main
 on:
@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths: # Only run tests when certain paths change
-      - fides-server/*
-      - fides_cli/*
+      - fides-server/**
+      - fidesctl/**
       - .github/workflows/test.yaml
 
 jobs:
@@ -19,17 +19,17 @@ jobs:
       - name: Build the Docker Images
         run: make compose-build
 
-      - name: Test the Server
+      - name: Test Fides Server
         run: make server-test
 
-      - name: Format the CLI
+      - name: Format Fidesctl
         run: make cli-format
 
-      - name: Lint the CLI
+      - name: Lint Fidesctl
         run: make cli-lint
 
-      - name: TypeCheck the CLI
+      - name: TypeCheck Fidesctl
         run: make cli-typecheck
 
-      - name: Test the CLI
+      - name: Test Fidesctl
         run: make cli-test

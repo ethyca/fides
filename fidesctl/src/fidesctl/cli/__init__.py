@@ -40,7 +40,7 @@ def version() -> None:
 ####################
 ### Generic Commands
 ####################
-@cli.command()
+@cli.command(hidden=True)
 @url_option
 @object_type_argument
 @manifest_option
@@ -52,7 +52,7 @@ def create(url: str, object_type: str, manifest: str) -> None:
     handle_cli_response(_api.create(url, object_type, parsed_manifest))
 
 
-@cli.command()
+@cli.command(hidden=True)
 @url_option
 @object_type_argument
 @id_argument
@@ -74,7 +74,7 @@ def find(url: str, object_type: str, object_id: str) -> None:
     handle_cli_response(_api.find(url, object_type, object_id))
 
 
-@cli.command()
+@cli.command(hidden=True)
 @url_option
 @object_type_argument
 @id_argument
@@ -90,12 +90,12 @@ def get(url: str, object_type: str, object_id: str) -> None:
 @object_type_argument
 def show(url: str, object_type: str) -> None:
     """
-    List all of the objects of a certain type.
+    List all objects of a certain type.
     """
     handle_cli_response(_api.show(url, object_type))
 
 
-@cli.command()
+@cli.command(hidden=True)
 @url_option
 @manifest_option
 @object_type_argument
@@ -151,24 +151,24 @@ def generate_dataset(connection_string: str, output_filename: str) -> None:
 @cli.command()
 @url_option
 @click.argument("manifest_dir", type=click.Path())
-@click.argument("fides_key", type=str, default="")
-def evaluate(url: str, manifest_dir: str, fides_key: str = "") -> None:
+@click.argument("fides_key", type=str)
+def dry_evaluate(url: str, manifest_dir: str, fides_key: str) -> None:
     """
-    Evaluate a registry, either approving or denying
+    Dry-Run evaluate a registry or system, either approving or denying
     based on organizational policies.
-
-    Requires a path to a manifest.
     """
-    _evaluate.evaluate(url, manifest_dir, fides_key)
+    handle_cli_response(_evaluate.dry_evaluate(url, manifest_dir, fides_key))
 
 
 @cli.command()
 @url_option
-@click.argument("manifest_dir", type=click.Path())
-@click.argument("fides_key", type=str, default="")
-def apply_eval(url: str, manifest_dir: str, fides_key: str = "") -> None:
+@click.argument(
+    "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
+)
+@click.argument("fides_key", type=str)
+def evaluate(url: str, object_type: str, fides_key: str) -> None:
     """
-    Combines the `apply` and `evaluate` commands into a single command.
+    Evaluate a registry or system, either approving or denying
+    based on organizational policies.
     """
-    _apply.apply(url, manifest_dir)
-    _evaluate.evaluate(url, manifest_dir, fides_key)
+    handle_cli_response(_evaluate.evaluate(url, object_type, fides_key))

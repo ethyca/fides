@@ -86,11 +86,22 @@ def update(
     return requests.post(object_url, headers=headers, data=payload)
 
 
-def evaluate(url: str, json_object: str) -> requests.Response:
+def dry_evaluate(url: str, object_type: str, json_object: str) -> requests.Response:
     """
-    Evaluate a registry based on organizational policies.
+    Dry Evaluate a registry based on organizational policies.
     """
-    url = f"{url}dry-run"
+    object_url = generate_object_url(url, object_type)
+    url = f"{object_url}evaluate/dry-run"
     payload = json_object
     headers = generate_request_headers()
     return requests.post(url, headers=headers, data=payload)
+
+
+def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
+    """
+    Evaluate a registry based on organizational policies.
+    """
+    object_url = generate_object_url(url, object_type)
+    url = f"{object_url}evaluate/{fides_key}"
+    headers = generate_request_headers()
+    return requests.get(url, headers=headers)
