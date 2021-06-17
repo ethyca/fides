@@ -17,14 +17,6 @@ package object util extends LazyLogging {
   /** Group a sequence of tuples into nested maps.
     * terminalF processes the lowest level of product type.
     */
-//  def mapGrouping3(ts: Seq[Product], terminalF: Product => Any, indexes: Seq[Int]): AnyRef = {
-//    if (indexes.isEmpty) {
-//      ts.map(terminalF)
-//    } else {
-//      val x: Map[Any, Seq[Product]] = ts.groupBy(_.productElement(indexes.head))
-//      x.map(inner => inner._1 -> mapGrouping(inner._2, terminalF, indexes.tail))
-//    }
-//  }
 
   def mapGrouping(ts: Seq[Product], terminalF: Product => Any, indexes: Seq[Int]): AnyRef = {
     indexes match {

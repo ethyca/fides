@@ -8,7 +8,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class PolicyRulePolicyEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
+class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
   val rater: PolicyRuleEvaluator = App.policyRuleEvaluator
 

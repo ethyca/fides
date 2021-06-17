@@ -4,9 +4,9 @@ import devtools.controller.definition.ApiResponse.{asyncOptionResponse, asyncRes
 import devtools.controller.definition.{BaseController, GetByUniqueKey, LongPK}
 import devtools.domain.{Approval, Registry}
 import devtools.exceptions.NoSuchValueException
-import devtools.persist.dao.UserDAO
+import devtools.persist.dao.{DAOs, UserDAO}
 import devtools.persist.service.{ApprovalService, RegistryService}
-import devtools.rating.PolicyEvaluator
+import devtools.rating.Evaluator
 import devtools.util.FidesYamlProtocols
 import net.jcazevedo.moultingyaml.YamlFormat
 import org.scalatra.scalate.ScalateSupport
@@ -17,15 +17,14 @@ import scala.util.{Failure, Success}
 class RegistryController(
   val service: RegistryService,
   val approvalService: ApprovalService,
-  val policyEvaluator: PolicyEvaluator,
-  val userDAO: UserDAO,
+  val daos: DAOs,
   val swagger: Swagger
 )(implicit
   executor: ExecutionContext
 ) extends BaseController[Registry, Long] with LongPK[Registry] with ScalateSupport with GetByUniqueKey[Registry] {
-
+  val userDAO: UserDAO                 = daos.userDAO
   val yamlFormat: YamlFormat[Registry] = FidesYamlProtocols.RegistryFormat
-
+  val evaluator: Evaluator             = new Evaluator(daos)
   /* Evaluate endpoints */
   get(
     "/evaluate/:fidesKey",
@@ -36,7 +35,7 @@ class RegistryController(
   ) {
     asyncResponse {
       service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
-        case Some(s) => policyEvaluator.registryEvaluate(s, requestContext.organizationId, requestContext.user.id)
+        case Some(s) => evaluator.registryEvaluate(s, requestContext.user.id)
         case None    => Future.failed(NoSuchValueException("fidesKey", params("fidesKey")))
       }
     }
@@ -66,7 +65,7 @@ class RegistryController(
   ) {
     asyncResponse {
       ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
-        case Success(t)         => policyEvaluator.registryDryRun(t, requestContext.organizationId, requestContext.user.id)
+        case Success(t)         => evaluator.registryDryRun(t, requestContext.user.id)
         case Failure(exception) => Future.failed(exception)
       }
     }

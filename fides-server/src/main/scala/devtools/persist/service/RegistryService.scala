@@ -2,11 +2,10 @@ package devtools.persist.service
 
 import devtools.App.registryDAO
 import devtools.controller.RequestContext
-import devtools.domain.{Approval, Registry}
+import devtools.domain.Registry
 import devtools.persist.dao._
 import devtools.persist.db.Queries.systemQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.rating.PolicyEvaluator
 import devtools.validation.RegistryValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -14,8 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RegistryService(
   val daos: DAOs,
-  val validator: RegistryValidator,
-  val policyRater: PolicyEvaluator
+  val validator: RegistryValidator
 )(implicit val ec: ExecutionContext)
   extends AuditingService[Registry](daos.registryDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with UniqueKeySearch[Registry] {

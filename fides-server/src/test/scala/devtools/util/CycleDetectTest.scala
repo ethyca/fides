@@ -8,11 +8,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class CycleDetectTest extends AnyFunSuite with TestUtils {
 
-  private def hasCycles(keys: Seq[NodeValue]): Seq[String] = {
-    val errorCollector = new MessageCollector()
-    collectCycleErrors(keys, errorCollector)
-    errorCollector.errors.toList
-  }
+  private def hasCycles(keys: Seq[NodeValue]): Seq[String] = collectCycleErrors(keys)
 
   test("test cycle detection") {
     hasCycles(Seq(("A", Set("B")), ("B", Set("C")), ("C", Set("A")), ("D", Set("C")))) should containMatchString(
