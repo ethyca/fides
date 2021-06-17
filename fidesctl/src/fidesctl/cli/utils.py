@@ -23,6 +23,7 @@ def handle_cli_response(response: requests.Response) -> requests.Response:
     else:
         try:
             pretty_echo(response.json(), "red")
+            raise SystemExit
         except json.JSONDecodeError:
             click.secho(response.text, fg="red")
     return response
