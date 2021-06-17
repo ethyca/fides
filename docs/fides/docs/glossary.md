@@ -88,12 +88,12 @@ A system can have multiple declarations.
    "organizationId":1,
    "registryId":5,
    "fidesKey":"an-organization-unique-identifier-for-this-system",
-   "versionStamp":26, //a by-organization global version numbering. Any changes to the data held by an organization increment the organization version stamp. 
+   "versionStamp":26, //a by-organization global version numbering. Any changes to the data held by an organization increment the organization version stamp.
    "fidesSystemType":"DATABASE", //the type of system this represents
    "name":"an optional human-readable name",
    "description":"an optional description.",
    //declarations of privacy useage:
-   "declarations":[ 
+   "declarations":[
       {
          "dataCategories":[
             "credentials"
@@ -129,7 +129,7 @@ A system can have multiple declarations.
    ],
    "systemDependencies":[
       "system2",
-      "test_system_2", 
+      "test_system_2",
       "test_system_1"
    ],
    "datasets":[
@@ -186,7 +186,7 @@ Currently
 
 A policy rule _applies_ to a system if
 
-- the system matches the rule's categories  
+- the system matches the rule's categories
 - the system matches the rule's uses
 - the system matches the rule's data subject categories
 - the system qualifier matches the rule's qualifier
@@ -220,7 +220,7 @@ To evaluate a system against a policy, we evaluate all rules and take the _most_
             "inclusion":"ANY",
             "values":[
                "market_advertise_or_promote",
-               "offer_upgrades_or_upsell", 
+               "offer_upgrades_or_upsell",
             ]
          },
          "dataSubjectCategories":{
@@ -242,7 +242,7 @@ To evaluate a system against a policy, we evaluate all rules and take the _most_
          "fidesKey":"rule1",
          "dataCategories":{
             "inclusion":"ANY",
-            "values":[ 
+            "values":[
                "user_location",
                "personal_health_data_and_medical_records",
                "connectivity_data",
@@ -284,131 +284,81 @@ When the evaluation of a system manifest is triggered, the following checks are 
 - If the systems privacy declarations are narrower than the declared privacy exposure of its dependent datasets, we generate a warning. For example, the system declares that it uses a dataset that includes "customer content data" at the "anonymized" level, but the system doesn't declare that it's exposing that.
 - If the system's privacy declarations are narrower than the declared privacy exposure of a dependent system, we generate a warning. This is similar to the above restriction, except that we examine the privacy declarations of a dependant system rather than a dataset.
 - For each policy rule we check each system declaration and take action on any declaration that falls within that policy rule's scope. For example, if a policy rule declares that **profiling_data** that is **identified_data** is disallowed, and the system contains a declaration that includes such data, an error will be generated.
- 
+
 Additionally, when a registry is evaluated, we also check that
 
 - The registry system graph contains a dependency cycle (that is, **system_a** declares that it depends on **system_b** that declares that it depends on **system_a**).
 - A system declares a dependency on a system that is not referenced in the registry.
- 
+
 
 ### A sample approval
 
 ```json
 {
-  "id":48,
+  "id":40,
   "organizationId":1,
-  "registryId":32,
+  "registryId":20,
   "userId":1,
-  "versionStamp":244,
-  "action":"rate", // we'll probably have a bunch of different "submit" actions - i.e. dry-run, create, update, ... TBD
-  "status":"FAIL", // this is the overall result. we should get the most restrictive; that is, if any component is FAIL, the overall is FAIL
+  "versionStamp":216,
+  "action":"evaluate",
+  //the overall response status. This will be the worst of any individual system responses in descending order:
+  // ERROR: at least one component was invalid; the registry can't be evaluated
+  // FAIL: at least one component failed validation
+  // MANUAL: at least one component requires manual approval
+  // PASS: none of the above conditions were found
   "details":{
-    "FAIL":{
-      "system1a":{
-        "policy2a":{
-          "declarations":{
-            "rule4":[  // this means that policy2a, rule4 failed system declarations 0, 1, and 2. 
-              0,       // this is pretty opaque, maybe naming the declarations would be helpful
-              1,
-              2
-            ],
-            "rule3":[
-              0,
-              1,
-              2
-            ]
-          }
+    "overall":{
+      "FAIL":[
+        "system1"
+      ],
+      "ERROR":[
+        "system3"
+      ]
+    },
+    "evaluations":{
+      "system1":{
+        "FAIL":{
+          "policy2.rule3":[
+            "test1",
+            "test2",
+            "test3"
+          ],
+          "policy1.rule2":[
+            "test1",
+            "test2",
+            "test3"
+          ],
+          "policy1.rule1":[
+            "test1",
+            "test2",
+            "test3"
+          ],
+          "policy2.rule4":[
+            "test1",
+            "test2",
+            "test3"
+          ]
         },
-        "policy1-b":{
-          "declarations":{
-            "rule1":[
-              0,
-              1,
-              2
-            ],
-            "rule2":[
-              0,
-              1,
-              2
-            ]
-          }
-        },
-        "policy1a":{
-          "declarations":{
-            "rule1":[
-              0,
-              1,
-              2
-            ],
-            "rule2":[
-              0,
-              1,
-              2
-            ]
-          }
-        }
+        "warnings":[
+          "Dataset:d1: These categories exist for qualifer identified_data in this dataset but do not appear with that qualifier in the dependant system system1:[customer_content_data,derived_data,cloud_service_provider_data]",
+          These categories exist for qualifer identified_data in the declared dataset d1a but do not appear with that qualifier in the dependant system:[profiling_data,political_opinions,demographic_information,user_location,personal_health_data_and_medical_records],
+        "errors":[
+
+        ]
       },
-      "system2a":{
-        "policy2a":{
-          "declarations":{
-            "rule4":[
-              0,
-              1
-            ],
-            "rule3":[
-              0,
-              1
-            ]
-          }
-        },
-        "policy1-b":{
-          "declarations":{
-            "rule1":[
-              0,
-              1
-            ],
-            "rule2":[
-              0,
-              1
-            ]
-          }
-        },
-        "policy1a":{
-          "declarations":{
-            "rule1":[
-              0,
-              1
-            ],
-            "rule2":[
-              0,
-              1
-            ]
-          }
-        }
+      "system3":{
+        "warnings":[
+
+        ],
+        "errors":[
+          "The referenced datasets missing_dataset_1,missing_dataset_2 were not found.",
+          "The referenced datasets system2 were not found."
+        ]
       }
     },
-    "PASS":{
-      "system1a":{
-
-      },
-      "system2a":{
-
-      },
-      "system3a":{
-
-      }
-    }
-  },
-  "messages":{
-    "errors":[
-      "These systems were declared as dependencies but were not found :[test_system_2,test_system_1,system1-c]",
-      "cyclic reference: system2a->system3a->system2a",
-      "These datasets were declared as dependencies but were not found:[missing_dataset_2,missing_dataset_1,d2,d1]"
-    ],
     "warnings":[
-      "These categories exist for qualifer identified_data in the declared dataset d1a but do not appear with that qualifier in the dependant system system2a:[profiling_data,personal_biometric_data,account_data,derived_data,cloud_service_provider_data,personal_genetic_data,social_data,users_environmental_sensor_data,customer_contact_lists,search_commands_and_queries,financial_details,telemetry_data,customer_content_data,access_and_authentication_data,personal_data_of_children,biometric_and_health_data,connectivity_data,sensor_measurement_data,account_or_administration_contact_information,political_opinions,payment_instrument_data,content_consumption_data,end_user_identifiable_information,client_side_browsing_history,organization_identifiable_information,end_user_contact_data,observed_usage_of_the_service_capability,demographic_information,user_location,personal_health_data_and_medical_records]",
-      "system2a declares the system system3a as a dependency, but system3a has been more recently updated than system2a",
-      "These categories exist for qualifer identified_data in the declared dataset d1a but do not appear with that qualifier in the dependant system system1a:[profiling_data,political_opinions,account_data,derived_data,cloud_service_provider_data,personal_genetic_data,social_data,users_environmental_sensor_data,customer_contact_lists,search_commands_and_queries,financial_details,customer_content_data,access_and_authentication_data,personal_data_of_children,biometric_and_health_data,sensor_measurement_data,personal_biometric_data,operations_data,content_consumption_data,end_user_identifiable_information,client_side_browsing_history,organization_identifiable_information,end_user_contact_data,observed_usage_of_the_service_capability,demographic_information,user_location,personal_health_data_and_medical_records]"
+      "The referenced objects don't exist in the given values:system2",
+      "cyclic reference: system3->system3"
     ]
   }
 }
