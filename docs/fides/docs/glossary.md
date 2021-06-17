@@ -276,34 +276,20 @@ To evaluate a system against a policy, we evaluate all rules and take the _most_
 }
 ```
 
-## Registry
-
-A registry represents a collection of systems. Since systems can declare their dependencies on other systems, this is essentially a system graph.
-Validations of a registry validate all systems indidually, as well as validate their declarations in light of their dependencies.
-
 ## Approvals
+We evaluate both systems and registries. Since a registry is essentially a graph of systems, a registry evaluation is just an evaluation of each individual system along with a few additional checks on the system graph as a whole.
 
-### Approval Validation Checks
+When the evaluation of a system manifest is triggered, the following checks are run:
 
-Evaluations of systems and registries may potentially generate a list of errors and warnings.
-
-- Any errors will result in a `FAIL` response.
-- Warnings will have no effect.
-
-Some sources of errors or warnings:
-
-```yaml
-- errors
- - dependency on a system that doesn't exist, or isn't part of the registry
- - dependency on a dataset that doesn't exist
- - dependency on self (loop)
- - dependency loop between multiple systems
+- If the systems privacy declarations are narrower than the declared privacy exposure of its dependent datasets, we generate a warning. For example, the system declares that it uses a dataset that includes "customer content data" at the "anonymized" level, but the system doesn't declare that it's exposing that.
+- If the system's privacy declarations are narrower than the declared privacy exposure of a dependent system, we generate a warning. This is similar to the above restriction, except that we examine the privacy declarations of a dependant system rather than a dataset.
+- For each policy rule we check each system declaration and take action on any declaration that falls within that policy rule's scope. For example, if a policy rule declares that **profiling_data** that is **identified_data** is disallowed, and the system contains a declaration that includes such data, an error will be generated.
  
-- warnings.
- - system declarations return narrower privacy range than included in datasets (i.e. dataset includes data that's "customer content data", at the "anonymized" level, but the system doesn't declare that it's exposing that).
- - system A declares a dependency on system B, but system B has been more recently been validated (that is, the privacy declarations of system B may have been changed)
- - system A declares a dependency on dataset B, but dataset B has been more recently been validated
-```
+Additionally, when a registry is evaluated, we also check that
+
+- The registry system graph contains a dependency cycle (that is, **system_a** declares that it depends on **system_b** that declares that it depends on **system_a**).
+- A system declares a dependency on a system that is not referenced in the registry.
+ 
 
 ### A sample approval
 

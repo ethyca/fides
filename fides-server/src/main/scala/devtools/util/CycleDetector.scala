@@ -1,9 +1,8 @@
 package devtools.util
 
 import com.typesafe.scalalogging.LazyLogging
-import devtools.validation.MessageCollector
 
-import scala.collection.mutable.{HashSet => MSet, ArrayStack => MStack}
+import scala.collection.mutable.{HashSet => MSet, ArrayStack => MStack, ListBuffer => MBuffer}
 
 object CycleDetector extends LazyLogging {
 
@@ -16,14 +15,14 @@ object CycleDetector extends LazyLogging {
 
   type NodeValue = (String, Set[String])
   /** List of { key , Set(keys) } -> Map{key -> Nodes } */
-  private def makeNodeGraph(nodeKeys: Iterable[NodeValue], errors: MessageCollector) = {
+  private def makeNodeGraph(nodeKeys: Iterable[NodeValue], messages: MBuffer[String]) = {
     val keys     = nodeKeys.map(_._1).toSet
     val children = nodeKeys.flatMap(_._2).toSet
     //check for missing parents referenced in children, not in key set
     val missing = children.diff(keys)
     if (missing.nonEmpty) {
       //just log; this error is reported from validation
-      logger.error(s"""The referenced objects don't exist in the given values:${missing.mkString(",")}""")
+      messages += s"""The referenced objects don't exist in the given values:${missing.mkString(",")}"""
       //Map.empty
     }
     //else {
@@ -32,14 +31,14 @@ object CycleDetector extends LazyLogging {
       val n = nodeMap(t._1)
       t._2.foreach(childKey => {
         //allow for the possibility of a missing node
-        nodeMap.get(childKey).foreach(n.children.add(_))
+        nodeMap.get(childKey).foreach(n.children.add)
       })
     })
 
     nodeMap
   }
 
-  private def recordErrorCycle(s: MStack[String], errors: MessageCollector): Unit = {
+  private def recordErrorCycle(s: MStack[String], messages: MBuffer[String]): Unit = {
     val out = new MStack[String]
     if (s.nonEmpty) {
       val head = s.pop()
@@ -50,12 +49,13 @@ object CycleDetector extends LazyLogging {
           out.push(next)
         } else {
           out.push(next)
-          errors.addError(s"cyclic reference: ${out.mkString("->")}")
+          messages += s"cyclic reference: ${out.mkString("->")}"
         }
       }
     }
   }
-  private def hasCycle(node: Node, path: MStack[String], errors: MessageCollector): Boolean = {
+
+  private def hasCycle(node: Node, path: MStack[String], messages: MBuffer[String]): Boolean = {
     path.push(node.id)
     if (node.visited) {
       return false
@@ -66,9 +66,9 @@ object CycleDetector extends LazyLogging {
     for (child <- node.children) {
       if (child.beingVisited) {
         path.push(child.id)
-        recordErrorCycle(path, errors)
+        recordErrorCycle(path, messages)
         return true
-      } else if (hasCycle(child, path, errors)) {
+      } else if (hasCycle(child, path, messages)) {
         return true
       }
     }
@@ -77,12 +77,14 @@ object CycleDetector extends LazyLogging {
     false
   }
 
-  def collectCycleErrors(nodeKeys: Iterable[NodeValue], errors: MessageCollector): Unit = {
-
-    val nodeMap = makeNodeGraph(nodeKeys, errors)
+  /** this will return cycle errors as warning strings. */
+  def collectCycleErrors(nodeKeys: Iterable[NodeValue]): Seq[String] = {
+    val messages = new MBuffer[String]
+    val nodeMap  = makeNodeGraph(nodeKeys, messages)
     // if (!errors.hasErrors) {
-    nodeMap.values.map(hasCycle(_, MStack(), errors)).fold(false)((a, b) => a || b)
+    nodeMap.values.map(hasCycle(_, MStack(), messages)).fold(false)((a, b) => a || b)
     // }
+    messages.toSeq
   }
 
 }

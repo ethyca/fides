@@ -11,7 +11,7 @@ final case class ReportLine(
   status: ApprovalStatus,
   timestamp: Timestamp,
   action: String,
-  details: Map[ApprovalStatus, _],
+  details: Map[String, _],
   messages: Map[String, Iterable[String]]
 ) extends Ordered[ReportLine] {
 

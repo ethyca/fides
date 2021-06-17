@@ -4,7 +4,7 @@ import devtools.controller._
 import devtools.persist.dao._
 import devtools.persist.db.DB
 import devtools.persist.service._
-import devtools.rating.{PolicyEvaluator, PolicyRuleEvaluator, RegistryApprovalChecks}
+import devtools.rating.PolicyRuleEvaluator
 import devtools.util.{Caches, ConfigLoader}
 import devtools.validation._
 import org.slf4j.{Logger, LoggerFactory}
@@ -77,9 +77,7 @@ object App {
   val dataCategoryValidator    = new DataCategoryValidator(daos)
   val subjectCategoryValidator = new DataSubjectCategoryValidator(daos)
 
-  val registryApprovalChecks = new RegistryApprovalChecks(daos)
-  val policyRuleEvaluator    = new PolicyRuleEvaluator(daos)
-  val policyEvaluator        = new PolicyEvaluator(policyRuleEvaluator, registryApprovalChecks, daos)
+  val policyRuleEvaluator = new PolicyRuleEvaluator(daos)
   //service
   val approvalService     = new ApprovalService(approvalDAO)
   val auditLogService     = new AuditLogService(auditLogDAO)
@@ -99,15 +97,14 @@ object App {
   val policyService = new PolicyService(daos, policyRuleService, policyValidator)
   val systemService = new SystemService(daos, policyService, systemValidator)(executionContext)
 
-  val registryService = new RegistryService(daos, registryValidator, policyEvaluator)(executionContext)
+  val registryService = new RegistryService(daos, registryValidator)(executionContext)
   val userService     = new UserService(userDAO)
   val reportService   = new ReportService(approvalDAO)(executionContext)
   //controllers
   val approvalController     = new ApprovalController(approvalService, userDAO, swagger)
   val auditLogController     = new AuditLogController(auditLogService, userDAO, swagger)
   val organizationController = new OrganizationController(organizationService, userDAO, swagger)
-  val systemController =
-    new SystemController(systemService, policyService, approvalService, policyEvaluator, userDAO, swagger)
+  val systemController       = new SystemController(systemService, policyService, approvalService, daos, swagger)
   val datasetController      = new DatasetController(datasetService, userDAO, swagger)
   val datasetTableController = new DatasetTableController(datasetTableService, userDAO, swagger)
   val datasetFieldController = new DatasetFieldController(datasetFieldService, userDAO, swagger)
@@ -118,7 +115,7 @@ object App {
   val dataSubjectCategoryController = new DataSubjectCategoryController(dataSubjectCategoryService, userDAO, swagger)
   val policyController              = new PolicyController(policyService, userDAO, swagger)
   val policyRuleController          = new PolicyRuleController(policyRuleService, userDAO, swagger)
-  val registryController            = new RegistryController(registryService, approvalService, policyEvaluator, userDAO, swagger)
+  val registryController            = new RegistryController(registryService, approvalService, daos, swagger)
   val userController                = new UserController(userService, userDAO, swagger)
   val adminController               = new AdminController(daos, swagger)
   val reportController              = new ReportController(reportService, userDAO, swagger)

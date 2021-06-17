@@ -130,7 +130,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   def withOptionalLongId[T](baseFormatter: YamlFormat[T]): YamlFormat[T] =
     withOptionalValues(Map("id" -> 0L), baseFormatter)
 
-  implicit val DeclarationFormat: YamlFormat[Declaration] = yamlFormat4(Declaration.apply)
+  implicit val DeclarationFormat: YamlFormat[Declaration] = yamlFormat5(Declaration.apply)
 
   /* policy rule structures */
   implicit val PolicyRuleAspectGroupingFormat: YamlFormat[PolicyValueGrouping] = yamlFormat2(PolicyValueGrouping)

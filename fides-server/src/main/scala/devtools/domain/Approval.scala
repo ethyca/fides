@@ -15,7 +15,7 @@ final case class Approval(
   versionStamp: Option[Long],
   action: String,
   status: ApprovalStatus,
-  details: Option[Map[ApprovalStatus, _]],
+  details: Option[Map[String, _]],
   messages: Option[Map[String, Iterable[String]]],
   creationTime: Option[Timestamp]
 ) extends IdType[Approval, Long] with OrganizationId with VersionStamp {
@@ -67,7 +67,7 @@ object Approval {
       t._6,
       t._7,
       ApprovalStatus.fromString(t._8).get,
-      t._9.map(v => parseToObj[Map[ApprovalStatus, Map[String, Set[String]]]](v).getOrElse(Map())),
+      t._9.map(v => parseToObj[Map[String, Map[String, Set[String]]]](v).getOrElse(Map())),
       t._10.map(v => parseToObj[Map[String, Seq[String]]](v).getOrElse(Map())),
       t._11
     )

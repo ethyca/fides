@@ -4,9 +4,9 @@ import devtools.controller.definition.ApiResponse.{asyncOptionResponse, asyncRes
 import devtools.controller.definition.{BaseController, GetByUniqueKey, LongPK}
 import devtools.domain.{Approval, SystemObject}
 import devtools.exceptions.NoSuchValueException
-import devtools.persist.dao.UserDAO
+import devtools.persist.dao.{DAOs, UserDAO}
 import devtools.persist.service.{ApprovalService, PolicyService, SystemService}
-import devtools.rating.PolicyEvaluator
+import devtools.rating.Evaluator
 import devtools.util.FidesYamlProtocols
 import net.jcazevedo.moultingyaml.YamlFormat
 import org.scalatra.swagger.Swagger
@@ -18,15 +18,15 @@ class SystemController(
   val service: SystemService,
   val policyService: PolicyService,
   val approvalService: ApprovalService,
-  val policyEvaluator: PolicyEvaluator,
-  val userDAO: UserDAO,
+  val daos: DAOs,
   val swagger: Swagger
 )(implicit
   executor: ExecutionContext
 ) extends BaseController[SystemObject, Long] with LongPK[SystemObject] with GetByUniqueKey[SystemObject] {
 
   val yamlFormat: YamlFormat[SystemObject] = FidesYamlProtocols.SystemObjectFormat
-
+  val userDAO: UserDAO                     = daos.userDAO
+  val evaluator: Evaluator                 = new Evaluator(daos)
   /** Default input values that are part of system object but we don't expect as part of the post */
 
   override val inputMergeMap = Map("id" -> 0, "creationTime" -> null, "lastUpdateTime" -> null)
@@ -56,7 +56,7 @@ class SystemController(
   ) {
     asyncResponse {
       service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
-        case Some(s) => policyEvaluator.systemEvaluate(s, requestContext.organizationId, requestContext.user.id)
+        case Some(s) => evaluator.systemEvaluate(s, requestContext.user.id)
         case None    => Future.failed(NoSuchValueException("fides-key", params("fidesKey")))
       }
     }
@@ -86,7 +86,7 @@ class SystemController(
   ) {
     asyncResponse {
       ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
-        case Success(t)         => policyEvaluator.systemDryRun(t, requestContext.organizationId, requestContext.user.id)
+        case Success(t)         => evaluator.systemDryRun(t, requestContext.user.id)
         case Failure(exception) => Future.failed(exception)
       }
     }
