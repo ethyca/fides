@@ -4,24 +4,24 @@ This tutorial walks you the fundamental functionality of Fides including major c
 
 ## Writing Manifest Files
 
-Manifest files are written in `yaml` and are used create objects within the Fides database via the Fides server. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
+Manifest files are written in `yaml` and are used to create objects within the Fides database via the Fides server. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
 
-There are examples of each type of object within the `fides_cli/sample/data/` sub-directory.
+System manifest files are intended to live with the application or code that it describes. All other manifests are intended to live in a separate directory or repository of Fides manifests.
 
-## Applying Manifest Files
+## Applying Non-System Manifest Files
 
-Once all of the required manifest files have been defined, they can be sent to the server using Fidesctl. The command for this is:
+Once all of the required non-system manifest files have been defined, they can be sent to the server using Fidesctl. The command for this is:
 
 `fidesctl apply <directory>`
 
-This will load all files ending in either `.yaml` or `yml` and determines whether each one needs to be created, updated, or nothing needs to be done (the object exists on the server and there hasn't been a change). Any file formatting issues within the manifests will be caught and shown to the user.
+This will load all files ending in either `.yaml` or `yml` and determines whether each object needs to be created, updated, or nothing needs to be done (the object exists on the server and there hasn't been a change). Any file formatting issues within the manifests will be caught and shown to the user. _This directory should not container the system manifest!_
 
-## Evaluating Registries
+## System Evaluatation and Creation
+
+System manifests have a slightly different workflow as they are also meant to be incorporated into CI pipelines.
+
+## Registry Evaluation
 
 With all of the manifests having been applied, it's time to evaluate the registry and confirm that everything is valid and safe. Use the following command:
 
 `fidesctl evaluate <manifest_directory> [<registry_fidesKey>]>`
-
-## Rectifying Manifest Errors
-
-This step will potentially throw errors related to either invalid manifests (e.g. `dependent dataset doesn't exist`).
