@@ -1,6 +1,7 @@
 """Contains reusable utils for the CLI commands."""
 import json
 import os
+import sys
 from typing import Dict, Callable
 
 import click
@@ -18,13 +19,15 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
 
 def handle_cli_response(response: requests.Response) -> requests.Response:
     """Viewable CLI response"""
-    if response.status_code == 200:
+    if response.status_code >= 200 and response.status_code <= 299:
         pretty_echo(response.json(), "green")
     else:
         try:
             pretty_echo(response.json(), "red")
         except json.JSONDecodeError:
             click.secho(response.text, fg="red")
+        finally:
+            sys.exit(1)
     return response
 
 
