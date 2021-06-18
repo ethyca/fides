@@ -1,61 +1,190 @@
 package devtools.rating
 
-import devtools.domain.{Approval, Dataset, SystemObject}
-import devtools.domain.policy.Policy
-import devtools.util.waitFor
+import devtools.Generators.SystemObjectGen
+import devtools.domain.enums.ApprovalStatus
+import devtools.domain.policy.{Declaration, Policy}
+import devtools.domain.{DataCategoryName, DataQualifierName, DataSubjectCategoryName, DataUseName, Dataset, SystemObject}
 import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.jdbc.MySQLProfile.api._
 class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   implicit val context: ExecutionContext = App.executionContext
   private val systemEvaluator            = new SystemEvaluator(App.daos)
   private val testData                   = new RatingTestData()
 
-  private def relatedValues(sys: SystemObject): Future[(Iterable[Policy], Seq[SystemObject], Iterable[Dataset])] =
-    for {
-      policies         <- App.daos.policyDAO.findHydrated(_.organizationId === sys.organizationId)
-      dependentSystems <- App.daos.systemDAO.findForFidesKeyInSet(sys.systemDependencies, sys.organizationId)
-      datasets         <- App.daos.datasetDAO.findHydrated(_.fidesKey inSet sys.datasets)
-    } yield (policies, dependentSystems, datasets)
 
   test("test rate rating catch missing dataset") {
-//    val rv = waitFor(relatedValues(testData.system3))
-//    val v: Approval = waitFor(systemEvaluator.evaluateSystem(testData.system3, rv._2, rv._3.toSeq, rv._1.toSeq)
-//    val m = v.details.get
-//    val messages = v.messages.get
-//    println(s"$m\n\n$messages")
-////    messages("errors").toSeq should containMatchString(
-//      "These systems were declared as dependencies but were not found"
-//    )
-//    messages("errors").toSeq should containMatchString(
-//      "These datasets were declared as dependencies but were not found"
-//    )
-//
-//    v.status shouldEqual ApprovalStatus.FAIL
+     val sys = SystemObjectGen.sample.get.copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set(),
+       datasets = Set("missing1","missing2"))
+     val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq(),Seq())
+
+    v.errors should containMatchString(
+      "These datasets were declared as dependencies but were not found"
+    )
+    v.overallApproval shouldEqual ApprovalStatus.ERROR
+  }
+  test("test rate rating catch missing dataset") {
+    val sys = SystemObjectGen.sample.get.copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set("missing1","missing2"),
+      datasets = Set(""))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(testData.system3, Seq(), Seq(),Seq())
+
+    v.errors should containMatchString(
+      "These systems were declared as dependencies but were not found"
+    )
+
+    v.overallApproval shouldEqual ApprovalStatus.ERROR
+  }
+  test("test self reference") {
+    val sys = SystemObjectGen.sample.get.copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set("a"))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq(),Seq())
+
+    v.errors should containMatchString(
+      "self reference"
+    )
+    v.overallApproval shouldEqual ApprovalStatus.ERROR
+  }
+
+
+  //categories
+  private def cat_root1       = "customer_content_data"
+  private def cat_root1_child1 = "credentials"
+   private def cat_root1_child2 = "customer_contact_lists"
+  private def cat_root2       = "derived_data"
+  private def allChildrenOfCatRoot1 = Set( "credentials","customer_contact_lists", "personal_health_data_and_medical_records","personal_genetic_data",
+    "personal_biometric_data","personal_data_of_children", "political_opinions","financial_details","sensor_measurement_data")
+
+  //subject categories
+  private def scat_root1 = "customer"
+  private def scat_root2 = "patient"
+
+  //qualifiers
+  private def q_root = "aggregated_data"
+  private def q_child = "anonymized_data"
+
+  //use
+  private def use_root1 = "share"
+  private def use_root1_child = "share_when_required_to_provide_the_service"
+  private def use_root2 = "personalize"
+     test("test system declaration dependencies") {
+
+        def testDependencies(parent: Seq[Declaration], child: Seq[Declaration]): Seq[String] = {
+          val s1 = systemOf("a").copy(systemDependencies = Set("b"), declarations = parent)
+          val s2 = systemOf("b").copy(declarations = child)
+          systemEvaluator.checkDeclarationsOfDependentSystems(s1, Seq( s2))
+        }
+
+
+        //Just different category
+        testDependencies(
+          Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+          Seq(Declaration("test3", Set(cat_root2), use_root1, q_root, Set(scat_root1)))
+        ) should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+        //Just different subject category
+        testDependencies(
+          Seq(Declaration("test4", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+          Seq(Declaration("test5", Set(cat_root1), use_root1, q_root, Set(scat_root2)))
+        ) should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+        //child with child cat, same qualifier/use is ok
+
+        testDependencies(
+          Seq(Declaration("test6", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+          Seq(Declaration("test7", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))
+        ).size shouldEqual 0
+
+        //child with parent cat, same qualifier/use -> message
+
+        testDependencies(
+          Seq(Declaration("test8", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))),
+          Seq(Declaration("test9", Set(cat_root1), use_root1, q_root, Set(scat_root1)))
+        ) should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+        //child with NEW (qualifier/use) pair
+        testDependencies(
+          Seq(Declaration("test10", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+          Seq(
+            Declaration("test11", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)),
+            Declaration("test12", Set(cat_root2), use_root2, q_root, Set(scat_root1))
+          )
+        ) should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+      }
+
+  test("check dependent dataset privacy gamut") {
+
+    type DatasetSpec = (String,Set[String]) //(qualifier, categories)
+
+    def testDependencies(declarations: Seq[Declaration], datasetSpecs: Seq[DatasetSpec]): Seq[String] = {
+      val s1 = systemOf("a").copy( declarations = declarations)
+      val dataset = datasetOf("b", datasetTableOf("c",
+        datasetSpecs.zipWithIndex.map(t => datasetFieldOf(s"f${t._2}").copy(
+          dataCategories = Some(t._1._2), dataQualifier = Some(t._1._1))): _*))
+      systemEvaluator.checkDependentDatasetPrivacyDeclaration(s1, Seq( dataset))
+    }
+
+    //System is child value category. Diff should be the parent that only exists in the dataset spec
+    testDependencies(
+      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(cat_root1_child1))),
+      Seq(( q_root, Set(scat_root1)))
+    )  should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+
+
+    //unrelated category
+    testDependencies(
+      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set())),
+      Seq(( q_root, Set(cat_root2)))
+    )  should containMatchString("The system b includes privacy declarations that do not exist in a")
+
+
+    //dataset contains more open qualifier
+    testDependencies(
+      Seq(Declaration("test2", Set(cat_root1), use_root1, q_child, Set())),
+      Seq(( q_root, Set(cat_root1)))
+    )  should containMatchString("The system b includes privacy declarations that do not exist in a")
+  }
+
+
+  test ("test merge declarations"){
+
+    systemEvaluator.mergeDeclarations(1L, Seq(
+      Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1)),
+        Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))
+    ) shouldBe Declaration("a,b", Set(cat_root1), use_root1, q_root, Set(scat_root1))
+
+    //all child copies replaced with parent
+    systemEvaluator.mergeDeclarations(1L, Seq(
+      Declaration("a", allChildrenOfCatRoot1, use_root1, q_root, Set(scat_root1)))
+    ) shouldBe Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1))
+
+    //TODO TEST merge with both subject category and category
 
   }
-  test("test rate registry") {
-//    val v = waitFor(
-//      evaluator.registryEvaluate(
-//        testData.r1.copy(systems = Some(Right(Seq(testData.system1, testData.system1, testData.system3)))),
-//        1
-//      )
-//    )
-//
-//    prettyPrintJson(v)
-//    val messages = v.messages.get
-//    messages("errors").toSeq should containMatchString("cyclic reference")
+
+  test ("test diff declarations"){
+      //diff child/parent
+      systemEvaluator.diffDeclarations(1L,
+        Seq(Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+        Seq(Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))) shouldBe
+        Declaration("a,b", Set(cat_root1), use_root1, q_root, Set(scat_root1))
+
+      //diff child1/child2
+    systemEvaluator.diffDeclarations(1L,
+      Seq(Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("b", Set(cat_root2), use_root1, q_root, Set(scat_root1)))) shouldBe
+      Declaration("a,b", Set(cat_root1), use_root1, q_root, Set(scat_root1))
+      //diff a,b/b == a
+    systemEvaluator.diffDeclarations(1L,
+      Seq(Declaration("a", Set(cat_root1_child1, cat_root1_child2), use_root1, q_root, Set(scat_root1))),
+      Seq(Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))) shouldBe
+      Declaration("a,b", Set(cat_root1_child2), use_root1, q_root, Set(scat_root1))
+      //diff (a,b,c) ... (b,c,d) == (a,d)?
+
+
   }
-
-  test("check dependent dataset privacy gamut") {}
-  test("check dependent system privacy gamut") {}
-
-  test("check dependent dataset exists") {}
-  test("check dependent system exists") {}
-
-  test("test evaluate policy rules") {}
-
 }

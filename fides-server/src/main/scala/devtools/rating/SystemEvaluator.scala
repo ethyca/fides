@@ -29,7 +29,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   /** Check system declarations and warn if there are declared types in the dataset that have not been declared
     * in the system
     */
-  private def checkDependentDatasetPrivacyDeclaration(
+  def checkDependentDatasetPrivacyDeclaration(
     systemObject: SystemObject,
     datasets: Iterable[Dataset]
   ): Seq[String] = {
