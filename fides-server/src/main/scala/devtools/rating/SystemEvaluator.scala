@@ -41,6 +41,25 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       daos.dataCategoryDAO.mergeAndReduce(systemObject.organizationId, categories)
     }
 
+    //merge any qualifier children; that is, for any set of categories matching qualifier
+    //'a', add to the set any categories mathching any child of 'a'
+    //e.g. {a:[c1,c2], childofA:[c3], b:[c4]} => {a:[c1,c2, c3], childofA:[c3], b:[c4]}
+
+    def mergeQualifierMap(
+      m: Map[DataQualifierName, Set[DataCategoryName]]
+    ): Map[DataQualifierName, Set[DataCategoryName]] = {
+      m.map { t: (DataQualifierName, Set[DataCategoryName]) =>
+        val thisQualifier   = t._1
+        val childQualifiers = daos.dataQualifierDAO.childrenOfInclusive(systemObject.organizationId, thisQualifier)
+        val values = m
+          .filter((t2: (DataQualifierName, Set[DataCategoryName])) => childQualifiers.contains(t2._1))
+          .values
+          .flatten
+          .toSet
+        thisQualifier -> values
+      }
+    }
+
     val categoriesByQualifierInSystem: Map[DataQualifierName, Set[DataCategoryName]] = systemObject.declarations
       .map(d => (d.dataQualifier, d.dataCategories))
       .groupBy(_._1)
@@ -50,13 +69,13 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     var warnings = Seq[String]()
 
     datasets.foreach(ds =>
-      categoriesByQualifierInSystem.foreach {
+      mergeQualifierMap(categoriesByQualifierInSystem).foreach {
         case (qualifier, categories) =>
           val datasetCategories = categoriesForQualifier(qualifier, ds)
           val diff              = datasetCategories.diff(categories)
           if (diff.nonEmpty) {
             val s =
-              s"Dataset:${ds.fidesKey}: These categories exist for qualifer $qualifier in this dataset but do not appear with that qualifier in the dependant system ${systemObject.fidesKey}:[${diff
+              s"Dataset:${ds.fidesKey}: These categories exist for qualifier $qualifier in this dataset but do not appear with that qualifier in the dependant system ${systemObject.fidesKey}:[${diff
                 .mkString(",")}]"
             warnings = warnings :+ s
           }
@@ -65,6 +84,13 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     warnings
   }
+
+  def checkSelfReference(systemObject: SystemObject): Seq[String] =
+    if (systemObject.systemDependencies.contains(systemObject.fidesKey)) {
+      Seq("Invalid self reference: System cannot depend on itself")
+    } else {
+      Seq()
+    }
 
   /** for all dependent systems, check if privacy declarations includes things that are not in the privacy set of this system.
     * Assumes that all dependent systems are populated in the dependentSystems variable
@@ -90,12 +116,15 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
   def checkDependentDatasetsExist(system: SystemObject, dependentDatasets: Seq[Dataset]): Seq[String] =
     system.datasets.diff(dependentDatasets.map(_.fidesKey).toSet) match {
-      case missing if missing.nonEmpty => Seq(s"The referenced datasets ${missing.mkString(",")} were not found.")
-      case _                           => Seq()
+      case missing if missing.nonEmpty => {
+        Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
+      }
+      case _ => Seq()
     }
+
   def checkDependentSystemsExist(system: SystemObject, dependentSystems: Seq[SystemObject]): Seq[String] =
-    system.systemDependencies.diff(dependentSystems.map(_.fidesKey).toSet) match {
-      case missing if missing.nonEmpty => Seq(s"The referenced datasets ${missing.mkString(",")} were not found.")
+    system.systemDependencies.diff(dependentSystems.map(_.fidesKey).toSet + system.fidesKey) match {
+      case missing if missing.nonEmpty => Seq(s"The referenced systems [${missing.mkString(",")}] were not found.")
       case _                           => Seq()
     }
 
@@ -138,12 +167,12 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   ): SystemEvaluation = {
     val m: Map[ApprovalStatus, Map[String, Seq[String]]] = evaluatePolicyRules(policies, system)
 
-    val warnings = checkDependentDatasetPrivacyDeclaration(
-      system,
-      dependentDatasets
-    ) ++ checkDeclarationsOfDependentSystems(system, dependentSystems)
+    val warnings = checkDependentDatasetPrivacyDeclaration(system, dependentDatasets) ++
+      checkDeclarationsOfDependentSystems(system, dependentSystems)
     val errors =
-      checkDependentDatasetsExist(system, dependentDatasets) ++ checkDependentSystemsExist(system, dependentSystems)
+      checkDependentDatasetsExist(system, dependentDatasets) ++
+        checkDependentSystemsExist(system, dependentSystems) ++
+        checkSelfReference(system)
 
     val overallApproval = {
       if (errors.nonEmpty) {
