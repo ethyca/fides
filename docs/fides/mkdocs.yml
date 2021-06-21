@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - License: license.md
   - Getting Started: getting_started.md
+  - What is Fides?: what_is_fides.md
   - Tutorial: tutorial.md
   - Glossary: glossary.md
   - Manifests: manifests.md
