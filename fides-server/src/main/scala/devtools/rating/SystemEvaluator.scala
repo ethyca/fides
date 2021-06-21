@@ -116,8 +116,8 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
   def checkDependentDatasetsExist(system: SystemObject, dependentDatasets: Seq[Dataset]): Seq[String] =
     system.datasets.diff(dependentDatasets.map(_.fidesKey).toSet) match {
-      case missing if missing.nonEmpty =>  Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
-      case _ => Seq()
+      case missing if missing.nonEmpty => Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
+      case _                           => Seq()
     }
 
   def checkDependentSystemsExist(system: SystemObject, dependentSystems: Seq[SystemObject]): Seq[String] =

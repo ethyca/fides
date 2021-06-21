@@ -17,7 +17,12 @@ class DataCategoryCacheTest extends AnyFunSuite with TestUtils {
     //should be none but populates the cache
     dao.cacheGet(1, 0) shouldEqual None
     val roots: Seq[Int] =
-      waitFor(dao.db.run(sql"""SELECT id FROM #${dao.query.baseTableRow.tableName} WHERE parent_id IS NULL AND organization_id = 1""".as[Int]))
+      waitFor(
+        dao.db.run(
+          sql"""SELECT id FROM #${dao.query.baseTableRow.tableName} WHERE parent_id IS NULL AND organization_id = 1"""
+            .as[Int]
+        )
+      )
     dao.cacheGetRoots(1).map(i => i.id).toSet shouldEqual roots.toSet
 
   }
