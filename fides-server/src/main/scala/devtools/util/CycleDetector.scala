@@ -22,7 +22,9 @@ object CycleDetector extends LazyLogging {
     val missing = children.diff(keys)
     if (missing.nonEmpty) {
       //just log; this error is reported from validation
-      messages += s"""The referenced objects don't exist in the given values:${missing.mkString(",")}"""
+      messages += s"""Cycle detection error: the referenced systems [${missing.mkString(
+        ","
+      )}] don't exist in the available systems."""
       //Map.empty
     }
     //else {
@@ -84,7 +86,7 @@ object CycleDetector extends LazyLogging {
     // if (!errors.hasErrors) {
     nodeMap.values.map(hasCycle(_, MStack(), messages)).fold(false)((a, b) => a || b)
     // }
-    messages.toSeq
+    messages
   }
 
 }
