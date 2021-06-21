@@ -4,10 +4,29 @@ nav:
   - Home: index.md
   - License: license.md
   - Getting Started: getting_started.md
+  - What is Fides?: what_is_fides.md
   - Tutorial: tutorial.md
-  - Glossary: glossary.md
+  - Fides Objects: fides_objects.md
   - Fidesctl: fidesctl.md
   - Fides Server: server.md
   - Deployment: deployment.md
   - Contributing: contributing.md
-theme: readthedocs
+theme:
+  name: material
+  features:
+    - naviation.top
+    - navigation.instant
+    #- navigation.tabs
+    #- navigation.sections
+
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.inlinehilite
+
+# theme: material
+#   - features:
+#     - navigation.instant
+#     - navigation.tabs
