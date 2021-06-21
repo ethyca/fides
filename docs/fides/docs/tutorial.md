@@ -8,7 +8,7 @@ Manifest files are written in `yaml` and are used to create objects within the F
 
 System manifest files are intended to live with the application or code that it describes. All other manifests are intended to live in a separate directory or repository of Fides manifests.
 
-For a set of example manifests see the [Manifests](manifests.md) page.
+For a set of example manifests see the [Fides Objects](fides_objects.md) page.
 
 ## Applying Non-System Manifest Files
 
