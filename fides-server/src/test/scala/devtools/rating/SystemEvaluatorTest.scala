@@ -48,7 +48,6 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   //categories
   private def cat_root1        = "customer_content_data"
   private def cat_root1_child1 = "credentials"
-  private def cat_root1_child2 = "customer_contact_lists"
   private def cat_root2        = "derived_data"
   private def allChildrenOfCatRoot1 =
     Set(
@@ -171,48 +170,72 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   }
 
   test("test merge declarations") {
+    def merge(declarations:Declaration*) =  systemEvaluator.mergeDeclarations(3L, declarations)
 
-    systemEvaluator.mergeDeclarations(
-      1L,
-      Seq(
-        Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1)),
-        Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))
-      )
-    ) shouldBe List(Declaration("a,b", Set(cat_root1), use_root1, q_root, Set(scat_root1)))
 
-    //all child copies replaced with parent
-    systemEvaluator.mergeDeclarations(
-      1L,
-      Seq(Declaration("a", allChildrenOfCatRoot1, use_root1, q_root, Set(scat_root1)))
-    ) shouldBe List(Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1)))
+    //merge identical elements should return same element
+    merge(Declaration("a", Set("ca","ca1"), "ua", "qa", Set("sa","sa1")),
+      Declaration("a", Set("ca","ca1"), "ua", "qa", Set("sa","sa1")),
+      Declaration("a", Set("ca","ca1"), "ua", "qa", Set("sa","sa1"))) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set("sa")))
+    //same split into 2 declarations
+    merge(Declaration("a", Set("ca"), "ua", "qa", Set("sa")),
+      Declaration("b", Set("ca1"), "ua", "qa", Set("sa1")))  shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
 
-    //TODO TEST merge with both subject category and category
+    //merge elements in a single declaration
+    merge(Declaration("a", Set("ca","ca1"), "ua", "qa", Set("sa","sa1"))) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set("sa")))
+   //same split into 2 declarations
+    merge(Declaration("a", Set("ca"), "ua", "qa", Set("sa")),
+      Declaration("b", Set("ca1"), "ua", "qa", Set("sa1")))  shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+
+    merge(Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
+      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")))  shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+
+    merge(Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
+      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")))  shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+
+    //different use values
+    merge(Declaration("a", Set("ca1"), "ua", "qa", Set("sa")), Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")),
+      Declaration("c", Set("ca1"), "ub", "qa", Set("sa")), Declaration("d", Set("ca2"), "ub", "qa", Set("sa1"))
+    )  shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")), Declaration("c,d", Set("ca"), "ub", "qa", Set("sa")))
+
+    //same use values, different category roots
+    merge(Declaration("a", Set("ca1"), "ua", "qa", Set("sa")), Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")),
+      Declaration("c", Set("cb1"), "ua", "qa", Set("sa")), Declaration("d", Set("cb2"), "ua", "qa", Set("sa1"))
+    )  shouldBe Set(Declaration("a,b,c,d", Set("ca","cb"), "ua", "qa", Set("sa")))
+
+
 
   }
 
   test("test diff declarations") {
+
+    def diff(aDecs:Seq[Declaration],bDecs:Seq[Declaration]): Set[Declaration] =  systemEvaluator.diffDeclarations(3L, aDecs, bDecs)
+
+    //diff of identitcal
+    diff(Seq(Declaration( "a",Set("ca"), "ua", "qa", Set("sa"))), Seq( Declaration("b",Set("ca"), "ua", "qa", Set("sa")))) shouldBe Set()
+    //diff of child/parent cat
+    diff(Seq(Declaration( "a",Set("ca"), "ua", "qa", Set("sa"))), Seq( Declaration("b",Set("ca1"), "ua", "qa", Set("sa")))) shouldBe Set(Declaration("a",Set("ca"), "ua", "qa", Set()))
+    //diff of child/parent subject-cat
+    diff(Seq(Declaration( "a",Set("ca"), "ua", "qa", Set("sa"))), Seq( Declaration("b",Set("ca"), "ua", "qa", Set("sa1")))) shouldBe Set(Declaration("a",Set(), "ua", "qa", Set("sa")))
+    //diff of child/parent both
+    diff(Seq(Declaration( "a",Set("ca"), "ua", "qa", Set("sa"))), Seq( Declaration("b",Set("ca1"), "ua", "qa", Set("sa1")))) shouldBe Set(Declaration("a",Set("ca"), "ua", "qa", Set("sa")))
+    //diff of child/parent both split between multiple
+    diff(Seq(Declaration( "a",Set("ca"), "ua", "qa", Set("sa"))), Seq( Declaration("b",Set("ca1"), "ua", "qa", Set("sa1")))) shouldBe Set(Declaration("a",Set("ca"), "ua", "qa", Set("sa")))
+    //split by use
+    diff(Seq(Declaration( "a",Set("ca1"), "ua", "qa", Set("sa1")), Declaration( "a",Set("ca1"), "ua1", "qa", Set("sa1")) ),
+      Seq( Declaration("b",Set("ca2"), "ua", "qa", Set("sa1")),  Declaration("b",Set("ca2"), "ua1", "qa", Set("sa1")))) shouldBe Set(Declaration("a",Set("ca1"), "ua", "qa", Set()),Declaration("a",Set("ca1"), "ua1", "qa", Set()))
+
+
+    //split by qualifier
+
+
     //diff child/parent
-    systemEvaluator.diffDeclarations(
-      1L,
-      Seq(Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))
-    ) shouldBe
-      Set(Declaration("a", Set(cat_root1), use_root1, q_root, Set()))
+
 
     //diff child1/child2
-    systemEvaluator.diffDeclarations(
-      1L,
-      Seq(Declaration("a", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("b", Set(cat_root2), use_root1, q_root, Set(scat_root1)))
-    ) shouldBe
-      Set(Declaration("a", Set(cat_root1), use_root1, q_root, Set()))
+
     //diff a,b/b == a
-    systemEvaluator.diffDeclarations(
-      1L,
-      Seq(Declaration("a", Set(cat_root1_child1, cat_root1_child2), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("b", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))
-    ) shouldBe
-      Set(Declaration("a", Set(cat_root1_child2), use_root1, q_root, Set()))
+
     //diff (a,b,c) ... (b,c,d) == (a,d)?
 
   }

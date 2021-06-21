@@ -116,9 +116,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
   def checkDependentDatasetsExist(system: SystemObject, dependentDatasets: Seq[Dataset]): Seq[String] =
     system.datasets.diff(dependentDatasets.map(_.fidesKey).toSet) match {
-      case missing if missing.nonEmpty => {
-        Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
-      }
+      case missing if missing.nonEmpty =>  Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
       case _ => Seq()
     }
 
@@ -213,7 +211,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     * Return a sequence of [{set of declaration names that were used to generate this merge}, merged declaration}]
     */
 
-  def mergeDeclarations(organizationId: Long, declarations: Iterable[Declaration]): Seq[Declaration] = {
+  def mergeDeclarations(organizationId: Long, declarations: Iterable[Declaration]): Set[Declaration] = {
     declarations
       .groupBy(d => (d.dataQualifier, d.dataUse))
       .map { t: ((DataQualifierName, DataUseName), Iterable[Declaration]) =>
@@ -222,7 +220,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           daos.dataSubjectCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjectCategories).toSet)
         Declaration(t._2.map(_.name).toSet.mkString(","), categories, t._1._2, t._1._1, subjectCategories)
       }
-      .toSeq
+      .toSet
   }
 
   def diffDeclarations(organizationId: Long, a: Iterable[Declaration], b: Iterable[Declaration]): Set[Declaration] = {
@@ -230,24 +228,24 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     val l = mergeDeclarations(organizationId, a)
     val r = mergeDeclarations(organizationId, b)
 
-    val rGrouped: Map[(DataQualifierName, DataUseName), Seq[Declaration]] = r.groupBy(d => (d.dataQualifier, d.dataUse))
-    val lGrouped: Map[(DataQualifierName, DataUseName), Seq[Declaration]] = l.groupBy(d => (d.dataQualifier, d.dataUse))
+    val rGrouped: Map[(DataQualifierName, DataUseName), Set[Declaration]] = r.groupBy(d => (d.dataQualifier, d.dataUse))
+    val lGrouped: Map[(DataQualifierName, DataUseName), Set[Declaration]] = l.groupBy(d => (d.dataQualifier, d.dataUse))
 
-    val grouped: Seq[Declaration] = lGrouped.map { t: ((DataQualifierName, DataUseName), Seq[Declaration]) =>
-      val rVals: Seq[Declaration] = rGrouped.getOrElse(t._1, Seq())
-      val rCategories             = rVals.flatMap(_.dataCategories).toSet
-      val rSubjectCategories      = rVals.flatMap(_.dataSubjectCategories).toSet
+    val grouped: Set[Declaration] = lGrouped.map { t: ((DataQualifierName, DataUseName), Set[Declaration]) =>
+      val rVals: Set[Declaration] = rGrouped.getOrElse(t._1, Set())
+      val rCategories             = rVals.flatMap(_.dataCategories)
+      val rSubjectCategories      = rVals.flatMap(_.dataSubjectCategories)
 
-      val lCategories        = t._2.flatMap(_.dataCategories).toSet
-      val lSubjectCategories = t._2.flatMap(_.dataSubjectCategories).toSet
+      val lCategories        = t._2.flatMap(_.dataCategories)
+      val lSubjectCategories = t._2.flatMap(_.dataSubjectCategories)
 
       val categoryDiff = daos.dataCategoryDAO.diff(organizationId, rCategories, lCategories)
       val subjectCategoryDiff =
         daos.dataSubjectCategoryDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
       Declaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
-    }.toSeq
+    }.toSet
 
-    grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjectCategories.nonEmpty).toSet
+    grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjectCategories.nonEmpty)
   }
 }
