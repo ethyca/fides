@@ -24,27 +24,43 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
   // --------------------------------------------
 
   //TODO disallow if user is not in same organization as system
-  def systemEvaluate(sys: SystemObject, userId: Long): Future[Approval] =
-    generateSystemApproval(sys, "evaluate", userId).flatMap(daos.approvalDAO.create)
+  def systemEvaluate(
+    sys: SystemObject,
+    userId: Long,
+    submitTag: Option[String],
+    submitMessage: Option[String]
+  ): Future[Approval] = generateSystemApproval(sys, "evaluate", userId, submitTag, submitMessage).flatMap(daos.approvalDAO.create)
+
 
   def systemDryRun(sys: SystemObject, userId: Long): Future[Approval] =
-    generateSystemApproval(sys, "dry-run", userId)
+    generateSystemApproval(sys, "dry-run", userId, None, None)
 
   // --------------------------------------------
   // registry
   // --------------------------------------------
 
-  def registryEvaluate(registry: Registry, userId: Long): Future[Approval] =
-    runRegistryEvaluate(registry, "evaluate", userId).flatMap(daos.approvalDAO.create)
+  def registryEvaluate(
+    registry: Registry,
+    userId: Long,
+    submitTag: Option[String],
+    submitMessage: Option[String]
+  ): Future[Approval] =
+    runRegistryEvaluate(registry, "evaluate", userId, submitTag, submitMessage).flatMap(daos.approvalDAO.create)
 
   def registryDryRun(registry: Registry, userId: Long): Future[Approval] =
-    runRegistryEvaluate(registry, "dry-run", userId)
+    runRegistryEvaluate(registry, "dry-run", userId, None, None)
 
   // --------------------------------------------
   // evaluate
   // --------------------------------------------
 
-  private def generateSystemApproval(system: SystemObject, actionType: String, userId: Long): Future[Approval] = {
+  private def generateSystemApproval(
+    system: SystemObject,
+    actionType: String,
+    userId: Long,
+    submitTag: Option[String],
+    submitMessage: Option[String]
+  ): Future[Approval] = {
     val v: Future[(Iterable[Policy], Seq[SystemObject], Iterable[Dataset], Option[Long])] = for {
       policies            <- daos.policyDAO.findHydrated(_.organizationId === system.organizationId)
       dependentSystems    <- daos.systemDAO.findForFidesKeyInSet(system.systemDependencies, system.organizationId)
@@ -61,16 +77,23 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
         None,
         userId,
         t._4,
+        submitTag,
+        submitMessage,
         actionType,
         detailMap.overallApproval,
         Some(detailMap.toMap),
-        None,
         None
       )
     })
   }
 
-  private def runRegistryEvaluate(registry: Registry, action: String, userId: Long): Future[Approval] = {
+  private def runRegistryEvaluate(
+    registry: Registry,
+    action: String,
+    userId: Long,
+    submitTag: Option[String],
+    submitMessage: Option[String]
+  ): Future[Approval] = {
 
     val systemsFromRegistry: Future[Seq[SystemObject]] = registry.systems match {
       case Some(Left(ids))      => daos.systemDAO.db.run(systemQuery.filter(s => s.id inSet ids).result)
@@ -97,10 +120,11 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
           Some(registry.id),
           userId,
           version,
+          submitTag,
+          submitMessage,
           action,
           detailMap.overallApproval,
           Some(detailMap.toMap),
-          None,
           None
         )
 

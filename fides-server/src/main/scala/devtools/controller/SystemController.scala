@@ -52,12 +52,21 @@ class SystemController(
     operation(
       apiOperation[Approval](s"evaluate a single system and return the approval value")
         .summary("run and store evaluation on the specified system.")
+        .parameters(
+          queryParam[String]("tag").description(s"optional commit tag"),
+          queryParam[String]("message").description(s"optional commit message")
+        )
     )
   ) {
+
+    val fidesKey = params("fidesKey")
+    val tag      = params.get("tag")
+    val message  = params.get("message")
+
     asyncResponse {
-      service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
-        case Some(s) => evaluator.systemEvaluate(s, requestContext.user.id)
-        case None    => Future.failed(NoSuchValueException("fides-key", params("fidesKey")))
+      service.findByUniqueKey(requestContext.organizationId, fidesKey).flatMap {
+        case Some(s) => evaluator.systemEvaluate(s, requestContext.user.id, tag, message)
+        case None    => Future.failed(NoSuchValueException("fides-key", fidesKey))
       }
     }
   }
@@ -84,6 +93,7 @@ class SystemController(
         .summary("Evaluate the posted system as a 'dry-run' only.")
     )
   ) {
+
     asyncResponse {
       ingest(request.body, Option(request.getHeader("Content-Type")), inputMergeMap) match {
         case Success(t)         => evaluator.systemDryRun(t, requestContext.user.id)

@@ -10,9 +10,10 @@ import java.sql.Timestamp
 final case class ReportLine(
   status: ApprovalStatus,
   timestamp: Timestamp,
+  tag: Option[String],
+  message: Option[String],
   action: String,
-  details: Map[String, _],
-  messages: Map[String, Iterable[String]]
+  details: Map[String, _]
 ) extends Ordered[ReportLine] {
 
   /** By default we will want reports to output sorted by time. */
@@ -25,8 +26,9 @@ object ReportLine {
     ReportLine(
       approval.status,
       approval.creationTime.getOrElse(new Timestamp(0)),
+      approval.submitTag,
+      approval.submitMessage,
       approval.action,
-      approval.details.getOrElse(Map()),
-      approval.messages.getOrElse(Map())
+      approval.details.getOrElse(Map())
     )
 }

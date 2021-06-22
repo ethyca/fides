@@ -1,10 +1,9 @@
 package devtools.controller
 
 import devtools.App
-import devtools.Generators.{SystemObjectGen, fidesKey}
+import devtools.Generators.SystemObjectGen
 import devtools.domain.{Approval, SystemObject}
-import devtools.util.JsonSupport.{dumps => jdumps, parseToObj => jParseToObj, toAST => jToAST}
-import devtools.util.YamlSupport.{dumps => ydumps, toAST => yToAST}
+import devtools.util.JsonSupport.{dumps => jdumps}
 
 import scala.util.{Success, Try}
 

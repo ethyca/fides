@@ -49,26 +49,13 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   private def cat_root1        = "customer_content_data"
   private def cat_root1_child1 = "credentials"
   private def cat_root2        = "derived_data"
-  private def allChildrenOfCatRoot1 =
-    Set(
-      "credentials",
-      "customer_contact_lists",
-      "personal_health_data_and_medical_records",
-      "personal_genetic_data",
-      "personal_biometric_data",
-      "personal_data_of_children",
-      "political_opinions",
-      "financial_details",
-      "sensor_measurement_data"
-    )
 
   //subject categories
   private def scat_root1 = "customer"
   private def scat_root2 = "patient"
 
   //qualifiers
-  private def q_root  = "aggregated_data"
-  private def q_child = "anonymized_data"
+  private def q_root = "aggregated_data"
 
   //use
   private def use_root1 = "share"

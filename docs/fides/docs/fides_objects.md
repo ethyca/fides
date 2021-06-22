@@ -22,12 +22,12 @@ This individual system's privacy usage. Each declaration consists of
 - A set of data subject categories
 - A data use
 - A data qualifier
- 
+
 
 And can be read as "This system uses data in categories (data categories) (for [data subject categories]) with the purpose of (data use) at a qualified privacy level of (data qualifier)"
 A system can have multiple declarations.
 
- 
+
  ```   json
  {
   "id":40,
@@ -95,7 +95,7 @@ A system can have multiple declarations.
  }
 
  ```
- 
+
 
 
 ## Dataset
@@ -264,7 +264,7 @@ Additionally, when a registry is evaluated, we also check that
   "userId":1,
   "versionStamp":216,
   "action":"evaluate",
-  //the overall response status. This will be the worst of any individual system responses 
+  //the overall response status. This will be the worst of any individual system responses
   // in descending order:
   //  - ERROR: at least one component was invalid; the registry can't be evaluated
   //  - FAIL: at least one component failed validation
@@ -279,9 +279,9 @@ Additionally, when a registry is evaluated, we also check that
         "system3"
       ]
     },
-    
+
     // detailed evaluations
-    // Here, system1 failed because its privacy declaration "declaration1" violated 
+    // Here, system1 failed because its privacy declaration "declaration1" violated
     // policy2 rule3, declaration3 violated policy1, rule2, and so on.
     "evaluations":{
       "system1":{
@@ -310,7 +310,7 @@ Additionally, when a registry is evaluated, we also check that
           // data. This is returned as a warning since datasets may often contain a wide
           // privacy range.
           "Dataset:d1: These categories exist for qualifier identified_data in this dataset but do not appear with that qualifier in the dependant system system1:[customer_content_data,derived_data,cloud_service_provider_data]",
-          // Similar to the warning for datasets, but for the privacy declared by 
+          // Similar to the warning for datasets, but for the privacy declared by
           // dependant systems.
           "The system b includes privacy declarations that do not exist in a:[profiling_data,political_opinions],
         "errors":[
@@ -321,7 +321,7 @@ Additionally, when a registry is evaluated, we also check that
         "warnings":[
 
         ],
-            // fatal errors. Here "system3" declared a dependence on datasets and systems 
+            // fatal errors. Here "system3" declared a dependence on datasets and systems
             // that did not exist.
         "errors":[
           "The referenced datasets missing_dataset_1,missing_dataset_2 were not found.",
