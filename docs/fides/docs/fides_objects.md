@@ -18,19 +18,18 @@ System dependencies are a graph, giving users the ability to describe that syste
 
 This individual system's privacy usage. Each declaration consists of
 
-```yaml
 - A set of data categories
 - A set of data subject categories
 - A data use
 - A data qualifier
-```
+ 
 
 And can be read as "This system uses data in categories (data categories) (for [data subject categories]) with the purpose of (data use) at a qualified privacy level of (data qualifier)"
 A system can have multiple declarations.
 
-
-```   json
-{
+ 
+ ```   json
+ {
   "id":40,
   "organizationId":1,
 
@@ -93,9 +92,10 @@ A system can have multiple declarations.
   ],
   "creationTime":"2021-07-09T14:08:17Z",
   "lastUpdateTime":"2021-06-23T08:39:14Z"
-}
+ }
 
-```
+ ```
+ 
 
 
 ## Dataset
@@ -264,11 +264,12 @@ Additionally, when a registry is evaluated, we also check that
   "userId":1,
   "versionStamp":216,
   "action":"evaluate",
-  //the overall response status. This will be the worst of any individual system responses in descending order:
-  // ERROR: at least one component was invalid; the registry can't be evaluated
-  // FAIL: at least one component failed validation
-  // MANUAL: at least one component requires manual approval
-  // PASS: none of the above conditions were found
+  //the overall response status. This will be the worst of any individual system responses 
+  // in descending order:
+  //  - ERROR: at least one component was invalid; the registry can't be evaluated
+  //  - FAIL: at least one component failed validation
+  //  - MANUAL: at least one component requires manual approval
+  //  - PASS: none of the above conditions were found
   "details":{
     "overall":{
       "FAIL":[
@@ -278,33 +279,40 @@ Additionally, when a registry is evaluated, we also check that
         "system3"
       ]
     },
+    
+    // detailed evaluations
+    // Here, system1 failed because its privacy declaration "declaration1" violated 
+    // policy2 rule3, declaration3 violated policy1, rule2, and so on.
     "evaluations":{
       "system1":{
         "FAIL":{
           "policy2.rule3":[
-            "test1",
-            "test2",
-            "test3"
+            "declaration1"
           ],
           "policy1.rule2":[
-            "test1",
-            "test2",
-            "test3"
+            "declaration2",
+            "declaration3"
           ],
           "policy1.rule1":[
-            "test1",
-            "test2",
-            "test3"
+            "declaration3"
           ],
           "policy2.rule4":[
-            "test1",
-            "test2",
-            "test3"
+            "declaration1",
+            "declaration2",
+            "declaration3"
           ]
         },
         "warnings":[
-          "Dataset:d1: These categories exist for qualifer identified_data in this dataset but do not appear with that qualifier in the dependant system system1:[customer_content_data,derived_data,cloud_service_provider_data]",
-          These categories exist for qualifer identified_data in the declared dataset d1a but do not appear with that qualifier in the dependant system:[profiling_data,political_opinions,demographic_information,user_location,personal_health_data_and_medical_records],
+          // this warning shows that the system declares useage of a dataset that contains
+          // privacy data that the system does not declare. For example, here the dataset
+          // contains identified (i.e. unencrypted) customer content data but the system
+          // declarations do not state that they are exposing identified customner content
+          // data. This is returned as a warning since datasets may often contain a wide
+          // privacy range.
+          "Dataset:d1: These categories exist for qualifier identified_data in this dataset but do not appear with that qualifier in the dependant system system1:[customer_content_data,derived_data,cloud_service_provider_data]",
+          // Similar to the warning for datasets, but for the privacy declared by 
+          // dependant systems.
+          "The system b includes privacy declarations that do not exist in a:[profiling_data,political_opinions],
         "errors":[
 
         ]
@@ -313,9 +321,11 @@ Additionally, when a registry is evaluated, we also check that
         "warnings":[
 
         ],
+            // fatal errors. Here "system3" declared a dependence on datasets and systems 
+            // that did not exist.
         "errors":[
           "The referenced datasets missing_dataset_1,missing_dataset_2 were not found.",
-          "The referenced datasets system2 were not found."
+          "The referenced systems system2 were not found."
         ]
       }
     },
@@ -334,98 +344,103 @@ Fides uses four classifiers for describing how systems use privacy data, and for
 
 ### Data category
 
+=== "Yaml"
 
-```yaml
-data-category:
-  - organizationId: 1
-    fidesKey: "customer_content_data"
-    name: "Customer Content Data"
+    ```yaml
+    data-category:
+    - organizationId: 1
+        fidesKey: "customer_content_data"
+        name: "Customer Content Data"
 
-    // This field refers to the clause in the draft ISO-19944-1 that this is
-    // derived from. This value is optional and custom hierarchies of data
-    // categories are supported without any loss of functionality.
-    clause: "8.8.2"
-    description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
-```
+        // This field refers to the clause in the draft ISO-19944-1 that this is
+        // derived from. This value is optional and custom hierarchies of data
+        // categories are supported without any loss of functionality.
+        clause: "8.8.2"
+        description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
+    ```
 
-An example organization of data categories:
+=== "An example hierarchy:"
 
-```yaml
-- customer content data
-    - credentials
-    - personal health data
-    - ...
-- derived data
-    - end user identifiable information
-        - elemetry data
-        - connectivity data
-        -  ...
-- account data
-    - account or administration contact information
-    - payment instrument data
-    -  ...
-```
+    ```yaml
+    - customer content data
+        - credentials
+        - personal health data
+    - derived data
+        - end user identifiable information
+            - telemetry data
+            - connectivity data
+    - account data
+        - account or administration contact information
+        - payment instrument data
+    ```
 
 ### Data use
 
-```yaml
-data-use:
-  - organizationId: 1
-    fidesKey: "personalize"
-    name: "Personalize"
-    description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
-```
+=== "Yaml"
 
-An example organization of data uses:
+    ```yaml
+    data-use:
+    - organizationId: 1
+        fidesKey: "personalize"
+        name: "Personalize"
+        description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
+    ```
 
-```yaml
-- personalize
-- share
-  - share when required to provide the service
-- promote
-  - promote based on contextual information
-  - promote based on personalization
-```
+=== "An example hierarchy:"
+
+    ```yaml
+    - personalize
+    - share
+        - share when required to provide the service
+    - promote
+        - promote based on contextual information
+        - promote based on personalization
+    ```
 
 
 ### Data Subject Category
 
 
-```yaml
-data-subject-category:
-  - organizationId: 1
-    fidesKey: "anonymous_user"
-    name: "Anonymous User"
-    description: "A user without any identifiable information tied to them."
-```
+=== "Yaml"
 
-An example list of data subject categories:
+    ```yaml
+    data-subject-category:
+    - organizationId: 1
+        fidesKey: "anonymous_user"
+        name: "Anonymous User"
+        description: "A user without any identifiable information tied to them."
+    ```
 
-```yaml
-- customer
-- supplier
-- job applicant
-- ...
-```
+=== "An example hierarchy:"
+
+
+    ```yaml
+    - customer
+    - supplier
+    - job applicant
+    ```
 
 ### Data qualifier
 
-```yaml
-data-qualifier:
-  - organizationId: 1
-    fidesKey: "aggregated_data"
-    name: "Aggregated Data"
-    clause: "8.3.6"
-    description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
-```
+=== "Yaml"
 
+    ```yaml
+    data-qualifier:
+    - organizationId: 1
+        fidesKey: "aggregated_data"
+        name: "Aggregated Data"
+        clause: "8.3.6"
+        description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
+    ```
 
-```yaml
-- aggregated data
-  - anonymized data
-    - unlinked pseudonymized data
-      - pseudonymized data
-        - identified data
-```
+=== "An example hierarchy:"
+
+    ```yaml
+    - aggregated data
+        - anonymized data
+            - unlinked pseudonymized data
+                - pseudonymized data
+                    - identified data
+    ```
 
 Data qualifiers are sorted in order of increasing data exposure.
