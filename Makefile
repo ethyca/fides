@@ -69,7 +69,7 @@ server-shell: check-db
 ####################
 
 # CLI
-cli-build: 
+cli-build:
 	@echo "Building the $(CLI_IMAGE) image..."
 	docker build --tag $(CLI_IMAGE) fidesctl/
 
@@ -80,7 +80,7 @@ cli-push: cli-build
 	docker push $(CLI_IMAGE_LATEST)
 
 # Server
-server-build: 
+server-build:
 	@echo "Building the $(SERVER_IMAGE) image..."
 	docker build --tag $(SERVER_IMAGE) fides-server/
 
@@ -138,7 +138,7 @@ server-package: compose-build
 ####################
 
 .PHONY: clean
-clean: 
+clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
 	@docker system prune -f
 	@docker-compose run $(SERVER_IMAGE_NAME) sbt clean cleanFiles
@@ -149,3 +149,7 @@ compose-build:
 	@echo "Build the images required in the docker-compose file..."
 	@docker-compose down
 	@docker-compose build
+
+.PHONY: docs-serve
+docs-serve:
+	@docker run --rm -p 8000:8000 -v ${PWD}/docs/fides:/docs squidfunk/mkdocs-material
