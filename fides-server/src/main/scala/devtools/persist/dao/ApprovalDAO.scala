@@ -21,15 +21,17 @@ class ApprovalDAO(val db: Database)(implicit val executionContext: ExecutionCont
         r.<<?[Long],
         r.<<[Long],
         r.<<?[Long],
-        r.<<[String],
-        r.<<[String],
         r.<<?[String],
+        r.<<?[String],
+        r.<<[String],
+        r.<<[String],
         r.<<?[String],
         r.<<?[java.sql.Timestamp]
       )
 
   def searchInOrganizationAction[C <: Rep[_]](value: String): ApprovalQuery => Rep[Option[Boolean]] = {
-    t: ApprovalQuery => (t.status like value) || (t.details like value) || (t.messages like value)
+    t: ApprovalQuery =>
+      (t.status like value) || (t.details like value) || (t.submitMessage like value) || (t.submitTag like value)
   }
 
 }

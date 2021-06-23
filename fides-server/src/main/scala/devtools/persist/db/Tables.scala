@@ -33,10 +33,11 @@ object Tables {
     val systemId: Rep[Option[Long]]          = column[Option[Long]]("system_id")
     val registryId: Rep[Option[Long]]        = column[Option[Long]]("registry_id")
     val userId: Rep[Long]                    = column[Long]("user_id")
+    val submitTag: Rep[Option[String]]       = column[Option[String]]("submit_tag")
+    val submitMessage: Rep[Option[String]]   = column[Option[String]]("submit_message")
     val action: Rep[String]                  = column[String]("action")
     val status: Rep[String]                  = column[String]("status")
     val details: Rep[Option[String]]         = column[Option[String]]("details")
-    val messages: Rep[Option[String]]        = column[Option[String]]("messages")
     val creationTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("creation_time", O.AutoInc)
     def * =
       (
@@ -46,10 +47,11 @@ object Tables {
         registryId,
         userId,
         versionStamp,
+        submitTag,
+        submitMessage,
         action,
         status,
         details,
-        messages,
         creationTime
       ) <> (Approval.fromInsertable, Approval.toInsertable)
   }

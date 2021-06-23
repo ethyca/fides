@@ -13,10 +13,13 @@ final case class Approval(
   registryId: Option[Long],
   userId: Long,
   versionStamp: Option[Long],
+  /** A tag to be provided on submission, e.g. git commit tag */
+  submitTag: Option[String],
+  /** A message to be provided on submission, e.g. git commit message */
+  submitMessage: Option[String],
   action: String,
   status: ApprovalStatus,
   details: Option[Map[String, _]],
-  messages: Option[Map[String, Iterable[String]]],
   creationTime: Option[Timestamp]
 ) extends IdType[Approval, Long] with OrganizationId with VersionStamp {
   override def withId(idValue: Long): Approval = this.copy(id = idValue)
@@ -35,9 +38,10 @@ object Approval {
       Option[Long],
       Long,
       Option[Long],
-      String,
-      String,
       Option[String],
+      Option[String],
+      String,
+      String,
       Option[String],
       Option[Timestamp]
     )
@@ -50,10 +54,11 @@ object Approval {
       s.registryId,
       s.userId,
       s.versionStamp,
+      s.submitTag,
+      s.submitMessage,
       s.action,
       s.status.toString,
       s.details.map(dumps),
-      s.messages.map(dumps),
       None
     )
 
@@ -66,10 +71,11 @@ object Approval {
       t._5,
       t._6,
       t._7,
-      ApprovalStatus.fromString(t._8).get,
-      t._9.map(v => parseToObj[Map[String, Map[String, Set[String]]]](v).getOrElse(Map())),
-      t._10.map(v => parseToObj[Map[String, Seq[String]]](v).getOrElse(Map())),
-      t._11
+      t._8,
+      t._9,
+      ApprovalStatus.fromString(t._10).get,
+      t._11.map(v => parseToObj[Map[String, Map[String, Set[String]]]](v).getOrElse(Map())),
+      t._12
     )
 
   def stamp(): String = java.util.UUID.randomUUID.toString
