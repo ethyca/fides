@@ -68,10 +68,6 @@ server-shell: check-db
 # Docker
 ####################
 
-docker-login:
-	@echo "Logging in to Docker Hub..."
-	@docker login -u ${DOCKER_USER} -p {DOCKER_TOKEN}
-
 # CLI
 cli-build:
 	@echo "Building the $(CLI_IMAGE) image..."
