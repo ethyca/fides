@@ -16,7 +16,8 @@ def server_url():
 @pytest.fixture()
 def objects_dict():
     """
-    Yields an object containing sample representations of different Fides objects.
+    Yields an object containing sample representations of different
+    Fides objects.
     """
     objects_dict: Dict[str, Any] = {
         "data-category": models.DataCategory(
@@ -121,6 +122,7 @@ def objects_dict():
             description="Test Policy",
             declarations=[
                 models.DataDeclaration(
+                    name="declaration-name",
                     dataCategories=[],
                     dataUse="provide",
                     dataSubjectCategories=[],
