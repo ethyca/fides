@@ -16,13 +16,13 @@ system:
     name: "Demo System"
     description: "A system used for demos."
     declarations:
-      - dataCategories:
+      - name: "test-declaration"
+        dataCategories:
           - "customer_content_data"
         dataUse: "provide"
         dataQualifier: "anonymized_data"
         dataSubjectCategories:
           - "anonymous_user"
-        dataSets:
-          - "user_data"
+
     systemDependencies: []
     datasets: []

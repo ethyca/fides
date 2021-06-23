@@ -1,6 +1,6 @@
 -- required for valid org id references
 INSERT INTO ORGANIZATION(id, fides_key, description) values (1, "Test", "Reserved for a test account");
-
+INSERT INTO ORGANIZATION(id, fides_key, description) values (3, "Test data", "Reserved for a test taxonomy data");
 -- DATA CATEGORIES (see doc/iso_19944_data_categories.csv)--
 
 insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key, `name`, clause, description) values(1,NULL, 1, "customer_content_data","Customer content data","8.2.2","Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device. Notice that the locally executing application may or may not choose to share that data with the cloud service and yet the data would still fit in this extended definition. This includes content directly created by customers and their users and all data, including all text, sound, software or image files that customers provide to the cloud service, or are provided to the cloud service on behalf of customers, through the capabilities of the service or application. This also includes data that the user intentionally creates through the use of the application or cloud service, such as documents, processed data sets, modified images, recorded sounds, etc. When customer content data local to the device is transmitted to the cloud service, it becomes cloud service customer data.
@@ -138,3 +138,69 @@ insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `na
 insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (14,NULL,1, 'trainee', 'Trainee','');
 insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (15,NULL,1,'visitor', 'Visitor','');
 
+
+-- some trees at id 0 for taxonomy testing:
+
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(33,NULL, 3, "ca");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(34,33, 3, "ca1");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(35,34, 3, "ca11");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(36,34, 3, "ca12");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(37,33, 3, "ca2");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(38,37, 3, "ca21");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(39,37, 3, "ca22");
+
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(40,NULL, 3, "cb");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(41,40, 3, "cb1");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(42,41, 3, "cb11");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(43,41, 3, "cb12");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(44,40, 3, "cb2");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(45,44, 3, "cb21");
+insert into DATA_CATEGORY(id, parent_id, organization_id, fides_key) values(46,44, 3, "cb22");
+
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(6,NULL, 3, "qa");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(7,6, 3, "qa1");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(8,7, 3, "qa11");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(9,7, 3, "qa12");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(10,6, 3, "qa2");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(11,10, 3, "qa21");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(12,10, 3, "qa22");
+
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(13,NULL, 3, "qb");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(14,13, 3, "qb1");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(15,14, 3, "qb11");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(16,14, 3, "qb12");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(17,13, 3, "qb2");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(18,17, 3, "qb21");
+insert into DATA_QUALIFIER(id, parent_id, organization_id, fides_key) values(19,17, 3, "qb22");
+
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(14,NULL, 3, "ua");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(15,14, 3, "ua1");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(16,15, 3, "ua11");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(17,15, 3, "ua12");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(18,14, 3, "ua2");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(19,18, 3, "ua21");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(20,18, 3, "ua22");
+
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(21,NULL, 3, "ub");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(22,21, 3, "ub1");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(23,22, 3, "ub11");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(24,22, 3, "ub12");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(25,21, 3, "ub2");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(26,25, 3, "ub21");
+insert into DATA_USE(id, parent_id, organization_id, fides_key) values(27,25, 3, "ub22");
+
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(16,NULL, 3, "sa");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(17,16, 3, "sa1");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(18,17, 3, "sa11");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(19,17, 3, "sa12");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(20,16, 3, "sa2");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(21,20, 3, "sa21");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(22,20, 3, "sa22");
+
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(23,NULL, 3, "sb");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(24,23, 3, "sb1");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(25,24, 3, "sb11");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(26,24, 3, "sb12");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(27,23, 3, "sb2");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(28,27, 3, "sb21");
+insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(29,27, 3, "sb22");

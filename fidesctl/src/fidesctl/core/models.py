@@ -115,6 +115,7 @@ class Registry(BaseModel):
 
 
 class DataDeclaration(BaseModel):
+    name: str
     dataCategories: List[str]
     dataUse: str
     dataQualifier: str

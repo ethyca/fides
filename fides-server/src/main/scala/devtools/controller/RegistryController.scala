@@ -31,12 +31,21 @@ class RegistryController(
     operation(
       apiOperation[Approval](s"evaluate a single registry and return the approval value")
         .summary("run and store evaluation on the specified system.")
+        .parameters(
+          queryParam[String]("tag").description(s"optional commit tag"),
+          queryParam[String]("message").description(s"optional commit message")
+        )
     )
   ) {
+
+    val fidesKey = params("fidesKey")
+    val tag      = params.get("tag")
+    val message  = params.get("message")
+
     asyncResponse {
-      service.findByUniqueKey(requestContext.organizationId, params("fidesKey")).flatMap {
-        case Some(s) => evaluator.registryEvaluate(s, requestContext.user.id)
-        case None    => Future.failed(NoSuchValueException("fidesKey", params("fidesKey")))
+      service.findByUniqueKey(requestContext.organizationId, fidesKey).flatMap {
+        case Some(s) => evaluator.registryEvaluate(s, requestContext.user.id, tag, message)
+        case None    => Future.failed(NoSuchValueException("fidesKey", fidesKey))
       }
     }
   }
@@ -61,6 +70,10 @@ class RegistryController(
     operation(
       apiOperation[Approval](s"evaluate a the posted registry and return the approval value")
         .summary("Evaluate the posted registry as a 'dry-run' only.")
+        .parameters(
+          queryParam[String]("tag").description(s"optional commit tag"),
+          queryParam[String]("message").description(s"optional commit message")
+        )
     )
   ) {
     asyncResponse {

@@ -1,6 +1,6 @@
 package devtools
 
-import devtools.Generators._
+import devtools.Generators.{SystemObjectGen, _}
 import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
 import devtools.domain._
@@ -165,10 +165,11 @@ object Generators {
       None,
       userId,
       versionStamp,
+      Some(Random.nextLong().toHexString),
+      Some(s"commit message"),
       actionStr,
       status,
       Some(Map()),
-      Some(Map("errors" -> errors.toList, "warnings" -> warnings.toList)),
       timestamp()
     )
 
@@ -388,6 +389,7 @@ object Generators {
       println(s"\n----${e.getClass.getSimpleName}----\n${e.values}")
 
     }
+
   }
 
 }

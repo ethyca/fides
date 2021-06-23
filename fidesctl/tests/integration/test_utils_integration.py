@@ -1,9 +1,9 @@
-import pytest
+import os
 
 from fidesctl.core import utils
 
 
 def test_get_db_engine():
-    conn_str = "mysql+mysqlconnector://fidesdb:fidesdb@fides-db:3306/fidesdb"
+    conn_str = os.getenv("FIDES_SERVER_SQLALCHEMY_CONN_STR")
     engine = utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
