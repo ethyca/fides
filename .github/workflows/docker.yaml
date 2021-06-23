@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  DOCKER_USER: ethycaci
+  DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
 jobs:
   push-server:
     runs-on: ubuntu-latest
@@ -12,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Log In
-        run: echo "Docker Login"
+        run: make docker-login
 
       - name: Build & Push the Server
         run: make server-push
@@ -23,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Log In
-        run: echo "Docker Login"
+        run: make docker-login
 
       - name: Build & Push the CLI
         run: make cli-push

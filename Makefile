@@ -5,7 +5,7 @@
 # CONSTANTS
 ####################
 
-REGISTRY := registry.gitlab.com/ethyca/fides-core
+REGISTRY := ethyca
 # If running in CI, inherit the SHA; otherwise, calculate it from git
 GIT_COMMIT_SHA ?= $(CI_COMMIT_SHORT_SHA)
 ifeq ($(strip $(GIT_COMMIT_SHA)),)
@@ -68,6 +68,10 @@ server-shell: check-db
 # Docker
 ####################
 
+docker-login:
+	@echo "Logging in to Docker Hub..."
+	@docker login -u ${DOCKER_USER} -p {DOCKER_TOKEN}
+
 # CLI
 cli-build:
 	@echo "Building the $(CLI_IMAGE) image..."
@@ -100,7 +104,7 @@ cli-check-all: cli-format cli-lint cli-typecheck cli-test
 
 cli-format: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	black .
+	black src/
 
 cli-lint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
