@@ -10,10 +10,10 @@ from fidesctl.core.models import FidesModel
 from .utils import echo_red
 
 
-def check_eval_result(response: requests.Response):
+def check_eval_result(response: requests.Response) -> requests.Response:
     """
     Check for the result of the evaluation and flip
-    the status_code to a 400-level if it isn't passing.
+    the status_code to 500 if it isn't passing.
     """
 
     try:
@@ -24,7 +24,9 @@ def check_eval_result(response: requests.Response):
     return response
 
 
-def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
+def dry_evaluate(
+    url: str, manifests_dir: str, fides_key: str = ""
+) -> requests.Response:
     """
     Rate a registry against all of the policies within an organization.
     """
