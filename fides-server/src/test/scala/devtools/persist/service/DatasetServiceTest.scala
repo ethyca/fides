@@ -100,7 +100,7 @@ class DatasetServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLog
     matchField(response, t2.name, f22.name, (a, b) => a.description == b.description)
     matchField(response, t3.name, f3.name, (a, b) => a.description == b.description)
 
-    waitFor(auditLogDAO.find(response.id, "Dataset", CREATE)).size shouldEqual 1
+    waitFor(findAuditLogs(response.id, "Dataset", CREATE)).size shouldEqual 1
 
     datasetIds.add(response.id)
 
@@ -149,12 +149,12 @@ class DatasetServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLog
     matchField(updatedResponse, t4.name, f5.name, (a, b) => a.description == b.description)
 
     // we should have 1 update record in the audit log
-    waitFor(auditLogDAO.find(response.id, "Dataset", UPDATE)).size shouldEqual 1
+    waitFor(findAuditLogs(response.id, "Dataset", UPDATE)).size shouldEqual 1
 
     //delete should increment the org version
     waitFor(datasetService.delete(response.id, requestContext))
     // we should have 1 delete record in the audit log
-    waitFor(auditLogDAO.find(response.id, "Dataset", DELETE)).size shouldEqual 1
+    waitFor(findAuditLogs(response.id, "Dataset", DELETE)).size shouldEqual 1
 
   }
 

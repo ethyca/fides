@@ -7,7 +7,6 @@ import devtools.domain.enums.PolicyAction.ACCEPT
 import devtools.domain.enums.RuleInclusion.ALL
 import devtools.domain.enums._
 import devtools.domain.policy._
-import devtools.persist.dao.AuditLogDAO
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -21,7 +20,6 @@ import scala.concurrent.ExecutionContext
 class PolicyServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
   private val policyRuleDAO                       = App.policyRuleDAO
   private val policyService                       = App.policyService
-  private val auditLogDAO: AuditLogDAO            = App.auditLogDAO
   implicit val executionContext: ExecutionContext = App.executionContext
 
   def findChildByNameFromDb(name: String): Option[PolicyRule] = waitFor(policyRuleDAO.findFirst(_.name === name))
@@ -71,7 +69,7 @@ class PolicyServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     response.versionStamp.get should be > startVersion
     val afterCreateVersion = currentVersionStamp(1)
     afterCreateVersion should be > startVersion
-    val logRecord: Seq[AuditLog] = waitFor(auditLogDAO.find(response.id, "Policy", CREATE))
+    val logRecord: Seq[AuditLog] = waitFor(findAuditLogs(response.id, "Policy", CREATE))
     logRecord.size shouldEqual 1
     logRecord.head.versionStamp shouldEqual response.versionStamp
 
@@ -94,14 +92,14 @@ class PolicyServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     updatedResponse.versionStamp.get should be > afterCreateVersion
     val afterUpdateVersion = currentVersionStamp(1)
     afterUpdateVersion should be > afterCreateVersion
-    val logRecord2: Seq[AuditLog] = waitFor(auditLogDAO.find(response.id, "Policy", UPDATE))
+    val logRecord2: Seq[AuditLog] = waitFor(findAuditLogs(response.id, "Policy", UPDATE))
     logRecord2.size shouldEqual 1
     logRecord2.head.versionStamp shouldEqual updatedResponse.versionStamp
 
     //delete should increment the org version
     waitFor(policyService.delete(response.id, requestContext))
     // we should have 1 delete record in the audit log
-    waitFor(auditLogDAO.find(response.id, "Policy", DELETE)).size shouldEqual 1
+    waitFor(findAuditLogs(response.id, "Policy", DELETE)).size shouldEqual 1
     findChildByNameFromDb("child1") shouldEqual None
     findChildByNameFromDb("child2") shouldEqual None
     findChildByNameFromDb("child3") shouldEqual None

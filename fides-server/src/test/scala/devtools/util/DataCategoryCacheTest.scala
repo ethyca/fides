@@ -28,7 +28,7 @@ class DataCategoryCacheTest extends AnyFunSuite with TestUtils {
   }
 
   test("test find all cache values") {
-    val categories: Seq[DataCategory] = waitFor(dao.findAllInOrganization(1L))
+    val categories: Seq[DataCategory] = waitFor(dao.findAllInOrganization(1L, Pagination.unlimited))
 
     categories.foreach { c =>
       val cachedCopy = dao.cacheGet(1, c.id)

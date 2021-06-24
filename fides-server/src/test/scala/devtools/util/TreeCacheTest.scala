@@ -68,9 +68,9 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
   class TestTreeCache(val nodes: Seq[Node]) extends TreeCache[NodeTree, Node] {
     override implicit def executionContext: ExecutionContext = App.executionContext
 
-    override def getAll: Future[Seq[Node]] = Future.successful(nodes)
+    override def getAll(pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
 
-    override def findAllInOrganization(l: Long): Future[Seq[Node]] = Future.successful(nodes)
+    override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
   }
 
   private val cache = new TestTreeCache(nodes)

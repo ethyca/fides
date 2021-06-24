@@ -2,6 +2,7 @@ package devtools.persist.dao.definition
 
 import devtools.domain.definition.{IdType, OrganizationId}
 import devtools.persist.db.{BaseTable, OrganizationIdTable}
+import devtools.util.Pagination
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.Future
@@ -9,14 +10,23 @@ import scala.concurrent.Future
 trait ByOrganization[E <: IdType[E, Long] with OrganizationId, T <: BaseTable[E, Long] with OrganizationIdTable[E]] {
   this: DAO[E, Long, T] =>
 
-  def findAllInOrganization(organizationId: Long): Future[Seq[E]] =
-    db.run(query.filter(_.organizationId === organizationId).result)
+  def findAllInOrganization(organizationId: Long, pagination: Pagination): Future[Seq[E]] =
+    filterPaginated(_.organizationId === organizationId, _.id, pagination)
 
   /** Search clause by string fields */
   def searchInOrganizationAction[C <: Rep[_]](value: String): T => Rep[Option[Boolean]]
 
-  def searchInOrganization(organizationId: Long, value: String): Future[Seq[E]] = {
+  def searchInOrganization(organizationId: Long, value: String, pagination: Pagination): Future[Seq[E]] = {
     val searchValue = s"%${value.toUpperCase()}%"
-    db.run(query.filter(_.organizationId === organizationId).filter(searchInOrganizationAction(searchValue)).result)
+
+    db.run(
+      query
+        .filter(_.organizationId === organizationId)
+        .filter(searchInOrganizationAction(searchValue))
+        .sorted(_.id)
+        .drop(pagination.offset)
+        .take(pagination.limit)
+        .result
+    )
   }
 }

@@ -4,6 +4,7 @@ import devtools.controller.RequestContext
 import devtools.domain.definition.IdType
 import devtools.exceptions.NoSuchValueException
 import devtools.persist.dao.definition.DAO
+import devtools.util.Pagination
 import devtools.validation.Validator
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -11,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 abstract class Service[E <: IdType[E, PK], PK](val dao: DAO[E, PK, _], validator: Validator[E, PK])(implicit
   ec: ExecutionContext
 ) {
-  def getAll(ctx: RequestContext): Future[Seq[E]] = dao.getAll
+  def getAll(ctx: RequestContext, pagination: Pagination): Future[Seq[E]] = dao.getAll(pagination)
 
   /** return a (hydrated) value */
   def findById(id: PK, ctx: RequestContext): Future[Option[E]] =
@@ -44,6 +45,7 @@ abstract class Service[E <: IdType[E, PK], PK](val dao: DAO[E, PK, _], validator
 
   def deleteValidated(id: PK, previous: E, ctx: RequestContext): Future[Int] = dao.delete(id)
 
-  def search(s: String, ctx: RequestContext): Future[Seq[E]] =
+  def search(s: String, ctx: RequestContext, pagination: Pagination): Future[Seq[E]] =
     Future.failed(new UnsupportedOperationException("search is not yet supported for this type"))
+
 }

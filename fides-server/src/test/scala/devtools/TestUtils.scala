@@ -1,5 +1,6 @@
 package devtools
 
+import com.typesafe.scalalogging.LazyLogging
 import devtools.Generators.{SystemObjectGen, _}
 import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
@@ -9,18 +10,18 @@ import devtools.domain.policy.{Declaration, Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
-import devtools.util.{JsonSupport, waitFor}
+import devtools.util.{JsonSupport, Pagination, waitFor}
 import org.json4s.Formats
 import org.scalacheck.Gen
 import org.scalatest.matchers.{MatchResult, Matcher}
-
 import java.sql.Timestamp
 import scala.collection.Seq
+import scala.concurrent.Future
 import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.{Random, Try}
 
-trait TestUtils {
+trait TestUtils extends LazyLogging {
 
   def randomInt: Int = Random.nextInt()
 
@@ -62,6 +63,9 @@ trait TestUtils {
   def systemOf(fidesKeyName: String, declarations: Declaration*): SystemObject =
     SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, declarations = declarations)
 
+  def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
+    AuditLog(0, objectId, 1, None, 1, action, typeName, None, None, None, None)
+
   def datasetOf(name: String, tables: DatasetTable*): Dataset =
     Dataset(0, 1, name, None, None, None, None, None, Some(tables), None, None)
 
@@ -97,6 +101,11 @@ trait TestUtils {
   def containMatchString(pattern: String): ContainsErrorStringMatcher = new ContainsErrorStringMatcher(pattern)
   private val organizationDAO: OrganizationDAO                        = App.organizationDAO
   def currentVersionStamp(organizationId: Int): Long                  = waitFor(organizationDAO.getVersion(organizationId)).get
+
+  def findAuditLogs(objectId: Long, typeName: String, action: AuditAction): Future[Seq[AuditLog]] = {
+    import slick.jdbc.MySQLProfile.api._
+    App.auditLogDAO.filter(a => a.objectId === objectId && a.typeName === typeName && a.action === action.toString)
+  }
 }
 
 object Generators {
@@ -106,10 +115,11 @@ object Generators {
   val availableDataUses: Seq[String]          = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDataCategories: Seq[String]    = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableSubjectCategories: Seq[String] = App.dataSubjectCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDatasets: Seq[String]          = waitFor(App.datasetDAO.findAllInOrganization(1)).map(_.fidesKey)
-  val genName: Gen[String]                    = Gen.resultOf { _: Int => faker.Name.first_name }
-  val genLongName: Gen[String]                = Gen.resultOf { _: Int => faker.Name.name }
-  def fidesKey: String                        = sanitizeUniqueIdentifier(faker.Name.name + "_" + faker.Name.name)
+  val availableDatasets: Seq[String] =
+    waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
+  val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
+  val genLongName: Gen[String] = Gen.resultOf { _: Int => faker.Name.name }
+  def fidesKey: String         = sanitizeUniqueIdentifier(faker.Name.name + "_" + faker.Name.name)
 
   def randomText(): String = faker.Lorem.sentence()
   def blankSystem: SystemObject =
@@ -156,8 +166,6 @@ object Generators {
       userId    <- Gen.posNum[Int] //TODO user in test org
       status    <- Gen.oneOf(ApprovalStatus.values)
       actionStr <- Gen.oneOf(Seq("rate", "create", "update"))
-      errors    <- smallListGen[String](1, 3, genName)
-      warnings  <- smallListGen[String](1, 3, genName)
     } yield Approval(
       id,
       1,

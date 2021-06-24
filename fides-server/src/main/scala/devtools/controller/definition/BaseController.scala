@@ -6,13 +6,12 @@ import devtools.exceptions.InvalidDataException
 import devtools.persist.dao.UserDAO
 import devtools.persist.service.definition.Service
 import devtools.util.YamlSupport._
-import devtools.util.{JsonSupport, YamlSupport}
+import devtools.util.{JsonSupport, Pagination, YamlSupport}
 import net.jcazevedo.moultingyaml.{YamlFormat, YamlObject, YamlReader, YamlValue}
 import org.json4s.JValue
 import org.json4s.JsonAST.JObject
 import org.scalatra.swagger.Swagger
 
-import javax.servlet.http.HttpServletRequest
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Try}
 
@@ -31,6 +30,12 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
   def toPK(idStr: String): Try[PK]
   def inputMergeMap: Map[String, Any]
 
+  def intParam(p: Option[String], default: Int): Int =
+    p match {
+      case Some(o) => Try(o.trim.toInt).getOrElse(default)
+      case _       => default
+    }
+
   /** Find all */
   get(
     "/",
@@ -38,13 +43,21 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
       apiOperation[List[T]](s"getAll${typeName}s")
         .summary(s"Show all ${typeName}s")
         .description(s"Shows all the ${typeName}s")
+        .parameters(
+          queryParam[String]("offset").description(s"optional pagination offset, default 0"),
+          queryParam[String]("limit").description(s"optional pagination limit, default 100")
+        )
     )
-  )(
+  ) {
+
+    val offset = intParam(params.get("offset"), 0)
+    val limit  = intParam(params.get("limit"), 100)
+
     params.get("search") match {
-      case Some(search) => asyncResponse(service.search(search, requestContext))
-      case _            => asyncResponse(service.getAll(requestContext))
+      case Some(search) => asyncResponse(service.search(search, requestContext, Pagination(limit, offset)))
+      case _            => asyncResponse(service.getAll(requestContext, Pagination(limit, offset)))
     }
-  )
+  }
 
   /** read content type from header, digest either as yaml or json. */
   def ingest(requestBody: String, contentTypeHeader: Option[String], merge: Map[String, Any] = Map()): Try[T] = {

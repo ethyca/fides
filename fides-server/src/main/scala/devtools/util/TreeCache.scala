@@ -20,9 +20,11 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
 
   implicit def executionContext: ExecutionContext
 
-  def getAll: Future[Seq[BaseType]]
+  def getAll: Future[Seq[BaseType]] = getAll(Pagination.unlimited)
 
-  def findAllInOrganization(l: Long): Future[Seq[BaseType]]
+  def getAll(pagination: Pagination): Future[Seq[BaseType]]
+
+  def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[BaseType]]
 
   private val caches: MHashMap[Long, Map[Long, V]] = new MHashMap
 
@@ -36,7 +38,9 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
 
   /** Because this intended to be built as a unit, we're only going to support global building */
   def cacheBuild(organizationId: Long): Unit =
-    findAllInOrganization(organizationId).foreach(values => buildForOrganization(organizationId, values))
+    findAllInOrganization(organizationId, Pagination.unlimited).foreach(values =>
+      buildForOrganization(organizationId, values)
+    )
 
   private def buildForOrganization(organizationId: Long, values: Seq[BaseType]): Unit = {
     val m: Map[Long, V] = values.map(c => c.id -> c.toTreeItem).toMap
