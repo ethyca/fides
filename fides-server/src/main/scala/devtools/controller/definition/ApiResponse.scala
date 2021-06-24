@@ -36,6 +36,7 @@ object ApiResponse extends LazyLogging {
       case e: Throwable          => Seq(e.getMessage)
     }
 
+  /** Handle async response with option None => NotFound. */
   def asyncResponse[ResponseType](
     f: => Future[ResponseType]
   )(implicit executor: ExecutionContext, context: ScalatraContext, formats: Formats): AsyncResult =
@@ -47,6 +48,7 @@ object ApiResponse extends LazyLogging {
       )
     }
 
+  /** Handle async response with option None => NotFound. */
   def asyncOptionResponse[ResponseType](
     f: => Future[Option[ResponseType]]
   )(implicit executor: ExecutionContext, context: ScalatraContext, formats: Formats): AsyncResult = {

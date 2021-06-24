@@ -5,7 +5,9 @@ import devtools.persist.dao.DAOs
 
 import scala.concurrent.ExecutionContext
 
-/** Validate the existence of taxonomy members */
+/** Common functions for taxonomy validation checking.
+  * Validate the existence of taxonomy members.
+  */
 trait ValidateByTaxonomy {
 
   val daos: DAOs

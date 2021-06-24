@@ -1,6 +1,6 @@
 package devtools.persist.dao
 import devtools.domain.policy.PolicyRule
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.policyRuleQuery
 import devtools.persist.db.Tables.PolicyRuleQuery
 import slick.dbio.Effect
@@ -12,7 +12,7 @@ import java.sql.Timestamp
 import scala.concurrent.{ExecutionContext, Future}
 class PolicyRuleDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[PolicyRule, Long, PolicyRuleQuery](policyRuleQuery) with AutoIncrementing[PolicyRule, PolicyRuleQuery]
-  with ByOrganization[PolicyRule, PolicyRuleQuery] {
+  with ByOrganizationDAO[PolicyRule, PolicyRuleQuery] {
 
   override implicit def getResult: GetResult[PolicyRule] =
     r =>

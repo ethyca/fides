@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.{DataUse, DataUseTree}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.dataUseQuery
 import devtools.persist.db.Tables.DataUseQuery
 import devtools.util.TreeCache
@@ -13,7 +13,7 @@ import scala.util.Success
 class DataUseDAO(val db: Database)(implicit
   val executionContext: ExecutionContext
 ) extends DAO[DataUse, Long, DataUseQuery](dataUseQuery) with AutoIncrementing[DataUse, DataUseQuery]
-  with ByOrganization[DataUse, DataUseQuery] with TreeCache[DataUseTree, DataUse] {
+  with ByOrganizationDAO[DataUse, DataUseQuery] with TreeCache[DataUseTree, DataUse] {
 
   cacheBuildAll()
 

@@ -4,20 +4,22 @@ import devtools.controller.RequestContext
 import devtools.domain.AuditLog
 import devtools.domain.definition.{IdType, OrganizationId}
 import devtools.domain.enums.AuditAction
-import devtools.persist.dao.definition.{ByOrganization, DAO}
+import devtools.persist.dao.definition.{ByOrganizationDAO, DAO}
 import devtools.persist.dao.{AuditLogDAO, OrganizationDAO}
 import devtools.persist.db.{BaseAutoIncTable, OrganizationIdTable}
 import devtools.util.JsonSupport
 import devtools.util.JsonSupport.difference
 import devtools.validation.Validator
+import org.json4s.JValue
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/** Extension of a service by organization that creates audit log entries on CREATE/UPDATE/DELETE operations. */
 abstract class AuditingService[E <: IdType[E, Long] with OrganizationId](
-  dao: DAO[E, Long, _ <: BaseAutoIncTable[E] with OrganizationIdTable[E]] with ByOrganization[E, _],
-  auditLogDAO: AuditLogDAO,
-  organizationDAO: OrganizationDAO,
-  validator: Validator[E, Long]
+                                                                          dao: DAO[E, Long, _ <: BaseAutoIncTable[E] with OrganizationIdTable[E]] with ByOrganizationDAO[E, _],
+                                                                          auditLogDAO: AuditLogDAO,
+                                                                          organizationDAO: OrganizationDAO,
+                                                                          validator: Validator[E, Long]
 )(implicit ec: ExecutionContext, m: Manifest[E])
   extends ByOrganizationService[E](dao, validator) {
 
@@ -41,8 +43,8 @@ abstract class AuditingService[E <: IdType[E, Long] with OrganizationId](
     )
 
   def updateValue(t: E, previous: E, orgId: Long, versionStamp: Option[Long], userId: Long): AuditLog = {
-    val from = JsonSupport.toAST[E](previous)
-    val to   = JsonSupport.toAST[E](t)
+    val from: JValue = JsonSupport.toAST[E](previous)
+    val to: JValue = JsonSupport.toAST[E](t)
     val diff = difference(from, to)
     AuditLog(
       0,

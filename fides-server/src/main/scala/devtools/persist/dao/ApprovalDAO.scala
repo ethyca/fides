@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.Approval
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.approvalQuery
 import devtools.persist.db.Tables.ApprovalQuery
 import slick.jdbc.GetResult
@@ -10,7 +10,7 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.ExecutionContext
 
 class ApprovalDAO(val db: Database)(implicit val executionContext: ExecutionContext)
-  extends DAO[Approval, Long, ApprovalQuery](approvalQuery) with ByOrganization[Approval, ApprovalQuery]
+  extends DAO[Approval, Long, ApprovalQuery](approvalQuery) with ByOrganizationDAO[Approval, ApprovalQuery]
   with AutoIncrementing[Approval, ApprovalQuery] {
   implicit def getResult: GetResult[Approval] =
     r =>

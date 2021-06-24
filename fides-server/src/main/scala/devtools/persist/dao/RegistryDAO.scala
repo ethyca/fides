@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.{Registry, SystemObject}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.{registryQuery, systemQuery}
 import devtools.persist.db.Tables.RegistryQuery
 import slick.jdbc.GetResult
@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RegistryDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[Registry, Long, RegistryQuery](registryQuery) with AutoIncrementing[Registry, RegistryQuery]
-  with ByOrganization[Registry, RegistryQuery] {
+  with ByOrganizationDAO[Registry, RegistryQuery] {
 
   override implicit def getResult: GetResult[Registry] =
     r =>

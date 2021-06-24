@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.{Dataset, DatasetField, DatasetTable}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery, datasetTableQuery}
 import devtools.persist.db.Tables.DatasetQuery
 import slick.jdbc.MySQLProfile.api._
@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[Dataset, Long, DatasetQuery](datasetQuery) with AutoIncrementing[Dataset, DatasetQuery]
-  with ByOrganization[Dataset, DatasetQuery] {
+  with ByOrganizationDAO[Dataset, DatasetQuery] {
 
   override implicit def getResult: GetResult[Dataset] =
     r =>

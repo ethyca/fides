@@ -9,6 +9,16 @@ import devtools.validation.Validator
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/** A service represents an interface for a type mapped to a db table.
+  * A DAO only handles direct db CRUD operations without any application
+  * logic.
+  *
+  * The service itself represents application logic wrapped around the DAO,
+  * including
+  * - limiting by organization where appropriate
+  * - hydrating values that have One-to_many members
+  * - validation logic
+  */
 abstract class Service[E <: IdType[E, PK], PK](val dao: DAO[E, PK, _], validator: Validator[E, PK])(implicit
   ec: ExecutionContext
 ) {

@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.User
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.userQuery
 import devtools.persist.db.Tables.UserQuery
 import slick.jdbc.GetResult
@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 
 class UserDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[User, Long, UserQuery](userQuery) with AutoIncrementing[User, UserQuery]
-  with ByOrganization[User, UserQuery] {
+  with ByOrganizationDAO[User, UserQuery] {
 
   override implicit def getResult: GetResult[User] =
     r =>

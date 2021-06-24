@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.{DataCategory, DataCategoryTree}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.dataCategoryQuery
 import devtools.persist.db.Tables.DataCategoryQuery
 import devtools.util.TreeCache
@@ -17,7 +17,7 @@ import scala.util.Success
 class DataCategoryDAO(val db: Database)(implicit
   val executionContext: ExecutionContext
 ) extends DAO[DataCategory, Long, DataCategoryQuery](dataCategoryQuery)
-  with AutoIncrementing[DataCategory, DataCategoryQuery] with ByOrganization[DataCategory, DataCategoryQuery]
+  with AutoIncrementing[DataCategory, DataCategoryQuery] with ByOrganizationDAO[DataCategory, DataCategoryQuery]
   with TreeCache[DataCategoryTree, DataCategory] {
 
   cacheBuildAll()

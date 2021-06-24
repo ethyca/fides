@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.AuditLog
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.auditLogQuery
 import devtools.persist.db.Tables.AuditLogQuery
 import slick.jdbc.MySQLProfile.api._
@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuditLogDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[AuditLog, Long, AuditLogQuery](auditLogQuery) with AutoIncrementing[AuditLog, AuditLogQuery]
-  with ByOrganization[AuditLog, AuditLogQuery] {
+  with ByOrganizationDAO[AuditLog, AuditLogQuery] {
 
   override def update(record: AuditLog): Future[Option[AuditLog]] =
     Future.failed(new UnsupportedOperationException("Updating of audit log records is not supported"))

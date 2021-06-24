@@ -9,12 +9,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
   extends Validator[Dataset, Long] with ValidateByOrganization {
 
+  /** Validations:
+    *
+    * - referenced organization exists. */
   def validateForCreate(t: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
     requireOrganizationIdExists(t.organizationId, errors).flatMap(_.asFuture())
   }
   /**
-    * if fideskey changes, validate that it's not inuse
+    * if fideskey changes, validate that it's not in use.
     */
   override def validateForUpdate(t: Dataset, previous: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
@@ -38,7 +41,7 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
   }
 
   /**
-    * if fides key is in use, fail
+    * if fides key is in use, fail.
     */
   override def validateForDelete(pk: Long, existing: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector

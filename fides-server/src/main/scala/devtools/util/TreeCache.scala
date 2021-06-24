@@ -20,10 +20,13 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
 
   implicit def executionContext: ExecutionContext
 
+  /** Unlimited retrieva (should not be used directly in services).  */
   def getAll: Future[Seq[BaseType]] = getAll(Pagination.unlimited)
 
+  /** Retrieve all based on applied pagination limits.  */
   def getAll(pagination: Pagination): Future[Seq[BaseType]]
 
+  /** Find all based on organization id.  */
   def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[BaseType]]
 
   private val caches: MHashMap[Long, Map[Long, V]] = new MHashMap
@@ -59,16 +62,20 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
     caches.put(organizationId, m)
   }
 
+  /** Return only the cache root values (that is, values where parentId == None) for a given organization. */
   def cacheGetRoots(organizationId: Long): Iterable[V] = caches.getOrElse(organizationId, Map()).values.filter(_.isRoot)
 
+  /** Return only the cache root values (that is, values where parentId == None) for a given organization. */
   def cacheGetAll(organizationId: Long): Map[Long, V] = caches.getOrElse(organizationId, Map())
 
+  /** Find existing fides key in an organization. */
   def cacheFind(organizationId: Long, fidesKey: String): Option[V] =
     caches.getOrElse(organizationId, Map()).values.find(_.fidesKey == fidesKey)
 
   /** True if the cache contains a value that returns true for this function. */
   def containsFidesKey(organizationId: Long, fidesKey: String): Boolean = cacheFind(organizationId, fidesKey).isDefined
 
+  /** Retrieve cache value by id. */
   def cacheGet(organizationId: Long, k: Long): Option[V] =
     caches.getOrElse(organizationId, Map()).get(k) match {
       case None => logger.info(s"Cache miss: did not find $k"); None

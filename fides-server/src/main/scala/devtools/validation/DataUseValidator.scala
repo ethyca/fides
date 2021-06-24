@@ -32,6 +32,8 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       }
       .flatMap(_.asFuture())
 
+  /** Deletion validations for taxonomy types have to ensure that those values are not referenced
+    * by any existing systems or policy rules. */
   override def validateForDelete(pk: Long, existing: DataUse, ctx: RequestContext): Future[Unit] =
     fidesKeyInUseInSystem(existing, new MessageCollector)
       .flatMap(fidesKeyInUseInSystem(existing, _))
@@ -39,6 +41,7 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       .flatMap(hasChildren(pk, _))
       .flatMap(_.asFuture())
 
+  /** Add to errors (fail) if this use has child values. since this would create orphan records.*/
   def hasChildren(id: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.dataUseDAO.runAction(
       daos.dataUseDAO.query.filter(d => d.parentId === id).map(_.id).result
@@ -49,7 +52,7 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       errors
     }
 
-  /** Require that the parent key exists or is 0 (root) */
+  /** Require that the parent key exists or that this value is a root value */
   def requireParentIdExists(du: DataUse, errors: MessageCollector): Future[MessageCollector] =
     du.parentId match {
       case Some(pid) =>
@@ -62,6 +65,7 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       case _ => Future.successful(errors)
     }
 
+  /** Add to errors if the data use key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dataUse: DataUse, errors: MessageCollector): Future[MessageCollector] =
     daos.systemDAO
       .findSystemsWithJsonMember(dataUse.organizationId, dataUse.fidesKey, "dataUse")
@@ -72,6 +76,7 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
         errors
       }
 
+  /** Add to errors if the data use key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dataUse: DataUse, errors: MessageCollector): Future[MessageCollector] =
     daos.policyRuleDAO.findPolicyRuleWithDataUse(dataUse.organizationId, dataUse.fidesKey).map { ruleIds =>
       if (ruleIds.nonEmpty) {
