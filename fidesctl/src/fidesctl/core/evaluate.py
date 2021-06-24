@@ -1,4 +1,5 @@
 """Module for evaluating systems and registries."""
+from json.decoder import JSONDecodeError
 from typing import Dict
 
 import requests
@@ -9,7 +10,23 @@ from fidesctl.core.models import FidesModel
 from .utils import echo_red
 
 
-def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
+def check_eval_result(response: requests.Response) -> requests.Response:
+    """
+    Check for the result of the evaluation and flip
+    the status_code to 500 if it isn't passing.
+    """
+
+    try:
+        if response.json()["data"]["status"] != "PASS":
+            response.status_code = 500
+    except JSONDecodeError:
+        pass
+    return response
+
+
+def dry_evaluate(
+    url: str, manifests_dir: str, fides_key: str = ""
+) -> requests.Response:
     """
     Rate a registry against all of the policies within an organization.
     """
@@ -43,11 +60,10 @@ def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
         object_type=object_type,
         json_object=_object.json(exclude_none=True),
     )
-
-    return response
+    return check_eval_result(response)
 
 
 def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
     """Run an evaluation on an existing system."""
     response = api.evaluate(url=url, object_type=object_type, fides_key=fides_key)
-    return response
+    return check_eval_result(response)

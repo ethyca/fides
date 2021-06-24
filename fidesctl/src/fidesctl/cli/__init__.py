@@ -37,9 +37,9 @@ def version() -> None:
     click.echo(fidesctl.__version__)
 
 
-####################
-### Generic Commands
-####################
+########################
+### Generic Commands ###
+########################
 @cli.command(hidden=True)
 @url_option
 @object_type_argument
@@ -108,9 +108,9 @@ def update(url: str, object_type: str, object_id: str, manifest: str) -> None:
     handle_cli_response(_api.update(url, object_type, object_id, parsed_manifest))
 
 
-#########
-### Special Commands
-#########
+########################
+### Special Commands ###
+########################
 @cli.command()
 @url_option
 @click.argument("manifest_dir", type=click.Path())
@@ -148,6 +148,9 @@ def generate_dataset(connection_string: str, output_filename: str) -> None:
     _generate_dataset.generate_dataset(connection_string, output_filename)
 
 
+################
+### Evaluate ###
+################
 @cli.command()
 @url_option
 @click.argument("manifest_dir", type=click.Path())
