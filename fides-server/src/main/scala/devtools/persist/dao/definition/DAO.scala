@@ -3,10 +3,11 @@ package devtools.persist.dao.definition
 import com.typesafe.scalalogging.LazyLogging
 import devtools.domain.definition.IdType
 import devtools.persist.db.BaseTable
+import devtools.util.Pagination
 import slick.dbio.{DBIOAction, Effect, NoStream}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
-import slick.lifted.CanBeQueryCondition
+import slick.lifted.{CanBeQueryCondition, Ordered}
 import slick.sql.FixedSqlAction
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,16 +23,6 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
   implicit def getResult: GetResult[E]
   val db: Database
 
-  def getAll: Future[Seq[E]] = db.run(query.result)
-
-  def findById(id: PK): Future[Option[E]] = db.run(findByIdAction(id))
-
-  def deleteAll(): Future[Int] =
-    db.run(sqlu"""TRUNCATE TABLE "#${query.baseTableRow.tableName}" """)
-
-  def filter[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Seq[E]] =
-    db.run(query.filter(expr).result)
-
   def count[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Int] =
     db.run(query.filter(expr).length.result)
 
@@ -39,9 +30,6 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
     count(expr).map(_ > 0)
 
   def runAction[R](action: DBIOAction[R, NoStream, Nothing]): Future[R] = db.run(action)
-
-  def findFirst[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
-    db.run(query.filter(expr).result.headOption)
 
   def create(record: E): Future[E] = db.run(createAction(record))
 
@@ -52,6 +40,42 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
   def delete[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Int] =
     db.run(query.filter(expr).delete)
 
+  // ---------------------------
+  // find
+  // ---------------------------
+
+  // pagination defaults
+  val DEFAULT_SORT: T => _ <: Rep[PK] = { t: T => t.id }
+  val DEFAULT_PAGINATION: Pagination = Pagination()
+
+  def getAll(pagination: Pagination): Future[Seq[E]] = getAllPaginated(_.id, pagination)
+
+  /** Support pagination values */
+  def getAllPaginated[C <: Rep[_]](sort: T => C, pagination: Pagination)(implicit ev: C => Ordered): Future[Seq[E]] =
+    db.run(query.sortBy(sort)(ev).drop(pagination.offset).take(pagination.limit).result)
+
+  def findById(id: PK): Future[Option[E]] = db.run(findByIdAction(id))
+
+  // by default we sort and return by id.
+  def filter[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Seq[E]] =
+    filterPaginated(expr, _.id, DEFAULT_PAGINATION)
+
+  /** Support pagination values */
+  def filterPaginated[SRT <: Rep[_], ORD <: Rep[_]](expr: T => ORD, sort: T => SRT, pagination: Pagination)(implicit
+    ev: SRT => Ordered,
+    wt: CanBeQueryCondition[ORD]
+  ): Future[Seq[E]] = db.run(query.filter(expr).sortBy(sort)(ev).drop(pagination.offset).take(pagination.limit).result)
+
+  def findFirst[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
+    db.run(query.filter(expr).result.headOption)
+
+  /** find the most recent value matching expr, sorting by id column. */
+  def mostRecent[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
+    db.run(query.filter(expr).sorted(_.id.desc).take(1).result.headOption)
+
+  // ------------------
+  // actions
+  // ------------------
   def createAction(record: E): FixedSqlAction[E, NoStream, Effect.Write]
 
   def updateAction(
@@ -62,9 +86,5 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
   def deleteAction(id: PK): DBIOAction[Int, NoStream, Effect.Write] = query.filter(_.id === id).delete
 
   def findByIdAction(id: PK): DBIOAction[Option[E], NoStream, Effect.Read] = query.filter(_.id === id).result.headOption
-
-  /** find the most recent value matching expr, sorting by id column. */
-  def mostRecent[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
-    db.run(query.filter(expr).sorted(_.id.desc).take(1).result.headOption)
 
 }

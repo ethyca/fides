@@ -4,7 +4,6 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.Generators.{blankSystem, fidesKey, randomText, requestContext}
 import devtools.domain.enums.AuditAction.{CREATE, DELETE, UPDATE}
 import devtools.domain.{AuditLog, Registry}
-import devtools.persist.dao.AuditLogDAO
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -17,14 +16,13 @@ import scala.concurrent.ExecutionContext
 class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils with BeforeAndAfterAll {
   private val systemDAO                           = App.systemDAO
   private val registryService                     = App.registryService
-  private val auditLogDAO: AuditLogDAO            = App.auditLogDAO
   implicit val executionContext: ExecutionContext = App.executionContext
 
   private var sys1 =
     blankSystem.copy(organizationId = 1, fidesKey = fidesKey, name = Some("child1"), description = Some(randomText()))
   private var sys2               = sys1.copy(fidesKey = fidesKey, name = Some("child2"), description = Some(randomText()))
   private var sys3               = sys2.copy(fidesKey = fidesKey, name = Some("child3"), description = Some(randomText()))
-  private var registry: Registry = Registry(0, 1, fidesKey, None, None, None, None, None, None)
+  private val registry: Registry = Registry(0, 1, fidesKey, None, None, None, None, None, None)
 
   override def beforeAll(): Unit = {
     sys1 = waitFor(systemDAO.create(sys1))
@@ -56,7 +54,7 @@ class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils wi
     insertedRegistry.versionStamp.get should be > startVersion
     val afterCreateVersion = currentVersionStamp(1)
     afterCreateVersion should be > startVersion
-    val logRecord: Seq[AuditLog] = waitFor(auditLogDAO.find(insertedRegistry.id, "Registry", CREATE))
+    val logRecord: Seq[AuditLog] = waitFor(findAuditLogs(insertedRegistry.id, "Registry", CREATE))
     logRecord.size shouldEqual 1
     logRecord.head.versionStamp shouldEqual insertedRegistry.versionStamp
 
@@ -73,14 +71,14 @@ class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils wi
     updatedResponse.versionStamp.get should be > afterCreateVersion
     val afterUpdateVersion = currentVersionStamp(1)
     afterUpdateVersion should be > afterCreateVersion
-    val logRecord2: Seq[AuditLog] = waitFor(auditLogDAO.find(insertedRegistry.id, "Registry", UPDATE))
+    val logRecord2: Seq[AuditLog] = waitFor(findAuditLogs(insertedRegistry.id, "Registry", UPDATE))
     logRecord2.size shouldEqual 1
     logRecord2.head.versionStamp shouldEqual updatedResponse.versionStamp
 
     //delete should increment the org version
     waitFor(registryService.delete(insertedRegistry.id, requestContext))
     // we should have 1 delete record in the audit log
-    waitFor(auditLogDAO.find(insertedRegistry.id, "Registry", DELETE)).size shouldEqual 1
+    waitFor(findAuditLogs(insertedRegistry.id, "Registry", DELETE)).size shouldEqual 1
     //Systems are not deleted but have their registry ids unset
     systemRegistryId(sys1.id) should be(None)
     systemRegistryId(sys2.id) should be(None)

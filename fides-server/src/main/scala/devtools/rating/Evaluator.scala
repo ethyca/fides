@@ -29,8 +29,8 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
     userId: Long,
     submitTag: Option[String],
     submitMessage: Option[String]
-  ): Future[Approval] = generateSystemApproval(sys, "evaluate", userId, submitTag, submitMessage).flatMap(daos.approvalDAO.create)
-
+  ): Future[Approval] =
+    generateSystemApproval(sys, "evaluate", userId, submitTag, submitMessage).flatMap(daos.approvalDAO.create)
 
   def systemDryRun(sys: SystemObject, userId: Long): Future[Approval] =
     generateSystemApproval(sys, "dry-run", userId, None, None)

@@ -20,11 +20,6 @@ class AuditLogDAO(val db: Database)(implicit val executionContext: ExecutionCont
   override def delete(id: Long): Future[Int] =
     Future.failed(new UnsupportedOperationException("deleting of audit log records is not supported"))
 
-  def find(objectId: Long, typeName: String, action: AuditAction): Future[Seq[AuditLog]] =
-    runAction(
-      query.filter(a => a.objectId === objectId && a.typeName === typeName && a.action === action.toString).result
-    )
-
   override implicit def getResult: GetResult[AuditLog] =
     r =>
       AuditLog.fromInsertable(

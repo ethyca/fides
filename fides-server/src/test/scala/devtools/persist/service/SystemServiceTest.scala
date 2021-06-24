@@ -1,13 +1,8 @@
 package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
-import devtools.Generators.{DeclarationGen, PolicyGen, blankSystem, requestContext}
-import devtools.domain.Approval
+import devtools.Generators.{DeclarationGen, blankSystem, requestContext}
 import devtools.domain.enums.AuditAction.{CREATE, DELETE, UPDATE}
-import devtools.domain.enums.PolicyAction.REJECT
-import devtools.domain.enums.RuleInclusion.{ALL, ANY, NONE}
-import devtools.domain.enums._
-import devtools.domain.policy.Declaration
 import devtools.persist.dao.{AuditLogDAO, OrganizationDAO, SystemDAO}
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
@@ -37,7 +32,7 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
       waitFor(systemService.create(blankSystem.copy(declarations = Seq(DeclarationGen.sample.get)), requestContext))
 
     // we should have 1 create record in the audit log
-    waitFor(auditLogDAO.find(v.id, "SystemObject", CREATE)).size shouldEqual 1
+    waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1
 
     systemIds.add(v.id)
 
@@ -47,13 +42,13 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     updatedResponse.description shouldEqual Some("description")
 
     // we should have 1 update record in the audit log
-    waitFor(auditLogDAO.find(v.id, "SystemObject", UPDATE)).size shouldEqual 1
+    waitFor(findAuditLogs(v.id, "SystemObject", UPDATE)).size shouldEqual 1
 
     //delete should increment the org version
 
     waitFor(systemService.delete(v.id, requestContext))
     // we should have 1 delete record in the audit log
-    waitFor(auditLogDAO.find(v.id, "SystemObject", DELETE)).size shouldEqual 1
+    waitFor(findAuditLogs(v.id, "SystemObject", DELETE)).size shouldEqual 1
 
   }
 

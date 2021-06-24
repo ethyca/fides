@@ -5,7 +5,6 @@ import devtools.controller.RequestContext
 import devtools.domain.SystemObject
 import devtools.persist.dao.DAOs
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
-import devtools.util.waitFor
 import devtools.validation.SystemValidator
 import slick.jdbc.MySQLProfile.api._
 
@@ -19,9 +18,6 @@ class SystemService(
   val ec: ExecutionContext
 ) extends AuditingService[SystemObject](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with LazyLogging with UniqueKeySearch[SystemObject] {
-
-  def searchInOrganization(organizationId: Long, value: String): Future[Seq[SystemObject]] =
-    daos.systemDAO.searchInOrganization(organizationId, value)
 
   /** retrieve an org id from the base type */
   override def orgId(t: SystemObject): Long = t.organizationId
