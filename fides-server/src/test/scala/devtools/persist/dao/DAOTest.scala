@@ -32,7 +32,7 @@ class DAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with T
     })
   }
   override def afterAll(): Unit = {
-  //    dao.delete(_.id inSet (ids.toSet))
+    //    dao.delete(_.id inSet (ids.toSet))
   }
 
   test("test pagination") {
