@@ -26,8 +26,6 @@ def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
     """
     Combine all of the manifests into a single dictionary,
     appending object values with the same keys.
-
-    If there is only one value in a list of keys, make sure it is still in a list.
     """
 
     key_lists: List[List[str]] = [list(manifest.keys()) for manifest in manifests]
