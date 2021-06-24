@@ -1,4 +1,5 @@
 """Module for evaluating systems and registries."""
+from json.decoder import JSONDecodeError
 from typing import Dict
 
 import requests
@@ -50,6 +51,11 @@ def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
 def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
     """Run an evaluation on an existing system."""
     response = api.evaluate(url=url, object_type=object_type, fides_key=fides_key)
-    
-    # inspect the response and change the status code if needed
+
+    # change the status_code if the evaluation didn't pass
+    try:
+        if response.json()["data"]["status"] != "PASS":
+            response.status_code = 404
+    except JSONDecodeError:
+        pass
     return response
