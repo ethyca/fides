@@ -3,7 +3,6 @@ package devtools.persist.dao
 import com.typesafe.scalalogging.LazyLogging
 import devtools.domain.AuditLog
 import devtools.domain.enums.AuditAction
-import devtools.persist.db.Tables.AuditLogQuery
 import devtools.util.{Pagination, waitFor}
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -19,36 +18,48 @@ class DAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with T
 
   implicit val executionContext: ExecutionContextExecutor = App.executionContext
 
-   val ids: HSet[Long] = new HSet[Long]
+  private val ids: HSet[Long] = new HSet[Long]
 
-  // for pagination we'll use audit log values, since they have
+  // for pagination we'll use audit log values
 
-  val dao: AuditLogDAO = App.auditLogDAO
+  private val dao: AuditLogDAO = App.auditLogDAO
+  private val auditActions     = AuditAction.values.toList
+  override def beforeAll(): Unit = {
 
-  override def beforeAll(): Unit ={
-    (1 to 100).foreach(i => {
-      val auditLog: AuditLog = waitFor(dao.create(auditLogOf(i.longValue(), AuditAction.CREATE, s"test-instance-$i")))
+    (1 to 30).foreach(i => {
+      val auditLog: AuditLog = waitFor(dao.create(auditLogOf(i.longValue(), auditActions(i % 3), s"test-instance-$i")))
       ids.add(auditLog.id)
-    }
+    })
   }
   override def afterAll(): Unit = {
     dao.delete(_.id inSet (ids.toSet))
   }
 
   test("test pagination") {
-      val setA: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10,0))).map(_.id).sorted
-      val setB: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10,10))).map(_.id).sorted
+    val setA: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 0))).map(_.id).sorted
+    val setB: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 10))).map(_.id).sorted
+    val setC: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 20))).map(_.id).sorted
 
     setA.size shouldEqual 10
     setB.size shouldEqual 10
+    setC.size shouldEqual 10
     // values are
-    setA.max should be  < setB.min
-
-
-
+    setA.max should be < setB.min
+    setB.max should be < setC.min
 
   }
 
-  test("test filter paginated") {}
+  test("test filter paginated") {
+    val testAction = auditActions(0)
+    val setA       = waitFor(dao.filterPaginated(_.action === testAction.toString, _.id, Pagination(5, 0)))
+    val setB       = waitFor(dao.filterPaginated(_.action === testAction.toString, _.id, Pagination(5, 5)))
+    setA.size shouldEqual 5
+    setB.size shouldEqual 5
+
+    setA.map(_.id).max should be < setB.map(_.id).min
+    setA.map(_.action).toSet shouldEqual Set(testAction)
+    setB.map(_.action).toSet shouldEqual Set(testAction)
+
+  }
 
 }

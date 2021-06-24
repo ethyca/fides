@@ -40,7 +40,6 @@ class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils wi
   test("test registry composite insert") {
     val startVersion = currentVersionStamp(1)
 
-    println("--" + sys1.id + " " + sys2.id + " " + sys3.id)
     //create a base with base c1, c2
     val insertedRegistry: Registry = waitFor(
       registryService.create(registry.copy(systems = Some(Left(Seq(sys1.id, sys2.id)))), requestContext)

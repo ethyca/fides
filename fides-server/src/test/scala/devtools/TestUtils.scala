@@ -1,5 +1,6 @@
 package devtools
 
+import com.typesafe.scalalogging.LazyLogging
 import devtools.Generators.{SystemObjectGen, _}
 import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
@@ -10,10 +11,9 @@ import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.{JsonSupport, Pagination, waitFor}
-import org.json4s.{Formats, JValue}
+import org.json4s.Formats
 import org.scalacheck.Gen
 import org.scalatest.matchers.{MatchResult, Matcher}
-
 import java.sql.Timestamp
 import scala.collection.Seq
 import scala.concurrent.Future
@@ -21,7 +21,7 @@ import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.{Random, Try}
 
-trait TestUtils {
+trait TestUtils extends LazyLogging {
 
   def randomInt: Int = Random.nextInt()
 
