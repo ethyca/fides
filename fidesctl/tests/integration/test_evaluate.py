@@ -70,7 +70,7 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
             name="declaration-name",
             dataCategories=["customer_content_data"],
             dataUse="provide",
-            dataSubjectCategories=[],
+            dataSubjectCategories=["customer"],
             dataQualifier="identified_data",
         )
     ]
