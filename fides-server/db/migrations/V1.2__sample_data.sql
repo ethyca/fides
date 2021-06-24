@@ -20,7 +20,7 @@ INSERT INTO POLICY_RULE(id, policy_id, organization_id, fides_key, description, 
 values (1,1,1,'test_policy_rule_1', 'random rule 1', '{"inclusion":"ANY","values":[ ]}','{"inclusion":"ANY","values":[ ]}',
         '{"inclusion":"NONE","values":[ "provide" ]}','unlinked_pseudonymized_data','REQUIRE');
 INSERT INTO POLICY_RULE(id, policy_id, organization_id, fides_key, description, data_categories, data_subject_categories, data_uses, data_qualifier, action)
-values (2,1,1,'test_policy_rule_2', 'random rule 2', '{"inclusion":"ANY","values":[ ]}','{"inclusion":"ANY","values":[ ]}',
+values (2,1,1,'test_policy_rule_2', 'random rule 2', '{"inclusion":"ANY","values":[ "customer_content_data" ]}','{"inclusion":"ANY","values":[ "customer" ]}',
         '{"inclusion":"ANY","values":[ "provide" ]}','identified_data','REJECT');
 
 INSERT INTO USER(id, organization_id, user_name, first_name, last_name, role) values (1,1,'demo1','Iama','Sample','ADMIN');
