@@ -12,15 +12,18 @@ import devtools.util.TreeCache
 class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  checks by taxonomy type ------------------
-
+  /** Categories matches the policy rule category value(s) */
   def categoriesMatch(organizationId: Long, categories: PolicyValueGrouping, declaration: Declaration): Boolean = {
     groupingMatch("categories", organizationId, daos.dataCategoryDAO, categories, declaration.dataCategories)
 
   }
+
+  /** Use matches the policy rule uses value */
   def usesMatch(organizationId: Long, uses: PolicyValueGrouping, declaration: Declaration): Boolean = {
     groupingMatch("data uses", organizationId, daos.dataUseDAO, uses, Set(declaration.dataUse))
   }
 
+  /** Subject categories matches the policy rule subject category value(s) */
   def subjectCategoriesMatch(
     organizationId: Long,
     subjectCategories: PolicyValueGrouping,
@@ -35,6 +38,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     )
   }
 
+  /** Qualifier matches the policy rule qualifier value */
   def qualifierMatches(
     organizationId: Long,
     qualifier: Option[DataQualifierName],
@@ -68,9 +72,8 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  support functions ------------------
 
-  private def isChildOf(trees: Set[TreeItem[_, _]], possibleChildKey: String): Set[Boolean] = {
-    trees.map { isChild(_, possibleChildKey) }
-  }
+
+  /** True iff the child key can be found in the input set or children (including root values). */
   private def isChild(tree: TreeItem[_, _], possibleChildKey: String): Boolean = {
     tree.exists { t: TreeItem[_, _] => t.fidesKey == possibleChildKey }
   }
@@ -102,6 +105,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     }
   }
 
+
   def groupingMatch[T <: TreeItem[T, Long]](
     label: String,
     organizationId: Long,
@@ -109,6 +113,11 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     policyGrouping: PolicyValueGrouping,
     declarationValues: Set[String]
   ): Boolean = {
+
+    def isChildOf(trees: Set[TreeItem[_, _]], possibleChildKey: String): Set[Boolean] = {
+      trees.map { isChild(_, possibleChildKey) }
+    }
+
     checkForMissingValues(organizationId, s"declaration $label", declarationValues, cache)
     checkForMissingValues(organizationId, s"policy rule $label", policyGrouping.values, cache)
 

@@ -14,6 +14,7 @@ trait Validator[T, PK] extends LazyLogging {
   /** Allow for separate validation logic for updates */
   def validateForUpdate(t: T, existingValue: T, ctx: RequestContext): Future[Unit] = validateForCreate(t, ctx)
 
+  /** Allow for separarte validation logic for deletions. */
   def validateForDelete(pk: PK, existingValue: T, ctx: RequestContext): Future[Unit] = Future.unit
 }
 

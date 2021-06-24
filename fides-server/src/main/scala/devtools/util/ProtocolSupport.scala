@@ -81,9 +81,14 @@ object JsonSupport extends LazyLogging {
         }
     }
 
+  /** String -> T */
   def parseToObj[T](s: String)(implicit formats: Formats = formats, manifest: Manifest[T]): Try[T] =
     loads(s) map { j => j.extract[T] }
 
+  /** T -> String */
+  def dumps[T <: AnyRef](t: T): String = Serialization.write(t)(formats)
+
+  /** String -> Json */
   def loads(s: String): Try[JValue] =
     try {
       Success(parse(s))
@@ -91,12 +96,13 @@ object JsonSupport extends LazyLogging {
       case e: Throwable => Failure(InvalidDataException(e.getMessage))
     }
 
-  def dumps[T <: AnyRef](t: T): String = Serialization.write(t)(formats)
-
+  /** Json -> formatted string */
   def prettyPrint(j: JValue): String = writePretty(j)
 
+  /** T -> Json */
   def toAST[T <: AnyRef](t: T): JValue = Extraction.decompose(t)
 
+  /** Json -> T */
   def fromAST[T](j: JValue)(implicit manifest: Manifest[T]): Try[T] = {
     try {
       Success(j.extract[T])
@@ -111,6 +117,7 @@ object JsonSupport extends LazyLogging {
     }
   }
 
+  /** Json -> YAML */
   def toYaml(j: JValue): YamlValue = {
     j match {
       case JNothing    => YamlNull
@@ -129,8 +136,14 @@ object JsonSupport extends LazyLogging {
     }
   }
 
-  def difference[T <: AnyRef](left: T, right: T): JsonAST.JObject = {
-    val Diff(changed, added, deleted) = JsonSupport.toAST[T](left) diff JsonSupport.toAST[T](right)
+  /** Generaete a report of differences from left -> right by key association:
+    *
+    *  changed: Values with same key but altered values
+    *  added: keys in right but not in left
+    *  deleted: keys in left but not in right
+    * */
+  def difference(left: JValue, right: JValue): JsonAST.JObject = {
+    val Diff(changed, added, deleted) = left diff right // JsonSupport.toAST[T](left) diff JsonSupport.toAST[T](right)
     ("changed" -> changed) ~ ("added" -> added) ~ ("deleted" -> deleted)
   }
 }
@@ -150,10 +163,13 @@ object YamlSupport {
       s.parseYaml()
     }
 
+  /** Yaml -> string */
   def dumps(y: YamlValue): String = y.prettyPrint
 
+  /** T -> YAML */
   def toAST[T](t: T)(implicit writer: YamlWriter[T]): YamlValue = t.toYaml
 
+  /** YAML -> T */
   def fromAST[T](y: YamlValue)(implicit reader: YamlReader[T]): Try[T] =
     try {
       Success(y.convertTo[T])
@@ -173,6 +189,7 @@ object YamlSupport {
         }
     }
 
+  /** YAML -> Json */
   def toJson(yaml: YamlValue): JValue = {
     yaml match {
       case YamlNumber(n) =>

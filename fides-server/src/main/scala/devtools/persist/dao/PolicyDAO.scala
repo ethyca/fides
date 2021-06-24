@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.policy.{Policy, PolicyRule}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.{policyQuery, policyRuleQuery}
 import devtools.persist.db.Tables.PolicyQuery
 import slick.dbio.{Effect, NoStream}
@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PolicyDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[Policy, Long, PolicyQuery](policyQuery) with AutoIncrementing[Policy, PolicyQuery]
-  with ByOrganization[Policy, PolicyQuery] {
+  with ByOrganizationDAO[Policy, PolicyQuery] {
 
   override def createAction(record: Policy): FixedSqlAction[Policy, NoStream, Effect.Write] =
     insertQuery += record.copy(id = 0, creationTime = None, lastUpdateTime = None)

@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.SystemObject
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.systemQuery
 import devtools.persist.db.Tables.SystemQuery
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -16,7 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[SystemObject, Long, SystemQuery](systemQuery) with AutoIncrementing[SystemObject, SystemQuery]
-  with ByOrganization[SystemObject, SystemQuery] {
+  with ByOrganizationDAO[SystemObject, SystemQuery] {
   override implicit def getResult: GetResult[SystemObject] =
     r =>
       SystemObject.fromInsertable(

@@ -22,11 +22,13 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       .flatMap(_ => errors.asFuture())
   }
 
+  /** Disallow self-reference in referenced systems. */
   def checkForSelfReference(sys: SystemObject, errors: MessageCollector): Unit =
     if (sys.systemDependencies.contains(sys.fidesKey)) {
       errors.addError(s"Invalid self reference: System ${sys.fidesKey} cannot declare a dependency on itself")
     }
 
+  /** If a registry id is specified, it must exist. */
   def validateRegistryExists(sys: SystemObject, errors: MessageCollector): Future[Unit] =
     sys.registryId match {
       case Some(rid) =>
@@ -38,6 +40,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       case _ => Future.unit
     }
 
+  /** Validate each declaration for valid members. */
   def validateDeclarations(sys: SystemObject, errors: MessageCollector): Unit = {
     /*map cannot be empty */
     if (sys.declarations.isEmpty) {

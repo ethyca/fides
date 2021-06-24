@@ -67,6 +67,15 @@ class JsonSupportTest extends AnyFunSuite with TestUtils {
     JsonSupport.parseToObj[EnumHolder](JsonSupport.dumps(e)) shouldEqual Success(e)
   }
 
+  test("test difference"){
+    val a = JsonSupport.toAST(Map("A"->1, "B"->2, "C"->3, "E"->5))
+    val b = JsonSupport.toAST(Map( "B"->2, "C"->3,"D"-> 4, "E"->6))
+    val a_to_b = JsonSupport.fromAST[Map[String,Any]](JsonSupport.difference(a,b)).get
+    val b_to_a = JsonSupport.fromAST[Map[String,Any]](JsonSupport.difference(b,a)).get
+    a_to_b shouldEqual Map("changed" -> Map("E" -> 6), "added" -> Map("D" -> 4), "deleted" -> Map("A" -> 1))
+    b_to_a shouldEqual Map("changed" -> Map("E" -> 5), "added" -> Map("A" -> 1), "deleted" -> Map("D" -> 4))
+  }
+
   test("test parse nested datasets") {
     val raw =
       """

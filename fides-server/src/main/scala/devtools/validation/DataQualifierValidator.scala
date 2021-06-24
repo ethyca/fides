@@ -15,6 +15,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
     requireParentIdExists(dq, new MessageCollector)
       .flatMap(requireOrganizationIdExists(dq.organizationId, _))
       .flatMap(_.asFuture())
+
   /** Require that organization id exists,
     * parent id exists,
     * any altered fides keys are not in use
@@ -31,6 +32,8 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
       }
       .flatMap(_.asFuture())
 
+  /** Deletion validations for taxonomy types have to ensure that those values are not referenced
+    * by any existing systems or policy rules. */
   override def validateForDelete(pk: Long, existing: DataQualifier, ctx: RequestContext): Future[Unit] =
     fidesKeyInUseInSystem(existing, new MessageCollector)
       .flatMap(fidesKeyInUseInSystem(existing, _))
@@ -38,6 +41,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
       .flatMap(hasChildren(pk, _))
       .flatMap(_.asFuture())
 
+  /**Add to errors (fail) if this qualifier has child values. since this would create orphan records. */
   def hasChildren(id: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.dataQualifierDAO.runAction(
       daos.dataQualifierDAO.query.filter(d => d.parentId === id).map(_.id).result
@@ -48,7 +52,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
       errors
     }
 
-  /** Require that the parent key exists or is 0 (root) */
+  /** Require that the parent key exists or that this value is a root value */
   def requireParentIdExists(dq: DataQualifier, errors: MessageCollector): Future[MessageCollector] =
     dq.parentId match {
 
@@ -64,6 +68,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
       case _ => Future.successful(errors)
     }
 
+  /** Add to errors if the data qualifier key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dq: DataQualifier, errors: MessageCollector): Future[MessageCollector] =
     daos.systemDAO
       .findSystemsWithJsonMember(dq.organizationId, dq.fidesKey, "dataQualifier")
@@ -74,6 +79,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
         errors
       }
 
+  /** Add to errors if the data qualifier key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dq: DataQualifier, errors: MessageCollector): Future[MessageCollector] =
     daos.policyRuleDAO.findPolicyRuleWithDataQualifer(dq.organizationId, dq.fidesKey).map { ruleIds =>
       if (ruleIds.nonEmpty) {

@@ -10,6 +10,7 @@ trait ValidateByOrganization {
   val daos: DAOs
   implicit val executionContext: ExecutionContext
 
+  /** Validate that the referenced organization exists. */
   def requireOrganizationIdExists(organizationId: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.organizationDAO.exists(_.id === organizationId).map { exists: Boolean =>
       if (!exists) {

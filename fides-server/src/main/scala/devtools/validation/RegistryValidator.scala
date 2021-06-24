@@ -11,6 +11,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistryValidator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
   extends Validator[Registry, Long] with ValidateByOrganization {
 
+  /** Validations:
+    *
+    * - require that referenced organization exists.
+    *
+    * - require that any included system ids exist, if they are posted as declared system ids.
+    **/
   def requireSystemIdsExists(
     organizationId: Long,
     declaredSystemIds: OneToMany[Long, SystemObject],

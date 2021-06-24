@@ -1,7 +1,7 @@
 package devtools.persist.dao
 
 import devtools.domain.{DataQualifier, DataQualifierTree}
-import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
+import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Queries.dataQualifierQuery
 import devtools.persist.db.Tables.DataQualifierQuery
 import devtools.util.TreeCache
@@ -19,7 +19,7 @@ class DataQualifierDAO(val db: Database)(implicit
   val executionContext: ExecutionContext
 ) extends DAO[DataQualifier, Long, DataQualifierQuery](dataQualifierQuery)
   with AutoIncrementing[DataQualifier, DataQualifierQuery] with TreeCache[DataQualifierTree, DataQualifier]
-  with ByOrganization[DataQualifier, DataQualifierQuery] {
+  with ByOrganizationDAO[DataQualifier, DataQualifierQuery] {
   cacheBuildAll()
 
   override def create(record: DataQualifier): Future[DataQualifier] = {

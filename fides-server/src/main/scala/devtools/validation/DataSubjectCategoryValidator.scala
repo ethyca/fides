@@ -37,6 +37,8 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       }
       .flatMap(_.asFuture())
 
+  /** Deletion validations for taxonomy types have to ensure that those values are not referenced
+    * by any existing systems or policy rules. */
   override def validateForDelete(pk: Long, existing: DataSubjectCategory, ctx: RequestContext): Future[Unit] =
     fidesKeyInUseInSystem(existing, new MessageCollector)
       .flatMap(fidesKeyInUseInSystem(existing, _))
@@ -44,6 +46,7 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       .flatMap(hasChildren(pk, _))
       .flatMap(_.asFuture())
 
+  /**Add to errors (fail) if this subject category has child values. since this would create orphan records. */
   def hasChildren(id: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.dataSubjectCategoryDAO.runAction(
       daos.dataSubjectCategoryDAO.query.filter(d => d.parentId === id).map(_.id).result
@@ -54,7 +57,7 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       errors
     }
 
-  /** Require that the parent key exists or is 0 (root) */
+  /** Require that the parent key exists or that this value is a root value */
   def requireParentIdExists(dq: DataSubjectCategory, errors: MessageCollector): Future[MessageCollector] =
     dq.parentId match {
       case Some(pid) =>
@@ -70,6 +73,7 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       case _ => Future.successful(errors)
     }
 
+  /** Add to errors if the data subject category key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dataUse: DataSubjectCategory, errors: MessageCollector): Future[MessageCollector] =
     daos.systemDAO
       .findSystemsWithJsonMember(dataUse.organizationId, dataUse.fidesKey, "dataSubjectCategories")
@@ -80,6 +84,7 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
         errors
       }
 
+  /** Add to errors if the data subject category key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dataUse: DataSubjectCategory, errors: MessageCollector): Future[MessageCollector] =
     daos.policyRuleDAO.findPolicyRuleWithSubjectCategory(dataUse.organizationId, dataUse.fidesKey).map { ruleIds =>
       if (ruleIds.nonEmpty) {

@@ -5,7 +5,7 @@ import devtools.exceptions.ValidationException
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.concurrent.Future
 
-/** collect messages, with special handling for errors */
+/** Collect messages, with special handling for errors */
 class MessageCollector(val warnings: MSet[String] = MSet(), val errors: MSet[String] = MSet()) {
 
   def addError(value: String): Unit = errors.add(value)
