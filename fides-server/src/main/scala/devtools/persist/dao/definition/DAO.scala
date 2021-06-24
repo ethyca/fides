@@ -45,26 +45,26 @@ abstract class DAO[E <: IdType[E, PK], PK: BaseColumnType, T <: BaseTable[E, PK]
   // ---------------------------
 
   // pagination defaults
-  val DEFAULT_SORT: T => _ <: Rep[PK] = { t: T => t.id }
+  val DEFAULT_SORT: T => Rep[PK]     = _.id
   val DEFAULT_PAGINATION: Pagination = Pagination()
 
-  def getAll(pagination: Pagination): Future[Seq[E]] = getAllPaginated(_.id, pagination)
+  def getAll(pagination: Pagination): Future[Seq[E]] = getAllPaginated(DEFAULT_SORT, pagination)
 
   /** Support pagination values */
   def getAllPaginated[C <: Rep[_]](sort: T => C, pagination: Pagination)(implicit ev: C => Ordered): Future[Seq[E]] =
     db.run(query.sortBy(sort)(ev).drop(pagination.offset).take(pagination.limit).result)
 
-  def findById(id: PK): Future[Option[E]] = db.run(findByIdAction(id))
-
   // by default we sort and return by id.
   def filter[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Seq[E]] =
-    filterPaginated(expr, _.id, DEFAULT_PAGINATION)
+    filterPaginated(expr, DEFAULT_SORT, DEFAULT_PAGINATION)
 
   /** Support pagination values */
   def filterPaginated[SRT <: Rep[_], ORD <: Rep[_]](expr: T => ORD, sort: T => SRT, pagination: Pagination)(implicit
     ev: SRT => Ordered,
     wt: CanBeQueryCondition[ORD]
   ): Future[Seq[E]] = db.run(query.filter(expr).sortBy(sort)(ev).drop(pagination.offset).take(pagination.limit).result)
+
+  def findById(id: PK): Future[Option[E]] = db.run(findByIdAction(id))
 
   def findFirst[C <: Rep[_]](expr: T => C)(implicit wt: CanBeQueryCondition[C]): Future[Option[E]] =
     db.run(query.filter(expr).result.headOption)

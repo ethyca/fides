@@ -18,6 +18,7 @@ trait ByOrganization[E <: IdType[E, Long] with OrganizationId, T <: BaseTable[E,
 
   def searchInOrganization(organizationId: Long, value: String, pagination: Pagination): Future[Seq[E]] = {
     val searchValue = s"%${value.toUpperCase()}%"
+
     db.run(
       query
         .filter(_.organizationId === organizationId)

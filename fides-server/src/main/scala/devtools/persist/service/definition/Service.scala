@@ -47,4 +47,5 @@ abstract class Service[E <: IdType[E, PK], PK](val dao: DAO[E, PK, _], validator
 
   def search(s: String, ctx: RequestContext, pagination: Pagination): Future[Seq[E]] =
     Future.failed(new UnsupportedOperationException("search is not yet supported for this type"))
+
 }

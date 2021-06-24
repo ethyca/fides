@@ -1,7 +1,6 @@
 package devtools.persist.dao
 
 import devtools.domain.AuditLog
-import devtools.domain.enums.AuditAction
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganization, DAO}
 import devtools.persist.db.Queries.auditLogQuery
 import devtools.persist.db.Tables.AuditLogQuery
@@ -39,8 +38,8 @@ class AuditLogDAO(val db: Database)(implicit val executionContext: ExecutionCont
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
     value: String
-  ): AuditLogQuery => MySQLProfile.api.Rep[Option[Boolean]] = {
-    { t: AuditLogQuery => (t.typeName.toUpperCase like value) || (t.action like value) || (t.change like value) }
+  ): AuditLogQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: AuditLogQuery =>
+    (t.typeName.toUpperCase like value) || (t.action like value) || (t.change like value)
 
   }
 }

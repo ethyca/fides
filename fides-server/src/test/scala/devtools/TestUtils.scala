@@ -10,7 +10,7 @@ import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.{JsonSupport, Pagination, waitFor}
-import org.json4s.Formats
+import org.json4s.{Formats, JValue}
 import org.scalacheck.Gen
 import org.scalatest.matchers.{MatchResult, Matcher}
 
@@ -62,6 +62,9 @@ trait TestUtils {
 
   def systemOf(fidesKeyName: String, declarations: Declaration*): SystemObject =
     SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, declarations = declarations)
+
+  def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
+    AuditLog(0, objectId, 1, None, 1, action, typeName, None, None, None, None)
 
   def datasetOf(name: String, tables: DatasetTable*): Dataset =
     Dataset(0, 1, name, None, None, None, None, None, Some(tables), None, None)
