@@ -10,6 +10,20 @@ from fidesctl.core.models import FidesModel
 from .utils import echo_red
 
 
+def check_eval_result(response: requests.Response):
+    """
+    Check for the result of the evaluation and flip
+    the status_code to a 400-level if it isn't passing.
+    """
+
+    try:
+        if response.json()["data"]["status"] != "PASS":
+            response.status_code = 500
+    except JSONDecodeError:
+        pass
+    return response
+
+
 def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
     """
     Rate a registry against all of the policies within an organization.
@@ -44,18 +58,10 @@ def dry_evaluate(url: str, manifests_dir: str, fides_key: str = "") -> None:
         object_type=object_type,
         json_object=_object.json(exclude_none=True),
     )
-
-    return response
+    return check_eval_result(response)
 
 
 def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
     """Run an evaluation on an existing system."""
     response = api.evaluate(url=url, object_type=object_type, fides_key=fides_key)
-
-    # change the status_code if the evaluation didn't pass
-    try:
-        if response.json()["data"]["status"] != "PASS":
-            response.status_code = 404
-    except JSONDecodeError:
-        pass
-    return response
+    return check_eval_result(response)
