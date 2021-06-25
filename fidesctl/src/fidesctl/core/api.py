@@ -97,11 +97,13 @@ def dry_evaluate(url: str, object_type: str, json_object: str) -> requests.Respo
     return requests.post(url, headers=headers, data=payload)
 
 
-def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
+def evaluate(
+    url: str, object_type: str, fides_key: str, tag: str, message: str
+) -> requests.Response:
     """
     Evaluate a registry based on organizational policies.
     """
     object_url = generate_object_url(url, object_type)
     url = f"{object_url}evaluate/{fides_key}"
     headers = generate_request_headers()
-    return requests.get(url, headers=headers)
+    return requests.get(url, headers=headers, params={"tag": tag, "message": message})
