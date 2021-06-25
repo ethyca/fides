@@ -95,7 +95,11 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
 
 def test_evaluate_system_pass(server_url, objects_dict):
     response = evaluate.evaluate(
-        url=server_url, object_type="system", fides_key="test_system_1"
+        url=server_url,
+        object_type="system",
+        fides_key="test_system_1",
+        tag="tag",
+        message="message",
     )
 
     print(response.json())
@@ -105,7 +109,11 @@ def test_evaluate_system_pass(server_url, objects_dict):
 
 def test_evaluate_registry_pass(server_url, objects_dict):
     response = evaluate.evaluate(
-        url=server_url, object_type="registry", fides_key="test"
+        url=server_url,
+        object_type="registry",
+        fides_key="test",
+        tag="tag",
+        message="message",
     )
 
     print(response.json())
