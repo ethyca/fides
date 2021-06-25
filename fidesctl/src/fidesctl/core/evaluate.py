@@ -63,7 +63,11 @@ def dry_evaluate(
     return check_eval_result(response)
 
 
-def evaluate(url: str, object_type: str, fides_key: str) -> requests.Response:
+def evaluate(
+    url: str, object_type: str, fides_key: str, tag: str, message: str
+) -> requests.Response:
     """Run an evaluation on an existing system."""
-    response = api.evaluate(url=url, object_type=object_type, fides_key=fides_key)
+    response = api.evaluate(
+        url=url, object_type=object_type, fides_key=fides_key, tag=tag, message=message
+    )
     return check_eval_result(response)

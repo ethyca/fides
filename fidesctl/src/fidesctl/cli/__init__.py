@@ -165,13 +165,21 @@ def dry_evaluate(url: str, manifest_dir: str, fides_key: str) -> None:
 
 @cli.command()
 @url_option
+@click.option("-t", "--tag", help="optional commit tag")
+@click.option("-m", "--message", help="optional commit message")
 @click.argument(
     "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
 )
 @click.argument("fides_key", type=str)
-def evaluate(url: str, object_type: str, fides_key: str) -> None:
+def evaluate(
+    url: str, object_type: str, fides_key: str, tag: str, message: str
+) -> None:
     """
     Evaluate a registry or system, either approving or denying
     based on organizational policies.
     """
-    handle_cli_response(_evaluate.evaluate(url, object_type, fides_key))
+
+    # if the version tag is none, use git tag if available
+    if tag is None:
+        tag = fidesctl.__version__
+    handle_cli_response(_evaluate.evaluate(url, object_type, fides_key, tag, message))
