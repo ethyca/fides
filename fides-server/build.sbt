@@ -59,6 +59,9 @@ lazy val root = (project in file("."))
       "org.scalatra" %% "scalatra-swagger" % "2.7.1",
       // views
       "org.scalatra" %% "scalatra-scalate" % "2.7.1",
+      // jwt
+      //"hu.blackbelt.karaf.features" % "bouncycastle" % "1.61.2",
+      "com.github.jwt-scala" %% "jwt-core" % "8.0.2",
       //cache
       //"com.github.blemale" % "scaffeine_2.13" % "4.0.2",
       // db support
@@ -122,7 +125,3 @@ wartremoverErrors ++= Seq(
   Wart.ListAppend,
   Wart.FinalCaseClass
 )
-
-
-
-

@@ -19,7 +19,7 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
   val executor: ExecutionContext,
   val manifest: Manifest[T],
   val pkManifest: Manifest[PK]
-) extends ControllerSupport with AuthenticationSupport {
+) extends ControllerSupport with JwtAuthenticationSupport {
 
   lazy val typeName: String               = manifest.runtimeClass.getSimpleName
   lazy val applicationDescription: String = s"$typeName API"

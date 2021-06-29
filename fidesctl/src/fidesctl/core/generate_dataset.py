@@ -14,6 +14,13 @@ def get_db_tables(engine: Engine) -> Dict[str, List[str]]:
     a database and their columns
     """
     inspector = sqlalchemy.inspect(engine)
+
+    for schema in inspector.get_schema_names():
+        for table in inspector.get_table_names(schema=schema):
+            print(f"{table}")
+            for column in inspector.get_columns(table):
+                print(f"     {column}")
+
     db_tables = {
         f"{schema}.{table}": [column["name"] for column in inspector.get_columns(table)]
         for schema in inspector.get_schema_names()
@@ -77,7 +84,7 @@ def generate_dataset(connection_string: str, file_name: str) -> None:
     and write out a boilerplate dataset manifest.
     """
     db_engine = get_db_engine(connection_string)
-    db_tables = get_db_tables(db_engine)
+    db_tables = get_db_tables()
     table_manifests = generate_table_manifests(db_tables)
     dataset_info = generate_dataset_info(db_engine)
     dataset_info["dataset"][0]["datasetTables"] = table_manifests
