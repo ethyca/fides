@@ -10,10 +10,11 @@ import devtools.domain.policy.{Declaration, Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
-import devtools.util.{JsonSupport, Pagination, waitFor}
+import devtools.util.{JsonSupport, JwtUtil, Pagination, waitFor}
 import org.json4s.Formats
 import org.scalacheck.Gen
 import org.scalatest.matchers.{MatchResult, Matcher}
+
 import java.sql.Timestamp
 import scala.collection.Seq
 import scala.concurrent.Future
@@ -362,7 +363,7 @@ object Generators {
     firstName <- Gen.option(genName)
     lastName  <- Gen.option(Gen.resultOf { _: Int => faker.Name.last_name })
     role      <- Gen.oneOf(Role.values)
-  } yield User(id, 1, userName, firstName, lastName, role, timestamp(), timestamp())
+  } yield User(id, 1, userName, firstName, lastName, role, JwtUtil.generateToken(), timestamp(), timestamp())
   val requestContext: RequestContext = RequestContext(UserGen.sample.get.copy(id = 1, organizationId = 1))
 
   private def domainObjectGenerators: Seq[Gen[_ <: AnyRef]] =

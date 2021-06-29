@@ -11,7 +11,8 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
 
   /** Validations:
     *
-    * - referenced organization exists. */
+    * - referenced organization exists.
+    */
   def validateForCreate(t: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
     requireOrganizationIdExists(t.organizationId, errors).flatMap(_.asFuture())

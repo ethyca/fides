@@ -59,6 +59,8 @@ lazy val root = (project in file("."))
       "org.scalatra" %% "scalatra-swagger" % "2.7.1",
       // views
       "org.scalatra" %% "scalatra-scalate" % "2.7.1",
+      // jwt
+      "com.github.jwt-scala" %% "jwt-core" % "8.0.2",
       //cache
       //"com.github.blemale" % "scaffeine_2.13" % "4.0.2",
       // db support
@@ -94,7 +96,7 @@ slickCodegenDatabaseUrl := dbConfUrl
 slickCodegenDatabaseUser := dbConfUser
 slickCodegenDatabasePassword := dbConfPass
 slickCodegenDriver := slick.jdbc.MySQLProfile
-slickCodegenJdbcDriver := "com.mysql.jdbc.Driver"
+slickCodegenJdbcDriver := "com.mysql.cj.jdbc.Driver"
 slickCodegenOutputPackage := "devtools.persist.tables.generated"
 slickCodegenOutputDir := file("src/main/scala")
 
@@ -122,7 +124,3 @@ wartremoverErrors ++= Seq(
   Wart.ListAppend,
   Wart.FinalCaseClass
 )
-
-
-
-

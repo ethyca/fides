@@ -72,7 +72,6 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  support functions ------------------
 
-
   /** True iff the child key can be found in the input set or children (including root values). */
   private def isChild(tree: TreeItem[_, _], possibleChildKey: String): Boolean = {
     tree.exists { t: TreeItem[_, _] => t.fidesKey == possibleChildKey }
@@ -104,7 +103,6 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
       throw InvalidDataException(s"No $typeKey values found with fides keys [${missing.mkString(",")}]")
     }
   }
-
 
   def groupingMatch[T <: TreeItem[T, Long]](
     label: String,

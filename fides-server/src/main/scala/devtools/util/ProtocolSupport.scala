@@ -141,7 +141,7 @@ object JsonSupport extends LazyLogging {
     *  changed: Values with same key but altered values
     *  added: keys in right but not in left
     *  deleted: keys in left but not in right
-    * */
+    */
   def difference(left: JValue, right: JValue): JsonAST.JObject = {
     val Diff(changed, added, deleted) = left diff right // JsonSupport.toAST[T](left) diff JsonSupport.toAST[T](right)
     ("changed" -> changed) ~ ("added" -> added) ~ ("deleted" -> deleted)

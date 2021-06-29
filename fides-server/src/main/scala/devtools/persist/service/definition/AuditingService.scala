@@ -16,10 +16,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 /** Extension of a service by organization that creates audit log entries on CREATE/UPDATE/DELETE operations. */
 abstract class AuditingService[E <: IdType[E, Long] with OrganizationId](
-                                                                          dao: DAO[E, Long, _ <: BaseAutoIncTable[E] with OrganizationIdTable[E]] with ByOrganizationDAO[E, _],
-                                                                          auditLogDAO: AuditLogDAO,
-                                                                          organizationDAO: OrganizationDAO,
-                                                                          validator: Validator[E, Long]
+  dao: DAO[E, Long, _ <: BaseAutoIncTable[E] with OrganizationIdTable[E]] with ByOrganizationDAO[E, _],
+  auditLogDAO: AuditLogDAO,
+  organizationDAO: OrganizationDAO,
+  validator: Validator[E, Long]
 )(implicit ec: ExecutionContext, m: Manifest[E])
   extends ByOrganizationService[E](dao, validator) {
 
@@ -44,8 +44,8 @@ abstract class AuditingService[E <: IdType[E, Long] with OrganizationId](
 
   def updateValue(t: E, previous: E, orgId: Long, versionStamp: Option[Long], userId: Long): AuditLog = {
     val from: JValue = JsonSupport.toAST[E](previous)
-    val to: JValue = JsonSupport.toAST[E](t)
-    val diff = difference(from, to)
+    val to: JValue   = JsonSupport.toAST[E](t)
+    val diff         = difference(from, to)
     AuditLog(
       0,
       t.id,

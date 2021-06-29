@@ -12,6 +12,7 @@ final case class User(
   firstName: Option[String],
   lastName: Option[String],
   role: Role,
+  apiKey: String,
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends IdType[User, Long] with OrganizationId {
@@ -20,7 +21,8 @@ final case class User(
 
 object User {
 
-  type Tupled = (Long, Long, String, Option[String], Option[String], String, Option[Timestamp], Option[Timestamp])
+  type Tupled =
+    (Long, Long, String, Option[String], Option[String], String, String, Option[Timestamp], Option[Timestamp])
 
   def toInsertable(s: User): Option[Tupled] =
     Some(
@@ -30,6 +32,7 @@ object User {
       s.firstName,
       s.lastName,
       s.role.toString,
+      s.apiKey,
       None,
       None
     )
@@ -43,7 +46,8 @@ object User {
       t._5,
       Role.fromString(t._6).get,
       t._7,
-      t._8
+      t._8,
+      t._9
     )
 
 }

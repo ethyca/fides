@@ -2,13 +2,18 @@
 from typing import Dict
 
 import requests
+from .utils import jwt_encode
 
 
 def generate_request_headers() -> Dict[str, str]:
     """
     Generate the headers for a request.
     """
-    return {"Content-Type": "application/json", "user-id": "1"}
+    return {
+        "Content-Type": "application/json",
+        "user-id": "1",
+        "Authorization": "Bearer %s" % jwt_encode(1, "test_api_key"),
+    }
 
 
 def generate_object_url(
