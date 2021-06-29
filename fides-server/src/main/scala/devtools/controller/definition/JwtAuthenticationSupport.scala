@@ -1,5 +1,6 @@
 package devtools.controller.definition
 
+import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
 import devtools.domain.User
 import devtools.persist.dao.UserDAO
@@ -16,7 +17,7 @@ import scala.util.{Failure, Success, Try}
   * This is a temporary implementation to support user management development on the CLI.
   * We will probably need something a bit more ... robust.
   */
-trait JwtAuthenticationSupport extends ScalatraBase {
+trait JwtAuthenticationSupport extends ScalatraBase with LazyLogging {
 
   /** Temporary "declare that I am user X" placeholder authentication */
   val UserIdHeader = "user-id"
@@ -70,7 +71,10 @@ trait JwtAuthenticationSupport extends ScalatraBase {
   def validateToken(request: HttpServletRequest, user: User): Unit =
     extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey)) match {
       case Some(m) if m("uid") == user.id.toString => ()
-      case _                                       => halt(status = 401, headers = Map("WWW-Authenticate" -> "Invalid token"))
+      case _                                       => {
+        logger.info(s"401: ${request.getRequestURI}")
+        halt(status = 401, headers = Map("WWW-Authenticate" -> "Invalid token"))
+      }
     }
 
 }

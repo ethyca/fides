@@ -23,7 +23,7 @@ INSERT INTO POLICY_RULE(id, policy_id, organization_id, fides_key, description, 
 values (2,1,1,'test_policy_rule_2', 'random rule 2', '{"inclusion":"ANY","values":[ "customer_content_data" ]}','{"inclusion":"ANY","values":[ "customer" ]}',
         '{"inclusion":"ANY","values":[ "provide" ]}','identified_data','REJECT');
 
-INSERT INTO USER(id, organization_id, user_name, first_name, last_name, role, api_key) values (1,1,'demo1','Iama','Sample','ADMIN','dkaPKLidht05a2QemEIJvefxaifoPkxqpZlHyE23');
+INSERT INTO USER(id, organization_id, user_name, first_name, last_name, role, api_key) values (1,1,'demo1','Iama','Sample','ADMIN','test_api_key');
 
 INSERT INTO APPROVAL( organization_id, system_id, user_id, version_stamp, status, action) values (1,1,1,0,'PASS','test data');
 

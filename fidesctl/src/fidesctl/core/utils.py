@@ -2,7 +2,7 @@
 import logging
 from functools import partial
 from json.decoder import JSONDecodeError
-
+import jwt
 import click
 import requests
 import sqlalchemy
@@ -46,3 +46,10 @@ def get_db_engine(connection_string: str) -> Engine:
         echo_red(f"Database connection failed with engine:\n{engine}!")
         raise SystemExit(err)
     return engine
+
+
+def jwt_encode(user_id: int, api_key: str) -> str:
+    """
+    Encode user information into server-required JWT token
+    """
+    return jwt.encode({"uid": user_id}, api_key, algorithm="HS256")
