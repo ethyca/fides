@@ -34,7 +34,6 @@ trait JwtAuthenticationSupport extends ScalatraBase {
   before() {
     // we check the host where the request is made
     val userId: Option[String] = Option(request.getHeader(UserIdHeader))
-    val token = Option(request.getHeader("Authorization"))
 
     userId match {
       case None => halt(status = 401, body = "No user id set", headers = Map("WWW-Authenticate" -> "user-id"))
@@ -53,7 +52,6 @@ trait JwtAuthenticationSupport extends ScalatraBase {
                 validateToken(request, user)
                 requestContext.user = user
                 requestContext.organizationId = user.organizationId
-
             }
         }
     }
@@ -64,15 +62,15 @@ trait JwtAuthenticationSupport extends ScalatraBase {
   // -------------------------------------------------
   private val headerTokenRegex = """Bearer (.+?)""".r
 
-  def extractToken(request:HttpServletRequest): Option[String] =
+  def extractToken(request: HttpServletRequest): Option[String] =
     Option(request.getHeader("Authorization")) collect {
       case headerTokenRegex(token) => token
     }
 
-  def validateToken(request:HttpServletRequest, user:User):Unit = {
-    extractToken(request).flatMap(JwtUtil.decodeClaim(_,user.apiKey)) match {
-      case Some(m) if m("user-id") == user.id.toString =>
-      case _ => halt(status = 401, headers = Map("WWW-Authenticate" -> "Invalid token"))
+  def validateToken(request: HttpServletRequest, user: User): Unit =
+    extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey)) match {
+      case Some(m) if m("uid") == user.id.toString => ()
+      case _                                       => halt(status = 401, headers = Map("WWW-Authenticate" -> "Invalid token"))
     }
-  }
+
 }

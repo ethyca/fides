@@ -60,7 +60,6 @@ lazy val root = (project in file("."))
       // views
       "org.scalatra" %% "scalatra-scalate" % "2.7.1",
       // jwt
-      //"hu.blackbelt.karaf.features" % "bouncycastle" % "1.61.2",
       "com.github.jwt-scala" %% "jwt-core" % "8.0.2",
       //cache
       //"com.github.blemale" % "scaffeine_2.13" % "4.0.2",
@@ -97,7 +96,7 @@ slickCodegenDatabaseUrl := dbConfUrl
 slickCodegenDatabaseUser := dbConfUser
 slickCodegenDatabasePassword := dbConfPass
 slickCodegenDriver := slick.jdbc.MySQLProfile
-slickCodegenJdbcDriver := "com.mysql.jdbc.Driver"
+slickCodegenJdbcDriver := "com.mysql.cj.jdbc.Driver"
 slickCodegenOutputPackage := "devtools.persist.tables.generated"
 slickCodegenOutputDir := file("src/main/scala")
 

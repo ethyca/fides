@@ -5,7 +5,8 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.{HashSet => MSet, ArrayStack => MStack, ListBuffer => MBuffer}
 
 /** Iterate through a node graoh expressed as a set of { String -> Set[String]}
-  * and report if any loops exist in the graph. */
+  * and report if any loops exist in the graph.
+  */
 object CycleDetector extends LazyLogging {
 
   private class Node(

@@ -12,7 +12,8 @@ class DatasetTableValidator(daos: DAOs)(implicit val executionContext: Execution
 
   /** Validations:
     *
-    * - parent table exists */
+    * - parent table exists
+    */
   def validateForCreate(t: DatasetTable, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
     requireDatasetExists(t.datasetId, errors).flatMap { _ => errors.asFuture() }

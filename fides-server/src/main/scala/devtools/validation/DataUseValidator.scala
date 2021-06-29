@@ -33,7 +33,8 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       .flatMap(_.asFuture())
 
   /** Deletion validations for taxonomy types have to ensure that those values are not referenced
-    * by any existing systems or policy rules. */
+    * by any existing systems or policy rules.
+    */
   override def validateForDelete(pk: Long, existing: DataUse, ctx: RequestContext): Future[Unit] =
     fidesKeyInUseInSystem(existing, new MessageCollector)
       .flatMap(fidesKeyInUseInSystem(existing, _))
@@ -41,7 +42,7 @@ class DataUseValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       .flatMap(hasChildren(pk, _))
       .flatMap(_.asFuture())
 
-  /** Add to errors (fail) if this use has child values. since this would create orphan records.*/
+  /** Add to errors (fail) if this use has child values. since this would create orphan records. */
   def hasChildren(id: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.dataUseDAO.runAction(
       daos.dataUseDAO.query.filter(d => d.parentId === id).map(_.id).result

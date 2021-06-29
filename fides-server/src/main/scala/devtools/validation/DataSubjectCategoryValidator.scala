@@ -38,7 +38,8 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       .flatMap(_.asFuture())
 
   /** Deletion validations for taxonomy types have to ensure that those values are not referenced
-    * by any existing systems or policy rules. */
+    * by any existing systems or policy rules.
+    */
   override def validateForDelete(pk: Long, existing: DataSubjectCategory, ctx: RequestContext): Future[Unit] =
     fidesKeyInUseInSystem(existing, new MessageCollector)
       .flatMap(fidesKeyInUseInSystem(existing, _))
@@ -46,7 +47,7 @@ class DataSubjectCategoryValidator(val daos: DAOs)(implicit val executionContext
       .flatMap(hasChildren(pk, _))
       .flatMap(_.asFuture())
 
-  /**Add to errors (fail) if this subject category has child values. since this would create orphan records. */
+  /** Add to errors (fail) if this subject category has child values. since this would create orphan records. */
   def hasChildren(id: Long, errors: MessageCollector): Future[MessageCollector] =
     daos.dataSubjectCategoryDAO.runAction(
       daos.dataSubjectCategoryDAO.query.filter(d => d.parentId === id).map(_.id).result

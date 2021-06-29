@@ -11,7 +11,8 @@ class PolicyValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
   /** Validations:
     *
-    * - require that referenced organization exists.*/
+    * - require that referenced organization exists.
+    */
   def validateForCreate(p: Policy, ctx: RequestContext): Future[Unit] =
     requireOrganizationIdExists(p.organizationId, new MessageCollector)
       .flatMap(_.asFuture())

@@ -136,7 +136,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit val PolicyRuleAspectGroupingFormat: YamlFormat[PolicyValueGrouping] = yamlFormat2(PolicyValueGrouping)
 
   /* domain objects */
-  implicit val UserFormat: YamlFormat[User]              = withOptionalLongId[User](yamlFormat8(User.apply))
+  implicit val UserFormat: YamlFormat[User]              = withOptionalLongId[User](yamlFormat9(User.apply))
   implicit lazy val ApprovalFormat: YamlFormat[Approval] = withOptionalLongId[Approval](yamlFormat12(Approval.apply))
   implicit val AuditLogFormat: YamlFormat[AuditLog]      = withOptionalLongId[AuditLog](yamlFormat11(AuditLog.apply))
   implicit val DataQualifierFormat: YamlFormat[DataQualifier] =

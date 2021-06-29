@@ -7,7 +7,8 @@ import slick.jdbc.MySQLProfile.api._
 import slick.sql.FixedSqlAction
 
 /** Support for tables with a primary key that auto increments.
-  * In practice all tables are currently defined this way.  */
+  * In practice all tables are currently defined this way.
+  */
 trait AutoIncrementing[E <: IdType[E, Long], T <: BaseAutoIncTable[E]] {
   val db: Database
   val query: slick.lifted.TableQuery[T]

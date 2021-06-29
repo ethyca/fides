@@ -361,8 +361,8 @@ object Tables {
     val userName: Rep[String]                  = column[String]("user_name")
     val firstName: Rep[Option[String]]         = column[Option[String]]("first_name")
     val lastName: Rep[Option[String]]          = column[Option[String]]("last_name")
-    val role: Rep[String]                      = column[String]("role"
-    val apiKey: Rep[String] = column[String]("api_key")
+    val role: Rep[String]                      = column[String]("role")
+    val apiKey: Rep[String]                    = column[String]("api_key")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
     val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_update_time", O.AutoInc)
     def * =

@@ -3,4 +3,4 @@
 fides.db.jdbc.url="jdbc:mysql://localhost:3306/devtools"
 fides.db.jdbc.user=dpcp
 fides.db.jdbc.password=dpcp
-fides.db.driver=com.mysql.jdbc.Driver
+fides.db.driver=com.mysql.cj.jdbc.Driver

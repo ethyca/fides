@@ -20,13 +20,13 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
 
   implicit def executionContext: ExecutionContext
 
-  /** Unlimited retrieva (should not be used directly in services).  */
+  /** Unlimited retrieva (should not be used directly in services). */
   def getAll: Future[Seq[BaseType]] = getAll(Pagination.unlimited)
 
-  /** Retrieve all based on applied pagination limits.  */
+  /** Retrieve all based on applied pagination limits. */
   def getAll(pagination: Pagination): Future[Seq[BaseType]]
 
-  /** Find all based on organization id.  */
+  /** Find all based on organization id. */
   def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[BaseType]]
 
   private val caches: MHashMap[Long, Map[Long, V]] = new MHashMap
