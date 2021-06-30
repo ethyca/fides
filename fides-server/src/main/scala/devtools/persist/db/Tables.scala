@@ -165,26 +165,6 @@ object Tables {
       ) <> (Dataset.fromInsertable, Dataset.toInsertable)
   }
 
-  /** Table description of table DATASET_FIELD. Objects of this class serve as prototypes for rows in queries. */
-  class DatasetTableQuery(tag: Tag) extends BaseAutoIncTable[DatasetTable](tag, "DATASET_TABLE") {
-
-    val datasetId: Rep[Long]                   = column[Long]("dataset_id")
-    val name: Rep[String]                      = column[String]("name")
-    val description: Rep[Option[String]]       = column[Option[String]]("description")
-    val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
-    val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_update_time", O.AutoInc)
-    def * =
-      (
-        id,
-        datasetId,
-        name,
-        description,
-        creationTime,
-        lastUpdateTime
-      ) <> (DatasetTable.fromInsertable, DatasetTable.toInsertable)
-
-  }
-
   class DatasetFieldQuery(tag: Tag) extends BaseAutoIncTable[DatasetField](tag, "DATASET_FIELD") {
 
     val datasetTableId: Rep[Long]              = column[Long]("dataset_table_id")
@@ -265,9 +245,8 @@ object Tables {
         description
       ) <> (DataQualifier.fromInsertable, DataQualifier.toInsertable)
   }
-  class DataSubjectCategoryQuery(tag: Tag)
-    extends BaseAutoIncTable[DataSubjectCategory](tag, "DATA_SUBJECT_CATEGORY")
-    with OrganizationIdTable[DataSubjectCategory] {
+  class DataSubjectQuery(tag: Tag)
+    extends BaseAutoIncTable[DataSubject](tag, "DATA_SUBJECT") with OrganizationIdTable[DataSubject] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
@@ -280,7 +259,7 @@ object Tables {
         fidesKey,
         name,
         description
-      ) <> (DataSubjectCategory.fromInsertable, DataSubjectCategory.toInsertable)
+      ) <> (DataSubject.fromInsertable, DataSubject.toInsertable)
   }
   class RegistryQuery(tag: Tag)
     extends BaseAutoIncTable[Registry](tag, "REGISTRY") with OrganizationIdTable[Registry]

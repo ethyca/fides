@@ -111,11 +111,11 @@ trait TestUtils extends LazyLogging {
 
 object Generators {
 
-  def versionStamp: Option[Long]              = Some(Math.abs(Random.nextLong()))
-  val availableDataQualifiers: Seq[String]    = App.dataQualifierDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDataUses: Seq[String]          = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDataCategories: Seq[String]    = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableSubjectCategories: Seq[String] = App.dataSubjectCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  def versionStamp: Option[Long]           = Some(Math.abs(Random.nextLong()))
+  val availableDataQualifiers: Seq[String] = App.dataQualifierDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataUses: Seq[String]       = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataCategories: Seq[String] = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataSubjects: Seq[String]   = App.dataSubjectDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDatasets: Seq[String] =
     waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
   val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
@@ -207,21 +207,6 @@ object Generators {
       timestamp(),
       timestamp()
     )
-  val DatasetTableGen: Gen[DatasetTable] =
-    for {
-      id: Int   <- Gen.posNum[Int]
-      datasetId <- Gen.posNum[Int]
-      name      <- genLongName
-      fields    <- Gen.option(smallListGen(2, 5, DatasetFieldGen))
-    } yield DatasetTable(
-      id,
-      datasetId,
-      name,
-      Some(randomText()),
-      fields.map(_.toSeq),
-      timestamp(),
-      timestamp()
-    )
 
   val DatasetGen: Gen[Dataset] =
     for {
@@ -260,11 +245,11 @@ object Generators {
       clause  <- Gen.option(genVersionString)
       name    <- Gen.resultOf { _: Int => faker.Name.name }
     } yield DataQualifier(id, None, 1, fidesKey, Some(name), clause, Some(randomText()))
-  val DataSubjectCategoryGen: Gen[DataSubjectCategory] =
+  val DataSubjectGen: Gen[DataSubject] =
     for {
       id: Int <- Gen.posNum[Int]
       name    <- Gen.resultOf { _: Int => faker.Name.name }
-    } yield DataSubjectCategory(id, None, 1, fidesKey, Some(name), Some(randomText()))
+    } yield DataSubject(id, None, 1, fidesKey, Some(name), Some(randomText()))
   val DeclarationGen: Gen[Declaration] =
     for {
       name      <- genName
@@ -275,7 +260,7 @@ object Generators {
       smallSetOf(1, 4, availableDataCategories),
       use,
       qualifier,
-      smallSetOf(1, 4, availableSubjectCategories)
+      smallSetOf(1, 4, availableDataSubjects)
     )
   val OrgGen: Gen[Organization] =
     for {
@@ -295,7 +280,7 @@ object Generators {
       dataCategory      <- PolicyValueGroupingGenOf(availableDataCategories)
       dataQualifier     <- Gen.option(Gen.oneOf(availableDataQualifiers))
       dataUses          <- PolicyValueGroupingGenOf(availableDataUses)
-      subjectCategories <- PolicyValueGroupingGenOf(availableSubjectCategories)
+      subjectCategories <- PolicyValueGroupingGenOf(availableDataSubjects)
       action            <- Gen.oneOf(PolicyAction.values)
     } yield {
       PolicyRule(
@@ -371,7 +356,7 @@ object Generators {
       ApprovalGen,
       DataCategoryGen,
       DataQualifierGen,
-      DataSubjectCategoryGen,
+      DataSubjectGen,
       DataUseGen,
       DeclarationGen,
       OrgGen,

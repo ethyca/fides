@@ -32,7 +32,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     groupingMatch(
       "data subject categories",
       organizationId,
-      daos.dataSubjectCategoryDAO,
+      daos.dataSubjectDAO,
       subjectCategories,
       declaration.dataSubjectCategories
     )

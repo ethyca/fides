@@ -10,6 +10,7 @@ final case class DatasetField(
   id: Long,
   datasetTableId: Long,
   name: String,
+  path: String,
   description: Option[String],
   dataCategories: Option[Set[String]],
   dataQualifier: Option[String],

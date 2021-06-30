@@ -1,6 +1,6 @@
 package devtools.validation
 
-import devtools.domain.{DataCategoryName, DataQualifierName, DataSubjectCategoryName, DataUseName}
+import devtools.domain.{DataCategoryName, DataQualifierName, DataSubjectName, DataUseName}
 import devtools.persist.dao.DAOs
 
 import scala.concurrent.ExecutionContext
@@ -16,10 +16,10 @@ trait ValidateByTaxonomy {
   /** Require that all values listed as a data subject category exist */
   def validateDataSubjectCategories(
     organizationId: Long,
-    categories: Set[DataSubjectCategoryName],
+    categories: Set[DataSubjectName],
     errors: MessageCollector
   ): Unit = {
-    val foundStrings = daos.dataSubjectCategoryDAO.cacheGetAll(organizationId).values.map(_.fidesKey).toSet
+    val foundStrings = daos.dataSubjectDAO.cacheGetAll(organizationId).values.map(_.fidesKey).toSet
     categories
       .diff(foundStrings)
       .foreach((s: String) => errors.addError(s"The value '$s' given as a data subject category does not exist."))

@@ -11,14 +11,16 @@ final case class SystemObject(
   id: Long,
   organizationId: Long,
   registryId: Option[Long],
+  metadata: Option[Map[String, Any]],
   fidesKey: String,
   versionStamp: Option[Long],
-  fidesSystemType: Option[String],
-  name: Option[String],
+  //fidesSystemType: Option[String], (renamed)
+  systemType: Option[String],
+  //name: Option[String],
   description: Option[String],
-  declarations: Seq[Declaration],
+  privacyDeclarations: Seq[Declaration],
   systemDependencies: Set[String],
-  datasets: Set[String],
+  //datasets: Set[String],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends WithFidesKey[SystemObject, Long] with VersionStamp with OrganizationId {

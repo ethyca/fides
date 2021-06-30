@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS DATASET_FIELD(
 -- ------------------------------
 --  Taxonomny types
 -- ------------------------------
-CREATE TABLE IF NOT EXISTS DATA_SUBJECT_CATEGORY (
+CREATE TABLE IF NOT EXISTS DATA_SUBJECT (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     organization_id BIGINT,
     parent_id INT,

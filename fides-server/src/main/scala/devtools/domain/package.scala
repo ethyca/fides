@@ -11,7 +11,7 @@ package object domain {
   /** Data qualifier taxonomy value string */
   type DataQualifierName = String
   /** Data subject taxonomy value string */
-  type DataSubjectCategoryName = String
+  type DataSubjectName = String
   /** String that should map to a defined dataset name. */
   type DatasetName = String
 

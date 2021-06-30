@@ -6,7 +6,16 @@ import devtools.domain.enums._
 import devtools.domain.policy.PolicyRule
 import devtools.domain.{DatasetField, DatasetTable}
 import devtools.exceptions.InvalidDataException
-import net.jcazevedo.moultingyaml.{YamlArray, YamlBoolean, YamlNull, YamlNumber, YamlObject, YamlSet, YamlString, YamlValue}
+import net.jcazevedo.moultingyaml.{
+  YamlArray,
+  YamlBoolean,
+  YamlNull,
+  YamlNumber,
+  YamlObject,
+  YamlSet,
+  YamlString,
+  YamlValue
+}
 import org.json4s.JsonAST.JString
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization

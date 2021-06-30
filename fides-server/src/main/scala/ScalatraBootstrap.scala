@@ -17,7 +17,7 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(datasetTableController, "/v1/dataset-table")
     context.mount(datasetFieldController, "/v1/dataset-field")
     context.mount(dataUseController, "/v1/data-use")
-    context.mount(dataSubjectCategoryController, "/v1/data-subject-category")
+    context.mount(dataSubjectController, "/v1/data-subject")
     context.mount(dataCategoryController, "/v1/data-category")
     context.mount(dataQualifierController, "/v1/data-qualifier")
     context.mount(policyController, "/v1/policy")

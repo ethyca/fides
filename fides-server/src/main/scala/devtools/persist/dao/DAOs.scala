@@ -12,9 +12,8 @@ class DAOs(
   val policyRuleDAO: PolicyRuleDAO,
   val registryDAO: RegistryDAO,
   val systemDAO: SystemDAO,
-  val dataSubjectCategoryDAO: DataSubjectCategoryDAO,
+  val dataSubjectDAO: DataSubjectDAO,
   val userDAO: UserDAO,
   val datasetDAO: DatasetDAO,
-  val datasetTableDAO: DatasetTableDAO,
   val datasetFieldDAO: DatasetFieldDAO
 ) {}

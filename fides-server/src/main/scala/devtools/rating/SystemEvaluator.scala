@@ -221,7 +221,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       .map { t: ((DataQualifierName, DataUseName), Iterable[Declaration]) =>
         val categories = daos.dataCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataCategories).toSet)
         val subjectCategories =
-          daos.dataSubjectCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjectCategories).toSet)
+          daos.dataSubjectDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjectCategories).toSet)
         Declaration(t._2.map(_.name).toSet.mkString(","), categories, t._1._2, t._1._1, subjectCategories)
       }
       .toSet
@@ -249,7 +249,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
       val categoryDiff = daos.dataCategoryDAO.diff(organizationId, rCategories, lCategories)
       val subjectCategoryDiff =
-        daos.dataSubjectCategoryDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
+        daos.dataSubjectDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
       Declaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
     }.toSet

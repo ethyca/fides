@@ -35,7 +35,7 @@ class AdminController(val daos: DAOs, val swagger: Swagger)(implicit val executo
           d <- daos.dataQualifierDAO.delete(_.organizationId === id)
           e <- daos.dataUseDAO.delete(_.organizationId === id)
           f <- daos.systemDAO.delete(_.organizationId === id)
-          g <- daos.dataSubjectCategoryDAO.delete(_.organizationId === id)
+          g <- daos.dataSubjectDAO.delete(_.organizationId === id)
           h <- daos.userDAO.delete(_.organizationId === id)
 
         } yield (a, b, c, d, e, f, g, h)
@@ -43,7 +43,7 @@ class AdminController(val daos: DAOs, val swagger: Swagger)(implicit val executo
         daos.dataCategoryDAO.cacheDelete(id)
         daos.dataQualifierDAO.cacheDelete(id)
         daos.dataUseDAO.cacheDelete(id)
-        daos.dataSubjectCategoryDAO.cacheDelete(id)
+        daos.dataSubjectDAO.cacheDelete(id)
 
         asyncResponse(
           responses.map(t =>

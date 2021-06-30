@@ -28,7 +28,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule1"
     )
@@ -41,7 +41,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule2"
     )
@@ -53,7 +53,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule3"
     )
@@ -65,7 +65,7 @@ class RatingTestData extends TestUtils {
     PolicyValueGrouping(ANY, availableDataUses.toSet),
     //dataQualifier
     "pseudonymized_data",
-    PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+    PolicyValueGrouping(ANY, availableDataSubjects.toSet),
     REJECT,
     "rule4"
   )

@@ -8,13 +8,13 @@ import java.sql.Timestamp
 final case class Dataset(
   id: Long,
   organizationId: Long,
+  metadata: Option[Map[String, Any]],
   fidesKey: String,
   versionStamp: Option[Long],
-  name: Option[String],
   description: Option[String],
   location: Option[String],
   datasetType: Option[String],
-  tables: Option[Seq[DatasetTable]],
+  fields: Option[Seq[DatasetField]],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends WithFidesKey[Dataset, Long] with VersionStamp with OrganizationId {

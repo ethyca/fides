@@ -8,5 +8,6 @@ final case class Declaration(
   dataCategories: Set[DataCategoryName],
   dataUse: DataUseName,
   dataQualifier: DataQualifierName,
-  dataSubjectCategories: Set[DataSubjectCategoryName]
+  dataSubjects: Set[DataSubjectName],
+  references: Set[String]
 )

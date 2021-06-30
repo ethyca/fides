@@ -122,21 +122,21 @@ insert into DATA_USE(id,parent_id, organization_id, fides_key, `name`, clause,de
 insert into DATA_USE(id,parent_id, organization_id, fides_key, `name`, clause,description) values(13,NULL,1,"train_ai_system","Train (AI system)","9.3.9","Use the specified data categories from the source scope to train, retrain or test an artificial intelligence (AI) system. The AI system can use machine learning technologies, or it can use other technologies.
 Cloud service providers describing the use of data to train AI systems should include a statement addressing the extent to which individuals are directly identified in the resulting AI system. The data identification qualifiers in 8.3 could be used as the basis for this description. If there is PII in the resulting AI system, then additional statements are likely required, e.g. about data retention periods.");
 
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (1,NULL,1,'anonymous_user','Anonymous User','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (2,NULL,1, 'citizen_voter', 'Citizen / Voter','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (3,NULL,1, 'commuter', 'Commuter','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (4,NULL,1, 'consultant', 'Consultant','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (5,NULL,1, 'customer', 'Customer','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (6,NULL,1, 'employee', 'Employee','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (7,NULL,1, 'job_applicant', 'Job Applicant','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (8,NULL,1, 'next_of_kin', 'Next of Kin','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (9,NULL,1, 'passenger', 'Passenger','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (10,NULL,1, 'patient', 'Patient','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (11,NULL,1, 'prospect', 'Prospect','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (12,NULL,1, 'shareholder', 'Shareholder','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (13,NULL,1, 'supplier_vendor', 'Supplier / Vendor','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (14,NULL,1, 'trainee', 'Trainee','');
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key, `name`, description) values (15,NULL,1,'visitor', 'Visitor','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (1,NULL,1,'anonymous_user','Anonymous User','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (2,NULL,1, 'citizen_voter', 'Citizen / Voter','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (3,NULL,1, 'commuter', 'Commuter','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (4,NULL,1, 'consultant', 'Consultant','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (5,NULL,1, 'customer', 'Customer','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (6,NULL,1, 'employee', 'Employee','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (7,NULL,1, 'job_applicant', 'Job Applicant','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (8,NULL,1, 'next_of_kin', 'Next of Kin','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (9,NULL,1, 'passenger', 'Passenger','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (10,NULL,1, 'patient', 'Patient','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (11,NULL,1, 'prospect', 'Prospect','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (12,NULL,1, 'shareholder', 'Shareholder','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (13,NULL,1, 'supplier_vendor', 'Supplier / Vendor','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (14,NULL,1, 'trainee', 'Trainee','');
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (15,NULL,1,'visitor', 'Visitor','');
 
 
 -- some trees at id 0 for taxonomy testing:
@@ -189,18 +189,18 @@ insert into DATA_USE(id, parent_id, organization_id, fides_key) values(25,21, 3,
 insert into DATA_USE(id, parent_id, organization_id, fides_key) values(26,25, 3, "ub21");
 insert into DATA_USE(id, parent_id, organization_id, fides_key) values(27,25, 3, "ub22");
 
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(16,NULL, 3, "sa");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(17,16, 3, "sa1");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(18,17, 3, "sa11");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(19,17, 3, "sa12");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(20,16, 3, "sa2");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(21,20, 3, "sa21");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(22,20, 3, "sa22");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(16,NULL, 3, "sa");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(17,16, 3, "sa1");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(18,17, 3, "sa11");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(19,17, 3, "sa12");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(20,16, 3, "sa2");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(21,20, 3, "sa21");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(22,20, 3, "sa22");
 
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(23,NULL, 3, "sb");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(24,23, 3, "sb1");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(25,24, 3, "sb11");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(26,24, 3, "sb12");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(27,23, 3, "sb2");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(28,27, 3, "sb21");
-insert into DATA_SUBJECT_CATEGORY(id, parent_id, organization_id, fides_key) values(29,27, 3, "sb22");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(23,NULL, 3, "sb");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(24,23, 3, "sb1");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(25,24, 3, "sb11");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(26,24, 3, "sb12");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(27,23, 3, "sb2");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(28,27, 3, "sb21");
+insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key) values(29,27, 3, "sb22");
