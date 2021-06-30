@@ -5,7 +5,7 @@ import devtools.domain.definition.WithFidesKey
 import devtools.domain.enums.PolicyAction.REJECT
 import devtools.domain.enums.PolicyValueGrouping
 import devtools.domain.enums.RuleInclusion.ANY
-import devtools.domain.policy.{Declaration, Policy}
+import devtools.domain.policy.{PrivacyDeclaration, Policy}
 import devtools.domain.{Dataset, Registry, SystemObject}
 import devtools.util.waitFor
 import devtools.{App, TestUtils}

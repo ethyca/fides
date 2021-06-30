@@ -2,7 +2,7 @@ package devtools.rating
 
 import devtools.domain.enums.PolicyValueGrouping
 import devtools.domain.enums.RuleInclusion.{ALL, ANY, NONE}
-import devtools.domain.policy.Declaration
+import devtools.domain.policy.PrivacyDeclaration
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite

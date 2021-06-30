@@ -2,7 +2,7 @@ package devtools.domain.policy
 
 import devtools.domain._
 
-final case class Declaration(
+final case class PrivacyDeclaration(
   /** A name field to make reporting clearer. */
   name: String,
   dataCategories: Set[DataCategoryName],

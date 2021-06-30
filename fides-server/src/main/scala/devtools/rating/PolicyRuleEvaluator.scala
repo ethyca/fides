@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.definition.TreeItem
 import devtools.domain.enums._
-import devtools.domain.policy.{Declaration, PolicyRule}
+import devtools.domain.policy.{PrivacyDeclaration, PolicyRule}
 import devtools.exceptions.InvalidDataException
 import devtools.persist.dao.DAOs
 import devtools.util.TreeCache
@@ -13,13 +13,13 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  checks by taxonomy type ------------------
   /** Categories matches the policy rule category value(s) */
-  def categoriesMatch(organizationId: Long, categories: PolicyValueGrouping, declaration: Declaration): Boolean = {
+  def categoriesMatch(organizationId: Long, categories: PolicyValueGrouping, declaration: PrivacyDeclaration): Boolean = {
     groupingMatch("categories", organizationId, daos.dataCategoryDAO, categories, declaration.dataCategories)
 
   }
 
   /** Use matches the policy rule uses value */
-  def usesMatch(organizationId: Long, uses: PolicyValueGrouping, declaration: Declaration): Boolean = {
+  def usesMatch(organizationId: Long, uses: PolicyValueGrouping, declaration: PrivacyDeclaration): Boolean = {
     groupingMatch("data uses", organizationId, daos.dataUseDAO, uses, Set(declaration.dataUse))
   }
 
@@ -27,7 +27,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
   def subjectCategoriesMatch(
     organizationId: Long,
     subjectCategories: PolicyValueGrouping,
-    declaration: Declaration
+    declaration: PrivacyDeclaration
   ): Boolean = {
     groupingMatch(
       "data subject categories",
@@ -42,7 +42,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
   def qualifierMatches(
     organizationId: Long,
     qualifier: Option[DataQualifierName],
-    declaration: Declaration
+    declaration: PrivacyDeclaration
   ): Boolean = {
     //an empty dataQualifier will always match, as it's "unqualified data"
     qualifier match {
@@ -56,7 +56,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
   }
 
   /** return Some(action) for a matching rule, or None if the rule does not match */
-  def matches(rule: PolicyRule, declaration: Declaration): Option[PolicyAction] = {
+  def matches(rule: PolicyRule, declaration: PrivacyDeclaration): Option[PolicyAction] = {
     val c = categoriesMatch(rule.organizationId, rule.dataCategories, declaration)
     val u = usesMatch(rule.organizationId, rule.dataUses, declaration)
     val q = qualifierMatches(rule.organizationId, rule.dataQualifier, declaration)

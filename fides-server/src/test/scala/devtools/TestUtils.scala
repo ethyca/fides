@@ -6,7 +6,7 @@ import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{Declaration, Policy, PolicyRule}
+import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -61,7 +61,7 @@ trait TestUtils extends LazyLogging {
   def policyOf(fidesKeyName: String, rules: PolicyRule*): Policy =
     Policy(0, 1, fidesKeyName, None, None, None, Some(rules), None, None)
 
-  def systemOf(fidesKeyName: String, declarations: Declaration*): SystemObject =
+  def systemOf(fidesKeyName: String, declarations: PrivacyDeclaration*): SystemObject =
     SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, declarations = declarations)
 
   def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
@@ -133,7 +133,7 @@ object Generators {
       Some("DATABASE"),
       None,
       None,
-      scala.Seq[Declaration](),
+      scala.Seq[PrivacyDeclaration](),
       Set(),
       Set(),
       None,
@@ -250,7 +250,7 @@ object Generators {
       id: Int <- Gen.posNum[Int]
       name    <- Gen.resultOf { _: Int => faker.Name.name }
     } yield DataSubject(id, None, 1, fidesKey, Some(name), Some(randomText()))
-  val DeclarationGen: Gen[Declaration] =
+  val DeclarationGen: Gen[PrivacyDeclaration] =
     for {
       name      <- genName
       use       <- Gen.oneOf(availableDataUses)

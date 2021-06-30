@@ -2,7 +2,7 @@ package devtools.domain
 
 import devtools.App
 import devtools.Generators.SystemObjectGen
-import devtools.domain.policy.Declaration
+import devtools.domain.policy.PrivacyDeclaration
 import devtools.exceptions.InvalidDataException
 import devtools.util.{FidesYamlProtocols, waitFor}
 import faker._

@@ -8,9 +8,10 @@ import java.sql.Timestamp
 final case class Dataset(
   id: Long,
   organizationId: Long,
-  metadata: Option[Map[String, Any]],
   fidesKey: String,
   versionStamp: Option[Long],
+  metadata: Option[Map[String, Any]],
+  name: Option[String],
   description: Option[String],
   location: Option[String],
   datasetType: Option[String],

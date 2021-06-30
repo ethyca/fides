@@ -3,7 +3,7 @@ package devtools.util
 import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{Declaration, Policy, PolicyRule}
+import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
 import net.jcazevedo.moultingyaml.{
   DefaultYamlProtocol,
   YamlArray,
@@ -130,7 +130,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   def withOptionalLongId[T](baseFormatter: YamlFormat[T]): YamlFormat[T] =
     withOptionalValues(Map("id" -> 0L), baseFormatter)
 
-  implicit val DeclarationFormat: YamlFormat[Declaration] = yamlFormat5(Declaration.apply)
+  implicit val DeclarationFormat: YamlFormat[PrivacyDeclaration] = yamlFormat5(PrivacyDeclaration.apply)
 
   /* policy rule structures */
   implicit val PolicyRuleAspectGroupingFormat: YamlFormat[PolicyValueGrouping] = yamlFormat2(PolicyValueGrouping)

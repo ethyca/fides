@@ -2,7 +2,7 @@ package devtools.rating
 
 import devtools.Generators.SystemObjectGen
 import devtools.domain.enums.ApprovalStatus
-import devtools.domain.policy.Declaration
+import devtools.domain.policy.PrivacyDeclaration
 import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -62,7 +62,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   private def use_root2 = "personalize"
   test("test system declaration dependencies") {
 
-    def testDependencies(parent: Seq[Declaration], child: Seq[Declaration]): Seq[String] = {
+    def testDependencies(parent: Seq[PrivacyDeclaration], child: Seq[PrivacyDeclaration]): Seq[String] = {
       val s1 = systemOf("a").copy(systemDependencies = Set("b"), declarations = parent)
       val s2 = systemOf("b").copy(declarations = child)
       systemEvaluator.checkDeclarationsOfDependentSystems(s1, Seq(s2))
@@ -109,7 +109,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     type DatasetSpec = (String, Set[String]) //(qualifier, categories)
 
-    def testDependencies(declarations: Seq[Declaration], datasetSpecs: Seq[DatasetSpec]): Seq[String] = {
+    def testDependencies(declarations: Seq[PrivacyDeclaration], datasetSpecs: Seq[DatasetSpec]): Seq[String] = {
       val s1 = systemOf("a").copy(declarations = declarations)
       val dataset = datasetOf(
         "b",
@@ -143,13 +143,13 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
     //dataset qualifier and/or categories represent a wider gamut than the system declaration
     /*
     testDependencies(
-      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(PrivacyDeclaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
       Seq(( q_child, Set(cat_root1)))
     )  should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //dataset contains more open qualifier and category
     testDependencies(
-      Seq(Declaration("test2", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))),
+      Seq(PrivacyDeclaration("test2", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))),
       Seq((q_child , Set(cat_root1)))
     )  should containMatchString("The system b includes privacy declarations that do not exist in a")
      */
@@ -157,7 +157,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   }
 
   test("test merge declarations") {
-    def merge(declarations: Declaration*) = systemEvaluator.mergeDeclarations(3L, declarations)
+    def merge(declarations: PrivacyDeclaration*) = systemEvaluator.mergeDeclarations(3L, declarations)
 
     //merge identical elements should return same element
     merge(
@@ -214,7 +214,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   test("test diff declarations") {
 
-    def diff(aDecs: Seq[Declaration], bDecs: Seq[Declaration]): Set[Declaration] =
+    def diff(aDecs: Seq[PrivacyDeclaration], bDecs: Seq[PrivacyDeclaration]): Set[PrivacyDeclaration] =
       systemEvaluator.diffDeclarations(3L, aDecs, bDecs)
 
     //diff of identitcal
