@@ -1,20 +1,12 @@
 package devtools.util
 
 import com.typesafe.scalalogging.LazyLogging
+import devtools.controller.definition.ApiResponse
 import devtools.domain.enums._
 import devtools.domain.policy.PolicyRule
 import devtools.domain.{DatasetField, DatasetTable}
 import devtools.exceptions.InvalidDataException
-import net.jcazevedo.moultingyaml.{
-  YamlArray,
-  YamlBoolean,
-  YamlNull,
-  YamlNumber,
-  YamlObject,
-  YamlSet,
-  YamlString,
-  YamlValue
-}
+import net.jcazevedo.moultingyaml.{YamlArray, YamlBoolean, YamlNull, YamlNumber, YamlObject, YamlSet, YamlString, YamlValue}
 import org.json4s.JsonAST.JString
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
@@ -58,6 +50,7 @@ object JsonSupport extends LazyLogging {
     ("id" -> 0L) ~ ("policyId" -> 0L),
     DefaultFormats + RuleInclusion.jsonFormat + PolicyAction.jsonFormat
   )
+
   implicit lazy val formats: Formats = DefaultFormats +
     ApprovalStatus.jsonFormat +
     Role.jsonFormat +

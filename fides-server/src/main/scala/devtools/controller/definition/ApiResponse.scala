@@ -14,9 +14,9 @@ object ApiResponse extends LazyLogging {
 
   def success(t: Any): ActionResult = Ok(ApiResponse(data = Some(t)))
 
-  def failure(e: Throwable): ActionResult = BadRequest(ApiResponse(errors = errorsFromThrowable(e)))
+  def failure(e: Throwable): ActionResult = BadRequest(ApiResponse(errors = errorsFromThrowable(e), data=Some(Seq())))
 
-  def failure(msg: String): ActionResult = BadRequest(ApiResponse(errors = Seq(msg)))
+  def failure(msg: String): ActionResult = BadRequest(ApiResponse (errors = Seq(msg), data=Some(Seq())))
 
   def fromTry[T](f: Try[T]): ActionResult =
     f match {
