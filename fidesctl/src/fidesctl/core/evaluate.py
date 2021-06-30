@@ -17,7 +17,8 @@ def check_eval_result(response: requests.Response) -> requests.Response:
     """
 
     try:
-        if response.json()["data"]["status"] != "PASS":
+        data = response.json()["data"]
+        if (not "status" in data) or data["status"] != "PASS":
             response.status_code = 500
     except JSONDecodeError:
         pass
