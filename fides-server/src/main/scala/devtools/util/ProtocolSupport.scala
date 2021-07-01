@@ -1,20 +1,13 @@
 package devtools.util
 
 import com.typesafe.scalalogging.LazyLogging
+
 import devtools.domain.DatasetField
+import devtools.controller.definition.ApiResponse
 import devtools.domain.enums._
 import devtools.domain.policy.PolicyRule
 import devtools.exceptions.InvalidDataException
-import net.jcazevedo.moultingyaml.{
-  YamlArray,
-  YamlBoolean,
-  YamlNull,
-  YamlNumber,
-  YamlObject,
-  YamlSet,
-  YamlString,
-  YamlValue
-}
+import net.jcazevedo.moultingyaml.{YamlArray, YamlBoolean, YamlNull, YamlNumber, YamlObject, YamlSet, YamlString, YamlValue}
 import org.json4s.JsonAST.JString
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
