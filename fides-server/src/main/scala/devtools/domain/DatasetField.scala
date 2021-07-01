@@ -9,7 +9,7 @@ final case class DatasetField(
   id: Long,
   datasetId: Long,
   name: String,
-  path: String,
+  path: Option[String],
   description: Option[String],
   dataCategories: Option[Set[String]],
   dataQualifier: Option[String],
@@ -28,7 +28,7 @@ final case class DatasetField(
 object DatasetField {
 
   type Tupled =
-    (Long, Long, String, String, Option[String], Option[String], Option[String], Option[Timestamp], Option[Timestamp])
+    (Long, Long, String, Option[String], Option[String], Option[String], Option[String], Option[Timestamp], Option[Timestamp])
 
   def toInsertable(s: DatasetField): Option[Tupled] =
     Some(

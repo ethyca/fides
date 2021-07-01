@@ -46,7 +46,7 @@ class SystemObjectTest
     s shouldEqual fromInsertable
 
     /* trying to parse a value where the input is invalid json fails.*/
-    assertThrows[InvalidDataException] { SystemObject.fromInsertable(toInsertable.copy(_6 = Some("[Not valid json"))) }
+    assertThrows[InvalidDataException] { SystemObject.fromInsertable(toInsertable.copy(_10 = "[Not valid json")) }
   }
 
   test("search for category string") {

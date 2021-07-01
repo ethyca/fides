@@ -16,12 +16,12 @@ CREATE TABLE IF NOT EXISTS SYSTEM_OBJECT(
     registry_id INT,
     fides_key VARCHAR(100) NOT NULL,
     version_stamp BIGINT,
-    fides_system_type VARCHAR(100),
+    metadata JSON,
     `name` VARCHAR(100),
     description VARCHAR(1000),
-    declarations JSON NOT NULL,
+    system_type VARCHAR(100),
+    privacy_declarations JSON NOT NULL,
     system_dependencies JSON NOT NULL,
-    datasets JSON NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT unique_system_fides_key UNIQUE (fides_key, organization_id),
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS REGISTRY (
     organization_id BIGINT NOT NULL,
     fides_key VARCHAR(100) NOT NULL,
     version_stamp BIGINT,
+    metadata JSON,
     `name` VARCHAR(100),
     description VARCHAR(1000),
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -128,35 +129,28 @@ CREATE TABLE IF NOT EXISTS DATASET(
     organization_id BIGINT NOT NULL,
     fides_key VARCHAR(100) NOT NULL,
     version_stamp BIGINT,
+    metadata JSON,
     `name` VARCHAR(100),
     description VARCHAR(1000),
-    dataset_location VARCHAR(100),
+    location VARCHAR(100),
     dataset_type VARCHAR(50),
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT unique_dataset_fides_key UNIQUE (fides_key, organization_id),
     FOREIGN KEY (organization_id) REFERENCES ORGANIZATION(id) ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS DATASET_TABLE(
+
+CREATE TABLE IF NOT EXISTS DATASET_FIELD(
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     dataset_id BIGINT NOT NULL,
     `name` VARCHAR(100) NOT NULL,
-    description VARCHAR(1000),
-    creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT unique_dataset_table_name UNIQUE (name, dataset_id),
-    FOREIGN KEY (dataset_id) REFERENCES DATASET(id) ON DELETE CASCADE
-);
-CREATE TABLE IF NOT EXISTS DATASET_FIELD(
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    dataset_table_id BIGINT NOT NULL,
-    `name` VARCHAR(100) NOT NULL,
+    `path` VARCHAR(1000),
     description VARCHAR(1000),
     data_categories JSON,
     data_qualifier  VARCHAR(100),
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (dataset_table_id) REFERENCES DATASET_TABLE(id) ON DELETE CASCADE
+    FOREIGN KEY (dataset_id) REFERENCES DATASET(id) ON DELETE CASCADE
 );
 
 -- ------------------------------

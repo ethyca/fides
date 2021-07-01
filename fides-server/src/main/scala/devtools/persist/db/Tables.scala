@@ -171,7 +171,7 @@ object Tables {
 
     val datasetId: Rep[Long]                   = column[Long]("dataset_id")
     val name: Rep[String]                      = column[String]("name")
-    val path: Rep[String]                      = column[String]("path")
+    val path: Rep[Option[String]]                      = column[Option[String]]("path")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val dataCategories: Rep[Option[String]]    = column[Option[String]]("data_categories")
     val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")

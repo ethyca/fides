@@ -7,9 +7,9 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 class DatasetFieldValidatorTest
   extends ValidatorTestBase[DatasetField, Long](DatasetFieldGen, App.datasetFieldDAO, App.datasetFieldValidator) {
 
-  test("create requires belonging to a table with a valid organization") {
-    createValidationErrors(_.copy(datasetId = randomLong)) should containMatchString("no parent")
-  }
+//  test("create requires belonging to a dataset with a valid organization") {
+//    createValidationErrors(_.copy(datasetId = randomLong)) should containMatchString("no parent")
+//  }
 
   test("create requires categories to exist") {
     createValidationErrors(
