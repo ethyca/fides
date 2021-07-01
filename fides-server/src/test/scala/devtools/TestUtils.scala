@@ -6,7 +6,7 @@ import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{Declaration, Policy, PolicyRule}
+import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -61,23 +61,21 @@ trait TestUtils extends LazyLogging {
   def policyOf(fidesKeyName: String, rules: PolicyRule*): Policy =
     Policy(0, 1, fidesKeyName, None, None, None, Some(rules), None, None)
 
-  def systemOf(fidesKeyName: String, declarations: Declaration*): SystemObject =
-    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, declarations = declarations)
+  def systemOf(fidesKeyName: String, declarations: PrivacyDeclaration*): SystemObject =
+    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, privacyDeclarations = declarations)
 
   def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
-    AuditLog(0, objectId, 1, None, 1, action, typeName, None, None, None, None)
+    AuditLog(0L, objectId, 1, None, 1, action, typeName, None, None, None, None)
 
-  def datasetOf(name: String, tables: DatasetTable*): Dataset =
-    Dataset(0, 1, name, None, None, None, None, None, Some(tables), None, None)
-
-  def datasetTableOf(name: String, fields: DatasetField*): DatasetTable =
-    DatasetTable(0, 0, name, None, Some(fields), None, None)
+  def datasetOf(name: String, fields: DatasetField*): Dataset =
+    Dataset(0L, 1L, name, None, None, None, None, None, None, Some(fields), None, None)
 
   def datasetFieldOf(name: String): DatasetField =
     DatasetField(
-      0,
-      0,
+      0L,
+      0L,
       name,
+      Some("path"),
       None,
       Some(smallSetOf(0, 5, availableDataCategories)),
       Some(oneOf(availableDataQualifiers)),
@@ -111,11 +109,11 @@ trait TestUtils extends LazyLogging {
 
 object Generators {
 
-  def versionStamp: Option[Long]              = Some(Math.abs(Random.nextLong()))
-  val availableDataQualifiers: Seq[String]    = App.dataQualifierDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDataUses: Seq[String]          = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDataCategories: Seq[String]    = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableSubjectCategories: Seq[String] = App.dataSubjectCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  def versionStamp: Option[Long]           = Some(Math.abs(Random.nextLong()))
+  val availableDataQualifiers: Seq[String] = App.dataQualifierDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataUses: Seq[String]       = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataCategories: Seq[String] = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
+  val availableDataSubjects: Seq[String]   = App.dataSubjectDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDatasets: Seq[String] =
     waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
   val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
@@ -125,16 +123,16 @@ object Generators {
   def randomText(): String = faker.Lorem.sentence()
   def blankSystem: SystemObject =
     SystemObject(
-      0,
-      1,
+      0L,
+      1L,
       None,
       fidesKey,
       None,
+      None,
+      None,
+      None,
       Some("DATABASE"),
-      None,
-      None,
-      scala.Seq[Declaration](),
-      Set(),
+      scala.Seq[PrivacyDeclaration](),
       Set(),
       None,
       None
@@ -162,9 +160,9 @@ object Generators {
 
   val ApprovalGen: Gen[Approval] =
     for {
-      id        <- Gen.posNum[Int]
-      objectId  <- Gen.posNum[Int] //TODO system in test org
-      userId    <- Gen.posNum[Int] //TODO user in test org
+      id        <- Gen.posNum[Long]
+      objectId  <- Gen.posNum[Long] //TODO system in test org
+      userId    <- Gen.posNum[Long] //TODO user in test org
       status    <- Gen.oneOf(ApprovalStatus.values)
       actionStr <- Gen.oneOf(Seq("rate", "create", "update"))
     } yield Approval(
@@ -193,53 +191,40 @@ object Generators {
    */
   val DatasetFieldGen: Gen[DatasetField] =
     for {
-      id             <- Gen.posNum[Int]
-      datasetTableId <- Gen.posNum[Int]
+      id             <- Gen.posNum[Long]
+      datasetTableId <- Gen.posNum[Long]
       name           <- genLongName
       dataQualifier  <- Gen.option(Gen.oneOf(availableDataQualifiers))
     } yield DatasetField(
       id,
       datasetTableId,
       name,
+      Some("path"),
       Some(randomText()),
       Some(smallSetOf(1, 4, availableDataCategories)),
       dataQualifier,
       timestamp(),
       timestamp()
     )
-  val DatasetTableGen: Gen[DatasetTable] =
-    for {
-      id: Int   <- Gen.posNum[Int]
-      datasetId <- Gen.posNum[Int]
-      name      <- genLongName
-      fields    <- Gen.option(smallListGen(2, 5, DatasetFieldGen))
-    } yield DatasetTable(
-      id,
-      datasetId,
-      name,
-      Some(randomText()),
-      fields.map(_.toSeq),
-      timestamp(),
-      timestamp()
-    )
 
   val DatasetGen: Gen[Dataset] =
     for {
-      id: Int <- Gen.posNum[Int]
-      name    <- Gen.option(genLongName)
-      loc     <- Gen.option(genLongName)
-      dtype   <- Gen.option(genLongName)
-      tables  <- Gen.option(smallListGen(2, 5, DatasetTableGen))
+      id     <- Gen.posNum[Long]
+      name   <- Gen.option(genLongName)
+      loc    <- Gen.option(genLongName)
+      dtype  <- Gen.option(genLongName)
+      fields <- Gen.option(smallListGen(2, 5, DatasetFieldGen))
     } yield Dataset(
       id,
-      1,
+      1L,
       fidesKey,
       versionStamp,
+      None,
       name,
       Some(randomText()),
       loc,
       dtype,
-      tables.map(_.toSeq),
+      fields.map(_.toSeq),
       timestamp(),
       timestamp()
     )
@@ -260,22 +245,23 @@ object Generators {
       clause  <- Gen.option(genVersionString)
       name    <- Gen.resultOf { _: Int => faker.Name.name }
     } yield DataQualifier(id, None, 1, fidesKey, Some(name), clause, Some(randomText()))
-  val DataSubjectCategoryGen: Gen[DataSubjectCategory] =
+  val DataSubjectGen: Gen[DataSubject] =
     for {
       id: Int <- Gen.posNum[Int]
       name    <- Gen.resultOf { _: Int => faker.Name.name }
-    } yield DataSubjectCategory(id, None, 1, fidesKey, Some(name), Some(randomText()))
-  val DeclarationGen: Gen[Declaration] =
+    } yield DataSubject(id, None, 1, fidesKey, Some(name), Some(randomText()))
+  val DeclarationGen: Gen[PrivacyDeclaration] =
     for {
       name      <- genName
       use       <- Gen.oneOf(availableDataUses)
       qualifier <- Gen.oneOf(availableDataQualifiers)
-    } yield Declaration(
+    } yield PrivacyDeclaration(
       name,
       smallSetOf(1, 4, availableDataCategories),
       use,
       qualifier,
-      smallSetOf(1, 4, availableSubjectCategories)
+      smallSetOf(1, 4, availableDataSubjects),
+      Set() //TODO fields??
     )
   val OrgGen: Gen[Organization] =
     for {
@@ -295,7 +281,7 @@ object Generators {
       dataCategory      <- PolicyValueGroupingGenOf(availableDataCategories)
       dataQualifier     <- Gen.option(Gen.oneOf(availableDataQualifiers))
       dataUses          <- PolicyValueGroupingGenOf(availableDataUses)
-      subjectCategories <- PolicyValueGroupingGenOf(availableSubjectCategories)
+      subjectCategories <- PolicyValueGroupingGenOf(availableDataSubjects)
       action            <- Gen.oneOf(PolicyAction.values)
     } yield {
       PolicyRule(
@@ -317,7 +303,7 @@ object Generators {
 
   val PolicyGen: Gen[Policy] =
     for {
-      id   <- Gen.posNum[Int]
+      id   <- Gen.posNum[Long]
       name <- genName
     } yield Policy(id, 1, fidesKey, Some(0L), Some(name), Some(randomText()), None, timestamp(), timestamp())
 
@@ -326,25 +312,25 @@ object Generators {
   val SystemObjectGen: Gen[SystemObject] = {
 
     for {
-      id: Int <- Gen.posNum[Int]
-      name    <- Gen.option(genName)
+      id: Long <- Gen.posNum[Long]
+      name     <- Gen.option(genName)
       /* Require that the systemType value rateByRule one of [[devtools.domain.enums.SystemType]] */
-      fidesSystemType <- Gen.option(Gen.oneOf("Api", "Database", "Unknown"))
-      declarations    <- smallListGen(1, 4, DeclarationGen)
+      systemType   <- Gen.option(Gen.oneOf("Api", "Database", "Unknown"))
+      declarations <- smallListGen(1, 4, DeclarationGen)
     } yield SystemObject(
       id,
       1,
       None,
       fidesKey,
       versionStamp,
-      fidesSystemType,
+      None,
       name,
       Some(randomText()),
+      systemType,
       declarations.toList,
       Random.shuffle(
         waitFor(App.systemDAO.filter(_.organizationId === 1L)).map(_.fidesKey).take(Random.nextInt(4)).toSet
       ),
-      smallSetOf(0, 4, availableDatasets),
       timestamp(),
       timestamp()
     )
@@ -354,7 +340,7 @@ object Generators {
     for {
       id   <- Gen.posNum[Long]
       name <- Gen.option(genName)
-    } yield Registry(id, 1, fidesKey, versionStamp, name, Some(randomText()), None, timestamp(), timestamp())
+    } yield Registry(id, 1, fidesKey, versionStamp, None, name, Some(randomText()), None, timestamp(), timestamp())
   }
 
   val UserGen: Gen[User] = for {
@@ -371,7 +357,7 @@ object Generators {
       ApprovalGen,
       DataCategoryGen,
       DataQualifierGen,
-      DataSubjectCategoryGen,
+      DataSubjectGen,
       DataUseGen,
       DeclarationGen,
       OrgGen,
@@ -381,7 +367,6 @@ object Generators {
       RegistryGen,
       UserGen,
       DatasetGen,
-      DatasetTableGen,
       DatasetFieldGen
     )
   def main(args: Array[String]): Unit = {

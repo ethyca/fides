@@ -2,14 +2,14 @@ package devtools.domain
 
 import devtools.domain.definition.IdType
 import devtools.util.JsonSupport.{dumps, parseToObj}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
 final case class DatasetField(
   id: Long,
-  datasetTableId: Long,
+  datasetId: Long,
   name: String,
+  path: Option[String],
   description: Option[String],
   dataCategories: Option[Set[String]],
   dataQualifier: Option[String],
@@ -28,13 +28,14 @@ final case class DatasetField(
 object DatasetField {
 
   type Tupled =
-    (Long, Long, String, Option[String], Option[String], Option[String], Option[Timestamp], Option[Timestamp])
+    (Long, Long, String, Option[String], Option[String], Option[String], Option[String], Option[Timestamp], Option[Timestamp])
 
   def toInsertable(s: DatasetField): Option[Tupled] =
     Some(
       s.id,
-      s.datasetTableId,
+      s.datasetId,
       s.name,
+      s.path,
       s.description,
       s.dataCategories.map(dumps(_)),
       s.dataQualifier,
@@ -47,10 +48,11 @@ object DatasetField {
       t._2,
       t._3,
       t._4,
-      t._5.map(parseToObj[Set[String]](_).get),
-      t._6,
+      t._5,
+      t._6.map(parseToObj[Set[String]](_).get),
       t._7,
-      t._8
+      t._8,
+      t._9
     )
 
   }

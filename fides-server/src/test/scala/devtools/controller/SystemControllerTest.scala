@@ -38,41 +38,41 @@ class SystemControllerTest
 
   }
 
-  test("test approval endpoints") {
-    def approval(body: String): Approval = parseBody[Approval](body).get
-
-    var apr: Approval = null
-
-    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
-      apr = approval(body)
-      apr.action shouldEqual "evaluate"
-    }
-
-    /* retrieving "last" returns the same approval we just created */
-    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
-      approval(body).id shouldEqual apr.id
-    }
-    /* create a new approval. Id should be greater.*/
-    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
-      var v = approval(body)
-      v.id should be > apr.id
-      apr = v
-      apr.action shouldEqual "evaluate"
-
-    }
-
-    /* last should now refer to most recent.*/
-    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
-      approval(body).id shouldEqual apr.id
-    }
-
-    post(
-      s"/$path/evaluate/dry-run",
-      jdumps(testInstance),
-      headers = withTestHeaders("Content-Type" -> "application/json")
-    ) {
-      approval(body).action shouldEqual "dry-run"
-    }
-  }
+//  test("test approval endpoints") {
+//    def approval(body: String): Approval = parseBody[Approval](body).get
+//
+//    var apr: Approval = null
+//
+//    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
+//      apr = approval(body)
+//      apr.action shouldEqual "evaluate"
+//    }
+//
+//    /* retrieving "last" returns the same approval we just created */
+//    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
+//      approval(body).id shouldEqual apr.id
+//    }
+//    /* create a new approval. Id should be greater.*/
+//    get(s"/$path/evaluate/${testInstance.fidesKey}", headers = testHeaders) {
+//      var v = approval(body)
+//      v.id should be > apr.id
+//      apr = v
+//      apr.action shouldEqual "evaluate"
+//
+//    }
+//
+//    /* last should now refer to most recent.*/
+//    get(s"/$path/evaluate/${testInstance.fidesKey}/last", headers = testHeaders) {
+//      approval(body).id shouldEqual apr.id
+//    }
+//
+//    post(
+//      s"/$path/evaluate/dry-run",
+//      jdumps(testInstance),
+//      headers = withTestHeaders("Content-Type" -> "application/json")
+//    ) {
+//      approval(body).action shouldEqual "dry-run"
+//    }
+//  }
 
 }

@@ -1,10 +1,11 @@
 package devtools.util
 
 import com.typesafe.scalalogging.LazyLogging
+
+import devtools.domain.DatasetField
 import devtools.controller.definition.ApiResponse
 import devtools.domain.enums._
 import devtools.domain.policy.PolicyRule
-import devtools.domain.{DatasetField, DatasetTable}
 import devtools.exceptions.InvalidDataException
 import net.jcazevedo.moultingyaml.{YamlArray, YamlBoolean, YamlNull, YamlNumber, YamlObject, YamlSet, YamlString, YamlValue}
 import org.json4s.JsonAST.JString
@@ -44,8 +45,6 @@ object JsonSupport extends LazyLogging {
 
   implicit val datasetFieldFormat: CustomSerializer[DatasetField] =
     withMapValues[DatasetField](("id" -> 0L) ~ ("datasetTableId" -> 0L), DefaultFormats)
-  implicit val datasetTableFormat: CustomSerializer[DatasetTable] =
-    withMapValues[DatasetTable](("id" -> 0L) ~ ("datasetId" -> 0L), DefaultFormats + datasetFieldFormat)
   implicit val policyRuleFormat: CustomSerializer[PolicyRule] = withMapValues[PolicyRule](
     ("id" -> 0L) ~ ("policyId" -> 0L),
     DefaultFormats + RuleInclusion.jsonFormat + PolicyAction.jsonFormat
@@ -59,7 +58,6 @@ object JsonSupport extends LazyLogging {
     AuditAction.jsonFormat +
     ApprovalStatus.keySerializer +
     datasetFieldFormat +
-    datasetTableFormat +
     policyRuleFormat
 
   /** extract an optionally present nested value. */
@@ -129,7 +127,7 @@ object JsonSupport extends LazyLogging {
     }
   }
 
-  /** Generaete a report of differences from left -> right by key association:
+  /** Generate a report of differences from left -> right by key association:
     *
     *  changed: Values with same key but altered values
     *  added: keys in right but not in left

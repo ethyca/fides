@@ -3,7 +3,7 @@ package devtools.util
 import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{Declaration, Policy, PolicyRule}
+import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
 import net.jcazevedo.moultingyaml.{
   DefaultYamlProtocol,
   YamlArray,
@@ -115,7 +115,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
     yamlCustomMapKeyFormat[ApprovalStatus](t => ApprovalStatus.fromString(t).get)
 
   /** A YAML reader that can be configured to substitute in for missing values.
-    * This is necessary when we're ingesting values that are missing required memebers (e.g. id value).
+    * This is necessary when we're ingesting values that are missing required members (e.g. id value).
     * The writeMap values are appended to the input values, if they are not provided.
     */
   def withOptionalValues[T](values: Map[String, Any], baseFormatter: YamlFormat[T]): YamlFormat[T] =
@@ -130,7 +130,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   def withOptionalLongId[T](baseFormatter: YamlFormat[T]): YamlFormat[T] =
     withOptionalValues(Map("id" -> 0L), baseFormatter)
 
-  implicit val DeclarationFormat: YamlFormat[Declaration] = yamlFormat5(Declaration.apply)
+  implicit val DeclarationFormat: YamlFormat[PrivacyDeclaration] = yamlFormat6(PrivacyDeclaration.apply)
 
   /* policy rule structures */
   implicit val PolicyRuleAspectGroupingFormat: YamlFormat[PolicyValueGrouping] = yamlFormat2(PolicyValueGrouping)
@@ -142,13 +142,13 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit val DataQualifierFormat: YamlFormat[DataQualifier] =
     withOptionalLongId[DataQualifier](yamlFormat7(DataQualifier.apply))
   implicit val DataUseFormat: YamlFormat[DataUse] = withOptionalLongId[DataUse](yamlFormat7(DataUse.apply))
-  implicit val SubjectCategoryFormat: YamlFormat[DataSubjectCategory] =
-    withOptionalLongId[DataSubjectCategory](yamlFormat6(DataSubjectCategory.apply))
+  implicit val SubjectCategoryFormat: YamlFormat[DataSubject] =
+    withOptionalLongId[DataSubject](yamlFormat6(DataSubject.apply))
   implicit val DataCategoryFormat: YamlFormat[DataCategory] =
     withOptionalLongId[DataCategory](yamlFormat7(DataCategory.apply))
   implicit val SystemObjectFormat: YamlFormat[SystemObject] =
     withOptionalLongId[SystemObject](yamlFormat13(SystemObject.apply))
-  implicit val RegistryFormat: YamlFormat[Registry] = withOptionalLongId[Registry](yamlFormat9(Registry.apply))
+  implicit val RegistryFormat: YamlFormat[Registry] = withOptionalLongId[Registry](yamlFormat10(Registry.apply))
   implicit val OrganizationFormat: YamlFormat[Organization] =
     withOptionalLongId[Organization](yamlFormat7(Organization.apply))
 
@@ -156,9 +156,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
     withOptionalValues[PolicyRule](Map("id" -> 0L, "policyId" -> 0L), yamlFormat13(PolicyRule.apply))
   implicit val PolicyFormat: YamlFormat[Policy] = withOptionalLongId[Policy](yamlFormat9(Policy.apply))
   implicit val DatasetFieldFormat: YamlFormat[DatasetField] =
-    withOptionalValues[DatasetField](Map("id" -> 0L, "datasetTableId" -> 0L), yamlFormat8(DatasetField.apply))
-  implicit val DatasetTableFormat: YamlFormat[DatasetTable] =
-    withOptionalValues[DatasetTable](Map("id" -> 0L, "datasetId" -> 0L), yamlFormat7(DatasetTable.apply))
-  implicit val DatasetFormat: YamlFormat[Dataset] = withOptionalLongId[Dataset](yamlFormat11(Dataset.apply))
+    withOptionalValues[DatasetField](Map("id" -> 0L, "datasetId" -> 0L), yamlFormat9(DatasetField.apply))
+  implicit val DatasetFormat: YamlFormat[Dataset] = withOptionalLongId[Dataset](yamlFormat12(Dataset.apply))
 
 }

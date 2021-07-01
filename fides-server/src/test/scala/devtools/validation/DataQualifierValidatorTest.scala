@@ -23,7 +23,7 @@ class DataQualifierValidatorTest
     newTaxonomyValue = waitFor(dao.create(DataQualifier(0, None, 1, newKey, None, None, None)))
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(declarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey))))
+      sDao.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey))))
     )
     newPolicyRule = waitFor(
       prDao.create(PolicyRuleGen.sample.get.copy(organizationId = 1, dataQualifier = Some(newKey)))
@@ -80,7 +80,7 @@ class DataQualifierValidatorTest
 
     deleteValidationErrors(newKeyId) shouldNot containMatchString("systems")
 
-    //delete policyrule, update and delete should pass
+    //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
       DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),

@@ -28,7 +28,7 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
         r.<<?[String],
         r.<<?[String],
         r.<<?[String],
-        r.<<[String],
+        r.<<?[String],
         r.<<[String],
         r.<<[String],
         r.<<?[Timestamp],
@@ -60,16 +60,17 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
   def findForFidesKeyInSet(fidesKeys: Set[String], organizationId: Long): Future[Seq[SystemObject]] =
     db.run(systemQuery.filter(sys => { sys.fidesKey.inSet(fidesKeys) && sys.organizationId === organizationId }).result)
 
-  /** i.e  select id FROM SYSTEM_OBJECT WHERE JSON_SEARCH(declarations, 'one','telemetry_data',NULL, '$[*].dataCategories' ) IS NOT NULL; */
+  /** i.e  select id FROM SYSTEM_OBJECT WHERE JSON_SEARCH(privacy_declarations, 'one','telemetry_data',NULL, '$[*].dataCategories' ) IS NOT NULL; */
   def findSystemsWithJsonMember(organizationId: Long, fidesKey: String, memberName: String): Future[Seq[Long]] = {
     val typeKey   = s"$$[*].$memberName"
     val sanitized = sanitizeUniqueIdentifier(fidesKey)
     db.run(
-      sql"""select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(declarations, 'one','#$sanitized',NULL, '#$typeKey' ) IS NOT NULL"""
+      sql"""select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(privacy_declarations, 'one','#$sanitized',NULL, '#$typeKey' ) IS NOT NULL"""
         .as[Long]
     )
   }
   /** find systems that reference a particular dataset. */
+  //TODO
   def findSystemsWithDataset(organizationId: Long, fidesKey: String): Future[Seq[Long]] = {
     val sanitized = sanitizeUniqueIdentifier(fidesKey)
     db.run(
@@ -83,11 +84,10 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     value: String
   ): SystemQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: SystemQuery =>
     (t.fidesKey.toUpperCase like value) ||
-    (t.fidesSystemType like value) ||
+    (t.systemType like value) ||
     (t.name like value) ||
     (t.description like value) ||
-    (t.systemDependencies like value) ||
-    (t.datasets like value)
+    (t.systemDependencies like value)
   }
 
 }

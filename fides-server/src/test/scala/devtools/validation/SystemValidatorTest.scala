@@ -20,8 +20,8 @@ class SystemValidatorTest
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        declarations =
-          Seq(DeclarationGen.sample.get.copy(dataSubjectCategories = Set("not a valid data subject category")))
+        privacyDeclarations =
+          Seq(DeclarationGen.sample.get.copy(dataSubjects = Set("not a valid data subject category")))
       )
     ) should containMatchString("data subject category")
 
@@ -34,7 +34,10 @@ class SystemValidatorTest
   test("Only data use categories that exist in db are accepted") {
     createValidationErrors(
       blankSystem
-        .copy(fidesKey = name1, declarations = Seq(DeclarationGen.sample.get.copy(dataUse = "not_a_valid_data_use")))
+        .copy(
+          fidesKey = name1,
+          privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataUse = "not_a_valid_data_use"))
+        )
     ) should containMatchString("data use category")
 
   }
@@ -42,7 +45,7 @@ class SystemValidatorTest
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        declarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set("not_a_valid_data_category")))
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set("not_a_valid_data_category")))
       )
     ) should containMatchString("data category")
 
@@ -52,7 +55,7 @@ class SystemValidatorTest
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        declarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = "not_a_valid_qualifier"))
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = "not_a_valid_qualifier"))
       )
     ) should containMatchString("data qualifier")
   }

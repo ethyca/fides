@@ -29,7 +29,9 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
   test("test crud operations set versions and audit logs") {
 
     val v =
-      waitFor(systemService.create(blankSystem.copy(declarations = Seq(DeclarationGen.sample.get)), requestContext))
+      waitFor(
+        systemService.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get)), requestContext)
+      )
 
     // we should have 1 create record in the audit log
     waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1

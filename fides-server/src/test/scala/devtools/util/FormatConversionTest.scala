@@ -52,7 +52,7 @@ class FormatConversionTest extends AnyFunSuite with Matchers {
   }
 
   test("test data subject category format conversion") {
-    testObject(DataSubjectCategoryGen.sample.get)
+    testObject(DataSubjectGen.sample.get)
   }
 
   test("test declaration format conversion") {
@@ -81,9 +81,6 @@ class FormatConversionTest extends AnyFunSuite with Matchers {
     testObject(DatasetGen.sample.get)
   }
 
-  test("test dataset table format conversion") {
-    testObject(DatasetTableGen.sample.get)
-  }
   test("test dataset field format conversion") {
     testObject(DatasetFieldGen.sample.get)
   }

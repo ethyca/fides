@@ -5,7 +5,7 @@ import devtools.domain.definition.WithFidesKey
 import devtools.domain.enums.PolicyAction.REJECT
 import devtools.domain.enums.PolicyValueGrouping
 import devtools.domain.enums.RuleInclusion.ANY
-import devtools.domain.policy.{Declaration, Policy}
+import devtools.domain.policy.{PrivacyDeclaration, Policy}
 import devtools.domain.{Dataset, Registry, SystemObject}
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
@@ -28,7 +28,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule1"
     )
@@ -41,7 +41,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule2"
     )
@@ -53,7 +53,7 @@ class RatingTestData extends TestUtils {
       PolicyValueGrouping(ANY, availableDataUses.toSet),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
       "rule3"
     )
@@ -65,7 +65,7 @@ class RatingTestData extends TestUtils {
     PolicyValueGrouping(ANY, availableDataUses.toSet),
     //dataQualifier
     "pseudonymized_data",
-    PolicyValueGrouping(ANY, availableSubjectCategories.toSet),
+    PolicyValueGrouping(ANY, availableDataSubjects.toSet),
     REJECT,
     "rule4"
   )
@@ -79,40 +79,56 @@ class RatingTestData extends TestUtils {
   //            Declarations
   // -----------------------------------------
   //r1 categories. all other values match
-  private val depMatchesOnlyR1 = Declaration("test1", Set("credentials"), "provide", "identified_data", Set("prospect"))
+  private val depMatchesOnlyR1 =
+    PrivacyDeclaration("test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set())
 
   private val depMatchesOnlyR2 =
-    Declaration("test2", Set("telemetry_data", "connectivity_data"), "share", "identified_data", Set("prospect"))
+    PrivacyDeclaration(
+      "test2",
+      Set("telemetry_data", "connectivity_data"),
+      "share",
+      "identified_data",
+      Set("prospect"),
+      Set()
+    )
 
-  private val depMatchesOnlyR3 = Declaration(
+  private val depMatchesOnlyR3 = PrivacyDeclaration(
     "test3",
     Set("payment_instrument_data", "account_or_administration_contact_information"),
     "improvement_of_business_support_for_contracted_service",
     "identified_data",
-    Set("prospect")
+    Set("prospect"),
+    Set()
   )
 
-  private val depMatchesOnlyR4 = Declaration("test4", Set("credentials"), "provide", "identified_data", Set("trainee"))
+  private val depMatchesOnlyR4 =
+    PrivacyDeclaration("test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set())
 
   private val depMatchesBothR1R2 =
-    Declaration("test5", Set("operations_data"), "improve", "identified_data", Set("prospect", "employee", "trainee"))
+    PrivacyDeclaration(
+      "test5",
+      Set("operations_data"),
+      "improve",
+      "identified_data",
+      Set("prospect", "employee", "trainee"),
+      Set()
+    )
 
   // -----------------------------------------
   //            Datasets
   // -----------------------------------------
   private val fullyPopulatedField = datasetFieldOf("all")
     .copy(dataCategories = Some(availableDataCategories.toSet), dataQualifier = Some("identified_data"))
-  private val dataset1 = datasetOf(
-    wRunKey("d1"),
-    datasetTableOf("d1t1", datasetFieldOf("t1f1"), datasetFieldOf("t1f2"), datasetFieldOf("t1f3"), fullyPopulatedField),
-    datasetTableOf("d1t2", datasetFieldOf("t2f1"), datasetFieldOf("t2f2"), datasetFieldOf("t2f3"))
-  )
+  private val dataset1 = datasetOf(wRunKey("d1"))
+  //,
+  //  datasetFieldOf("t1f1"), datasetFieldOf("t1f2"), datasetFieldOf("t1f3"))
+  //  datasetTableOf("d1t2", datasetFieldOf("t2f1"), datasetFieldOf("t2f2"), datasetFieldOf("t2f3"))
 
-  private val dataset2 = datasetOf(
-    wRunKey("d2"),
-    datasetTableOf("d2t3", datasetFieldOf("t3f1"), datasetFieldOf("t3f2"), datasetFieldOf("t3f3")),
-    datasetTableOf("d2t4", datasetFieldOf("t4f1"), datasetFieldOf("t4f2"), datasetFieldOf("t4f3"))
-  )
+  private val dataset2 = datasetOf(wRunKey("d2"))
+
+  //, datasetTableOf("d2t3", datasetFieldOf("t3f1"), datasetFieldOf("t3f2"), datasetFieldOf("t3f3")),
+  // datasetTableOf("d2t4", datasetFieldOf("t4f1"), datasetFieldOf("t4f2"), datasetFieldOf("t4f3"))
+  //)
 
   // -----------------------------------------
   //            Systems
@@ -120,11 +136,9 @@ class RatingTestData extends TestUtils {
 
   val system1: SystemObject =
     systemOf(wRunKey("system1"), depMatchesOnlyR1, depMatchesOnlyR2, depMatchesOnlyR3)
-      .copy(datasets = Set(wRunKey("d1")))
   val system2: SystemObject = systemOf(wRunKey("system2"), depMatchesBothR1R2, depMatchesOnlyR4)
-    .copy(datasets = Set(wRunKey("d2")), systemDependencies = Set(wRunKey("system3")))
+    .copy(systemDependencies = Set(wRunKey("system3")))
   val system3: SystemObject = systemOf(wRunKey("system3")).copy(
-    datasets = Set("missing_dataset_1", "missing_dataset_2", wRunKey("d1")),
     systemDependencies = Set(wRunKey("system2"), wRunKey("system3"))
   )
 
@@ -140,6 +154,7 @@ class RatingTestData extends TestUtils {
       0,
       1,
       wRunKey("registry1"),
+      None,
       None,
       None,
       None,

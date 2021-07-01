@@ -3,8 +3,7 @@ package devtools.validation
 import devtools.controller.RequestContext
 import devtools.domain.{DatasetName, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.{datasetQuery, systemQuery}
-import devtools.util.CycleDetector.collectCycleErrors
+import devtools.persist.db.Queries.datasetQuery
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,17 +42,17 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   /** Validate each declaration for valid members. */
   def validateDeclarations(sys: SystemObject, errors: MessageCollector): Unit = {
     /*map cannot be empty */
-    if (sys.declarations.isEmpty) {
+    if (sys.privacyDeclarations.isEmpty) {
       errors.addError("no declarations specified")
     } else {
       /* All map keys must be valid members of a data category */
-      validateDataCategories(sys.organizationId, sys.declarations.flatMap(_.dataCategories).toSet, errors)
+      validateDataCategories(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataCategories).toSet, errors)
       /* All use categories must be members of data use categories */
-      validateDataUseCategories(sys.organizationId, sys.declarations.map(_.dataUse).toSet, errors)
+      validateDataUseCategories(sys.organizationId, sys.privacyDeclarations.map(_.dataUse).toSet, errors)
       /* All declared qualifiers must be valid data dataQualifier members */
-      validateQualifiers(sys.organizationId, sys.declarations.map(_.dataQualifier).toSet, errors)
+      validateQualifiers(sys.organizationId, sys.privacyDeclarations.map(_.dataQualifier).toSet, errors)
       /* All declared data subject categories must be valid members */
-      validateDataSubjectCategories(sys.organizationId, sys.declarations.flatMap(_.dataSubjectCategories).toSet, errors)
+      validateDataSubjectCategories(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
     }
   }
 

@@ -41,7 +41,7 @@ class DataCategoryDAO(val db: Database)(implicit
   def categoryReferencesCtAction(
     categoryName: String
   ): SqlStreamingAction[Vector[Long], Long, Effect]#ResultAction[Long, NoStream, Effect] = {
-    sql"""select COUNT(*) FROM SYSTEM_OBJECT WHERE JSON_SEARCH(declarations, 'one','#$categoryName',NULL, '$$[*].dataCategories' ) IS NOT NULL"""
+    sql"""select COUNT(*) FROM SYSTEM_OBJECT WHERE JSON_SEARCH(privacy_declarations, 'one','#$categoryName',NULL, '$$[*].dataCategories' ) IS NOT NULL"""
       .as[Long]
       .head
   }

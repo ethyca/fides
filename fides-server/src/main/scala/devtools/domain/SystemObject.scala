@@ -1,7 +1,8 @@
 package devtools.domain
 
-import devtools.domain.definition.{WithFidesKey, OrganizationId, VersionStamp}
-import devtools.domain.policy.Declaration
+import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
+import devtools.domain.policy.PrivacyDeclaration
+import devtools.util.JsonSupport
 import devtools.util.JsonSupport.{dumps, parseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
@@ -13,12 +14,12 @@ final case class SystemObject(
   registryId: Option[Long],
   fidesKey: String,
   versionStamp: Option[Long],
-  fidesSystemType: Option[String],
+  metadata: Option[Map[String, Any]],
   name: Option[String],
   description: Option[String],
-  declarations: Seq[Declaration],
+  systemType: Option[String],
+  privacyDeclarations: Seq[PrivacyDeclaration],
   systemDependencies: Set[String],
-  datasets: Set[String],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends WithFidesKey[SystemObject, Long] with VersionStamp with OrganizationId {
@@ -38,7 +39,7 @@ object SystemObject {
       Option[String],
       Option[String],
       Option[String],
-      String,
+      Option[String],
       String,
       String,
       Option[Timestamp],
@@ -52,12 +53,12 @@ object SystemObject {
       s.registryId,
       sanitizeUniqueIdentifier(s.fidesKey),
       s.versionStamp,
-      s.fidesSystemType,
+      s.metadata.map(JsonSupport.dumps),
       s.name,
       s.description,
-      dumps(s.declarations),
+      s.systemType,
+      dumps(s.privacyDeclarations),
       dumps(s.systemDependencies),
-      dumps(s.datasets),
       s.creationTime,
       s.lastUpdateTime
     )
@@ -69,11 +70,11 @@ object SystemObject {
       t._3,
       t._4,
       t._5,
-      t._6,
+      t._6.flatMap(JsonSupport.parseToObj[Map[String, Any]](_).toOption),
       t._7,
       t._8,
-      parseToObj[Seq[Declaration]](t._9).get,
-      parseToObj[Set[String]](t._10).get,
+      t._9, //system type
+      parseToObj[Seq[PrivacyDeclaration]](t._10).get,
       parseToObj[Set[String]](t._11).get,
       t._12,
       t._13

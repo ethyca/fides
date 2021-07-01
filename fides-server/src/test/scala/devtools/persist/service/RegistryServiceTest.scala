@@ -22,7 +22,7 @@ class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils wi
     blankSystem.copy(organizationId = 1, fidesKey = fidesKey, name = Some("child1"), description = Some(randomText()))
   private var sys2               = sys1.copy(fidesKey = fidesKey, name = Some("child2"), description = Some(randomText()))
   private var sys3               = sys2.copy(fidesKey = fidesKey, name = Some("child3"), description = Some(randomText()))
-  private val registry: Registry = Registry(0, 1, fidesKey, None, None, None, None, None, None)
+  private val registry: Registry = Registry(0, 1, fidesKey, None, None, None, None, None, None, None)
 
   override def beforeAll(): Unit = {
     sys1 = waitFor(systemDAO.create(sys1))

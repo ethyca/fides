@@ -62,22 +62,21 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
     submitTag: Option[String],
     submitMessage: Option[String]
   ): Future[Approval] = {
-    val v: Future[(Iterable[Policy], Seq[SystemObject], Iterable[Dataset], Option[Long])] = for {
+    val v: Future[(Iterable[Policy], Seq[SystemObject], Option[Long])] = for {
       policies            <- daos.policyDAO.findHydrated(_.organizationId === system.organizationId)
       dependentSystems    <- daos.systemDAO.findForFidesKeyInSet(system.systemDependencies, system.organizationId)
-      datasets            <- daos.datasetDAO.findHydrated(_.fidesKey inSet system.datasets)
       currentVersionStamp <- daos.organizationDAO.getVersion(system.organizationId)
-    } yield (policies, dependentSystems, datasets, currentVersionStamp)
+    } yield (policies, dependentSystems, currentVersionStamp)
 
-    v.map((t: (Iterable[Policy], Seq[SystemObject], Iterable[Dataset], Option[Long])) => {
-      val detailMap = systemEvaluator.evaluateSystem(system, t._2, t._3.toSeq, t._1.toSeq)
+    v.map((t: (Iterable[Policy], Seq[SystemObject], Option[Long])) => {
+      val detailMap = systemEvaluator.evaluateSystem(system, t._2, t._1.toSeq)
       Approval(
         0,
         system.organizationId,
         Some(system.id),
         None,
         userId,
-        t._4,
+        t._3,
         submitTag,
         submitMessage,
         actionType,
@@ -102,17 +101,15 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
       case _                    => daos.systemDAO.db.run(systemQuery.filter(s => s.registryId === registry.id).result)
     }
 
-    val v: Future[(Iterable[Policy], Seq[SystemObject], Iterable[Dataset], Option[Long])] = for {
-      policies <- daos.policyDAO.findHydrated(_.organizationId === registry.organizationId)
-      systems  <- systemsFromRegistry
-      datasetNames = systems.flatMap(_.datasets).toSet
-      datasets            <- daos.datasetDAO.findHydrated(_.fidesKey inSet datasetNames)
+    val v: Future[(Iterable[Policy], Seq[SystemObject], Option[Long])] = for {
+      policies            <- daos.policyDAO.findHydrated(_.organizationId === registry.organizationId)
+      systems             <- systemsFromRegistry
       currentVersionStamp <- daos.organizationDAO.getVersion(registry.organizationId)
-    } yield (policies, systems, datasets, currentVersionStamp)
+    } yield (policies, systems, currentVersionStamp)
 
     v.map {
-      case (policies, systems, datasets, version) =>
-        val detailMap: RegistryEvaluation = registryEvaluator.runEvaluation(systems, datasets.toSeq, policies.toSeq)
+      case (policies, systems, version) =>
+        val detailMap: RegistryEvaluation = registryEvaluator.runEvaluation(systems, policies.toSeq)
 
         Approval(
           0,
