@@ -1,10 +1,10 @@
 # Getting Started
 
-This section contains Quick Start guides to help you get up and running with Fides.
+This section contains Quick Start guides to help you get up and running with Fides. Before starting either guide you'll need to pull the [Fides repo](https://github.com/ethyca/fides).
 
 ## Running Fides in Docker
 
-The easiest way to get started with Fides is to pull the [Fides repo](https://github.com/ethyca/fides) and launch it using the supplied `make` commands.
+The easiest way to get started with Fides is to launch it using the supplied `make` commands.
 
 ### Docker Requirements
 
@@ -13,10 +13,10 @@ The easiest way to get started with Fides is to pull the [Fides repo](https://gi
 
 ### Docker Setup
 
-1. `make cli` - this will build the required images, spin up the database, and open a shell inside of a container with `fidesctl` installed
-1. About 15 seconds after the `fidesctl` shell initializes, run the `fidesctl ping`
-1. `fidesctl` - this command will list all of the possible `fidesctl` commands
-1. See the `Tutorial` page for further usage guides
+1. `make cli` -> this will build the required images, spin up the database, and open a shell inside of a container with `fidesctl` installed
+1. About 15 seconds after the `fidesctl` shell initializes, run the `fidesctl ping` command to verify that `fidesctl` can communicate with the server.
+1. `fidesctl` -> this command will list all of the possible `fidesctl` commands
+1. See the [Tutorial](tutorial.md) page for further usage guides
 
 ## Running Fides Locally
 
@@ -32,7 +32,6 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 
 ### Local Setup
 
-1. Clone the [Fides repo](https://github.com/ethyca/fides)
 1. Spin up the MySQL database with your desired credentials
 1. `cd fides-server/`
 1. Update the `application.conf` in `src/main/resources/` with the database credentials

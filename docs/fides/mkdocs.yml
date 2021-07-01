@@ -4,7 +4,6 @@ nav:
   - Home: index.md
   - License: license.md
   - Getting Started: getting_started.md
-  - What is Fides?: what_is_fides.md
   - Tutorial: tutorial.md
   - Fides Objects: fides_objects.md
   - Fidesctl: fidesctl.md
@@ -18,7 +17,6 @@ theme:
     - navigation.instant
     #- navigation.tabs
     #- navigation.sections
-
 
 markdown_extensions:
   - pymdownx.superfences

@@ -4,7 +4,7 @@
 
 A system represents the privacy usage of a single software project or codebase
 
-#### Fields
+### Fields
 
 | name   |    type    |   description   |
 |  --- | --- | --- |
@@ -17,13 +17,13 @@ A system represents the privacy usage of a single software project or codebase
 | systemDependencies |  List  | Systems that this system depends on, identified by their fidesKey |
 | datasets |  Set  | Data sets that this system depends on, identified by their fidesKey |
 
-#### Datasets
+### Datasets
 
 Aa dataset represents an annotated datastore (see below). It is ultimately made up of a collection of tables and fields. Each field declares a list of data categories it represents as well as a data qualifier.
 
 If the privacy range of datasets is wider than that declared by this system a warning will be generated.
 
-####  Dependent Systems
+### Dependent Systems
 
 System dependencies are a graph, giving users the ability to describe that system `A` is dependent on systems `B` and `C`. Fides will then merge all of the systems' declarations and ensure that not only does system `A` perform in a compliant manner, but that systems `B` and `C` do as well.
 
@@ -76,8 +76,6 @@ creationTime:2021-07-09T14:08:17Z,
 lastUpdateTime:2021-06-23T08:39:14Z
 
 ```
-
-
 
 ## Dataset
 
