@@ -3,11 +3,11 @@ site_url: https://example.com/
 nav:
   - Home: index.md
   - License: license.md
+  - Fides Objects: fides_objects.md
   - Getting Started: getting_started.md
   - Tutorial: tutorial.md
-  - Fides Objects: fides_objects.md
   - Fidesctl: fidesctl.md
-  - Fides Server: server.md
+  - FidesAPI: api.md
   - Deployment: deployment.md
   - Contributing: contributing.md
 theme:

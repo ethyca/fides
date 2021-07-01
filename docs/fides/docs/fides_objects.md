@@ -1,5 +1,109 @@
 # Fides Objects
 
+## Privacy Classifiers
+
+Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
+
+### Data Category
+
+=== "Yaml"
+
+    ```yaml
+    data-category:
+    - organizationId: 1
+        fidesKey: "customer_content_data"
+        name: "Customer Content Data"
+
+      # This field refers to the clause in the draft ISO-19944-1 that this is
+      # derived from. This value is optional and custom hierarchies of data
+      # categories are supported without any loss of functionality.
+        clause: "8.8.2"
+        description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
+    ```
+
+=== "An example hierarchy:"
+
+    ```yaml
+    - customer content data
+        - credentials
+        - personal health data
+    - derived data
+        - end user identifiable information
+            - telemetry data
+            - connectivity data
+    - account data
+        - account or administration contact information
+        - payment instrument data
+    ```
+
+### Data Use
+
+=== "Yaml"
+
+    ```yaml
+    data-use:
+    - organizationId: 1
+        fidesKey: "personalize"
+        name: "Personalize"
+        description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
+    ```
+
+=== "An example hierarchy:"
+
+    ```yaml
+    - personalize
+    - share
+        - share when required to provide the service
+    - promote
+        - promote based on contextual information
+        - promote based on personalization
+    ```
+
+### Data Subject Category
+
+=== "Yaml"
+
+    ```yaml
+    data-subject-category:
+    - organizationId: 1
+        fidesKey: "anonymous_user"
+        name: "Anonymous User"
+        description: "A user without any identifiable information tied to them."
+    ```
+
+=== "An example hierarchy:"
+
+    ```yaml
+    - customer
+    - supplier
+    - job applicant
+    ```
+
+### Data Qualifier
+
+=== "Yaml"
+
+    ```yaml
+    data-qualifier:
+    - organizationId: 1
+        fidesKey: "aggregated_data"
+        name: "Aggregated Data"
+        clause: "8.3.6"
+        description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
+    ```
+
+=== "An example hierarchy:"
+
+    ```yaml
+    - aggregated data
+        - anonymized data
+            - unlinked pseudonymized data
+                - pseudonymized data
+                    - identified data
+    ```
+
+Data qualifiers are sorted in order of increasing data exposure.
+
 ## System
 
 A system represents the privacy usage of a single software project or codebase
@@ -41,40 +145,39 @@ A system can have multiple declarations.
 
 #### An example system
 
-```   yaml
-id:40
-organizationId:1
-fidesKey: bobco_service_api
-versionStamp:123
-fidesSystemType: API
-name:Bob,
-description:Bobco's service API
-declarations:
-   - dataCategories:
-        customer_content_data
-        credentials
-     dataUse:provide_operational_support_for_contracted_service
-     dataQualifier:anonymized_data
-     dataSubjectCategories:
-        supplier_vendor
-        job_applicant
-        consultant
-   - dataCategories:
-        social_data
-     dataUse:
-        train_ai_system
-     dataQualifier:
-        identified_data
-     dataSubjectCategories:
-        prospect
-systemDependencies:
-    test_system_2
-    test_system_1
-datasets:
-    test-dataset
-creationTime:2021-07-09T14:08:17Z,
-lastUpdateTime:2021-06-23T08:39:14Z
-
+```yaml
+  id:40
+  organizationId:1
+  fidesKey: bobco_service_api
+  versionStamp:123
+  fidesSystemType: API
+  name:Bob,
+  description:Bobco's service API
+  declarations:
+    - dataCategories:
+          customer_content_data
+          credentials
+      dataUse:provide_operational_support_for_contracted_service
+      dataQualifier:anonymized_data
+      dataSubjectCategories:
+          supplier_vendor
+          job_applicant
+          consultant
+    - dataCategories:
+          social_data
+      dataUse:
+          train_ai_system
+      dataQualifier:
+          identified_data
+      dataSubjectCategories:
+          prospect
+  systemDependencies:
+      test_system_2
+      test_system_1
+  datasets:
+      test-dataset
+  creationTime:2021-07-09T14:08:17Z,
+  lastUpdateTime:2021-06-23T08:39:14Z
 ```
 
 ## Dataset
@@ -108,8 +211,6 @@ dataset:
           - name: "Food Preference"
             description: "User's favorite food"
 ```
-
-
 
 ## Policies
 
@@ -315,7 +416,6 @@ Additionally, when a registry is evaluated, we also check that
   }
 }
 ```
-
 
 ## Privacy Classifiers
 
