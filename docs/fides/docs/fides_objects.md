@@ -6,22 +6,20 @@ Fides uses four classifiers for describing how systems use privacy data, and for
 
 ### Data Category
 
-=== "Yaml"
+A Data Category describes the kind of data that is being used.
+
+=== "Example Manifest"
 
     ```yaml
     data-category:
     - organizationId: 1
-        fidesKey: "customer_content_data"
-        name: "Customer Content Data"
-
-      # This field refers to the clause in the draft ISO-19944-1 that this is
-      # derived from. This value is optional and custom hierarchies of data
-      # categories are supported without any loss of functionality.
-        clause: "8.8.2"
-        description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
+      fidesKey: "customer_content_data"
+      name: "Customer Content Data"
+      clause: "8.8.2"
+      description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
     ```
 
-=== "An example hierarchy:"
+=== "Example Hierarchy"
 
     ```yaml
     - customer content data
@@ -36,19 +34,29 @@ Fides uses four classifiers for describing how systems use privacy data, and for
         - payment instrument data
     ```
 
+| name   |    type    |   description   |
+|  --- | --- | --- |
+| organizationId  |  Int |  Id of the organization this data category belongs to |
+| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-'.|
+| name |  String |  A name for this data category |
+| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data categories are supported without any loss of functionality. |
+| description |  String | A description of what this data category means or encapsulates |
+
 ### Data Use
 
-=== "Yaml"
+A Data Use describes what the data is being used for.
+
+=== "Example Manifest"
 
     ```yaml
     data-use:
     - organizationId: 1
-        fidesKey: "personalize"
-        name: "Personalize"
-        description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
+      fidesKey: "personalize"
+      name: "Personalize"
+      description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
     ```
 
-=== "An example hierarchy:"
+=== "Example Hierarchy"
 
     ```yaml
     - personalize
@@ -59,19 +67,28 @@ Fides uses four classifiers for describing how systems use privacy data, and for
         - promote based on personalization
     ```
 
-### Data Subject Category
+| name   |    type    |   description   |
+|  --- | --- | --- |
+| organizationId  |  Int |  Id of the organization this data use belongs to |
+| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-'.|
+| name |  String |  A name for this data use |
+| description |  String | A description of what this data use means or encapsulates |
 
-=== "Yaml"
+### Data Subject
+
+A Data Subject describes who the data belongs to.
+
+=== "Example Manifest"
 
     ```yaml
-    data-subject-category:
+    data-subject:
     - organizationId: 1
-        fidesKey: "anonymous_user"
-        name: "Anonymous User"
-        description: "A user without any identifiable information tied to them."
+      fidesKey: "anonymous_user"
+      name: "Anonymous User"
+      description: "A user without any identifiable information tied to them."
     ```
 
-=== "An example hierarchy:"
+=== "Example Hierarchy"
 
     ```yaml
     - customer
@@ -79,20 +96,29 @@ Fides uses four classifiers for describing how systems use privacy data, and for
     - job applicant
     ```
 
+| name   |    type    |   description   |
+|  --- | --- | --- |
+| organizationId  |  Int |  Id of the organization this data subject belongs to |
+| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-'.|
+| name |  String |  A name for this data subject |
+| description |  String | A description of what this data subject means or encapsulates |
+
 ### Data Qualifier
 
-=== "Yaml"
+A Data Qualifier describes how private the data being used is. The hierarchy for Data Qualifiers is in order of increasing exposure.
+
+=== "Example Manifest"
 
     ```yaml
     data-qualifier:
     - organizationId: 1
-        fidesKey: "aggregated_data"
-        name: "Aggregated Data"
-        clause: "8.3.6"
-        description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
+      fidesKey: "aggregated_data"
+      name: "Aggregated Data"
+      clause: "8.3.6"
+      description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
     ```
 
-=== "An example hierarchy:"
+=== "Example Hierarchy"
 
     ```yaml
     - aggregated data
@@ -102,115 +128,111 @@ Fides uses four classifiers for describing how systems use privacy data, and for
                     - identified data
     ```
 
-Data qualifiers are sorted in order of increasing data exposure.
+| Name   |    Type    |   Description   |
+|  --- | --- | --- |
+| organizationId  |  Int |  Id of the organization this data qualifier belongs to |
+| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-'.|
+| name |  String |  A name for this data qualifier |
+| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data qualifiers are supported without any loss of functionality. |
+| description |  String | A description of what this data qualifier means or encapsulates |
+
+---
 
 ## System
 
-A system represents the privacy usage of a single software project or codebase
+A system represents the privacy usage of a single software project, service, codebase, or application.
 
-### Fields
+=== "Example Manifest"
 
-| name   |    type    |   description   |
+    ```yaml
+    system:
+      - organizationId: 1
+        fidesOrganizationKey: "Ethyca"
+        registryId: 1
+        fidesKey: "demoSystem"
+        systemType: "service"
+        metadata:
+          name: "Demo System"
+        description: "A demo system for testing."
+        privacyDeclarations:
+          - dataCategories:
+              - "customer_content_data"
+            dataUse: "provide"
+            dataQualifier: "anonymized_data"
+            dataSubjectCategories:
+              - "anonymous_user"
+            dataSets:
+              - "user_data"
+        systemDependencies: []
+    ```
+
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this system belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| systemType | String | The type of system being declared |
+| privacyDeclarations | List[privacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
+| systemDependencies | List | Systems that this system depends on, identified by their fidesKey |
+
+### Privacy Declaration
+
+A Privacy Declaration describes the usage of data within a system. It is included as a composite object within a system declaration.
+
+| Name | Type | Description |
 |  --- | --- | --- |
-| id  |  Int |  Generated unique id |
-| organizationId  |  Int |  Id of the organization this system belongs to |
-| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-'.|
-| versionStamp  |  Int |    The version stamp is an incrementing number attached to your organization. It tracks the current version attached to your organization as any action is applied and can thus be used for "before/after" comparisons.  The version stamp is generated by the fides server. |
-| fidesSystemType |  String |  A system type, API |
-| declarations | List  |   A list of privacy declarations.  |
-| systemDependencies |  List  | Systems that this system depends on, identified by their fidesKey |
-| datasets |  Set  | Data sets that this system depends on, identified by their fidesKey |
+| dataCategories | List[String] | Id of the organization this system belongs to |
+| dataSubjects | List[String] | Id of the organization this system belongs to |
+| dataUse | String | Id of the organization this system belongs to |
+| dataQualifier | String | Id of the organization this system belongs to |
+| dataSets | String | Id of the organization this system belongs to |
 
-### Datasets
+A Privacy Declaration can be read as "This system uses data in categories `dataCategories` for `dataSubjects` with the purpose of `dataUse` at a qualified privacy level of `dataQualifier`"
 
-Aa dataset represents an annotated datastore (see below). It is ultimately made up of a collection of tables and fields. Each field declares a list of data categories it represents as well as a data qualifier.
-
-If the privacy range of datasets is wider than that declared by this system a warning will be generated.
-
-### Dependent Systems
-
-System dependencies are a graph, giving users the ability to describe that system `A` is dependent on systems `B` and `C`. Fides will then merge all of the systems' declarations and ensure that not only does system `A` perform in a compliant manner, but that systems `B` and `C` do as well.
-
-#### Declarations
-
-This individual system's privacy usage. Each declaration consists of
-
-- A set of data categories
-- A set of data subject categories
-- A data use
-- A data qualifier
-
- and can be read as "This system uses data in categories (data categories) (for [data subject categories]) with the purpose of (data use) at a qualified privacy level of (data qualifier)"
-A system can have multiple declarations.
-
-#### An example system
-
-```yaml
-  id:40
-  organizationId:1
-  fidesKey: bobco_service_api
-  versionStamp:123
-  fidesSystemType: API
-  name:Bob,
-  description:Bobco's service API
-  declarations:
-    - dataCategories:
-          customer_content_data
-          credentials
-      dataUse:provide_operational_support_for_contracted_service
-      dataQualifier:anonymized_data
-      dataSubjectCategories:
-          supplier_vendor
-          job_applicant
-          consultant
-    - dataCategories:
-          social_data
-      dataUse:
-          train_ai_system
-      dataQualifier:
-          identified_data
-      dataSubjectCategories:
-          prospect
-  systemDependencies:
-      test_system_2
-      test_system_1
-  datasets:
-      test-dataset
-  creationTime:2021-07-09T14:08:17Z,
-  lastUpdateTime:2021-06-23T08:39:14Z
-```
+---
 
 ## Dataset
 
-A dataset represents a datastore. It consists of tables and field names, along with descriptions of the data category and qualifer held for each field. Data descriptions
+A Dataset represents any kind of place where data is stores. It consists of field names, along with descriptions of the data category and qualifer held for each field. Data descriptions
 for datastore fields do not contain data use or data subject category values, since
 those related to the useage of data.
 
-```yaml
-dataset:
-  - organizationId: 1
-    fidesKey: "sample_db_dataset"
-    name: "Sample DB Dataset"
-    description: "This is a Sample Database Dataset"
-    datasetType: "MySQL"
-    location: "US East" # Geographic location of the dataset
-    tables:
-      - name: "sample_db_table_1"
-        description: "Sample DB Table Description"
-        fields:
-          - name: "first_name"
-            description: "A First Name Field"
-            dataCategories:
-              - "derived_data"
-            dataQualifier: "identified_data"
-          - name: "email"
-            description: "User's Email"
-            dataCategories:
-              - "account_data"
-            dataQualifier: "identified_data"
-          - name: "Food Preference"
-            description: "User's favorite food"
-```
+=== "Example Manifest"
+
+    ```yaml
+    dataset:
+      - organizationId: 1
+        fidesKey: "sample_db_dataset"
+        name: "Sample DB Dataset"
+        description: "This is a Sample Database Dataset"
+        datasetType: "MySQL"
+        location: "US East" # Geographic location of the dataset
+        tables:
+          - name: "sample_db_table_1"
+            description: "Sample DB Table Description"
+            fields:
+              - name: "first_name"
+                description: "A First Name Field"
+                dataCategories:
+                  - "derived_data"
+                dataQualifier: "identified_data"
+              - name: "email"
+                description: "User's Email"
+                dataCategories:
+                  - "account_data"
+                dataQualifier: "identified_data"
+              - name: "Food Preference"
+                description: "User's favorite food"
+    ```
+
+| Name | Type | Description |
+|  --- | --- | --- |
+| dataCategories | List[String] | Id of the organization this system belongs to |
+| dataSubjects | List[String] | Id of the organization this system belongs to |
+| dataUse | String | Id of the organization this system belongs to |
+| dataQualifier | String | Id of the organization this system belongs to |
+| dataSets | String | Id of the organization this system belongs to |
+
+---
 
 ## Policies
 
@@ -319,7 +341,10 @@ policy:
       action: REJECT
 ```
 
+---
+
 ## Approvals
+
 We evaluate both systems and registries. Since a registry is essentially a graph of systems, a registry evaluation is just an evaluation of each individual system along with a few additional checks on the system graph as a whole.
 
 When the evaluation of a system manifest is triggered, the following checks are run:
@@ -332,7 +357,6 @@ Additionally, when a registry is evaluated, we also check that
 
 - The registry system graph contains a dependency cycle (that is, **system_a** declares that it depends on **system_b** that declares that it depends on **system_a**).
 - A system declares a dependency on a system that is not referenced in the registry.
-
 
 ### A sample approval
 
@@ -416,110 +440,3 @@ Additionally, when a registry is evaluated, we also check that
   }
 }
 ```
-
-## Privacy Classifiers
-
-Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
-
-### Data category
-
-=== "Yaml"
-
-    ```yaml
-    data-category:
-    - organizationId: 1
-        fidesKey: "customer_content_data"
-        name: "Customer Content Data"
-
-      # This field refers to the clause in the draft ISO-19944-1 that this is
-      # derived from. This value is optional and custom hierarchies of data
-      # categories are supported without any loss of functionality.
-        clause: "8.8.2"
-        description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
-    ```
-
-=== "An example hierarchy:"
-
-    ```yaml
-    - customer content data
-        - credentials
-        - personal health data
-    - derived data
-        - end user identifiable information
-            - telemetry data
-            - connectivity data
-    - account data
-        - account or administration contact information
-        - payment instrument data
-    ```
-
-### Data use
-
-=== "Yaml"
-
-    ```yaml
-    data-use:
-    - organizationId: 1
-        fidesKey: "personalize"
-        name: "Personalize"
-        description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
-    ```
-
-=== "An example hierarchy:"
-
-    ```yaml
-    - personalize
-    - share
-        - share when required to provide the service
-    - promote
-        - promote based on contextual information
-        - promote based on personalization
-    ```
-
-
-### Data Subject Category
-
-
-=== "Yaml"
-
-    ```yaml
-    data-subject-category:
-    - organizationId: 1
-        fidesKey: "anonymous_user"
-        name: "Anonymous User"
-        description: "A user without any identifiable information tied to them."
-    ```
-
-=== "An example hierarchy:"
-
-
-    ```yaml
-    - customer
-    - supplier
-    - job applicant
-    ```
-
-### Data qualifier
-
-=== "Yaml"
-
-    ```yaml
-    data-qualifier:
-    - organizationId: 1
-        fidesKey: "aggregated_data"
-        name: "Aggregated Data"
-        clause: "8.3.6"
-        description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
-    ```
-
-=== "An example hierarchy:"
-
-    ```yaml
-    - aggregated data
-        - anonymized data
-            - unlinked pseudonymized data
-                - pseudonymized data
-                    - identified data
-    ```
-
-Data qualifiers are sorted in order of increasing data exposure.

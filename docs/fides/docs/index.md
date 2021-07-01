@@ -134,10 +134,10 @@ Conceptually, there are a few key parts to Fides privacy management:
 
 ### Systems
 
-A System is a standalone application or software project, or really anything that has an independant lifecycle and potential useage of privacy data. As far as Fides is concerned, what matters about a system, aside from a bit of identifing data, is
+A System is a standalone application or software project, or really anything that has an independant lifecycle and potential usage of privacy data. As far as Fides is concerned, the important parts of a system are:
 
-* its declared useage of privacy data
-* what other systems and datasets it depends on (since it may be using privacy data exposed by those other systems)
+* Its declared useage of privacy data
+* What other systems and datasets it depends on (since it may be using privacy data exposed by those other systems)
 
 ### Datasets
 
