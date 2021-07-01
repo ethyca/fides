@@ -42,8 +42,8 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     }
 
     //merge any qualifier children; that is, for any set of categories matching qualifier
-    //'a', add to the set any categories mathching any child of 'a'
-    //e.g. {a:[c1,c2], childofA:[c3], b:[c4]} => {a:[c1,c2, c3], childofA:[c3], b:[c4]}
+    //'a', add to the set any categories matching any child of 'a'
+    //e.g. {a:[c1,c2], childOfA:[c3], b:[c4]} => {a:[c1,c2, c3], childOfA:[c3], b:[c4]}
 
     def mergeQualifierMap(
       m: Map[DataQualifierName, Set[DataCategoryName]]
@@ -60,7 +60,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       }
     }
 
-    val categoriesByQualifierInSystem: Map[DataQualifierName, Set[DataCategoryName]] = systemObject.declarations
+    val categoriesByQualifierInSystem: Map[DataQualifierName, Set[DataCategoryName]] = systemObject.privacyDeclarations
       .map(d => (d.dataQualifier, d.dataCategories))
       .groupBy(_._1)
       .map((t: (DataQualifierName, Seq[(DataQualifierName, Set[DataCategoryName])])) => t._1 -> t._2.map(_._2))
@@ -100,11 +100,11 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     systemObject: SystemObject,
     dependentSystems: Iterable[SystemObject]
   ): Seq[String] = {
-    val mergedDependencies = mergeDeclarations(systemObject.organizationId, systemObject.declarations)
+    val mergedDependencies = mergeDeclarations(systemObject.organizationId, systemObject.privacyDeclarations)
     var warnings           = Seq[String]()
 
     dependentSystems.foreach(ds => {
-      val mergedDependenciesForDs = mergeDeclarations(systemObject.organizationId, ds.declarations)
+      val mergedDependenciesForDs = mergeDeclarations(systemObject.organizationId, ds.privacyDeclarations)
       val diff                    = diffDeclarations(systemObject.organizationId, mergedDependenciesForDs, mergedDependencies)
       if (diff.nonEmpty) {
         warnings =
@@ -114,13 +114,6 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     warnings
   }
-
-  /** Ensure that datasets listed under dependencies exist in the db. */
-  def checkDependentDatasetsExist(system: SystemObject, dependentDatasets: Seq[Dataset]): Seq[String] =
-    system.datasets.diff(dependentDatasets.map(_.fidesKey).toSet) match {
-      case missing if missing.nonEmpty => Seq(s"The referenced datasets [${missing.mkString(",")}] were not found.")
-      case _                           => Seq()
-    }
 
   /** Ensure that systems listed under system dependencies exist in the db. */
   def checkDependentSystemsExist(system: SystemObject, dependentSystems: Seq[SystemObject]): Seq[String] =
@@ -139,7 +132,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   ): Map[ApprovalStatus, Map[String, Seq[String]]] = {
 
     val v: Seq[(Option[PolicyAction], String, String)] = for {
-      d                <- system.declarations
+      d                <- system.privacyDeclarations
       policy           <- policies
       rule: PolicyRule <- policy.rules.getOrElse(Set())
       action: Option[PolicyAction] = policyRuleEvaluator.matches(rule, d)
@@ -164,16 +157,13 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   def evaluateSystem(
     system: SystemObject,
     dependentSystems: Seq[SystemObject],
-    dependentDatasets: Seq[Dataset],
     policies: Seq[Policy]
   ): SystemEvaluation = {
     val m: Map[ApprovalStatus, Map[String, Seq[String]]] = evaluatePolicyRules(policies, system)
 
-    val warnings = checkDependentDatasetPrivacyDeclaration(system, dependentDatasets) ++
-      checkDeclarationsOfDependentSystems(system, dependentSystems)
+    val warnings = checkDeclarationsOfDependentSystems(system, dependentSystems)
     val errors =
-      checkDependentDatasetsExist(system, dependentDatasets) ++
-        checkDependentSystemsExist(system, dependentSystems) ++
+      checkDependentSystemsExist(system, dependentSystems) ++
         checkSelfReference(system)
 
     val overallApproval = {
@@ -213,6 +203,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     *      - reduce both sets of values using TreeCache mergeAndReduce
     *
     * Return a sequence of [{set of declaration names that were used to generate this merge}, merged declaration}]
+    * Merged set does not retain field information.
     */
 
   def mergeDeclarations(organizationId: Long, declarations: Iterable[PrivacyDeclaration]): Set[PrivacyDeclaration] = {
@@ -221,15 +212,17 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       .map { t: ((DataQualifierName, DataUseName), Iterable[PrivacyDeclaration]) =>
         val categories = daos.dataCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataCategories).toSet)
         val subjectCategories =
-          daos.dataSubjectDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjectCategories).toSet)
-        Declaration(t._2.map(_.name).toSet.mkString(","), categories, t._1._2, t._1._1, subjectCategories)
+          daos.dataSubjectDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjects).toSet)
+        PrivacyDeclaration(t._2.map(_.name).toSet.mkString(","), categories, t._1._2, t._1._1, subjectCategories, Set())
       }
       .toSet
   }
 
-  /** PrivacyDeclaration diff generated by comparing values heald in declaration sets a,b, where each combination
+  /** PrivacyDeclaration diff generated by comparing values held in declaration sets a,b, where each combination
     * of (DataQualifier,DataUse) is considered unique. This means grouping and merging category and subject
     * category combinations under each key.
+    *
+    * Diff does not retain privacy information
     */
   def diffDeclarations(
     organizationId: Long,
@@ -249,18 +242,18 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       t: ((DataQualifierName, DataUseName), Set[PrivacyDeclaration]) =>
         val rVals: Set[PrivacyDeclaration] = rGrouped.getOrElse(t._1, Set())
         val rCategories                    = rVals.flatMap(_.dataCategories)
-        val rSubjectCategories             = rVals.flatMap(_.dataSubjectCategories)
+        val rSubjectCategories             = rVals.flatMap(_.dataSubjects)
 
         val lCategories        = t._2.flatMap(_.dataCategories)
-        val lSubjectCategories = t._2.flatMap(_.dataSubjectCategories)
+        val lSubjectCategories = t._2.flatMap(_.dataSubjects)
 
         val categoryDiff = daos.dataCategoryDAO.diff(organizationId, rCategories, lCategories)
         val subjectCategoryDiff =
           daos.dataSubjectDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
-        Declaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
+        PrivacyDeclaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff, Set())
     }.toSet
 
-    grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjectCategories.nonEmpty)
+    grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjects.nonEmpty)
   }
 }

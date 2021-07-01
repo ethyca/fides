@@ -1,8 +1,8 @@
 package devtools.rating
 
+import devtools.domain.SystemObject
 import devtools.domain.enums.ApprovalStatus
 import devtools.domain.policy.Policy
-import devtools.domain.{Dataset, SystemObject}
 import devtools.util.CycleDetector.collectCycleErrors
 
 import scala.concurrent.ExecutionContext
@@ -32,7 +32,7 @@ class RegistryEvaluator(val systemEvaluator: SystemEvaluator)(implicit val execu
   /** Evaluate and generate an approval for the given sequence of systems and datasets.
     * This method assumes that all systems and datasets have been populated.
     */
-  def runEvaluation(systems: Seq[SystemObject], datasets: Seq[Dataset], policies: Seq[Policy]): RegistryEvaluation = {
+  def runEvaluation(systems: Seq[SystemObject], policies: Seq[Policy]): RegistryEvaluation = {
     val cycleWarnings = cycleCheck(systems)
 
     val systemEvaluations: Map[String, SystemEvaluation] = systems
@@ -40,7 +40,6 @@ class RegistryEvaluator(val systemEvaluator: SystemEvaluator)(implicit val execu
         sys.fidesKey -> systemEvaluator.evaluateSystem(
           sys,
           systems.filter(dependentSystem => sys.systemDependencies.contains(dependentSystem.fidesKey)),
-          datasets.filter(dependentDataset => sys.datasets.contains(dependentDataset.fidesKey)),
           policies
         )
       )

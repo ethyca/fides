@@ -38,7 +38,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
       organizationId,
       daos.dataSubjectDAO,
       subjectCategories,
-      declaration.dataSubjectCategories
+      declaration.dataSubjects
     )
   }
 

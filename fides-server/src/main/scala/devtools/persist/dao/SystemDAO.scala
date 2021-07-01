@@ -84,11 +84,10 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     value: String
   ): SystemQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: SystemQuery =>
     (t.fidesKey.toUpperCase like value) ||
-    (t.fidesSystemType like value) ||
+    (t.systemType like value) ||
     (t.name like value) ||
     (t.description like value) ||
-    (t.systemDependencies like value) ||
-    (t.datasets like value)
+    (t.systemDependencies like value)
   }
 
 }

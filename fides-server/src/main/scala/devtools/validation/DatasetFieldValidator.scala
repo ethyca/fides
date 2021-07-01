@@ -3,7 +3,7 @@ package devtools.validation
 import devtools.controller.RequestContext
 import devtools.domain.DatasetField
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.{datasetQuery, datasetTableQuery}
+import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,9 +22,8 @@ class DatasetFieldValidator(val daos: DAOs)(implicit val executionContext: Execu
     val orgIdAction: Query[Rep[Long], Long, Seq] = for {
       a <-
         datasetQuery
-          .join(datasetTableQuery)
+          .join(datasetFieldQuery)
           .on(_.id === _.datasetId)
-          .filter(_._2.id === t.datasetTableId)
           .map(_._1)
           .map(_.organizationId)
     } yield a

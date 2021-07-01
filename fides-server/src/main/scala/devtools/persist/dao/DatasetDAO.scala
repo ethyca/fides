@@ -43,8 +43,7 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.location like value)
   }
 
-  /** retrieved all policies with populated systems that match the given filter */
-  //TODO
+  /** Retrieve all datasets that match the given filter populated with fields. */
   def findHydrated[C <: Rep[_]](
     expr: DatasetQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
@@ -53,18 +52,10 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
         expr
       ) join datasetFieldQuery on (_.id === _.datasetId)
     } yield (dataset, field)
-    \
+
     db.run(q.result).map { t =>
-      t.groupBy(_._1.id).map { t1: (Long, Seq[(Dataset, DatasetTable, DatasetField)]) =>
-        {
-          val dataset = t1._2.head._1
-          val tables = t1._2.groupBy(_._2.id).map { t2: (Long, Seq[(Dataset, DatasetField)]) =>
-            val table  = t2._2.head._2
-            val fields = t2._2.map(_._3)
-            table.copy(fields = Some(fields))
-          }
-          dataset.copy(tables = Some(tables.toSeq))
-        }
+      t.groupBy(_._1).map { t1: (Dataset, Seq[(Dataset, DatasetField)]) =>
+        t1._1.copy(fields = Some(t1._2.map(_._2)))
       }
     }
   }

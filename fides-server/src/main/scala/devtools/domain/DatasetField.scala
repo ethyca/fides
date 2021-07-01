@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.domain.definition.IdType
 import devtools.util.JsonSupport.{dumps, parseToObj}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -34,7 +33,7 @@ object DatasetField {
   def toInsertable(s: DatasetField): Option[Tupled] =
     Some(
       s.id,
-      s.datasetTableId,
+      s.datasetId,
       s.name,
       s.path,
       s.description,
@@ -52,7 +51,8 @@ object DatasetField {
       t._5,
       t._6.map(parseToObj[Set[String]](_).get),
       t._7,
-      t._8
+      t._8,
+      t._9
     )
 
   }

@@ -81,7 +81,7 @@ object App {
   val organizationService = new OrganizationService(organizationDAO)
   val policyRuleService   = new PolicyRuleService(policyRuleDAO)
   val datasetFieldService = new DatasetFieldService(datasetFieldDAO, datasetFieldValidator)
-  val datasetService      = new DatasetService(daos, datasetValidator)
+  val datasetService      = new DatasetService(daos, datasetFieldService, datasetValidator)
   val dataUseService      = new DataUseService(dataUseDAO, auditLogDAO, organizationDAO, dataUseValidator)
   val dataCategoryService =
     new DataCategoryService(dataCategoryDAO, auditLogDAO, organizationDAO, dataCategoryValidator)

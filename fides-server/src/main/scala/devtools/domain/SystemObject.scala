@@ -18,7 +18,7 @@ final case class SystemObject(
   name: Option[String],
   description: Option[String],
   systemType: Option[String],
-  privacyDeclarations: Set[PrivacyDeclaration],
+  privacyDeclarations: Seq[PrivacyDeclaration],
   systemDependencies: Set[String],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
@@ -74,7 +74,7 @@ object SystemObject {
       t._7,
       t._8,
       t._9, //system type
-      parseToObj[Set[PrivacyDeclaration]](t._10).get,
+      parseToObj[Seq[PrivacyDeclaration]](t._10).get,
       parseToObj[Set[String]](t._11).get,
       t._12,
       t._13
