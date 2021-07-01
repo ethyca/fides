@@ -134,16 +134,16 @@ Conceptually, there are a few key parts to Fides privacy management:
 
 ### Systems
 
-A System is a standalone application or software project, or really anything that has an independant lifecycle and potential usage of privacy data. As far as Fides is concerned, the important parts of a system are:
+A System is a standalone application, software project, service, etc. that has an independant lifecycle and potential usage of privacy data. As far as Fides is concerned, the important parts of a system are:
 
-* Its declared useage of privacy data
-* What other systems and datasets it depends on (since it may be using privacy data exposed by those other systems)
+* Its declared usage of privacy data
+* What other systems it depends on, since those other systems may also use privacy data
 
 ### Datasets
 
-Similar to a system, a dataset represents the privacy exposure of a database or any other kind of data repository. Datasets are intended to allow for the description of privacy data available in a datastore.
+Similar to a system, a dataset represents the privacy exposure of a database, datastore, or any other kind of data repository. Datasets are intended to allow for the description of privacy data within said repository.
 
-Datastore privacy declarations differ are more limited than system privacy declarations in that datastores can't really describe or limit how data is being _used_, only what data is contained.
+Datastore privacy declarations are more limited than system privacy declarations in that they only accept Data Categories and Data Qualifiers.
 
 ### Registries
 

@@ -34,13 +34,13 @@ A Data Category describes the kind of data that is being used.
         - payment instrument data
     ```
 
-| name   |    type    |   description   |
-|  --- | --- | --- |
-| organizationId  |  Int |  Id of the organization this data category belongs to |
-| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-'.|
-| name |  String |  A name for this data category |
-| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data categories are supported without any loss of functionality. |
-| description |  String | A description of what this data category means or encapsulates |
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this data category belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| name | String |  A name for this data category |
+| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data categories are supported without any loss of functionality |
+| description | String | A description of what this data category means or encapsulates |
 
 ### Data Use
 
@@ -67,12 +67,12 @@ A Data Use describes what the data is being used for.
         - promote based on personalization
     ```
 
-| name   |    type    |   description   |
-|  --- | --- | --- |
-| organizationId  |  Int |  Id of the organization this data use belongs to |
-| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-'.|
-| name |  String |  A name for this data use |
-| description |  String | A description of what this data use means or encapsulates |
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this data use belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| name | String | A name for this data use |
+| description | String | A description of what this data use means or encapsulates |
 
 ### Data Subject
 
@@ -96,12 +96,12 @@ A Data Subject describes who the data belongs to.
     - job applicant
     ```
 
-| name   |    type    |   description   |
-|  --- | --- | --- |
-| organizationId  |  Int |  Id of the organization this data subject belongs to |
-| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-'.|
-| name |  String |  A name for this data subject |
-| description |  String | A description of what this data subject means or encapsulates |
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this data subject belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| name | String | A name for this data subject |
+| description | String | A description of what this data subject means or encapsulates |
 
 ### Data Qualifier
 
@@ -128,13 +128,13 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
                     - identified data
     ```
 
-| Name   |    Type    |   Description   |
-|  --- | --- | --- |
-| organizationId  |  Int |  Id of the organization this data qualifier belongs to |
-| fidesKey  |  String |  A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-'.|
-| name |  String |  A name for this data qualifier |
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this data qualifier belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| name | String | A name for this data qualifier |
 | clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data qualifiers are supported without any loss of functionality. |
-| description |  String | A description of what this data qualifier means or encapsulates |
+| description | String | A description of what this data qualifier means or encapsulates |
 
 ---
 
