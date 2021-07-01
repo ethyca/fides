@@ -27,6 +27,8 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
         r.<<?[String],
         r.<<?[String],
         r.<<?[String],
+        r.<<?[String],
+        r.<<?[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
       )

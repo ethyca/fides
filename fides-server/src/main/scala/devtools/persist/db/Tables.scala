@@ -146,6 +146,8 @@ object Tables {
     val metadata: Rep[Option[String]]          = column[Option[String]]("metadata")
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
+    val dataCategories: Rep[Option[String]]    = column[Option[String]]("data_categories")
+    val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")
     val location: Rep[Option[String]]          = column[Option[String]]("location")
     val datasetType: Rep[Option[String]]       = column[Option[String]]("dataset_type")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
@@ -159,6 +161,8 @@ object Tables {
         versionStamp,
         metadata,
         name,
+        dataCategories,
+        dataQualifier,
         description,
         location,
         datasetType,
@@ -171,7 +175,7 @@ object Tables {
 
     val datasetId: Rep[Long]                   = column[Long]("dataset_id")
     val name: Rep[String]                      = column[String]("name")
-    val path: Rep[Option[String]]                      = column[Option[String]]("path")
+    val path: Rep[Option[String]]              = column[Option[String]]("path")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val dataCategories: Rep[Option[String]]    = column[Option[String]]("data_categories")
     val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")

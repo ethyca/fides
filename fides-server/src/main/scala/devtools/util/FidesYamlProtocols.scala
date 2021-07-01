@@ -157,6 +157,6 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit val PolicyFormat: YamlFormat[Policy] = withOptionalLongId[Policy](yamlFormat9(Policy.apply))
   implicit val DatasetFieldFormat: YamlFormat[DatasetField] =
     withOptionalValues[DatasetField](Map("id" -> 0L, "datasetId" -> 0L), yamlFormat9(DatasetField.apply))
-  implicit val DatasetFormat: YamlFormat[Dataset] = withOptionalLongId[Dataset](yamlFormat12(Dataset.apply))
+  implicit val DatasetFormat: YamlFormat[Dataset] = withOptionalLongId[Dataset](yamlFormat14(Dataset.apply))
 
 }

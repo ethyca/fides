@@ -28,7 +28,17 @@ final case class DatasetField(
 object DatasetField {
 
   type Tupled =
-    (Long, Long, String, Option[String], Option[String], Option[String], Option[String], Option[Timestamp], Option[Timestamp])
+    (
+      Long,
+      Long,
+      String,
+      Option[String],
+      Option[String],
+      Option[String],
+      Option[String],
+      Option[Timestamp],
+      Option[Timestamp]
+    )
 
   def toInsertable(s: DatasetField): Option[Tupled] =
     Some(

@@ -68,7 +68,7 @@ trait TestUtils extends LazyLogging {
     AuditLog(0L, objectId, 1, None, 1, action, typeName, None, None, None, None)
 
   def datasetOf(name: String, fields: DatasetField*): Dataset =
-    Dataset(0L, 1L, name, None, None, None, None, None, None, Some(fields), None, None)
+    Dataset(0L, 1L, name, None, None, None, None, None, None, None, None, Some(fields), None, None)
 
   def datasetFieldOf(name: String): DatasetField =
     DatasetField(
@@ -209,11 +209,12 @@ object Generators {
 
   val DatasetGen: Gen[Dataset] =
     for {
-      id     <- Gen.posNum[Long]
-      name   <- Gen.option(genLongName)
-      loc    <- Gen.option(genLongName)
-      dtype  <- Gen.option(genLongName)
-      fields <- Gen.option(smallListGen(2, 5, DatasetFieldGen))
+      id            <- Gen.posNum[Long]
+      name          <- Gen.option(genLongName)
+      loc           <- Gen.option(genLongName)
+      dtype         <- Gen.option(genLongName)
+      dataQualifier <- Gen.option(Gen.oneOf(availableDataQualifiers))
+      fields        <- Gen.option(smallListGen(2, 5, DatasetFieldGen))
     } yield Dataset(
       id,
       1L,
@@ -222,6 +223,8 @@ object Generators {
       None,
       name,
       Some(randomText()),
+      Some(smallSetOf(1, 4, availableDataCategories)),
+      dataQualifier,
       loc,
       dtype,
       fields.map(_.toSeq),

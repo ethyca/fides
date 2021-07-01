@@ -123,7 +123,6 @@ CREATE TABLE IF NOT EXISTS AUDIT_LOG(
 --  Dataset
 -- ------------------------------
 
-
 CREATE TABLE IF NOT EXISTS DATASET(
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     organization_id BIGINT NOT NULL,
@@ -132,6 +131,8 @@ CREATE TABLE IF NOT EXISTS DATASET(
     metadata JSON,
     `name` VARCHAR(100),
     description VARCHAR(1000),
+    data_categories JSON,
+    data_qualifier VARCHAR(100),
     location VARCHAR(100),
     dataset_type VARCHAR(50),
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

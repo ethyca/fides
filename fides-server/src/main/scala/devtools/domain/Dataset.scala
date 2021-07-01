@@ -14,6 +14,8 @@ final case class Dataset(
   metadata: Option[Map[String, Any]],
   name: Option[String],
   description: Option[String],
+  dataCategories: Option[Set[String]],
+  dataQualifier: Option[String],
   location: Option[String],
   datasetType: Option[String],
   fields: Option[Seq[DatasetField]],
@@ -40,6 +42,8 @@ object Dataset {
     Option[String],
     Option[String],
     Option[String],
+    Option[String],
+    Option[String],
     Option[Timestamp],
     Option[Timestamp]
   )
@@ -53,6 +57,8 @@ object Dataset {
       s.metadata.map(JsonSupport.dumps),
       s.name,
       s.description,
+      s.dataCategories.map(JsonSupport.dumps),
+      s.dataQualifier,
       s.location,
       s.datasetType,
       s.creationTime,
@@ -67,11 +73,13 @@ object Dataset {
       t._5.flatMap(JsonSupport.parseToObj[Map[String, Any]](_).toOption),
       t._6,
       t._7,
-      t._8,
+      t._8.flatMap(JsonSupport.parseToObj[Set[String]](_).toOption),
       t._9,
-      None,
       t._10,
-      t._11
+      t._11,
+      None,
+      t._12,
+      t._13
     )
 
 }

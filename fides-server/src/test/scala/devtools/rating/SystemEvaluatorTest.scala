@@ -13,7 +13,6 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   implicit val context: ExecutionContext = App.executionContext
   private val systemEvaluator            = new SystemEvaluator(App.daos)
 
-
   test("test rate rating catch missing system dependency") {
     val sys = SystemObjectGen.sample.get
       .copy(fidesKey = "a", privacyDeclarations = Seq(), systemDependencies = Set("missing1", "missing2"))
