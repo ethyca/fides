@@ -12,6 +12,8 @@ nav:
   - Contributing: contributing.md
 theme:
   name: material
+  favicon: img/favicon.png
+  logo: img/logo.png
   features:
     - naviation.top
     - navigation.instant
@@ -26,10 +28,6 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.tabbed
 
-# theme: material
-#   - features:
-#     - navigation.instant
-#     - navigation.tabs
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
   - javascripts/config.js
