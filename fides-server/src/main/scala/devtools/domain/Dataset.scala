@@ -1,6 +1,7 @@
 package devtools.domain
 
-import devtools.domain.definition.{WithFidesKey, OrganizationId, VersionStamp}
+import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
+import devtools.util.JsonSupport
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
@@ -22,7 +23,7 @@ final case class Dataset(
   override def withId(idValue: Long): Dataset = this.copy(id = idValue)
 
   def categoriesForQualifiers(qualifiers: Set[DataQualifierName]): Set[DataCategoryName] =
-    tables match {
+    fields match {
       case Some(r) => r.flatMap(_.categoriesForQualifiers(qualifiers)).toSet
       case None    => Set()
     }
@@ -38,6 +39,7 @@ object Dataset {
     Option[String],
     Option[String],
     Option[String],
+    Option[String],
     Option[Timestamp],
     Option[Timestamp]
   )
@@ -48,6 +50,7 @@ object Dataset {
       s.organizationId,
       sanitizeUniqueIdentifier(s.fidesKey),
       s.versionStamp,
+      s.metadata.map(JsonSupport.dumps),
       s.name,
       s.description,
       s.location,
@@ -61,13 +64,14 @@ object Dataset {
       t._2,
       t._3,
       t._4,
-      t._5,
+      t._5.flatMap(JsonSupport.parseToObj[Map[String, Any]](_).toOption),
       t._6,
       t._7,
       t._8,
-      None,
       t._9,
-      t._10
+      None,
+      t._10,
+      t._11
     )
 
 }

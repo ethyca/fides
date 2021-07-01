@@ -9,19 +9,19 @@ import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import java.sql.Timestamp
 
 final case class SystemObject(
-                               id: Long,
-                               organizationId: Long,
-                               registryId: Option[Long],
-                               fidesKey: String,
-                               versionStamp: Option[Long],
-                               metadata: Option[Map[String, Any]],
-                               name: Option[String],
-                               description: Option[String],
-                               systemType: Option[String],
-                               privacyDeclarations: Set[PrivacyDeclaration],
-                               systemDependencies: Set[String],
-                               creationTime: Option[Timestamp],
-                               lastUpdateTime: Option[Timestamp]
+  id: Long,
+  organizationId: Long,
+  registryId: Option[Long],
+  fidesKey: String,
+  versionStamp: Option[Long],
+  metadata: Option[Map[String, Any]],
+  name: Option[String],
+  description: Option[String],
+  systemType: Option[String],
+  privacyDeclarations: Set[PrivacyDeclaration],
+  systemDependencies: Set[String],
+  creationTime: Option[Timestamp],
+  lastUpdateTime: Option[Timestamp]
 ) extends WithFidesKey[SystemObject, Long] with VersionStamp with OrganizationId {
   override def withId(idValue: Long): SystemObject = this.copy(id = idValue)
 
@@ -70,10 +70,10 @@ object SystemObject {
       t._3,
       t._4,
       t._5,
-      t._6.flatMap(JsonSupport.parseToObj[Map[String,Any]](_).toOption),
+      t._6.flatMap(JsonSupport.parseToObj[Map[String, Any]](_).toOption),
       t._7,
       t._8,
-      t._9,//system type
+      t._9, //system type
       parseToObj[Set[PrivacyDeclaration]](t._10).get,
       parseToObj[Set[String]](t._11).get,
       t._12,

@@ -1,8 +1,8 @@
 package devtools.persist.dao
 
-import devtools.domain.{Dataset, DatasetField, DatasetTable}
+import devtools.domain.{Dataset, DatasetField}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery, datasetTableQuery}
+import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
 import devtools.persist.db.Tables.DatasetQuery
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}
@@ -26,6 +26,7 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
         r.<<?[String],
         r.<<?[String],
         r.<<?[String],
+        r.<<?[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
       )
@@ -39,24 +40,25 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.name like value) ||
     (t.description like value) ||
     (t.datasetType like value) ||
-    (t.datasetLocation like value)
+    (t.location like value)
   }
 
   /** retrieved all policies with populated systems that match the given filter */
+  //TODO
   def findHydrated[C <: Rep[_]](
     expr: DatasetQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
     val q = for {
-      ((dataset, table), field) <- query.filter(
+      (dataset, field) <- query.filter(
         expr
-      ) join datasetTableQuery on (_.id === _.datasetId) join datasetFieldQuery on (_._2.id === _.datasetTableId)
-    } yield (dataset, table, field)
-
+      ) join datasetFieldQuery on (_.id === _.datasetId)
+    } yield (dataset, field)
+    \
     db.run(q.result).map { t =>
       t.groupBy(_._1.id).map { t1: (Long, Seq[(Dataset, DatasetTable, DatasetField)]) =>
         {
           val dataset = t1._2.head._1
-          val tables = t1._2.groupBy(_._2.id).map { t2: (Long, Seq[(Dataset, DatasetTable, DatasetField)]) =>
+          val tables = t1._2.groupBy(_._2.id).map { t2: (Long, Seq[(Dataset, DatasetField)]) =>
             val table  = t2._2.head._2
             val fields = t2._2.map(_._3)
             table.copy(fields = Some(fields))

@@ -20,6 +20,7 @@ class DatasetFieldDAO(val db: Database)(implicit val executionContext: Execution
         r.<<[Long],
         r.<<[Long],
         r.<<[String],
+        r.<<[String],
         r.<<?[String],
         r.<<?[String],
         r.<<?[String],

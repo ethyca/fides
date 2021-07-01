@@ -1,5 +1,3 @@
-
-
 import java.io.{File, FileInputStream}
 import java.util.Properties
 
@@ -24,10 +22,11 @@ val properties = {
 
   //overwrite any values with env values, if they have been set.
   //env values are name translated, from e.g. a.b.c.d -> A_B_C_D
-  p.keySet().forEach { k => {
-    val envKey = k.toString.replace('.', '_').toUpperCase
-    sys.env.get(envKey).foreach(p.put(k, _))
-  }
+  p.keySet().forEach { k =>
+    {
+      val envKey = k.toString.replace('.', '_').toUpperCase
+      sys.env.get(envKey).foreach(p.put(k, _))
+    }
   }
   p
 }
@@ -38,17 +37,16 @@ lazy val root = (project in file("."))
     version := "0.1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % ScalatraVersion,
-
       //logging
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.3",
-      "ch.qos.logback" % "logback-classic" % "1.2.3" % "runtime",
-      "org.eclipse.jetty" % "jetty-webapp" % "9.4.36.v20210114" % "container",
-      "javax.servlet" % "javax.servlet-api" % "4.0.1" % "provided",
+      "com.typesafe.scala-logging" %% "scala-logging"     % "3.9.3",
+      "ch.qos.logback"              % "logback-classic"   % "1.2.3"            % "runtime",
+      "org.eclipse.jetty"           % "jetty-webapp"      % "9.4.36.v20210114" % "container",
+      "javax.servlet"               % "javax.servlet-api" % "4.0.1"            % "provided",
       //json support
-      "org.scalatra" %% "scalatra-json" % "2.7.1",
-      "org.json4s" %% "json4s-jackson" % "3.6.11",
-      "org.json4s" %% "json4s-core" % "3.6.11",
-      "org.json4s" %% "json4s-native" % "3.6.11",
+      "org.scalatra" %% "scalatra-json"  % "2.7.1",
+      "org.json4s"   %% "json4s-jackson" % "3.6.11",
+      "org.json4s"   %% "json4s-core"    % "3.6.11",
+      "org.json4s"   %% "json4s-native"  % "3.6.11",
       //http
       "org.scalaj" %% "scalaj-http" % "2.4.2",
       //yaml,
@@ -64,29 +62,26 @@ lazy val root = (project in file("."))
       //cache
       //"com.github.blemale" % "scaffeine_2.13" % "4.0.2",
       // db support
-      "c3p0" % "c3p0" % "0.9.1.2",
-      "mysql" % "mysql-connector-java" % "8.0.25",
-      "com.typesafe.slick" % "slick_2.12" % "3.3.3",// excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
-      "com.typesafe.slick" % "slick-codegen_2.12" % "3.3.3",// excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
+      "c3p0"               % "c3p0"                 % "0.9.1.2",
+      "mysql"              % "mysql-connector-java" % "8.0.25",
+      "com.typesafe.slick" % "slick_2.12"           % "3.3.3", // excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
+      "com.typesafe.slick" % "slick-codegen_2.12"   % "3.3.3", // excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
       //testing
-      "org.scalatra" %% "scalatra-scalatest" % ScalatraVersion % "test",
-      "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-      "org.scalactic" %% "scalactic" % "3.2.9",
-      "com.github.pjfanning" %% "scala-faker" % "0.5.3" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.15.4" % "test",
-      "org.scalamock" %% "scalamock" % "5.1.0" % "test"
-    ),
+      "org.scalatra"         %% "scalatra-scalatest" % ScalatraVersion % "test",
+      "org.scalatest"        %% "scalatest"          % "3.2.9"         % "test",
+      "org.scalactic"        %% "scalactic"          % "3.2.9",
+      "com.github.pjfanning" %% "scala-faker"        % "0.5.3"         % "test",
+      "org.scalacheck"       %% "scalacheck"         % "1.15.4"        % "test",
+      "org.scalamock"        %% "scalamock"          % "5.1.0"         % "test"
+    )
   )
 
-
 Test / mainClass := Some("JettyLauncher")
-
 
 //flywayResolvers
 val dbConfUser = properties.getProperty("fides.db.jdbc.user")
 val dbConfPass = properties.getProperty("fides.db.jdbc.password")
-val dbConfUrl = properties.getProperty("fides.db.jdbc.url").replace("\"", "")
-
+val dbConfUrl  = properties.getProperty("fides.db.jdbc.url").replace("\"", "")
 
 flywayUrl := dbConfUrl
 flywayUser := dbConfUser
@@ -99,7 +94,6 @@ slickCodegenDriver := slick.jdbc.MySQLProfile
 slickCodegenJdbcDriver := "com.mysql.cj.jdbc.Driver"
 slickCodegenOutputPackage := "devtools.persist.tables.generated"
 slickCodegenOutputDir := file("src/main/scala")
-
 
 //don't generate a slick model for the flyway migration tracking table
 Compile / slickCodegenExcludedTables := Seq("flyway_schema_history")

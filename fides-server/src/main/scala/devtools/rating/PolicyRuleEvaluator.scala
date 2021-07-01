@@ -13,7 +13,11 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
   // ------------------  checks by taxonomy type ------------------
   /** Categories matches the policy rule category value(s) */
-  def categoriesMatch(organizationId: Long, categories: PolicyValueGrouping, declaration: PrivacyDeclaration): Boolean = {
+  def categoriesMatch(
+    organizationId: Long,
+    categories: PolicyValueGrouping,
+    declaration: PrivacyDeclaration
+  ): Boolean = {
     groupingMatch("categories", organizationId, daos.dataCategoryDAO, categories, declaration.dataCategories)
 
   }

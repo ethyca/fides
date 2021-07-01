@@ -17,14 +17,14 @@ class RegistryDAO(val db: Database)(implicit val executionContext: ExecutionCont
 
   override implicit def getResult: GetResult[Registry] =
     r =>
-      Registry(
+      Registry.fromInsertable(
         r.<<[Long],
         r.<<[Long],
         r.<<[String],
         r.<<?[Long],
         r.<<?[String],
         r.<<?[String],
-        None,
+        r.<<?[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
       )

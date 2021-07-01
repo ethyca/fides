@@ -231,27 +231,34 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     * of (DataQualifier,DataUse) is considered unique. This means grouping and merging category and subject
     * category combinations under each key.
     */
-  def diffDeclarations(organizationId: Long, a: Iterable[PrivacyDeclaration], b: Iterable[PrivacyDeclaration]): Set[PrivacyDeclaration] = {
+  def diffDeclarations(
+    organizationId: Long,
+    a: Iterable[PrivacyDeclaration],
+    b: Iterable[PrivacyDeclaration]
+  ): Set[PrivacyDeclaration] = {
 
     val l = mergeDeclarations(organizationId, a)
     val r = mergeDeclarations(organizationId, b)
 
-    val rGrouped: Map[(DataQualifierName, DataUseName), Set[PrivacyDeclaration]] = r.groupBy(d => (d.dataQualifier, d.dataUse))
-    val lGrouped: Map[(DataQualifierName, DataUseName), Set[PrivacyDeclaration]] = l.groupBy(d => (d.dataQualifier, d.dataUse))
+    val rGrouped: Map[(DataQualifierName, DataUseName), Set[PrivacyDeclaration]] =
+      r.groupBy(d => (d.dataQualifier, d.dataUse))
+    val lGrouped: Map[(DataQualifierName, DataUseName), Set[PrivacyDeclaration]] =
+      l.groupBy(d => (d.dataQualifier, d.dataUse))
 
-    val grouped: Set[PrivacyDeclaration] = lGrouped.map { t: ((DataQualifierName, DataUseName), Set[PrivacyDeclaration]) =>
-      val rVals: Set[PrivacyDeclaration] = rGrouped.getOrElse(t._1, Set())
-      val rCategories             = rVals.flatMap(_.dataCategories)
-      val rSubjectCategories      = rVals.flatMap(_.dataSubjectCategories)
+    val grouped: Set[PrivacyDeclaration] = lGrouped.map {
+      t: ((DataQualifierName, DataUseName), Set[PrivacyDeclaration]) =>
+        val rVals: Set[PrivacyDeclaration] = rGrouped.getOrElse(t._1, Set())
+        val rCategories                    = rVals.flatMap(_.dataCategories)
+        val rSubjectCategories             = rVals.flatMap(_.dataSubjectCategories)
 
-      val lCategories        = t._2.flatMap(_.dataCategories)
-      val lSubjectCategories = t._2.flatMap(_.dataSubjectCategories)
+        val lCategories        = t._2.flatMap(_.dataCategories)
+        val lSubjectCategories = t._2.flatMap(_.dataSubjectCategories)
 
-      val categoryDiff = daos.dataCategoryDAO.diff(organizationId, rCategories, lCategories)
-      val subjectCategoryDiff =
-        daos.dataSubjectDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
+        val categoryDiff = daos.dataCategoryDAO.diff(organizationId, rCategories, lCategories)
+        val subjectCategoryDiff =
+          daos.dataSubjectDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
-      Declaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
+        Declaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff)
     }.toSet
 
     grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjectCategories.nonEmpty)

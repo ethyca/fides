@@ -110,12 +110,12 @@ object Tables {
     with VersionStampTable[SystemObject] {
     val registryId: Rep[Option[Long]]          = column[Option[Long]]("registry_id")
     val fidesKey: Rep[String]                  = column[String]("fides_key")
-    val fidesSystemType: Rep[Option[String]]   = column[Option[String]]("fides_system_type")
+    val metadata: Rep[Option[String]]          = column[Option[String]]("metadata")
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
-    val declarations: Rep[String]              = column[String]("declarations")
+    val systemType: Rep[Option[String]]        = column[Option[String]]("system_type")
+    val privacyDeclarations: Rep[String]       = column[String]("privacy_declarations")
     val systemDependencies: Rep[String]        = column[String]("system_dependencies")
-    val datasets: Rep[String]                  = column[String]("datasets")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
     val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_update_time", O.AutoInc)
     def * =
@@ -125,12 +125,12 @@ object Tables {
         registryId,
         fidesKey,
         versionStamp,
-        fidesSystemType,
+        metadata,
         name,
         description,
-        declarations,
+        systemType,
+        privacyDeclarations,
         systemDependencies,
-        datasets,
         creationTime,
         lastUpdateTime
       ) <> (SystemObject.fromInsertable, SystemObject.toInsertable)
@@ -143,9 +143,10 @@ object Tables {
     extends BaseAutoIncTable[Dataset](tag, "DATASET") with OrganizationIdTable[Dataset]
     with VersionStampTable[Dataset] {
     val fidesKey: Rep[String]                  = column[String]("fides_key")
+    val metadata: Rep[Option[String]]          = column[Option[String]]("metadata")
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
-    val datasetLocation: Rep[Option[String]]   = column[Option[String]]("dataset_location")
+    val location: Rep[Option[String]]          = column[Option[String]]("location")
     val datasetType: Rep[Option[String]]       = column[Option[String]]("dataset_type")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
     val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("creation_time", O.AutoInc)
@@ -156,9 +157,10 @@ object Tables {
         organizationId,
         fidesKey,
         versionStamp,
+        metadata,
         name,
         description,
-        datasetLocation,
+        location,
         datasetType,
         creationTime,
         lastUpdateTime
@@ -167,8 +169,9 @@ object Tables {
 
   class DatasetFieldQuery(tag: Tag) extends BaseAutoIncTable[DatasetField](tag, "DATASET_FIELD") {
 
-    val datasetTableId: Rep[Long]              = column[Long]("dataset_table_id")
+    val datasetId: Rep[Long]                   = column[Long]("dataset_id")
     val name: Rep[String]                      = column[String]("name")
+    val path: Rep[String]                      = column[String]("path")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val dataCategories: Rep[Option[String]]    = column[Option[String]]("data_categories")
     val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")
@@ -177,8 +180,9 @@ object Tables {
     def * =
       (
         id,
-        datasetTableId,
+        datasetId,
         name,
+        path,
         description,
         dataCategories,
         dataQualifier,
@@ -265,6 +269,7 @@ object Tables {
     extends BaseAutoIncTable[Registry](tag, "REGISTRY") with OrganizationIdTable[Registry]
     with VersionStampTable[Registry] {
     val fidesKey: Rep[String]                  = column[String]("fides_key")
+    val metadata: Rep[Option[String]]          = column[Option[String]]("metadata")
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
@@ -276,6 +281,7 @@ object Tables {
         organizationId,
         fidesKey,
         versionStamp,
+        metadata,
         name,
         description,
         creationTime,

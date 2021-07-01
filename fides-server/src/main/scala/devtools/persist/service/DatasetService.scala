@@ -2,7 +2,7 @@ package devtools.persist.service
 
 import devtools.App.datasetDAO
 import devtools.controller.RequestContext
-import devtools.domain.{Dataset, DatasetField, DatasetTable}
+import devtools.domain.{Dataset, DatasetField}
 import devtools.persist.dao.DAOs
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.DatasetValidator
@@ -19,10 +19,9 @@ class DatasetService(val daos: DAOs, val datasetTableService: DatasetTableServic
   override def orgId(t: Dataset): Long = t.organizationId
 
   override def hydrate(r: Dataset): Future[Dataset] = {
-    val v: Future[(Seq[DatasetTable], Seq[DatasetField])] = for {
-      tables: Seq[DatasetTable] <- daos.datasetTableDAO.filter(_.datasetId === r.id)
-      fields: Seq[DatasetField] <- daos.datasetFieldDAO.filter(_.datasetTableId.inSet(tables.map(t => t.id)))
-    } yield (tables, fields)
+    val v: Future[(Seq[DatasetField])] = for {
+      fields: Seq[DatasetField] <- daos.datasetFieldDAO.filter(_.datasetId.inSet(tables.map(t => t.id)))
+    } yield fields
 
     v.map {
       case (tables, fields) =>
