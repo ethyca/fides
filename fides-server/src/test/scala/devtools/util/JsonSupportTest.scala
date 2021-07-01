@@ -76,48 +76,6 @@ class JsonSupportTest extends AnyFunSuite with TestUtils {
     b_to_a shouldEqual Map("changed" -> Map("E" -> 5), "added" -> Map("A" -> 1), "deleted" -> Map("D" -> 4))
   }
 
-  test("test parse nested datasets") {
-    val raw =
-      """
-    {
-      "id":1,
-      "organizationId": 1,
-      "fidesKey": "test-dataset",
-      "versionStamp": 0,
-      "name": "my test dataset",
-      "location": "us-east-1",
-      "datasetType": "SQL",
-      "tables": [
-         {
-        "name": "table1",
-        "fields": [ {
-          "name": "field1",
-          "dataCategories": [
-          "credentials"
-          ],
-          "dataQualifier": "aggregated_data"
-        },
-        {
-          "name": "field2",
-          "dataCategories": [],
-          "dataQualifier": "pseudonymized_data"
-        }
-        ]
-      },
-      {
-        "name": "table2"
-      }
-      ]
-    }
-  }"""
-
-    val r      = JsonSupport.parseToObj[Dataset](raw)
-    val tables = r.get.tables.get
-    tables.size shouldEqual 2
-    val table1 = tables.find(_.name == "table1").get
-    table1.fields.get.map(_.name).toSet shouldEqual Set("field1", "field2")
-  }
-
   test("test parse nested policy rules") {
     val raw = """{
                 |  "id": 1,

@@ -15,8 +15,8 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   test("test rate rating catch missing dataset") {
     val sys = SystemObjectGen.sample.get
-      .copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set(), datasets = Set("missing1", "missing2"))
-    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq(), Seq())
+      .copy(fidesKey = "a", privacyDeclarations = Seq(), systemDependencies = Set())
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq())
 
     v.errors should containMatchString(
       "The referenced datasets \\[.*\\] were not found"
@@ -25,8 +25,8 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   }
   test("test rate rating catch missing system dependency") {
     val sys = SystemObjectGen.sample.get
-      .copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set("missing1", "missing2"), datasets = Set())
-    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq(), Seq())
+      .copy(fidesKey = "a", privacyDeclarations = Seq(), systemDependencies = Set("missing1", "missing2"))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq())
 
     v.errors should containMatchString(
       "The referenced systems \\[.*\\] were not found."
@@ -36,8 +36,9 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   }
 
   test("test self reference") {
-    val sys                 = SystemObjectGen.sample.get.copy(fidesKey = "a", declarations = Seq(), systemDependencies = Set("a"))
-    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq(), Seq())
+    val sys =
+      SystemObjectGen.sample.get.copy(fidesKey = "a", privacyDeclarations = Seq(), systemDependencies = Set("a"))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq())
 
     v.errors should containMatchString(
       "Invalid self reference"
@@ -63,96 +64,45 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
   test("test system declaration dependencies") {
 
     def testDependencies(parent: Seq[PrivacyDeclaration], child: Seq[PrivacyDeclaration]): Seq[String] = {
-      val s1 = systemOf("a").copy(systemDependencies = Set("b"), declarations = parent)
-      val s2 = systemOf("b").copy(declarations = child)
+      val s1 = systemOf("a").copy(systemDependencies = Set("b"), privacyDeclarations = parent)
+      val s2 = systemOf("b").copy(privacyDeclarations = child)
       systemEvaluator.checkDeclarationsOfDependentSystems(s1, Seq(s2))
     }
 
     //Just different category
     testDependencies(
-      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("test3", Set(cat_root2), use_root1, q_root, Set(scat_root1)))
+      Seq(PrivacyDeclaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1), Set())),
+      Seq(PrivacyDeclaration("test3", Set(cat_root2), use_root1, q_root, Set(scat_root1), Set()))
     ) should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //Just different subject category
     testDependencies(
-      Seq(Declaration("test4", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("test5", Set(cat_root1), use_root1, q_root, Set(scat_root2)))
+      Seq(PrivacyDeclaration("test4", Set(cat_root1), use_root1, q_root, Set(scat_root1), Set())),
+      Seq(PrivacyDeclaration("test5", Set(cat_root1), use_root1, q_root, Set(scat_root2), Set()))
     ) should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //child with child cat, same qualifier/use is ok
 
     testDependencies(
-      Seq(Declaration("test6", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("test7", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)))
+      Seq(PrivacyDeclaration("test6", Set(cat_root1), use_root1, q_root, Set(scat_root1), Set())),
+      Seq(PrivacyDeclaration("test7", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1), Set()))
     ).size shouldEqual 0
 
     //child with parent cat, same qualifier/use -> message
 
     testDependencies(
-      Seq(Declaration("test8", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))),
-      Seq(Declaration("test9", Set(cat_root1), use_root1, q_root, Set(scat_root1)))
+      Seq(PrivacyDeclaration("test8", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1), Set())),
+      Seq(PrivacyDeclaration("test9", Set(cat_root1), use_root1, q_root, Set(scat_root1), Set()))
     ) should containMatchString("The system b includes privacy declarations that do not exist in a")
 
     //child with NEW (qualifier/use) pair
     testDependencies(
-      Seq(Declaration("test10", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
+      Seq(PrivacyDeclaration("test10", Set(cat_root1), use_root1, q_root, Set(scat_root1), Set())),
       Seq(
-        Declaration("test11", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1)),
-        Declaration("test12", Set(cat_root2), use_root2, q_root, Set(scat_root1))
+        PrivacyDeclaration("test11", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1), Set()),
+        PrivacyDeclaration("test12", Set(cat_root2), use_root2, q_root, Set(scat_root1), Set())
       )
     ) should containMatchString("The system b includes privacy declarations that do not exist in a")
-
-  }
-
-  test("check dependent dataset privacy gamut") {
-
-    type DatasetSpec = (String, Set[String]) //(qualifier, categories)
-
-    def testDependencies(declarations: Seq[PrivacyDeclaration], datasetSpecs: Seq[DatasetSpec]): Seq[String] = {
-      val s1 = systemOf("a").copy(declarations = declarations)
-      val dataset = datasetOf(
-        "b",
-        datasetTableOf(
-          "c",
-          datasetSpecs.zipWithIndex.map(t =>
-            datasetFieldOf(s"f${t._2}").copy(dataCategories = Some(t._1._2), dataQualifier = Some(t._1._1))
-          ): _*
-        )
-      )
-      systemEvaluator.checkDependentDatasetPrivacyDeclaration(s1, Seq(dataset))
-    }
-
-    //System is child value category. Diff should be the parent that only exists in the dataset spec
-    testDependencies(
-      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq((q_root, Set(cat_root1_child1)))
-    ) should containMatchString(
-      "These categories exist for qualifier aggregated_data in this dataset but do not appear with that qualifier in the dependant system"
-    )
-
-    //unrelated category
-    testDependencies(
-      Seq(Declaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq((q_root, Set(cat_root2)))
-    ) should containMatchString(
-      "These categories exist for qualifier aggregated_data in this dataset but do not appear with that qualifier in the dependant system"
-    )
-
-    //TODO these are failing and need to be rewritten:
-    //dataset qualifier and/or categories represent a wider gamut than the system declaration
-    /*
-    testDependencies(
-      Seq(PrivacyDeclaration("test2", Set(cat_root1), use_root1, q_root, Set(scat_root1))),
-      Seq(( q_child, Set(cat_root1)))
-    )  should containMatchString("The system b includes privacy declarations that do not exist in a")
-
-    //dataset contains more open qualifier and category
-    testDependencies(
-      Seq(PrivacyDeclaration("test2", Set(cat_root1_child1), use_root1, q_root, Set(scat_root1))),
-      Seq((q_child , Set(cat_root1)))
-    )  should containMatchString("The system b includes privacy declarations that do not exist in a")
-     */
 
   }
 
@@ -161,54 +111,54 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     //merge identical elements should return same element
     merge(
-      Declaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1")),
-      Declaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1")),
-      Declaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"))
-    ) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"), Set()),
+      PrivacyDeclaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"), Set()),
+      PrivacyDeclaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set()))
     //same split into 2 declarations
     merge(
-      Declaration("a", Set("ca"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca1"), "ua", "qa", Set("sa1"))
-    ) shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca1"), "ua", "qa", Set("sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a,b", Set("ca"), "ua", "qa", Set("sa"), Set()))
 
     //merge elements in a single declaration
-    merge(Declaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"))) shouldBe Set(
-      Declaration("a", Set("ca"), "ua", "qa", Set("sa"))
+    merge(PrivacyDeclaration("a", Set("ca", "ca1"), "ua", "qa", Set("sa", "sa1"), Set())) shouldBe Set(
+      PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())
     )
     //same split into 2 declarations
     merge(
-      Declaration("a", Set("ca"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca1"), "ua", "qa", Set("sa1"))
-    ) shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca1"), "ua", "qa", Set("sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a,b", Set("ca"), "ua", "qa", Set("sa"), Set()))
 
     merge(
-      Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1"))
-    ) shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca2"), "ua", "qa", Set("sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a,b", Set("ca"), "ua", "qa", Set("sa"), Set()))
 
     merge(
-      Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1"))
-    ) shouldBe Set(Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca2"), "ua", "qa", Set("sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a,b", Set("ca"), "ua", "qa", Set("sa"), Set()))
 
     //different use values
     merge(
-      Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")),
-      Declaration("c", Set("ca1"), "ub", "qa", Set("sa")),
-      Declaration("d", Set("ca2"), "ub", "qa", Set("sa1"))
+      PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca2"), "ua", "qa", Set("sa1"), Set()),
+      PrivacyDeclaration("c", Set("ca1"), "ub", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("d", Set("ca2"), "ub", "qa", Set("sa1"), Set())
     ) shouldBe Set(
-      Declaration("a,b", Set("ca"), "ua", "qa", Set("sa")),
-      Declaration("c,d", Set("ca"), "ub", "qa", Set("sa"))
+      PrivacyDeclaration("a,b", Set("ca"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("c,d", Set("ca"), "ub", "qa", Set("sa"), Set())
     )
 
     //same use values, different category roots
     merge(
-      Declaration("a", Set("ca1"), "ua", "qa", Set("sa")),
-      Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")),
-      Declaration("c", Set("cb1"), "ua", "qa", Set("sa")),
-      Declaration("d", Set("cb2"), "ua", "qa", Set("sa1"))
-    ) shouldBe Set(Declaration("a,b,c,d", Set("ca", "cb"), "ua", "qa", Set("sa")))
+      PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("b", Set("ca2"), "ua", "qa", Set("sa1"), Set()),
+      PrivacyDeclaration("c", Set("cb1"), "ua", "qa", Set("sa"), Set()),
+      PrivacyDeclaration("d", Set("cb2"), "ua", "qa", Set("sa1"), Set())
+    ) shouldBe Set(PrivacyDeclaration("a,b,c,d", Set("ca", "cb"), "ua", "qa", Set("sa"), Set()))
 
   }
 
@@ -219,34 +169,43 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     //diff of identitcal
     diff(
-      Seq(Declaration("a", Set("ca"), "ua", "qa", Set("sa"))),
-      Seq(Declaration("b", Set("ca"), "ua", "qa", Set("sa")))
+      Seq(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())),
+      Seq(PrivacyDeclaration("b", Set("ca"), "ua", "qa", Set("sa"), Set()))
     ) shouldBe Set()
     //diff of child/parent cat
     diff(
-      Seq(Declaration("a", Set("ca"), "ua", "qa", Set("sa"))),
-      Seq(Declaration("b", Set("ca1"), "ua", "qa", Set("sa")))
-    ) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set()))
+      Seq(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())),
+      Seq(PrivacyDeclaration("b", Set("ca1"), "ua", "qa", Set("sa"), Set()))
+    ) shouldBe Set(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set(), Set()))
     //diff of child/parent subject-cat
     diff(
-      Seq(Declaration("a", Set("ca"), "ua", "qa", Set("sa"))),
-      Seq(Declaration("b", Set("ca"), "ua", "qa", Set("sa1")))
-    ) shouldBe Set(Declaration("a", Set(), "ua", "qa", Set("sa")))
+      Seq(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())),
+      Seq(PrivacyDeclaration("b", Set("ca"), "ua", "qa", Set("sa1"), Set()))
+    ) shouldBe Set(PrivacyDeclaration("a", Set(), "ua", "qa", Set("sa"), Set()))
     //diff of child/parent both
     diff(
-      Seq(Declaration("a", Set("ca"), "ua", "qa", Set("sa"))),
-      Seq(Declaration("b", Set("ca1"), "ua", "qa", Set("sa1")))
-    ) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set("sa")))
+      Seq(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())),
+      Seq(PrivacyDeclaration("b", Set("ca1"), "ua", "qa", Set("sa1"), Set()))
+    ) shouldBe Set(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set()))
     //diff of child/parent both split between multiple
     diff(
-      Seq(Declaration("a", Set("ca"), "ua", "qa", Set("sa"))),
-      Seq(Declaration("b", Set("ca1"), "ua", "qa", Set("sa1")))
-    ) shouldBe Set(Declaration("a", Set("ca"), "ua", "qa", Set("sa")))
+      Seq(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set())),
+      Seq(PrivacyDeclaration("b", Set("ca1"), "ua", "qa", Set("sa1"), Set()))
+    ) shouldBe Set(PrivacyDeclaration("a", Set("ca"), "ua", "qa", Set("sa"), Set()))
     //split by use
     diff(
-      Seq(Declaration("a", Set("ca1"), "ua", "qa", Set("sa1")), Declaration("a", Set("ca1"), "ua1", "qa", Set("sa1"))),
-      Seq(Declaration("b", Set("ca2"), "ua", "qa", Set("sa1")), Declaration("b", Set("ca2"), "ua1", "qa", Set("sa1")))
-    ) shouldBe Set(Declaration("a", Set("ca1"), "ua", "qa", Set()), Declaration("a", Set("ca1"), "ua1", "qa", Set()))
+      Seq(
+        PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set("sa1"), Set()),
+        PrivacyDeclaration("a", Set("ca1"), "ua1", "qa", Set("sa1"), Set())
+      ),
+      Seq(
+        PrivacyDeclaration("b", Set("ca2"), "ua", "qa", Set("sa1"), Set()),
+        PrivacyDeclaration("b", Set("ca2"), "ua1", "qa", Set("sa1"), Set())
+      )
+    ) shouldBe Set(
+      PrivacyDeclaration("a", Set("ca1"), "ua", "qa", Set(), Set()),
+      PrivacyDeclaration("a", Set("ca1"), "ua1", "qa", Set(), Set())
+    )
 
     //split by qualifier
 

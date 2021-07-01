@@ -81,9 +81,6 @@ class FormatConversionTest extends AnyFunSuite with Matchers {
     testObject(DatasetGen.sample.get)
   }
 
-  test("test dataset table format conversion") {
-    testObject(DatasetTableGen.sample.get)
-  }
   test("test dataset field format conversion") {
     testObject(DatasetFieldGen.sample.get)
   }

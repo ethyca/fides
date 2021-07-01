@@ -8,18 +8,18 @@ class DatasetFieldValidatorTest
   extends ValidatorTestBase[DatasetField, Long](DatasetFieldGen, App.datasetFieldDAO, App.datasetFieldValidator) {
 
   test("create requires belonging to a table with a valid organization") {
-    createValidationErrors(_.copy(datasetTableId = randomLong)) should containMatchString("no parent")
+    createValidationErrors(_.copy(datasetId = randomLong)) should containMatchString("no parent")
   }
 
   test("create requires categories to exist") {
     createValidationErrors(
-      _.copy(datasetTableId = 1, dataCategories = Some(Set("not_a_valid_category")))
+      _.copy(datasetId = 1L, dataCategories = Some(Set("not_a_valid_category")))
     ) should containMatchString("data category does not exist")
   }
 
   test("create requires qualifier to exist") {
     createValidationErrors(
-      _.copy(datasetTableId = 1, dataQualifier = Some("not_a_valid_qualifier"))
+      _.copy(datasetId = 1L, dataQualifier = Some("not_a_valid_qualifier"))
     ) should containMatchString(" data qualifier does not exist")
   }
 

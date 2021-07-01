@@ -30,7 +30,7 @@ class DataSubjectValidatorTest
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
       sDao.create(
-        blankSystem.copy(declarations = Seq(DeclarationGen.sample.get.copy(dataSubjectCategories = Set(newKey))))
+        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataSubjects = Set(newKey))))
       )
     )
 
@@ -90,7 +90,7 @@ class DataSubjectValidatorTest
 
     deleteValidationErrors(newKeyId) shouldNot containMatchString("systems")
 
-    //delete policyrule, update and delete should pass
+    //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
       DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),

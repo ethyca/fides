@@ -25,7 +25,9 @@ class DataCategoryValidatorTest
     newTaxonomyValue = waitFor(dao.create(DataCategory(0, None, 1, newKey, None, None, None)))
     newId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(declarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey)))))
+      sDao.create(
+        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey))))
+      )
     )
 
     newPolicyRule = waitFor(
@@ -84,7 +86,7 @@ class DataCategoryValidatorTest
 
     deleteValidationErrors(newId) shouldNot containMatchString("systems")
 
-    //delete policyrule, update and delete should pass
+    //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
       DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
