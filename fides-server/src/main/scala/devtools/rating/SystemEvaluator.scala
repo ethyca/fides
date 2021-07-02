@@ -195,7 +195,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     *    - they have the same data use
     *    - they have the same data qualifier
     *
-    * data subject categories are the mergeDeclarations of both data subject categories
+    * data subjects are the mergeDeclarations of both data subjects
     * data categories are the mergeDeclarations of both data categories
     *
     * where "mergeDeclarations" means:

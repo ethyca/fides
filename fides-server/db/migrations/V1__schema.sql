@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS POLICY_RULE (
     description VARCHAR(1000),
     data_categories JSON NOT NULL,
     data_uses JSON NOT NULL,
-    data_subject_categories JSON NOT NULL,
+    data_subjects JSON NOT NULL,
     data_qualifier VARCHAR(100),
     `action` VARCHAR(100) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

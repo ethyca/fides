@@ -74,10 +74,10 @@ class DataSubjectValidator(val daos: DAOs)(implicit val executionContext: Execut
       case _ => Future.successful(errors)
     }
 
-  /** Add to errors if the data subject category key is found in any existing system in this organization. */
+  /** Add to errors if the data subject key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dataUse: DataSubject, errors: MessageCollector): Future[MessageCollector] =
     daos.systemDAO
-      .findSystemsWithJsonMember(dataUse.organizationId, dataUse.fidesKey, "dataSubjectCategories")
+      .findSystemsWithJsonMember(dataUse.organizationId, dataUse.fidesKey, "dataSubjects")
       .map { systemIds =>
         if (systemIds.nonEmpty) {
           errors.addError(s"The fides key ${dataUse.fidesKey} is in use in systems ${systemIds.mkString(",")}")
@@ -85,9 +85,9 @@ class DataSubjectValidator(val daos: DAOs)(implicit val executionContext: Execut
         errors
       }
 
-  /** Add to errors if the data subject category key is found in any existing policy rule. */
+  /** Add to errors if the data subject key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dataUse: DataSubject, errors: MessageCollector): Future[MessageCollector] =
-    daos.policyRuleDAO.findPolicyRuleWithSubjectCategory(dataUse.organizationId, dataUse.fidesKey).map { ruleIds =>
+    daos.policyRuleDAO.findPolicyRuleWithSubject(dataUse.organizationId, dataUse.fidesKey).map { ruleIds =>
       if (ruleIds.nonEmpty) {
         errors.addError(s"The fides key ${dataUse.fidesKey} is in use in policy rules ${ruleIds.mkString(",")}")
       }

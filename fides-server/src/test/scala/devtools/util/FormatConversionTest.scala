@@ -51,7 +51,7 @@ class FormatConversionTest extends AnyFunSuite with Matchers {
     testObject(DataUseGen.sample.get)
   }
 
-  test("test data subject category format conversion") {
+  test("test data subject format conversion") {
     testObject(DataSubjectGen.sample.get)
   }
 

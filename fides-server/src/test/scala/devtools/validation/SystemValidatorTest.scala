@@ -20,10 +20,9 @@ class SystemValidatorTest
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        privacyDeclarations =
-          Seq(DeclarationGen.sample.get.copy(dataSubjects = Set("not a valid data subject category")))
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataSubjects = Set("not a valid data subject")))
       )
-    ) should containMatchString("data subject category")
+    ) should containMatchString("data subject")
 
   }
   test("Only valid registry ids") {

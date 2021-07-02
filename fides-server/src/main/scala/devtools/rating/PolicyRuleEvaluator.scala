@@ -30,14 +30,14 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
   /** Subject categories matches the policy rule subject category value(s) */
   def subjectCategoriesMatch(
     organizationId: Long,
-    subjectCategories: PolicyValueGrouping,
+    subjects: PolicyValueGrouping,
     declaration: PrivacyDeclaration
   ): Boolean = {
     groupingMatch(
-      "data subject categories",
+      "data subjects",
       organizationId,
       daos.dataSubjectDAO,
-      subjectCategories,
+      subjects,
       declaration.dataSubjects
     )
   }
@@ -64,7 +64,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     val c = categoriesMatch(rule.organizationId, rule.dataCategories, declaration)
     val u = usesMatch(rule.organizationId, rule.dataUses, declaration)
     val q = qualifierMatches(rule.organizationId, rule.dataQualifier, declaration)
-    val s = subjectCategoriesMatch(rule.organizationId, rule.dataSubjectCategories, declaration)
+    val s = subjectCategoriesMatch(rule.organizationId, rule.dataSubjects, declaration)
 
     if (c && u && q && s) {
       logger.debug("matching on rule={}, declaration={}", rule, declaration)

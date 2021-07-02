@@ -322,7 +322,7 @@ object Tables {
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val dataCategories: Rep[String]            = column[String]("data_categories")
     val dataUses: Rep[String]                  = column[String]("data_uses")
-    val dataSubjectCategories: Rep[String]     = column[String]("data_subject_categories")
+    val dataSubjects: Rep[String]              = column[String]("data_subjects")
     val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")
     val action: Rep[String]                    = column[String]("action")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
@@ -338,7 +338,7 @@ object Tables {
         description,
         dataCategories,
         dataUses,
-        dataSubjectCategories,
+        dataSubjects,
         dataQualifier,
         action,
         creationTime,

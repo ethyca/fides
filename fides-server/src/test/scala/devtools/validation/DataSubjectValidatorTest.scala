@@ -36,7 +36,7 @@ class DataSubjectValidatorTest
 
     newPolicyRule = waitFor(
       prDao.create(
-        PolicyRuleGen.sample.get.copy(organizationId = 1, dataSubjectCategories = PolicyValueGrouping(ALL, Set(newKey)))
+        PolicyRuleGen.sample.get.copy(organizationId = 1, dataSubjects = PolicyValueGrouping(ALL, Set(newKey)))
       )
     )
     createdIds.add(newKeyId)

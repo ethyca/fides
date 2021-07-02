@@ -51,8 +51,8 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       validateDataUseCategories(sys.organizationId, sys.privacyDeclarations.map(_.dataUse).toSet, errors)
       /* All declared qualifiers must be valid data dataQualifier members */
       validateQualifiers(sys.organizationId, sys.privacyDeclarations.map(_.dataQualifier).toSet, errors)
-      /* All declared data subject categories must be valid members */
-      validateDataSubjectCategories(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
+      /* All declared data subjects must be valid members */
+      validateDataSubjects(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
     }
   }
 

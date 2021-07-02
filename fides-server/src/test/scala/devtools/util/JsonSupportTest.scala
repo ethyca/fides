@@ -98,7 +98,7 @@ class JsonSupportTest extends AnyFunSuite with TestUtils {
                 |          "provide"
                 |        ]
                 |      },
-                |      "dataSubjectCategories": {
+                |      "dataSubjects": {
                 |        "inclusion": "ANY",
                 |        "values": []
                 |      },
@@ -119,7 +119,7 @@ class JsonSupportTest extends AnyFunSuite with TestUtils {
                 |          "provide"
                 |        ]
                 |      },
-                |      "dataSubjectCategories": {
+                |      "dataSubjects": {
                 |        "inclusion": "ANY",
                 |        "values": []
                 |      },
