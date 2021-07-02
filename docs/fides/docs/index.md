@@ -14,7 +14,9 @@ When data governance is declared and colocated with the source code by engineers
 
 ---
 
-## Diagram
+## Fides Workflow Diagram
+
+![alt text](img/fides_diagram.svg "Fides Workflow Diagram")
 
 ## Quick Example
 
@@ -125,8 +127,6 @@ system:
     datasets: ["user_data"]
 ```
 
-For further context on how to setup and configure Fides, visit the [Getting Started](getting_started.md) and [Fides Objects](fides_objects.md) pages.
-
 ---
 
 ## Core Components
@@ -166,3 +166,7 @@ Fides defines data privacy with four dimensions. Each of these dimensions can be
 (customer, job applicant, supplier...)
 * data qualifier: How explicitly is this data being stored?
 (anonymized, fully identified, aggregated...)
+
+## Next Steps
+
+For further context on how to setup and configure Fides, visit the [Getting Started](getting_started.md) and [Fides Objects](fides_objects.md) pages.

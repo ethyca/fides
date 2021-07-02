@@ -16,7 +16,6 @@ The easiest way to get started with Fides is to launch it using the supplied `ma
 1. `make cli` -> this will build the required images, spin up the database, and open a shell inside of a container with `fidesctl` installed
 1. About 15 seconds after the `fidesctl` shell initializes, run the `fidesctl ping` command to verify that `fidesctl` can communicate with the server.
 1. `fidesctl` -> this command will list all of the possible `fidesctl` commands
-1. See the [Tutorial](tutorial.md) page for further usage guides
 
 ## Running Fides Locally
 
@@ -39,3 +38,7 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 1. `sbt ~jetty:start` -> You now have a Fides Server instance up and running powered by MySQL!
 1. In a new shell -> `pip install fidesctl`
 1. You can now run `fidesctl ping` to verify that your installation is set up properly
+
+## Next Steps
+
+See the [Tutorial](tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
