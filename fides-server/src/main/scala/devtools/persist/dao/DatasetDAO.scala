@@ -1,15 +1,14 @@
 package devtools.persist.dao
 
-import devtools.domain.{Dataset, DatasetField}
+import devtools.domain.Dataset
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
+import devtools.persist.db.Queries.datasetQuery
 import devtools.persist.db.Tables.DatasetQuery
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}
-import slick.lifted.CanBeQueryCondition
 
 import java.sql.Timestamp
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionContext)
   extends DAO[Dataset, Long, DatasetQuery](datasetQuery) with AutoIncrementing[Dataset, DatasetQuery]
@@ -44,22 +43,5 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.datasetType like value) ||
     (t.location like value)
   }
-
-//  /** Retrieve all datasets that match the given filter populated with fields. */
-//  def findHydrated[C <: Rep[_]](
-//    expr: DatasetQuery => C
-//  )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
-//    val q = for {
-//      (dataset, field) <- query.filter(
-//        expr
-//      ) join datasetFieldQuery on (_.id === _.datasetId)
-//    } yield (dataset, field)
-//
-//    db.run(q.result).map { t =>
-//      t.groupBy(_._1).map { t1: (Dataset, Seq[(Dataset, DatasetField)]) =>
-//        t1._1.copy(fields = Some(t1._2.map(_._2)))
-//      }
-//    }
-//  }
 
 }
