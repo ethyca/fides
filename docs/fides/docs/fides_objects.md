@@ -153,7 +153,6 @@ A system represents the privacy usage of a single software project, service, cod
         systemType: "service"
         metadata:
           name: "Demo System"
-        description: "A demo system for testing."
         privacyDeclarations:
           - dataCategories:
               - "customer_content_data"
@@ -169,10 +168,12 @@ A system represents the privacy usage of a single software project, service, cod
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
+| registryId | Int | Id of the registry this system belongs to |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | systemType | String | The type of system being declared |
+| metadata | Map[String, String] | A key-value pair field to add various additional info |
 | privacyDeclarations | List[privacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
-| systemDependencies | List | Systems that this system depends on, identified by their fidesKey |
+| systemDependencies | List[fidesKey] | Systems that this system depends on, identified by their fidesKey |
 
 ### Privacy Declaration
 
@@ -192,9 +193,7 @@ A Privacy Declaration can be read as "This system uses data in categories `dataC
 
 ## Dataset
 
-A Dataset represents any kind of place where data is stores. It consists of field names, along with descriptions of the data category and qualifer held for each field. Data descriptions
-for datastore fields do not contain data use or data subject category values, since
-those related to the useage of data.
+A Dataset represents any kind of place where data is stored and includes a sub-object that describes the fields within that dataset.
 
 === "Example Manifest"
 
@@ -206,36 +205,110 @@ those related to the useage of data.
         description: "This is a Sample Database Dataset"
         datasetType: "MySQL"
         location: "US East" # Geographic location of the dataset
-        tables:
-          - name: "sample_db_table_1"
-            description: "Sample DB Table Description"
-            fields:
-              - name: "first_name"
-                description: "A First Name Field"
-                dataCategories:
-                  - "derived_data"
-                dataQualifier: "identified_data"
-              - name: "email"
-                description: "User's Email"
-                dataCategories:
-                  - "account_data"
-                dataQualifier: "identified_data"
-              - name: "Food Preference"
-                description: "User's favorite food"
+        fields:
+          - name: "first_name"
+            description: "A First Name Field"
+            dataCategories:
+              - "derived_data"
+            dataQualifier: "identified_data"
+          - name: "email"
+            description: "User's Email"
+            dataCategories:
+              - "account_data"
+            dataQualifier: "identified_data"
+          - name: "Food Preference"
+            description: "User's favorite food"
     ```
 
 | Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this system belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| name | String | A name for this dataset |
+| description | String | A description of what this dataset exists for |
+| datasetType | String | The type of dataset being declared |
+| location | String | The physical location of the dataset |
+| fields | List[Fields] | A list of fields (see `Field` below) |
+
+### Field
+
+A Field describes a single column or array of data within a dataset. Data descriptions for dataset fields do not contain data use or data subject values as those refer specifically to data usage.
+
+| Name | Type | Description |
 |  --- | --- | --- |
-| dataCategories | List[String] | Id of the organization this system belongs to |
-| dataSubjects | List[String] | Id of the organization this system belongs to |
-| dataUse | String | Id of the organization this system belongs to |
-| dataQualifier | String | Id of the organization this system belongs to |
-| dataSets | String | Id of the organization this system belongs to |
+| name | String | A name for this field |
+| description | String | A description of what this field contains |
+| dataCategories | List[String] | The data categories that apply to this field |
+| dataQualifier | String | The data qualifier for this data |
 
 ---
 
 ## Policies
 
+Privacy policies describe what kinds of data are acceptable for what kinds of use. Fides compares the data usage you are declaring against the policies you are permitting to evaluate your state of compliance.
+
+=== "Example Manifest"
+
+    ```yaml
+    policy:
+      organizationId: 1
+      fidesKey: "primaryPrivacyPolicy"
+      rules:
+        - organizationId: 1
+          fidesKey: "rejectTargetedMarketing"
+          dataCategories:
+            inclusion: "ANY"
+            values:
+              - profiling_data
+              - account_data
+              - derived_data
+              - cloud_service_provider_data
+          dataUses:
+            inclusion: ANY
+            values:
+              - market_advertise_or_promote
+              - offer_upgrades_or_upsell
+          dataSubjectCategories:
+            inclusion: ANY
+            values:
+              - trainee
+              - commuter
+          dataQualifier: pseudonymized_data
+          action: REJECT
+        - organizationId: 1
+          fidesKey: rejectSome
+          dataCategories:
+            inclusion: ANY
+            values:
+              - user_location
+              - personal_health_data_and_medical_records
+              - connectivity_data
+              - credentials
+          dataUses:
+            inclusion: ALL
+            values:
+              - improvement_of_business_support_for_contracted_service
+              - personalize
+              - share_when_required_to_provide_the_service
+          dataSubjectCategories:
+            inclusion: NONE
+            values:
+              - trainee
+              - commuter
+              - patient
+          dataQualifier: pseudonymized_data
+          action: REJECT
+    ```
+
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this system belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| name | String | A name for this dataset |
+| description | String | A description of what this dataset exists for |
+| datasetType | String | The type of dataset being declared |
+| location | String | The physical location of the dataset |
+| fields | List[Fields] | A list of fields (see `Field` below) |
 ### Policy rules
 
 Aside from some identifing data, a policy is made up of a collection of rules. Each rule specifies an action:
@@ -288,7 +361,6 @@ A policy rule _applies_ to a system if
 To evaluate a system against a policy, we evaluate all rules and take the _most_ restricive interpretation.
 
 ### A Complete Policy
-
 
 ```yaml
 policy:
