@@ -45,21 +45,21 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.location like value)
   }
 
-  /** Retrieve all datasets that match the given filter populated with fields. */
-  def findHydrated[C <: Rep[_]](
-    expr: DatasetQuery => C
-  )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
-    val q = for {
-      (dataset, field) <- query.filter(
-        expr
-      ) join datasetFieldQuery on (_.id === _.datasetId)
-    } yield (dataset, field)
-
-    db.run(q.result).map { t =>
-      t.groupBy(_._1).map { t1: (Dataset, Seq[(Dataset, DatasetField)]) =>
-        t1._1.copy(fields = Some(t1._2.map(_._2)))
-      }
-    }
-  }
+//  /** Retrieve all datasets that match the given filter populated with fields. */
+//  def findHydrated[C <: Rep[_]](
+//    expr: DatasetQuery => C
+//  )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
+//    val q = for {
+//      (dataset, field) <- query.filter(
+//        expr
+//      ) join datasetFieldQuery on (_.id === _.datasetId)
+//    } yield (dataset, field)
+//
+//    db.run(q.result).map { t =>
+//      t.groupBy(_._1).map { t1: (Dataset, Seq[(Dataset, DatasetField)]) =>
+//        t1._1.copy(fields = Some(t1._2.map(_._2)))
+//      }
+//    }
+//  }
 
 }
