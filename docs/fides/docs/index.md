@@ -148,15 +148,15 @@ Datastore privacy declarations are more limited than system privacy declarations
 
 ### Registries
 
-A Registry is a collection of systems analyzed as a group. Since a registry also contains some information on how systems depend on each other, an analysis of a registry also includes checking on the validity of declared system dependencies and the validity of the declared relationships.
+A Registry is a collection of systems analyzed as a group. Since a registry also contains some information on how systems depend on each other, an analysis of a registry also includes checking on the validity of each system and their dependencies.
 
 ### Privacy Policies
 
-Privacy policies describe what kinds of data are acceptable for use. Fides compares the data useage you are declaring against the policies you are permitting and reports on your compliance.
+Privacy policies describe what kinds of data are acceptable for what kinds of use. Fides compares the data usage you are declaring against the policies you are permitting to evaluate your state of compliance.
 
-## How Is Data Privacy Described?
+### Describing Data Privacy
 
-Data privacy is defined along four "axes". Each of these axes can be defined on an organization-wide basis, and allow for hierarchical definition
+Fides defines data privacy with four dimensions. Each of these dimensions can be defined on an organization-wide basis, and allow for hierarchical definition.
 
 * data category: What kind of data is contained here?
 (personal health data, account data, telemetry data...)
