@@ -158,7 +158,7 @@ A system represents the privacy usage of a single software project, service, cod
               - "customer_content_data"
             dataUse: "provide"
             dataQualifier: "anonymized_data"
-            dataSubjectCategories:
+            dataSubjects:
               - "anonymous_user"
             dataSets:
               - "user_data"
@@ -245,7 +245,7 @@ A Field describes a single column or array of data within a dataset. Data descri
 
 ## Policies
 
-Privacy policies describe what kinds of data are acceptable for what kinds of use. Fides compares the data usage you are declaring against the policies you are permitting to evaluate your state of compliance.
+Policies group together sets of privacy rules into a single object. These are the objects that systems and registries will be evaluated against.
 
 === "Example Manifest"
 
@@ -253,9 +253,8 @@ Privacy policies describe what kinds of data are acceptable for what kinds of us
     policy:
       organizationId: 1
       fidesKey: "primaryPrivacyPolicy"
-      rules:
-        - organizationId: 1
-          fidesKey: "rejectTargetedMarketing"
+      privacyRules:
+        - fidesKey: "rejectTargetedMarketing"
           dataCategories:
             inclusion: "ANY"
             values:
@@ -268,15 +267,14 @@ Privacy policies describe what kinds of data are acceptable for what kinds of us
             values:
               - market_advertise_or_promote
               - offer_upgrades_or_upsell
-          dataSubjectCategories:
+          dataSubjects:
             inclusion: ANY
             values:
               - trainee
               - commuter
           dataQualifier: pseudonymized_data
           action: REJECT
-        - organizationId: 1
-          fidesKey: rejectSome
+        - fidesKey: rejectSome
           dataCategories:
             inclusion: ANY
             values:
@@ -290,7 +288,7 @@ Privacy policies describe what kinds of data are acceptable for what kinds of us
               - improvement_of_business_support_for_contracted_service
               - personalize
               - share_when_required_to_provide_the_service
-          dataSubjectCategories:
+          dataSubjects:
             inclusion: NONE
             values:
               - trainee
@@ -304,120 +302,152 @@ Privacy policies describe what kinds of data are acceptable for what kinds of us
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
-| name | String | A name for this dataset |
-| description | String | A description of what this dataset exists for |
-| datasetType | String | The type of dataset being declared |
-| location | String | The physical location of the dataset |
-| fields | List[Fields] | A list of fields (see `Field` below) |
-### Policy rules
+| privacyRules | List[privacyRule] | A list of privacy rules (see `Privacy Rule` below) |
 
-Aside from some identifing data, a policy is made up of a collection of rules. Each rule specifies an action:
-a data qualifer as well as, for each of
+### Privacy Rule
 
-```yaml
-- data uses
-- data categories
-- data subject categories
-both
-- a list of values
-- a qualifier (ANY, ALL, or NONE)
-```
+A Privacy Rule describes a single combination of data privacy classifiers that are acceptable or not.
 
-where something like, e.g.
+| Name | Type | Description |
+| --- | --- | --- |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| dataCategories | List[dataRule] | A list of data rules (see `Data Rule` below) |
+| dataUses | List[dataRule] | A list of data rules (see `Data Rule` below) |
+| dataSubjects | List[dataRule] | A list of data rules (see `Data Rule` below) |
+| dataQualifier | String | A data qualifier for this privacy rule |
+| action | Choice | A string, either `ACCEPT` or `REJECT` |
 
-```json
-{
-   "dataCategories":{
-      "inclusion":"ANY",
-      "values":[
-         "account_data",
-         "derived_data"
-      ]
-   }
-}
-```
+### Data Rule
 
-means "this rule applies if the data categories being considered match ANY of "account_data", "derived_data" (child values are considered to be matching)
+A Data Rule states what inclusion operator to use as well as a list of values to match on.
 
-#### Policy Rule Actions
+| Name | Type | Description |
+| --- | --- | --- |
+| inclusion | Choice | A string, either `ALL`, `NONE` or `ANY` |
+| values | List[fidesKey] | A list of specific data privacy classifier fidesKeys |
 
-Currently
+### Policy Rule Application
 
-```yaml
-- ACCEPT (accept if the policy matches)
-- REJECT (reject if the policy matches)
-- MANUAL (trigger a manual review process, TBD)
-```
+Fides uses a matching algorithm to determine whether or not each Privacy Declaration is acceptable or not. The following are some examples of how it works.
 
-#### Policy Rule Application
+#### Non-Matching
 
-A policy rule _applies_ to a system if
+=== "Example Privacy Rule"
 
-- the system matches the rule's categories
-- the system matches the rule's uses
-- the system matches the rule's data subject categories
-- the system qualifier matches the rule's qualifier
+    ```yaml
+      - fidesKey: "rejectTargetedMarketing"
+        dataCategories:
+          inclusion: "ANY"
+          values:
+            - customer_content_data
+            - cloud_service_provider_data
+        dataUses:
+          inclusion: ANY
+          values:
+            - provide
+            - market_advertise_or_promote
+            - offer_upgrades_or_upsell
+        dataSubjects:
+          inclusion: NONE
+          values:
+            - trainee
+            - commuter
+        dataQualifier: pseudonymized_data
+        action: REJECT
+    ```
 
-To evaluate a system against a policy, we evaluate all rules and take the _most_ restricive interpretation.
+=== "Example Privacy Declaration"
 
-### A Complete Policy
+    ```yaml
+        - dataCategories:
+            - "customer_content_data"
+          dataUses: "provide"
+          dataSubjects:
+            - "anonymous_user"
+          dataQualifier: "anonymized_data"
+          dataSets:
+            - "user_data"
+    ```
 
-```yaml
-policy:
-  organizationId: 1
-  fidesKey: "primaryPrivacyPolicy"
-  rules:
-    - organizationId: 1
-      fidesKey: "rejectTargetedMarketing"
-      dataCategories:
-        inclusion: "ANY"
-        values:
-          - profiling_data
-          - account_data
-          - derived_data
-          - cloud_service_provider_data
-      dataUses:
-        inclusion: ANY
-        values:
-          - market_advertise_or_promote
-          - offer_upgrades_or_upsell
-      dataSubjectCategories:
-        inclusion: ANY
-        values:
-          - trainee
-          - commuter
-      dataQualifier: pseudonymized_data
-      action: REJECT
-    - organizationId: 1
-      fidesKey: rejectSome
-      dataCategories:
-        inclusion: ANY
-        values:
-          - user_location
-          - personal_health_data_and_medical_records
-          - connectivity_data
-          - credentials
-      dataUses:
-        inclusion: ALL
-        values:
-          - improvement_of_business_support_for_contracted_service
-          - personalize
-          - share_when_required_to_provide_the_service
-      dataSubjectCategories:
-        inclusion: NONE
-        values:
-          - trainee
-          - commuter
-          - patient
-      dataQualifier: pseudonymized_data
-      action: REJECT
-```
+=== "Example Evaluation Logic"
+
+    ```yaml
+    - Do "ANY" of the dataCategories match?
+        - Yes
+    - Do "ANY" of the dataUses match?
+        - Yes
+    - Do "NONE" of the dataSubjects match?
+        - Yes
+    - Is the dataQualifier at the same level of exposure or higher?
+        - No
+    - Was the answer "yes" to all of the above questions?
+        - No
+    There is no match!
+    ```
+
+#### Matching
+
+=== "Example Privacy Rule"
+
+    ```yaml
+      - fidesKey: "rejectTargetedMarketing"
+        dataCategories:
+          inclusion: "ANY"
+          values:
+            - customer_content_data
+            - cloud_service_provider_data
+        dataUses:
+          inclusion: ANY
+          values:
+            - provide
+            - market_advertise_or_promote
+            - offer_upgrades_or_upsell
+        dataSubjectCategories:
+          inclusion: ANY
+          values:
+            - trainee
+            - commuter
+        dataQualifier: pseudonymized_data
+        action: REJECT
+    ```
+
+=== "Example Privacy Declaration"
+
+    ```yaml
+        - dataCategories:
+            - "customer_content_data"
+          dataUses: "provide"
+          dataSubjects:
+            - "anonymous_user"
+            - "commuter"
+          dataQualifier: "psuedonymized_data"
+          dataSets:
+            - "user_data"
+    ```
+
+=== "Example Evaluation Logic"
+
+    ```yaml
+    - Do "ANY" of the dataCategories match?
+        - Yes
+    - Do "ANY" of the dataUses match?
+        - Yes
+    - Do "NONE" of the dataSubjects match?
+        - Yes
+    - Is the dataQualifier at the same level of exposure or higher?
+        - Yes
+    - Was the answer "yes" to all of the above questions?
+        - Yes
+    There is a match, and the Privacy Declaration evaluates to "REJECT"!
+    ```
+
+When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.
 
 ---
 
 ## Approvals
 
-We evaluate both systems and registries. Since a registry is essentially a graph of systems, a registry evaluation is just an evaluation of each individual system along with a few additional checks on the system graph as a whole.
+Fides evaluates both systems and registries. Since a registry is a graph of systems, a registry evaluation is an evaluation of each individual system as well as a few additional checks on the graph as a whole.
 
 When the evaluation of a system manifest is triggered, the following checks are run:
 
