@@ -6,13 +6,13 @@ It is designed to help companies stay compliant by briding the gap between compl
 
 When data governance is declared and colocated with the source code by engineers, it makes it possible for organizations to handle data privacy in a proactive manner.
 
-Fides is a tool to help you keep track of how you are working with and exposing sensitive data during the software devleopment lifecycle. By comparing your useage of sensitive data with your stated privacy policies, as well as with the data used by related systems, Fides can determine whether you are in conformance with those policies, and suggest what needs to be changed to come back into complicance.
-
 ## Principles
 
 * Data Lineage as YAML
 * Compliance controls at the CI layer
 * Synergy between engineers and lawyers
+
+---
 
 ## Diagram
 
@@ -125,12 +125,13 @@ system:
     datasets: ["user_data"]
 ```
 
-For further info on how to setup Fides, visit the [Getting Started](getting_started.md) page.
-For further info on Fides objects, visit the [Fides Objects](fides_objects.md) page.
+For further context on how to setup and configure Fides, visit the [Getting Started](getting_started.md) and [Fides Objects](fides_objects.md) pages.
+
+---
 
 ## Core Components
 
-Conceptually, there are a few key parts to Fides privacy management:
+Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Object](fides_objects.md) page.
 
 ### Systems
 
@@ -147,13 +148,13 @@ Datastore privacy declarations are more limited than system privacy declarations
 
 ### Registries
 
-A Registry is simply a collection of systems analyzed as a group. Since a registry also contains some information on how systems depend on each other, an analysis of a registry also includes checking on the validity of declared system dependencies and the validity of the declared relationships.
+A Registry is a collection of systems analyzed as a group. Since a registry also contains some information on how systems depend on each other, an analysis of a registry also includes checking on the validity of declared system dependencies and the validity of the declared relationships.
 
 ### Privacy Policies
 
 Privacy policies describe what kinds of data are acceptable for use. Fides compares the data useage you are declaring against the policies you are permitting and reports on your compliance.
 
-## How is data privacy described?
+## How Is Data Privacy Described?
 
 Data privacy is defined along four "axes". Each of these axes can be defined on an organization-wide basis, and allow for hierarchical definition
 
