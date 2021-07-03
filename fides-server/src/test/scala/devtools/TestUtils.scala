@@ -114,8 +114,10 @@ object Generators {
   val availableDataUses: Seq[String]       = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDataCategories: Seq[String] = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDataSubjects: Seq[String]   = App.dataSubjectDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDatasets: Seq[String] =
+  lazy val availableDatasets: Seq[String] =
     waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
+  lazy val availableDatasetsOrFields: Seq[String] = availableDatasets ++
+    availableDatasets.map(dsName => s"$dsName.fieldName${faker.Name.first_name}")
   val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
   val genLongName: Gen[String] = Gen.resultOf { _: Int => faker.Name.name }
   def fidesKey: String         = sanitizeUniqueIdentifier(faker.Name.name + "_" + faker.Name.name)
@@ -264,7 +266,7 @@ object Generators {
       use,
       qualifier,
       smallSetOf(1, 4, availableDataSubjects),
-      Set() //TODO fields??
+      smallSetOf(0, 4, availableDatasetsOrFields)
     )
   val OrgGen: Gen[Organization] =
     for {

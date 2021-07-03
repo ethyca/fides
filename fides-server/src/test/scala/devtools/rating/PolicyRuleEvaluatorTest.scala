@@ -92,22 +92,22 @@ class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndA
   val s2 = "citizen_voter"
   val s3 = "commuter"
   test("test subject category match") {
-    rater.subjectCategoriesMatch(
+    rater.subjectsMatch(
       1,
       PolicyValueGrouping(ANY, Set(s1)),
       PrivacyDeclaration("test", null, null, null, Set(s1), Set())
     ) shouldEqual true
-    rater.subjectCategoriesMatch(
+    rater.subjectsMatch(
       1,
       PolicyValueGrouping(ANY, Set(s1, s2)),
       PrivacyDeclaration("test", null, null, null, Set(s1), Set())
     ) shouldEqual true
-    rater.subjectCategoriesMatch(
+    rater.subjectsMatch(
       1,
       PolicyValueGrouping(NONE, Set(s1, s2)),
       PrivacyDeclaration("test", null, null, null, Set(s3), Set())
     ) shouldEqual true
-    rater.subjectCategoriesMatch(
+    rater.subjectsMatch(
       1,
       PolicyValueGrouping(NONE, Set(s1, s2)),
       PrivacyDeclaration("test", null, null, null, Set(s1), Set())

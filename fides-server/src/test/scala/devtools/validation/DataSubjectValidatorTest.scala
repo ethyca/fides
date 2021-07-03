@@ -64,7 +64,6 @@ class DataSubjectValidatorTest
     ) should containMatchString("parentId")
   }
 
-  /*
   test("update or delete with fides key in use by system fails") {
     //attempt to update with new key
     updateValidationErrors(
@@ -100,7 +99,6 @@ class DataSubjectValidatorTest
     //attempt to delete with the new key
     deleteValidationErrors(newKeyId) shouldNot containMatchString("is in use in policy rules")
   }
-   */
 
   test("delete with children") {
     deleteValidationErrors(newKeyId) should containMatchString("child")

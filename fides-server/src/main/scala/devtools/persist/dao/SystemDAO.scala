@@ -70,11 +70,10 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     )
   }
   /** find systems that reference a particular dataset. */
-  //TODO
   def findSystemsWithDataset(organizationId: Long, fidesKey: String): Future[Seq[Long]] = {
     val sanitized = sanitizeUniqueIdentifier(fidesKey)
     db.run(
-      sql""" select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(datasets, 'one','#$sanitized',NULL, '$$[*]' ) IS NOT NULL;"""
+      sql""" select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(privacy_declarations, 'one','#$sanitized',NULL, '$$[*].references' ) IS NOT NULL;"""
         .as[Long]
     )
   }
