@@ -23,13 +23,13 @@ class SystemValidatorTest
         privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataSubjects = Set("not a valid data subject")))
       )
     ) should containMatchString("data subject")
-
   }
+
   test("Only valid registry ids") {
     createValidationErrors(blankSystem.copy(registryId = Some(randomLong))) should containMatchString("registry id ")
     createValidationErrors(blankSystem.copy(registryId = None)) shouldNot containMatchString("registry id ")
-
   }
+
   test("Only data use categories that exist in db are accepted") {
     createValidationErrors(
       blankSystem
@@ -38,8 +38,8 @@ class SystemValidatorTest
           privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataUse = "not_a_valid_data_use"))
         )
     ) should containMatchString("data use category")
-
   }
+
   test("Only data categories that exist in db are accepted") {
     createValidationErrors(
       blankSystem.copy(
@@ -47,7 +47,6 @@ class SystemValidatorTest
         privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set("not_a_valid_data_category")))
       )
     ) should containMatchString("data category")
-
   }
 
   test("Only data qualifiers that exist in db are accepted") {
@@ -66,6 +65,14 @@ class SystemValidatorTest
         systemDependencies = Set(name1)
       )
     ) should containMatchString(s"Invalid self reference")
+  }
+
+  test("test datasets and dataset fields in declarations must exist") {
+    // also test that they are searched for by their validated names
+    // test with a mix of dataset, dataset field names
+    // test that this works with a dataset name for a dataset record that exists
+    // with no fields specified
+    fail("TODO")
   }
 
 }

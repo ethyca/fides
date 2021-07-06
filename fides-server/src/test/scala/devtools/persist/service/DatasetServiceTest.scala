@@ -95,4 +95,8 @@ class DatasetServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLog
     waitFor(datasetFieldDAO.filter(_.id.inSet(fieldIds.toSet))).isEmpty shouldEqual true
   }
 
+  test("test dataset keys and dataset field names sanitized") {
+    fail("TODO")
+  }
+
 }

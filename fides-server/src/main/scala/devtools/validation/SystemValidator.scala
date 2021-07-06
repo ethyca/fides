@@ -1,9 +1,10 @@
 package devtools.validation
 
 import devtools.controller.RequestContext
-import devtools.domain.{DatasetName, SystemObject}
+import devtools.domain.SystemObject
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.datasetQuery
+import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
+import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,6 +19,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     checkForSelfReference(sys, errors)
     requireOrganizationIdExists(sys.organizationId, errors)
       .flatMap(_ => validateRegistryExists(sys, errors))
+      .flatMap(_ => validateDatasets(sys, errors))
       .flatMap(_ => errors.asFuture())
   }
 
@@ -53,26 +55,52 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       validateQualifiers(sys.organizationId, sys.privacyDeclarations.map(_.dataQualifier).toSet, errors)
       /* All declared data subjects must be valid members */
       validateDataSubjects(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
+      /* All declared fields must be valid members */
+      /* Dataset and field declarations acan either be a dataset fidesKey name or a dataset fides Key . fieldName
+      value.
+       */
+
     }
   }
 
   /** Require that all values listed as a dependent datasets exist */
-  def validateDatasets(
-    organizationId: Long,
-    datasets: Set[DatasetName],
-    errors: MessageCollector
-  ): Future[Unit] = {
-    val foundStrings: Future[Seq[String]] = daos.datasetDAO.runAction(
-      datasetQuery
-        .filter(d => d.organizationId === organizationId && d.fidesKey.inSet(datasets))
-        .map(d => d.fidesKey)
-        .result
-    )
-    foundStrings.map(f => {
-      datasets
-        .diff(f.toSet)
-        .foreach(s => errors.addError(s"The value '$s' given as a dataset fidesKey does not exist."))
-    })
+  def validateDatasets(sys: SystemObject, errors: MessageCollector): Future[Unit] = {
+    // datasets as declared in the privacy declarations. These may be of the form
+    // "dataset" or "dataset.field"
+    val datasetIdentifiers = sys.privacyDeclarations.flatMap(p => p.references).map(sanitizeUniqueIdentifier).toSet
+
+    // the actual names of just the dataset part for searching
+    val datasetNames           = datasetIdentifiers.map(_.split('.')(0))
+    val datasetNamesWithFields = datasetNames.filter(_.indexOf('.') > 0)
+    val query = for {
+      (dataset, field) <-
+        datasetQuery
+          .filter(d => d.organizationId === sys.organizationId && d.fidesKey.inSet(datasetNames))
+          .joinLeft(datasetFieldQuery)
+          .on(_.id === _.datasetId)
+    } yield (dataset.fidesKey, field.map(_.name))
+
+    for {
+      compositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
+        {
+          ts.map {
+            case (dsName, Some(fName)) => s"$dsName.$fName"
+            case (dsName, None)        => dsName
+          }.toSet
+        }
+      }
+      foundDsNames = compositeNames.map(_.split('.')(0))
+      _ =
+        datasetNames
+          .diff(foundDsNames)
+          .foreach(d => errors.addError(s"The value '$d' given as a dataset fidesKey does not exist."))
+      _ =
+        datasetNamesWithFields
+          .diff(compositeNames)
+          .foreach(d => errors.addError(s"The value '$d' given as a dataset.field name does not exist."))
+
+    } yield ()
+
   }
 
 }

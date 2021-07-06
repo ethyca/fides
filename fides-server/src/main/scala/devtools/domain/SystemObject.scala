@@ -29,6 +29,10 @@ final case class SystemObject(
 
 object SystemObject {
 
+  /** Apply sanitization/normalization to the references field of privacy declarations. */
+  def sanitizePrivacyDeclarations(ds: Seq[PrivacyDeclaration]): Seq[PrivacyDeclaration] =
+    ds.map(d => d.copy(references = d.references.map(sanitizeUniqueIdentifier)))
+
   type Tupled =
     (
       Long,
@@ -57,7 +61,7 @@ object SystemObject {
       s.name,
       s.description,
       s.systemType,
-      dumps(s.privacyDeclarations),
+      dumps(sanitizePrivacyDeclarations(s.privacyDeclarations)),
       dumps(s.systemDependencies),
       s.creationTime,
       s.lastUpdateTime
