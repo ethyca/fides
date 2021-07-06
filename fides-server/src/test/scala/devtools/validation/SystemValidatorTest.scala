@@ -4,6 +4,7 @@ import devtools.App
 import devtools.Generators.{DeclarationGen, SystemObjectGen, blankSystem, fidesKey}
 import devtools.domain.SystemObject
 import devtools.util.waitFor
+import org.scalatest.matchers.must.Matchers.not
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class SystemValidatorTest
@@ -72,7 +73,31 @@ class SystemValidatorTest
     // test with a mix of dataset, dataset field names
     // test that this works with a dataset name for a dataset record that exists
     // with no fields specified
-    fail("TODO")
+    // fail("TODO")
+
+    // this is search for by its sanitized name, "test-dataset_", which fails":
+    createValidationErrors(
+      blankSystem.copy(
+        fidesKey = name1,
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(references = Set("test_dataset ")))
+      )
+    ) should containMatchString("dataset")
+
+    //using validated name works fine
+    createValidationErrors(
+      blankSystem.copy(
+        fidesKey = name1,
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(references = Set("test dataset")))
+      )
+    ) shouldNot containMatchString("dataset")
+
+    createValidationErrors(
+      blankSystem.copy(
+        fidesKey = name1,
+        privacyDeclarations = Seq(DeclarationGen.sample.get.copy(references = Set("test_dataset.not a field")))
+      )
+    ) should containMatchString("not_a_field")
+
   }
 
 }

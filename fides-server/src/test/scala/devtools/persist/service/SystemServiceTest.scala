@@ -1,9 +1,10 @@
 package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
-import devtools.Generators.{DeclarationGen, blankSystem, requestContext}
+import devtools.Generators.{DeclarationGen, blankSystem, fidesKey, requestContext}
 import devtools.domain.enums.AuditAction.{CREATE, DELETE, UPDATE}
 import devtools.persist.dao.{AuditLogDAO, OrganizationDAO, SystemDAO}
+import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -28,14 +29,28 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
 
   test("test crud operations set versions and audit logs") {
 
+    val unsanitizedFidesKey = s"$fidesKey x"
+    val sanitizedFidesKey   = sanitizeUniqueIdentifier(unsanitizedFidesKey)
     val v =
       waitFor(
-        systemService.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get)), requestContext)
+        systemService.create(
+          blankSystem.copy(
+            fidesKey = unsanitizedFidesKey,
+            privacyDeclarations =
+              Seq(DeclarationGen.sample.get.copy(references = Set("test dataset", "test dataset.field1")))
+          ),
+          requestContext
+        )
       )
 
     // we should have 1 create record in the audit log
     waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1
 
+    val saved = waitFor(systemService.findByUniqueKey(1, sanitizedFidesKey)).get
+
+    saved.fidesKey shouldEqual sanitizedFidesKey
+    //dataset and field references are also sanitized
+    saved.privacyDeclarations.flatMap(_.references).toSet shouldEqual Set("test_dataset", "test_dataset.field1")
     systemIds.add(v.id)
 
     waitFor(systemService.update(v.copy(description = Some("description")), requestContext))
@@ -52,10 +67,6 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     // we should have 1 delete record in the audit log
     waitFor(findAuditLogs(v.id, "SystemObject", DELETE)).size shouldEqual 1
 
-  }
-
-  test("test dataset keys and dataset field in declarations names sanitized") {
-    fail("TODO")
   }
 
 }

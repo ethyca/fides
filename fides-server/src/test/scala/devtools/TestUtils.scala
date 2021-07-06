@@ -116,8 +116,15 @@ object Generators {
   val availableDataSubjects: Seq[String]   = App.dataSubjectDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   lazy val availableDatasets: Seq[String] =
     waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
-  lazy val availableDatasetsOrFields: Seq[String] = availableDatasets ++
-    availableDatasets.map(dsName => s"$dsName.fieldName${faker.Name.first_name}")
+  val availableDatasetsOrFields: Seq[String] = Seq(
+    "test_dataset",
+    "test_dataset.field1",
+    "test_dataset.field2",
+    "test_dataset2",
+    "test_dataset2.field1",
+    "test_dataset2.field2"
+  )
+
   val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
   val genLongName: Gen[String] = Gen.resultOf { _: Int => faker.Name.name }
   def fidesKey: String         = sanitizeUniqueIdentifier(faker.Name.name + "_" + faker.Name.name)

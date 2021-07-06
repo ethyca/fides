@@ -27,6 +27,9 @@ INSERT INTO USER(id, organization_id, user_name, first_name, last_name, role, ap
 
 INSERT INTO APPROVAL( organization_id, system_id, user_id, version_stamp, status, action) values (1,1,1,0,'PASS','test data');
 
-INSERT INTO DATASET(id, organization_id, fides_key, version_stamp, name, location, dataset_type) values (1,1,'test-dataset',0, 'my test dataset', 'us-east-1', 'SQL');
-INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (1,'table1.field1', null, '["credentials"]','aggregated_data');
-INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (1,'table2.field2', null, '[]','pseudonymized_data');
+INSERT INTO DATASET(id, organization_id, fides_key, version_stamp, name, location, dataset_type) values (1,1,'test_dataset',0, 'my test dataset', 'us-east-1', 'SQL');
+INSERT INTO DATASET(id, organization_id, fides_key, version_stamp, name, location, dataset_type) values (2,1,'test_dataset2',0, 'my test dataset 2', 'us-east-1', 'SQL');
+INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (1,'field1', null, '["credentials"]','aggregated_data');
+INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (1,'field2', null, '[]','pseudonymized_data');
+INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (2,'field1', null, '["credentials"]','aggregated_data');
+INSERT INTO DATASET_FIELD(dataset_id, name, `path`, data_categories, data_qualifier) values (2,'field2', null, '[]','pseudonymized_data');

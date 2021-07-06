@@ -56,10 +56,10 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       /* All declared data subjects must be valid members */
       validateDataSubjects(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
       /* All declared fields must be valid members */
-      /* Dataset and field declarations acan either be a dataset fidesKey name or a dataset fides Key . fieldName
+      /* Dataset and field declarations a can either be a dataset fidesKey name or a dataset fides Key . fieldName
       value.
        */
-
+      validateDatasets(sys, errors)
     }
   }
 
@@ -70,8 +70,9 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     val datasetIdentifiers = sys.privacyDeclarations.flatMap(p => p.references).map(sanitizeUniqueIdentifier).toSet
 
     // the actual names of just the dataset part for searching
-    val datasetNames           = datasetIdentifiers.map(_.split('.')(0))
-    val datasetNamesWithFields = datasetNames.filter(_.indexOf('.') > 0)
+    val datasetNames = datasetIdentifiers.map(_.split('.')(0))
+
+    val datasetNamesWithFields = datasetIdentifiers.filter(_.indexOf('.') > 0)
     val query = for {
       (dataset, field) <-
         datasetQuery
@@ -98,7 +99,6 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
         datasetNamesWithFields
           .diff(compositeNames)
           .foreach(d => errors.addError(s"The value '$d' given as a dataset.field name does not exist."))
-
     } yield ()
 
   }
