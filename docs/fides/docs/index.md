@@ -14,9 +14,15 @@ When data governance is declared and colocated with the source code by engineers
 
 ---
 
-## Fides Workflow Diagram
+## Fides Diagrams
 
-![alt text](img/fides_diagram.svg "Fides Workflow Diagram")
+### Applying Manifests
+
+![alt text](img/Manifest_Flow.svg "Fides Manifest Workflow")
+
+### CI Checks
+
+![alt text](img/CI_Workflow.svg "Fides CI Workflow")
 
 ## Quick Example
 
@@ -131,7 +137,7 @@ system:
 
 ## Core Components
 
-Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Object](fides_objects.md) page.
+Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Objects](fides_objects.md) page.
 
 ### Systems
 
@@ -148,15 +154,15 @@ Datastore privacy declarations are more limited than system privacy declarations
 
 ### Registries
 
-A Registry is a collection of systems analyzed as a group. Since a registry also contains some information on how systems depend on each other, an analysis of a registry also includes checking on the validity of each system and their dependencies.
+A Registry is a collection of systems evaluated as a group. Since a registry contains information on how systems depend on each other, an analysis of a registry also includes checking on the validity of each system and their dependencies.
 
 ### Privacy Policies
 
-Privacy policies describe what kinds of data are acceptable for what kinds of use. Fides compares the data usage you are declaring against the policies you are permitting to evaluate your state of compliance.
+Privacy Policies describe what kinds of data are acceptable for what kinds of use. Fides compares the data usage you are declaring against the policies you are defining to evaluate your state of compliance.
 
 ### Describing Data Privacy
 
-Fides defines data privacy with four dimensions. Each of these dimensions can be defined on an organization-wide basis, and allow for hierarchical definition.
+Fides defines data privacy with four dimensions, called Data Privacy Classifiers. Each of these classifiers can be defined on an organization-wide basis, and allow for hierarchical definition.
 
 * data category: What kind of data is contained here?
 (personal health data, account data, telemetry data...)
