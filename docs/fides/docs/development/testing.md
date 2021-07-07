@@ -73,6 +73,6 @@ For debugging, we recommend installing the [`pdbpp`](https://github.com/pdbpp/pd
 
 The `--sw` flag will exit `pytest` the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.
 
-## CI
+## CI Workflows
 
 CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors.
