@@ -80,7 +80,7 @@ class RatingTestData extends TestUtils {
   // -----------------------------------------
   //r1 categories. all other values match
   private val depMatchesOnlyR1 =
-    PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set())
+    PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set(), Set())
 
   private val depMatchesOnlyR2 =
     PrivacyDeclaration(
@@ -91,6 +91,7 @@ class RatingTestData extends TestUtils {
       "share",
       "identified_data",
       Set("prospect"),
+      Set(),
       Set()
     )
 
@@ -102,11 +103,12 @@ class RatingTestData extends TestUtils {
     "improvement_of_business_support_for_contracted_service",
     "identified_data",
     Set("prospect"),
+    Set(),
     Set()
   )
 
   private val depMatchesOnlyR4 =
-    PrivacyDeclaration(0L, 0L, "test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set())
+    PrivacyDeclaration(0L, 0L, "test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set(), Set())
 
   private val depMatchesBothR1R2 =
     PrivacyDeclaration(
@@ -117,6 +119,7 @@ class RatingTestData extends TestUtils {
       "improve",
       "identified_data",
       Set("prospect", "employee", "trainee"),
+      Set(),
       Set()
     )
 

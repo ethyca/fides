@@ -13,16 +13,30 @@ final case class PrivacyDeclaration(
   dataUse: DataUseName,
   dataQualifier: DataQualifierName,
   dataSubjects: Set[DataSubjectName],
-  datasetReferences: Set[String]
+  /* Dataset or dataset.field references.
+   * *These are the "use" references that will be echoed to the user.*/
+  datasetReferences: Set[String],
+  /** these are just the raw rawDatasets,(that is, with field references stripped)
+    * and are included here for ease of searching. They are an optimization and
+    * are not reflected to the user.
+    */
+  rawDatasets: Set[String]
 ) extends IdType[PrivacyDeclaration, Long] {
   /** Supply a copy of this object with an altered id. */
   override def withId(id: Long): PrivacyDeclaration = this.copy(id = id)
 }
 object PrivacyDeclaration {
 
-  type Tupled = (Long, Long, String, String, DataUseName, DataQualifierName, String, String)
+  /** collection of mixture of dataset, dataset.field to the set of unique referenced
+    * rawDatasets. e.g. [dataset1.f1, dataset2.f1, dataset2] => [dataset1, dataset2]
+    */
+  def extractDatasets(references: Iterable[String]): Set[String] = references.map(_.split('.')(0)).toSet
 
-  def toInsertable(s: PrivacyDeclaration): Option[Tupled] =
+  type Tupled = (Long, Long, String, String, DataUseName, DataQualifierName, String, String, String)
+
+  def toInsertable(s: PrivacyDeclaration): Option[Tupled] = {
+
+    val sanitizedRefs = s.datasetReferences.map(sanitizeUniqueIdentifier)
     Some(
       s.id,
       s.systemId,
@@ -31,8 +45,10 @@ object PrivacyDeclaration {
       s.dataUse,
       s.dataQualifier,
       JsonSupport.dumps(s.dataSubjects),
-      JsonSupport.dumps(s.datasetReferences.map(sanitizeUniqueIdentifier))
+      JsonSupport.dumps(sanitizedRefs),
+      JsonSupport.dumps(extractDatasets(sanitizedRefs))
     )
+  }
 
   def fromInsertable(t: Tupled): PrivacyDeclaration =
     PrivacyDeclaration(
@@ -43,7 +59,8 @@ object PrivacyDeclaration {
       t._5,
       t._6,
       JsonSupport.parseToObj[Set[String]](t._7).get,
-      JsonSupport.parseToObj[Set[String]](t._8).get
+      JsonSupport.parseToObj[Set[String]](t._8).get,
+      JsonSupport.parseToObj[Set[String]](t._9).get
     )
 
 }

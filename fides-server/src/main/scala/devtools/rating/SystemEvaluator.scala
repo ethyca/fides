@@ -224,6 +224,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           t._1._2,
           t._1._1,
           subjectCategories,
+          Set(),
           Set()
         )
       }
@@ -271,6 +272,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           t._1._2,
           t._1._1,
           subjectCategoryDiff,
+          Set(),
           Set()
         )
     }.toSet

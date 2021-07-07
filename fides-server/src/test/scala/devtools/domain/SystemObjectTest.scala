@@ -1,5 +1,4 @@
 package devtools.domain
-
 import devtools.App
 import devtools.Generators.SystemObjectGen
 import devtools.exceptions.InvalidDataException
@@ -7,8 +6,9 @@ import devtools.util.{FidesYamlProtocols, waitFor}
 import faker._
 import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import slick.jdbc.MySQLProfile.api._
 
-import java.sql.Timestamp
+import scala.concurrent.Future
 
 class SystemObjectTest
   extends DomainObjectTestBase[SystemObject, Long](
@@ -16,9 +16,17 @@ class SystemObjectTest
     SystemObjectGen,
     FidesYamlProtocols.SystemObjectFormat
   ) {
-  private val dataCategoryDAO                                   = App.dataCategoryDAO
+  private val db                                                = App.database
   override def editValue(t: SystemObject): SystemObject         = t.copy(fidesKey = Name.name)
   override def maskForComparison(t: SystemObject): SystemObject = t.copy(creationTime = None, lastUpdateTime = None)
+
+  /** How many times is this category referenced in a system? */
+  def categoryReferencesCt(categoryName: String): Future[Int] =
+    db.run(
+      sql"""select COUNT DISTINCT A.ID from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
+           B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('#$categoryName',B.data_categories) > 0"""
+        .asInstanceOf[DBIOAction[Int, NoStream, _]]
+    )
 
   test(s"System.fidesKey must be unique") {
     testInsertConstraint({ sys: SystemObject => this.generator.sample.get.copy(fidesKey = sys.fidesKey) })
@@ -36,7 +44,7 @@ class SystemObjectTest
 
   test("search for category string") {
     val dataCategory = "customer_content_data"
-    val ct: Long     = waitFor(App.systemDAO.runAction(dataCategoryDAO.categoryReferencesCtAction(dataCategory)))
+    val ct           = waitFor(categoryReferencesCt(dataCategory))
     waitFor(
       service.create(
         generator.sample.get
@@ -51,6 +59,7 @@ class SystemObjectTest
                   "provide",
                   "identified_data",
                   Set(),
+                  Set(),
                   Set()
                 )
               )
@@ -60,7 +69,7 @@ class SystemObjectTest
       )
     )
 
-    val ct2: Long = waitFor(App.systemDAO.runAction(dataCategoryDAO.categoryReferencesCtAction(dataCategory)))
+    val ct2: Int = waitFor(categoryReferencesCt(dataCategory))
     ct2 should be > ct
   }
 }

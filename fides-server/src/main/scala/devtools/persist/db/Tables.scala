@@ -113,6 +113,7 @@ object Tables {
     val dataQualifier: Rep[String]     = column[String]("data_qualifier")
     val dataSubjects: Rep[String]      = column[String]("data_subjects")
     val datasetReferences: Rep[String] = column[String]("dataset_references")
+    val rawDatasets: Rep[String]       = column[String]("raw_datasets")
     def * =
       (
         id,
@@ -122,7 +123,8 @@ object Tables {
         dataUse,
         dataQualifier,
         dataSubjects,
-        datasetReferences
+        datasetReferences,
+        rawDatasets
       ) <> (PrivacyDeclaration.fromInsertable, PrivacyDeclaration.toInsertable)
   }
 

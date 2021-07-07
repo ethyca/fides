@@ -29,8 +29,8 @@ class RegistryEvaluator(val systemEvaluator: SystemEvaluator)(implicit val execu
   def cycleCheck(systems: Seq[SystemObject]): Seq[String] =
     collectCycleErrors(systems.map(s => s.fidesKey -> s.systemDependencies))
 
-  /** Evaluate and generate an approval for the given sequence of systems and datasets.
-    * This method assumes that all systems and datasets have been populated.
+  /** Evaluate and generate an approval for the given sequence of systems and rawDatasets.
+    * This method assumes that all systems and rawDatasets have been populated.
     */
   def runEvaluation(systems: Seq[SystemObject], policies: Seq[Policy]): RegistryEvaluation = {
     val cycleWarnings = cycleCheck(systems)

@@ -6,12 +6,12 @@ INSERT INTO REGISTRY(id, organization_id, fides_key, name, description) values(2
 
 INSERT INTO SYSTEM_OBJECT(id, organization_id, fides_key, version_stamp, system_type, description,system_dependencies)
 values (1,1,'test_system_1',0, 'SYSTEM','some test system','[]');
-INSERT INTO PRIVACY_DECLARATION(system_id, `name`, data_categories, data_use, data_qualifier, data_subjects, dataset_references)
-values (1,'a','["telemetry_data"]', 'provide','aggregated_data','[]','[]');
+INSERT INTO PRIVACY_DECLARATION(system_id, `name`, data_categories, data_use, data_qualifier, data_subjects, dataset_references, raw_datasets)
+values (1,'a','["telemetry_data"]', 'provide','aggregated_data','[]','[]', '[]');
 
 INSERT INTO SYSTEM_OBJECT(id, organization_id, fides_key,version_stamp, system_type, description, system_dependencies) values (2,1,'test_system_2',0,'SYSTEM','some other test system','[]');
-INSERT INTO PRIVACY_DECLARATION(system_id, `name`, data_categories, data_use, data_qualifier, data_subjects, dataset_references)
-values (2,'b','["end_user_identifiable_information", "personal_data_of_children"]', 'provide','identified_data','[]','[]');
+INSERT INTO PRIVACY_DECLARATION(system_id, `name`, data_categories, data_use, data_qualifier, data_subjects, dataset_references, raw_datasets)
+values (2,'b','["end_user_identifiable_information", "personal_data_of_children"]', 'provide','identified_data','[]','[]', '[]');
 
 
 INSERT INTO POLICY(id, organization_id, version_stamp, fides_key, description) values (1,1,0,'test policy 1', 'random policy');

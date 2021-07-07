@@ -69,14 +69,13 @@ class DataCategoryValidator(val daos: DAOs)(implicit val executionContext: Execu
 
   /** Add to errors if the data category key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dc: DataCategory, errors: MessageCollector): Future[MessageCollector] =
-    daos.systemDAO
-      .findSystemsWithJsonMember(dc.organizationId, dc.fidesKey, "dataCategories")
-      .map { systemIds =>
-        if (systemIds.nonEmpty) {
-          errors.addError(s"The fides key ${dc.fidesKey} is in use in systems ${systemIds.mkString(",")}")
-        }
-        errors
+    daos.privacyDeclarationDAO.systemsReferencingDataCategory(dc.organizationId, dc.fidesKey).map { fidesKeys =>
+      if (fidesKeys.nonEmpty) {
+        errors.addError(s"The data category ${dc.fidesKey} is in use in systems ${fidesKeys.mkString(",")}")
       }
+      errors
+    }
+
   /** Add to errors if the data category key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dc: DataCategory, errors: MessageCollector): Future[MessageCollector] =
     daos.policyRuleDAO.findPolicyRuleWithDataCategory(dc.organizationId, dc.fidesKey).map { ruleIds =>

@@ -267,16 +267,23 @@ object Generators {
       name      <- genName
       use       <- Gen.oneOf(availableDataUses)
       qualifier <- Gen.oneOf(availableDataQualifiers)
-    } yield PrivacyDeclaration(
-      0L,
-      0L,
-      name,
-      smallSetOf(1, 4, availableDataCategories),
-      use,
-      qualifier,
-      smallSetOf(1, 4, availableDataSubjects),
-      smallSetOf(0, 4, availableDatasetsOrFields)
-    )
+    } yield {
+
+      val fields = smallSetOf(0, 4, availableDatasetsOrFields)
+
+      PrivacyDeclaration(
+        0L,
+        0L,
+        name,
+        smallSetOf(1, 4, availableDataCategories),
+        use,
+        qualifier,
+        smallSetOf(1, 4, availableDataSubjects),
+        fields,
+        PrivacyDeclaration.extractDatasets(fields)
+      )
+    }
+
   val OrgGen: Gen[Organization] =
     for {
       id          <- Gen.posNum[Int]

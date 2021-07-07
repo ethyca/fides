@@ -71,14 +71,12 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
 
   /** Add to errors if the data qualifier key is found in any existing system in this organization. */
   def fidesKeyInUseInSystem(dq: DataQualifier, errors: MessageCollector): Future[MessageCollector] =
-    daos.systemDAO
-      .findSystemsWithJsonMember(dq.organizationId, dq.fidesKey, "dataQualifier")
-      .map { systemIds =>
-        if (systemIds.nonEmpty) {
-          errors.addError(s"The fides key ${dq.fidesKey} is in use in systems ${systemIds.mkString(",")}")
-        }
-        errors
+    daos.privacyDeclarationDAO.systemsReferencingDataQualifier(dq.organizationId, dq.fidesKey).map { fidesKeys =>
+      if (fidesKeys.nonEmpty) {
+        errors.addError(s"The data qualifier ${dq.fidesKey} is in use in systems ${fidesKeys.mkString(",")}")
       }
+      errors
+    }
 
   /** Add to errors if the data qualifier key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dq: DataQualifier, errors: MessageCollector): Future[MessageCollector] =

@@ -37,14 +37,6 @@ class DataCategoryDAO(val db: Database)(implicit
       _ = r.foreach(d => cacheBuild(d.organizationId))
     } yield i
 
-  //TODO remove - this is only in use in tests
-  def categoryReferencesCtAction(
-    categoryName: String
-  ): SqlStreamingAction[Vector[Long], Long, Effect]#ResultAction[Long, NoStream, Effect] = {
-    sql"""select COUNT(*) FROM SYSTEM_OBJECT WHERE JSON_SEARCH(privacy_declarations, 'one','#$categoryName',NULL, '$$[*].dataCategories' ) IS NOT NULL"""
-      .as[Long]
-      .head
-  }
   override implicit def getResult: GetResult[DataCategory] =
     r => DataCategory(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String])
 

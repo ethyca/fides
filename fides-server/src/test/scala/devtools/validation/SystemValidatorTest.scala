@@ -68,7 +68,7 @@ class SystemValidatorTest
     ) should containMatchString(s"Invalid self reference")
   }
 
-  test("test datasets and dataset fields in declarations must exist") {
+  test("test rawDatasets and dataset fields in declarations must exist") {
     // also test that they are searched for by their validated names
     // test with a mix of dataset, dataset field names
     // test that this works with a dataset name for a dataset record that exists

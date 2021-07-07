@@ -79,9 +79,9 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     }
   }
 
-  /** Require that all values listed as a dependent datasets exist */
+  /** Require that all values listed as a dependent rawDatasets exist */
   def validateDatasets(sys: SystemObject, errors: MessageCollector): Future[Unit] = {
-    // datasets as declared in the privacy declarations. These may be of the form
+    // rawDatasets as declared in the privacy declarations. These may be of the form
     // "dataset" or "dataset.field"
     val datasetIdentifiers =
       sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).map(sanitizeUniqueIdentifier).toSet
