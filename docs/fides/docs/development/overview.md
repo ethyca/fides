@@ -1,7 +1,5 @@
 # Development Overview
 
----
-
 Thanks for contributing to Fides! This section of the docs is designed to help you become familiar with how we work, the standards we apply, and how to ensure your contribution is successful.
 
 If you're stuck, don't be shy about asking for help [on GitHub](https://github.com/ethyca/fides/issues).
