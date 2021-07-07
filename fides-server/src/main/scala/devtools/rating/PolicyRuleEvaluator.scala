@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.definition.TreeItem
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, PolicyRule}
+import devtools.domain.policy.PolicyRule
 import devtools.exceptions.InvalidDataException
 import devtools.persist.dao.DAOs
 import devtools.util.TreeCache

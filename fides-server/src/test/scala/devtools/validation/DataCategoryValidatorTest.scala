@@ -26,7 +26,7 @@ class DataCategoryValidatorTest
     newId = newTaxonomyValue.id
     newSystem = waitFor(
       sDao.create(
-        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey))))
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey)))))
       )
     )
 

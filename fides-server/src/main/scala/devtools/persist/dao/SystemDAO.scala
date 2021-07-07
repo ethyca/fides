@@ -30,7 +30,6 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
         r.<<?[String],
         r.<<?[String],
         r.<<[String],
-        r.<<[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
       )
@@ -74,7 +73,7 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
   def findSystemsWithDataset(organizationId: Long, fidesKey: String): Future[Seq[Long]] = {
     val sanitized = sanitizeUniqueIdentifier(fidesKey)
     db.run(
-      sql""" select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(privacy_declarations, 'one','#$sanitized',NULL, '$$[*].references' ) IS NOT NULL;"""
+      sql""" select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(privacy_declarations, 'one','#$sanitized',NULL, '$$[*].datasetReferences' ) IS NOT NULL;"""
         .as[Long]
     )
   }

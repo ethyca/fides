@@ -28,20 +28,21 @@ object App {
   val database: MySQLProfile.api.Database = DB.db
 
   //service
-  val approvalDAO      = new ApprovalDAO(database)
-  val auditLogDAO      = new AuditLogDAO(database)
-  val organizationDAO  = new OrganizationDAO(database)
-  val systemDAO        = new SystemDAO(database)
-  val policyDAO        = new PolicyDAO(database)
-  val policyRuleDAO    = new PolicyRuleDAO(database)
-  val dataCategoryDAO  = new DataCategoryDAO(database)
-  val dataQualifierDAO = new DataQualifierDAO(database)
-  val dataSubjectDAO   = new DataSubjectDAO(database)
-  val dataUseDAO       = new DataUseDAO(database)
-  val registryDAO      = new RegistryDAO(database)
-  val userDAO          = new UserDAO(database)
-  val datasetDAO       = new DatasetDAO(database)
-  val datasetFieldDAO  = new DatasetFieldDAO(database)
+  val approvalDAO           = new ApprovalDAO(database)
+  val auditLogDAO           = new AuditLogDAO(database)
+  val organizationDAO       = new OrganizationDAO(database)
+  val privacyDeclarationDAO = new PrivacyDeclarationDAO(database)
+  val systemDAO             = new SystemDAO(database)
+  val policyDAO             = new PolicyDAO(database)
+  val policyRuleDAO         = new PolicyRuleDAO(database)
+  val dataCategoryDAO       = new DataCategoryDAO(database)
+  val dataQualifierDAO      = new DataQualifierDAO(database)
+  val dataSubjectDAO        = new DataSubjectDAO(database)
+  val dataUseDAO            = new DataUseDAO(database)
+  val registryDAO           = new RegistryDAO(database)
+  val userDAO               = new UserDAO(database)
+  val datasetDAO            = new DatasetDAO(database)
+  val datasetFieldDAO       = new DatasetFieldDAO(database)
   /** Convenience grouping of all DAOs. */
   val daos = new DAOs(
     approvalDAO,
@@ -53,6 +54,7 @@ object App {
     policyDAO,
     policyRuleDAO,
     registryDAO,
+    privacyDeclarationDAO,
     systemDAO,
     dataSubjectDAO,
     userDAO,
@@ -63,18 +65,18 @@ object App {
   val caches = new Caches(dataSubjectDAO, dataCategoryDAO, dataUseDAO, dataQualifierDAO)
 
   //validators
-  val datasetFieldValidator  = new DatasetFieldValidator(daos)
-  val datasetValidator       = new DatasetValidator(daos)
-  val systemValidator        = new SystemValidator(daos)
-  val policyValidator        = new PolicyValidator(daos)
-  val registryValidator      = new RegistryValidator(daos)
-  val policyRuleValidator    = new PolicyRuleValidator(daos)
-  val dataUseValidator       = new DataUseValidator(daos)
-  val dataQualifierValidator = new DataQualifierValidator(daos)
-  val dataCategoryValidator  = new DataCategoryValidator(daos)
-  val dataSubjectValidator   = new DataSubjectValidator(daos)
-
-  val policyRuleEvaluator = new PolicyRuleEvaluator(daos)
+  val datasetFieldValidator       = new DatasetFieldValidator(daos)
+  val datasetValidator            = new DatasetValidator(daos)
+  val systemValidator             = new SystemValidator(daos)
+  val policyValidator             = new PolicyValidator(daos)
+  val registryValidator           = new RegistryValidator(daos)
+  val policyRuleValidator         = new PolicyRuleValidator(daos)
+  val dataUseValidator            = new DataUseValidator(daos)
+  val dataQualifierValidator      = new DataQualifierValidator(daos)
+  val dataCategoryValidator       = new DataCategoryValidator(daos)
+  val dataSubjectValidator        = new DataSubjectValidator(daos)
+  val privacyDeclarationValidator = new PrivacyDeclarationValidator(daos)
+  val policyRuleEvaluator         = new PolicyRuleEvaluator(daos)
   //service
   val approvalService     = new ApprovalService(approvalDAO)
   val auditLogService     = new AuditLogService(auditLogDAO)
@@ -90,8 +92,9 @@ object App {
   val dataQualifierService =
     new DataQualifierService(dataQualifierDAO, auditLogDAO, organizationDAO, dataQualifierValidator)
 
-  val policyService = new PolicyService(daos, policyRuleService, policyValidator)
-  val systemService = new SystemService(daos, policyService, systemValidator)(executionContext)
+  val policyService             = new PolicyService(daos, policyRuleService, policyValidator)
+  val privacyDeclarationService = new PrivacyDeclarationService(daos, privacyDeclarationValidator)
+  val systemService             = new SystemService(daos, privacyDeclarationService, systemValidator)(executionContext)
 
   val registryService = new RegistryService(daos, registryValidator)(executionContext)
   val userService     = new UserService(userDAO)

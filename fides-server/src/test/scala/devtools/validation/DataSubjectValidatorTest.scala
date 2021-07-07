@@ -30,7 +30,7 @@ class DataSubjectValidatorTest
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
       sDao.create(
-        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataSubjects = Set(newKey))))
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataSubjects = Set(newKey)))))
       )
     )
 

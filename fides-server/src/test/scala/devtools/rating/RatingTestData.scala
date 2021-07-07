@@ -5,8 +5,8 @@ import devtools.domain.definition.WithFidesKey
 import devtools.domain.enums.PolicyAction.REJECT
 import devtools.domain.enums.PolicyValueGrouping
 import devtools.domain.enums.RuleInclusion.ANY
-import devtools.domain.policy.{PrivacyDeclaration, Policy}
-import devtools.domain.{Dataset, Registry, SystemObject}
+import devtools.domain.policy.Policy
+import devtools.domain.{Dataset, PrivacyDeclaration, Registry, SystemObject}
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 
@@ -80,10 +80,12 @@ class RatingTestData extends TestUtils {
   // -----------------------------------------
   //r1 categories. all other values match
   private val depMatchesOnlyR1 =
-    PrivacyDeclaration("test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set())
+    PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set())
 
   private val depMatchesOnlyR2 =
     PrivacyDeclaration(
+      0L,
+      0L,
       "test2",
       Set("telemetry_data", "connectivity_data"),
       "share",
@@ -93,6 +95,8 @@ class RatingTestData extends TestUtils {
     )
 
   private val depMatchesOnlyR3 = PrivacyDeclaration(
+    0L,
+    0L,
     "test3",
     Set("payment_instrument_data", "account_or_administration_contact_information"),
     "improvement_of_business_support_for_contracted_service",
@@ -102,10 +106,12 @@ class RatingTestData extends TestUtils {
   )
 
   private val depMatchesOnlyR4 =
-    PrivacyDeclaration("test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set())
+    PrivacyDeclaration(0L, 0L, "test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set())
 
   private val depMatchesBothR1R2 =
     PrivacyDeclaration(
+      0L,
+      0L,
       "test5",
       Set("operations_data"),
       "improve",
@@ -117,8 +123,6 @@ class RatingTestData extends TestUtils {
   // -----------------------------------------
   //            Datasets
   // -----------------------------------------
-  private val fullyPopulatedField = datasetFieldOf("all")
-    .copy(dataCategories = Some(availableDataCategories.toSet), dataQualifier = Some("identified_data"))
   private val dataset1 = datasetOf(wRunKey("d1"))
   //,
   //  datasetFieldOf("t1f1"), datasetFieldOf("t1f2"), datasetFieldOf("t1f3"))

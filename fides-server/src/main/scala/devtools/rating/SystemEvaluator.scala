@@ -2,7 +2,7 @@ package devtools.rating
 
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
+import devtools.domain.policy.{Policy, PolicyRule}
 import devtools.persist.dao.DAOs
 import devtools.util.mapGrouping
 
@@ -61,6 +61,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     }
 
     val categoriesByQualifierInSystem: Map[DataQualifierName, Set[DataCategoryName]] = systemObject.privacyDeclarations
+      .getOrElse(Seq())
       .map(d => (d.dataQualifier, d.dataCategories))
       .groupBy(_._1)
       .map((t: (DataQualifierName, Seq[(DataQualifierName, Set[DataCategoryName])])) => t._1 -> t._2.map(_._2))
@@ -100,12 +101,14 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     systemObject: SystemObject,
     dependentSystems: Iterable[SystemObject]
   ): Seq[String] = {
-    val mergedDependencies = mergeDeclarations(systemObject.organizationId, systemObject.privacyDeclarations)
-    var warnings           = Seq[String]()
+    val mergedDependencies =
+      mergeDeclarations(systemObject.organizationId, systemObject.privacyDeclarations.getOrElse(Seq()))
+    var warnings = Seq[String]()
 
     dependentSystems.foreach(ds => {
-      val mergedDependenciesForDs = mergeDeclarations(systemObject.organizationId, ds.privacyDeclarations)
-      val diff                    = diffDeclarations(systemObject.organizationId, mergedDependenciesForDs, mergedDependencies)
+      val mergedDependenciesForDs =
+        mergeDeclarations(systemObject.organizationId, ds.privacyDeclarations.getOrElse(Seq()))
+      val diff = diffDeclarations(systemObject.organizationId, mergedDependenciesForDs, mergedDependencies)
       if (diff.nonEmpty) {
         warnings =
           warnings :+ s"The system ${ds.fidesKey} includes privacy declarations that do not exist in ${systemObject.fidesKey} : ${diff.map(_.name).mkString(",")}"
@@ -132,7 +135,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   ): Map[ApprovalStatus, Map[String, Seq[String]]] = {
 
     val v: Seq[(Option[PolicyAction], String, String)] = for {
-      d                <- system.privacyDeclarations
+      d                <- system.privacyDeclarations.getOrElse(Seq())
       policy           <- policies
       rule: PolicyRule <- policy.rules.getOrElse(Set())
       action: Option[PolicyAction] = policyRuleEvaluator.matches(rule, d)
@@ -213,7 +216,16 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
         val categories = daos.dataCategoryDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataCategories).toSet)
         val subjectCategories =
           daos.dataSubjectDAO.mergeAndReduce(organizationId, t._2.flatMap(_.dataSubjects).toSet)
-        PrivacyDeclaration(t._2.map(_.name).toSet.mkString(","), categories, t._1._2, t._1._1, subjectCategories, Set())
+        PrivacyDeclaration(
+          0L,
+          0L,
+          t._2.map(_.name).toSet.mkString(","),
+          categories,
+          t._1._2,
+          t._1._1,
+          subjectCategories,
+          Set()
+        )
       }
       .toSet
   }
@@ -251,7 +263,16 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
         val subjectCategoryDiff =
           daos.dataSubjectDAO.diff(organizationId, rSubjectCategories, lSubjectCategories)
 
-        PrivacyDeclaration(t._2.map(_.name).mkString(","), categoryDiff, t._1._2, t._1._1, subjectCategoryDiff, Set())
+        PrivacyDeclaration(
+          0L,
+          0L,
+          t._2.map(_.name).mkString(","),
+          categoryDiff,
+          t._1._2,
+          t._1._1,
+          subjectCategoryDiff,
+          Set()
+        )
     }.toSet
 
     grouped.filter(d => d.dataCategories.nonEmpty || d.dataSubjects.nonEmpty)

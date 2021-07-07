@@ -23,7 +23,9 @@ class DataQualifierValidatorTest
     newTaxonomyValue = waitFor(dao.create(DataQualifier(0, None, 1, newKey, None, None, None)))
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey))))
+      sDao.create(
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey))))
+      )
     )
     newPolicyRule = waitFor(
       prDao.create(PolicyRuleGen.sample.get.copy(organizationId = 1, dataQualifier = Some(newKey)))

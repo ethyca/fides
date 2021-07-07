@@ -6,7 +6,7 @@ import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
+import devtools.domain.policy.{Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -62,7 +62,7 @@ trait TestUtils extends LazyLogging {
     Policy(0, 1, fidesKeyName, None, None, None, Some(rules), None, None)
 
   def systemOf(fidesKeyName: String, declarations: PrivacyDeclaration*): SystemObject =
-    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, privacyDeclarations = declarations)
+    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, privacyDeclarations = Some(declarations))
 
   def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
     AuditLog(0L, objectId, 1, None, 1, action, typeName, None, None, None, None)
@@ -141,7 +141,7 @@ object Generators {
       None,
       None,
       Some("DATABASE"),
-      scala.Seq[PrivacyDeclaration](),
+      None,
       Set(),
       None,
       None
@@ -268,6 +268,8 @@ object Generators {
       use       <- Gen.oneOf(availableDataUses)
       qualifier <- Gen.oneOf(availableDataQualifiers)
     } yield PrivacyDeclaration(
+      0L,
+      0L,
       name,
       smallSetOf(1, 4, availableDataCategories),
       use,
@@ -339,7 +341,7 @@ object Generators {
       name,
       Some(randomText()),
       systemType,
-      declarations.toList,
+      Some(declarations.toList),
       Random.shuffle(
         waitFor(App.systemDAO.filter(_.organizationId === 1L)).map(_.fidesKey).take(Random.nextInt(4)).toSet
       ),

@@ -48,13 +48,29 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       errors.addError("no declarations specified")
     } else {
       /* All map keys must be valid members of a data category */
-      validateDataCategories(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataCategories).toSet, errors)
+      validateDataCategories(
+        sys.organizationId,
+        sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.dataCategories).toSet,
+        errors
+      )
       /* All use categories must be members of data use categories */
-      validateDataUseCategories(sys.organizationId, sys.privacyDeclarations.map(_.dataUse).toSet, errors)
+      validateDataUseCategories(
+        sys.organizationId,
+        sys.privacyDeclarations.getOrElse(Seq()).map(_.dataUse).toSet,
+        errors
+      )
       /* All declared qualifiers must be valid data dataQualifier members */
-      validateQualifiers(sys.organizationId, sys.privacyDeclarations.map(_.dataQualifier).toSet, errors)
+      validateQualifiers(
+        sys.organizationId,
+        sys.privacyDeclarations.getOrElse(Seq()).map(_.dataQualifier).toSet,
+        errors
+      )
       /* All declared data subjects must be valid members */
-      validateDataSubjects(sys.organizationId, sys.privacyDeclarations.flatMap(_.dataSubjects).toSet, errors)
+      validateDataSubjects(
+        sys.organizationId,
+        sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.dataSubjects).toSet,
+        errors
+      )
       /* All declared fields must be valid members */
       /* Dataset and field declarations a can either be a dataset fidesKey name or a dataset fides Key . fieldName
       value.
@@ -67,7 +83,8 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   def validateDatasets(sys: SystemObject, errors: MessageCollector): Future[Unit] = {
     // datasets as declared in the privacy declarations. These may be of the form
     // "dataset" or "dataset.field"
-    val datasetIdentifiers = sys.privacyDeclarations.flatMap(p => p.references).map(sanitizeUniqueIdentifier).toSet
+    val datasetIdentifiers =
+      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).map(sanitizeUniqueIdentifier).toSet
 
     // the actual names of just the dataset part for searching
     val datasetNames = datasetIdentifiers.map(_.split('.')(0))

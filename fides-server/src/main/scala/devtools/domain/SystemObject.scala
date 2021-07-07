@@ -1,7 +1,6 @@
 package devtools.domain
 
 import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
-import devtools.domain.policy.PrivacyDeclaration
 import devtools.util.JsonSupport
 import devtools.util.JsonSupport.{dumps, parseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -18,7 +17,7 @@ final case class SystemObject(
   name: Option[String],
   description: Option[String],
   systemType: Option[String],
-  privacyDeclarations: Seq[PrivacyDeclaration],
+  privacyDeclarations: Option[Seq[PrivacyDeclaration]],
   systemDependencies: Set[String],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
@@ -28,10 +27,6 @@ final case class SystemObject(
 }
 
 object SystemObject {
-
-  /** Apply sanitization/normalization to the references field of privacy declarations. */
-  def sanitizePrivacyDeclarations(ds: Seq[PrivacyDeclaration]): Seq[PrivacyDeclaration] =
-    ds.map(d => d.copy(references = d.references.map(sanitizeUniqueIdentifier)))
 
   type Tupled =
     (
@@ -44,7 +39,6 @@ object SystemObject {
       Option[String],
       Option[String],
       Option[String],
-      String,
       String,
       Option[Timestamp],
       Option[Timestamp]
@@ -61,7 +55,6 @@ object SystemObject {
       s.name,
       s.description,
       s.systemType,
-      dumps(sanitizePrivacyDeclarations(s.privacyDeclarations)),
       dumps(s.systemDependencies),
       s.creationTime,
       s.lastUpdateTime
@@ -78,10 +71,10 @@ object SystemObject {
       t._7,
       t._8,
       t._9, //system type
-      parseToObj[Seq[PrivacyDeclaration]](t._10).get,
-      parseToObj[Set[String]](t._11).get,
-      t._12,
-      t._13
+      None,
+      parseToObj[Set[String]](t._10).get,
+      t._11,
+      t._12
     )
 
 }

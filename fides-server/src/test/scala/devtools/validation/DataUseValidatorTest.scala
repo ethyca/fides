@@ -23,7 +23,7 @@ class DataUseValidatorTest extends ValidatorTestBase[DataUse, Long](DataUseGen, 
     newTaxonomyValue = waitFor(dao.create(DataUse(0, None, 1, newKey, None, None, None)))
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataUse = newKey))))
+      sDao.create(blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataUse = newKey)))))
     )
     newPolicyRule = waitFor(
       prDao.create(PolicyRuleGen.sample.get.copy(organizationId = 1L, dataUses = PolicyValueGrouping(ALL, Set(newKey))))

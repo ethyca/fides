@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.App
 import devtools.Generators.SystemObjectGen
-import devtools.domain.policy.PrivacyDeclaration
 import devtools.exceptions.InvalidDataException
 import devtools.util.{FidesYamlProtocols, waitFor}
 import faker._
@@ -26,22 +25,8 @@ class SystemObjectTest
   }
 
   test("test parse-from-db json field errors") {
-    val s = SystemObjectGen.sample.get
-    val toInsertable: (
-      Long,
-      Long,
-      Option[Long],
-      String,
-      Option[Long],
-      Option[String],
-      Option[String],
-      Option[String],
-      Option[String],
-      String,
-      String,
-      Option[Timestamp],
-      Option[Timestamp]
-    )                  = SystemObject.toInsertable(s).get
+    val s              = SystemObjectGen.sample.get
+    val toInsertable   = SystemObject.toInsertable(s).get
     val fromInsertable = SystemObject.fromInsertable(toInsertable)
     s shouldEqual fromInsertable
 
@@ -56,7 +41,20 @@ class SystemObjectTest
       service.create(
         generator.sample.get
           .copy(privacyDeclarations =
-            Seq(PrivacyDeclaration("test", Set("customer_content_data"), "provide", "identified_data", Set(), Set()))
+            Some(
+              Seq(
+                PrivacyDeclaration(
+                  0L,
+                  0L,
+                  "test",
+                  Set("customer_content_data"),
+                  "provide",
+                  "identified_data",
+                  Set(),
+                  Set()
+                )
+              )
+            )
           ),
         requestContext
       )

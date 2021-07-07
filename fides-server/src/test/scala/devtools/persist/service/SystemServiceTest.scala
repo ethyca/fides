@@ -37,7 +37,7 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
           blankSystem.copy(
             fidesKey = unsanitizedFidesKey,
             privacyDeclarations =
-              Seq(DeclarationGen.sample.get.copy(references = Set("test dataset", "test dataset.field1")))
+              Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test dataset", "test dataset.field1"))))
           ),
           requestContext
         )
@@ -49,8 +49,11 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     val saved = waitFor(systemService.findByUniqueKey(1, sanitizedFidesKey)).get
 
     saved.fidesKey shouldEqual sanitizedFidesKey
-    //dataset and field references are also sanitized
-    saved.privacyDeclarations.flatMap(_.references).toSet shouldEqual Set("test_dataset", "test_dataset.field1")
+    //dataset and field datasetReferences are also sanitized
+    saved.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet shouldEqual Set(
+      "test_dataset",
+      "test_dataset.field1"
+    )
     systemIds.add(v.id)
 
     waitFor(systemService.update(v.copy(description = Some("description")), requestContext))

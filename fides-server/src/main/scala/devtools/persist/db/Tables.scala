@@ -105,6 +105,27 @@ object Tables {
       ) <> (Organization.fromInsertable, Organization.toInsertable)
   }
 
+  class PrivacyDeclarationQuery(tag: Tag) extends BaseAutoIncTable[PrivacyDeclaration](tag, "PRIVACY_DECLARATION") {
+    val systemId: Rep[Long]            = column[Long]("system_id")
+    val name: Rep[String]              = column[String]("name")
+    val dataCategories: Rep[String]    = column[String]("data_categories")
+    val dataUse: Rep[String]           = column[String]("data_use")
+    val dataQualifier: Rep[String]     = column[String]("data_qualifier")
+    val dataSubjects: Rep[String]      = column[String]("data_subjects")
+    val datasetReferences: Rep[String] = column[String]("dataset_references")
+    def * =
+      (
+        id,
+        systemId,
+        name,
+        dataCategories,
+        dataUse,
+        dataQualifier,
+        dataSubjects,
+        datasetReferences
+      ) <> (PrivacyDeclaration.fromInsertable, PrivacyDeclaration.toInsertable)
+  }
+
   class SystemQuery(tag: Tag)
     extends BaseAutoIncTable[SystemObject](tag, "SYSTEM_OBJECT") with OrganizationIdTable[SystemObject]
     with VersionStampTable[SystemObject] {
@@ -114,7 +135,6 @@ object Tables {
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val systemType: Rep[Option[String]]        = column[Option[String]]("system_type")
-    val privacyDeclarations: Rep[String]       = column[String]("privacy_declarations")
     val systemDependencies: Rep[String]        = column[String]("system_dependencies")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
     val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_update_time", O.AutoInc)
@@ -129,7 +149,6 @@ object Tables {
         name,
         description,
         systemType,
-        privacyDeclarations,
         systemDependencies,
         creationTime,
         lastUpdateTime
