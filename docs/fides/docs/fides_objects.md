@@ -1,6 +1,8 @@
 # Fides Objects
 
-## Object Relationships
+This page describes the various objects that make up the Fides platform.
+
+## Object Relationship Diagram
 
 ![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
 
@@ -334,104 +336,45 @@ A Data Rule states what inclusion operator to use as well as a list of values to
 
 Fides uses a matching algorithm to determine whether or not each Privacy Declaration is acceptable or not. The following are some examples of how it works.
 
-#### Non-Matching
-
-=== "Example Privacy Rule"
+=== "Matching Rule"
 
     ```yaml
-      - fidesKey: "rejectTargetedMarketing"
-        dataCategories:
-          inclusion: "ANY"
-          values:
-            - customer_content_data
-            - cloud_service_provider_data
-        dataUses:
-          inclusion: ANY
-          values:
-            - provide
-            - market_advertise_or_promote
-            - offer_upgrades_or_upsell
-        dataSubjects:
-          inclusion: NONE
-          values:
-            - trainee
-            - commuter
-        dataQualifier: pseudonymized_data
-        action: REJECT
-    ```
+    # Example Privacy Rule:
 
-=== "Example Privacy Declaration"
+    - fidesKey: "rejectTargetedMarketing"
+      dataCategories:
+        inclusion: "ANY"
+        values:
+          - customer_content_data
+          - cloud_service_provider_data
+      dataUses:
+        inclusion: ANY
+        values:
+          - provide
+          - market_advertise_or_promote
+          - offer_upgrades_or_upsell
+      dataSubjectCategories:
+        inclusion: ANY
+        values:
+          - trainee
+          - commuter
+      dataQualifier: pseudonymized_data
+      action: REJECT
 
-    ```yaml
-        - dataCategories:
-            - "customer_content_data"
-          dataUses: "provide"
-          dataSubjects:
-            - "anonymous_user"
-          dataQualifier: "anonymized_data"
-          dataSets:
-            - "user_data"
-    ```
+    # Example Privacy Declaration:
 
-=== "Example Evaluation Logic"
+    - dataCategories:
+        - "customer_content_data"
+      dataUses: "provide"
+      dataSubjects:
+        - "anonymous_user"
+        - "commuter"
+      dataQualifier: "psuedonymized_data"
+      dataSets:
+        - "user_data"
 
-    ```yaml
-    - Do "ANY" of the dataCategories match?
-        - Yes
-    - Do "ANY" of the dataUses match?
-        - Yes
-    - Do "NONE" of the dataSubjects match?
-        - Yes
-    - Is the dataQualifier at the same level of exposure or higher?
-        - No
-    - Was the answer "yes" to all of the above questions?
-        - No
-    There is no match!
-    ```
+    # Example Evaluation Logic:
 
-#### Matching
-
-=== "Example Privacy Rule"
-
-    ```yaml
-      - fidesKey: "rejectTargetedMarketing"
-        dataCategories:
-          inclusion: "ANY"
-          values:
-            - customer_content_data
-            - cloud_service_provider_data
-        dataUses:
-          inclusion: ANY
-          values:
-            - provide
-            - market_advertise_or_promote
-            - offer_upgrades_or_upsell
-        dataSubjectCategories:
-          inclusion: ANY
-          values:
-            - trainee
-            - commuter
-        dataQualifier: pseudonymized_data
-        action: REJECT
-    ```
-
-=== "Example Privacy Declaration"
-
-    ```yaml
-        - dataCategories:
-            - "customer_content_data"
-          dataUses: "provide"
-          dataSubjects:
-            - "anonymous_user"
-            - "commuter"
-          dataQualifier: "psuedonymized_data"
-          dataSets:
-            - "user_data"
-    ```
-
-=== "Example Evaluation Logic"
-
-    ```yaml
     - Do "ANY" of the dataCategories match?
         - Yes
     - Do "ANY" of the dataUses match?
@@ -443,6 +386,57 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     - Was the answer "yes" to all of the above questions?
         - Yes
     There is a match, and the Privacy Declaration evaluates to "REJECT"!
+    ```
+
+=== "Non-Matching Rule"
+
+    ```yaml
+    # Example Privacy Rule:
+
+    - fidesKey: "rejectTargetedMarketing"
+      dataCategories:
+        inclusion: "ANY"
+        values:
+          - customer_content_data
+          - cloud_service_provider_data
+      dataUses:
+        inclusion: ANY
+        values:
+          - provide
+          - market_advertise_or_promote
+          - offer_upgrades_or_upsell
+      dataSubjects:
+        inclusion: NONE
+        values:
+          - trainee
+          - commuter
+      dataQualifier: pseudonymized_data
+      action: REJECT
+
+    # Example Privacy Declaration:
+
+    - dataCategories:
+        - "customer_content_data"
+      dataUses: "provide"
+      dataSubjects:
+        - "anonymous_user"
+      dataQualifier: "anonymized_data"
+      dataSets:
+        - "user_data"
+
+    # Example Evaluation Logic:
+
+    - Do "ANY" of the dataCategories match?
+        - Yes
+    - Do "ANY" of the dataUses match?
+        - Yes
+    - Do "NONE" of the dataSubjects match?
+        - Yes
+    - Is the dataQualifier at the same level of exposure or higher?
+        - No
+    - Was the answer "yes" to all of the above questions?
+        - No
+    There is no match!
     ```
 
 When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.

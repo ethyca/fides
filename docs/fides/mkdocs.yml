@@ -21,8 +21,6 @@ theme:
   features:
     - naviation.top
     - navigation.instant
-    #- navigation.tabs
-    #- navigation.sections
 
 markdown_extensions:
   - pymdownx.superfences
