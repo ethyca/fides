@@ -6,6 +6,27 @@ This page describes the various objects that make up the Fides platform.
 
 ![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
 
+## Organization
+
+An organization is a logical grouping of objects, and all objects must belong to an organization. Fides includes a default organization with an id of 1.
+
+=== "Example Manifest"
+
+    ```yaml
+    organization:
+      fidesKey: "test_organization"
+      name: "Test Organization"
+      description: "A test organization used to check the validity of changes."
+    ```
+
+| Name | Type | Description |
+| --- | --- | --- |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| name | String |  A name for this organization |
+| description | String | A description of what this organiztion encapsulates |
+
+---
+
 ## Privacy Classifiers
 
 Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
@@ -144,6 +165,29 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
 ---
 
+## Registry
+
+A registry can optionally be used to group systems.
+
+=== "Example Manifest"
+
+    ```yaml
+    registry:
+    - organizationId: 1
+      fidesKey: "user_systems_registry"
+      name: "User Systems Registry"
+      description: "A registry for all of the user-related systems."
+    ```
+
+| Name | Type | Description |
+| --- | --- | --- |
+| organizationId | Int | Id of the organization this registry belongs to |
+| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| name | String |  A name for this registry |
+| description | String | A description of what this registry means or encapsulates |
+
+---
+
 ## System
 
 A system represents the privacy usage of a single software project, service, codebase, or application.
@@ -174,7 +218,7 @@ A system represents the privacy usage of a single software project, service, cod
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
-| registryId | Int | Id of the registry this system belongs to |
+| registryId | Optional[Int] | Id of the registry this system belongs to |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | systemType | String | The type of system being declared |
 | metadata | Map[String, String] | A key-value pair field to add various additional info |

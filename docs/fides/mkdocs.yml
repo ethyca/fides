@@ -6,9 +6,9 @@ nav:
   - Fides Objects: fides_objects.md
   - Getting Started: getting_started.md
   - Tutorial: tutorial.md
+  - Deployment: deployment.md
   - Fidesctl: fidesctl.md
   - FidesAPI: api.md
-  - Deployment: deployment.md
   - Development:
       - Contributing: contributing.md
   - Community:
@@ -24,14 +24,14 @@ theme:
 
 markdown_extensions:
   - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
-  - pymdownx.inlinehilite
-  - pymdownx.tabbed
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
-  - javascripts/config.js
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css

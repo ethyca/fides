@@ -26,112 +26,124 @@ When data governance is declared and colocated with the source code by engineers
 
 ## Quick Example
 
-To make things more concrete, the following is a realistic set of Fides manifests.
+To make things more concrete, the following is a brief overview of the steps required to set up a new project with Fides as used by a monorepo:
 
-Policy:
+1. Create a new directory for your Fides objects to live in, for examples `fides_manifests/`.
 
-```yaml
-policy:
-  organizationId: 1
-  fidesKey: "primaryPrivacyPolicy"
-  rules:
-    - organizationId: 1
-      fidesKey: "rejectTargetedMarketing"
-      dataCategories:
-        inclusion: "ANY"
-        values:
-          - profiling_data
-          - account_data
-          - derived_data
-          - cloud_service_provider_data
-      dataUses:
-        inclusion: ANY
-        values:
-          - market_advertise_or_promote
-          - offer_upgrades_or_upsell
-      dataSubjectCategories:
-        inclusion: ANY
-        values:
-          - trainee
-          - commuter
-      dataQualifier: pseudonymized_data
-      action: REJECT
-    - organizationId: 1
-      fidesKey: rejectSome
-      dataCategories:
-        inclusion: ANY
-        values:
-          - user_location
-          - personal_health_data_and_medical_records
-          - connectivity_data
-          - credentials
-      dataUses:
-        inclusion: ALL
-        values:
-          - improvement_of_business_support_for_contracted_service
-          - personalize
-          - share_when_required_to_provide_the_service
-      dataSubjectCategories:
-        inclusion: NONE
-        values:
-          - trainee
-          - commuter
-          - patient
-      dataQualifier: pseudonymized_data
-      action: REJECT
-```
+1. The next step is to define Fides objects as manifest files. This would include defining datasets, extending the privacy classifiers, and anything else needed to describe the state of the project's privacy.
 
-Dataset:
+1. Apply the manifests using `fidesctl apply fides_manifests/`. This command will create/update objects via the Fides API.
 
-```yaml
-dataset:
-  - organizationId: 1
-    fidesKey: "sample_db_dataset"
-    name: "Sample DB Dataset"
-    description: "This is a Sample Database Dataset"
-    datasetType: "MySQL"
-    location: "US East" # Geographic location of the dataset
-    tables:
-      - name: "sample_db_table_1"
-        description: "Sample DB Table Description"
-        fields:
-          - name: "first_name"
-            description: "A First Name Field"
+1. Set up a CI pipeline to run when the system file is changed. It should use the `fidesctl dry-evaluate <system_manifest> <system_key>` command to check that a system is still valid after it has been update.
+
+1. Upon merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
+
+The following is a set of example manifests a project could use to get started:
+
+=== "fides_manifests/policy.yml"
+
+    ```yaml
+    policy:
+      - organizationId: 1
+        fidesKey: "primaryPrivacyPolicy"
+        rules:
+          - organizationId: 1
+            fidesKey: "rejectTargetedMarketing"
             dataCategories:
-              - "derived_data"
-            dataQualifier: "identified_data"
-          - name: "email"
-            description: "User's Email"
+              inclusion: "ANY"
+              values:
+                - profiling_data
+                - account_data
+                - derived_data
+                - cloud_service_provider_data
+            dataUses:
+              inclusion: ANY
+              values:
+                - market_advertise_or_promote
+                - offer_upgrades_or_upsell
+            dataSubjectCategories:
+              inclusion: ANY
+              values:
+                - trainee
+                - commuter
+            dataQualifier: pseudonymized_data
+            action: REJECT
+          - organizationId: 1
+            fidesKey: rejectSome
             dataCategories:
-              - "account_data"
-            dataQualifier: "identified_data"
-          - name: "Food Preference"
-            description: "User's favorite food"
-```
+              inclusion: ANY
+              values:
+                - user_location
+                - personal_health_data_and_medical_records
+                - connectivity_data
+                - credentials
+            dataUses:
+              inclusion: ALL
+              values:
+                - improvement_of_business_support_for_contracted_service
+                - personalize
+                - share_when_required_to_provide_the_service
+            dataSubjectCategories:
+              inclusion: NONE
+              values:
+                - trainee
+                - commuter
+                - patient
+            dataQualifier: pseudonymized_data
+            action: REJECT
+    ```
 
-System:
+=== "fides_manifests/dataset.yml"
 
-```yaml
-system:
-  - organizationId: 1
-    fidesOrganizationKey: "Ethyca"
-    registryId: 1
-    fidesKey: "demoSystem"
-    fidesSystemType: "SYSTEM"
-    name: "Demo System"
-    description: "A system used for demos."
-    declarations:
-      - dataCategories:
-          - "customer_content_data"
-        dataUse: "provide"
-        dataQualifier: "anonymized_data"
-        dataSubjectCategories:
-          - "anonymous_user"
-        dataSets:
-          - "user_data"
-    systemDependencies: []
-    datasets: ["user_data"]
-```
+    ```yaml
+    dataset:
+      - organizationId: 1
+        fidesKey: "sample_db_dataset"
+        name: "Sample DB Dataset"
+        description: "This is a Sample Database Dataset"
+        datasetType: "MySQL"
+        location: "US East" # Geographic location of the dataset
+        tables:
+          - name: "sample_db_table_1"
+            description: "Sample DB Table Description"
+            fields:
+              - name: "first_name"
+                description: "A First Name Field"
+                dataCategories:
+                  - "derived_data"
+                dataQualifier: "identified_data"
+              - name: "email"
+                description: "User's Email"
+                dataCategories:
+                  - "account_data"
+                dataQualifier: "identified_data"
+              - name: "Food Preference"
+                description: "User's favorite food"
+    ```
+
+=== "fides_manifests/system.yml"
+
+    ```yaml
+    system:
+      - organizationId: 1
+        fidesOrganizationKey: "Ethyca"
+        registryId: 1
+        fidesKey: "demoSystem"
+        fidesSystemType: "SYSTEM"
+        name: "Demo System"
+        description: "A system used for demos."
+        declarations:
+          - dataCategories:
+              - "customer_content_data"
+            dataUse: "provide"
+            dataQualifier: "anonymized_data"
+            dataSubjectCategories:
+              - "anonymous_user"
+            dataSets:
+              - "user_data"
+        systemDependencies: []
+        datasets: ["user_data"]
+    ```
 
 ---
 
@@ -152,6 +164,8 @@ Similar to a system, a dataset represents the privacy exposure of a database, da
 
 Datastore privacy declarations are more limited than system privacy declarations in that they only accept Data Categories and Data Qualifiers.
 
+Datasets are annotated on a per-field basis.
+
 ### Registries
 
 A Registry is a collection of systems evaluated as a group. Since a registry contains information on how systems depend on each other, an analysis of a registry also includes checking on the validity of each system and their dependencies.
@@ -162,7 +176,7 @@ Privacy Policies describe what kinds of data are acceptable for what kinds of us
 
 ### Describing Data Privacy
 
-Fides defines data privacy with four dimensions, called Data Privacy Classifiers. Each of these classifiers can be defined on an organization-wide basis, and allow for hierarchical definition.
+Fides defines data privacy in four dimensions, called Data Privacy Classifiers. Each of these classifiers can be defined on an organization-wide basis, and allow for hierarchical definition.
 
 * data category: What kind of data is contained here?
 (personal health data, account data, telemetry data...)
