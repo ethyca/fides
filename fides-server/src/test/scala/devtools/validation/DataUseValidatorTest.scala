@@ -1,7 +1,7 @@
 package devtools.validation
 
 import devtools.App
-import devtools.Generators.{DataUseGen, DeclarationGen, PolicyRuleGen, blankSystem, fidesKey}
+import devtools.Generators.{DataUseGen, DeclarationGen, PolicyRuleGen, blankSystem, fidesKey, requestContext}
 import devtools.domain.enums.RuleInclusion.ALL
 import devtools.domain.enums.PolicyValueGrouping
 import devtools.domain.policy.PolicyRule
@@ -10,7 +10,7 @@ import devtools.util.waitFor
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 class DataUseValidatorTest extends ValidatorTestBase[DataUse, Long](DataUseGen, App.dataUseDAO, App.dataUseValidator) {
 
-  private val sDao              = App.systemDAO
+  private val systemService     = App.systemService
   private val prDao             = App.policyRuleDAO
   var newKey: String            = ""
   var newKeyId: Long            = 0
@@ -21,9 +21,13 @@ class DataUseValidatorTest extends ValidatorTestBase[DataUse, Long](DataUseGen, 
   override def beforeAll(): Unit = {
     newKey = fidesKey
     newTaxonomyValue = waitFor(dao.create(DataUse(0, None, 1, newKey, None, None, None)))
+    Thread.sleep(100)
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataUse = newKey)))))
+      systemService.create(
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataUse = newKey)))),
+        requestContext
+      )
     )
     newPolicyRule = waitFor(
       prDao.create(PolicyRuleGen.sample.get.copy(organizationId = 1L, dataUses = PolicyValueGrouping(ALL, Set(newKey))))
@@ -36,7 +40,7 @@ class DataUseValidatorTest extends ValidatorTestBase[DataUse, Long](DataUseGen, 
 
   override def afterAll(): Unit = {
     super.afterAll()
-    sDao.delete(newSystem.id)
+    systemService.dao.delete(newSystem.id)
   }
 
   test("create requires organization exists") {
@@ -72,7 +76,7 @@ class DataUseValidatorTest extends ValidatorTestBase[DataUse, Long](DataUseGen, 
     deleteValidationErrors(newKeyId) should containMatchString("is in use in policy rules")
 
     //delete system, update and delete should pass
-    waitFor(sDao.delete(newSystem.id))
+    waitFor(systemService.dao.delete(newSystem.id))
     updateValidationErrors(
       DataUse(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue

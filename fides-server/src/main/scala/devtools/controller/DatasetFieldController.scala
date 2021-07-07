@@ -13,8 +13,7 @@ import scala.concurrent.ExecutionContext
 
 class DatasetFieldController(val service: DatasetFieldService, val userDAO: UserDAO, val swagger: Swagger)(implicit
   executor: ExecutionContext
-) extends BaseController[DatasetField, Long] with LongPK[DatasetField] with ScalateSupport
-  with GetByUniqueKey[DatasetField] {
+) extends BaseController[DatasetField, Long] with LongPK[DatasetField] with ScalateSupport {
   val yamlFormat: YamlFormat[DatasetField] = FidesYamlProtocols.DatasetFieldFormat
 
 }

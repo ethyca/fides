@@ -7,6 +7,7 @@ import faker._
 import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.SQLActionBuilder
 
 import scala.concurrent.Future
 
@@ -23,9 +24,8 @@ class SystemObjectTest
   /** How many times is this category referenced in a system? */
   def categoryReferencesCt(categoryName: String): Future[Int] =
     db.run(
-      sql"""select COUNT DISTINCT A.ID from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
-           B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('#$categoryName',B.data_categories) > 0"""
-        .asInstanceOf[DBIOAction[Int, NoStream, _]]
+      sqlu"""select COUNT(DISTINCT A.ID) from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
+           B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('["#$categoryName"]',B.data_categories) > 0"""
     )
 
   test(s"System.fidesKey must be unique") {

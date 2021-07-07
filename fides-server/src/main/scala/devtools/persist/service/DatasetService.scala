@@ -4,6 +4,7 @@ import devtools.App.datasetDAO
 import devtools.controller.RequestContext
 import devtools.domain.{Dataset, DatasetField}
 import devtools.persist.dao.DAOs
+import devtools.persist.db.Tables.{DataCategoryQuery, DatasetQuery}
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.DatasetValidator
 import slick.jdbc.MySQLProfile.api._
@@ -12,8 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DatasetService(val daos: DAOs, val datasetFieldService: DatasetFieldService, val validator: DatasetValidator)(
   implicit val context: ExecutionContext
-) extends AuditingService[Dataset](daos.datasetDAO, daos.auditLogDAO, daos.organizationDAO, validator)
-  with UniqueKeySearch[Dataset] {
+) extends AuditingService[Dataset, DatasetQuery](daos.datasetDAO, daos.auditLogDAO, daos.organizationDAO, validator)
+  with UniqueKeySearch[Dataset, DatasetQuery] {
 
   /** retrieve an org id from the base type */
   override def orgId(t: Dataset): Long = t.organizationId
@@ -57,12 +58,8 @@ class DatasetService(val daos: DAOs, val datasetFieldService: DatasetFieldServic
       case a => Future.successful(a)
     }
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[Dataset]] = {
-    val base: Future[Option[Dataset]] =
-      daos.datasetDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
-    base.flatMap {
-      case None          => Future.successful(None)
-      case Some(dataset) => hydrate(dataset).map(Some(_))
-    }
+  def findByUniqueKeyQuery(organizationId: Long, key: String) = { q =>
+    q.fidesKey === key && q.organizationId === organizationId
   }
+
 }

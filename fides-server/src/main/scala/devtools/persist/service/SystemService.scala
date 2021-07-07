@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
 import devtools.domain.{PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.DAOs
+import devtools.persist.db.Tables.SystemQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.SystemValidator
 import slick.jdbc.MySQLProfile.api._
@@ -14,16 +15,15 @@ class SystemService(
   daos: DAOs,
   val privacyDeclarationService: PrivacyDeclarationService,
   val validator: SystemValidator
-)(implicit
-  val ec: ExecutionContext
-) extends AuditingService[SystemObject](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
-  with LazyLogging with UniqueKeySearch[SystemObject] {
+)(implicit ec: ExecutionContext)
+  extends AuditingService[SystemObject, SystemQuery](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
+  with LazyLogging with UniqueKeySearch[SystemObject, SystemQuery] {
 
   /** retrieve an org id from the base type */
   override def orgId(t: SystemObject): Long = t.organizationId
 
   /** actual create action that runs post validations, audit changes, and any other type-specific actions. */
-  override def createAudited(record: SystemObject, versionStamp: Long, ctx: RequestContext): Future[SystemObject] =
+  override def createAudited(record: SystemObject, versionStamp: Long, ctx: RequestContext): Future[SystemObject] = {
     for {
       s <- daos.systemDAO.create(record.copy(versionStamp = Some(versionStamp)))
       t <- record.privacyDeclarations match {
@@ -36,6 +36,7 @@ class SystemService(
             .map(t => Some(t))
       }
     } yield s.copy(privacyDeclarations = t)
+  }
 
   /** actual update action that runs post validations, audit changes, and any other type-specific actions. */
   override def updateAudited(
@@ -68,7 +69,8 @@ class SystemService(
       _ = previous.registryId.map(daos.registryDAO.setVersion(_, versionStamp))
     } yield deleted
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[SystemObject]] =
-    daos.systemDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
+  def findByUniqueKeyQuery(organizationId: Long, key: String): SystemQuery => Rep[Boolean] = { q =>
+    q.fidesKey === key && q.organizationId === organizationId
+  }
 
 }

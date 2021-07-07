@@ -15,13 +15,15 @@ import org.json4s.JValue
 import scala.concurrent.{ExecutionContext, Future}
 
 /** Extension of a service by organization that creates audit log entries on CREATE/UPDATE/DELETE operations. */
-abstract class AuditingService[E <: IdType[E, Long] with OrganizationId](
-  dao: DAO[E, Long, _ <: BaseAutoIncTable[E] with OrganizationIdTable[E]] with ByOrganizationDAO[E, _],
+abstract class AuditingService[E <: IdType[E, Long] with OrganizationId, T <: BaseAutoIncTable[
+  E
+] with OrganizationIdTable[E]](
+  dao: DAO[E, Long, T] with ByOrganizationDAO[E, _],
   auditLogDAO: AuditLogDAO,
   organizationDAO: OrganizationDAO,
   validator: Validator[E, Long]
 )(implicit ec: ExecutionContext, m: Manifest[E])
-  extends ByOrganizationService[E](dao, validator) {
+  extends ByOrganizationService[E, T](dao, validator) {
 
   /** retrieve an org id from the base type */
   def orgId(t: E): Long

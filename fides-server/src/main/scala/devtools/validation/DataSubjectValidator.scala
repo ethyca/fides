@@ -75,13 +75,14 @@ class DataSubjectValidator(val daos: DAOs)(implicit val executionContext: Execut
     }
 
   /** Add to errors if the data subject key is found in any existing system in this organization. */
-  def fidesKeyInUseInSystem(ds: DataSubject, errors: MessageCollector): Future[MessageCollector] =
+  def fidesKeyInUseInSystem(ds: DataSubject, errors: MessageCollector): Future[MessageCollector] = {
     daos.privacyDeclarationDAO.systemsReferencingDataSubject(ds.organizationId, ds.fidesKey).map { fidesKeys =>
       if (fidesKeys.nonEmpty) {
         errors.addError(s"The data subject ${ds.fidesKey} is in use in systems ${fidesKeys.mkString(",")}")
       }
       errors
     }
+  }
 
   /** Add to errors if the data subject key is found in any existing policy rule. */
   def fidesKeyInUseInPolicyRule(dataUse: DataSubject, errors: MessageCollector): Future[MessageCollector] =

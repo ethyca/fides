@@ -18,7 +18,7 @@ import scala.collection.mutable.{HashSet => MHashSet}
 import scala.util.{Failure, Success, Try}
 
 abstract class DomainObjectTestBase[T <: IdType[T, PK], PK](
-  val service: Service[T, PK],
+  val service: Service[T, PK, _],
   val generator: Gen[T],
   val yamlFormat: YamlFormat[T]
 )(implicit manifest: Manifest[T])

@@ -5,6 +5,7 @@ import devtools.controller.RequestContext
 import devtools.domain.Registry
 import devtools.persist.dao._
 import devtools.persist.db.Queries.systemQuery
+import devtools.persist.db.Tables.RegistryQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.RegistryValidator
 import slick.jdbc.MySQLProfile.api._
@@ -14,9 +15,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistryService(
   val daos: DAOs,
   val validator: RegistryValidator
-)(implicit val ec: ExecutionContext)
-  extends AuditingService[Registry](daos.registryDAO, daos.auditLogDAO, daos.organizationDAO, validator)
-  with UniqueKeySearch[Registry] {
+)(implicit ec: ExecutionContext)
+  extends AuditingService[Registry, RegistryQuery](daos.registryDAO, daos.auditLogDAO, daos.organizationDAO, validator)
+  with UniqueKeySearch[Registry, RegistryQuery] {
   def orgId(d: Registry): Long = d.organizationId
 
   /** populate registry with system ids */
@@ -65,12 +66,7 @@ class RegistryService(
       _ <- daos.systemDAO.unsetRegistryIds(_.registryId === id)
     } yield i
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[Registry]] = {
-    val base: Future[Option[Registry]] =
-      daos.registryDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
-    base.flatMap {
-      case None    => Future.successful(None)
-      case Some(r) => hydrate(r).map(Some(_))
-    }
+  def findByUniqueKeyQuery(organizationId: Long, key: String): RegistryQuery => Rep[Boolean] = { q =>
+    q.fidesKey === key && q.organizationId === organizationId
   }
 }
