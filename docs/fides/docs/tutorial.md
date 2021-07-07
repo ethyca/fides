@@ -2,13 +2,23 @@
 
 This tutorial walks you through the process of getting up and running with Fides.
 
+## Getting Started
+
+Use either the [Docker](getting_started/docker.md) or [Local](getting_started/local.md) guide to get Fides up and running on your machine.
+
 ## Writing Manifest Files
 
-Manifest files are written in `yaml` and are used to create objects within the Fides database via the FidesAPI. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
+The next critical step is to write the manifest files that describe privacy using the Fides ontology. Manifest files are written in YAML and are used to create objects within the Fides database via the FidesAPI.
 
 For a set of example manifests see the [Fides Objects](fides_objects.md) page.
 
-## Applying Non-System Manifest Files
+First create a directory for the manifests to live in:
+
+`mkdir fides_manifests/`
+
+Next, we need to define a Policy and a System, as those are the bare minimum objects that Fides requires.
+
+## Applying Manifest Files
 
 Once all of the required non-system manifest files have been defined, they can be sent to the server using Fidesctl. The command for this is:
 
@@ -16,7 +26,7 @@ Once all of the required non-system manifest files have been defined, they can b
 
 This will load all files ending in either `.yaml` or `yml` and determines whether each object needs to be created, updated, or nothing needs to be done (the object exists on the server and there hasn't been a change). Any file formatting issues within the manifests will be caught and shown to the user. _This directory should not contain the system manifest, since it should be evaluated before submission!_
 
-## System Evaluatation and Creation
+## Evaluatation
 
 System manifests have a slightly different workflow as they are also meant to be incorporated into CI pipelines.
 
@@ -28,8 +38,8 @@ If that command shows passing, then it is safe to apply the system upon merge:
 
 `fidesctl apply <system_manifest>`
 
-## Registry Evaluation
+## Setting up CI/CD
 
-With all of the manifests having been applied and systems evaluated and created, it's time to evaluate the registry and confirm that everything is valid and safe. Use the following command:
-
-`fidesctl evaluate registry <registry_fidesKey>`
+* Run dry eval locally
+* CI pipeline to do `fidesctl dry_evaluate <system>`
+* Apply manifests on merge
