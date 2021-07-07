@@ -26,7 +26,7 @@ When data governance is declared and colocated with the source code by engineers
 
 ![alt text](img/CI_Workflow.svg "Fides CI Workflow")
 
-## Quick Example
+## Quick Guide
 
 To make things more concrete, the following is a brief overview of the steps required to set up a new project with Fides as used by a monorepo:
 
@@ -146,6 +146,8 @@ The following is a set of example manifests a project could use to get started:
         systemDependencies: []
         datasets: ["user_data"]
     ```
+
+For a more in-depth guide, see the [Tutorial](tutorial.md) page.
 
 ---
 

@@ -4,7 +4,9 @@ nav:
   - Home: index.md
   - License: license.md
   - Fides Objects: fides_objects.md
-  - Getting Started: getting_started.md
+  - Getting Started:
+      - getting_started/docker_getting_started.md
+      - getting_started/local_getting_started.md
   - Tutorial: tutorial.md
   - Deployment: deployment.md
   - Fidesctl: fidesctl.md
