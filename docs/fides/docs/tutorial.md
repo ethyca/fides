@@ -1,12 +1,10 @@
 # Tutorial
 
-This tutorial walks you the fundamental functionality of Fides including major concepts and usage.
+This tutorial walks you through the process of getting up and running with Fides.
 
 ## Writing Manifest Files
 
-Manifest files are written in `yaml` and are used to create objects within the Fides database via the Fides server. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
-
-System manifest files are intended to live with the application or code that it describes. All other manifests are intended to live in a separate directory or repository of Fides manifests.
+Manifest files are written in `yaml` and are used to create objects within the Fides database via the FidesAPI. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
 
 For a set of example manifests see the [Fides Objects](fides_objects.md) page.
 

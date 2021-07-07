@@ -1,5 +1,7 @@
 # Getting Started
 
+---
+
 This section contains Quick Start guides to help you get up and running with Fides. Before starting either guide you'll need to pull the [Fides repo](https://github.com/ethyca/fides).
 
 ## Running Fides in Docker

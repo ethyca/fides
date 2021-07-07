@@ -494,7 +494,7 @@ Fides evaluates both systems and registries. Since a registry is a graph of syst
 When the evaluation of a registry or system is triggered, the following actions take place:
 
 - If the privacy declarations are narrower than the declared privacy exposure of its dependent datasets, Fides generates a warning. For example, the system declares that it uses a dataset that includes "customer content data" at the "anonymized" level, but the system doesn't declare that it's exposing that.
-- If the system's privacy declarations are narrower than the declared privacy exposure of a dependent system, we generate a warning. This is similar to the above restriction, except that we examine the privacy declarations of a dependant system rather than a dataset.
+- If the system's privacy declarations are narrower than the declared privacy exposure of a dependent system, we generate a warning. This is similar to the above restriction, except that we examine the privacy declarations of a dependent system rather than a dataset.
 - For each policy rule we check each system declaration and take action on any declaration that falls within that policy rule's scope. For example, if a policy rule declares that **profiling_data** that is **identified_data** is disallowed, and the system contains a declaration that includes such data, an error will be generated.
 
 Additionally, when a registry is evaluated, we also check that

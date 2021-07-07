@@ -1,5 +1,7 @@
 # Fides Documentation
 
+---
+
 Fides is a platform to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
 It is designed to help companies stay compliant by briding the gap between compliance officers and engineers. By describing the uses of data as Fides manifests, Fides is able to continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
