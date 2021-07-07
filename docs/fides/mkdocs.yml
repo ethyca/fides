@@ -9,9 +9,10 @@ nav:
   - Fidesctl: fidesctl.md
   - FidesAPI: api.md
   - Deployment: deployment.md
-  - Contributing: contributing.md
+  - Development:
+      - Contributing: contributing.md
   - Community:
-      - Communication: communication.md
+      - GitHub: github.md
       - Code of Conduct: code_of_conduct.md
 theme:
   name: material
