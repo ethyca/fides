@@ -10,6 +10,9 @@ nav:
   - FidesAPI: api.md
   - Deployment: deployment.md
   - Contributing: contributing.md
+  - Community:
+      - Communication: communication.md
+      - Code of Conduct: code_of_conduct.md
 theme:
   name: material
   favicon: img/favicon.png
