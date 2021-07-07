@@ -17,9 +17,10 @@ class SystemObjectTest
     SystemObjectGen,
     FidesYamlProtocols.SystemObjectFormat
   ) {
-  private val db                                                = App.database
-  override def editValue(t: SystemObject): SystemObject         = t.copy(fidesKey = Name.name)
-  override def maskForComparison(t: SystemObject): SystemObject = t.copy(creationTime = None, lastUpdateTime = None)
+  private val db                                        = App.database
+  override def editValue(t: SystemObject): SystemObject = t.copy(fidesKey = Name.name)
+  override def maskForComparison(t: SystemObject): SystemObject =
+    t.copy(creationTime = None, lastUpdateTime = None, privacyDeclarations = None)
 
   /** How many times is this category referenced in a system? */
   def categoryReferencesCt(categoryName: String): Future[Int] =

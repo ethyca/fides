@@ -2,8 +2,9 @@ package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
-import devtools.domain.{PrivacyDeclaration, SystemObject}
+import devtools.domain.{PrivacyDeclaration, Registry, SystemObject}
 import devtools.persist.dao.DAOs
+import devtools.persist.db.Queries.systemQuery
 import devtools.persist.db.Tables.SystemQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.SystemValidator
@@ -18,6 +19,9 @@ class SystemService(
 )(implicit ec: ExecutionContext)
   extends AuditingService[SystemObject, SystemQuery](daos.systemDAO, daos.auditLogDAO, daos.organizationDAO, validator)
   with LazyLogging with UniqueKeySearch[SystemObject, SystemQuery] {
+
+  override def hydrate(s: SystemObject): Future[SystemObject] =
+    daos.privacyDeclarationDAO.filter(_.systemId === s.id).map(d => s.copy(privacyDeclarations = Some(d)))
 
   /** retrieve an org id from the base type */
   override def orgId(t: SystemObject): Long = t.organizationId
