@@ -1,37 +1,67 @@
 # Tutorial
 
-This tutorial walks you the fundamental functionality of Fides including major concepts and usage.
+This tutorial walks you through the process of getting up and running with Fides.
+
+## Getting Started
+
+Use either the [Docker](getting_started/docker.md) or [Local](getting_started/local.md) guide to get Fides up and running on your machine.
 
 ## Writing Manifest Files
 
-Manifest files are written in `yaml` and are used to create objects within the Fides database via the Fides server. They are read into Python models for use within Fidesctl before being converted to JSON and sent to the server.
+The next step is to write the manifest files that describe your privacy data usage with the Fides privacy ontology. Manifest files are written in YAML and are used to create and update objects within the Fides database via the FidesAPI.
 
-System manifest files are intended to live with the application or code that it describes. All other manifests are intended to live in a separate directory or repository of Fides manifests.
+First create a directory for the manifests to live in:
 
-For a set of example manifests see the [Fides Objects](fides_objects.md) page.
+`mkdir fides_manifests/`
 
-## Applying Non-System Manifest Files
+Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required objects for Fides to function. For an exhaustive set of example manifests see the [Fides Objects](fides_objects.md) page.
 
-Once all of the required non-system manifest files have been defined, they can be sent to the server using Fidesctl. The command for this is:
+## Applying Manifest Files
 
-`fidesctl apply <directory>`
+Once you've finished writing your manifest files, it's time to apply them to the server. This is done with a single `fidesctl` command that handles both creating _and_ updating objects in the Fides database. If an object with the same type and fidesKey already exists, that object will be updated.
 
-This will load all files ending in either `.yaml` or `yml` and determines whether each object needs to be created, updated, or nothing needs to be done (the object exists on the server and there hasn't been a change). Any file formatting issues within the manifests will be caught and shown to the user. _This directory should not contain the system manifest, since it should be evaluated before submission!_
+If we assume the same directory name as before for where our manifests are located, the command would be:
 
-## System Evaluatation and Creation
+`fidesctl apply fides_manifests/`
 
-System manifests have a slightly different workflow as they are also meant to be incorporated into CI pipelines.
+This will load all files ending in either `.yaml` or `.yml` within that directory. Any file formatting issues within the manifests will be caught and shown to the user.
 
-Use the following command to verify that your system is valid without creating it (safe to do in branches):
+## Evaluatation
 
-`fidesctl dry_evaluate <system_manifest> <fides_key>`
+Systems and Registries have a slightly different workflow as they are also designed to be incorporated into CI pipelines.
 
-If that command shows passing, then it is safe to apply the system upon merge:
+Now that you've created your initial manifest files via the `apply` command, it's time to evaluate if that initial system is compliant. Use the following command to evaluate your system:
 
-`fidesctl apply <system_manifest>`
+`fidesctl evaluate system <fides_key>`
 
-## Registry Evaluation
+If that command returns a "PASS" evaluation, then you're now in a known-good state and ready to set up automated CI workflows to make sure your application stays compliant within each PR.
 
-With all of the manifests having been applied and systems evaluated and created, it's time to evaluate the registry and confirm that everything is valid and safe. Use the following command:
+## Setting up CI/CD
 
-`fidesctl evaluate registry <registry_fidesKey>`
+To set up CI/CD for Fides evaluations, there are a few suggested steps to follow:
+
+=== "Pull Request"
+
+    1. Set up a new CI workflow that gets triggered whenever a system or registry file gets changed within a pull request
+    1. Configure the new workflow to run `fidesctl dry-evaluate fides_manifests/ <fides_key>` when it gets triggered
+    1. The command will trigger a non-zero exit if the evaluation fails
+
+    Use the result of this job to determine whether or not a system change is safe to merge or not. If the command fails, check the error messages to see why the evaluation failed.
+
+=== "Merge Event"
+
+    1. Set up a new CI workflow that gets triggered whenever something in your manifests directory changes and the branch gets merged to the main branch
+    1. Configure the new workflow to run two few jobs:
+        1. `fidesctl apply fides_manifest/`
+        1. `fidesctl evaluate system <fides_key>`
+
+    This will apply all of your manifests to the API and then evaluate the current state of your system on the main branch.
+
+## Next Steps
+
+Congratulations, you've walked through all of the steps to get a simple but complete Fides instance running! Here are some next steps to continue building out your Fides instance:
+
+1. Define Datasets
+1. Create a Registry and assign systems to it
+1. Add more Policy Rules or Policies
+1. Extend the Privacy Classifiers as needed

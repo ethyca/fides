@@ -152,4 +152,4 @@ compose-build:
 
 .PHONY: docs-serve
 docs-serve:
-	@docker run --rm -p 8000:8000 -v ${PWD}/docs/fides:/docs squidfunk/mkdocs-material
+	@docker-compose up docs

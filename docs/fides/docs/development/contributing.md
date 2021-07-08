@@ -1,6 +1,8 @@
 # Contributing
 
-There are two components to the Fides project; the CLI and the Server. The CLI is a Python application and the Server is a Scala application powered by MySQL.
+---
+
+We welcome issues, contributions and discussion from all users, regardless of background or experience level. In order to create a positive and welcoming environment, all interactions are governed by Fides's [Code of Conduct](../community/code_of_conduct.md).
 
 ## Developing the Server
 
