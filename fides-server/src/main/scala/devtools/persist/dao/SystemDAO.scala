@@ -1,8 +1,8 @@
 package devtools.persist.dao
 
-import devtools.domain.SystemObject
+import devtools.domain.{PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Tables.{SystemQuery, systemQuery}
+import devtools.persist.db.Tables.{SystemQuery, privacyDeclarationQuery, systemQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}
@@ -54,9 +54,6 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     )
   }
 
-  def findForFidesKeyInSet(fidesKeys: Set[String], organizationId: Long): Future[Seq[SystemObject]] =
-    db.run(systemQuery.filter(sys => { sys.fidesKey.inSet(fidesKeys) && sys.organizationId === organizationId }).result)
-
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
     value: String
@@ -68,4 +65,18 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     (t.systemDependencies like value)
   }
 
+  /** retrieved all systems populated with privacy declarations */
+  def findHydrated[C <: Rep[_]](
+    expr: SystemQuery => C
+  )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[SystemObject]] = {
+    val q = for {
+      (s, d) <- query.filter(expr) join privacyDeclarationQuery on (_.id === _.systemId)
+    } yield (s, d)
+
+    db.run(q.result).map { pairs =>
+      pairs.groupBy(t => t._2.systemId).values.map { s: Seq[(SystemObject, PrivacyDeclaration)] =>
+        s.head._1.copy(privacyDeclarations = Some(s.map(_._2)))
+      }
+    }
+  }
 }

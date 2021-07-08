@@ -8,14 +8,10 @@ import scala.concurrent.ExecutionContext
 
 class RegistryEvaluatorTest extends AnyFunSuite with TestUtils {
 
-  implicit val context: ExecutionContext = App.executionContext
-  private val systemEvaluator            = new SystemEvaluator(App.daos)
-  private val registryEvaluator          = new RegistryEvaluator(systemEvaluator)
-
   test("test cycle check") {
 
     //a->b->c->d->e->a
-    registryEvaluator.cycleCheck(
+    RegistryEvaluator.cycleCheck(
       Seq(
         systemOf("a").copy(systemDependencies = Set("b")),
         systemOf("b").copy(systemDependencies = Set("c")),

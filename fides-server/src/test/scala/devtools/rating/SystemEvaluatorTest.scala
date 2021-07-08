@@ -3,6 +3,7 @@ package devtools.rating
 import devtools.Generators.SystemObjectGen
 import devtools.domain.PrivacyDeclaration
 import devtools.domain.enums.ApprovalStatus
+import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -12,11 +13,16 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   implicit val context: ExecutionContext = App.executionContext
   private val systemEvaluator            = new SystemEvaluator(App.daos)
+  private val evaluator                  = new Evaluator(App.daos)
 
   test("test rate rating catch missing system dependency") {
+    //for this test we need to set the privacyDeclarations to "Some" since if the system is
+    //understood to be not hydrated we will try to retrieve the value from the db, which
+    //will fail for this test value.
     val sys = SystemObjectGen.sample.get
-      .copy(fidesKey = "a", privacyDeclarations = None, systemDependencies = Set("missing1", "missing2"))
-    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq())
+      .copy(fidesKey = "a", privacyDeclarations = Some(Seq()), systemDependencies = Set("missing1", "missing2"))
+    val eo                  = waitFor(evaluator.retrievePopulated(Seq(sys)))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys.fidesKey, eo)
 
     v.errors should containMatchString(
       "The referenced systems \\[.*\\] were not found."
@@ -27,8 +33,9 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   test("test self reference") {
     val sys =
-      SystemObjectGen.sample.get.copy(fidesKey = "a", privacyDeclarations = None, systemDependencies = Set("a"))
-    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys, Seq(), Seq())
+      SystemObjectGen.sample.get.copy(fidesKey = "a", privacyDeclarations = Some(Seq()), systemDependencies = Set("a"))
+    val eo                  = waitFor(evaluator.retrievePopulated(Seq(sys)))
+    val v: SystemEvaluation = systemEvaluator.evaluateSystem(sys.fidesKey, eo)
 
     v.errors should containMatchString(
       "Invalid self reference"

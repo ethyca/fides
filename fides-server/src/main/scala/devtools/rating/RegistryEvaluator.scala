@@ -2,10 +2,7 @@ package devtools.rating
 
 import devtools.domain.SystemObject
 import devtools.domain.enums.ApprovalStatus
-import devtools.domain.policy.Policy
 import devtools.util.CycleDetector.collectCycleErrors
-
-import scala.concurrent.ExecutionContext
 
 final case class RegistryEvaluation(
   /** map of status to {policy.rule -> [matching declaration names]} */
@@ -23,26 +20,26 @@ final case class RegistryEvaluation(
   }
 }
 
-class RegistryEvaluator(val systemEvaluator: SystemEvaluator)(implicit val executionContext: ExecutionContext) {
+object RegistryEvaluator {
 
   /** Don't allow a cycle in the system graph. */
   def cycleCheck(systems: Seq[SystemObject]): Seq[String] =
     collectCycleErrors(systems.map(s => s.fidesKey -> s.systemDependencies))
 
-  /** Evaluate and generate an approval for the given sequence of systems and rawDatasets.
-    * This method assumes that all systems and rawDatasets have been populated.
+  /** evaluate all systems in the registry. fides key for relevant systems are provided
+    * since the EvaluationObjectSet may contain systems that are only referenced in
+    * System.systemDependencies.
     */
-  def runEvaluation(systems: Seq[SystemObject], policies: Seq[Policy]): RegistryEvaluation = {
-    val cycleWarnings = cycleCheck(systems)
+  def evaluateRegistry(
+    fidesKeys: Seq[String],
+    eo: EvaluationObjectSet,
+    systemEvaluator: SystemEvaluator
+  ): RegistryEvaluation = {
 
-    val systemEvaluations: Map[String, SystemEvaluation] = systems
-      .map(sys =>
-        sys.fidesKey -> systemEvaluator.evaluateSystem(
-          sys,
-          systems.filter(dependentSystem => sys.systemDependencies.contains(dependentSystem.fidesKey)),
-          policies
-        )
-      )
+    val cycleWarnings = cycleCheck(eo.systems.values.toSeq)
+
+    val systemEvaluations: Map[String, SystemEvaluation] = fidesKeys
+      .map(fk => fk -> systemEvaluator.evaluateSystem(fk, eo))
       .toMap
 
     val overallApproval = {
@@ -62,5 +59,7 @@ class RegistryEvaluator(val systemEvaluator: SystemEvaluator)(implicit val execu
       }
     }
     RegistryEvaluation(systemEvaluations, cycleWarnings, overallApproval)
+
   }
+
 }

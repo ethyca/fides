@@ -24,6 +24,15 @@ final case class SystemObject(
 ) extends WithFidesKey[SystemObject, Long] with VersionStamp with OrganizationId {
   override def withId(idValue: Long): SystemObject = this.copy(id = idValue)
 
+  /** collect all dataset references from the embedded privacy declarations. If
+    * this object is not hydrated and privacy declarations are not present, will
+    * returns an empty Set
+    */
+  def datasetReferences: Set[String] =
+    privacyDeclarations match {
+      case Some(declarations) => declarations.flatMap(_.datasetReferences).toSet
+      case _                  => Set()
+    }
 }
 
 object SystemObject {

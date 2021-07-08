@@ -71,7 +71,7 @@ class SystemControllerTest
 
     post(
       s"/$path/evaluate/dry-run",
-      jdumps(testInstance),
+      jdumps(testInstance.copy(privacyDeclarations = Some(Seq()))),
       headers = withTestHeaders("Content-Type" -> "application/json")
     ) {
       approval(body).action shouldEqual "dry-run"
