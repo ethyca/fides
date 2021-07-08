@@ -37,36 +37,36 @@ def objects_dict():
         "dataset": models.Dataset(
             organizationId=1,
             fidesKey="test_sample_db_dataset",
+            metadata={},
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
+            dataCategories=[],
+            dataQualifier="",
             datasetType="MySQL",
             location="ethyca_mysql_db.ethyca_schema.ethyca_table",
-            tables=[
-                models.DatasetTable(
-                    name="sample_db_table_1",
-                    description="Sample DB Table Description",
-                    fields=[
-                        models.DatasetField(
-                            name="Food Preference",
-                            description="User's favorite food",
-                        ),
-                        models.DatasetField(
-                            name="first_name",
-                            description="A First Name Field",
-                            dataCategories=["derived_data"],
-                            dataQualifier="identified_data",
-                        ),
-                        models.DatasetField(
-                            name="email",
-                            description="User's Email",
-                            dataCategories=["account_data"],
-                            dataQualifier="identified_data",
-                        ),
-                    ],
+            fields=[
+                models.DatasetField(
+                    name="Food Preference",
+                    description="User's favorite food",
+                    path="some.path",
+                ),
+                models.DatasetField(
+                    name="first_name",
+                    description="A First Name Field",
+                    path="another.path",
+                    dataCategories=["derived_data"],
+                    dataQualifier="identified_data",
+                ),
+                models.DatasetField(
+                    name="email",
+                    description="User's Email",
+                    path="another.another.path",
+                    dataCategories=["account_data"],
+                    dataQualifier="identified_data",
                 ),
             ],
         ),
-        "data-subject-category": models.DataSubjectCategory(
+        "data-subject": models.DataSubject(
             organizationId=1,
             fidesKey="customer_content_data",
             name="customer_content_data",
@@ -101,7 +101,7 @@ def objects_dict():
             description="Test Policy",
             dataCategories=models.DataRule(inclusion="NONE", values=[]),
             dataUses=models.DataRule(inclusion="NONE", values=["provide"]),
-            dataSubjectCategories=models.DataRule(inclusion="ANY", values=[]),
+            dataSubjects=models.DataRule(inclusion="ANY", values=[]),
             dataQualifier="unlinked_pseudonymized_data",
             action="REJECT",
         ),
@@ -125,7 +125,7 @@ def objects_dict():
                     name="declaration-name",
                     dataCategories=[],
                     dataUse="provide",
-                    dataSubjectCategories=[],
+                    dataSubjects=[],
                     dataQualifier="aggregated_data",
                 )
             ],
