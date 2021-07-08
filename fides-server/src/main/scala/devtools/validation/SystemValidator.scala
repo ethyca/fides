@@ -45,7 +45,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   def validateDeclarations(sys: SystemObject, errors: MessageCollector): Unit = {
     /*map cannot be empty */
     if (sys.privacyDeclarations.isEmpty) {
-      errors.addError("no declarations specified")
+      errors.addWarning("no declarations specified")
     } else {
       /* All map keys must be valid members of a data category */
       validateDataCategories(

@@ -1,6 +1,6 @@
 package devtools.persist.db
 
-import devtools.domain._
+import devtools.domain.{PrivacyDeclaration, _}
 import devtools.domain.definition.{IdType, OrganizationId, VersionStamp}
 import devtools.domain.policy.{Policy, PolicyRule}
 import org.slf4j.{Logger, LoggerFactory}
@@ -114,6 +114,7 @@ object Tables {
     val dataSubjects: Rep[String]      = column[String]("data_subjects")
     val datasetReferences: Rep[String] = column[String]("dataset_references")
     val rawDatasets: Rep[String]       = column[String]("raw_datasets")
+
     def * =
       (
         id,

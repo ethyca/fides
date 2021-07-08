@@ -14,7 +14,9 @@ class SystemControllerTest
   override def isValid(t: SystemObject): Boolean = t.id > 0 && t.fidesKey.nonEmpty
 
   override def withoutMergeValues(t: SystemObject): Map[String, Any] =
-    super.withoutMergeValues(t.copy(lastUpdateTime = None, creationTime = None, versionStamp = None))
+    super.withoutMergeValues(
+      t.copy(lastUpdateTime = None, creationTime = None, versionStamp = None, privacyDeclarations = None)
+    )
 
   var testInstance: SystemObject = generator.sample.get
 

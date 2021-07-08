@@ -28,7 +28,6 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
   }
 
   test("test crud operations set versions and audit logs") {
-
     val unsanitizedFidesKey = s"$fidesKey x"
     val sanitizedFidesKey   = sanitizeUniqueIdentifier(unsanitizedFidesKey)
     val v =
@@ -47,7 +46,6 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1
 
     val saved = waitFor(systemService.findByUniqueKey(1, sanitizedFidesKey)).get
-    prettyPrintJson(saved)
     saved.fidesKey shouldEqual sanitizedFidesKey
     //dataset and field datasetReferences are also sanitized
     saved.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet shouldEqual Set(

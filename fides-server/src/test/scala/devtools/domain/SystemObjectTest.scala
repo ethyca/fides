@@ -7,9 +7,6 @@ import faker._
 import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.SQLActionBuilder
-
-import scala.concurrent.Future
 
 class SystemObjectTest
   extends DomainObjectTestBase[SystemObject, Long](
@@ -23,18 +20,22 @@ class SystemObjectTest
     t.copy(creationTime = None, lastUpdateTime = None, privacyDeclarations = None)
 
   /** How many times is this category referenced in a system? */
-  def categoryReferencesCt(categoryName: String): Future[Int] =
-    db.run(
-      sqlu"""select COUNT(DISTINCT A.ID) from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
-           B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('["#$categoryName"]',B.data_categories) > 0"""
+  def categoryReferencesCt(categoryName: String): Int = {
+    val v = waitFor(
+      db.run(
+        sql"""select COUNT(DISTINCT A.ID) from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
+           B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('["#$categoryName"]',B.data_categories) > 0""".as[Int]
+      )
     )
+    v.head
+  }
 
   test(s"System.fidesKey must be unique") {
     testInsertConstraint({ sys: SystemObject => this.generator.sample.get.copy(fidesKey = sys.fidesKey) })
   }
 
   test("test parse-from-db json field errors") {
-    val s              = SystemObjectGen.sample.get
+    val s              = SystemObjectGen.sample.get.copy(privacyDeclarations = None)
     val toInsertable   = SystemObject.toInsertable(s).get
     val fromInsertable = SystemObject.fromInsertable(toInsertable)
     s shouldEqual fromInsertable
@@ -45,7 +46,7 @@ class SystemObjectTest
 
   test("search for category string") {
     val dataCategory = "customer_content_data"
-    val ct           = waitFor(categoryReferencesCt(dataCategory))
+    val ct           = categoryReferencesCt(dataCategory)
     waitFor(
       service.create(
         generator.sample.get
@@ -60,7 +61,6 @@ class SystemObjectTest
                   "provide",
                   "identified_data",
                   Set(),
-                  Set(),
                   Set()
                 )
               )
@@ -70,7 +70,7 @@ class SystemObjectTest
       )
     )
 
-    val ct2: Int = waitFor(categoryReferencesCt(dataCategory))
+    val ct2: Int = categoryReferencesCt(dataCategory)
     ct2 should be > ct
   }
 }

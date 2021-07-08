@@ -24,27 +24,27 @@ class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndA
     rater.categoriesMatch(
       1,
       PolicyValueGrouping(ANY, Set(p1)),
-      PrivacyDeclaration(0L, 0L, "test", Set(p1), null, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", Set(p1), null, null, null, Set())
     ) shouldEqual true
     rater.categoriesMatch(
       1,
       PolicyValueGrouping(ALL, Set(p1)),
-      PrivacyDeclaration(0L, 0L, "test", Set(p1c1, p1c2, p1), null, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", Set(p1c1, p1c2, p1), null, null, null, Set())
     ) shouldEqual true
     rater.categoriesMatch(
       1,
       PolicyValueGrouping(ANY, Set(p1)),
-      PrivacyDeclaration(0L, 0L, "test", Set(p1, p2), null, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", Set(p1, p2), null, null, null, Set())
     ) shouldEqual true
     rater.categoriesMatch(
       1,
       PolicyValueGrouping(ALL, Set(p1)),
-      PrivacyDeclaration(0L, 0L, "test", Set(p1, p2), null, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", Set(p1, p2), null, null, null, Set())
     ) shouldEqual false
     rater.categoriesMatch(
       1,
       PolicyValueGrouping(NONE, Set(p1)),
-      PrivacyDeclaration(0L, 0L, "test", Set(p2, p2c1, p2c2), null, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", Set(p2, p2c1, p2c2), null, null, null, Set())
     ) shouldEqual true
   }
 
@@ -58,22 +58,22 @@ class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndA
     rater.usesMatch(
       1,
       PolicyValueGrouping(ANY, Set(u1)),
-      PrivacyDeclaration(0L, 0L, "test", null, u1, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, u1, null, null, Set())
     ) shouldEqual true
     rater.usesMatch(
       1,
       PolicyValueGrouping(ANY, Set(u1, u2)),
-      PrivacyDeclaration(0L, 0L, "test", null, u2, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, u2, null, null, Set())
     ) shouldEqual true
     rater.usesMatch(
       1,
       PolicyValueGrouping(NONE, Set(u1c1, u1c2)),
-      PrivacyDeclaration(0L, 0L, "test", null, u1c1, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, u1c1, null, null, Set())
     ) shouldEqual false
     rater.usesMatch(
       1,
       PolicyValueGrouping(NONE, Set(u1c1, u1c2)),
-      PrivacyDeclaration(0L, 0L, "test", null, u2, null, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, u2, null, null, Set())
     ) shouldEqual true
   }
   //qualifiers
@@ -84,22 +84,22 @@ class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndA
     rater.qualifierMatches(
       1,
       Some(q1),
-      PrivacyDeclaration(0L, 0L, "test", null, null, q1, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, q1, null, Set())
     ) shouldEqual true
     rater.qualifierMatches(
       1,
       Some(q1),
-      PrivacyDeclaration(0L, 0L, "test", null, null, q1c1, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, q1c1, null, Set())
     ) shouldEqual true
     rater.qualifierMatches(
       1,
       Some(q1c1),
-      PrivacyDeclaration(0L, 0L, "test", null, null, q1c1c1, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, q1c1c1, null, Set())
     ) shouldEqual true
     rater.qualifierMatches(
       1,
       None,
-      PrivacyDeclaration(0L, 0L, "test", null, null, q1, null, Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, q1, null, Set())
     ) shouldEqual true
   }
 
@@ -111,22 +111,22 @@ class PolicyRuleEvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndA
     rater.subjectsMatch(
       1,
       PolicyValueGrouping(ANY, Set(s1)),
-      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set())
     ) shouldEqual true
     rater.subjectsMatch(
       1,
       PolicyValueGrouping(ANY, Set(s1, s2)),
-      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set())
     ) shouldEqual true
     rater.subjectsMatch(
       1,
       PolicyValueGrouping(NONE, Set(s1, s2)),
-      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s3), Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s3), Set())
     ) shouldEqual true
     rater.subjectsMatch(
       1,
       PolicyValueGrouping(NONE, Set(s1, s2)),
-      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set(), Set())
+      PrivacyDeclaration(0L, 0L, "test", null, null, null, Set(s1), Set())
     ) shouldEqual false
 
   }

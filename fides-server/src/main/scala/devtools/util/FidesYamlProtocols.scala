@@ -145,7 +145,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit val DataCategoryFormat: YamlFormat[DataCategory] =
     withOptionalLongId[DataCategory](yamlFormat7(DataCategory.apply))
   implicit val PrivacyDeclarationFormat: YamlFormat[PrivacyDeclaration] =
-    withOptionalLongId[PrivacyDeclaration](yamlFormat9(PrivacyDeclaration.apply))
+    withOptionalLongId[PrivacyDeclaration](yamlFormat8(PrivacyDeclaration.apply))
   implicit val SystemObjectFormat: YamlFormat[SystemObject] =
     withOptionalLongId[SystemObject](yamlFormat13(SystemObject.apply))
   implicit val RegistryFormat: YamlFormat[Registry] = withOptionalLongId[Registry](yamlFormat10(Registry.apply))

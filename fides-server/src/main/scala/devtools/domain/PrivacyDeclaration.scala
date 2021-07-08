@@ -15,12 +15,7 @@ final case class PrivacyDeclaration(
   dataSubjects: Set[DataSubjectName],
   /* Dataset or dataset.field references.
    * *These are the "use" references that will be echoed to the user.*/
-  datasetReferences: Set[String],
-  /** these are just the raw rawDatasets,(that is, with field references stripped)
-    * and are included here for ease of searching. They are an optimization and
-    * are not reflected to the user.
-    */
-  rawDatasets: Set[String]
+  datasetReferences: Set[String]
 ) extends IdType[PrivacyDeclaration, Long] {
   /** Supply a copy of this object with an altered id. */
   override def withId(id: Long): PrivacyDeclaration = this.copy(id = id)
@@ -35,8 +30,7 @@ object PrivacyDeclaration {
   type Tupled = (Long, Long, String, String, DataUseName, DataQualifierName, String, String, String)
 
   def toInsertable(s: PrivacyDeclaration): Option[Tupled] = {
-
-    val sanitizedRefs = s.datasetReferences.map(sanitizeUniqueIdentifier)
+    val datasetReferences = s.datasetReferences.map(sanitizeUniqueIdentifier)
     Some(
       s.id,
       s.systemId,
@@ -45,8 +39,8 @@ object PrivacyDeclaration {
       s.dataUse,
       s.dataQualifier,
       JsonSupport.dumps(s.dataSubjects),
-      JsonSupport.dumps(sanitizedRefs),
-      JsonSupport.dumps(extractDatasets(sanitizedRefs))
+      JsonSupport.dumps(datasetReferences),
+      JsonSupport.dumps(extractDatasets(datasetReferences))
     )
   }
 
@@ -59,8 +53,7 @@ object PrivacyDeclaration {
       t._5,
       t._6,
       JsonSupport.parseToObj[Set[String]](t._7).get,
-      JsonSupport.parseToObj[Set[String]](t._8).get,
-      JsonSupport.parseToObj[Set[String]](t._9).get
+      JsonSupport.parseToObj[Set[String]](t._8).get
     )
 
 }

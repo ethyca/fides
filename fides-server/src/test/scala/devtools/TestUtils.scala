@@ -279,8 +279,7 @@ object Generators {
         use,
         qualifier,
         smallSetOf(1, 4, availableDataSubjects),
-        fields,
-        PrivacyDeclaration.extractDatasets(fields)
+        fields
       )
     }
 
