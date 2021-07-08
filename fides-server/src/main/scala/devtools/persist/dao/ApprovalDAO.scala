@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.Approval
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.approvalQuery
-import devtools.persist.db.Tables.ApprovalQuery
+import devtools.persist.db.Tables.{ApprovalQuery, approvalQuery}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 

@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.User
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.userQuery
-import devtools.persist.db.Tables.UserQuery
+import devtools.persist.db.Tables.{UserQuery, userQuery}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 

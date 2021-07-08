@@ -105,6 +105,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
       }
     }
   }
+
   /* support for custom enum types.*/
   implicit val PolicyActionFormat: YamlFormat[PolicyAction]     = PolicyAction.yamlFormat
   implicit val InclusionFormat: YamlFormat[RuleInclusion]       = RuleInclusion.yamlFormat
@@ -145,7 +146,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit val DataCategoryFormat: YamlFormat[DataCategory] =
     withOptionalLongId[DataCategory](yamlFormat7(DataCategory.apply))
   implicit val PrivacyDeclarationFormat: YamlFormat[PrivacyDeclaration] =
-    withOptionalLongId[PrivacyDeclaration](yamlFormat8(PrivacyDeclaration.apply))
+    withOptionalValues(Map("id" -> 0L, "systemId" -> 0L), yamlFormat8(PrivacyDeclaration.apply))
   implicit val SystemObjectFormat: YamlFormat[SystemObject] =
     withOptionalLongId[SystemObject](yamlFormat13(SystemObject.apply))
   implicit val RegistryFormat: YamlFormat[Registry] = withOptionalLongId[Registry](yamlFormat10(Registry.apply))

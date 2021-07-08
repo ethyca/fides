@@ -2,14 +2,11 @@ package devtools.persist.dao
 
 import devtools.domain.{DataCategory, DataCategoryTree}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.dataCategoryQuery
-import devtools.persist.db.Tables.DataCategoryQuery
+import devtools.persist.db.Tables.{DataCategoryQuery, dataCategoryQuery}
 import devtools.util.TreeCache
-import slick.dbio.{Effect, NoStream}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.Rep
-import slick.sql.SqlStreamingAction
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success

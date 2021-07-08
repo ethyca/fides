@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.DatasetField
 import devtools.persist.dao.definition.{AutoIncrementing, DAO}
-import devtools.persist.db.Queries.datasetFieldQuery
-import devtools.persist.db.Tables.DatasetFieldQuery
+import devtools.persist.db.Tables.{DatasetFieldQuery, datasetFieldQuery}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 

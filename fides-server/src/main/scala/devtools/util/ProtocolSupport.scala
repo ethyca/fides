@@ -103,8 +103,8 @@ object JsonSupport extends LazyLogging {
     AuditAction.jsonFormat +
     ApprovalStatus.keySerializer +
     datasetFieldFormat +
-    policyRuleFormat
-  // + privacyDeclarationSerializer
+    policyRuleFormat +
+    privacyDeclarationSerializer
 
   /** extract an optionally present nested value. */
   @tailrec

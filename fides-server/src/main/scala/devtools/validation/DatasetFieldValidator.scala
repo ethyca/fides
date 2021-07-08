@@ -3,7 +3,7 @@ package devtools.validation
 import devtools.controller.RequestContext
 import devtools.domain.DatasetField
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
+import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}

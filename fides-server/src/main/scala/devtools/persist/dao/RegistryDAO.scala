@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.{Registry, SystemObject}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.{registryQuery, systemQuery}
-import devtools.persist.db.Tables.RegistryQuery
+import devtools.persist.db.Tables.{RegistryQuery, registryQuery, systemQuery}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.CanBeQueryCondition

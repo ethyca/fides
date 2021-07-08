@@ -1,8 +1,7 @@
 package devtools.persist.dao
 import devtools.domain.policy.PolicyRule
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.policyRuleQuery
-import devtools.persist.db.Tables.PolicyRuleQuery
+import devtools.persist.db.Tables.{PolicyRuleQuery, policyRuleQuery}
 import slick.dbio.Effect
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._

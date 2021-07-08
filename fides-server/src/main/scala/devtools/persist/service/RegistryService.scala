@@ -4,8 +4,7 @@ import devtools.App.registryDAO
 import devtools.controller.RequestContext
 import devtools.domain.Registry
 import devtools.persist.dao._
-import devtools.persist.db.Queries.systemQuery
-import devtools.persist.db.Tables.RegistryQuery
+import devtools.persist.db.Tables.{RegistryQuery, systemQuery}
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.RegistryValidator
 import slick.jdbc.MySQLProfile.api._

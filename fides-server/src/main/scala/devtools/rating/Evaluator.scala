@@ -1,9 +1,9 @@
 package devtools.rating
 
 import devtools.domain.policy.Policy
-import devtools.domain.{Approval, Dataset, Registry, SystemObject}
+import devtools.domain.{Approval, Registry, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.systemQuery
+import devtools.persist.db.Tables.systemQuery
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}

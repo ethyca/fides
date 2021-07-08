@@ -2,9 +2,8 @@ package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
-import devtools.domain.{PrivacyDeclaration, Registry, SystemObject}
+import devtools.domain.{PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.systemQuery
 import devtools.persist.db.Tables.SystemQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.SystemValidator

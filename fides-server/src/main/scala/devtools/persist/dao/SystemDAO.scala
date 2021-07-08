@@ -2,9 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.SystemObject
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.systemQuery
-import devtools.persist.db.Tables.SystemQuery
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.persist.db.Tables.{SystemQuery, systemQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}

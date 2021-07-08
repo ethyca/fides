@@ -1,9 +1,10 @@
 package devtools.controller
 
 import devtools.App
-import devtools.Generators.SystemObjectGen
+import devtools.Generators.{DeclarationGen, SystemObjectGen}
 import devtools.domain.{Approval, SystemObject}
 import devtools.util.JsonSupport.{dumps => jdumps}
+import devtools.util.YamlSupport
 
 import scala.util.{Success, Try}
 

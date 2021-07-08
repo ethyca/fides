@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain._
 import devtools.persist.dao.definition.{AutoIncrementing, DAO}
-import devtools.persist.db.Queries.{privacyDeclarationQuery, systemQuery}
-import devtools.persist.db.Tables.PrivacyDeclarationQuery
+import devtools.persist.db.Tables.{PrivacyDeclarationQuery, privacyDeclarationQuery, systemQuery}
 import devtools.util.JsonSupport
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import slick.jdbc.GetResult

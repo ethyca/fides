@@ -4,7 +4,7 @@ import devtools.controller.definition.ApiResponse.asyncResponse
 import devtools.controller.definition.BaseController
 import devtools.domain.AuditLog
 import devtools.persist.dao.{AuditLogDAO, UserDAO}
-import devtools.persist.db.Queries.auditLogQuery
+import devtools.persist.db.Tables.auditLogQuery
 import devtools.persist.service.AuditLogService
 import devtools.util.FidesYamlProtocols
 import net.jcazevedo.moultingyaml.YamlFormat
