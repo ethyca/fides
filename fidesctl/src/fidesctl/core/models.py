@@ -125,7 +125,7 @@ class DataDeclaration(BaseModel):
 class System(BaseModel):
     id: Optional[int]
     organizationId: int
-    registryId: int
+    registryId: Optional[int]
     fidesKey: str
     fidesSystemType: str
     name: str
