@@ -9,6 +9,7 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 1. Java 8
 1. sbt Version 2.12
 1. MySQL DB Version 8
+1. Clone the [Fides repo](https://github.com/ethyca/fides)
 
 ## Local Setup
 
@@ -22,4 +23,4 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 
 ## Next Steps
 
-See the [Tutorial](tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
+See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.

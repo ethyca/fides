@@ -16,11 +16,11 @@ To write concept docs, add Markdown files to the `docs/fides/docs/` directory (o
 
 Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides" and "FidesAPI".
 
-Other Fides terms, like "data-category" or "system", should generally not be capitalized unless they refer to a specific Python model. For example:
+Other Fides terms, like "Data Category" or "System", should also be capitalized to be clear about the fact that a Fides object is being referenced.
 
-> When a system is applied, it is either created or updated through the FidesAPI.
+> When a System is applied, it is either created or updated through the FidesAPI.
 >
-> The `System` model requires a field called `fidesKey`.
+> The System model requires a field called `fidesKey`.
 
 ## Previewing docs locally
 

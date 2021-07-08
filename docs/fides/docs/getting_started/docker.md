@@ -8,6 +8,7 @@ The easiest way to get started with Fides is to launch it using the supplied `ma
 
 1. Install Make
 1. Install Docker
+1. Clone the [Fides repo](https://github.com/ethyca/fides)
 
 ## Docker Setup
 
@@ -17,4 +18,4 @@ The easiest way to get started with Fides is to launch it using the supplied `ma
 
 ## Next Steps
 
-See the [Tutorial](tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
+See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
