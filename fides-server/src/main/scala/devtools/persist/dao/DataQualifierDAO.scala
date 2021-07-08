@@ -2,7 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.{DataQualifier, DataQualifierTree}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.dataQualifierQuery
+import devtools.persist.db.Tables.dataQualifierQuery
 import devtools.persist.db.Tables.DataQualifierQuery
 import devtools.util.TreeCache
 import slick.jdbc.GetResult

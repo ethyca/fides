@@ -1,10 +1,11 @@
 package devtools.persist.db
 
-import devtools.domain._
+import devtools.domain.{PrivacyDeclaration, _}
 import devtools.domain.definition.{IdType, OrganizationId, VersionStamp}
 import devtools.domain.policy.{Policy, PolicyRule}
 import org.slf4j.{Logger, LoggerFactory}
 import slick.jdbc.MySQLProfile.api._
+import slick.lifted.TableQuery
 
 import java.sql.Timestamp
 abstract class BaseTable[E <: IdType[E, PK], PK](tag: Tag, tableName: String) extends Table[E](tag, tableName) {
@@ -55,6 +56,7 @@ object Tables {
         creationTime
       ) <> (Approval.fromInsertable, Approval.toInsertable)
   }
+  lazy val approvalQuery = TableQuery[ApprovalQuery]
 
   class AuditLogQuery(tag: Tag)
     extends BaseAutoIncTable[AuditLog](tag, "AUDIT_LOG") with OrganizationIdTable[AuditLog]
@@ -84,6 +86,7 @@ object Tables {
       ) <> (AuditLog.fromInsertable, AuditLog.toInsertable)
 
   }
+  lazy val auditLogQuery = TableQuery[AuditLogQuery]
 
   class OrganizationQuery(tag: Tag)
     extends BaseAutoIncTable[Organization](tag, "ORGANIZATION") with VersionStampTable[Organization] {
@@ -104,6 +107,32 @@ object Tables {
         lastUpdateTime
       ) <> (Organization.fromInsertable, Organization.toInsertable)
   }
+  lazy val organizationQuery = TableQuery[OrganizationQuery]
+
+  class PrivacyDeclarationQuery(tag: Tag) extends BaseAutoIncTable[PrivacyDeclaration](tag, "PRIVACY_DECLARATION") {
+    val systemId: Rep[Long]            = column[Long]("system_id")
+    val name: Rep[String]              = column[String]("name")
+    val dataCategories: Rep[String]    = column[String]("data_categories")
+    val dataUse: Rep[String]           = column[String]("data_use")
+    val dataQualifier: Rep[String]     = column[String]("data_qualifier")
+    val dataSubjects: Rep[String]      = column[String]("data_subjects")
+    val datasetReferences: Rep[String] = column[String]("dataset_references")
+    val rawDatasets: Rep[String]       = column[String]("raw_datasets")
+
+    def * =
+      (
+        id,
+        systemId,
+        name,
+        dataCategories,
+        dataUse,
+        dataQualifier,
+        dataSubjects,
+        datasetReferences,
+        rawDatasets
+      ) <> (PrivacyDeclaration.fromInsertable, PrivacyDeclaration.toInsertable)
+  }
+  lazy val privacyDeclarationQuery = TableQuery[PrivacyDeclarationQuery]
 
   class SystemQuery(tag: Tag)
     extends BaseAutoIncTable[SystemObject](tag, "SYSTEM_OBJECT") with OrganizationIdTable[SystemObject]
@@ -114,7 +143,6 @@ object Tables {
     val name: Rep[Option[String]]              = column[Option[String]]("name")
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val systemType: Rep[Option[String]]        = column[Option[String]]("system_type")
-    val privacyDeclarations: Rep[String]       = column[String]("privacy_declarations")
     val systemDependencies: Rep[String]        = column[String]("system_dependencies")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
     val lastUpdateTime: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_update_time", O.AutoInc)
@@ -129,12 +157,12 @@ object Tables {
         name,
         description,
         systemType,
-        privacyDeclarations,
         systemDependencies,
         creationTime,
         lastUpdateTime
       ) <> (SystemObject.fromInsertable, SystemObject.toInsertable)
   }
+  lazy val systemQuery = TableQuery[SystemQuery]
   /*
    * Dataset types
    */
@@ -170,6 +198,7 @@ object Tables {
         lastUpdateTime
       ) <> (Dataset.fromInsertable, Dataset.toInsertable)
   }
+  lazy val datasetQuery = TableQuery[DatasetQuery]
 
   class DatasetFieldQuery(tag: Tag) extends BaseAutoIncTable[DatasetField](tag, "DATASET_FIELD") {
 
@@ -195,7 +224,7 @@ object Tables {
       ) <> (DatasetField.fromInsertable, DatasetField.toInsertable)
 
   }
-
+  lazy val datasetFieldQuery = TableQuery[DatasetFieldQuery]
   /*
    * Taxonomy types
    */
@@ -217,7 +246,7 @@ object Tables {
         description
       ) <> (DataCategory.fromInsertable, DataCategory.toInsertable)
   }
-
+  lazy val dataCategoryQuery = TableQuery[DataCategoryQuery]
   class DataUseQuery(tag: Tag) extends BaseAutoIncTable[DataUse](tag, "DATA_USE") with OrganizationIdTable[DataUse] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
@@ -235,6 +264,8 @@ object Tables {
         description
       ) <> (DataUse.fromInsertable, DataUse.toInsertable)
   }
+  lazy val dataUseQuery = TableQuery[DataUseQuery]
+
   class DataQualifierQuery(tag: Tag)
     extends BaseAutoIncTable[DataQualifier](tag, "DATA_QUALIFIER") with OrganizationIdTable[DataQualifier] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
@@ -253,12 +284,14 @@ object Tables {
         description
       ) <> (DataQualifier.fromInsertable, DataQualifier.toInsertable)
   }
+  lazy val dataQualifierQuery = TableQuery[DataQualifierQuery]
   class DataSubjectQuery(tag: Tag)
     extends BaseAutoIncTable[DataSubject](tag, "DATA_SUBJECT") with OrganizationIdTable[DataSubject] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
     val description: Rep[Option[String]] = column[Option[String]]("description")
+
     def * =
       (
         id,
@@ -269,6 +302,8 @@ object Tables {
         description
       ) <> (DataSubject.fromInsertable, DataSubject.toInsertable)
   }
+  lazy val dataSubjectQuery = TableQuery[DataSubjectQuery]
+
   class RegistryQuery(tag: Tag)
     extends BaseAutoIncTable[Registry](tag, "REGISTRY") with OrganizationIdTable[Registry]
     with VersionStampTable[Registry] {
@@ -293,7 +328,7 @@ object Tables {
       ) <> (Registry.fromInsertable, Registry.toInsertable)
 
   }
-
+  lazy val registryQuery = TableQuery[RegistryQuery]
   class PolicyQuery(tag: Tag)
     extends BaseAutoIncTable[Policy](tag, "POLICY") with OrganizationIdTable[Policy] with VersionStampTable[Policy] {
     val fidesKey: Rep[String]                  = column[String]("fides_key")
@@ -313,6 +348,7 @@ object Tables {
         lastUpdateTime
       ) <> (Policy.fromInsertable, Policy.toInsertable)
   }
+  lazy val policyQuery = TableQuery[PolicyQuery]
 
   class PolicyRuleQuery(tag: Tag)
     extends BaseAutoIncTable[PolicyRule](tag, "POLICY_RULE") with OrganizationIdTable[PolicyRule] {
@@ -322,7 +358,7 @@ object Tables {
     val description: Rep[Option[String]]       = column[Option[String]]("description")
     val dataCategories: Rep[String]            = column[String]("data_categories")
     val dataUses: Rep[String]                  = column[String]("data_uses")
-    val dataSubjectCategories: Rep[String]     = column[String]("data_subject_categories")
+    val dataSubjects: Rep[String]              = column[String]("data_subjects")
     val dataQualifier: Rep[Option[String]]     = column[Option[String]]("data_qualifier")
     val action: Rep[String]                    = column[String]("action")
     val creationTime: Rep[Option[Timestamp]]   = column[Option[Timestamp]]("creation_time", O.AutoInc)
@@ -338,13 +374,14 @@ object Tables {
         description,
         dataCategories,
         dataUses,
-        dataSubjectCategories,
+        dataSubjects,
         dataQualifier,
         action,
         creationTime,
         lastUpdateTime
       ) <> (PolicyRule.fromInsertable, PolicyRule.toInsertable)
   }
+  lazy val policyRuleQuery = TableQuery[PolicyRuleQuery]
 
   class UserQuery(tag: Tag) extends BaseAutoIncTable[User](tag, "USER") with OrganizationIdTable[User] {
     val userName: Rep[String]                  = column[String]("user_name")
@@ -368,5 +405,6 @@ object Tables {
       ) <> (User.fromInsertable, User.toInsertable)
 
   }
+  lazy val userQuery = TableQuery[UserQuery]
 
 }

@@ -16,7 +16,7 @@ class DataSubjectValidatorTest
     App.dataSubjectValidator
   ) {
 
-  private val sDao                  = App.systemDAO
+  private val systemService         = App.systemService
   private val prDao                 = App.policyRuleDAO
   var newKey: String                = ""
   var newKeyId: Long                = 0
@@ -27,16 +27,18 @@ class DataSubjectValidatorTest
   override def beforeAll(): Unit = {
     newKey = fidesKey
     newTaxonomyValue = waitFor(dao.create(DataSubject(0, None, 1, newKey, None, None)))
+    Thread.sleep(100)
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(
-        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataSubjects = Set(newKey))))
+      systemService.create(
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataSubjects = Set(newKey))))),
+        requestContext
       )
     )
 
     newPolicyRule = waitFor(
       prDao.create(
-        PolicyRuleGen.sample.get.copy(organizationId = 1, dataSubjectCategories = PolicyValueGrouping(ALL, Set(newKey)))
+        PolicyRuleGen.sample.get.copy(organizationId = 1, dataSubjects = PolicyValueGrouping(ALL, Set(newKey)))
       )
     )
     createdIds.add(newKeyId)
@@ -46,7 +48,7 @@ class DataSubjectValidatorTest
 
   override def afterAll(): Unit = {
     super.afterAll()
-    sDao.delete(newSystem.id)
+    systemService.dao.delete(newSystem.id)
   }
 
   test("create requires organization exists") {
@@ -64,7 +66,6 @@ class DataSubjectValidatorTest
     ) should containMatchString("parentId")
   }
 
-  /*
   test("update or delete with fides key in use by system fails") {
     //attempt to update with new key
     updateValidationErrors(
@@ -83,7 +84,7 @@ class DataSubjectValidatorTest
     deleteValidationErrors(newKeyId) should containMatchString("is in use in policy rules")
 
     //delete system, update and delete should pass
-    waitFor(sDao.delete(newSystem.id))
+    waitFor(systemService.delete(newSystem.id, requestContext))
     updateValidationErrors(
       DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),
       newTaxonomyValue
@@ -100,7 +101,6 @@ class DataSubjectValidatorTest
     //attempt to delete with the new key
     deleteValidationErrors(newKeyId) shouldNot containMatchString("is in use in policy rules")
   }
-   */
 
   test("delete with children") {
     deleteValidationErrors(newKeyId) should containMatchString("child")

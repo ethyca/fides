@@ -1,7 +1,6 @@
 package devtools.domain
 
 import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
-import devtools.domain.policy.PrivacyDeclaration
 import devtools.util.JsonSupport
 import devtools.util.JsonSupport.{dumps, parseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -18,13 +17,22 @@ final case class SystemObject(
   name: Option[String],
   description: Option[String],
   systemType: Option[String],
-  privacyDeclarations: Seq[PrivacyDeclaration],
+  privacyDeclarations: Option[Seq[PrivacyDeclaration]],
   systemDependencies: Set[String],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends WithFidesKey[SystemObject, Long] with VersionStamp with OrganizationId {
   override def withId(idValue: Long): SystemObject = this.copy(id = idValue)
 
+  /** collect all dataset references from the embedded privacy declarations. If
+    * this object is not hydrated and privacy declarations are not present, will
+    * returns an empty Set
+    */
+  def datasetReferences: Set[String] =
+    privacyDeclarations match {
+      case Some(declarations) => declarations.flatMap(_.datasetReferences).toSet
+      case _                  => Set()
+    }
 }
 
 object SystemObject {
@@ -41,7 +49,6 @@ object SystemObject {
       Option[String],
       Option[String],
       String,
-      String,
       Option[Timestamp],
       Option[Timestamp]
     )
@@ -57,7 +64,6 @@ object SystemObject {
       s.name,
       s.description,
       s.systemType,
-      dumps(s.privacyDeclarations),
       dumps(s.systemDependencies),
       s.creationTime,
       s.lastUpdateTime
@@ -74,10 +80,10 @@ object SystemObject {
       t._7,
       t._8,
       t._9, //system type
-      parseToObj[Seq[PrivacyDeclaration]](t._10).get,
-      parseToObj[Set[String]](t._11).get,
-      t._12,
-      t._13
+      None,
+      parseToObj[Set[String]](t._10).get,
+      t._11,
+      t._12
     )
 
 }

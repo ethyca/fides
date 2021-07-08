@@ -2,7 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.AuditLog
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.auditLogQuery
+import devtools.persist.db.Tables.auditLogQuery
 import devtools.persist.db.Tables.AuditLogQuery
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}

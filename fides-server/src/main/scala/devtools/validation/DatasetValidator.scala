@@ -50,11 +50,11 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
   }
 
   def checkFidesKeyInUse(organizationId: Long, fidesKey: String, errors: MessageCollector): Future[MessageCollector] = {
-    daos.systemDAO
-      .findSystemsWithDataset(organizationId, fidesKey)
+    daos.privacyDeclarationDAO
+      .systemsReferencingDataset(organizationId, fidesKey)
       .map(keys => {
         if (keys.nonEmpty) {
-          errors.addError(s"The systems ${keys.mkString(",")} are using fides key $fidesKey")
+          errors.addError(s"The systems ${keys.mkString(",")} are using dataset $fidesKey")
         }
 
         errors

@@ -40,10 +40,11 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
   def cacheDelete(organizationId: Long): Unit = caches.remove(organizationId)
 
   /** Because this intended to be built as a unit, we're only going to support global building */
-  def cacheBuild(organizationId: Long): Unit =
+  def cacheBuild(organizationId: Long): Unit = {
     findAllInOrganization(organizationId, Pagination.unlimited).foreach(values =>
       buildForOrganization(organizationId, values)
     )
+  }
 
   private def buildForOrganization(organizationId: Long, values: Seq[BaseType]): Unit = {
     val m: Map[Long, V] = values.map(c => c.id -> c.toTreeItem).toMap

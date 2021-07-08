@@ -1,10 +1,8 @@
 package devtools.persist.dao
 
-import devtools.domain.SystemObject
+import devtools.domain.{PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.systemQuery
-import devtools.persist.db.Tables.SystemQuery
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.persist.db.Tables.{SystemQuery, privacyDeclarationQuery, systemQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}
@@ -29,7 +27,6 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
         r.<<?[String],
         r.<<?[String],
         r.<<?[String],
-        r.<<[String],
         r.<<[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
@@ -57,28 +54,6 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     )
   }
 
-  def findForFidesKeyInSet(fidesKeys: Set[String], organizationId: Long): Future[Seq[SystemObject]] =
-    db.run(systemQuery.filter(sys => { sys.fidesKey.inSet(fidesKeys) && sys.organizationId === organizationId }).result)
-
-  /** i.e  select id FROM SYSTEM_OBJECT WHERE JSON_SEARCH(privacy_declarations, 'one','telemetry_data',NULL, '$[*].dataCategories' ) IS NOT NULL; */
-  def findSystemsWithJsonMember(organizationId: Long, fidesKey: String, memberName: String): Future[Seq[Long]] = {
-    val typeKey   = s"$$[*].$memberName"
-    val sanitized = sanitizeUniqueIdentifier(fidesKey)
-    db.run(
-      sql"""select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(privacy_declarations, 'one','#$sanitized',NULL, '#$typeKey' ) IS NOT NULL"""
-        .as[Long]
-    )
-  }
-  /** find systems that reference a particular dataset. */
-  //TODO
-  def findSystemsWithDataset(organizationId: Long, fidesKey: String): Future[Seq[Long]] = {
-    val sanitized = sanitizeUniqueIdentifier(fidesKey)
-    db.run(
-      sql""" select id FROM SYSTEM_OBJECT WHERE organization_id = #$organizationId AND JSON_SEARCH(datasets, 'one','#$sanitized',NULL, '$$[*]' ) IS NOT NULL;"""
-        .as[Long]
-    )
-  }
-
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
     value: String
@@ -90,4 +65,18 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     (t.systemDependencies like value)
   }
 
+  /** retrieved all systems populated with privacy declarations */
+  def findHydrated[C <: Rep[_]](
+    expr: SystemQuery => C
+  )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[SystemObject]] = {
+    val q = for {
+      (s, d) <- query.filter(expr) join privacyDeclarationQuery on (_.id === _.systemId)
+    } yield (s, d)
+
+    db.run(q.result).map { pairs =>
+      pairs.groupBy(t => t._2.systemId).values.map { s: Seq[(SystemObject, PrivacyDeclaration)] =>
+        s.head._1.copy(privacyDeclarations = Some(s.map(_._2)))
+      }
+    }
+  }
 }

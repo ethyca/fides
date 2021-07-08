@@ -11,6 +11,7 @@ class DAOs(
   val policyDAO: PolicyDAO,
   val policyRuleDAO: PolicyRuleDAO,
   val registryDAO: RegistryDAO,
+  val privacyDeclarationDAO: PrivacyDeclarationDAO,
   val systemDAO: SystemDAO,
   val dataSubjectDAO: DataSubjectDAO,
   val userDAO: UserDAO,

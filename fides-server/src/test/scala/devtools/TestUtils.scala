@@ -6,7 +6,7 @@ import devtools.controller.RequestContext
 import devtools.controller.definition.ApiResponse
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
+import devtools.domain.policy.{Policy, PolicyRule}
 import devtools.persist.dao.OrganizationDAO
 import devtools.util.JsonSupport.{parseToObj => jParseToObj}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -62,7 +62,7 @@ trait TestUtils extends LazyLogging {
     Policy(0, 1, fidesKeyName, None, None, None, Some(rules), None, None)
 
   def systemOf(fidesKeyName: String, declarations: PrivacyDeclaration*): SystemObject =
-    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, privacyDeclarations = declarations)
+    SystemObjectGen.sample.get.copy(fidesKey = fidesKeyName, privacyDeclarations = Some(declarations))
 
   def auditLogOf(objectId: Long, action: AuditAction, typeName: String): AuditLog =
     AuditLog(0L, objectId, 1, None, 1, action, typeName, None, None, None, None)
@@ -114,8 +114,17 @@ object Generators {
   val availableDataUses: Seq[String]       = App.dataUseDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDataCategories: Seq[String] = App.dataCategoryDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
   val availableDataSubjects: Seq[String]   = App.dataSubjectDAO.cacheGetAll(1).values.map(_.fidesKey).toSeq
-  val availableDatasets: Seq[String] =
+  lazy val availableDatasets: Seq[String] =
     waitFor(App.datasetDAO.findAllInOrganization(1, Pagination.unlimited)).map(_.fidesKey)
+  val availableDatasetsOrFields: Seq[String] = Seq(
+    "test_dataset",
+    "test_dataset.field1",
+    "test_dataset.field2",
+    "test_dataset2",
+    "test_dataset2.field1",
+    "test_dataset2.field2"
+  )
+
   val genName: Gen[String]     = Gen.resultOf { _: Int => faker.Name.first_name }
   val genLongName: Gen[String] = Gen.resultOf { _: Int => faker.Name.name }
   def fidesKey: String         = sanitizeUniqueIdentifier(faker.Name.name + "_" + faker.Name.name)
@@ -132,7 +141,7 @@ object Generators {
       None,
       None,
       Some("DATABASE"),
-      scala.Seq[PrivacyDeclaration](),
+      None,
       Set(),
       None,
       None
@@ -258,14 +267,22 @@ object Generators {
       name      <- genName
       use       <- Gen.oneOf(availableDataUses)
       qualifier <- Gen.oneOf(availableDataQualifiers)
-    } yield PrivacyDeclaration(
-      name,
-      smallSetOf(1, 4, availableDataCategories),
-      use,
-      qualifier,
-      smallSetOf(1, 4, availableDataSubjects),
-      Set() //TODO fields??
-    )
+    } yield {
+
+      val fields = smallSetOf(0, 4, availableDatasetsOrFields)
+
+      PrivacyDeclaration(
+        0L,
+        0L,
+        name,
+        smallSetOf(1, 4, availableDataCategories),
+        use,
+        qualifier,
+        smallSetOf(1, 4, availableDataSubjects),
+        fields
+      )
+    }
+
   val OrgGen: Gen[Organization] =
     for {
       id          <- Gen.posNum[Int]
@@ -330,7 +347,7 @@ object Generators {
       name,
       Some(randomText()),
       systemType,
-      declarations.toList,
+      Some(declarations.toList),
       Random.shuffle(
         waitFor(App.systemDAO.filter(_.organizationId === 1L)).map(_.fidesKey).take(Random.nextInt(4)).toSet
       ),

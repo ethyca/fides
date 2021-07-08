@@ -10,7 +10,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 class DataQualifierValidatorTest
   extends ValidatorTestBase[DataQualifier, Long](DataQualifierGen, App.dataQualifierDAO, App.dataQualifierValidator) {
 
-  private val sDao                    = App.systemDAO
+  private val systemService           = App.systemService
   private val prDao                   = App.policyRuleDAO
   var newKey: String                  = ""
   var newKeyId: Long                  = 0
@@ -21,9 +21,13 @@ class DataQualifierValidatorTest
   override def beforeAll(): Unit = {
     newKey = fidesKey
     newTaxonomyValue = waitFor(dao.create(DataQualifier(0, None, 1, newKey, None, None, None)))
+    Thread.sleep(100)
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey))))
+      systemService.create(
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataQualifier = newKey)))),
+        requestContext
+      )
     )
     newPolicyRule = waitFor(
       prDao.create(PolicyRuleGen.sample.get.copy(organizationId = 1, dataQualifier = Some(newKey)))
@@ -36,7 +40,7 @@ class DataQualifierValidatorTest
 
   override def afterAll(): Unit = {
     super.afterAll()
-    sDao.delete(newSystem.id)
+    systemService.dao.delete(newSystem.id)
   }
 
   test("create requires organization exists") {
@@ -72,7 +76,7 @@ class DataQualifierValidatorTest
     deleteValidationErrors(newKeyId) should containMatchString("is in use in policy rules")
 
     //delete system, update and delete should pass
-    waitFor(sDao.delete(newSystem.id))
+    waitFor(systemService.dao.delete(newSystem.id))
     updateValidationErrors(
       DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue

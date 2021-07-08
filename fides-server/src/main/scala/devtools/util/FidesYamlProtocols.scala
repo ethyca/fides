@@ -3,7 +3,7 @@ package devtools.util
 import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, Policy, PolicyRule}
+import devtools.domain.policy.{Policy, PolicyRule}
 import net.jcazevedo.moultingyaml.{
   DefaultYamlProtocol,
   YamlArray,
@@ -105,6 +105,7 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
       }
     }
   }
+
   /* support for custom enum types.*/
   implicit val PolicyActionFormat: YamlFormat[PolicyAction]     = PolicyAction.yamlFormat
   implicit val InclusionFormat: YamlFormat[RuleInclusion]       = RuleInclusion.yamlFormat
@@ -127,14 +128,12 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
         baseFormatter.read(yaml.asYamlObject().mergeAfter(values))
       }
     }
+
   def withOptionalLongId[T](baseFormatter: YamlFormat[T]): YamlFormat[T] =
     withOptionalValues(Map("id" -> 0L), baseFormatter)
 
-  implicit val DeclarationFormat: YamlFormat[PrivacyDeclaration] = yamlFormat6(PrivacyDeclaration.apply)
-
   /* policy rule structures */
   implicit val PolicyRuleAspectGroupingFormat: YamlFormat[PolicyValueGrouping] = yamlFormat2(PolicyValueGrouping)
-
   /* domain objects */
   implicit val UserFormat: YamlFormat[User]              = withOptionalLongId[User](yamlFormat9(User.apply))
   implicit lazy val ApprovalFormat: YamlFormat[Approval] = withOptionalLongId[Approval](yamlFormat12(Approval.apply))
@@ -146,6 +145,8 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
     withOptionalLongId[DataSubject](yamlFormat6(DataSubject.apply))
   implicit val DataCategoryFormat: YamlFormat[DataCategory] =
     withOptionalLongId[DataCategory](yamlFormat7(DataCategory.apply))
+  implicit val PrivacyDeclarationFormat: YamlFormat[PrivacyDeclaration] =
+    withOptionalValues(Map("id" -> 0L, "systemId" -> 0L), yamlFormat8(PrivacyDeclaration.apply))
   implicit val SystemObjectFormat: YamlFormat[SystemObject] =
     withOptionalLongId[SystemObject](yamlFormat13(SystemObject.apply))
   implicit val RegistryFormat: YamlFormat[Registry] = withOptionalLongId[Registry](yamlFormat10(Registry.apply))

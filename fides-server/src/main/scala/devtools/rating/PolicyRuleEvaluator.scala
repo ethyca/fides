@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.domain._
 import devtools.domain.definition.TreeItem
 import devtools.domain.enums._
-import devtools.domain.policy.{PrivacyDeclaration, PolicyRule}
+import devtools.domain.policy.PolicyRule
 import devtools.exceptions.InvalidDataException
 import devtools.persist.dao.DAOs
 import devtools.util.TreeCache
@@ -28,16 +28,16 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
   }
 
   /** Subject categories matches the policy rule subject category value(s) */
-  def subjectCategoriesMatch(
+  def subjectsMatch(
     organizationId: Long,
-    subjectCategories: PolicyValueGrouping,
+    subjects: PolicyValueGrouping,
     declaration: PrivacyDeclaration
   ): Boolean = {
     groupingMatch(
-      "data subject categories",
+      "data subjects",
       organizationId,
       daos.dataSubjectDAO,
-      subjectCategories,
+      subjects,
       declaration.dataSubjects
     )
   }
@@ -64,7 +64,7 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
     val c = categoriesMatch(rule.organizationId, rule.dataCategories, declaration)
     val u = usesMatch(rule.organizationId, rule.dataUses, declaration)
     val q = qualifierMatches(rule.organizationId, rule.dataQualifier, declaration)
-    val s = subjectCategoriesMatch(rule.organizationId, rule.dataSubjectCategories, declaration)
+    val s = subjectsMatch(rule.organizationId, rule.dataSubjects, declaration)
 
     if (c && u && q && s) {
       logger.debug("matching on rule={}, declaration={}", rule, declaration)
@@ -122,7 +122,6 @@ class PolicyRuleEvaluator(val daos: DAOs) extends LazyLogging {
 
     checkForMissingValues(organizationId, s"declaration $label", declarationValues, cache)
     checkForMissingValues(organizationId, s"policy rule $label", policyGrouping.values, cache)
-
     val trees = policyGrouping.values.map(v => (v, cache.cacheFind(organizationId, v)))
     //output result for the application to each declaration
     val booleanMatches: Set[Boolean] =

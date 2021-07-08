@@ -64,6 +64,7 @@ object Dataset {
       s.creationTime,
       s.lastUpdateTime
     )
+
   def fromInsertable(t: Tupled): Dataset =
     Dataset(
       t._1,

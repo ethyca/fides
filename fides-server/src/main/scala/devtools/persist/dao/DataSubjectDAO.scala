@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.{DataSubject, DataSubjectTree}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.dataSubjectQuery
-import devtools.persist.db.Tables.DataSubjectQuery
+import devtools.persist.db.Tables.{DataSubjectQuery, dataSubjectQuery}
 import devtools.util.TreeCache
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._

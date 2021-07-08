@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.policy.{Policy, PolicyRule}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.{policyQuery, policyRuleQuery}
-import devtools.persist.db.Tables.PolicyQuery
+import devtools.persist.db.Tables.{PolicyQuery, policyQuery, policyRuleQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._

@@ -2,8 +2,7 @@ package devtools.persist.dao
 
 import devtools.domain.{Dataset, DatasetField}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.{datasetFieldQuery, datasetQuery}
-import devtools.persist.db.Tables.DatasetQuery
+import devtools.persist.db.Tables.{DatasetQuery, datasetFieldQuery, datasetQuery}
 import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.{GetResult, MySQLProfile}
 import slick.lifted.CanBeQueryCondition
@@ -45,21 +44,18 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.location like value)
   }
 
-  /** Retrieve all datasets that match the given filter populated with fields. */
+  /** retrieved all systems populated with privacy declarations */
   def findHydrated[C <: Rep[_]](
     expr: DatasetQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
     val q = for {
-      (dataset, field) <- query.filter(
-        expr
-      ) join datasetFieldQuery on (_.id === _.datasetId)
-    } yield (dataset, field)
+      (s, d) <- query.filter(expr) join datasetFieldQuery on (_.id === _.datasetId)
+    } yield (s, d)
 
-    db.run(q.result).map { t =>
-      t.groupBy(_._1).map { t1: (Dataset, Seq[(Dataset, DatasetField)]) =>
-        t1._1.copy(fields = Some(t1._2.map(_._2)))
+    db.run(q.result).map { pairs =>
+      pairs.groupBy(t => t._2.datasetId).values.map { s: Seq[(Dataset, DatasetField)] =>
+        s.head._1.copy(fields = Some(s.map(_._2)))
       }
     }
   }
-
 }

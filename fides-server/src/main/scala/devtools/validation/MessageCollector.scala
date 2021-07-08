@@ -2,7 +2,7 @@ package devtools.validation
 
 import devtools.exceptions.ValidationException
 
-import scala.collection.mutable.{Map => MMap, Set => MSet}
+import scala.collection.mutable.{Set => MSet}
 import scala.concurrent.Future
 
 /** Collect messages, with special handling for errors */

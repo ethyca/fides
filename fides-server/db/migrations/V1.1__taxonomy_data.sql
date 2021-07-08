@@ -1,4 +1,4 @@
--- required for valid org id references
+-- required for valid org id datasetReferences
 INSERT INTO ORGANIZATION(id, fides_key, description) values (1, "Test", "Reserved for a test account");
 INSERT INTO ORGANIZATION(id, fides_key, description) values (3, "Test data", "Reserved for a test taxonomy data");
 -- DATA CATEGORIES (see doc/iso_19944_data_categories.csv)--

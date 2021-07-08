@@ -10,7 +10,7 @@ import devtools.persist.service.definition.{Service, UniqueKeySearch}
 trait GetByUniqueKey[T <: IdType[T, Long]] {
   self: BaseController[T, Long] =>
 
-  val service: Service[T, Long] with UniqueKeySearch[T]
+  val service: Service[T, Long, _] with UniqueKeySearch[T, _]
 
   /** Find By Unique key */
   get(
@@ -23,7 +23,7 @@ trait GetByUniqueKey[T <: IdType[T, Long]] {
   )(
     asyncOptionResponse(
       service
-        .asInstanceOf[UniqueKeySearch[T]]
+        .asInstanceOf[UniqueKeySearch[T, _]]
         .findByUniqueKey(requestContext.organizationId, params("key"))
     )
   )

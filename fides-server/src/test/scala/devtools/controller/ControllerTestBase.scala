@@ -24,7 +24,7 @@ abstract class ControllerTestBase[T <: IdType[T, PK], PK](
   val ids: MHashSet[PK] = new MHashSet[PK]
   /** Cleanup any created records */
   override def afterAll(): Unit = {
-    ids.foreach(id => controller.service.delete(id, requestContext))
+    // ids.foreach(id => controller.service.delete(id, requestContext))
   }
   implicit val swagger: DevToolsSwagger = new DevToolsSwagger
 

@@ -1,8 +1,7 @@
 package devtools.persist.dao
 import devtools.domain.policy.PolicyRule
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
-import devtools.persist.db.Queries.policyRuleQuery
-import devtools.persist.db.Tables.PolicyRuleQuery
+import devtools.persist.db.Tables.{PolicyRuleQuery, policyRuleQuery}
 import slick.dbio.Effect
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
@@ -53,9 +52,9 @@ class PolicyRuleDAO(val db: Database)(implicit val executionContext: ExecutionCo
         .as[Long]
     )
 
-  def findPolicyRuleWithSubjectCategory(organizationId: Long, fidesKey: String): Future[Seq[Long]] =
+  def findPolicyRuleWithSubject(organizationId: Long, fidesKey: String): Future[Seq[Long]] =
     db.run(
-      sql"""select id FROM POLICY_RULE WHERE organization_id = #$organizationId AND JSON_SEARCH(data_subject_categories, 'one','#$fidesKey',NULL, '$$.values' ) IS NOT NULL"""
+      sql"""select id FROM POLICY_RULE WHERE organization_id = #$organizationId AND JSON_SEARCH(data_subjects, 'one','#$fidesKey',NULL, '$$.values' ) IS NOT NULL"""
         .as[Long]
     )
   /** Search clause by string fields */
@@ -65,7 +64,7 @@ class PolicyRuleDAO(val db: Database)(implicit val executionContext: ExecutionCo
       (t.name like value) ||
       (t.description like value) ||
       (t.dataUses like value) ||
-      (t.dataSubjectCategories like value) ||
+      (t.dataSubjects like value) ||
       (t.dataQualifier like value) ||
       (t.action like value)
   }

@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS SYSTEM_OBJECT(
     `name` VARCHAR(100),
     description VARCHAR(1000),
     system_type VARCHAR(100),
-    privacy_declarations JSON NOT NULL,
     system_dependencies JSON NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -28,6 +27,18 @@ CREATE TABLE IF NOT EXISTS SYSTEM_OBJECT(
     FOREIGN KEY (organization_id) REFERENCES ORGANIZATION(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS PRIVACY_DECLARATION(
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    system_id BIGINT NOT NULL,
+    `name` VARCHAR(100),
+    data_categories JSON NOT NULL,
+    data_use VARCHAR(100),
+    data_qualifier VARCHAR(100),
+    data_subjects JSON NOT NULL,
+    dataset_references JSON NOT NULL,
+    raw_datasets JSON NOT NULL,
+    FOREIGN KEY (system_id) REFERENCES SYSTEM_OBJECT(id) ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS REGISTRY (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     organization_id BIGINT NOT NULL,
@@ -64,7 +75,7 @@ CREATE TABLE IF NOT EXISTS POLICY_RULE (
     description VARCHAR(1000),
     data_categories JSON NOT NULL,
     data_uses JSON NOT NULL,
-    data_subject_categories JSON NOT NULL,
+    data_subjects JSON NOT NULL,
     data_qualifier VARCHAR(100),
     `action` VARCHAR(100) NOT NULL,
     creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

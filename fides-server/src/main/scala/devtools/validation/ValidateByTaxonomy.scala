@@ -13,8 +13,8 @@ trait ValidateByTaxonomy {
   val daos: DAOs
   implicit val executionContext: ExecutionContext
 
-  /** Require that all values listed as a data subject category exist */
-  def validateDataSubjectCategories(
+  /** Require that all values listed as a data subject exist */
+  def validateDataSubjects(
     organizationId: Long,
     categories: Set[DataSubjectName],
     errors: MessageCollector
@@ -22,7 +22,7 @@ trait ValidateByTaxonomy {
     val foundStrings = daos.dataSubjectDAO.cacheGetAll(organizationId).values.map(_.fidesKey).toSet
     categories
       .diff(foundStrings)
-      .foreach((s: String) => errors.addError(s"The value '$s' given as a data subject category does not exist."))
+      .foreach((s: String) => errors.addError(s"The value '$s' given as a data subject does not exist."))
   }
   /** Require that all values listed as a data category exist */
   def validateDataCategories(

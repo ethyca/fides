@@ -23,7 +23,7 @@ abstract class BaseController[T <: IdType[T, PK], PK](implicit
 
   lazy val typeName: String               = manifest.runtimeClass.getSimpleName
   lazy val applicationDescription: String = s"$typeName API"
-  val service: Service[T, PK]
+  val service: Service[T, PK, _]
   val userDAO: UserDAO
   val yamlFormat: YamlFormat[T]
   val swagger: Swagger

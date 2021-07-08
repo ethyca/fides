@@ -4,6 +4,7 @@ import devtools.controller.RequestContext
 import devtools.domain.definition.IdType
 import devtools.exceptions.NoSuchValueException
 import devtools.persist.dao.definition.DAO
+import devtools.persist.db.BaseTable
 import devtools.util.Pagination
 import devtools.validation.Validator
 
@@ -19,8 +20,11 @@ import scala.concurrent.{ExecutionContext, Future}
   * - hydrating values that have One-to_many members
   * - validation logic
   */
-abstract class Service[E <: IdType[E, PK], PK](val dao: DAO[E, PK, _], validator: Validator[E, PK])(implicit
-  ec: ExecutionContext
+abstract class Service[E <: IdType[E, PK], PK, T <: BaseTable[E, PK]](
+  val dao: DAO[E, PK, T],
+  validator: Validator[E, PK]
+)(implicit
+  val ec: ExecutionContext
 ) {
   def getAll(ctx: RequestContext, pagination: Pagination): Future[Seq[E]] = dao.getAll(pagination)
 

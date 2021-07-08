@@ -1,14 +1,13 @@
 package devtools.persist.dao
 
 import com.typesafe.scalalogging.LazyLogging
-import devtools.domain.{DataCategory, DatasetField, Organization}
+import devtools.domain.Organization
 import devtools.persist.dao.definition.{AutoIncrementing, DAO}
-import devtools.persist.db.Queries.organizationQuery
-import devtools.persist.db.Tables.OrganizationQuery
+import devtools.persist.db.Tables.{OrganizationQuery, organizationQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
-import slick.sql.{FixedSqlAction, SqlAction}
+import slick.sql.FixedSqlAction
 
 import java.sql.Timestamp
 import scala.concurrent.{ExecutionContext, Future}

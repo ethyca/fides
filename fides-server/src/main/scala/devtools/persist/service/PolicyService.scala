@@ -5,6 +5,7 @@ import devtools.App.policyDAO
 import devtools.controller.RequestContext
 import devtools.domain.policy.Policy
 import devtools.persist.dao.DAOs
+import devtools.persist.db.Tables.PolicyQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.PolicyValidator
 import slick.jdbc.MySQLProfile.api._
@@ -12,9 +13,9 @@ import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 class PolicyService(daos: DAOs, policyRuleService: PolicyRuleService, val validator: PolicyValidator)(implicit
-  val ec: ExecutionContext
-) extends AuditingService[Policy](daos.policyDAO, daos.auditLogDAO, daos.organizationDAO, validator) with LazyLogging
-  with UniqueKeySearch[Policy] {
+  ec: ExecutionContext
+) extends AuditingService[Policy, PolicyQuery](daos.policyDAO, daos.auditLogDAO, daos.organizationDAO, validator)
+  with LazyLogging with UniqueKeySearch[Policy, PolicyQuery] {
 
   def orgId(p: Policy): Long = p.organizationId
 
@@ -67,13 +68,8 @@ class PolicyService(daos: DAOs, policyRuleService: PolicyRuleService, val valida
       case a => Future.successful(a)
     }
 
-  def findByUniqueKey(organizationId: Long, key: String): Future[Option[Policy]] = {
-    val base: Future[Option[Policy]] =
-      daos.policyDAO.findFirst(t => t.fidesKey === key && t.organizationId === organizationId)
-    base.flatMap {
-      case None         => Future.successful(None)
-      case Some(policy) => hydrate(policy).map(Some(_))
-    }
+  def findByUniqueKeyQuery(organizationId: Long, key: String): PolicyQuery => Rep[Boolean] = { q =>
+    q.fidesKey === key && q.organizationId === organizationId
   }
 
 }

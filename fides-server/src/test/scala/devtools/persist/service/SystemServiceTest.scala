@@ -1,9 +1,10 @@
 package devtools.persist.service
 
 import com.typesafe.scalalogging.LazyLogging
-import devtools.Generators.{DeclarationGen, blankSystem, requestContext}
+import devtools.Generators.{DeclarationGen, blankSystem, fidesKey, requestContext}
 import devtools.domain.enums.AuditAction.{CREATE, DELETE, UPDATE}
 import devtools.persist.dao.{AuditLogDAO, OrganizationDAO, SystemDAO}
+import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -27,15 +28,30 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
   }
 
   test("test crud operations set versions and audit logs") {
-
+    val unsanitizedFidesKey = s"$fidesKey x"
+    val sanitizedFidesKey   = sanitizeUniqueIdentifier(unsanitizedFidesKey)
     val v =
       waitFor(
-        systemService.create(blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get)), requestContext)
+        systemService.create(
+          blankSystem.copy(
+            fidesKey = unsanitizedFidesKey,
+            privacyDeclarations =
+              Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test dataset", "test dataset.field1"))))
+          ),
+          requestContext
+        )
       )
 
     // we should have 1 create record in the audit log
     waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1
 
+    val saved = waitFor(systemService.findByUniqueKey(1, sanitizedFidesKey)).get
+    saved.fidesKey shouldEqual sanitizedFidesKey
+    //dataset and field datasetReferences are also sanitized
+    saved.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet shouldEqual Set(
+      "test_dataset",
+      "test_dataset.field1"
+    )
     systemIds.add(v.id)
 
     waitFor(systemService.update(v.copy(description = Some("description")), requestContext))

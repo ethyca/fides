@@ -1,11 +1,9 @@
 package devtools.util
 
 import com.typesafe.scalalogging.LazyLogging
-
-import devtools.domain.DatasetField
-import devtools.controller.definition.ApiResponse
 import devtools.domain.enums._
 import devtools.domain.policy.PolicyRule
+import devtools.domain.{DatasetField, PrivacyDeclaration}
 import devtools.exceptions.InvalidDataException
 import net.jcazevedo.moultingyaml.{
   YamlArray,
@@ -22,7 +20,7 @@ import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.native.Serialization.writePretty
 import org.json4s.{CustomSerializer, _}
-
+import org.json4s.JsonDSL._
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
@@ -50,6 +48,44 @@ object JsonSupport extends LazyLogging {
     )
   }
 
+  def privacyDeclarationSerializer: CustomSerializer[PrivacyDeclaration] = {
+    // ser: Formats => (PartialFunction[JValue, A], PartialFunction[Any, JValue]))
+    new CustomSerializer[PrivacyDeclaration](_ =>
+      (
+        {
+          case j: JObject =>
+            val id                = (j \ "id").extract[Option[Long]]
+            val systemId          = (j \ "systemId").extract[Option[Long]]
+            val name              = (j \ "name").extract[String]
+            val dataUse           = (j \ "dataUse").extract[String]
+            val dataQualifier     = (j \ "dataQualifier").extract[String]
+            val dataCategories    = (j \ "dataCategories").extract[Set[String]]
+            val dataSubjects      = (j \ "dataSubjects").extract[Set[String]]
+            val datasetReferences = (j \ "datasetReferences").extract[Set[String]]
+            PrivacyDeclaration(
+              id.getOrElse(0L),
+              systemId.getOrElse(0L),
+              name,
+              dataCategories,
+              dataUse,
+              dataQualifier,
+              dataSubjects,
+              datasetReferences
+            )
+        },
+        {
+          case f: PrivacyDeclaration =>
+            ("name"                -> f.name) ~
+              ("dataUse"           -> f.dataUse) ~
+              ("dataQualifier"     -> f.dataQualifier) ~
+              ("dataCategories"    -> f.dataCategories) ~
+              ("dataSubjects"      -> f.dataSubjects) ~
+              ("datasetReferences" -> f.datasetReferences)
+        }
+      )
+    )
+  }
+
   import org.json4s.JsonDSL._
 
   implicit val datasetFieldFormat: CustomSerializer[DatasetField] =
@@ -67,7 +103,8 @@ object JsonSupport extends LazyLogging {
     AuditAction.jsonFormat +
     ApprovalStatus.keySerializer +
     datasetFieldFormat +
-    policyRuleFormat
+    policyRuleFormat +
+    privacyDeclarationSerializer
 
   /** extract an optionally present nested value. */
   @tailrec

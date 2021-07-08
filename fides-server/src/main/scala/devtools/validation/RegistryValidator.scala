@@ -3,7 +3,7 @@ package devtools.validation
 import devtools.controller.RequestContext
 import devtools.domain.{OneToMany, Registry, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Queries.systemQuery
+import devtools.persist.db.Tables.systemQuery
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}

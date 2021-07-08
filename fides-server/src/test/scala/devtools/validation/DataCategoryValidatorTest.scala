@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 class DataCategoryValidatorTest
   extends ValidatorTestBase[DataCategory, Long](DataCategoryGen, App.dataCategoryDAO, App.dataCategoryValidator) {
 
-  private val sDao                   = App.systemDAO
+  private val systemService          = App.systemService
   private val prDao                  = App.policyRuleDAO
   var newKey: String                 = ""
   var newId: Long                    = _
@@ -23,10 +23,12 @@ class DataCategoryValidatorTest
   override def beforeAll(): Unit = {
     newKey = fidesKey
     newTaxonomyValue = waitFor(dao.create(DataCategory(0, None, 1, newKey, None, None, None)))
+    Thread.sleep(100)
     newId = newTaxonomyValue.id
     newSystem = waitFor(
-      sDao.create(
-        blankSystem.copy(privacyDeclarations = Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey))))
+      systemService.create(
+        blankSystem.copy(privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(dataCategories = Set(newKey))))),
+        requestContext
       )
     )
 
@@ -42,7 +44,7 @@ class DataCategoryValidatorTest
 
   override def afterAll(): Unit = {
     super.afterAll()
-    sDao.delete(newSystem.id)
+    systemService.dao.delete(newSystem.id)
   }
 
   test("create requires organization exists") {
@@ -78,7 +80,7 @@ class DataCategoryValidatorTest
     deleteValidationErrors(newId) should containMatchString("is in use in policy rules")
 
     //delete system, update and delete should pass
-    waitFor(sDao.delete(newSystem.id))
+    waitFor(systemService.dao.delete(newSystem.id))
     updateValidationErrors(
       DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue
