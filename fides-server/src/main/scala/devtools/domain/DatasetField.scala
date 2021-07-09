@@ -12,19 +12,13 @@ final case class DatasetField(
   name: String,
   path: Option[String],
   description: Option[String],
-  dataCategories: Option[Set[String]],
-  dataQualifier: Option[String],
+  dataCategories: Option[Set[DataCategoryName]],
+  dataQualifier: Option[DataQualifierName],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends IdType[DatasetField, Long] {
   override def withId(idValue: Long): DatasetField = this.copy(id = idValue)
 
-  /** Collect the data categories that match a given data qualifier */
-  def categoriesForQualifiers(qualifiers: Set[DataQualifierName]): Set[DataCategoryName] =
-    dataQualifier match {
-      case Some(q) if qualifiers.contains(q) => dataCategories.getOrElse(Set())
-      case _                                 => Set()
-    }
 }
 object DatasetField {
 

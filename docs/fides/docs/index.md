@@ -193,4 +193,4 @@ Fides defines data privacy in four dimensions, called Data Privacy Classifiers. 
 
 ## Next Steps
 
-For further context on how to setup and configure Fides, visit the [Getting Started](getting_started/docker.md) and [Fides Objects](fides_objects.md) pages.
+For further context on how to setup and configure Fides, visit one of the `Getting Started` pages ([Getting Started with Docker](getting_started/docker.md) or [Getting Started Locally](getting_started/local.md)) and the [Fides Objects](fides_objects.md) pages.
