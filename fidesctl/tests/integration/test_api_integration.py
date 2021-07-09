@@ -66,6 +66,7 @@ def test_sent_is_received(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
     object_key = manifest.fidesKey
 
+    print(manifest.json(exclude_none=True))
     result = _api.find(url=server_url, object_type=endpoint, object_key=object_key)
     print(result.text)
     assert result.status_code == 200
