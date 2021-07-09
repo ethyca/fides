@@ -67,7 +67,7 @@ class DataUse(BaseModel):
     description: str
 
 
-class DataRule(BaseModel):
+class PrivacyRule(BaseModel):
     inclusion: str
     values: List[str]
 
@@ -78,9 +78,9 @@ class PolicyRule(BaseModel):
     fidesKey: str
     name: str
     description: str
-    dataCategories: DataRule
-    dataUses: DataRule
-    dataSubjects: DataRule
+    dataCategories: PrivacyRule
+    dataUses: PrivacyRule
+    dataSubjects: PrivacyRule
     dataQualifier: str
     action: str
 

@@ -40,8 +40,6 @@ def objects_dict():
             metadata={},
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
-            dataCategories=[],
-            dataQualifier="",
             datasetType="MySQL",
             location="ethyca_mysql_db.ethyca_schema.ethyca_table",
             fields=[
@@ -99,9 +97,9 @@ def objects_dict():
             fidesKey="test_policy",
             name="Test Policy",
             description="Test Policy",
-            dataCategories=models.DataRule(inclusion="NONE", values=[]),
-            dataUses=models.DataRule(inclusion="NONE", values=["provide"]),
-            dataSubjects=models.DataRule(inclusion="ANY", values=[]),
+            dataCategories=models.PrivacyRule(inclusion="NONE", values=[]),
+            dataUses=models.PrivacyRule(inclusion="NONE", values=["provide"]),
+            dataSubjects=models.PrivacyRule(inclusion="ANY", values=[]),
             dataQualifier="unlinked_pseudonymized_data",
             action="REJECT",
         ),
@@ -116,12 +114,11 @@ def objects_dict():
             organizationId=1,
             registryId=1,
             fidesKey="test_system",
-            fidesSystemType="SYSTEM",
-            fidesOrganizationKey="Ethyca",
+            systemType="SYSTEM",
             name="Test System",
             description="Test Policy",
             declarations=[
-                models.DataDeclaration(
+                models.PrivacyDeclaration(
                     name="declaration-name",
                     dataCategories=[],
                     dataUse="provide",

@@ -30,6 +30,7 @@ def test_api_show(server_url, endpoint):
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_create(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
+    print(manifest.json(exclude_none=True))
     result = _api.create(
         url=server_url,
         object_type=endpoint,

@@ -66,7 +66,7 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
     failing_declaration = [
-        models.DataDeclaration(
+        models.PrivacyDeclaration(
             name="declaration-name",
             dataCategories=["customer_content_data"],
             dataUse="provide",
