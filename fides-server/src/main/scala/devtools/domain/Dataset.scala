@@ -24,11 +24,27 @@ final case class Dataset(
 ) extends WithFidesKey[Dataset, Long] with VersionStamp with OrganizationId {
   override def withId(idValue: Long): Dataset = this.copy(id = idValue)
 
-  def categoriesForQualifiers(qualifiers: Set[DataQualifierName]): Set[DataCategoryName] =
-    fields match {
-      case Some(r) => r.flatMap(_.categoriesForQualifiers(qualifiers)).toSet
-      case None    => Set()
+  /** form a map of qualifier -> categories for a given embedded field. For fields in which this is not specified,
+    * the dataset value is  used. If no values are specified, no values will appear in the map.
+    */
+  def qualifierCategoriesMapForField(f:DatasetField): Map[DataQualifierName, Set[DataCategoryName] = {
+    val qualifier = if (f.dataQualifier.isDefined) f.dataQualifier else dataQualifier
+    val categories = if (f.dataCategories.isDefined) f.dataCategories else dataCategories
+    (qualifier, categories) match {
+      case (Some(q), Some(c)) => Map(q -> c)
+      case _ => Map()
+
     }
+  }
+
+  def qualifierCategoriesMap():Map[DataQualifierName, Set[DataCategoryName]] =
+     fields.getOrElse(Seq()).map(qualifierCategoriesMapForField).fold(Map())(_ ++ _ )
+
+
+  def getField(name:String):Option[DatasetField] = fields flatMap {
+    f => f.find(_.name == name)
+  }
+
 }
 object Dataset {
 

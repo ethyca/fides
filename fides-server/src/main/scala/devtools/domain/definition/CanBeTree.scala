@@ -38,6 +38,10 @@ trait TreeItem[C <: TreeItem[C, PK], PK] {
       children.exists(_.exists(predicate))
     }
   }
+
+  /** The given fidesKey is one of the children of this node or is == to this node. */
+  def containsChild(fidesKey:String) = exists(_.fidesKey == fidesKey)
+
 }
 /** Indicates a value that can be expressed and organized into a tree hierarchy.
   *
