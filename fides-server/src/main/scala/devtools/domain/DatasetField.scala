@@ -12,8 +12,8 @@ final case class DatasetField(
   name: String,
   path: Option[String],
   description: Option[String],
-  dataCategories: Option[Set[String]],
-  dataQualifier: Option[String],
+  dataCategories: Option[Set[DataCategoryName]],
+  dataQualifier: Option[DataQualifierName],
   creationTime: Option[Timestamp],
   lastUpdateTime: Option[Timestamp]
 ) extends IdType[DatasetField, Long] {
