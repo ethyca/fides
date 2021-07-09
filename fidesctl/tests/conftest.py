@@ -37,14 +37,13 @@ def objects_dict():
         "dataset": models.Dataset(
             organizationId=1,
             fidesKey="test_sample_db_dataset",
-            metadata={},
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
             datasetType="MySQL",
             location="ethyca_mysql_db.ethyca_schema.ethyca_table",
             fields=[
                 models.DatasetField(
-                    name="Food Preference",
+                    name="Food",
                     description="User's favorite food",
                     path="some.path",
                 ),
@@ -117,17 +116,17 @@ def objects_dict():
             systemType="SYSTEM",
             name="Test System",
             description="Test Policy",
-            declarations=[
+            privacyDeclarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
                     dataCategories=[],
                     dataUse="provide",
                     dataSubjects=[],
                     dataQualifier="aggregated_data",
+                    datasetReferences=[],
                 )
             ],
             systemDependencies=[],
-            datasets=["sample_db_dataset"],
         ),
         "user": models.User(
             organizationId=1,

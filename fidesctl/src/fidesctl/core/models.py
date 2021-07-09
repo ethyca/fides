@@ -35,7 +35,7 @@ class Dataset(BaseModel):
     id: Optional[int]
     organizationId: int
     fidesKey: str
-    metadata: Dict[str, str]
+    metadata: Optional[Dict[str, str]]
     name: str
     description: str
     dataCategories: Optional[List[str]]
