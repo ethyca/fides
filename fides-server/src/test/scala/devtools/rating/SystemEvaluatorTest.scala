@@ -4,6 +4,7 @@ import devtools.Generators.SystemObjectGen
 import devtools.domain.PrivacyDeclaration
 import devtools.domain.enums.ApprovalStatus
 import devtools.util.waitFor
+import devtools.validation.MessageCollector
 import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -63,7 +64,9 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
     def testDependencies(parent: Seq[PrivacyDeclaration], children: Seq[PrivacyDeclaration]): Seq[String] = {
       val s1 = systemOf("a").copy(systemDependencies = Set("b"), privacyDeclarations = Some(parent))
       val s2 = systemOf("b").copy(privacyDeclarations = Some(children))
-      systemEvaluator.checkDeclarationsOfDependentSystems(s1, Seq(s2))
+      val mc = new MessageCollector()
+      systemEvaluator.checkDeclarationsOfDependentSystems(s1, Seq(s2), mc)
+      mc.warnings.toSeq
     }
 
     //Just different category
