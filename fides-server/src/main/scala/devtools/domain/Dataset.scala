@@ -14,8 +14,14 @@ final case class Dataset(
   metadata: Option[Map[String, Any]],
   name: Option[String],
   description: Option[String],
-  dataCategories: Option[Set[String]],
-  dataQualifier: Option[String],
+  /** This value will be used as the data category set for any field whose data category is not specified.Additionally it will also
+    * be used as the data category set for the dataset as a whole if specified.
+    */
+  dataCategories: Option[Set[DataCategoryName]],
+  /** This value will be used as the data qualifier for any field whose data category is not specified. Additionally it will also
+    * be used as the data qualifier for the dataset as a whole if specified.
+    */
+  dataQualifier: Option[DataQualifierName],
   location: Option[String],
   datasetType: Option[String],
   fields: Option[Seq[DatasetField]],
@@ -24,11 +30,34 @@ final case class Dataset(
 ) extends WithFidesKey[Dataset, Long] with VersionStamp with OrganizationId {
   override def withId(idValue: Long): Dataset = this.copy(id = idValue)
 
-  def categoriesForQualifiers(qualifiers: Set[DataQualifierName]): Set[DataCategoryName] =
-    fields match {
-      case Some(r) => r.flatMap(_.categoriesForQualifiers(qualifiers)).toSet
-      case None    => Set()
+  /** form a map of qualifier -> categories for a given embedded field. For fields in which these are not both specified,
+    * the global values are  used. If no values are specified, no values will appear in the map.
+    */
+  def qualifierCategoriesMapForField(f: DatasetField): Map[DataQualifierName, Set[DataCategoryName]] =
+    (f.dataQualifier, f.dataCategories) match {
+      case (Some(q), Some(c)) => Map(q -> c)
+      case _ => {
+
+        (dataQualifier, dataCategories) match {
+          case (Some(q1), Some(c1)) => Map(q1 -> c1)
+          case _                    => Map()
+        }
+      }
     }
+
+  def qualifierCategoriesMap(): Map[DataQualifierName, Set[DataCategoryName]] = {
+    val baseMap: Map[DataQualifierName, Set[DataCategoryName]] = (dataQualifier, dataCategories) match {
+      case (Some(q), Some(c)) => (Map(q -> c))
+      case _                  => Map()
+    }
+    fields.getOrElse(Seq()).map(qualifierCategoriesMapForField).fold(baseMap)(_ ++ _)
+  }
+
+  def getField(name: String): Option[DatasetField] =
+    fields flatMap { f =>
+      f.find(_.name == name)
+    }
+
 }
 object Dataset {
 

@@ -1,6 +1,6 @@
 package devtools.domain
 
-import devtools.domain.definition.{CanBeTree, WithFidesKey, IdType, OrganizationId, TreeItem}
+import devtools.domain.definition.{CanBeTree, OrganizationId, TreeItem, WithFidesKey}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import scala.collection.mutable

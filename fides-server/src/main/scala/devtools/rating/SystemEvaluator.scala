@@ -5,6 +5,7 @@ import devtools.domain.enums._
 import devtools.domain.policy.{Policy, PolicyRule}
 import devtools.persist.dao.DAOs
 import devtools.util.mapGrouping
+import devtools.validation.MessageCollector
 
 import scala.concurrent.ExecutionContext
 
@@ -26,103 +27,143 @@ final case class SystemEvaluation(
 class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext) {
 
   private val policyRuleEvaluator = new PolicyRuleEvaluator(daos)
-//  /** Check system declarations and warn if there are declared types in the dataset that have not been declared
-  //   * in the system
-//    */
-//  def checkDependentDatasetPrivacyDeclaration(
-//    systemObject: SystemObject,
-//    datasets: Iterable[Dataset]
-//  ): Seq[String] = {
-//    // collect all of the data categories matching the given data qualifier, including children.
-//    def categoriesForQualifier(dataQualifier: DataQualifierName, dataset: Dataset): Set[DataCategoryName] = {
-//      val categories: Set[DataCategoryName] = dataset.categoriesForQualifiers(
-//        daos.dataQualifierDAO.childrenOfInclusive(systemObject.organizationId, dataQualifier)
-//      )
-//      daos.dataCategoryDAO.mergeAndReduce(systemObject.organizationId, categories)
-//    }
-//
-//    //merge any qualifier children; that is, for any set of categories matching qualifier
-//    //'a', add to the set any categories matching any child of 'a'
-//    //e.g. {a:[c1,c2], childOfA:[c3], b:[c4]} => {a:[c1,c2, c3], childOfA:[c3], b:[c4]}
-//
-//    def mergeQualifierMap(
-//      m: Map[DataQualifierName, Set[DataCategoryName]]
-//    ): Map[DataQualifierName, Set[DataCategoryName]] = {
-//      m.map { t: (DataQualifierName, Set[DataCategoryName]) =>
-//        val thisQualifier   = t._1
-//        val childQualifiers = daos.dataQualifierDAO.childrenOfInclusive(systemObject.organizationId, thisQualifier)
-//        val values = m
-//          .filter((t2: (DataQualifierName, Set[DataCategoryName])) => childQualifiers.contains(t2._1))
-//          .values
-//          .flatten
-//          .toSet
-//        thisQualifier -> values
-//      }
-//    }
-//
-//    val categoriesByQualifierInSystem: Map[DataQualifierName, Set[DataCategoryName]] = systemObject.privacyDeclarations
-//      .getOrElse(Seq())
-//      .map(d => (d.dataQualifier, d.dataCategories))
-//      .groupBy(_._1)
-//      .map((t: (DataQualifierName, Seq[(DataQualifierName, Set[DataCategoryName])])) => t._1 -> t._2.map(_._2))
-//      .map(t => t._1 -> daos.dataCategoryDAO.mergeAndReduce(systemObject.organizationId, t._2.flatten.toSet))
-//
-//    var warnings = Seq[String]()
-//
-//    datasets.foreach(ds =>
-//      mergeQualifierMap(categoriesByQualifierInSystem).foreach {
-//        case (qualifier, categories) =>
-//          val datasetCategories = categoriesForQualifier(qualifier, ds)
-//          val diff              = datasetCategories.diff(categories)
-//          if (diff.nonEmpty) {
-//            val s =
-//              s"Dataset:${ds.fidesKey}: These categories exist for qualifier $qualifier in this dataset but do not appear with that qualifier in the dependant system ${systemObject.fidesKey}:[${diff
-//                .mkString(",")}]"
-//            warnings = warnings :+ s
-//          }
-//      }
-//    )
-//
-//    warnings
-//  }
 
-  /** Ensure that system does not contain a self-reference. */
-  def checkSelfReference(systemObject: SystemObject): Seq[String] =
-    if (systemObject.systemDependencies.contains(systemObject.fidesKey)) {
-      Seq("Invalid self reference: System cannot depend on itself")
-    } else {
-      Seq()
+  /** Check system declarations and warn if there are declared types in the datasets that don't match
+    * those in the privacy declaration(s).
+    */
+  def checkPrivacyDeclaration(
+    privacyDeclaration: PrivacyDeclaration,
+    datasets: Map[String, Dataset],
+    mc: MessageCollector
+  ): Unit = {
+
+    /** Split dataset.field into (dataset,field) */
+    def splitRef(s: String) = {
+      val i    = s.indexOf('.')
+      val head = if (i == -1) s else s.substring(0, i)
+      val tail = if (i == -1 || i == s.length) "" else s.substring(i + 1)
+      (head, tail)
     }
 
-  /** for all dependent systems, check if privacy declarations includes things that are not in the privacy set of this system.
-    * Assumes that all dependent systems are populated in the dependentSystems variable
-    */
-  def checkDeclarationsOfDependentSystems(
-    systemObject: SystemObject,
-    dependentSystems: Iterable[SystemObject]
-  ): Seq[String] = {
-    val mergedDependencies =
-      mergeDeclarations(systemObject.organizationId, systemObject.privacyDeclarations.getOrElse(Seq()))
-    var warnings = Seq[String]()
+    /** For the given dataset map of {qualifier -> set[categories]}, compare with the privacy declaration and return a possible list of
+      * category fides keys that are not children of the categories listed in the privacy declaration under that qualifier.
+      *
+      * For example, if the privacy declaration contains {dataQualifier = "a" ->  dataCategories = ["b","c", "d"]} and the
+      * dataset contains {dataQualifier = "a or child of a" ->  dataCategories = ["b or child of b", "c or child of c", "e", "f"]}
+      * this method should return ["e","f"].
+      *
+      * If the qualifier in the dataset is not == to or a child of the qualifier in the privacy declaration this method will return None
+      */
+    def gamutCheck(
+      pd: PrivacyDeclaration,
+      dsMap: Map[DataQualifierName, Set[DataCategoryName]],
+      organizationId: Long
+    ): Option[Iterable[String]] = {
 
-    dependentSystems.foreach(ds => {
-      val mergedDependenciesForDs =
-        mergeDeclarations(systemObject.organizationId, ds.privacyDeclarations.getOrElse(Seq()))
-      val diff = diffDeclarations(systemObject.organizationId, mergedDependenciesForDs, mergedDependencies)
-      if (diff.nonEmpty) {
-        warnings =
-          warnings :+ s"The system ${ds.fidesKey} includes privacy declarations that do not exist in ${systemObject.fidesKey} : ${diff.map(_.name).mkString(",")}"
+      //p === pd qualifier <- categories
+      //d === d qualifier <- categories
+      // missing:
+      // d.qualifier child of p.qualifier and d._2 has value that is not in some value of p._2
+      //
+      val privacyDataQualifier: Option[DataQualifierTree] =
+        daos.dataQualifierDAO.cacheFind(organizationId, pd.dataQualifier)
+
+      privacyDataQualifier collect {
+        case pdq: DataQualifierTree =>
+          //data qualifiers that exist in dataset that are a child of a qualifier in the privacy declaration
+          dsMap
+            .filter(dsm => pdq.containsChild(dsm._1))
+            .flatMap((m2: (DataQualifierName, Set[DataCategoryName])) => {
+              val categoriesAndAllChildrenOfDataset: Set[String] =
+                m2._2.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
+              val categoriesAndAllChildrenOfDeclaration: Set[String] =
+                pd.dataCategories.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
+              //values that are under the dataset that are not under the privacyDeclaration
+              categoriesAndAllChildrenOfDataset.diff(categoriesAndAllChildrenOfDeclaration)
+            })
       }
-    })
+    }
 
-    warnings
+    /** if we only have a dataset declaration test the dataset against the privacy declaration. */
+    def datasetGamutCheck(pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
+
+      val dsPrivacyMap: Map[DataQualifierName, Set[DataCategoryName]] = ds.qualifierCategoriesMap()
+      if (dsPrivacyMap.isEmpty) {
+        mc.addWarning(s"The dataset ${ds.fidesKey} did not specify any privacy information")
+      } else {
+        gamutCheck(pd, dsPrivacyMap, ds.organizationId) match {
+          case Some(i) if i.nonEmpty =>
+            mc.addError(
+              s"The dataset ${ds.fidesKey} contains categories [${i.mkString(",")}] under data qualifier [${dsPrivacyMap.keys.toSeq.head}] not accounted for in the privacy declaration ${pd.name}"
+            )
+          case _ =>
+        }
+      }
+    }
+
+    def datasetFieldGamutCheck(df: DatasetField, pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
+      val dsPrivacyMap = ds.qualifierCategoriesMapForField(df)
+      if (dsPrivacyMap.isEmpty) {
+        mc.addWarning(s"The dataset ${ds.fidesKey}.${df.name} did not specify any privacy information")
+      } else {
+        gamutCheck(pd, dsPrivacyMap, ds.organizationId) match {
+          case Some(i) if i.nonEmpty =>
+            mc.addError(
+              s"The dataset field ${ds.fidesKey}.${df.name} contains categories [${i
+                .mkString(",")}] under data qualifier [${dsPrivacyMap.keys.toSeq.head}] not accounted for in the privacy declaration ${pd.name}"
+            )
+          case _ =>
+        }
+      }
+    }
+
+    /*
+      for each table[.field] spec in the privacy declaration references:
+       1. does the dataset[.field] exist in eo.datasets?
+       2. does it match or fall within the value in this privacy declaration?
+       3. if the dataset declares a global (dataset, not field level) privacy declaration,
+         and that global value does _not_ fall within this privacy declaration (but the field does,
+           that is, there is no error generated so far), then we generate a warning.
+     */
+
+    //(dataset fides key, field name or "")
+    val referenceTuples: Set[(String, String)] = privacyDeclaration.datasetReferences.map(splitRef)
+
+    referenceTuples.foreach { t: (String, String) =>
+      t match {
+        case (a, "") =>
+          datasets.get(a) match {
+            case None =>
+              mc.addError(s"Dataset reference $a found in declaration ${privacyDeclaration.name} was not found")
+            case Some(ds) => datasetGamutCheck(privacyDeclaration, ds, mc)
+          }
+
+        case (a, b) =>
+          datasets.get(a) match {
+            case None =>
+              mc.addError(s"Dataset reference $a found in declaration ${privacyDeclaration.name} was not found")
+            case Some(ds) => ds.getField(b).foreach(datasetFieldGamutCheck(_, privacyDeclaration, ds, mc))
+          }
+      }
+
+    }
   }
 
+  /** Ensure that system does not contain a self-reference. */
+  def checkSelfReference(systemObject: SystemObject, mc: MessageCollector): Unit =
+    if (systemObject.systemDependencies.contains(systemObject.fidesKey)) {
+      mc.addError("Invalid self reference: System cannot depend on itself")
+    }
+
   /** Ensure that systems listed under system dependencies exist in the db. */
-  def checkDependentSystemsExist(system: SystemObject, dependentSystems: Seq[SystemObject]): Seq[String] =
-    system.systemDependencies.diff(dependentSystems.map(_.fidesKey).toSet + system.fidesKey) match {
-      case missing if missing.nonEmpty => Seq(s"The referenced systems [${missing.mkString(",")}] were not found.")
-      case _                           => Seq()
+  def checkDependentSystemsExist(
+    system: SystemObject,
+    dependentSystems: Seq[SystemObject],
+    mc: MessageCollector
+  ): Unit =
+    system.systemDependencies.diff(dependentSystems.map(_.fidesKey).toSet + system.fidesKey) collect {
+      case missing if missing.nonEmpty =>
+        mc.addError(s"The referenced systems [${missing.mkString(",")}] were not found.")
     }
 
   /** return map of approval status -> [rules that returned that rating]
@@ -156,17 +197,43 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     }
   }
 
+  /** for all dependent systems, check if privacy declarations includes things that are not in the privacy set of this system.
+    * Assumes that all dependent systems are populated in the dependentSystems variable
+    */
+  def checkDeclarationsOfDependentSystems(
+    systemObject: SystemObject,
+    dependentSystems: Iterable[SystemObject],
+    mc: MessageCollector
+  ): Unit = {
+    val mergedDependencies =
+      mergeDeclarations(systemObject.organizationId, systemObject.privacyDeclarations.getOrElse(Seq()))
+
+    dependentSystems.foreach(ds => {
+      val mergedDependenciesForDs =
+        mergeDeclarations(systemObject.organizationId, ds.privacyDeclarations.getOrElse(Seq()))
+      val diff = diffDeclarations(systemObject.organizationId, mergedDependenciesForDs, mergedDependencies)
+      if (diff.nonEmpty) {
+        mc.addWarning(
+          s"The system ${ds.fidesKey} includes privacy declarations that do not exist in ${systemObject.fidesKey} : ${diff.map(_.name).mkString(",")}"
+        )
+      }
+    })
+  }
+
   def evaluateSystem(fidesKey: String, eo: EvaluationObjectSet): SystemEvaluation = {
+    val mc     = new MessageCollector()
     val system = eo.systems(fidesKey) //TODO err on missing
 
     val m: Map[ApprovalStatus, Map[String, Seq[String]]] = evaluatePolicyRules(eo.policies, system)
     val dependentSystems                                 = system.systemDependencies.map(eo.systems.get).filter(_.nonEmpty).map(_.get)
-    val warnings                                         = checkDeclarationsOfDependentSystems(system, dependentSystems)
-    val errors =
-      checkDependentSystemsExist(system, dependentSystems.toSeq) ++ checkSelfReference(system)
-
+    //val warnings                                         = Seq() //checkDeclarationsOfDependentSystems(system, dependentSystems)
+    // val errors =
+    checkDependentSystemsExist(system, dependentSystems.toSeq, mc)
+    checkDeclarationsOfDependentSystems(system, dependentSystems.toSeq, mc)
+    checkSelfReference(system, mc)
+    system.privacyDeclarations.foreach(pds => pds.foreach(checkPrivacyDeclaration(_, eo.datasets, mc)))
     val overallApproval = {
-      if (errors.nonEmpty) {
+      if (mc.hasErrors) {
         ApprovalStatus.ERROR
       } else if (m.contains(ApprovalStatus.FAIL)) {
         ApprovalStatus.FAIL
@@ -177,7 +244,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       }
     }
 
-    SystemEvaluation(m, warnings, errors, overallApproval)
+    SystemEvaluation(m, mc.warnings.toSeq, mc.errors.toSeq, overallApproval)
   }
 
   // ------------------  support functions ------------------
