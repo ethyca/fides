@@ -1,9 +1,0 @@
-Name: master
-Version: 1.2.3
-  - rule: no_pii
-    category:  a
-    max: 5
-    score: 5
-  - rule: no_both
-    pii: a, b, c
-    score: 6

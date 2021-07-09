@@ -1,4 +1,4 @@
-fides-server/src/main/resources/application.conf
+fidesapi/src/main/resources/application.conf
 ## generic files to ignore
 *~
 *.lock

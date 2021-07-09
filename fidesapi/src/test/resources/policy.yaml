@@ -1,0 +1,9 @@
+id: 0
+name: myname
+version: '1.3'
+description: abcde
+rules:
+  - name: count
+    multiplier: 1.2
+  - name: avg
+    multiplier: 1.1

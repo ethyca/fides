@@ -1,0 +1,8 @@
+.git
+.dockerignore
+Dockerfile
+Dockerfile.*
+
+# sbt specific
+target/
+.bsp
