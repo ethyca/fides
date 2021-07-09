@@ -3,37 +3,42 @@ site_url: https://example.com/
 nav:
   - Home: index.md
   - License: license.md
-  - Getting Started: getting_started.md
-  - What is Fides?: what_is_fides.md
-  - Tutorial: tutorial.md
   - Fides Objects: fides_objects.md
-  - Fidesctl: fidesctl.md
-  - Fides Server: server.md
+  - Getting Started:
+      - getting_started/docker.md
+      - getting_started/local.md
+  - Tutorial: tutorial.md
   - Deployment: deployment.md
-  - Contributing: contributing.md
+  - Fidesctl: fidesctl.md
+  - FidesAPI: api.md
+  - Development:
+      - Overview: development/overview.md
+      - Contributing: development/contributing.md
+      - Code Style: development/code_style.md
+      - Documentation: development/documentation.md
+      - Testing: development/testing.md
+      - Release Checklist: development/release_checklist.md
+  - Community:
+      - GitHub: community/github.md
+      - Code of Conduct: community/code_of_conduct.md
 theme:
   name: material
+  favicon: img/favicon.png
+  logo: img/logo.png
   features:
     - naviation.top
     - navigation.instant
-    #- navigation.tabs
-    #- navigation.sections
-
 
 markdown_extensions:
   - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
-  - pymdownx.inlinehilite
-  - pymdownx.tabbed
 
-# theme: material
-#   - features:
-#     - navigation.instant
-#     - navigation.tabs
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
-  - javascripts/config.js
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css

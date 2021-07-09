@@ -77,7 +77,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     /** if we only have a dataset declaration test the dataset against the privacy declaration.*/
     def datasetGamutCheck(pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
-       gamutCheck(pd, ds.qualifierCategoriesMap(), ds.organizationId) match {
+      gamutCheck(pd, ds.qualifierCategoriesMap(), ds.organizationId) match {
         case Some(i) if i.nonEmpty => mc.addError(s"The dataset ${ds.fidesKey} contains the categories [${i.mkString(",")}] under data qualifier ${ds.dataQualifier} that are not accounted for in the privacy declaration ${pd.name}")
       }
     }
@@ -89,7 +89,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
                                 , mc: MessageCollector
                               ):Unit  = {
       ds.getField(fieldName).flatMap( f =>  gamutCheck(pd,  ds.qualifierCategoriesMapForField(f), ds.organizationId)) match
-        {
+      {
         case Some(i) if i.nonEmpty => mc.addError(s"The dataset field ${ds.fidesKey}.$fieldName contains the categories [${i.mkString(",")}] under data qualifier ${ds.dataQualifier} that are not accounted for in the privacy declaration ${pd.name}")
 
       }

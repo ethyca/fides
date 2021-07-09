@@ -44,5 +44,14 @@ services:
     env_file:
       - env_files/mysql_db.env
 
+  docs:
+    image: squidfunk/mkdocs-material
+    volumes:
+      - ./docs/fides:/docs
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+
 volumes:
   mysql:
