@@ -33,7 +33,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     */
   def checkPrivacyDeclaration(
     privacyDeclaration: PrivacyDeclaration,
-    eo: EvaluationObjectSet,
+    datasets: Map[String, Dataset],
     mc: MessageCollector
   ): Unit = {
 
@@ -44,6 +44,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       val tail = if (i == -1 || i == s.length) "" else s.substring(i + 1)
       (head, tail)
     }
+
     /** For the given dataset map of {qualifier -> set[categories]}, compare with the privacy declaration and return a possible list of
       * category fides keys that are not children of the categories listed in the privacy declaration under that qualifier.
       *
@@ -85,24 +86,37 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     /** if we only have a dataset declaration test the dataset against the privacy declaration. */
     def datasetGamutCheck(pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
-      gamutCheck(pd, ds.qualifierCategoriesMap(), ds.organizationId) match {
-        case Some(i) if i.nonEmpty =>
-          mc.addError(
-            s"The dataset ${ds.fidesKey} contains the categories [${i.mkString(",")}] under data qualifier ${ds.dataQualifier} that are not accounted for in the privacy declaration ${pd.name}"
-          )
+
+      val dsPrivacyMap: Map[DataQualifierName, Set[DataCategoryName]] = ds.qualifierCategoriesMap()
+      if (dsPrivacyMap.isEmpty) {
+        mc.addWarning(s"The dataset ${ds.fidesKey} did not specify any privacy information")
+      } else {
+        gamutCheck(pd, dsPrivacyMap, ds.organizationId) match {
+          case Some(i) if i.nonEmpty =>
+            mc.addError(
+              s"The dataset ${ds.fidesKey} contains categories [${i.mkString(",")}] under data qualifier [${dsPrivacyMap.keys.toSeq.head}] not accounted for in the privacy declaration ${pd.name}"
+            )
+          case _ =>
+        }
       }
     }
 
-    def datasetFieldGamutCheck(fieldName: String, pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
-      ds.getField(fieldName)
-        .flatMap(f => gamutCheck(pd, ds.qualifierCategoriesMapForField(f), ds.organizationId)) match {
-        case Some(i) if i.nonEmpty =>
-          mc.addError(
-            s"The dataset field ${ds.fidesKey}.$fieldName contains the categories [${i.mkString(",")}] under data qualifier ${ds.dataQualifier} that are not accounted for in the privacy declaration ${pd.name}"
-          )
-
+    def datasetFieldGamutCheck(df: DatasetField, pd: PrivacyDeclaration, ds: Dataset, mc: MessageCollector): Unit = {
+      val dsPrivacyMap = ds.qualifierCategoriesMapForField(df)
+      if (dsPrivacyMap.isEmpty) {
+        mc.addWarning(s"The dataset ${ds.fidesKey}.${df.name} did not specify any privacy information")
+      } else {
+        gamutCheck(pd, dsPrivacyMap, ds.organizationId) match {
+          case Some(i) if i.nonEmpty =>
+            mc.addError(
+              s"The dataset field ${ds.fidesKey}.${df.name} contains categories [${i
+                .mkString(",")}] under data qualifier [${dsPrivacyMap.keys.toSeq.head}] not accounted for in the privacy declaration ${pd.name}"
+            )
+          case _ =>
+        }
       }
     }
+
     /*
       for each table[.field] spec in the privacy declaration references:
        1. does the dataset[.field] exist in eo.datasets?
@@ -114,24 +128,25 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     //(dataset fides key, field name or "")
     val referenceTuples: Set[(String, String)] = privacyDeclaration.datasetReferences.map(splitRef)
-    referenceTuples.foreach { t: (String, String) =>
-      t match {
-        case (a, _) if !eo.datasets.contains(a) =>
-          mc.addError(s"dataset reference $a found in declaration ${privacyDeclaration.name} was not found")
-        case (a, b) if !eo.datasets(a).fields.get.map(_.name).toSet.contains(b) =>
-          mc.addError(s"dataset.field reference $a.$b found in declaration ${privacyDeclaration.name} was not found")
-
-      }
-    }
 
     referenceTuples.foreach { t: (String, String) =>
       t match {
-        case (a, _) if eo.datasets.contains(a) => datasetGamutCheck(privacyDeclaration, eo.datasets(a), mc)
-        case (a, b) if eo.datasets(a).fields.get.map(_.name).toSet.contains(b) =>
-          datasetFieldGamutCheck(b, privacyDeclaration, eo.datasets(a), mc)
-      }
-    }
+        case (a, "") =>
+          datasets.get(a) match {
+            case None =>
+              mc.addError(s"Dataset reference $a found in declaration ${privacyDeclaration.name} was not found")
+            case Some(ds) => datasetGamutCheck(privacyDeclaration, ds, mc)
+          }
 
+        case (a, b) =>
+          datasets.get(a) match {
+            case None =>
+              mc.addError(s"Dataset reference $a found in declaration ${privacyDeclaration.name} was not found")
+            case Some(ds) => ds.getField(b).foreach(datasetFieldGamutCheck(_, privacyDeclaration, ds, mc))
+          }
+      }
+
+    }
   }
 
   /** Ensure that system does not contain a self-reference. */
@@ -216,7 +231,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     checkDependentSystemsExist(system, dependentSystems.toSeq, mc)
     checkDeclarationsOfDependentSystems(system, dependentSystems.toSeq, mc)
     checkSelfReference(system, mc)
-
+    system.privacyDeclarations.foreach(pds => pds.foreach(checkPrivacyDeclaration(_, eo.datasets, mc)))
     val overallApproval = {
       if (mc.hasErrors) {
         ApprovalStatus.ERROR

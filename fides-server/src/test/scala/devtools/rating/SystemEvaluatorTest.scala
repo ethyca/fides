@@ -1,7 +1,7 @@
 package devtools.rating
 
 import devtools.Generators.SystemObjectGen
-import devtools.domain.PrivacyDeclaration
+import devtools.domain.{Dataset, PrivacyDeclaration}
 import devtools.domain.enums.ApprovalStatus
 import devtools.util.waitFor
 import devtools.validation.MessageCollector
@@ -106,6 +106,131 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
   }
 
+  test("test privacy-declaration vs dataset privacy declaration") {
+
+    def testPrivacyDeclaration(
+      privacyDeclaration: PrivacyDeclaration,
+      dataset: Dataset,
+      returnWarnings: Boolean = false
+    ): Seq[String] = {
+      val mc = new MessageCollector
+      systemEvaluator.checkPrivacyDeclaration(privacyDeclaration, Map(dataset.fidesKey -> dataset), mc)
+
+      if (returnWarnings) mc.warnings.toSeq else mc.errors.toSeq
+    }
+
+    val pd = PrivacyDeclaration(0L, 0L, "a", Set(), "aggregated_data", "share", Set(), Set())
+
+//    "aggregated_data": {
+//      "anonymized_data": {
+//      "unlinked_pseudonymized_data": {
+//      "pseudonymized_data": {
+
+    //categories:
+//    "cloud_service_provider_data": [
+//    "access_and_authentication_data",
+//    "operations_data"
+//    ],
+//    "derived_data": [
+//    {
+//      "end_user_identifiable_information": [
+//      // derived data associated with a user that is captured or generated from the use of the service by that user
+//      "telemetry_data",
+//      "connectivity_data",
+
+    //1. dataset or field doesn't exist
+
+    testPrivacyDeclaration(pd.copy(datasetReferences = Set("b")), datasetOf(None, None)) should containMatchString(
+      "Dataset reference b found in declaration a was not found"
+    )
+    //2. dataset category doesn't match privacy; literal match
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a")),
+      datasetOf(Some("aggregated_data"), Some(Set("operations_data")))
+    ) should containMatchString(
+      "The dataset a contains categories \\[operations_data\\] under data qualifier \\[aggregated_data\\]"
+    )
+    //3. dataset qualifier doesn't match privacy; literal match
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a")),
+      datasetOf(Some("identified_data"), Some(Set("operations_data")))
+    ) should containMatchString(
+      "The dataset a contains categories \\[operations_data\\] under data qualifier \\[identified_data\\]"
+    )
+    //4. dataset category contains a child of one of the privacy declaration values is fine:
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(Some("aggregated_data"), Some(Set("end_user_identifiable_information")))
+    ) shouldBe Seq()
+
+    //5. dataset category contains grandchild is ok:
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(Some("aggregated_data"), Some(Set("profiling_data")))
+    ) shouldBe Seq()
+
+    //5. dataset qualifier contains child
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "identified_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(Some("aggregated_data"), Some(Set("derived_data")))
+    ) shouldBe Seq()
+    //6. dataset.field doesn't match privacy
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
+      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("operations_data"))))
+    ) should containMatchString(
+      "The dataset field a.a contains categories \\[operations_data\\] under data qualifier \\[aggregated_data\\]"
+    )
+
+    //7. dataset category doesn't match privacy; literal match
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
+      datasetOf(None, None, datasetFieldOf(Some("identified_data"), Some(Set("access_and_authentication_data"))))
+    ) should containMatchString(
+      "The dataset field a.a contains categories \\[access_and_authentication_data\\] under data qualifier \\[identified_data\\]"
+    )
+    //8. qualifier doesn't match privacy; literal match
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
+      datasetOf(None, None, datasetFieldOf(Some("identified_data"), Some(Set("access_and_authentication_data"))))
+    ) should containMatchString(
+      "The dataset field a.a contains categories \\[access_and_authentication_data\\] under data qualifier \\[identified_data\\]"
+    )
+    //9. child values:
+    // dataset category contains a child of one of the privacy declaration values;
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("end_user_identifiable_information"))))
+    ) shouldBe Seq()
+
+    //10. dataset category contains grandchild
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("profiling_data"))))
+    ) shouldBe Seq()
+
+    //11. dataset qualifier contains child
+
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "identified_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("derived_data"))))
+    ) shouldBe Seq()
+
+    //12. no privacy gamut found for dataset or field
+    testPrivacyDeclaration(
+      pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
+      datasetOf(None, None),
+      true
+    ) should containMatchString("The dataset a did not specify any privacy information")
+
+  }
   test("test merge declarations") {
     def merge(declarations: PrivacyDeclaration*) = systemEvaluator.mergeDeclarations(3L, declarations)
 
@@ -207,15 +332,6 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
       PrivacyDeclaration(0L, 0L, "a", Set("ca1"), "ua1", "qa", Set(), Set())
     )
 
-    //split by qualifier
-
-    //diff child/parent
-
-    //diff child1/child2
-
-    //diff a,b/b == a
-
-    //diff (a,b,c) ... (b,c,d) == (a,d)?
-
   }
+
 }

@@ -5,28 +5,6 @@ import devtools.TestUtils
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-/*
-"aggregated_data": {
-    "anonymized_data": {
-      "unlinked_pseudonymized_data": {
-        "pseudonymized_data": {
-          "identified_data": {}
-
-
-
-            "customer_content_data": [
-    "credentials",
-    "customer_contact_lists"]
-
-      "cloud_service_provider_data": [
-    "access_and_authentication_data",
-    "operations_data"
-  ],
-
-
-
- */
-
 class DatasetTest extends AnyFunSuite with LazyLogging with TestUtils {
 
   test("test get privacy map") {
@@ -46,34 +24,9 @@ class DatasetTest extends AnyFunSuite with LazyLogging with TestUtils {
     //if only 1 field value is provided,  use the general values
     val d3 = datasetOf(Some("qualifierA"), Some(Set("cat1", "cat2")), datasetFieldOf(Some("qualifierB"), None))
     d3.getField("a").map(d3.qualifierCategoriesMapForField) shouldBe Some(Map("qualifierA" -> Set("cat1", "cat2")))
-
     val d4 = datasetOf(Some("qualifierA"), Some(Set("cat1", "cat2")), datasetFieldOf(None, Some(Set("cat1", "cat2"))))
     d4.getField("a").map(d4.qualifierCategoriesMapForField) shouldBe Some(Map("qualifierA" -> Set("cat1", "cat2")))
 
   }
-//  dataset: get privacy map
-//  dataset field: get privacy map
 
-  private def datasetOf(
-    dataQualifier: Option[DataQualifierName],
-    dataCategories: Option[Set[DataCategoryName]],
-    fields: DatasetField*
-  ) =
-    Dataset(0L, 1L, "", None, None, None, None, dataCategories, dataQualifier, None, None, Some(fields), None, None)
-
-  private def datasetFieldOf(
-    dataQualifier: Option[DataQualifierName],
-    dataCategories: Option[Set[DataCategoryName]]
-  ): DatasetField =
-    DatasetField(
-      0L,
-      0L,
-      "a",
-      None,
-      None,
-      dataCategories,
-      dataQualifier,
-      None,
-      None
-    )
 }

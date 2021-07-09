@@ -133,7 +133,6 @@ class JsonSupportTest extends AnyFunSuite with TestUtils {
     val rules = r.get.rules.get
     rules.size shouldEqual 2
     rules.map(_.fidesKey).toSet shouldEqual Set("AAAAAAAA", "BBBBBBBB")
-
   }
 
 }

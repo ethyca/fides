@@ -83,6 +83,29 @@ trait TestUtils extends LazyLogging {
       None
     )
 
+  def datasetOf(
+    dataQualifier: Option[DataQualifierName],
+    dataCategories: Option[Set[DataCategoryName]],
+    fields: DatasetField*
+  ): Dataset =
+    Dataset(0L, 1L, "a", None, None, None, None, dataCategories, dataQualifier, None, None, Some(fields), None, None)
+
+  def datasetFieldOf(
+    dataQualifier: Option[DataQualifierName],
+    dataCategories: Option[Set[DataCategoryName]]
+  ): DatasetField =
+    DatasetField(
+      0L,
+      0L,
+      "a",
+      None,
+      None,
+      dataCategories,
+      dataQualifier,
+      None,
+      None
+    )
+
   class ContainsErrorStringMatcher(pattern: String) extends Matcher[Seq[String]] {
     def apply(strings: Seq[String]): MatchResult = {
       val r = new Regex(pattern).unanchored
