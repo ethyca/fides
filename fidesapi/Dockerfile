@@ -14,7 +14,7 @@ RUN apt-get update
 RUN apt-get install -y sbt=$SBT_VERSION -V
 
 # Copy Local Files
-WORKDIR /usr/src/fides-server
+WORKDIR /usr/src/fidesapi
 COPY project project/
 COPY build.sbt .
 # TODO: ideally, this wouldn't be needed to run sbt update
@@ -25,7 +25,7 @@ EXPOSE 8080
 ##########
 # Build image to compile
 FROM local as build
-WORKDIR /usr/src/fides-server
+WORKDIR /usr/src/fidesapi
 COPY src src/
 RUN sbt package
 
@@ -33,9 +33,9 @@ RUN sbt package
 # Production image, including just the JRE
 FROM adoptopenjdk:8-jre-hotspot as production
 # TODO: parameterize this intelligently with args?
-COPY --from=build /usr/src/fides-server/target/scala-2.12/fides-server_2.12-0.1.0-SNAPSHOT.war /usr/fides-server/fides-server.war
-COPY --from=build /usr/src/fides-server/src/main/resources/logback.xml /usr/fides-server/logback.xml
-COPY deploy/jetty-runner-9.4.34.v20201102.jar /usr/fides-server/jetty-runner.jar
+COPY --from=build /usr/src/fidesapi/target/scala-2.12/fidesapi_2.12-0.1.0-SNAPSHOT.war /usr/fidesapi/fidesapi.war
+COPY --from=build /usr/src/fidesapi/src/main/resources/logback.xml /usr/fidesapi/logback.xml
+COPY deploy/jetty-runner-9.4.34.v20201102.jar /usr/fidesapi/jetty-runner.jar
 EXPOSE 8080
 
-CMD java -Dlogback.configurationFile='/usr/fides-server/logback.xml' -jar /usr/fides-server/jetty-runner.jar /usr/fides-server/fides-server.war
+CMD java -Dlogback.configurationFile='/usr/fidesapi/logback.xml' -jar /usr/fidesapi/jetty-runner.jar /usr/fidesapi/fidesapi.war

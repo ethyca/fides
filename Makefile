@@ -14,7 +14,7 @@ endif
 IMAGE_TAG := $(GIT_COMMIT_SHA)
 
 # Server
-SERVER_IMAGE_NAME := fides-server
+SERVER_IMAGE_NAME := fidesapi
 SERVER_IMAGE := $(REGISTRY)/$(SERVER_IMAGE_NAME):$(IMAGE_TAG)
 SERVER_IMAGE_LATEST := $(REGISTRY)/$(SERVER_IMAGE_NAME):latest
 # CLI
@@ -82,7 +82,7 @@ cli-push: cli-build
 # Server
 server-build:
 	@echo "Building the $(SERVER_IMAGE) image..."
-	docker build --tag $(SERVER_IMAGE) fides-server/
+	docker build --tag $(SERVER_IMAGE) fidesapi/
 
 server-push: server-build
 	@echo "Pushing the $(SERVER_IMAGE) image to $(DOCKER_REGISTRY)..."

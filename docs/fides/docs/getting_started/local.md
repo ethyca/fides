@@ -14,7 +14,7 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 ## Local Setup
 
 1. Spin up the MySQL database with your desired credentials
-1. `cd fides-server/`
+1. `cd fidesapi/`
 1. Update the `application.conf` in `src/main/resources/` with the database credentials
 1. `sbt flywayMigrate`
 1. `sbt ~jetty:start` -> You now have a Fides Server instance up and running powered by MySQL!

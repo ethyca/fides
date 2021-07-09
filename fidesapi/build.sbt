@@ -33,7 +33,7 @@ val properties = {
 
 lazy val root = (project in file("."))
   .settings(
-    name := "fides-server",
+    name := "fidesapi",
     version := "0.1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % ScalatraVersion,
