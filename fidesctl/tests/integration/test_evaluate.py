@@ -10,9 +10,6 @@ def test_evaluate():
 
 def test_dry_evaluate_system_pass(server_url, objects_dict):
     test_system = objects_dict["system"]
-    test_system.datasets = (
-        []
-    )  # The server checks will fail if the dataset doesn't exist
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
@@ -46,7 +43,18 @@ def test_dry_evaluate_registry_pass(server_url, objects_dict):
 
 
 def test_dry_evaluate_system_error(server_url, objects_dict):
+    # Set up the test system
     test_system = objects_dict["system"]
+    failing_declaration = [
+        models.PrivacyDeclaration(
+            name="declaration-name",
+            dataCategories=["customer_content_data"],
+            dataUse="provi",
+            dataSubjects=["customer"],
+            dataQualifier="identified_data",
+        )
+    ]
+    test_system.privacyDeclarations = failing_declaration
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
@@ -59,7 +67,7 @@ def test_dry_evaluate_system_error(server_url, objects_dict):
 
     print(response.json())
     assert response.status_code == 500
-    assert response.json()["data"]["status"] == "ERROR"
+    assert response.json()["errors"]
 
 
 def test_dry_evaluate_system_fail(server_url, objects_dict):
@@ -70,14 +78,11 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
             name="declaration-name",
             dataCategories=["customer_content_data"],
             dataUse="provide",
-            dataSubject=["customer"],
+            dataSubjects=["customer"],
             dataQualifier="identified_data",
         )
     ]
-    test_system.declarations = failing_declaration
-    test_system.datasets = (
-        []
-    )  # The server checks will fail if the dataset doesn't exist
+    test_system.privacyDeclarations = failing_declaration
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
