@@ -40,7 +40,7 @@ def objects_dict():
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
             datasetType="MySQL",
-            location="ethyca_mysql_db.ethyca_schema.ethyca_table",
+            location="US East",
             fields=[
                 models.DatasetField(
                     name="Food",

@@ -74,7 +74,6 @@ class PrivacyRule(BaseModel):
 
 class PolicyRule(BaseModel):
     organizationId: int
-    policyId: int
     fidesKey: str
     name: str
     description: str

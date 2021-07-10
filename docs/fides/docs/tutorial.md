@@ -22,6 +22,8 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     policy:
       - organizationId: 1
         fidesKey: "primaryPrivacyPolicy"
+        name: "Primary Privacy Policy"
+        definition: "The main privacy policy for the organization."
         rules:
           - organizationId: 1
             fidesKey: "rejectTargetedMarketing"
@@ -37,7 +39,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
               values:
                 - market_advertise_or_promote
                 - offer_upgrades_or_upsell
-            dataSubjectCategories:
+            dataSubjects:
               inclusion: ANY
               values:
                 - trainee
@@ -59,7 +61,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
                 - improvement_of_business_support_for_contracted_service
                 - personalize
                 - share_when_required_to_provide_the_service
-            dataSubjectCategories:
+            dataSubjects:
               inclusion: NONE
               values:
                 - trainee
@@ -79,22 +81,22 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
         description: "This is a Sample Database Dataset"
         datasetType: "MySQL"
         location: "US East"
-        tables:
-          - name: "sample_db_table_1"
-            description: "Sample DB Table Description"
-            fields:
-              - name: "first_name"
-                description: "A First Name Field"
-                dataCategories:
-                  - "derived_data"
-                dataQualifier: "identified_data"
-              - name: "email"
-                description: "User's Email"
-                dataCategories:
-                  - "account_data"
-                dataQualifier: "identified_data"
-              - name: "Food Preference"
-                description: "User's favorite food"
+        fields:
+          - name: "first_name"
+            description: "A First Name Field"
+            path: "sample_db_dataset.first_name"
+            dataCategories:
+              - "derived_data"
+            dataQualifier: "identified_data"
+          - name: "email"
+            description: "User's Email"
+            path: "sample_db_dataset.email"
+            dataCategories:
+              - "account_data"
+            dataQualifier: "identified_data"
+          - name: "Food Preference"
+            description: "User's favorite food"
+            path: "sample_db_dataset.food_preference"
     ```
 
 === "fides_manifests/system.yml"
@@ -102,23 +104,20 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     ```yaml
     system:
       - organizationId: 1
-        fidesOrganizationKey: "Ethyca"
-        registryId: 1
         fidesKey: "demoSystem"
-        fidesSystemType: "SYSTEM"
         name: "Demo System"
         description: "A system used for demos."
-        declarations:
+        systemType: "Service"
+        privacyDeclarations:
           - dataCategories:
               - "customer_content_data"
             dataUse: "provide"
             dataQualifier: "anonymized_data"
-            dataSubjectCategories:
+            dataSubjects:
               - "anonymous_user"
-            dataSets:
-              - "user_data"
+            datasetReferences:
+              - "sample_db_dataset"
         systemDependencies: []
-        datasets: ["user_data"]
     ```
 
 ## Applying Manifest Files
