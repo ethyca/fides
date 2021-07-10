@@ -39,7 +39,6 @@ object JsonSupport extends LazyLogging {
           case i: JObject =>
             val v: JObject = m merge i // this ensures that values in i take precedence over default values in m
             v.extract[T](formats, manifest)
-
         },
         {
           case f: T => Extraction.decompose(f)(formats)
@@ -89,7 +88,7 @@ object JsonSupport extends LazyLogging {
   import org.json4s.JsonDSL._
 
   implicit val datasetFieldFormat: CustomSerializer[DatasetField] =
-    withMapValues[DatasetField](("id" -> 0L) ~ ("datasetTableId" -> 0L), DefaultFormats)
+    withMapValues[DatasetField](("id" -> 0L) ~ ("datasetId" -> 0L), DefaultFormats)
   implicit val policyRuleFormat: CustomSerializer[PolicyRule] = withMapValues[PolicyRule](
     ("id" -> 0L) ~ ("policyId" -> 0L),
     DefaultFormats + RuleInclusion.jsonFormat + PolicyAction.jsonFormat
