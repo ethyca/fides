@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     command: /bin/bash
     depends_on:
-      - fides-server
+      - fidesapi
     volumes:
       - type: bind
         source: ./fidesctl
@@ -16,9 +16,9 @@ services:
     env_file:
       - env_files/fidesctl.env
 
-  fides-server:
+  fidesapi:
     build:
-      context: fides-server
+      context: fidesapi
       dockerfile: Dockerfile
       target: local
     command: sbt ~jetty:start
@@ -29,7 +29,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./fides-server:/usr/src/fides-server
+      - ./fidesapi:/usr/src/fidesapi
     env_file:
       - env_files/fides_server.env
 

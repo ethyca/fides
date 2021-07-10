@@ -1,6 +1,0 @@
-logs:
-  - type: file
-    path: "/logs/fides.log"
-    service: fides
-    source: dev
-    sourcecategory: sourcecode

@@ -7,7 +7,7 @@ We welcome issues, contributions and discussion from all users, regardless of ba
 ## Developing the Server
 
 1. Install [sbt](https://docs.scala-lang.org/getting-started/sbt-track/getting-started-with-scala-and-sbt-on-the-command-line.html). sbt requires at least java version 8. This project works on any java version >= 8.
-1. `cd` into the `fides-server` directory
+1. `cd` into the `fidesapi` directory
 1. Edit the values in src/main/resources/application.conf.example. Any values set here will override the values set in src/main/resources/reference.conf
 1. sbt ~jetty:start
 1. Endpoints should now be available @ `http://localhost:8080`
@@ -21,7 +21,7 @@ Tasks used with sbt for the Server
 * `scalafmtAll`: format all files, including tests
 * `slickCodegen`: (re)generate slick db table models from database
 * `flywayMigrate`: runs flyway database migrations
-* `assembly`: builds a standalone jar at target/scala-2.13/fides-server-assembly-VERSION-SNAPSHOT.jar
+* `assembly`: builds a standalone jar at target/scala-2.13/fidesapi-assembly-VERSION-SNAPSHOT.jar
 all other sbt tasks are standard. For a list, `sbt tasks`
 
 ## Developing the CLI
