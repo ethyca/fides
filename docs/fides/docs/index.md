@@ -2,17 +2,28 @@
 
 ---
 
-Fides is a platform to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
+## Overview
 
-It is designed to help companies stay compliant by briding the gap between compliance officers and engineers. By describing the uses of data as Fides manifests, Fides is able to continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+Fides enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
-When data governance is declared and colocated with the source code by engineers, it makes it possible for organizations to handle data privacy in a proactive manner.
+With Fides, anyone working with risk types of data (persona information), can simply declare or describe their data intentions and Fides will o continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+
+This approach ensures that privacy is easily described with your source code, making privacy easier to manage and a proactive part of your existing software development practises. 
+
+## Why Fides?
+
+Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for "honor and credibility" in every aspect of Roman life, in addition to this Fides also means reliability; "reliability between two parties, which is always reciprocal". 
+
+Our goal with this project is to kickstart a privacy ontology and set of tools that helps every developer, whether in software or data engineering with an easy to implement consistent and enforceable understanding of data privacy. So as we looked at naming conventions,  stood out for its embodiment of this projects philosophy - to provide developers with a reliable and trustworthy definition language for privacy.
+
+If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](https://en.wikipedia.org/wiki/Fides_(deity)).
 
 ## Principles
 
-* Data Lineage as YAML
-* Compliance controls at the CI layer
-* Synergy between engineers and lawyers
+* Data Lineage Declarations
+* Privacy controls at the CI layer
+* Predefined Privacy Taxonomy
+* Translation layer between engineers and lawyers
 
 ---
 
