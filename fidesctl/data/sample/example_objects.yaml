@@ -92,5 +92,5 @@ system:
         dataSubjects:
           - "anonymous_user"
         datasetReferences:
-          - "10"
+          - "sample_db_dataset"
     systemDependencies: []
