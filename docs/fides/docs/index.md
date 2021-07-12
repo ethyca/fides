@@ -6,15 +6,15 @@
 
 Fides enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
-With Fides, anyone working with risk types of data (persona information), can simply declare or describe their data intentions and Fides will o continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+With Fides, anyone working with risky types of data (persona information), can declare or describe their data intentions and Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
-This approach ensures that privacy is easily described with your source code, making privacy easier to manage and a proactive part of your existing software development practises. 
+This approach ensures that privacy is described within your source code, thereby making privacy easier to manage and a proactive part of your existing software development practices.
 
 ## Why Fides?
 
-Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for "honor and credibility" in every aspect of Roman life, in addition to this Fides also means reliability; "reliability between two parties, which is always reciprocal". 
+Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for "honor and credibility" in every aspect of Roman life, in addition to this Fides also means reliability; "reliability between two parties, which is always reciprocal".
 
-Our goal with this project is to kickstart a privacy ontology and set of tools that helps every developer, whether in software or data engineering with an easy to implement consistent and enforceable understanding of data privacy. So as we looked at naming conventions,  stood out for its embodiment of this projects philosophy - to provide developers with a reliable and trustworthy definition language for privacy.
+Our goal with this project is to kickstart a privacy ontology and set of tools that equips every developer, whether in software or data engineering, with an easy to implement and consistently enforceable understanding of data privacy. As we looked at naming conventions, Fides stood out for its embodiment of this project's philosophy - to provide developers with a reliable and trustworthy definition language for privacy.
 
 If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](https://en.wikipedia.org/wiki/Fides_(deity)).
 
