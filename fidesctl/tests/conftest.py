@@ -43,12 +43,12 @@ def objects_dict():
             location="US East",
             fields=[
                 models.DatasetField(
-                    name="Food Preference",
+                    name="Food_Preference",
                     description="User's favorite food",
                     path="some.path",
                 ),
                 models.DatasetField(
-                    name="First Name",
+                    name="First_Name",
                     description="A First Name Field",
                     path="another.path",
                     dataCategories=["derived_data"],
