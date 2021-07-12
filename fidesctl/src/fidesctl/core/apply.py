@@ -83,17 +83,14 @@ def execute_create_update_unchanged(
 
 
 def get_server_objects(
-    url: str, object_type: str, existing_keys: List[str], headers: Dict[str, str]
+    url: str, object_type: str, existing_keys: List[str]
 ) -> List[FidesModel]:
     """
     Get a list of objects from the server that match the provided keys.
     """
     raw_server_object_list: Iterable[Dict] = filter(
         None,
-        [
-            api.find(url, object_type, key, headers).json().get("data")
-            for key in existing_keys
-        ],
+        [api.find(url, object_type, key).json().get("data") for key in existing_keys],
     )
     server_object_list: List[FidesModel] = [
         parse.parse_manifest(object_type, _object, from_server=True)
@@ -102,7 +99,7 @@ def get_server_objects(
     return server_object_list
 
 
-def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
+def apply(url: str, manifests_dir: str) -> None:
     """
     Apply the current manifest file state to the server.
     Excludes systems and registries.
@@ -129,9 +126,7 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
         existing_keys = [
             manifest_object.fidesKey for manifest_object in manifest_object_list
         ]
-        server_object_list = get_server_objects(
-            url, object_type, existing_keys, headers
-        )
+        server_object_list = get_server_objects(url, object_type, existing_keys)
 
         # Determine which objects should be created, updated, or are unchanged
         create_list, update_list, unchanged_list = sort_create_update_unchanged(

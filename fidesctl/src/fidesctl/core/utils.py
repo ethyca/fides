@@ -2,8 +2,8 @@
 import logging
 from functools import partial
 from json.decoder import JSONDecodeError
-import click
 import jwt
+import click
 import requests
 import sqlalchemy
 from sqlalchemy.engine import Engine

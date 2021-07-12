@@ -2,6 +2,18 @@
 from typing import Dict
 
 import requests
+from .utils import jwt_encode
+
+
+def generate_request_headers() -> Dict[str, str]:
+    """
+    Generate the headers for a request.
+    """
+    return {
+        "Content-Type": "application/json",
+        "user-id": "1",
+        "Authorization": "Bearer {}".format(jwt_encode(1, "test_api_key")),
+    }
 
 
 def generate_object_url(
@@ -13,35 +25,33 @@ def generate_object_url(
     return f"{url}/{version}/{object_type}/{object_id}"
 
 
-def find(
-    url: str, object_type: str, object_key: str, headers: Dict[str, str]
-) -> requests.Response:
+def find(url: str, object_type: str, object_key: str) -> requests.Response:
     """
     Get an object by its fidesKey.
     """
     object_url = generate_object_url(url, object_type)
     find_url = f"{object_url}find/{object_key}"
+    headers = generate_request_headers()
     return requests.get(find_url, headers=headers)
 
 
-def get(
-    url: str, object_type: str, object_id: str, headers: Dict[str, str]
-) -> requests.Response:
+def get(url: str, object_type: str, object_id: str) -> requests.Response:
     """
     Get an object by its id.
     """
     object_url = generate_object_url(url, object_type, object_id)
+    headers = generate_request_headers()
     return requests.get(object_url, headers=headers)
 
 
-def create(
-    url: str, object_type: str, json_object: str, headers: Dict[str, str]
-) -> requests.Response:
+def create(url: str, object_type: str, json_object: str) -> requests.Response:
     """
     Create a new object.
     """
+    payload = json_object
     object_url = generate_object_url(url, object_type)
-    return requests.post(object_url, headers=headers, data=json_object)
+    headers = generate_request_headers()
+    return requests.post(object_url, headers=headers, data=payload)
 
 
 def ping(url: str) -> requests.Response:
@@ -51,60 +61,54 @@ def ping(url: str) -> requests.Response:
     return requests.get(url)
 
 
-def delete(
-    url: str, object_type: str, object_id: str, headers: Dict[str, str]
-) -> requests.Response:
+def delete(url: str, object_type: str, object_id: str) -> requests.Response:
     """
     Delete an object by its id.
     """
     object_url = generate_object_url(url, object_type, object_id)
+    headers = generate_request_headers()
     return requests.delete(object_url, headers=headers)
 
 
-def show(url: str, object_type: str, headers: Dict[str, str]) -> requests.Response:
+def show(url: str, object_type: str) -> requests.Response:
     """
     Get a list of all of the objects of a certain type.
     """
     object_url = generate_object_url(url, object_type)
+    headers = generate_request_headers()
     return requests.get(object_url, headers=headers)
 
 
 def update(
-    url: str,
-    object_type: str,
-    object_id: str,
-    json_object: Dict,
-    headers: Dict[str, str],
+    url: str, object_type: str, object_id: str, json_object: Dict
 ) -> requests.Response:
     """
     Update an existing object.
     """
     object_url = generate_object_url(url, object_type, object_id)
-    return requests.post(object_url, headers=headers, data=json_object)
+    payload = json_object
+    headers = generate_request_headers()
+    return requests.post(object_url, headers=headers, data=payload)
 
 
-def dry_evaluate(
-    url: str, object_type: str, json_object: str, headers: Dict[str, str]
-) -> requests.Response:
+def dry_evaluate(url: str, object_type: str, json_object: str) -> requests.Response:
     """
     Dry Evaluate a registry based on organizational policies.
     """
     object_url = generate_object_url(url, object_type)
     url = f"{object_url}evaluate/dry-run"
-    return requests.post(url, headers=headers, data=json_object)
+    payload = json_object
+    headers = generate_request_headers()
+    return requests.post(url, headers=headers, data=payload)
 
 
 def evaluate(
-    url: str,
-    object_type: str,
-    fides_key: str,
-    tag: str,
-    message: str,
-    headers: Dict[str, str],
+    url: str, object_type: str, fides_key: str, tag: str, message: str
 ) -> requests.Response:
     """
     Evaluate a registry based on organizational policies.
     """
     object_url = generate_object_url(url, object_type)
     url = f"{object_url}evaluate/{fides_key}"
+    headers = generate_request_headers()
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
