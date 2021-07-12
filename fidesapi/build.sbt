@@ -113,7 +113,6 @@ wartremoverErrors ++= Seq(
   Wart.JavaConversions,
   Wart.Option2Iterable,
   Wart.LeakingSealed,
-  Wart.PublicInference,
   Wart.ListUnapply,
   Wart.ListAppend,
   Wart.FinalCaseClass
