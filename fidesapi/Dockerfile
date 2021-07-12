@@ -1,6 +1,6 @@
 ##########
 # Local image for development
-FROM adoptopenjdk:8-jre-hotspot as local
+FROM adoptopenjdk:11-jre-hotspot as local
 RUN apt-get update
 RUN apt-get install -y \
     gnupg \
@@ -31,7 +31,7 @@ RUN sbt package
 
 ##########0
 # Production image, including just the JRE
-FROM adoptopenjdk:8-jre-hotspot as production
+FROM adoptopenjdk:11-jre-hotspot as production
 # TODO: parameterize this intelligently with args?
 COPY --from=build /usr/src/fidesapi/target/scala-2.12/fidesapi_2.12-0.1.0-SNAPSHOT.war /usr/fidesapi/fidesapi.war
 COPY --from=build /usr/src/fidesapi/src/main/resources/logback.xml /usr/fidesapi/logback.xml

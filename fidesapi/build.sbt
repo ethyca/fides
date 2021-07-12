@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % ScalatraVersion,
       //logging
-      "com.typesafe.scala-logging" %% "scala-logging"     % "3.9.3",
+      "com.typesafe.scala-logging" %% "scala-logging"     % "3.9.4",
       "ch.qos.logback"              % "logback-classic"   % "1.2.3"            % "runtime",
       "org.eclipse.jetty"           % "jetty-webapp"      % "9.4.36.v20210114" % "container",
       "javax.servlet"               % "javax.servlet-api" % "4.0.1"            % "provided",
@@ -60,7 +60,7 @@ lazy val root = (project in file("."))
       // jwt
       "com.github.jwt-scala" %% "jwt-core" % "8.0.2",
       //cache
-      //"com.github.blemale" % "scaffeine_2.13" % "4.0.2",
+      "com.github.blemale" %% "scaffeine" % "5.0.0",
       // db support
       "c3p0"               % "c3p0"                 % "0.9.1.2",
       "mysql"              % "mysql-connector-java" % "8.0.25",
