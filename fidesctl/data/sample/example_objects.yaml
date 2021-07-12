@@ -61,13 +61,13 @@ dataset:
     datasetType: "MySQL"
     location: "US East"
     fields:
-      - name: "first_name"
+      - name: "First Name"
         description: "A First Name Field"
         path: "sample_db_dataset.first_name"
         dataCategories:
           - "derived_data"
         dataQualifier: "identified_data"
-      - name: "email"
+      - name: "Email"
         description: "User's Email"
         path: "sample_db_dataset.email"
         dataCategories:

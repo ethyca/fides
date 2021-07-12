@@ -94,6 +94,10 @@ server-push: server-build
 # CI
 ####################
 
+# General
+test-all: server-test cli-check-all
+	@echo "Running all tests and checks..."
+
 # CLI
 cli-check-all: cli-format cli-lint cli-typecheck cli-test
 	@echo "Running formatter, linter, typechecker and tests..."
