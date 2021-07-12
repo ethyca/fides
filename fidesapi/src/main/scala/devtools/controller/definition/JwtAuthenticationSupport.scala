@@ -68,13 +68,14 @@ trait JwtAuthenticationSupport extends ScalatraBase with LazyLogging {
       case headerTokenRegex(token) => token
     }
 
-  def validateToken(request: HttpServletRequest, user: User): Unit =
-    extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey)) match {
+  def validateToken(request: HttpServletRequest, user: User): Unit = {
+        extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey)) match {
       case Some(m) if m("uid") == user.id.toString => ()
       case _ => {
         logger.info(s"401: ${request.getRequestURI}")
         halt(status = 401, headers = Map("WWW-Authenticate" -> "Invalid token"))
       }
     }
+  }
 
 }
