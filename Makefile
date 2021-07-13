@@ -108,7 +108,7 @@ black: compose-build
 
 pylint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	pylint --exit-zero src/
+	pylint src/
 
 pytest: compose-build init-db
 	@docker-compose up -d

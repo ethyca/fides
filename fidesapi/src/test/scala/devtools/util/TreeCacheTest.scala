@@ -3,7 +3,7 @@ package devtools.util
 import devtools.Generators.{oneOf, smallSetOf}
 import devtools.{App, Generators, TestUtils}
 import devtools.domain.definition.{CanBeTree, IdType, OrganizationId, TreeItem}
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers.contain
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -70,7 +70,8 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
     override def getAll(pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
 
-    override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
+    override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = {println("RELOAD");Future.successful(nodes)}
+
   }
 
   private val cache = new TestTreeCache(nodes)
@@ -83,7 +84,7 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
   }
 
   test("Test cache get roots") {
-    cache.cacheGetRoots(1).map(_.fidesKey).toSet shouldEqual Set("A", "B", "C", "D")
+      cache.cacheGetRoots(1).map(_.fidesKey).toSet shouldEqual Set("A", "B", "C", "D")
   }
 
   test("Test cache find") {
@@ -92,6 +93,7 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
       cache.cacheFind(1, randomKey).get.fidesKey shouldEqual randomKey
     }
   }
+
 
   test("test children of") {
     Set("A", "Ar", "Arr", "Arrr", "Arrrr").foreach(k => {

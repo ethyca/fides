@@ -156,6 +156,7 @@ FidesTypes = Union[
     Type[Policy],
     Type[Registry],
     Type[System],
+    Type[User],
 ]
 MODEL_DICT: Dict[str, FidesTypes] = {
     "data-category": DataCategory,
@@ -167,6 +168,7 @@ MODEL_DICT: Dict[str, FidesTypes] = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
+    "user": User,
 }
 MODEL_LIST = list(MODEL_DICT.keys())
 
@@ -180,4 +182,5 @@ FidesModel = Union[
     Policy,
     Registry,
     System,
+    User,
 ]
