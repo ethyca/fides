@@ -132,8 +132,9 @@ def test_apply_evaluate_example_manifests(server_url):
     included in the repo are valid and can be used within the docs tutorial.
     """
 
-    apply.apply(server_url, "data/sample/")
-    evaluation = evaluate.evaluate(
+    apply_response = apply.apply(server_url, "data/sample/").json()
+
+    evaluate_response = evaluate.evaluate(
         url=server_url,
         object_type="system",
         fides_key="demoSystem",
@@ -141,5 +142,6 @@ def test_apply_evaluate_example_manifests(server_url):
         message="test",
     ).json()
 
-    print(evaluation)
-    assert evaluation["data"]["status"] == "PASS"
+    print(apply_response)
+    print(evaluate_response)
+    assert evaluate_response["data"]["status"] == "PASS"
