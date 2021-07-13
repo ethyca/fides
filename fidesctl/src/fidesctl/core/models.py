@@ -138,7 +138,6 @@ class System(BaseModel):
 class User(BaseModel):
     id: Optional[int]
     organizationId: int
-    fidesKey: str
     userName: str
     firstName: str
     lastName: str
@@ -176,7 +175,6 @@ MODEL_DICT: Dict[str, FidesTypes] = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
-    "user": User,
 }
 MODEL_LIST = list(MODEL_DICT.keys())
 

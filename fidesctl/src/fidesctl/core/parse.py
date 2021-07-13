@@ -15,7 +15,6 @@ def parse_manifest(
     Parse an individual object into its Python model.
     """
     object_source = "server" if from_server else "manifest file"
-
     try:
         parsed_manifest = MODEL_DICT[object_type].parse_obj(_object)
     except Exception as err:
@@ -24,5 +23,5 @@ def parse_manifest(
                 object_type, object_source, _object["fidesKey"]
             )
         )
-        raise SystemExit(err)
+        raise SystemExit(err) from err
     return parsed_manifest
