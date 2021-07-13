@@ -104,7 +104,7 @@ cli-format: compose-build
 
 cli-lint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	pylint --exit-zero src/
+	pylint src/
 
 cli-test: compose-build init-db
 	@docker-compose up -d

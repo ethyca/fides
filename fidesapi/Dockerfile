@@ -1,6 +1,3 @@
-
-
-
 ##########
 # Local image for development
 ARG OPENJDK_TAG=11-jre-buster
