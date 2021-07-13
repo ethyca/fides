@@ -1,7 +1,7 @@
 import pytest
 from unittest import mock
 
-from fidesctl.core import evaluate, manifests, models
+from fidesctl.core import apply, evaluate, manifests, models
 
 
 def test_evaluate():
@@ -124,3 +124,22 @@ def test_evaluate_registry_pass(server_url, objects_dict):
     print(response.json())
     assert response.status_code == 200
     assert response.json()["data"]["status"] == "PASS"
+
+
+def test_apply_evaluate_example_manifests(server_url):
+    """
+    This test is designed to verify that the example manifests
+    included in the repo are valid and can be used within the docs tutorial.
+    """
+
+    apply.apply(server_url, "data/sample/")
+    evaluation = evaluate.evaluate(
+        url=server_url,
+        object_type="system",
+        fides_key="demoSystem",
+        tag="test",
+        message="test",
+    ).json()
+
+    print(evaluation)
+    assert evaluation["data"]["status"] == "PASS"

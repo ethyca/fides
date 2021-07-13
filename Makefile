@@ -1,6 +1,5 @@
 .DEFAULT_GOAL := help
 
-
 ####################
 # CONSTANTS
 ####################
@@ -99,7 +98,7 @@ test-all: server-test cli-check-all
 	@echo "Running all tests and checks..."
 
 # CLI
-cli-check: cli-format cli-lint cli-typecheck cli-test
+cli-check: black pylint mypy pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 black: compose-build
