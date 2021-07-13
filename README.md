@@ -3,6 +3,7 @@
 [![Latest Version][pypi-image]][pypi-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
+[![Checked with mypy][mypy-image]][mypy-url]
 
 ## Overview
 
@@ -50,4 +51,6 @@ Read about the Fides [community]() or dive in to the [development guides]() for 
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg
-[black-url]: https://github.com/psf/black 
+[black-url]: https://github.com/psf/black/
+[mypy-image]: http://www.mypy-lang.org/static/mypy_badge.svg
+[mypy-url]: http://mypy-lang.org/
