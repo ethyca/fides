@@ -88,7 +88,7 @@ def test_sent_is_received(server_url, objects_dict, endpoint):
         object_key=object_key,
         headers=test_headers,
     )
-    print(result.text)
+
     assert result.status_code == 200
     parsed_result = parse.parse_manifest(endpoint, result.json()["data"])
 

@@ -12,7 +12,7 @@ system:
     fidesOrganizationKey: "Ethyca"
     registryId: 1
     fidesKey: "demoSystem"
-    fidesSystemType: "SYSTEM"
+    systemType: "SYSTEM"
     name: "Demo System"
     description: "A system used for demos."
     declarations:
@@ -25,4 +25,3 @@ system:
           - "anonymous_user"
 
     systemDependencies: []
-    datasets: []

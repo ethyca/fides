@@ -1,7 +1,6 @@
 from typing import Dict
 
 from unittest import mock
-
 from fidesctl.cli.config import FidesConfig
 from fidesctl.core import evaluate, manifests, models
 
@@ -71,6 +70,7 @@ def test_dry_evaluate_system_error(server_url, objects_dict):
     manifests.ingest_manifests = original_ingest_manifests
 
     print(response.json())
+
     assert response.status_code == 500
     assert response.json()["data"]["status"] == "ERROR"
 

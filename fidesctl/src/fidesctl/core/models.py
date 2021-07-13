@@ -127,12 +127,11 @@ class System(BaseModel):
     organizationId: int
     registryId: int
     fidesKey: str
-    fidesSystemType: str
+    systemType: str
     name: str
     description: str
     declarations: Optional[List[DataDeclaration]]
     systemDependencies: List[str]
-    datasets: List[str]
 
 
 class User(BaseModel):
