@@ -19,7 +19,6 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
 
 def handle_cli_response(response: requests.Response) -> requests.Response:
     """Viewable CLI response"""
-    print(f"response = {response}")
     if response.status_code >= 200 and response.status_code <= 299:
         pretty_echo(response.json(), "green")
     else:
