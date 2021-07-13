@@ -66,7 +66,7 @@ def objects_dict():
                 ),
             ],
         ),
-        "data-subject-category": models.DataSubjectCategory(
+        "data-subject": models.DataSubjectCategory(
             organizationId=1,
             fidesKey="customer_content_data",
             name="customer_content_data",

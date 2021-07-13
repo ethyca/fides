@@ -169,7 +169,7 @@ MODEL_DICT: Dict[str, FidesTypes] = {
     "data-category": DataCategory,
     "data-qualifier": DataQualifier,
     "dataset": Dataset,
-    "data-subject-category": DataSubjectCategory,
+    "data-subject": DataSubjectCategory,
     "data-use": DataUse,
     "organization": Organization,
     "policy": Policy,
