@@ -15,13 +15,9 @@ black .
 
 A number of extensions are available for popular editors that will automatically apply black to your code.
 
-## Docstrings
-
-Fides expects all functions to include docstrings.
-
 ## Pylint
 
-Fides's code is linted using [pylint](https://pylint.org/). Linter checks run as part of a CI step and merges to master are prevented if code does not conform to a certain extent.
+Fides's code is linted using [pylint](https://pylint.org/). Linter checks run as part of a CI step and merges to master are prevented if code does not conform.
 
 To apply pylint to your code, run pylint from the root Fidesctl directory:
 
