@@ -68,19 +68,18 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       val privacyDataQualifier: Option[DataQualifierTree] =
         daos.dataQualifierDAO.cacheFind(organizationId, pd.dataQualifier)
 
-      privacyDataQualifier collect {
-        case pdq: DataQualifierTree =>
-          //data qualifiers that exist in dataset that are a child of a qualifier in the privacy declaration
-          dsMap
-            .filter(dsm => pdq.containsChild(dsm._1))
-            .flatMap((m2: (DataQualifierName, Set[DataCategoryName])) => {
-              val categoriesAndAllChildrenOfDataset: Set[String] =
-                m2._2.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
-              val categoriesAndAllChildrenOfDeclaration: Set[String] =
-                pd.dataCategories.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
-              //values that are under the dataset that are not under the privacyDeclaration
-              categoriesAndAllChildrenOfDataset.diff(categoriesAndAllChildrenOfDeclaration)
-            })
+      privacyDataQualifier collect { case pdq: DataQualifierTree =>
+        //data qualifiers that exist in dataset that are a child of a qualifier in the privacy declaration
+        dsMap
+          .filter(dsm => pdq.containsChild(dsm._1))
+          .flatMap((m2: (DataQualifierName, Set[DataCategoryName])) => {
+            val categoriesAndAllChildrenOfDataset: Set[String] =
+              m2._2.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
+            val categoriesAndAllChildrenOfDeclaration: Set[String] =
+              pd.dataCategories.flatMap(daos.dataCategoryDAO.childrenOfInclusive(organizationId, _))
+            //values that are under the dataset that are not under the privacyDeclaration
+            categoriesAndAllChildrenOfDataset.diff(categoriesAndAllChildrenOfDeclaration)
+          })
       }
     }
 
@@ -182,8 +181,8 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       action: Option[PolicyAction] = policyRuleEvaluator.matches(rule, d)
     } yield (action, policy.fidesKey + "." + rule.fidesKey, d.name)
 
-    val collectByAction = v.collect {
-      case (Some(rating), ruleName, declarationName) => (toApprovalStatus(rating), ruleName, declarationName)
+    val collectByAction = v.collect { case (Some(rating), ruleName, declarationName) =>
+      (toApprovalStatus(rating), ruleName, declarationName)
     }
 
     val groupByStatus = mapGrouping(collectByAction, t => t.productElement(2), Seq(0, 1))
@@ -255,8 +254,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       case PolicyAction.REJECT  => ApprovalStatus.FAIL
       case PolicyAction.REQUIRE => ApprovalStatus.MANUAL
     }
-  /**
-    * For all declarations
+  /** For all declarations
     *  - match:
     *    - they have the same data use
     *    - they have the same data qualifier

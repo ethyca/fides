@@ -70,7 +70,9 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
     override def getAll(pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
 
-    override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = {println("RELOAD");Future.successful(nodes)}
+    override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = {
+      println("RELOAD"); Future.successful(nodes)
+    }
 
   }
 
@@ -84,7 +86,7 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
   }
 
   test("Test cache get roots") {
-      cache.cacheGetRoots(1).map(_.fidesKey).toSet shouldEqual Set("A", "B", "C", "D")
+    cache.cacheGetRoots(1).map(_.fidesKey).toSet shouldEqual Set("A", "B", "C", "D")
   }
 
   test("Test cache find") {
@@ -93,7 +95,6 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
       cache.cacheFind(1, randomKey).get.fidesKey shouldEqual randomKey
     }
   }
-
 
   test("test children of") {
     Set("A", "Ar", "Arr", "Arrr", "Arrrr").foreach(k => {

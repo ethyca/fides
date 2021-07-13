@@ -28,8 +28,7 @@ trait JwtAuthenticationSupport extends ScalatraBase with LazyLogging {
     */
   val requestContext: RequestContext = new RequestContext()
 
-  /**
-    * A simple interceptor that checks for the existence
+  /** A simple interceptor that checks for the existence
     * of userId
     */
   before() {
@@ -64,12 +63,12 @@ trait JwtAuthenticationSupport extends ScalatraBase with LazyLogging {
   private val headerTokenRegex = """Bearer (.+?)""".r
 
   def extractToken(request: HttpServletRequest): Option[String] =
-    Option(request.getHeader("Authorization")) collect {
-      case headerTokenRegex(token) => token
+    Option(request.getHeader("Authorization")) collect { case headerTokenRegex(token) =>
+      token
     }
 
   def validateToken(request: HttpServletRequest, user: User): Unit = {
-        extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey)) match {
+    extractToken(request).flatMap(JwtUtil.decodeClaim(_, user.apiKey.getOrElse(""))) match {
       case Some(m) if m("uid") == user.id.toString => ()
       case _ => {
         logger.info(s"401: ${request.getRequestURI}")

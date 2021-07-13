@@ -6,7 +6,7 @@ import devtools.util.{JwtUtil, waitFor}
 trait TestHeaders {
 
   val token: String = {
-    val apiKey = waitFor(App.userDAO.findById(1)).get.apiKey
+    val apiKey = waitFor(App.userDAO.findById(1)).get.apiKey.get
     JwtUtil.encode(Map("uid" -> 1), apiKey)
   }
   val testHeaders = Seq("user-id" -> "1", "Authorization" -> s"Bearer $token")

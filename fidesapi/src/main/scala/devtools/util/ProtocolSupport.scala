@@ -35,13 +35,12 @@ object JsonSupport extends LazyLogging {
   def withMapValues[T](m: JObject, formats: Formats)(implicit manifest: Manifest[T]): CustomSerializer[T] = {
     new CustomSerializer[T](_ =>
       (
-        {
-          case i: JObject =>
-            val v: JObject = m merge i // this ensures that values in i take precedence over default values in m
-            v.extract[T](formats, manifest)
+        { case i: JObject =>
+          val v: JObject = m merge i // this ensures that values in i take precedence over default values in m
+          v.extract[T](formats, manifest)
         },
-        {
-          case f: T => Extraction.decompose(f)(formats)
+        { case f: T =>
+          Extraction.decompose(f)(formats)
         }
       )
     )
@@ -51,35 +50,33 @@ object JsonSupport extends LazyLogging {
     // ser: Formats => (PartialFunction[JValue, A], PartialFunction[Any, JValue]))
     new CustomSerializer[PrivacyDeclaration](_ =>
       (
-        {
-          case j: JObject =>
-            val id                = (j \ "id").extract[Option[Long]]
-            val systemId          = (j \ "systemId").extract[Option[Long]]
-            val name              = (j \ "name").extract[String]
-            val dataUse           = (j \ "dataUse").extract[String]
-            val dataQualifier     = (j \ "dataQualifier").extract[String]
-            val dataCategories    = (j \ "dataCategories").extract[Set[String]]
-            val dataSubjects      = (j \ "dataSubjects").extract[Set[String]]
-            val datasetReferences = (j \ "datasetReferences").extract[Set[String]]
-            PrivacyDeclaration(
-              id.getOrElse(0L),
-              systemId.getOrElse(0L),
-              name,
-              dataCategories,
-              dataUse,
-              dataQualifier,
-              dataSubjects,
-              datasetReferences
-            )
+        { case j: JObject =>
+          val id                = (j \ "id").extract[Option[Long]]
+          val systemId          = (j \ "systemId").extract[Option[Long]]
+          val name              = (j \ "name").extract[String]
+          val dataUse           = (j \ "dataUse").extract[String]
+          val dataQualifier     = (j \ "dataQualifier").extract[String]
+          val dataCategories    = (j \ "dataCategories").extract[Set[String]]
+          val dataSubjects      = (j \ "dataSubjects").extract[Set[String]]
+          val datasetReferences = (j \ "datasetReferences").extract[Set[String]]
+          PrivacyDeclaration(
+            id.getOrElse(0L),
+            systemId.getOrElse(0L),
+            name,
+            dataCategories,
+            dataUse,
+            dataQualifier,
+            dataSubjects,
+            datasetReferences
+          )
         },
-        {
-          case f: PrivacyDeclaration =>
-            ("name"                -> f.name) ~
-              ("dataUse"           -> f.dataUse) ~
-              ("dataQualifier"     -> f.dataQualifier) ~
-              ("dataCategories"    -> f.dataCategories) ~
-              ("dataSubjects"      -> f.dataSubjects) ~
-              ("datasetReferences" -> f.datasetReferences)
+        { case f: PrivacyDeclaration =>
+          ("name"                -> f.name) ~
+            ("dataUse"           -> f.dataUse) ~
+            ("dataQualifier"     -> f.dataQualifier) ~
+            ("dataCategories"    -> f.dataCategories) ~
+            ("dataSubjects"      -> f.dataSubjects) ~
+            ("datasetReferences" -> f.datasetReferences)
         }
       )
     )

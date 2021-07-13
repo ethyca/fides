@@ -143,6 +143,7 @@ class User(BaseModel):
     firstName: str
     lastName: str
     role: str
+    apiKey: str
 
 
 class Organization(BaseModel):

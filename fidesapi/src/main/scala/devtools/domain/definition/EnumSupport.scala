@@ -40,11 +40,11 @@ abstract class EnumSupport[T](implicit val manifest: Manifest[T]) {
   def jsonFormat: CustomSerializer[T] =
     new CustomSerializer[T](_ =>
       (
-        {
-          case JString(s) => fromString(s).get
+        { case JString(s) =>
+          fromString(s).get
         },
-        {
-          case x: T => JString(x.toString)
+        { case x: T =>
+          JString(x.toString)
         }
       )
     )
@@ -57,8 +57,8 @@ abstract class EnumSupport[T](implicit val manifest: Manifest[T]) {
         case (t, s) if t.clazz == manifest.runtimeClass => fromString(s).get
       }
 
-      def serialize(implicit format: Formats): PartialFunction[Any, String] = {
-        case t => t.toString
+      def serialize(implicit format: Formats): PartialFunction[Any, String] = { case t =>
+        t.toString
       }
     }
 
