@@ -1,5 +1,6 @@
 import java.io.{File, FileInputStream}
 import java.util.Properties
+import scala.util.Try
 
 conflictManager := ConflictManager.latestRevision
 val ScalatraVersion = "2.7.1"
@@ -10,6 +11,14 @@ ThisBuild / scalaVersion := "2.12.8"
 ThisBuild / organization := "ethyca"
 
 fork := true
+
+//require java11
+initialize := {
+  val _ = initialize.value // Needed to run previous initialization.
+  assert(scala.util.Properties.isJavaAtLeast("11"), "This project requires Java 11 or later")
+}
+
+
 
 val properties = {
   val p = new Properties()
