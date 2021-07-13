@@ -1,17 +1,20 @@
+
+
+
 ##########
 # Local image for development
-FROM adoptopenjdk:11-jre-hotspot as local
-RUN apt-get update
-RUN apt-get install -y \
-    gnupg \
-    vim
+ARG OPENJDK_TAG=11-jre-buster
+
+FROM openjdk:${OPENJDK_TAG} as local
 
 # Install SBT
 ARG SBT_VERSION=1.4.9
-RUN echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
-RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | apt-key add
-RUN apt-get update
-RUN apt-get install -y sbt=$SBT_VERSION -V
+RUN \
+   mkdir /working/ && \
+   cd /working/ && \
+   curl -L -o sbt-$SBT_VERSION.deb https://repo.scala-sbt.org/scalasbt/debian/sbt-$SBT_VERSION.deb && \
+   dpkg -i sbt-$SBT_VERSION.deb && \
+   rm -r /working
 
 # Copy Local Files
 WORKDIR /usr/src/fidesapi
@@ -31,7 +34,7 @@ RUN sbt package
 
 ##########0
 # Production image, including just the JRE
-FROM adoptopenjdk:11-jre-hotspot as production
+FROM openjdk:${OPENJDK_TAG}
 # TODO: parameterize this intelligently with args?
 COPY --from=build /usr/src/fidesapi/target/scala-2.12/fidesapi_2.12-0.1.0-SNAPSHOT.war /usr/fidesapi/fidesapi.war
 COPY --from=build /usr/src/fidesapi/src/main/resources/logback.xml /usr/fidesapi/logback.xml
