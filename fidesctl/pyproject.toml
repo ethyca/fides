@@ -58,7 +58,7 @@ output-format="colorized"
 max-line-length="88"
 
 [tool.pylint.basic]
-good-names="_,i,j,k,e,qs,pk,setUp,tearDown,maxDiff,default_app_config"
+good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
 
 ########
 # Pytest
