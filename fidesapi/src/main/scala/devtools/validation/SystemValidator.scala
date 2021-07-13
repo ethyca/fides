@@ -1,7 +1,7 @@
 package devtools.validation
 
 import devtools.controller.RequestContext
-import devtools.domain.SystemObject
+import devtools.domain.{Dataset, SystemObject}
 import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -87,9 +87,9 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
       sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).map(sanitizeUniqueIdentifier).toSet
 
     // the actual names of just the dataset part for searching
-    val datasetNames = datasetIdentifiers.map(_.split('.')(0))
+    val datasetNames = datasetIdentifiers.map(Dataset.baseName)
 
-    val datasetNamesWithFields = datasetIdentifiers.filter(_.indexOf('.') > 0)
+    val datasetNamesWithFields = datasetIdentifiers.filter(s => s.indexOf('.') > 0 && s.length > 2)
     val query = for {
       (dataset, field) <-
         datasetQuery
@@ -107,7 +107,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           }.toSet
         }
       }
-      foundDsNames = compositeNames.map(_.split('.')(0))
+      foundDsNames = compositeNames.map(Dataset.baseName)
       _ =
         datasetNames
           .diff(foundDsNames)

@@ -23,8 +23,8 @@ class PolicyController(val service: PolicyService, val userDAO: UserDAO, val swa
   configureMultipartHandling(
     MultipartConfig(maxFileSize = Some(requiredProperty[Long]("fides.file.upload.max.bytes")))
   )
-  error {
-    case e: SizeConstraintExceededException => RequestEntityTooLarge(s"too much! ${e.getMessage}")
+  error { case e: SizeConstraintExceededException =>
+    RequestEntityTooLarge(s"too much! ${e.getMessage}")
   }
 
 }

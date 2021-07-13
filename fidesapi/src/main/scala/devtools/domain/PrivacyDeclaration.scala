@@ -25,7 +25,7 @@ object PrivacyDeclaration {
   /** collection of mixture of dataset, dataset.field to the set of unique referenced
     * rawDatasets. e.g. [dataset1.f1, dataset2.f1, dataset2] => [dataset1, dataset2]
     */
-  def extractDatasets(references: Iterable[String]): Set[String] = references.map(_.split('.')(0)).toSet
+  def extractDatasets(references: Iterable[String]): Set[String] = references.map(Dataset.baseName).toSet
 
   type Tupled = (Long, Long, String, String, DataUseName, DataQualifierName, String, String, String)
 

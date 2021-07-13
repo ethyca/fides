@@ -29,4 +29,11 @@ class DatasetTest extends AnyFunSuite with LazyLogging with TestUtils {
 
   }
 
+  test("test basename") {
+    Dataset.baseName(".") shouldBe ""
+    Dataset.baseName("") shouldBe ""
+    Dataset.baseName("a") shouldBe "a"
+    Dataset.baseName("a.b") shouldBe "a"
+    Dataset.baseName("a.b.c") shouldBe "a"
+  }
 }

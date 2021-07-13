@@ -1,6 +1,5 @@
 package devtools
-/**
-  * Fides domain objects, which map directly to database tables.
+/** Fides domain objects, which map directly to database tables.
   */
 package object domain {
 

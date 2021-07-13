@@ -17,8 +17,7 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
     val errors = new MessageCollector
     requireOrganizationIdExists(t.organizationId, errors).flatMap(_.asFuture())
   }
-  /**
-    * if fideskey changes, validate that it's not in use.
+  /** if fideskey changes, validate that it's not in use.
     */
   override def validateForUpdate(t: Dataset, previous: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
@@ -41,8 +40,7 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
     } yield e
   }
 
-  /**
-    * if fides key is in use, fail.
+  /** if fides key is in use, fail.
     */
   override def validateForDelete(pk: Long, existing: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector

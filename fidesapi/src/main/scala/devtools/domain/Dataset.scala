@@ -112,4 +112,9 @@ object Dataset {
       t._13
     )
 
+  def baseName(datasetName: String) = {
+    val v = datasetName.split('.')
+    if (v.length > 0) v(0) else ""
+  }
+
 }
