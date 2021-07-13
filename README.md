@@ -45,15 +45,6 @@ Fides' documentation is available [here]().
 
 Read about the Fides [community]() or dive in to the [development guides]() for information about contributions, documentation, code style, testing and more.
 
-## Getting Started With Fides
-
-1. Install Docker and Make
-1. Clone the `https://gitlab.com/ethyca/fides-core` repo
-1. Run `make init-db` in the top-level directory to prepare the database
-1. `make cli` to start a shell within a `Fides CLI` container
-1. Wait a minute or so for the server to be available, you can check this with `fidesctl connect`
-1. `fidesctl` to get a list of possible commands
-
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
