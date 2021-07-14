@@ -12,11 +12,8 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
 
 import scala.collection.mutable.{HashSet => HSet}
-import scala.concurrent.ExecutionContextExecutor
 
 class DAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
-
-  implicit val executionContext: ExecutionContextExecutor = App.executionContext
 
   private val ids: HSet[Long] = new HSet[Long]
 
@@ -36,7 +33,7 @@ class DAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with T
   }
 
   test("test pagination") {
-    val setA: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 0))).map(_.id).sorted
+    val setA: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10))).map(_.id).sorted
     val setB: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 10))).map(_.id).sorted
     val setC: Seq[Long] = waitFor(dao.findAllInOrganization(1L, Pagination(10, 20))).map(_.id).sorted
 
@@ -50,8 +47,8 @@ class DAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with T
   }
 
   test("test filter paginated") {
-    val testAction = auditActions(0)
-    val setA       = waitFor(dao.filterPaginated(_.action === testAction.toString, _.id, Pagination(5, 0)))
+    val testAction = auditActions.head
+    val setA       = waitFor(dao.filterPaginated(_.action === testAction.toString, _.id, Pagination(5)))
     val setB       = waitFor(dao.filterPaginated(_.action === testAction.toString, _.id, Pagination(5, 5)))
     setA.size shouldEqual 5
     setB.size shouldEqual 5

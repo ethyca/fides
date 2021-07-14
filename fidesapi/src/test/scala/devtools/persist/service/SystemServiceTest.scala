@@ -12,16 +12,14 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext
 
 class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
-  val systemService: SystemService                = App.systemService
-  val policyService: PolicyService                = App.policyService
-  val systemDAO: SystemDAO                        = App.systemDAO
-  val orgDAO: OrganizationDAO                     = App.organizationDAO
-  val auditLogDAO: AuditLogDAO                    = App.auditLogDAO
-  implicit val executionContext: ExecutionContext = App.executionContext
-  val systemIds: mutable.Set[Long]                = mutable.HashSet[Long]()
+  val systemService: SystemService = App.systemService
+  val policyService: PolicyService = App.policyService
+  val systemDAO: SystemDAO         = App.systemDAO
+  val orgDAO: OrganizationDAO      = App.organizationDAO
+  val auditLogDAO: AuditLogDAO     = App.auditLogDAO
+  val systemIds: mutable.Set[Long] = mutable.HashSet[Long]()
 
   override def afterAll(): Unit = {
     systemIds.foreach(systemDAO.delete)

@@ -10,12 +10,9 @@ import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.ExecutionContextExecutor
-
 class OrganizationDAOTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
 
-  private val dao                                         = App.organizationDAO
-  implicit val executionContext: ExecutionContextExecutor = App.executionContext
+  private val dao = App.organizationDAO
   test("test increment version counter action") {
 
     val values = waitFor(dao.runAction((for {

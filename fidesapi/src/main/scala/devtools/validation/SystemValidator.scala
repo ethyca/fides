@@ -89,7 +89,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     // the actual names of just the dataset part for searching
     val datasetNames = datasetIdentifiers.map(Dataset.baseName)
 
-    val datasetNamesWithFields = datasetIdentifiers.filter(s => s.indexOf('.') > 0 && s.length > 2)
+    //val datasetNamesWithFields = datasetIdentifiers.filter(s => s.indexOf('.') > 0 && s.length > 2)
     val query = for {
       (dataset, field) <-
         datasetQuery
@@ -99,7 +99,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     } yield (dataset.fidesKey, field.map(_.name))
 
     for {
-      compositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
+      foundCompositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
         {
           ts.map {
             case (dsName, Some(fName)) => s"$dsName.$fName"
@@ -107,15 +107,13 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           }.toSet
         }
       }
-      foundDsNames = compositeNames.map(Dataset.baseName)
-      _ =
-        datasetNames
-          .diff(foundDsNames)
-          .foreach(d => errors.addError(s"The value '$d' given as a dataset fidesKey does not exist."))
-      _ =
-        datasetNamesWithFields
-          .diff(compositeNames)
-          .foreach(d => errors.addError(s"The value '$d' given as a dataset.field name does not exist."))
+      foundBaseNames = foundCompositeNames.map(Dataset.baseName)
+
+      diff = datasetIdentifiers.diff(foundCompositeNames ++ foundBaseNames)
+      _ = if (diff.nonEmpty) {
+        errors.addError(s"The values [$diff] given as dataset fidesKeys do not exist.")
+      }
+
     } yield ()
 
   }

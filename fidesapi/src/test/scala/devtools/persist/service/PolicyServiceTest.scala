@@ -15,12 +15,9 @@ import org.scalatest.matchers.must.Matchers.{a, be}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
 
-import scala.concurrent.ExecutionContext
-
 class PolicyServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
-  private val policyRuleDAO                       = App.policyRuleDAO
-  private val policyService                       = App.policyService
-  implicit val executionContext: ExecutionContext = App.executionContext
+  private val policyRuleDAO = App.policyRuleDAO
+  private val policyService = App.policyService
 
   def findChildByNameFromDb(name: String): Option[PolicyRule] = waitFor(policyRuleDAO.findFirst(_.name === name))
 

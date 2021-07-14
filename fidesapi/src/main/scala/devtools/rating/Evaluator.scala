@@ -3,7 +3,6 @@ package devtools.rating
 import devtools.domain.policy.Policy
 import devtools.domain.{Approval, Dataset, Registry, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.persist.db.Tables
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -82,15 +81,16 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
       val dependentSystemsFidesKeys = systems.flatMap(_.systemDependencies).toSet.diff(declaredFidesKeys)
       val allSystemKeys             = declaredFidesKeys ++ dependentSystemsFidesKeys
       val hydratedSystems           = systems.filter(_.privacyDeclarations.nonEmpty).toSet
-      val unhydratedSystemFidesKeys = hydratedSystems.map(_.fidesKey).diff(allSystemKeys)
+      val unhydratedSystemFidesKeys = allSystemKeys.diff(hydratedSystems.map(_.fidesKey))
       for {
         policies <- daos.policyDAO.findHydrated(_.organizationId === organizationId)
         newlyHydratedSystems <- daos.systemDAO.findHydrated(s =>
           (s.fidesKey inSet unhydratedSystemFidesKeys) && (s.organizationId === organizationId)
         )
+        allHydratedSystems = newlyHydratedSystems ++ hydratedSystems
         datasets <- {
           val referencedDatasets = {
-            val declarations = systems.flatMap(s => s.privacyDeclarations.getOrElse(Seq()))
+            val declarations = allHydratedSystems.flatMap(s => s.privacyDeclarations.getOrElse(Seq()))
             //this can be either dataset, dataset.field, dataset.table.field...
             val datasetFullNames = declarations.flatMap(_.datasetReferences)
             datasetFullNames.map(Dataset.baseName).toSet
@@ -101,11 +101,12 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
         }
         currentVersionStamp <- daos.organizationDAO.getVersion(organizationId)
       } yield EvaluationObjectSet(
-        (hydratedSystems ++ newlyHydratedSystems).map(s => s.fidesKey -> s).toMap,
+        allHydratedSystems.toSet.map((s: SystemObject) => s.fidesKey -> s).toMap,
         policies.toSeq,
         datasets.map(s => s.fidesKey -> s).toMap,
         currentVersionStamp
       )
+
     }
   }
 

@@ -4,13 +4,11 @@ import devtools.Generators._
 import devtools.domain.definition.WithFidesKey
 import devtools.domain.enums.PolicyAction.REJECT
 import devtools.domain.enums.PolicyValueGrouping
-import devtools.domain.enums.RuleInclusion.ANY
+import devtools.domain.enums.RuleInclusion.{ALL, ANY}
 import devtools.domain.policy.Policy
 import devtools.domain.{Dataset, PrivacyDeclaration, Registry, SystemObject}
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
-
-import scala.concurrent.ExecutionContext
 class RatingTestData extends TestUtils {
 
   val runKey: String             = fidesKey
@@ -23,49 +21,71 @@ class RatingTestData extends TestUtils {
   private val rule1 =
     policyRuleOf(
       //category
-      PolicyValueGrouping(ANY, availableDataCategories.toSet),
+      PolicyValueGrouping(ANY, Set("customer_content_data")),
       //use
-      PolicyValueGrouping(ANY, availableDataUses.toSet),
+      PolicyValueGrouping(ANY, Set("market_advertise_or_promote")),
       //dataQualifier
       "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
+      PolicyValueGrouping(ANY, Set("customer")),
       REJECT,
-      "rule1"
+      "any identified customer data for advertising"
     )
 
+  //any identified data, just identified using roots
   private val rule2 =
     policyRuleOf(
       //category
-      PolicyValueGrouping(ANY, availableDataCategories.toSet),
+      PolicyValueGrouping(
+        ANY,
+        Set("customer_content_data", "cloud_service_provider_data", "derived_data", "account_data")
+      ),
       //use
-      PolicyValueGrouping(ANY, availableDataUses.toSet),
+      PolicyValueGrouping(
+        ANY,
+        Set(
+          "personalize",
+          "share",
+          "provide",
+          "offer_upgrades_or_upsell",
+          "train_ai_system",
+          "collect",
+          "market_advertise_or_promote",
+          "improve"
+        )
+      ),
       //dataQualifier
-      "pseudonymized_data",
+      "identified_data",
       PolicyValueGrouping(ANY, availableDataSubjects.toSet),
       REJECT,
-      "rule2"
+      "any identified data"
     )
+
+  //disallow collecting identified account data for patients
   private val rule3 =
     policyRuleOf(
       //category
-      PolicyValueGrouping(ANY, availableDataCategories.toSet),
+      PolicyValueGrouping(
+        ANY,
+        Set("customer_content_data", "cloud_service_provider_data", "derived_data", "account_data")
+      ),
       //use
-      PolicyValueGrouping(ANY, availableDataUses.toSet),
+      PolicyValueGrouping(ANY, Set("collect")),
       //dataQualifier
-      "pseudonymized_data",
-      PolicyValueGrouping(ANY, availableDataSubjects.toSet),
+      "identified_data",
+      PolicyValueGrouping(ANY, Set("patient")),
       REJECT,
-      "rule3"
+      "accept any aggregated data"
     )
 
+  //disallow collecting identified account data for customers in combination with financial data
   private val rule4 = policyRuleOf(
     //category
-    PolicyValueGrouping(ANY, availableDataCategories.toSet),
+    PolicyValueGrouping(ALL, Set("account_data", "financial_data")),
     //use
-    PolicyValueGrouping(ANY, availableDataUses.toSet),
+    PolicyValueGrouping(ANY, Set("collect")),
     //dataQualifier
     "pseudonymized_data",
-    PolicyValueGrouping(ANY, availableDataSubjects.toSet),
+    PolicyValueGrouping(ANY, Set("customer")),
     REJECT,
     "rule4"
   )
@@ -76,11 +96,29 @@ class RatingTestData extends TestUtils {
   private val policy1 = policyOf(wRunKey("policy1"), rule1, rule2)
   private val policy2 = policyOf(wRunKey("policy2"), rule3, rule4)
   // -----------------------------------------
+  //            Datasets
+  // -----------------------------------------
+
+  private val ds1Key = wRunKey("d1")
+  private val dataset1 = datasetOf(
+    ds1Key,
+    datasetFieldOf("d1f1", "unlinked_pseudonymized_data", Set("personal_genetic_data", "personal_biometric_data")), //r1
+    datasetFieldOf("d1f2", "identified_data", Set("telemetry_data")),                                               //r2
+    datasetFieldOf("d1f3", "identified_data", Set("operations_data"))
+  ) //r3
+  private val ds2Key = wRunKey("d2")
+  private val dataset2 = datasetOf(
+    ds2Key,
+    datasetFieldOf("d2f2", "pseudonymized_data", Set("account_data", "financial_data")), //r4
+    datasetFieldOf("d2f3", "aggregated_data", Set("demographic_information"))
+  ) //safe
+
+  // -----------------------------------------
   //            Declarations
   // -----------------------------------------
   //r1 categories. all other values match
   private val depMatchesOnlyR1 =
-    PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set())
+    PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set(ds1Key))
 
   private val depMatchesOnlyR2 =
     PrivacyDeclaration(
@@ -91,7 +129,7 @@ class RatingTestData extends TestUtils {
       "share",
       "identified_data",
       Set("prospect"),
-      Set()
+      Set(s"$ds1Key.d1f2")
     )
 
   private val depMatchesOnlyR3 = PrivacyDeclaration(
@@ -102,11 +140,20 @@ class RatingTestData extends TestUtils {
     "improvement_of_business_support_for_contracted_service",
     "identified_data",
     Set("prospect"),
-    Set()
+    Set(s"$ds1Key.d1f3")
   )
 
   private val depMatchesOnlyR4 =
-    PrivacyDeclaration(0L, 0L, "test4", Set("credentials"), "provide", "identified_data", Set("trainee"), Set())
+    PrivacyDeclaration(
+      0L,
+      0L,
+      "test4",
+      Set("credentials"),
+      "provide",
+      "identified_data",
+      Set("trainee"),
+      Set(s"$ds2Key", s"$ds2Key.d2f2")
+    )
 
   private val depMatchesBothR1R2 =
     PrivacyDeclaration(
@@ -117,34 +164,18 @@ class RatingTestData extends TestUtils {
       "improve",
       "identified_data",
       Set("prospect", "employee", "trainee"),
-      Set()
+      Set(s"$ds2Key.d2f2", s"$ds2Key.d2f3")
     )
-
-  // -----------------------------------------
-  //            Datasets
-  // -----------------------------------------
-  private val dataset1 = datasetOf(wRunKey("d1"))
-  //,
-  //  datasetFieldOf("t1f1"), datasetFieldOf("t1f2"), datasetFieldOf("t1f3"))
-  //  datasetTableOf("d1t2", datasetFieldOf("t2f1"), datasetFieldOf("t2f2"), datasetFieldOf("t2f3"))
-
-  private val dataset2 = datasetOf(wRunKey("d2"))
-
-  //, datasetTableOf("d2t3", datasetFieldOf("t3f1"), datasetFieldOf("t3f2"), datasetFieldOf("t3f3")),
-  // datasetTableOf("d2t4", datasetFieldOf("t4f1"), datasetFieldOf("t4f2"), datasetFieldOf("t4f3"))
-  //)
 
   // -----------------------------------------
   //            Systems
   // -----------------------------------------
 
   val system1: SystemObject =
-    systemOf(wRunKey("system1"), depMatchesOnlyR1, depMatchesOnlyR2, depMatchesOnlyR3)
+    systemOf(wRunKey("system1"), depMatchesOnlyR1, depMatchesOnlyR2, depMatchesOnlyR3).copy(systemDependencies = Set())
   val system2: SystemObject = systemOf(wRunKey("system2"), depMatchesBothR1R2, depMatchesOnlyR4)
     .copy(systemDependencies = Set(wRunKey("system3")))
-  val system3: SystemObject = systemOf(wRunKey("system3")).copy(
-    systemDependencies = Set(wRunKey("system2"), wRunKey("system3"))
-  )
+  val system3: SystemObject = systemOf(wRunKey("system3")).copy(systemDependencies = Set())
 
   // -----------------------------------------
   //            Registries
@@ -168,7 +199,6 @@ class RatingTestData extends TestUtils {
     )
 
   private def toMap[T <: WithFidesKey[_, _]](ts: T*): Map[String, T] = ts.map(t => t.fidesKey -> t).toMap
-  implicit val executionContext: ExecutionContext                    = App.executionContext
   val d1: Dataset = waitFor(
     datasetSvc.create(dataset1, requestContext).flatMap(d => datasetSvc.findById(d.id, requestContext))
   ).get
@@ -187,7 +217,9 @@ class RatingTestData extends TestUtils {
   val s2: SystemObject = waitFor(
     systemSvc.create(system2, requestContext).flatMap(r => systemSvc.findById(r.id, requestContext))
   ).get
-
+  val s3: SystemObject = waitFor(
+    systemSvc.create(system3, requestContext).flatMap(r => systemSvc.findById(r.id, requestContext))
+  ).get
   val r1: Registry = waitFor(
     registrySvc.create(registry1, requestContext).flatMap(r => registrySvc.findById(r.id, requestContext))
   ).get

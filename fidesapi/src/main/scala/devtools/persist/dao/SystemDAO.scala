@@ -70,12 +70,12 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
     expr: SystemQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[SystemObject]] = {
     val q = for {
-      (s, d) <- query.filter(expr) join privacyDeclarationQuery on (_.id === _.systemId)
+      (s, d) <- query.filter(expr) joinLeft privacyDeclarationQuery on (_.id === _.systemId)
     } yield (s, d)
 
-    db.run(q.result).map { pairs =>
-      pairs.groupBy(t => t._2.systemId).values.map { s: Seq[(SystemObject, PrivacyDeclaration)] =>
-        s.head._1.copy(privacyDeclarations = Some(s.map(_._2)))
+    db.run(q.result).map { pairs: Seq[(SystemObject, Option[PrivacyDeclaration])] =>
+      pairs.groupBy(t => t._1.id).values.map { s: Seq[(SystemObject, Option[PrivacyDeclaration])] =>
+        s.head._1.copy(privacyDeclarations = Some(s.map(_._2).filter(_.isDefined).map(_.get)))
       }
     }
   }
