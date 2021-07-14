@@ -9,8 +9,6 @@ import scala.collection.mutable.{Set => MSet}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-
-
 /** A per-organization cache-ing of the taxonomy tree(s), which we anticipate will be very rarely
   * updated (and in fact don't yet have an api for updates/deletions).
   *
@@ -34,8 +32,9 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
   def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[BaseType]]
 
   /** Take a sequence of the base type (as represented in the db) and organize
-    * into a map of tree values that will be stored in the cache. */
-  private def toTree(values: Seq[BaseType]): Map[Long,V] = {
+    * into a map of tree values that will be stored in the cache.
+    */
+  private def toTree(values: Seq[BaseType]): Map[Long, V] = {
     val m: Map[Long, V] = values.map(c => c.id -> c.toTreeItem).toMap
     logger.info(s"building cache, ids=${m.keySet}")
     m.values.filter(!_.isRoot).foreach { v =>
@@ -53,16 +52,19 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
   }
 
   /** Cache-ing by organization id, since it's simpler to deal with the taxonomy trees as
-    * a single unit than to retrieve values individually. */
-  val caches: Cache[Long,Map[Long,V]] = {
-    val loaderF: Long => Map[Long, V] = organizationId =>{
+    * a single unit than to retrieve values individually.
+    */
+  val caches: Cache[Long, Map[Long, V]] = {
+    val loaderF: Long => Map[Long, V] = organizationId => {
       logger.info(s"rebuilding cache for organizationId $organizationId")
-      toTree(waitFor(findAllInOrganization(organizationId,Pagination.unlimited)))
+      toTree(waitFor(findAllInOrganization(organizationId, Pagination.unlimited)))
     }
 
     Scaffeine()
-      .expireAfterWrite(10.hours)
-      .evictionListener[Long, Map[Long,V]]((k, v, cause) => {logger.info(s"Cache eviction $k:$cause:${v.keys}"); cacheBuild(k) })
+      .expireAfterWrite(1.hours)
+      .evictionListener[Long, Map[Long, V]]((k, v, cause) => {
+        logger.info(s"Cache eviction $k:$cause:${v.keys}"); cacheBuild(k)
+      })
       .build[Long, Map[Long, V]](
         loaderF,
         None,
@@ -75,13 +77,13 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
     * All cache search and useage methods should route through here to ensure there's a cache check if
     * no data is found.
     */
-  def cacheGetAll(organizationId: Long): Map[Long, V] =  {
+  def cacheGetAll(organizationId: Long): Map[Long, V] = {
     caches.getIfPresent(organizationId) match {
       case Some(c) => c
       case None =>
         logger.info(s"reloading cache for organization $organizationId")
         val t: Map[Long, V] = toTree(waitFor(findAllInOrganization(organizationId, Pagination.unlimited)))
-        caches.put(organizationId,t)
+        caches.put(organizationId, t)
         t
     }
   }
@@ -89,26 +91,24 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
   /** Build for all values. */
   def cacheBuildAll(): Unit = getAll.foreach(s => {
     val v: Map[Long, Seq[BaseType]] = s.groupBy(_.organizationId)
-    v.foreach { case (orgId: Long, v: Seq[BaseType]) => caches.put(orgId, toTree(v))
-    }
+    v.foreach { case (orgId: Long, v: Seq[BaseType]) => caches.put(orgId, toTree(v)) }
   })
 
   /** Build for a single organization */
   def cacheBuild(organizationId: Long): Unit = {
     findAllInOrganization(organizationId, Pagination.unlimited).foreach(values =>
-      caches.put(organizationId,toTree(values))
+      caches.put(organizationId, toTree(values))
     )
   }
 
   def cacheDelete(organizationId: Long): Unit = caches.invalidate(organizationId)
 
-
   /** Return only the cache root values (that is, values where parentId == None) for a given organization. */
   def cacheGetRoots(organizationId: Long): Iterable[V] = cacheGetAll(organizationId).values.filter(_.isRoot)
 
-
   /** Find existing fides key in an organization. */
-  def cacheFind(organizationId: Long, fidesKey: String): Option[V] = cacheGetAll(organizationId).values.find(_.fidesKey == fidesKey)
+  def cacheFind(organizationId: Long, fidesKey: String): Option[V] =
+    cacheGetAll(organizationId).values.find(_.fidesKey == fidesKey)
 
   /** True if the cache contains a value that returns true for this function. */
   def containsFidesKey(organizationId: Long, fidesKey: String): Boolean = cacheFind(organizationId, fidesKey).isDefined
@@ -142,8 +142,7 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
       case _ => Set()
     }
 
-  /**
-    * values in left that are not in right
+  /** values in left that are not in right
     *
     * mergeAndReduce left
     * mergeAndReduce right

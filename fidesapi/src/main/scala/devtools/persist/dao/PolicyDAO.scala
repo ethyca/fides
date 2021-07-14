@@ -44,12 +44,12 @@ class PolicyDAO(val db: Database)(implicit val executionContext: ExecutionContex
     expr: PolicyQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Policy]] = {
     val q = for {
-      (policy, rule) <- query.filter(expr) join policyRuleQuery on (_.id === _.policyId)
+      (policy, rule) <- query.filter(expr) joinLeft policyRuleQuery on (_.id === _.policyId)
     } yield (policy, rule)
 
     db.run(q.result).map { pairs =>
-      pairs.groupBy(t => t._2.policyId).values.map { s: Seq[(Policy, PolicyRule)] =>
-        s.head._1.copy(rules = Some(s.map(_._2)))
+      pairs.groupBy(t => t._1.id).values.map { s: Seq[(Policy, Option[PolicyRule])] =>
+        s.head._1.copy(rules = Some(s.map(_._2).filter(_.isDefined).map(_.get)))
       }
     }
   }
