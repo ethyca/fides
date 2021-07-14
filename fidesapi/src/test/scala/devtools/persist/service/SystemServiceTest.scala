@@ -34,7 +34,7 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
           blankSystem.copy(
             fidesKey = unsanitizedFidesKey,
             privacyDeclarations =
-              Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test dataset", "test dataset.field1"))))
+              Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset", "test_dataset.field1"))))
           ),
           requestContext
         )

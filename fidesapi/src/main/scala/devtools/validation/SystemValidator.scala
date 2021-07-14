@@ -84,12 +84,11 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     // rawDatasets as declared in the privacy declarations. These may be of the form
     // "dataset" or "dataset.field"
     val datasetIdentifiers =
-      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).map(sanitizeUniqueIdentifier).toSet
+      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet
 
     // the actual names of just the dataset part for searching
     val datasetNames = datasetIdentifiers.map(Dataset.baseName)
 
-    //val datasetNamesWithFields = datasetIdentifiers.filter(s => s.indexOf('.') > 0 && s.length > 2)
     val query = for {
       (dataset, field) <-
         datasetQuery

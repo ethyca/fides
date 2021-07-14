@@ -253,7 +253,7 @@ object Generators {
     } yield Dataset(
       id,
       1L,
-      fidesKey,
+      fidesKey.replace('.', '_'),
       versionStamp,
       None,
       name,

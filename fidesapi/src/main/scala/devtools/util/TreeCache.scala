@@ -52,15 +52,16 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
   }
 
   /** Cache-ing by organization id, since it's simpler to deal with the taxonomy trees as
-    * a single unit than to retrieve values individually. */
-  val caches: Cache[Long,Map[Long,V]] = {
-    val loaderF: Long => Map[Long, V] = organizationId =>{
+    * a single unit than to retrieve values individually.
+    */
+  val caches: Cache[Long, Map[Long, V]] = {
+    val loaderF: Long => Map[Long, V] = organizationId => {
       logger.info(s"rebuilding cache for organizationId $organizationId")
-      toTree(waitFor(findAllInOrganization(organizationId,Pagination.unlimited)))
+      toTree(waitFor(findAllInOrganization(organizationId, Pagination.unlimited)))
     }
 
     Scaffeine()
-      .expireAfterWrite(10.hours) 
+      .expireAfterWrite(1.hours)
       .evictionListener[Long, Map[Long, V]]((k, v, cause) => {
         logger.info(s"Cache eviction $k:$cause:${v.keys}"); cacheBuild(k)
       })

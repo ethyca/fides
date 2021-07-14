@@ -21,14 +21,13 @@ abstract class ValidatorTestBase[E <: IdType[E, PK], PK](
 
   override def afterAll(): Unit = createdIds.foreach(dao.delete)
 
-  def createValidationErrors(t: E): Seq[String] = {
+  def createValidationErrors(t: E): Seq[String] =
     waitFor {
       validator.validateForCreate(t, requestContext).map(_ => Seq()).recover {
         case e: ValidationException => e.errors
         case e: Throwable           => Seq(e.getMessage)
       }
     }
-  }
 
   def createValidationErrors(f: E => E): Seq[String] = createValidationErrors(f(gen.sample.get))
 

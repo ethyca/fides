@@ -99,14 +99,14 @@ class RatingTestData extends TestUtils {
   //            Datasets
   // -----------------------------------------
 
-  private val ds1Key = wRunKey("d1")
+  private val ds1Key = wRunKey("d1").replace(".", "_")
   private val dataset1 = datasetOf(
     ds1Key,
     datasetFieldOf("d1f1", "unlinked_pseudonymized_data", Set("personal_genetic_data", "personal_biometric_data")), //r1
     datasetFieldOf("d1f2", "identified_data", Set("telemetry_data")),                                               //r2
     datasetFieldOf("d1f3", "identified_data", Set("operations_data"))
   ) //r3
-  private val ds2Key = wRunKey("d2")
+  private val ds2Key = wRunKey("d2").replace(".", "_")
   private val dataset2 = datasetOf(
     ds2Key,
     datasetFieldOf("d2f2", "pseudonymized_data", Set("account_data", "financial_data")), //r4

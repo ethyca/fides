@@ -87,7 +87,7 @@ class SystemValidatorTest
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test dataset"))))
+        privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset"))))
       )
     ) shouldNot containMatchString("dataset")
 
@@ -95,7 +95,7 @@ class SystemValidatorTest
       blankSystem.copy(
         fidesKey = name1,
         privacyDeclarations =
-          Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset.not a field"))))
+          Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset.not_a_field"))))
       )
     ) should containMatchString("not_a_field")
 
