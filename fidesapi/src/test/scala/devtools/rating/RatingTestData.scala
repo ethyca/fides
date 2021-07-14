@@ -80,7 +80,7 @@ class RatingTestData extends TestUtils {
   //disallow collecting identified account data for customers in combination with financial data
   private val rule4 = policyRuleOf(
     //category
-    PolicyValueGrouping(ALL, Set("account_data", "financial_data")),
+    PolicyValueGrouping(ALL, Set("account_data", "financial_details")),
     //use
     PolicyValueGrouping(ANY, Set("collect")),
     //dataQualifier
@@ -109,7 +109,7 @@ class RatingTestData extends TestUtils {
   private val ds2Key = wRunKey("d2").replace(".", "_")
   private val dataset2 = datasetOf(
     ds2Key,
-    datasetFieldOf("d2f2", "pseudonymized_data", Set("account_data", "financial_data")), //r4
+    datasetFieldOf("d2f2", "pseudonymized_data", Set("account_data", "financial_details")), //r4
     datasetFieldOf("d2f3", "aggregated_data", Set("demographic_information"))
   ) //safe
 
