@@ -4,6 +4,8 @@
 
 We welcome issues, contributions and discussion from all users, regardless of background or experience level. In order to create a positive and welcoming environment, all interactions are governed by Fides's [Code of Conduct](../community/code_of_conduct.md).
 
+When making changes to the codebase, make sure to follow the [Pull Request Guidelines](pull_requests.md).
+
 ## Developing the Server
 
 1. Install [sbt](https://docs.scala-lang.org/getting-started/sbt-track/getting-started-with-scala-and-sbt-on-the-command-line.html). sbt requires at least java version 8. This project works on any java version >= 8.

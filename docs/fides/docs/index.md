@@ -4,7 +4,7 @@
 
 ## Overview
 
-Fides enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
+Fides (Latin: Fidēs) enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
 With Fides, anyone working with risky types of data (e.g. personally identifiable information), can declare or describe their data intentions and Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 

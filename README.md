@@ -4,39 +4,46 @@
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 
-## Getting Started With Fides
+## Overview
 
-1. Install Docker and Make
-1. Clone the `https://gitlab.com/ethyca/fides-core` repo
-1. Run `make init-db` in the top-level directory to prepare the database
-1. `make cli` to start a shell within a `Fides CLI` container
-1. Wait a minute or so for the server to be available, you can check this with `fidesctl connect`
-1. `fidesctl` to get a list of possible commands
+Fides (Latin: Fidēs) enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
-## Configuring Fides
+With Fides, anyone working with risky types of data (e.g. personally identifiable information), can declare or describe their data intentions and Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
-### Application Variables
+This approach ensures that privacy is described within your source code, thereby making privacy easier to manage and a proactive part of your existing software development practices.
 
-These are the environment variables that can be set to configure the CLI for a specific deployment:
+## Principles
 
-* FIDES_SERVER_URL - The URL of the Fides webserver
+* Data Lineage Declarations
+* Privacy controls at the CI layer
+* Predefined Privacy Taxonomy
+* Translation layer between engineers and lawyers
 
-### Manifests
+## Quick Guide
 
-Fides ships with default data taxonomies that include standard examples, but in practice you may need to create your own to match what your organization uses in practice. This is done in the same way as declaring other objects. The following is a list of steps to both define and validate new systems within Fides.
+To make things more concrete, the following is a brief overview of the steps required to set up a new project with Fides as used by a monorepo:
 
-#### Creating objects
+1. Create a new directory for your Fides objects to live in, for examples `fides_manifests/`.
 
-1. Create the necessary objects (reference the sample manifest files in the `fidesctl/data/samples/`)
-1. `fidesctl apply <manifest_dir>/` to create the objects defined in that directory. This will create all objects _except_ for any systems contained within the manifest files.
+1. The next step is to define Fides objects as manifest files. This would include defining datasets, extending the privacy classifiers, and anything else needed to describe the state of the project's privacy.
 
-## Rating your Systems
+1. Apply the manifests using `fidesctl apply fides_manifests/`. This command will create/update objects via the Fides API.
 
-With your manifests defined, the next step is to “submit” your system for approval or rejection. This is done using the `fidesctl rate <path_to_system_manifests> <policy_id>` command. This will return an object that shows the status of the rating.
+1. Set up a CI pipeline to run when the system file is changed. It should use the `fidesctl dry-evaluate <system_manifest> <system_key>` command to check that a system is still valid after it has been update.
 
-## Contributing
+1. Upon merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
 
-There are two components to the Fides project; the CLI and the Server. The CLI is a Python application and the Server is a Scala application powered by MySQL.
+For more information on getting started, see the [tutorial docs]().
+
+## Resources
+
+### Documentation
+
+Fides' documentation is available [here]().
+
+### Contributing
+
+Read about the Fides [community]() or dive in to the [development guides]() for information about contributions, documentation, code style, testing and more.
 
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/
