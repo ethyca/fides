@@ -1,6 +1,5 @@
 package devtools.util
 
-import devtools.TestUtils
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 

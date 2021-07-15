@@ -11,6 +11,13 @@ ThisBuild / organization := "ethyca"
 
 fork := true
 
+//require java11
+initialize := {
+  val _ = initialize.value // Needed to run previous initialization.
+  assert(scala.util.Properties.isJavaAtLeast("11"), "This project requires Java 11 or later")
+}
+
+
 val properties = {
   val p = new Properties()
   p.load(new FileInputStream(new File("src/main/resources/reference.conf")))
@@ -113,7 +120,6 @@ wartremoverErrors ++= Seq(
   Wart.JavaConversions,
   Wart.Option2Iterable,
   Wart.LeakingSealed,
-  Wart.ListUnapply,
   Wart.ListAppend,
   Wart.FinalCaseClass
 )
