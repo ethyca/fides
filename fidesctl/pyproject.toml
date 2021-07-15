@@ -46,6 +46,7 @@ disable=[
     "no-self-use",
     "import-outside-toplevel",
     "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "too-many-arguments",
     "missing-module-docstring",
     "raise-missing-from",
     "fixme"]

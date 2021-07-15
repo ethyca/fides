@@ -36,10 +36,10 @@ def config_option(command: Callable) -> Callable:
     Apply the config file option.
     """
     command = click.option(
-        "--config",
+        "--config-path",
         "-f",
-        "config",
-        default=None,
+        "config_path",
+        default="",
         help="Optional configuration file",
     )(command)
     return command

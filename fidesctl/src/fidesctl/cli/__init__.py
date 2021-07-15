@@ -1,6 +1,6 @@
 """Contains all of the CLI commands for Fidesctl."""
 import json
-from typing import Optional
+from typing import Optional, Dict
 
 import click
 
@@ -49,12 +49,12 @@ def version() -> None:
 @object_type_argument
 @manifest_option
 @config_option
-def create(url: str, object_type: str, manifest: str, config: Optional[str]) -> None:
+def create(url: str, object_type: str, manifest: str, config_path: str) -> None:
     """
     Create a new object directly from a JSON object.
     """
     parsed_manifest = json.loads(manifest)
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _api.create(
@@ -71,11 +71,11 @@ def create(url: str, object_type: str, manifest: str, config: Optional[str]) -> 
 @object_type_argument
 @id_argument
 @config_option
-def delete(url: str, object_type: str, object_id: str, config: Optional[str]) -> None:
+def delete(url: str, object_type: str, object_id: str, config_path: str) -> None:
     """
     Delete an object by its id.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(_api.delete(url, object_type, object_id, request_headers))
 
@@ -85,11 +85,11 @@ def delete(url: str, object_type: str, object_id: str, config: Optional[str]) ->
 @object_type_argument
 @id_argument
 @config_option
-def find(url: str, object_type: str, object_id: str, config: Optional[str]) -> None:
+def find(url: str, object_type: str, object_id: str, config_path: str) -> None:
     """
     Get an object by its fidesKey.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(_api.find(url, object_type, object_id, request_headers))
 
@@ -99,11 +99,11 @@ def find(url: str, object_type: str, object_id: str, config: Optional[str]) -> N
 @object_type_argument
 @id_argument
 @config_option
-def get(url: str, object_type: str, object_id: str, config: Optional[str]) -> None:
+def get(url: str, object_type: str, object_id: str, config_path: str) -> None:
     """
     Get an object by its id.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(_api.get(url, object_type, object_id, request_headers))
 
@@ -112,15 +112,13 @@ def get(url: str, object_type: str, object_id: str, config: Optional[str]) -> No
 @url_option
 @object_type_argument
 @config_option
-def show(url: str, object_type: str, config: Optional[str]) -> None:
+def show(url: str, object_type: str, config_path: str) -> None:
     """
     List all objects of a certain type.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
-    handle_cli_response(
-        _api.show(url, object_type, generate_request_headers(read_config(config)))
-    )
+    handle_cli_response(_api.show(url, object_type, request_headers))
 
 
 @cli.command(hidden=True)
@@ -130,13 +128,13 @@ def show(url: str, object_type: str, config: Optional[str]) -> None:
 @id_argument
 @config_option
 def update(
-    url: str, object_type: str, object_id: str, manifest: str, config: Optional[str]
+    url: str, object_type: str, object_id: str, manifest: str, config_path: str
 ) -> None:
     """
     Update an existing object by its id.
     """
     parsed_manifest = json.loads(manifest)
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _api.update(
@@ -156,11 +154,11 @@ def update(
 @url_option
 @click.argument("manifest_dir", type=click.Path())
 @config_option
-def apply(url: str, manifest_dir: str, config: Optional[str]) -> None:
+def apply(url: str, manifest_dir: str, config_path: str) -> None:
     """
     Send the manifest files to the server.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     _apply.apply(url, manifest_dir, request_headers)
 
@@ -180,9 +178,7 @@ def ping(url: str) -> None:
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 @config_option
-def generate_dataset(
-    connection_string: str, output_filename: str, config: Optional[str]
-) -> None:
+def generate_dataset(connection_string: str, output_filename: str) -> None:
     """
     Generates a comprehensive dataset manifest from a database.
 
@@ -204,14 +200,12 @@ def generate_dataset(
 @click.argument("manifest_dir", type=click.Path())
 @click.argument("fides_key", type=str)
 @config_option
-def dry_evaluate(
-    url: str, manifest_dir: str, fides_key: str, config: Optional[str]
-) -> None:
+def dry_evaluate(url: str, manifest_dir: str, fides_key: str, config_path: str) -> None:
     """
     Dry-Run evaluate a registry or system, either approving or denying
     based on organizational policies.
     """
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _evaluate.dry_evaluate(url, manifest_dir, fides_key, request_headers)
@@ -233,7 +227,7 @@ def evaluate(
     fides_key: str,
     tag: str,
     message: str,
-    config: Optional[str],
+    config_path: str,
 ) -> None:
     """
     Evaluate a registry or system, either approving or denying
@@ -243,7 +237,7 @@ def evaluate(
     # if the version tag is none, use git tag if available
     if tag is None:
         tag = fidesctl.__version__
-    config = read_config(config)
+    config = read_config(config_path)
     request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _evaluate.evaluate(

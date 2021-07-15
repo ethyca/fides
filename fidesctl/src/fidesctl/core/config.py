@@ -2,7 +2,7 @@
 
 import os
 import configparser
-from typing import Optional, Dict
+from typing import Dict
 
 from fidesctl.core.utils import echo_red, jwt_encode
 
@@ -18,7 +18,7 @@ def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
     }
 
 
-def read_config(configuration: Optional[str] = None) -> Optional[Dict[str, str]]:
+def read_config(config_path: str = "") -> Dict[str, str]:
     """
     Attempt to read config file from:
     a) passed in configuration, if it exists
@@ -30,19 +30,20 @@ def read_config(configuration: Optional[str] = None) -> Optional[Dict[str, str]]
     """
 
     possible_config_locations = [
-        configuration,
-        os.env.get("FIDES_CONFIG_PATH"),
+        config_path,
+        os.getenv("FIDES_CONFIG_PATH", ""),
         os.path.join(os.curdir, ".fides.conf"),
         os.path.join(os.path.expanduser("~"), ".fides.conf"),
     ]
 
     for file_location in possible_config_locations:
-        if file_location is not None and os.path.isfile(file_location):
+        if file_location != "" and os.path.isfile(file_location):
             try:
                 parser = configparser.ConfigParser()
                 parser.read(file_location)
-                user_id = int(parser["User"]["id"])
+                user_id = parser["User"]["id"]
                 api_key = parser["User"]["api-key"]
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
-        return generate_request_headers(user_id, api_key)
+            break
+    return {"user_id": user_id, "api_key": api_key}
