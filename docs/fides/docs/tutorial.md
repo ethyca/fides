@@ -23,10 +23,12 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
       - organizationId: 1
         fidesKey: "primaryPrivacyPolicy"
         name: "Primary Privacy Policy"
-        definition: "The main privacy policy for the organization."
+        description: "The main privacy policy for the organization."
         rules:
           - organizationId: 1
             fidesKey: "rejectTargetedMarketing"
+            name: "Reject Targeted Marketing"
+            description: "Disallow marketing that is targeted towards users."
             dataCategories:
               inclusion: "ANY"
               values:
@@ -48,6 +50,8 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             action: REJECT
           - organizationId: 1
             fidesKey: rejectSome
+            name: "Reject Some Marketing"
+            description: "Disallow some marketing that is targeted towards users."
             dataCategories:
               inclusion: ANY
               values:
@@ -82,19 +86,19 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
         datasetType: "MySQL"
         location: "US East"
         fields:
-          - name: "first_name"
+          - name: "First_Name"
             description: "A First Name Field"
             path: "sample_db_dataset.first_name"
             dataCategories:
               - "derived_data"
             dataQualifier: "identified_data"
-          - name: "email"
+          - name: "Email"
             description: "User's Email"
             path: "sample_db_dataset.email"
             dataCategories:
               - "account_data"
-            dataQualifier: "identified_data"
-          - name: "Food Preference"
+            dataQualifier: "anonymized_data"
+          - name: "Food_Preference"
             description: "User's favorite food"
             path: "sample_db_dataset.food_preference"
     ```
@@ -109,14 +113,15 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
         description: "A system used for demos."
         systemType: "Service"
         privacyDeclarations:
-          - dataCategories:
-              - "customer_content_data"
+          - name: "Analyze Anonymous Content"
+            dataCategories:
+              - "account_data"
             dataUse: "provide"
             dataQualifier: "anonymized_data"
             dataSubjects:
               - "anonymous_user"
             datasetReferences:
-              - "sample_db_dataset"
+              - "sample_db_dataset.Email"
         systemDependencies: []
     ```
 
