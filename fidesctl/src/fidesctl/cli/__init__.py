@@ -1,5 +1,4 @@
 """Contains all of the CLI commands for Fidesctl."""
-from fidesctl.src.fidesctl.core.config import generate_request_headers
 import json
 from typing import Optional
 
@@ -12,7 +11,7 @@ from fidesctl.core import (
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
 )
-from fidesctl.core.config import read_config
+from fidesctl.core.config import read_config, generate_request_headers
 
 from .utils import (
     url_option,
@@ -56,7 +55,7 @@ def create(url: str, object_type: str, manifest: str, config: Optional[str]) -> 
     """
     parsed_manifest = json.loads(manifest)
     config = read_config(config)
-    request_headers = generate_request_headers()
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _api.create(
             url,
@@ -76,11 +75,9 @@ def delete(url: str, object_type: str, object_id: str, config: Optional[str]) ->
     """
     Delete an object by its id.
     """
-    handle_cli_response(
-        _api.delete(
-            url, object_type, object_id, read_conf(config).generate_request_headers()
-        )
-    )
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
+    handle_cli_response(_api.delete(url, object_type, object_id, request_headers))
 
 
 @cli.command()
@@ -92,11 +89,9 @@ def find(url: str, object_type: str, object_id: str, config: Optional[str]) -> N
     """
     Get an object by its fidesKey.
     """
-    handle_cli_response(
-        _api.find(
-            url, object_type, object_id, read_conf(config).generate_request_headers()
-        )
-    )
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
+    handle_cli_response(_api.find(url, object_type, object_id, request_headers))
 
 
 @cli.command(hidden=True)
@@ -108,11 +103,9 @@ def get(url: str, object_type: str, object_id: str, config: Optional[str]) -> No
     """
     Get an object by its id.
     """
-    handle_cli_response(
-        _api.get(
-            url, object_type, object_id, read_conf(config).generate_request_headers()
-        )
-    )
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
+    handle_cli_response(_api.get(url, object_type, object_id, request_headers))
 
 
 @cli.command()
@@ -123,6 +116,8 @@ def show(url: str, object_type: str, config: Optional[str]) -> None:
     """
     List all objects of a certain type.
     """
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _api.show(url, object_type, generate_request_headers(read_config(config)))
     )
@@ -141,13 +136,15 @@ def update(
     Update an existing object by its id.
     """
     parsed_manifest = json.loads(manifest)
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _api.update(
             url,
             object_type,
             object_id,
             parsed_manifest,
-            read_conf(config).generate_request_headers(),
+            request_headers,
         )
     )
 
@@ -163,7 +160,9 @@ def apply(url: str, manifest_dir: str, config: Optional[str]) -> None:
     """
     Send the manifest files to the server.
     """
-    _apply.apply(url, manifest_dir, read_conf(config).generate_request_headers())
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
+    _apply.apply(url, manifest_dir, request_headers)
 
 
 @cli.command()
@@ -194,9 +193,7 @@ def generate_dataset(
         output_filename (str): A path to where the manifest will be written
     """
 
-    _generate_dataset.generate_dataset(
-        connection_string, output_filename, read_conf(config).generate_request_headers()
-    )
+    _generate_dataset.generate_dataset(connection_string, output_filename)
 
 
 ################
@@ -214,10 +211,10 @@ def dry_evaluate(
     Dry-Run evaluate a registry or system, either approving or denying
     based on organizational policies.
     """
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
-        _evaluate.dry_evaluate(
-            url, manifest_dir, fides_key, read_conf(config).generate_request_headers()
-        )
+        _evaluate.dry_evaluate(url, manifest_dir, fides_key, request_headers)
     )
 
 
@@ -246,6 +243,8 @@ def evaluate(
     # if the version tag is none, use git tag if available
     if tag is None:
         tag = fidesctl.__version__
+    config = read_config(config)
+    request_headers = generate_request_headers(config["user_id"], config["api_key"])
     handle_cli_response(
         _evaluate.evaluate(
             url,
@@ -253,6 +252,6 @@ def evaluate(
             fides_key,
             tag,
             message,
-            read_conf(config).generate_request_headers(),
+            request_headers,
         )
     )
