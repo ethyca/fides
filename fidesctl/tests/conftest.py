@@ -130,11 +130,11 @@ def objects_dict():
         ),
         "user": models.User(
             organizationId=1,
-            fidesKey="ethyca",
             userName="ethyca",
             firstName="privacy",
             lastName="engineering",
             role="ADMIN",
+            apiKey="some_key",
         ),
     }
     yield objects_dict

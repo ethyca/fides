@@ -132,7 +132,7 @@ def test_apply_evaluate_example_manifests(server_url):
     included in the repo are valid and can be used within the docs tutorial.
     """
 
-    apply.apply(server_url, "data/sample/").json()
+    apply.apply(server_url, "data/sample/")
     evaluate_response = evaluate.evaluate(
         url=server_url,
         object_type="system",

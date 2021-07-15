@@ -131,11 +131,11 @@ class System(BaseModel):
 class User(BaseModel):
     id: Optional[int]
     organizationId: int
-    fidesKey: str
     userName: str
     firstName: str
     lastName: str
     role: str
+    apiKey: str
 
 
 class Organization(BaseModel):
