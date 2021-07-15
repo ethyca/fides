@@ -64,7 +64,12 @@ def test_api_get(server_url, endpoint):
 def test_api_find(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
     object_key = manifest.fidesKey if endpoint != "user" else manifest.userName
-    result = _api.find(url=server_url, object_type=endpoint, object_key=object_key)
+    result = _api.find(
+        url=server_url,
+        object_type=endpoint,
+        object_key=object_key,
+        headers=test_headers,
+    )
     print(result.text)
     assert result.status_code == 200
 
@@ -79,13 +84,20 @@ def test_sent_is_received(server_url, objects_dict, endpoint):
     object_key = manifest.fidesKey if endpoint != "user" else manifest.userName
 
     print(manifest.json(exclude_none=True))
-    result = _api.find(url=server_url, object_type=endpoint, object_key=object_key)
+    result = _api.find(
+        url=server_url,
+        object_type=endpoint,
+        object_key=object_key,
+        headers=test_headers,
+    )
     print(result.text)
     assert result.status_code == 200
     parsed_result = parse.parse_manifest(endpoint, result.json()["data"])
 
     # This is a hack because the system returns objects with IDs
     manifest.id = parsed_result.id
+    if endpoint == "user":
+        manifest.apiKey = parsed_result.apiKey
 
     assert parsed_result == manifest
 

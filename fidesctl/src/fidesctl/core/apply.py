@@ -43,6 +43,7 @@ def sort_create_update_unchanged(
 
 def execute_create_update_unchanged(
     url: str,
+    headers: Dict[str, str],
     object_type: str,
     create_list: Optional[List[FidesModel]] = None,
     update_list: Optional[List[FidesModel]] = None,
@@ -58,6 +59,7 @@ def execute_create_update_unchanged(
             handle_cli_response(
                 api.create(
                     url=url,
+                    headers=headers,
                     object_type=object_type,
                     json_object=create_object.json(exclude_none=True),
                 )
@@ -70,6 +72,7 @@ def execute_create_update_unchanged(
             handle_cli_response(
                 api.update(
                     url=url,
+                    headers=headers,
                     object_type=object_type,
                     object_id=update_object.id,
                     json_object=update_object.json(exclude_none=True),
@@ -145,6 +148,7 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
         )
         execute_create_update_unchanged(
             url=url,
+            headers=headers,
             object_type=object_type,
             create_list=create_list,
             update_list=update_list,

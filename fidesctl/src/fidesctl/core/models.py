@@ -135,7 +135,7 @@ class User(BaseModel):
     firstName: str
     lastName: str
     role: str
-    apiKey: str
+    apiKey: Optional[str]
 
 
 class Organization(BaseModel):

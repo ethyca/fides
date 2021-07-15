@@ -150,9 +150,10 @@ def test_apply_evaluate_example_manifests(server_url):
     included in the repo are valid and can be used within the docs tutorial.
     """
 
-    apply.apply(server_url, "data/sample/")
+    apply.apply(server_url, "data/sample/", headers=test_headers)
     evaluate_response = evaluate.evaluate(
         url=server_url,
+        headers=test_headers,
         object_type="system",
         fides_key="demoSystem",
         tag="test",
