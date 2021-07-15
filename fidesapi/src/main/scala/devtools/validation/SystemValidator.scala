@@ -1,7 +1,7 @@
 package devtools.validation
 
 import devtools.controller.RequestContext
-import devtools.domain.SystemObject
+import devtools.domain.{Dataset, SystemObject}
 import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
 import devtools.util.Sanitization.sanitizeUniqueIdentifier
@@ -84,12 +84,11 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     // rawDatasets as declared in the privacy declarations. These may be of the form
     // "dataset" or "dataset.field"
     val datasetIdentifiers =
-      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).map(sanitizeUniqueIdentifier).toSet
+      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet
 
     // the actual names of just the dataset part for searching
-    val datasetNames = datasetIdentifiers.map(_.split('.')(0))
+    val datasetNames = datasetIdentifiers.map(Dataset.baseName)
 
-    val datasetNamesWithFields = datasetIdentifiers.filter(_.indexOf('.') > 0)
     val query = for {
       (dataset, field) <-
         datasetQuery
@@ -99,7 +98,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     } yield (dataset.fidesKey, field.map(_.name))
 
     for {
-      compositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
+      foundCompositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
         {
           ts.map {
             case (dsName, Some(fName)) => s"$dsName.$fName"
@@ -107,15 +106,13 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
           }.toSet
         }
       }
-      foundDsNames = compositeNames.map(_.split('.')(0))
-      _ =
-        datasetNames
-          .diff(foundDsNames)
-          .foreach(d => errors.addError(s"The value '$d' given as a dataset fidesKey does not exist."))
-      _ =
-        datasetNamesWithFields
-          .diff(compositeNames)
-          .foreach(d => errors.addError(s"The value '$d' given as a dataset.field name does not exist."))
+      foundBaseNames = foundCompositeNames.map(Dataset.baseName)
+
+      diff = datasetIdentifiers.diff(foundCompositeNames ++ foundBaseNames)
+      _ = if (diff.nonEmpty) {
+        errors.addError(s"The values [$diff] given as dataset fidesKeys do not exist.")
+      }
+
     } yield ()
 
   }

@@ -11,12 +11,9 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-import scala.concurrent.ExecutionContext
-
 class RegistryServiceTest extends AnyFunSuite with LazyLogging with TestUtils with BeforeAndAfterAll {
-  private val systemDAO                           = App.systemDAO
-  private val registryService                     = App.registryService
-  implicit val executionContext: ExecutionContext = App.executionContext
+  private val systemDAO       = App.systemDAO
+  private val registryService = App.registryService
 
   private var sys1 =
     blankSystem.copy(organizationId = 1, fidesKey = fidesKey, name = Some("child1"), description = Some(randomText()))

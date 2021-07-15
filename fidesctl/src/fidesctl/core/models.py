@@ -174,6 +174,7 @@ MODEL_DICT: Dict[str, FidesTypes] = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
+    "user": User,
 }
 MODEL_LIST = list(MODEL_DICT.keys())
 

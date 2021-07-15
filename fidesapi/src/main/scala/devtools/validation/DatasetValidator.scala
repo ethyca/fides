@@ -15,12 +15,14 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
     */
   def validateForCreate(t: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
+    validateFidesKey(t.fidesKey, errors)
     requireOrganizationIdExists(t.organizationId, errors).flatMap(_.asFuture())
   }
   /** if fideskey changes, validate that it's not in use.
     */
   override def validateForUpdate(t: Dataset, previous: Dataset, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
+    validateFidesKey(t.fidesKey, errors)
     for {
       _ <- {
         if (previous.organizationId != t.organizationId) {
@@ -39,6 +41,12 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
       e <- errors.asFuture()
     } yield e
   }
+
+  /** A dataset fides key name has the additional constraint that it cannot contain a '.'
+    * to disambiguate field references in "table.field" syntax
+    */
+  def validateFidesKey(s: String, errors: MessageCollector) =
+    if (s.contains('.')) { errors.addError("Dataset fides keys can not contain a '.'") }
 
   /** if fides key is in use, fail.
     */

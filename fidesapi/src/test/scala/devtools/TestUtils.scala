@@ -17,12 +17,14 @@ import org.scalatest.matchers.{MatchResult, Matcher}
 
 import java.sql.Timestamp
 import scala.collection.Seq
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.{Random, Try}
 
 trait TestUtils extends LazyLogging {
+
+  implicit val executionContext: ExecutionContextExecutor = App.executionContext
 
   def randomInt: Int = Random.nextInt()
 
@@ -91,17 +93,18 @@ trait TestUtils extends LazyLogging {
     Dataset(0L, 1L, "a", None, None, None, None, dataCategories, dataQualifier, None, None, Some(fields), None, None)
 
   def datasetFieldOf(
-    dataQualifier: Option[DataQualifierName],
-    dataCategories: Option[Set[DataCategoryName]]
+    name: String,
+    dataQualifier: DataQualifierName,
+    dataCategories: Set[DataCategoryName]
   ): DatasetField =
     DatasetField(
       0L,
       0L,
-      "a",
+      name,
       None,
       None,
-      dataCategories,
-      dataQualifier,
+      Some(dataCategories),
+      Some(dataQualifier),
       None,
       None
     )
@@ -250,7 +253,7 @@ object Generators {
     } yield Dataset(
       id,
       1L,
-      fidesKey,
+      fidesKey.replace('.', '_'),
       versionStamp,
       None,
       name,

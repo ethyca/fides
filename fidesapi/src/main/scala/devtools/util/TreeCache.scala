@@ -61,7 +61,7 @@ trait TreeCache[V <: TreeItem[V, Long], BaseType <: IdType[BaseType, Long] with 
     }
 
     Scaffeine()
-      .expireAfterWrite(10.hours)
+      .expireAfterWrite(1.hours)
       .evictionListener[Long, Map[Long, V]]((k, v, cause) => {
         logger.info(s"Cache eviction $k:$cause:${v.keys}"); cacheBuild(k)
       })

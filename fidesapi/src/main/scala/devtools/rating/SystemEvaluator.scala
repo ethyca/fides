@@ -230,6 +230,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     checkDependentSystemsExist(system, dependentSystems.toSeq, mc)
     checkDeclarationsOfDependentSystems(system, dependentSystems.toSeq, mc)
     checkSelfReference(system, mc)
+
     system.privacyDeclarations.foreach(pds => pds.foreach(checkPrivacyDeclaration(_, eo.datasets, mc)))
     val overallApproval = {
       if (mc.hasErrors) {

@@ -44,12 +44,12 @@ class RegistryDAO(val db: Database)(implicit val executionContext: ExecutionCont
     expr: RegistryQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Registry]] = {
     val q = for {
-      (reg, sys) <- query.filter(expr) join systemQuery on (_.id === _.registryId)
+      (reg, sys) <- query.filter(expr) joinLeft systemQuery on (_.id === _.registryId)
     } yield (reg, sys)
 
     db.run(q.result).map { pairs =>
-      pairs.groupBy(t => t._2.registryId).values.map { s: Seq[(Registry, SystemObject)] =>
-        s.head._1.copy(systems = Some(Right(s.map(_._2))))
+      pairs.groupBy(t => t._1.id).values.map { s: Seq[(Registry, Option[SystemObject])] =>
+        s.head._1.copy(systems = Some(Right(s.map(_._2).filter(_.isDefined).map(_.get))))
       }
     }
   }
