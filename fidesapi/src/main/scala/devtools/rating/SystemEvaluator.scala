@@ -225,7 +225,7 @@ class SystemEvaluator(val daos: DAOs)(implicit val executionContext: ExecutionCo
 
     val m: Map[ApprovalStatus, Map[String, Seq[String]]] = evaluatePolicyRules(eo.policies, system)
     val dependentSystems                                 = system.systemDependencies.map(eo.systems.get).filter(_.nonEmpty).map(_.get)
-    //val warnings                                         = Seq() //checkDeclarationsOfDependentSystems(system, dependentSystems)
+    checkDeclarationsOfDependentSystems(system, dependentSystems, mc)
     // val errors =
     checkDependentSystemsExist(system, dependentSystems.toSeq, mc)
     checkDeclarationsOfDependentSystems(system, dependentSystems.toSeq, mc)

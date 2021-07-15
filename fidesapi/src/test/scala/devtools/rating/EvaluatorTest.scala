@@ -12,11 +12,11 @@ class EvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
   private val evaluator = new Evaluator(App.daos)(App.executionContext)
   private val testData  = new RatingTestData()
   //test systems
-  private val s1 = testData.s1
-  private val s2 = testData.s2
-  private val s3 = testData.s3
-  private val r1=testData.r1
-   private val evaluationObjectSet = waitFor(evaluator.retrievePopulated(Seq(testData.s1, testData.s2)))
+  private val s1                  = testData.s1
+  private val s2                  = testData.s2
+  private val s3                  = testData.s3
+  private val r1                  = testData.r1
+  private val evaluationObjectSet = waitFor(evaluator.retrievePopulated(Seq(testData.s1, testData.s2)))
   override def afterAll(): Unit = {
     testData.destroy()
   }
@@ -46,27 +46,25 @@ class EvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
     evaluationObjectSet.policies.size shouldBe eo2.policies.size
   }
 
-    test("generate system evaluation"){
-      val approval = waitFor(  evaluator.systemEvaluate(s1, 1L, None, None))
-
-      prettyPrintJson(approval)
-
-    }
-
-  test("system evaluation dry run"){
-    val approval = waitFor(evaluator.systemDryRun(s2,1L))
+  test("generate system evaluation") {
+    val approval = waitFor(evaluator.systemEvaluate(s1, 1L, None, None))
     prettyPrintJson(approval)
   }
 
-  test("generate registry evaluation"){
-    val approval = waitFor(  evaluator.registryEvaluate(r1, 1L, None, None))
+  test("system evaluation dry run") {
+    val approval = waitFor(evaluator.systemDryRun(s2, 1L))
+    prettyPrintJson(approval)
+  }
+
+  test("generate registry evaluation") {
+    val approval = waitFor(evaluator.registryEvaluate(r1, 1L, None, None))
 
     prettyPrintJson(approval)
 
   }
 
-  test("registry evaluation dry run"){
-    val approval = waitFor(evaluator.registryDryRun(r1,1L))
+  test("registry evaluation dry run") {
+    val approval = waitFor(evaluator.registryDryRun(r1, 1L))
     prettyPrintJson(approval)
   }
 }

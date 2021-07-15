@@ -116,6 +116,17 @@ class RatingTestData extends TestUtils {
   // -----------------------------------------
   //            Declarations
   // -----------------------------------------
+  private val depFailure = PrivacyDeclaration(
+    0L,
+    0L,
+    "sensitiveData",
+    Set("customer_content_data", "cloud_service_provider_data", "derived_data", "account_data"),
+    "collect",
+    "identified_data",
+    Set("customer"),
+    Set(s"$ds1Key.d1f3")
+  )
+
   //r1 categories. all other values match
   private val depMatchesOnlyR1 =
     PrivacyDeclaration(0L, 0L, "test1", Set("credentials"), "provide", "identified_data", Set("prospect"), Set(ds1Key))
@@ -175,7 +186,7 @@ class RatingTestData extends TestUtils {
     systemOf(wRunKey("system1"), depMatchesOnlyR1, depMatchesOnlyR2, depMatchesOnlyR3).copy(systemDependencies = Set())
   val system2: SystemObject = systemOf(wRunKey("system2"), depMatchesBothR1R2, depMatchesOnlyR4)
     .copy(systemDependencies = Set(wRunKey("system3")))
-  val system3: SystemObject = systemOf(wRunKey("system3")).copy(systemDependencies = Set())
+  val system3: SystemObject = systemOf(wRunKey("system3"), depFailure)
 
   // -----------------------------------------
   //            Registries
@@ -184,19 +195,6 @@ class RatingTestData extends TestUtils {
   private val systemSvc   = App.systemService
   private val datasetSvc  = App.datasetService
   private val policySvc   = App.policyService
-  private val registry1 =
-    Registry(
-      0,
-      1,
-      wRunKey("registry1"),
-      None,
-      None,
-      None,
-      None,
-      Some(Right(Seq(system1, system2, system3))),
-      None,
-      None
-    )
 
   private def toMap[T <: WithFidesKey[_, _]](ts: T*): Map[String, T] = ts.map(t => t.fidesKey -> t).toMap
   val d1: Dataset = waitFor(
@@ -220,6 +218,19 @@ class RatingTestData extends TestUtils {
   val s3: SystemObject = waitFor(
     systemSvc.create(system3, requestContext).flatMap(r => systemSvc.findById(r.id, requestContext))
   ).get
+  private val registry1 =
+    Registry(
+      0,
+      1,
+      wRunKey("registry1"),
+      None,
+      None,
+      None,
+      None,
+      Some(Left(Seq(s1.id, s2.id, s3.id))),
+      None,
+      None
+    )
   val r1: Registry = waitFor(
     registrySvc.create(registry1, requestContext).flatMap(r => registrySvc.findById(r.id, requestContext))
   ).get
