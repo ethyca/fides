@@ -1,6 +1,5 @@
 .DEFAULT_GOAL := help
 
-
 ####################
 # CONSTANTS
 ####################
@@ -94,25 +93,28 @@ server-push: server-build
 # CI
 ####################
 
+# General
+test-all: server-test cli-check-all
+	@echo "Running all tests and checks..."
+
 # CLI
-cli-check-all: cli-format cli-lint cli-typecheck cli-test
+cli-check: black pylint mypy pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
-cli-format: compose-build
+black: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	black src/
 
-cli-lint: compose-build
+pylint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	pylint src/
 
-cli-test: compose-build init-db
+pytest: compose-build init-db
 	@docker-compose up -d
-	@echo "Sleeping so the server can get ready..."
-	@docker-compose run $(CLI_IMAGE_NAME) sleep 40
-	@docker-compose run $(CLI_IMAGE_NAME) pytest
+	@docker-compose run $(CLI_IMAGE_NAME) \
+	/bin/bash -c "sleep 90 & pytest"
 
-cli-typecheck: compose-build
+mypy: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	mypy --ignore-missing-imports src/
 

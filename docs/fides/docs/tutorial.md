@@ -22,9 +22,13 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     policy:
       - organizationId: 1
         fidesKey: "primaryPrivacyPolicy"
+        name: "Primary Privacy Policy"
+        description: "The main privacy policy for the organization."
         rules:
           - organizationId: 1
             fidesKey: "rejectTargetedMarketing"
+            name: "Reject Targeted Marketing"
+            description: "Disallow marketing that is targeted towards users."
             dataCategories:
               inclusion: "ANY"
               values:
@@ -37,7 +41,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
               values:
                 - market_advertise_or_promote
                 - offer_upgrades_or_upsell
-            dataSubjectCategories:
+            dataSubjects:
               inclusion: ANY
               values:
                 - trainee
@@ -46,6 +50,8 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             action: REJECT
           - organizationId: 1
             fidesKey: rejectSome
+            name: "Reject Some Marketing"
+            description: "Disallow some marketing that is targeted towards users."
             dataCategories:
               inclusion: ANY
               values:
@@ -59,7 +65,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
                 - improvement_of_business_support_for_contracted_service
                 - personalize
                 - share_when_required_to_provide_the_service
-            dataSubjectCategories:
+            dataSubjects:
               inclusion: NONE
               values:
                 - trainee
@@ -79,22 +85,22 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
         description: "This is a Sample Database Dataset"
         datasetType: "MySQL"
         location: "US East"
-        tables:
-          - name: "sample_db_table_1"
-            description: "Sample DB Table Description"
-            fields:
-              - name: "first_name"
-                description: "A First Name Field"
-                dataCategories:
-                  - "derived_data"
-                dataQualifier: "identified_data"
-              - name: "email"
-                description: "User's Email"
-                dataCategories:
-                  - "account_data"
-                dataQualifier: "identified_data"
-              - name: "Food Preference"
-                description: "User's favorite food"
+        fields:
+          - name: "First_Name"
+            description: "A First Name Field"
+            path: "sample_db_dataset.first_name"
+            dataCategories:
+              - "derived_data"
+            dataQualifier: "identified_data"
+          - name: "Email"
+            description: "User's Email"
+            path: "sample_db_dataset.email"
+            dataCategories:
+              - "account_data"
+            dataQualifier: "anonymized_data"
+          - name: "Food_Preference"
+            description: "User's favorite food"
+            path: "sample_db_dataset.food_preference"
     ```
 
 === "fides_manifests/system.yml"
@@ -102,23 +108,21 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     ```yaml
     system:
       - organizationId: 1
-        fidesOrganizationKey: "Ethyca"
-        registryId: 1
         fidesKey: "demoSystem"
-        fidesSystemType: "SYSTEM"
         name: "Demo System"
         description: "A system used for demos."
-        declarations:
-          - dataCategories:
-              - "customer_content_data"
+        systemType: "Service"
+        privacyDeclarations:
+          - name: "Analyze Anonymous Content"
+            dataCategories:
+              - "account_data"
             dataUse: "provide"
             dataQualifier: "anonymized_data"
-            dataSubjectCategories:
+            dataSubjects:
               - "anonymous_user"
-            dataSets:
-              - "user_data"
+            datasetReferences:
+              - "sample_db_dataset.Email"
         systemDependencies: []
-        datasets: ["user_data"]
     ```
 
 ## Applying Manifest Files

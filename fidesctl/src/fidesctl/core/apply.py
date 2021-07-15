@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple, Optional, Iterable
 
 from fidesctl.core import api, manifests, parse
 from fidesctl.core.models import FidesModel
+from fidesctl.cli.utils import handle_cli_response
 from .utils import echo_green
 
 
@@ -54,21 +55,25 @@ def execute_create_update_unchanged(
 
     if create_list:
         for create_object in create_list:
-            api.create(
-                url=url,
-                object_type=object_type,
-                json_object=create_object.json(exclude_none=True),
+            handle_cli_response(
+                api.create(
+                    url=url,
+                    object_type=object_type,
+                    json_object=create_object.json(exclude_none=True),
+                )
             )
             echo_green(
                 success_echo.format("Created", object_type, create_object.fidesKey)
             )
     if update_list:
         for update_object in update_list:
-            api.update(
-                url=url,
-                object_type=object_type,
-                object_id=update_object.id,
-                json_object=update_object.json(exclude_none=True),
+            handle_cli_response(
+                api.update(
+                    url=url,
+                    object_type=object_type,
+                    object_id=update_object.id,
+                    json_object=update_object.json(exclude_none=True),
+                )
             )
             echo_green(
                 success_echo.format("Updated", object_type, update_object.fidesKey)

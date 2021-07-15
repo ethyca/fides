@@ -71,7 +71,7 @@ class TreeCacheTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
     override def getAll(pagination: Pagination): Future[Seq[Node]] = Future.successful(nodes)
 
     override def findAllInOrganization(l: Long, pagination: Pagination): Future[Seq[Node]] = {
-      println("RELOAD"); Future.successful(nodes)
+      Future.successful(nodes)
     }
 
   }

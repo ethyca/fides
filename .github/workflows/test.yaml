@@ -23,13 +23,13 @@ jobs:
         run: make server-test
 
       - name: Format Fidesctl
-        run: make cli-format
+        run: make black
 
       - name: Lint Fidesctl
-        run: make cli-lint
+        run: make pylint
 
       - name: TypeCheck Fidesctl
-        run: make cli-typecheck
+        run: make mypy
 
       - name: Test Fidesctl
-        run: make cli-test
+        run: make pytest

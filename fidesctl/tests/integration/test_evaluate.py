@@ -2,7 +2,7 @@ from typing import Dict
 
 from unittest import mock
 from fidesctl.core.config import generate_request_headers
-from fidesctl.core import evaluate, manifests, models
+from fidesctl.core import apply, evaluate, manifests, models
 
 test_headers: Dict[str, str] = generate_request_headers(1, "test_api_key")
 
@@ -13,9 +13,6 @@ def test_evaluate():
 
 def test_dry_evaluate_system_pass(server_url, objects_dict):
     test_system = objects_dict["system"]
-    test_system.datasets = (
-        []
-    )  # The server checks will fail if the dataset doesn't exist
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
@@ -55,7 +52,18 @@ def test_dry_evaluate_registry_pass(server_url, objects_dict):
 
 
 def test_dry_evaluate_system_error(server_url, objects_dict):
+    # Set up the test system
     test_system = objects_dict["system"]
+    failing_declaration = [
+        models.PrivacyDeclaration(
+            name="declaration-name",
+            dataCategories=["customer_content_data"],
+            dataUse="provi",
+            dataSubjects=["customer"],
+            dataQualifier="identified_data",
+        )
+    ]
+    test_system.privacyDeclarations = failing_declaration
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
@@ -72,25 +80,22 @@ def test_dry_evaluate_system_error(server_url, objects_dict):
     print(response.json())
 
     assert response.status_code == 500
-    assert response.json()["data"]["status"] == "ERROR"
+    assert response.json()["errors"]
 
 
 def test_dry_evaluate_system_fail(server_url, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
     failing_declaration = [
-        models.DataDeclaration(
+        models.PrivacyDeclaration(
             name="declaration-name",
             dataCategories=["customer_content_data"],
             dataUse="provide",
-            dataSubjectCategories=["customer"],
+            dataSubjects=["customer"],
             dataQualifier="identified_data",
         )
     ]
-    test_system.declarations = failing_declaration
-    test_system.datasets = (
-        []
-    )  # The server checks will fail if the dataset doesn't exist
+    test_system.privacyDeclarations = failing_declaration
     test_manifest = {"system": [test_system.dict()]}
 
     # Need to store the original function and restore it after the call
@@ -137,3 +142,22 @@ def test_evaluate_registry_pass(server_url, objects_dict):
     print(response.json())
     assert response.status_code == 200
     assert response.json()["data"]["status"] == "PASS"
+
+
+def test_apply_evaluate_example_manifests(server_url):
+    """
+    This test is designed to verify that the example manifests
+    included in the repo are valid and can be used within the docs tutorial.
+    """
+
+    apply.apply(server_url, "data/sample/")
+    evaluate_response = evaluate.evaluate(
+        url=server_url,
+        object_type="system",
+        fides_key="demoSystem",
+        tag="test",
+        message="test",
+    ).json()
+
+    print(evaluate_response)
+    assert evaluate_response["data"]["status"] == "PASS"

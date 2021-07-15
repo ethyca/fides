@@ -19,7 +19,6 @@ initialize := {
 }
 
 
-
 val properties = {
   val p = new Properties()
   p.load(new FileInputStream(new File("src/main/resources/reference.conf")))
@@ -122,7 +121,6 @@ wartremoverErrors ++= Seq(
   Wart.JavaConversions,
   Wart.Option2Iterable,
   Wart.LeakingSealed,
-  Wart.ListUnapply,
   Wart.ListAppend,
   Wart.FinalCaseClass
 )

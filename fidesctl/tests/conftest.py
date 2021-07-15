@@ -40,33 +40,30 @@ def objects_dict():
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
             datasetType="MySQL",
-            location="ethyca_mysql_db.ethyca_schema.ethyca_table",
-            tables=[
-                models.DatasetTable(
-                    name="sample_db_table_1",
-                    description="Sample DB Table Description",
-                    fields=[
-                        models.DatasetField(
-                            name="Food Preference",
-                            description="User's favorite food",
-                        ),
-                        models.DatasetField(
-                            name="first_name",
-                            description="A First Name Field",
-                            dataCategories=["derived_data"],
-                            dataQualifier="identified_data",
-                        ),
-                        models.DatasetField(
-                            name="email",
-                            description="User's Email",
-                            dataCategories=["account_data"],
-                            dataQualifier="identified_data",
-                        ),
-                    ],
+            location="US East",
+            fields=[
+                models.DatasetField(
+                    name="Food_Preference",
+                    description="User's favorite food",
+                    path="some.path",
+                ),
+                models.DatasetField(
+                    name="First_Name",
+                    description="A First Name Field",
+                    path="another.path",
+                    dataCategories=["derived_data"],
+                    dataQualifier="identified_data",
+                ),
+                models.DatasetField(
+                    name="Email",
+                    description="User's Email",
+                    path="another.another.path",
+                    dataCategories=["account_data"],
+                    dataQualifier="identified_data",
                 ),
             ],
         ),
-        "data-subject": models.DataSubjectCategory(
+        "data-subject": models.DataSubject(
             organizationId=1,
             fidesKey="customer_content_data",
             name="customer_content_data",
@@ -99,9 +96,9 @@ def objects_dict():
             fidesKey="test_policy",
             name="Test Policy",
             description="Test Policy",
-            dataCategories=models.DataRule(inclusion="NONE", values=[]),
-            dataUses=models.DataRule(inclusion="NONE", values=["provide"]),
-            dataSubjectCategories=models.DataRule(inclusion="ANY", values=[]),
+            dataCategories=models.PrivacyRule(inclusion="NONE", values=[]),
+            dataUses=models.PrivacyRule(inclusion="NONE", values=["provide"]),
+            dataSubjects=models.PrivacyRule(inclusion="ANY", values=[]),
             dataQualifier="unlinked_pseudonymized_data",
             action="REJECT",
         ),
@@ -117,20 +114,19 @@ def objects_dict():
             registryId=1,
             fidesKey="test_system",
             systemType="SYSTEM",
-            fidesOrganizationKey="Ethyca",
             name="Test System",
             description="Test Policy",
-            declarations=[
-                models.DataDeclaration(
+            privacyDeclarations=[
+                models.PrivacyDeclaration(
                     name="declaration-name",
                     dataCategories=[],
                     dataUse="provide",
-                    dataSubjectCategories=[],
+                    dataSubjects=[],
                     dataQualifier="aggregated_data",
+                    datasetReferences=[],
                 )
             ],
             systemDependencies=[],
-            datasets=["sample_db_dataset"],
         ),
         "user": models.User(
             organizationId=1,
@@ -138,7 +134,7 @@ def objects_dict():
             firstName="privacy",
             lastName="engineering",
             role="ADMIN",
-            apiKey="api_key",
+            apiKey="some_key",
         ),
     }
     yield objects_dict

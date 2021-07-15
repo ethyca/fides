@@ -26,13 +26,22 @@ class DataQualifier(BaseModel):
 class DatasetField(BaseModel):
     name: str
     description: str
+    path: str
     dataCategories: Optional[List[str]]
     dataQualifier: Optional[str]
 
 
-class DatasetTable(BaseModel):
+class Dataset(BaseModel):
+    id: Optional[int]
+    organizationId: int
+    fidesKey: str
+    metadata: Optional[Dict[str, str]]
     name: str
     description: str
+    dataCategories: Optional[List[str]]
+    dataQualifier: Optional[str]
+    location: str
+    datasetType: str
     fields: List[DatasetField]
 
     @validator("fields")
@@ -41,23 +50,7 @@ class DatasetTable(BaseModel):
         return v
 
 
-class Dataset(BaseModel):
-    id: Optional[int]
-    organizationId: int
-    fidesKey: str
-    name: str
-    description: str
-    location: str
-    datasetType: str
-    tables: List[DatasetTable]
-
-    @validator("tables")
-    def sort_list_objects(cls, v: List) -> List:
-        v.sort(key=lambda x: x.name)
-        return v
-
-
-class DataSubjectCategory(BaseModel):
+class DataSubject(BaseModel):
     id: Optional[int]
     organizationId: int
     fidesKey: str
@@ -74,20 +67,19 @@ class DataUse(BaseModel):
     description: str
 
 
-class DataRule(BaseModel):
+class PrivacyRule(BaseModel):
     inclusion: str
     values: List[str]
 
 
 class PolicyRule(BaseModel):
     organizationId: int
-    policyId: int
     fidesKey: str
     name: str
     description: str
-    dataCategories: DataRule
-    dataUses: DataRule
-    dataSubjectCategories: DataRule
+    dataCategories: PrivacyRule
+    dataUses: PrivacyRule
+    dataSubjects: PrivacyRule
     dataQualifier: str
     action: str
 
@@ -114,24 +106,26 @@ class Registry(BaseModel):
     description: str
 
 
-class DataDeclaration(BaseModel):
+class PrivacyDeclaration(BaseModel):
     name: str
     dataCategories: List[str]
     dataUse: str
     dataQualifier: str
-    dataSubjectCategories: List[str]
+    dataSubjects: List[str]
+    datasetReferences: Optional[List[str]]
 
 
 class System(BaseModel):
     id: Optional[int]
     organizationId: int
-    registryId: int
+    registryId: Optional[int]
     fidesKey: str
+    metadata: Optional[Dict[str, str]]
     systemType: str
     name: str
     description: str
-    declarations: Optional[List[DataDeclaration]]
-    systemDependencies: List[str]
+    privacyDeclarations: Optional[List[PrivacyDeclaration]]
+    systemDependencies: Optional[List[str]]
 
 
 class User(BaseModel):
@@ -156,7 +150,7 @@ FidesTypes = Union[
     Type[DataCategory],
     Type[DataQualifier],
     Type[Dataset],
-    Type[DataSubjectCategory],
+    Type[DataSubject],
     Type[DataUse],
     Type[Organization],
     Type[Policy],
@@ -168,7 +162,7 @@ MODEL_DICT: Dict[str, FidesTypes] = {
     "data-category": DataCategory,
     "data-qualifier": DataQualifier,
     "dataset": Dataset,
-    "data-subject": DataSubjectCategory,
+    "data-subject": DataSubject,
     "data-use": DataUse,
     "organization": Organization,
     "policy": Policy,
@@ -182,7 +176,7 @@ FidesModel = Union[
     DataCategory,
     DataQualifier,
     Dataset,
-    DataSubjectCategory,
+    DataSubject,
     DataUse,
     Organization,
     Policy,

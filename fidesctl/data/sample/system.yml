@@ -1,0 +1,17 @@
+system:
+  - organizationId: 1
+    fidesKey: "demoSystem"
+    name: "Demo System"
+    description: "A system used for demos."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Analyze Anonymous Content"
+        dataCategories:
+          - "account_data"
+        dataUse: "provide"
+        dataQualifier: "anonymized_data"
+        dataSubjects:
+          - "anonymous_user"
+        datasetReferences:
+          - "sample_db_dataset.Email"
+    systemDependencies: []
