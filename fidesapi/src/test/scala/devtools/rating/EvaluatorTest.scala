@@ -1,11 +1,18 @@
 package devtools.rating
 
-import devtools.util.waitFor
+import devtools.domain.Approval
+import devtools.util.{JsonSupport, waitFor}
 import devtools.{App, TestUtils}
-import org.scalatest.BeforeAndAfterAll
+import org.json4s.JValue
+import org.scalatest.{BeforeAndAfterAll, ConfigMap}
 import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.matchers.must.Matchers.not
+import org.scalatest.matchers.must.Matchers.{contain, not}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.matchers.should.Matchers._
+
+import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 class EvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
@@ -48,23 +55,34 @@ class EvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 
   test("generate system evaluation") {
     val approval = waitFor(evaluator.systemEvaluate(s1, 1L, None, None))
-    prettyPrintJson(approval)
+    approval.action shouldBe "evaluate"
+    val eval = JsonSupport.toAST(approval)
+    JsonSupport.fromAST[Map[String, Any]](eval \ "details" \ "FAIL").get should not be empty
+    JsonSupport.fromAST[List[String]](eval \ "details" \ "errors").get should not be empty
+    approval.action shouldBe "evaluate"
   }
 
   test("system evaluation dry run") {
     val approval = waitFor(evaluator.systemDryRun(s2, 1L))
-    prettyPrintJson(approval)
+    approval.action shouldBe "dry-run"
+    val eval = JsonSupport.toAST(approval)
+    JsonSupport.fromAST[Map[String, Any]](eval \ "details" \ "FAIL").get should not be empty
+    JsonSupport.fromAST[List[String]](eval \ "details" \ "warnings").get should not be empty
   }
 
   test("generate registry evaluation") {
     val approval = waitFor(evaluator.registryEvaluate(r1, 1L, None, None))
-
-    prettyPrintJson(approval)
-
+    approval.action shouldBe "evaluate"
+    val eval = JsonSupport.toAST(approval)
+    JsonSupport.fromAST[List[String]](eval \ "details" \ "overall" \ "FAIL").get should not be empty
+    JsonSupport.fromAST[Map[String, Any]](eval \ "details" \ "evaluations").get should not be empty
   }
 
   test("registry evaluation dry run") {
     val approval = waitFor(evaluator.registryDryRun(r1, 1L))
-    prettyPrintJson(approval)
+    approval.action shouldBe "dry-run"
+    val eval = JsonSupport.toAST(approval)
+    JsonSupport.fromAST[List[String]](eval \ "details" \ "overall" \ "FAIL").get should not be empty
+    JsonSupport.fromAST[Map[String, Any]](eval \ "details" \ "evaluations").get should not be empty
   }
 }

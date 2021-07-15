@@ -135,7 +135,7 @@ class RatingTestData extends TestUtils {
     PrivacyDeclaration(
       0L,
       0L,
-      "test2",
+      "identified end-user data for prospecting",
       Set("telemetry_data", "connectivity_data"),
       "share",
       "identified_data",
@@ -146,7 +146,7 @@ class RatingTestData extends TestUtils {
   private val depMatchesOnlyR3 = PrivacyDeclaration(
     0L,
     0L,
-    "test3",
+    "identified account data for prospecting",
     Set("payment_instrument_data", "account_or_administration_contact_information"),
     "improvement_of_business_support_for_contracted_service",
     "identified_data",
@@ -158,7 +158,7 @@ class RatingTestData extends TestUtils {
     PrivacyDeclaration(
       0L,
       0L,
-      "test4",
+      "identified credentials for providing",
       Set("credentials"),
       "provide",
       "identified_data",
@@ -170,7 +170,7 @@ class RatingTestData extends TestUtils {
     PrivacyDeclaration(
       0L,
       0L,
-      "test5",
+      "operations data for improvement",
       Set("operations_data"),
       "improve",
       "identified_data",
@@ -186,7 +186,8 @@ class RatingTestData extends TestUtils {
     systemOf(wRunKey("system1"), depMatchesOnlyR1, depMatchesOnlyR2, depMatchesOnlyR3).copy(systemDependencies = Set())
   val system2: SystemObject = systemOf(wRunKey("system2"), depMatchesBothR1R2, depMatchesOnlyR4)
     .copy(systemDependencies = Set(wRunKey("system3")))
-  val system3: SystemObject = systemOf(wRunKey("system3"), depFailure)
+  val system3: SystemObject =
+    systemOf(wRunKey("system3"), depFailure).copy(systemDependencies = Set(wRunKey("system2")))
 
   // -----------------------------------------
   //            Registries
