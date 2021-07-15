@@ -3,11 +3,11 @@ from typing import Dict
 
 import pytest
 
-from fidesctl.cli.config import FidesConfig
+from fidesctl.core.config import generate_request_headers
 from fidesctl.core import api as _api, parse
 from fidesctl.core.models import MODEL_LIST
 
-test_headers: Dict[str, str] = FidesConfig(1, "test_api_key").generate_request_headers()
+test_headers: Dict[str, str] = generate_request_headers(1, "test_api_key")
 
 # Helper Functions
 def get_existing_id(server_url: str, object_type: str) -> int:

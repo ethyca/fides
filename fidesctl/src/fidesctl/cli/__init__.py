@@ -1,4 +1,5 @@
 """Contains all of the CLI commands for Fidesctl."""
+from fidesctl.src.fidesctl.core.config import generate_request_headers
 import json
 from typing import Optional
 
@@ -11,7 +12,7 @@ from fidesctl.core import (
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
 )
-from .config import read_conf
+from fidesctl.core.config import read_config
 
 from .utils import (
     url_option,
@@ -54,12 +55,14 @@ def create(url: str, object_type: str, manifest: str, config: Optional[str]) -> 
     Create a new object directly from a JSON object.
     """
     parsed_manifest = json.loads(manifest)
+    config = read_config(config)
+    request_headers = generate_request_headers()
     handle_cli_response(
         _api.create(
             url,
             object_type,
             parsed_manifest,
-            read_conf(config).generate_request_headers(),
+            request_headers,
         )
     )
 
@@ -121,7 +124,7 @@ def show(url: str, object_type: str, config: Optional[str]) -> None:
     List all objects of a certain type.
     """
     handle_cli_response(
-        _api.show(url, object_type, read_conf(config).generate_request_headers())
+        _api.show(url, object_type, generate_request_headers(read_config(config)))
     )
 
 

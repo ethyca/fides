@@ -1,10 +1,10 @@
 from typing import Dict
 
 from unittest import mock
-from fidesctl.cli.config import FidesConfig
+from fidesctl.core.config import generate_request_headers
 from fidesctl.core import evaluate, manifests, models
 
-test_headers: Dict[str, str] = FidesConfig(1, "test_api_key").generate_request_headers()
+test_headers: Dict[str, str] = generate_request_headers(1, "test_api_key")
 
 
 def test_evaluate():
