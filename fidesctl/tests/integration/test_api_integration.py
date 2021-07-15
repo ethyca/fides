@@ -30,6 +30,7 @@ def test_api_show(server_url, endpoint):
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_create(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
+    print(manifest.json(exclude_none=True))
     result = _api.create(
         url=server_url,
         object_type=endpoint,
@@ -50,7 +51,7 @@ def test_api_get(server_url, endpoint):
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_find(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
-    object_key = manifest.fidesKey
+    object_key = manifest.fidesKey if endpoint != "user" else manifest.userName
     result = _api.find(url=server_url, object_type=endpoint, object_key=object_key)
     print(result.text)
     assert result.status_code == 200
@@ -63,8 +64,9 @@ def test_sent_is_received(server_url, objects_dict, endpoint):
     same as the object that the server returns.
     """
     manifest = objects_dict[endpoint]
-    object_key = manifest.fidesKey
+    object_key = manifest.fidesKey if endpoint != "user" else manifest.userName
 
+    print(manifest.json(exclude_none=True))
     result = _api.find(url=server_url, object_type=endpoint, object_key=object_key)
     print(result.text)
     assert result.status_code == 200
@@ -95,7 +97,8 @@ def test_api_update(server_url, objects_dict, endpoint):
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_delete(server_url, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
-    delete_id = get_id_from_key(server_url, endpoint, manifest.fidesKey)
+    object_key = manifest.fidesKey if endpoint != "user" else manifest.userName
+    delete_id = get_id_from_key(server_url, endpoint, object_key)
 
     assert delete_id != 1
     result = _api.delete(url=server_url, object_type=endpoint, object_id=delete_id)
