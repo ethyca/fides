@@ -112,7 +112,7 @@ pylint: compose-build
 pytest: compose-build init-db
 	@docker-compose up -d
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	/bin/bash -c "sleep 60 & pytest"
+	/bin/bash -c "sleep 90 & pytest"
 
 mypy: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
