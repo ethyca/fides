@@ -22,7 +22,7 @@ class UserDAO(val db: Database)(implicit val executionContext: ExecutionContext)
         r.<<?[String],
         r.<<?[String],
         r.<<[String],
-        r.<<[String],
+        r.<<?[String],
         r.<<?[Timestamp],
         r.<<?[Timestamp]
       )

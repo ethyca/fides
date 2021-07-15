@@ -26,7 +26,7 @@ def check_eval_result(response: requests.Response) -> requests.Response:
 
 
 def dry_evaluate(
-    url: str, manifests_dir: str, fides_key: str = ""
+    url: str, manifests_dir: str, headers: Dict[str, str], fides_key: str = ""
 ) -> requests.Response:
     """
     Rate a registry against all of the policies within an organization.
@@ -60,15 +60,26 @@ def dry_evaluate(
         url=url,
         object_type=object_type,
         json_object=_object.json(exclude_none=True),
+        headers=headers,
     )
     return check_eval_result(response)
 
 
 def evaluate(
-    url: str, object_type: str, fides_key: str, tag: str, message: str
+    url: str,
+    object_type: str,
+    fides_key: str,
+    tag: str,
+    message: str,
+    headers: Dict[str, str],
 ) -> requests.Response:
     """Run an evaluation on an existing system."""
     response = api.evaluate(
-        url=url, object_type=object_type, fides_key=fides_key, tag=tag, message=message
+        url=url,
+        object_type=object_type,
+        fides_key=fides_key,
+        tag=tag,
+        message=message,
+        headers=headers,
     )
     return check_eval_result(response)

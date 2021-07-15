@@ -107,5 +107,7 @@ def test_sort_create_update_unchanged_unchanged():
 
 
 def test_execute_create_update_unchanged_empty():
-    apply.execute_create_update_unchanged("test", "test")
+    apply.execute_create_update_unchanged(
+        url="test", headers={"test": "test"}, object_type="test"
+    )
     assert True

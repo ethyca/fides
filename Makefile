@@ -23,7 +23,7 @@ CLI_IMAGE_LATEST := $(REGISTRY)/$(CLI_IMAGE_NAME):latest
 
 .PHONY: help
 help:
-	@echo "Under Construction, please read the Makefile directly!"
+	@echo "Under construction, please read the Makefile directly to see available targets"
 
 ####################
 # Dev

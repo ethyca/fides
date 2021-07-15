@@ -67,14 +67,14 @@ def test_union_manifests(test_manifests):
             {
                 "name": "Test System 1",
                 "organizationId": 1,
-                "fidesSystemType": "mysql",
+                "systemType": "mysql",
                 "description": "Test System 1",
                 "fidesKey": "some_system",
             },
             {
                 "name": "Test System 2",
                 "organizationId": 1,
-                "fidesSystemType": "mysql",
+                "systemType": "mysql",
                 "description": "Test System 2",
                 "fidesKey": "another_system",
             },
@@ -117,14 +117,14 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
         {
             "name": "Test System 1",
             "organizationId": 1,
-            "fidesSystemType": "mysql",
+            "systemType": "mysql",
             "description": "Test System 1",
             "fidesKey": "some_system",
         },
         {
             "name": "Test System 2",
             "organizationId": 1,
-            "fidesSystemType": "mysql",
+            "systemType": "mysql",
             "description": "Test System 2",
             "fidesKey": "another_system",
         },

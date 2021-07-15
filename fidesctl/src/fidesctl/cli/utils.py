@@ -3,9 +3,9 @@ import json
 import os
 import sys
 from typing import Dict, Callable
-
 import click
 import requests
+
 
 from fidesctl.core.models import MODEL_LIST
 
@@ -29,6 +29,20 @@ def handle_cli_response(response: requests.Response) -> requests.Response:
         finally:
             sys.exit(1)
     return response
+
+
+def config_option(command: Callable) -> Callable:
+    """
+    Apply the config file option.
+    """
+    command = click.option(
+        "--config-path",
+        "-f",
+        "config_path",
+        default="",
+        help="Optional configuration file",
+    )(command)
+    return command
 
 
 def url_option(command: Callable) -> Callable:

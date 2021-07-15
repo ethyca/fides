@@ -1,5 +1,6 @@
 import java.io.{File, FileInputStream}
 import java.util.Properties
+import scala.util.Try
 
 conflictManager := ConflictManager.latestRevision
 val ScalatraVersion = "2.7.1"

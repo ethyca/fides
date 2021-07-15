@@ -395,7 +395,7 @@ object Generators {
     firstName <- Gen.option(genName)
     lastName  <- Gen.option(Gen.resultOf { _: Int => faker.Name.last_name })
     role      <- Gen.oneOf(Role.values)
-  } yield User(id, 1, userName, firstName, lastName, role, JwtUtil.generateToken(), timestamp(), timestamp())
+  } yield User(id, 1, userName, firstName, lastName, role, Some(JwtUtil.generateToken()), timestamp(), timestamp())
   val requestContext: RequestContext = RequestContext(UserGen.sample.get.copy(id = 1, organizationId = 1))
 
   private def domainObjectGenerators: Seq[Gen[_ <: AnyRef]] =

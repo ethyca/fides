@@ -159,7 +159,7 @@ def test_manifests():
                 {
                     "name": "Test System 1",
                     "organizationId": 1,
-                    "fidesSystemType": "mysql",
+                    "systemType": "mysql",
                     "description": "Test System 1",
                     "fidesKey": "some_system",
                 }
@@ -181,7 +181,7 @@ def test_manifests():
                 {
                     "name": "Test System 2",
                     "organizationId": 1,
-                    "fidesSystemType": "mysql",
+                    "systemType": "mysql",
                     "description": "Test System 2",
                     "fidesKey": "another_system",
                 }
