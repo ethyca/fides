@@ -12,12 +12,10 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import slick.jdbc.MySQLProfile.api._
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext
 class DatasetServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogging with TestUtils {
-  private val datasetService                      = App.datasetService
-  private val datasetFieldDAO                     = App.datasetFieldDAO
-  implicit val executionContext: ExecutionContext = App.executionContext
-  private val datasetIds: mutable.Set[Long]       = mutable.HashSet[Long]()
+  private val datasetService                = App.datasetService
+  private val datasetFieldDAO               = App.datasetFieldDAO
+  private val datasetIds: mutable.Set[Long] = mutable.HashSet[Long]()
 
   override def afterAll(): Unit = {
     datasetIds.foreach(App.datasetDAO.delete)

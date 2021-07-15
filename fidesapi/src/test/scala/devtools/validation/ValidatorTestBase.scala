@@ -1,17 +1,16 @@
 package devtools.validation
 
 import devtools.Generators.requestContext
+import devtools.TestUtils
 import devtools.domain.definition.IdType
 import devtools.exceptions.{BaseFidesException, ValidationException}
 import devtools.persist.dao.definition.DAO
 import devtools.util.waitFor
-import devtools.{App, TestUtils}
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContextExecutor
 
 abstract class ValidatorTestBase[E <: IdType[E, PK], PK](
   val gen: Gen[E],
@@ -20,18 +19,15 @@ abstract class ValidatorTestBase[E <: IdType[E, PK], PK](
 ) extends AnyFunSuite with BeforeAndAfterAll with TestUtils {
   val createdIds: mutable.Set[PK] = mutable.HashSet[PK]()
 
-  implicit val executionContext: ExecutionContextExecutor = App.executionContext
-
   override def afterAll(): Unit = createdIds.foreach(dao.delete)
 
-  def createValidationErrors(t: E): Seq[String] = {
+  def createValidationErrors(t: E): Seq[String] =
     waitFor {
       validator.validateForCreate(t, requestContext).map(_ => Seq()).recover {
         case e: ValidationException => e.errors
         case e: Throwable           => Seq(e.getMessage)
       }
     }
-  }
 
   def createValidationErrors(f: E => E): Seq[String] = createValidationErrors(f(gen.sample.get))
 

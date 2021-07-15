@@ -44,17 +44,17 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
     (t.location like value)
   }
 
-  /** retrieved all systems populated with privacy declarations */
+  /** retrieved all systems populated with fields */
   def findHydrated[C <: Rep[_]](
     expr: DatasetQuery => C
   )(implicit wt: CanBeQueryCondition[C]): Future[Iterable[Dataset]] = {
     val q = for {
-      (s, d) <- query.filter(expr) join datasetFieldQuery on (_.id === _.datasetId)
+      (s, d) <- query.filter(expr) joinLeft datasetFieldQuery on (_.id === _.datasetId)
     } yield (s, d)
 
     db.run(q.result).map { pairs =>
-      pairs.groupBy(t => t._2.datasetId).values.map { s: Seq[(Dataset, DatasetField)] =>
-        s.head._1.copy(fields = Some(s.map(_._2)))
+      pairs.groupBy(t => t._1.id).values.map { s: Seq[(Dataset, Option[DatasetField])] =>
+        s.head._1.copy(fields = Some(s.map(_._2).filter(_.isDefined).map(_.get)))
       }
     }
   }

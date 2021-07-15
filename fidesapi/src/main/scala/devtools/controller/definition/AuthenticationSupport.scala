@@ -25,8 +25,7 @@ trait AuthenticationSupport extends ScalatraBase {
     */
   val requestContext: RequestContext = new RequestContext()
 
-  /**
-    * A simple interceptor that checks for the existence
+  /** A simple interceptor that checks for the existence
     * of userId
     */
   before() {

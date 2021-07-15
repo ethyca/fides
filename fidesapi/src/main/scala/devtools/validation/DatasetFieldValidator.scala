@@ -11,8 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DatasetFieldValidator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
   extends Validator[DatasetField, Long] with ValidateByTaxonomy {
 
-  /**
-    * Qualifier exists
+  /** Qualifier exists
     * categories exist
     * datasetTableId exists
     */

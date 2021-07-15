@@ -1,20 +1,17 @@
 package devtools.rating
 
 import devtools.Generators.SystemObjectGen
-import devtools.domain.{Dataset, PrivacyDeclaration}
 import devtools.domain.enums.ApprovalStatus
+import devtools.domain.{Dataset, PrivacyDeclaration}
 import devtools.util.waitFor
 import devtools.validation.MessageCollector
 import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-
-import scala.concurrent.ExecutionContext
 class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
-  implicit val context: ExecutionContext = App.executionContext
-  private val systemEvaluator            = new SystemEvaluator(App.daos)
-  private val evaluator                  = new Evaluator(App.daos)
+  private val systemEvaluator = new SystemEvaluator(App.daos)
+  private val evaluator       = new Evaluator(App.daos)
 
   test("test rate rating catch missing system dependency") {
     //for this test we need to set the privacyDeclarations to "Some" since if the system is
@@ -181,7 +178,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
-      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("operations_data"))))
+      datasetOf(None, None, datasetFieldOf("a", "aggregated_data", Set("operations_data")))
     ) should containMatchString(
       "The dataset field a.a contains categories \\[operations_data\\] under data qualifier \\[aggregated_data\\]"
     )
@@ -189,7 +186,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
     //7. dataset category doesn't match privacy; literal match
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
-      datasetOf(None, None, datasetFieldOf(Some("identified_data"), Some(Set("access_and_authentication_data"))))
+      datasetOf(None, None, datasetFieldOf("a", "identified_data", Set("access_and_authentication_data")))
     ) should containMatchString(
       "The dataset field a.a contains categories \\[access_and_authentication_data\\] under data qualifier \\[identified_data\\]"
     )
@@ -197,7 +194,7 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("credentials"), datasetReferences = Set("a.a")),
-      datasetOf(None, None, datasetFieldOf(Some("identified_data"), Some(Set("access_and_authentication_data"))))
+      datasetOf(None, None, datasetFieldOf("a", "identified_data", Set("access_and_authentication_data")))
     ) should containMatchString(
       "The dataset field a.a contains categories \\[access_and_authentication_data\\] under data qualifier \\[identified_data\\]"
     )
@@ -206,28 +203,28 @@ class SystemEvaluatorTest extends AnyFunSuite with TestUtils {
 
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
-      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("end_user_identifiable_information"))))
+      datasetOf(None, None, datasetFieldOf("a", "aggregated_data", Set("end_user_identifiable_information")))
     ) shouldBe Seq()
 
     //10. dataset category contains grandchild
 
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
-      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("profiling_data"))))
+      datasetOf(None, None, datasetFieldOf("a", "aggregated_data", Set("profiling_data")))
     ) shouldBe Seq()
 
     //11. dataset qualifier contains child
 
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "identified_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
-      datasetOf(None, None, datasetFieldOf(Some("aggregated_data"), Some(Set("derived_data"))))
+      datasetOf(None, None, datasetFieldOf("a", "aggregated_data", Set("derived_data")))
     ) shouldBe Seq()
 
     //12. no privacy gamut found for dataset or field
     testPrivacyDeclaration(
       pd.copy(dataQualifier = "aggregated_data", dataCategories = Set("derived_data"), datasetReferences = Set("a")),
       datasetOf(None, None),
-      true
+      returnWarnings = true
     ) should containMatchString("The dataset a did not specify any privacy information")
 
   }
