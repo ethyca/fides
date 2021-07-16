@@ -1,4 +1,4 @@
-# Fides Objects
+# Fides Object Types
 
 This page describes the various objects that make up the Fides platform.
 
