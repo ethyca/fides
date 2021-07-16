@@ -6,6 +6,7 @@
 
 REGISTRY := ethyca
 # If running in CI, inherit the SHA; otherwise, calculate it from git
+# update this to use the tag instead of the commit sha
 GIT_COMMIT_SHA ?= $(CI_COMMIT_SHORT_SHA)
 ifeq ($(strip $(GIT_COMMIT_SHA)),)
 GIT_COMMIT_SHA := $(shell git rev-parse --short HEAD)
