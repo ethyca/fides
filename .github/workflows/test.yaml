@@ -22,6 +22,9 @@ jobs:
       - name: Test Fides Server
         run: make server-test
 
+      - name: Check fidesctl installed
+        run: make fidesctl-check-install
+
       - name: Format Fidesctl
         run: make black
 
