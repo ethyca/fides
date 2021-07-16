@@ -97,9 +97,14 @@ server-push: server-build
 test-all: server-test cli-check-all
 	@echo "Running all tests and checks..."
 
-# CLI
-cli-check: black pylint mypy pytest
+# Fidesctl
+fidesctl-check-all: black pylint mypy pytest
 	@echo "Running formatter, linter, typechecker and tests..."
+
+fidesctl-check-install:
+	@echo "Checking that fidesctl is installed..."
+	@docker-compose run $(CLI_IMAGE_NAME) \
+	fidesctl
 
 black: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
