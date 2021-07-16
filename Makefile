@@ -5,13 +5,7 @@
 ####################
 
 REGISTRY := ethyca
-# If running in CI, inherit the SHA; otherwise, calculate it from git
-# update this to use the tag instead of the commit sha
-GIT_COMMIT_SHA ?= $(CI_COMMIT_SHORT_SHA)
-ifeq ($(strip $(GIT_COMMIT_SHA)),)
-GIT_COMMIT_SHA := $(shell git rev-parse --short HEAD)
-endif
-IMAGE_TAG := $(GIT_COMMIT_SHA)
+IMAGE_TAG := $(shell git describe --tags --dirty --always)
 
 # Server
 SERVER_IMAGE_NAME := fidesapi
