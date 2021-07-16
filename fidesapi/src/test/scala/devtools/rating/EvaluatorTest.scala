@@ -1,18 +1,11 @@
 package devtools.rating
 
-import devtools.domain.Approval
 import devtools.util.{JsonSupport, waitFor}
 import devtools.{App, TestUtils}
-import org.json4s.JValue
-import org.scalatest.{BeforeAndAfterAll, ConfigMap}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.matchers.must.Matchers.{contain, not}
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatest.matchers.{MatchResult, Matcher}
-import org.scalatest.matchers.should.Matchers._
-
-import scala.concurrent.Future
-import scala.reflect.ClassTag
+import org.scalatest.matchers.must.Matchers.not
+import org.scalatest.matchers.should.Matchers.{convertToAnyShouldWrapper, _}
 
 class EvaluatorTest extends AnyFunSuite with TestUtils with BeforeAndAfterAll {
 

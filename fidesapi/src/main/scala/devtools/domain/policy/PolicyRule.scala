@@ -1,10 +1,9 @@
 package devtools.domain.policy
 
 import devtools.domain.DataQualifierName
-import devtools.domain.definition.{WithFidesKey, OrganizationId}
+import devtools.domain.definition.{OrganizationId, WithFidesKey}
 import devtools.domain.enums.{PolicyAction, PolicyValueGrouping}
 import devtools.util.JsonSupport.{dumps, parseToObj}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -50,7 +49,7 @@ object PolicyRule {
       s.id,
       s.organizationId,
       s.policyId,
-      sanitizeUniqueIdentifier(s.fidesKey),
+      s.fidesKey,
       s.name,
       s.description,
       dumps(s.dataCategories),

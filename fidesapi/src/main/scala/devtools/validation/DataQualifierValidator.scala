@@ -14,6 +14,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
   def validateForCreate(dq: DataQualifier, ctx: RequestContext): Future[Unit] =
     requireParentIdExists(dq, new MessageCollector)
       .flatMap(requireOrganizationIdExists(dq.organizationId, _))
+      .map(validateFidesKey(dq.fidesKey, _))
       .flatMap(_.asFuture())
 
   /** Require that organization id exists,
@@ -30,6 +31,7 @@ class DataQualifierValidator(val daos: DAOs)(implicit val executionContext: Exec
           Future.successful(e)
         }
       }
+      .map(validateFidesKey(dq.fidesKey, _))
       .flatMap(_.asFuture())
 
   /** Deletion validations for taxonomy types have to ensure that those values are not referenced

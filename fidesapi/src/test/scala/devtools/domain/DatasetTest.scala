@@ -43,10 +43,10 @@ class DatasetTest extends AnyFunSuite with LazyLogging with TestUtils {
   }
 
   test("test basename") {
-    Dataset.baseName(".") shouldBe ""
-    Dataset.baseName("") shouldBe ""
-    Dataset.baseName("a") shouldBe "a"
-    Dataset.baseName("a.b") shouldBe "a"
-    Dataset.baseName("a.b.c") shouldBe "a"
+    Dataset.baseName(".") shouldBe None
+    Dataset.baseName("") shouldBe None
+    Dataset.baseName("a") shouldBe Some("a")
+    Dataset.baseName("a.b") shouldBe Some("a")
+    Dataset.baseName("a.b.c") shouldBe Some("a")
   }
 }

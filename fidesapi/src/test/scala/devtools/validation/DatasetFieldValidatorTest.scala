@@ -2,6 +2,7 @@ package devtools.validation
 import devtools.App
 import devtools.Generators.DatasetFieldGen
 import devtools.domain.DatasetField
+import org.scalatest.matchers.must.Matchers.not
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class DatasetFieldValidatorTest
@@ -21,6 +22,15 @@ class DatasetFieldValidatorTest
     createValidationErrors(
       _.copy(datasetId = 1L, dataQualifier = Some("not_a_valid_qualifier"))
     ) should containMatchString(" data qualifier does not exist")
+  }
+
+  test("invalid dataset name fails") {
+    //periods are legal
+    createValidationErrors(_.copy(name = "an.illegal.key")) shouldBe Seq()
+    //other characters are not
+    createValidationErrors(_.copy(name = "an:illegal:key")) should containMatchString(
+      "The field name an:illegal:key is invalid"
+    )
   }
 
 }

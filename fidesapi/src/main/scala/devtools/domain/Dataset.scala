@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
 import devtools.util.JsonSupport
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -36,18 +35,16 @@ final case class Dataset(
   def qualifierCategoriesMapForField(f: DatasetField): Map[DataQualifierName, Set[DataCategoryName]] =
     (f.dataQualifier, f.dataCategories) match {
       case (Some(q), Some(c)) => Map(q -> c)
-      case _ => {
-
+      case _ =>
         (dataQualifier, dataCategories) match {
           case (Some(q1), Some(c1)) => Map(q1 -> c1)
           case _                    => Map()
         }
-      }
     }
 
   def qualifierCategoriesMap(): Map[DataQualifierName, Set[DataCategoryName]] = {
     val baseMap: Map[DataQualifierName, Set[DataCategoryName]] = (dataQualifier, dataCategories) match {
-      case (Some(q), Some(c)) => (Map(q -> c))
+      case (Some(q), Some(c)) => Map(q -> c)
       case _                  => Map()
     }
     fields.getOrElse(Seq()).map(qualifierCategoriesMapForField).fold(baseMap)(_ ++ _)
@@ -81,7 +78,7 @@ object Dataset {
     Some(
       s.id,
       s.organizationId,
-      sanitizeUniqueIdentifier(s.fidesKey),
+      s.fidesKey,
       s.versionStamp,
       s.metadata.map(JsonSupport.dumps),
       s.name,
@@ -112,9 +109,9 @@ object Dataset {
       t._13
     )
 
-  def baseName(datasetName: String) = {
+  def baseName(datasetName: String): Option[String] = {
     val v = datasetName.split('.')
-    if (v.length > 0) v(0) else ""
+    if (v.length > 0 && v(0).nonEmpty) Some(v(0)) else None
   }
 
 }

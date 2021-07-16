@@ -3,7 +3,6 @@ package devtools.rating
 import devtools.domain.policy.Policy
 import devtools.domain.{Approval, Dataset, Registry, SystemObject}
 import devtools.persist.dao.DAOs
-import devtools.util.{JsonSupport, waitFor}
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -94,7 +93,7 @@ class Evaluator(val daos: DAOs)(implicit val executionContext: ExecutionContext)
             val declarations = allHydratedSystems.flatMap(s => s.privacyDeclarations.getOrElse(Seq()))
             //this can be either dataset, dataset.field, dataset.table.field...
             val datasetFullNames = declarations.flatMap(_.datasetReferences)
-            datasetFullNames.map(Dataset.baseName).toSet
+            datasetFullNames.map(Dataset.baseName).filter(_.isDefined).map(_.get).toSet
           }
           daos.datasetDAO.findHydrated(s =>
             (s.fidesKey inSet referencedDatasets) && (s.organizationId === organizationId)

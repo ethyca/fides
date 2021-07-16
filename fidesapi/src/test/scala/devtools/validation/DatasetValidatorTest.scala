@@ -11,6 +11,12 @@ class DatasetValidatorTest extends ValidatorTestBase[Dataset, Long](DatasetGen, 
     createValidationErrors(_.copy(organizationId = randomLong)) should containMatchString("organization")
   }
   test("name with '.' failes") {
-    createValidationErrors(_.copy(fidesKey = "a.b")) shouldEqual Seq("Dataset fides keys can not contain a '.'")
+    createValidationErrors(_.copy(fidesKey = "a.b")) shouldEqual Seq("'a.b' is not a valid identifier.")
   }
+  test("invalid dataset fides key fails") {
+    createValidationErrors(_.copy(fidesKey = "an.illegal.key")) should containMatchString(
+      "'an.illegal.key' is not a valid identifier."
+    )
+  }
+
 }

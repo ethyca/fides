@@ -2,6 +2,7 @@ package devtools.validation
 
 import com.typesafe.scalalogging.LazyLogging
 import devtools.controller.RequestContext
+import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import scala.concurrent.Future
 trait Validator[T, PK] extends LazyLogging {
@@ -16,6 +17,13 @@ trait Validator[T, PK] extends LazyLogging {
 
   /** Allow for separarte validation logic for deletions. */
   def validateForDelete(pk: PK, existingValue: T, ctx: RequestContext): Future[Unit] = Future.unit
+
+  def validateFidesKey(fidesKey: String, errors: MessageCollector): MessageCollector = {
+    if (sanitizeUniqueIdentifier(fidesKey) != fidesKey) {
+      errors.addError(s"'$fidesKey' is not a valid identifier.")
+    }
+    errors
+  }
 }
 
 object Validator {

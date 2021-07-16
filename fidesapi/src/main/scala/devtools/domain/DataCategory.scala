@@ -1,7 +1,6 @@
 package devtools.domain
 
-import devtools.domain.definition.{CanBeTree, WithFidesKey, IdType, OrganizationId, TreeItem}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.domain.definition.{CanBeTree, OrganizationId, TreeItem, WithFidesKey}
 
 import scala.collection.mutable
 
@@ -31,7 +30,7 @@ object DataCategory {
   def toInsertable(
     s: DataCategory
   ): Option[(Long, Option[Long], Long, String, Option[String], Option[String], Option[String])] =
-    Some(s.id, s.parentId, s.organizationId, sanitizeUniqueIdentifier(s.fidesKey), s.name, s.clause, s.description)
+    Some(s.id, s.parentId, s.organizationId, s.fidesKey, s.name, s.clause, s.description)
 
   def fromInsertable(
     t: (Long, Option[Long], Long, String, Option[String], Option[String], Option[String])

@@ -15,6 +15,7 @@ class PolicyValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
     */
   def validateForCreate(p: Policy, ctx: RequestContext): Future[Unit] =
     requireOrganizationIdExists(p.organizationId, new MessageCollector)
+      .map(validateFidesKey(p.fidesKey, _))
       .flatMap(_.asFuture())
 
 }

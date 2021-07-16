@@ -11,5 +11,10 @@ class RegistryValidatorTest
   test("only accept valid organizationIds") {
     createValidationErrors(_.copy(organizationId = randomLong)) should containMatchString("given as the organizationId")
   }
+  test("invalid registry fides key fails") {
+    createValidationErrors(_.copy(fidesKey = "an.illegal.key")) should containMatchString(
+      "'an.illegal.key' is not a valid identifier."
+    )
+  }
 
 }

@@ -4,13 +4,13 @@ import devtools.domain.Organization
 import devtools.persist.dao.OrganizationDAO
 import devtools.persist.db.Tables.OrganizationQuery
 import devtools.persist.service.definition.{Service, UniqueKeySearch}
-import devtools.validation.Validator
+import devtools.validation.{OrganizationValidator, Validator}
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
 class OrganizationService(dao: OrganizationDAO)(implicit val context: ExecutionContext)
-  extends Service[Organization, Long, OrganizationQuery](dao, Validator.noOp[Organization, Long])(context)
+  extends Service[Organization, Long, OrganizationQuery](dao, new OrganizationValidator)(context)
   with UniqueKeySearch[Organization, OrganizationQuery] {
 
   /** Note - Since the organization id is redunant and already returns a unique value this implementation ignores the

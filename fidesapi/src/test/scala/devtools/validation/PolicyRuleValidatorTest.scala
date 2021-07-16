@@ -40,4 +40,10 @@ class PolicyRuleValidatorTest
     ) should containMatchString("NeitherAmI")
   }
 
+  test("invalid dataset fides key fails") {
+    createValidationErrors(_.copy(fidesKey = "an.illegal.key")) should containMatchString(
+      "'an.illegal.key' is not a valid identifier."
+    )
+  }
+
 }

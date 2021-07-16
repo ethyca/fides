@@ -82,15 +82,19 @@ class SystemValidatorTest
         privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset "))))
       )
     ) should containMatchString("dataset")
-
     //using validated name works fine
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,
-        privacyDeclarations = Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset"))))
+        privacyDeclarations = Some(
+          Seq(
+            DeclarationGen.sample.get.copy(datasetReferences =
+              Set("test_dataset2", "test_dataset.field2", "test_dataset", "test_dataset.field1")
+            )
+          )
+        )
       )
     ) shouldNot containMatchString("dataset")
-
     createValidationErrors(
       blankSystem.copy(
         fidesKey = name1,

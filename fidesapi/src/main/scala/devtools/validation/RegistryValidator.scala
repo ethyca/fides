@@ -37,7 +37,6 @@ class RegistryValidator(val daos: DAOs)(implicit val executionContext: Execution
       }
       case _ =>
     }
-
     Future.successful(errors)
   }
 
@@ -46,6 +45,7 @@ class RegistryValidator(val daos: DAOs)(implicit val executionContext: Execution
   def validateForCreate(r: Registry, ctx: RequestContext): Future[Unit] =
     requireOrganizationIdExists(r.organizationId, new MessageCollector)
       .flatMap(e => requireSystemIdsExists(r.organizationId, r.systems, e))
+      .map(validateFidesKey(r.fidesKey, _))
       .flatMap(_.asFuture())
 
 }

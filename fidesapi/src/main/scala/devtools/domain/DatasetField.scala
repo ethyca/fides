@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.domain.definition.IdType
 import devtools.util.JsonSupport.{dumps, parseToObj}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -39,7 +38,7 @@ object DatasetField {
     Some(
       s.id,
       s.datasetId,
-      sanitizeUniqueIdentifier(s.name),
+      s.name,
       s.path,
       s.description,
       s.dataCategories.map(dumps(_)),
