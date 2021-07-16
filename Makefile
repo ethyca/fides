@@ -5,7 +5,7 @@
 ####################
 
 REGISTRY := ethyca
-IMAGE_TAG := $(shell git describe --tags --dirty --always)
+IMAGE_TAG := $(shell git fetch --tags && git describe --tags --dirty --always)
 
 # Server
 SERVER_IMAGE_NAME := fidesapi
