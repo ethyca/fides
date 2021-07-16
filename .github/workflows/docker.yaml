@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # This is required to properly tag images
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -21,13 +23,18 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
-      - name: Build & Push the Server
+      - name: Build FidesAPI
+        run: make server-build
+
+      - name: Push FidesAPI
         run: make server-push
 
   push-cli:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # This is required to properly tag images
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -35,5 +42,8 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
-      - name: Build & Push the CLI
+      - name: Build Fidesctl
+        run: make cli-build
+
+      - name: Push Fidesctl
         run: make cli-push
