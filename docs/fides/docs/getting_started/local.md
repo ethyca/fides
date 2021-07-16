@@ -6,7 +6,7 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 
 1. Python 3.8
 1. pip Version 21 or later
-1. Java 8
+1. Java 11
 1. sbt Version 2.12
 1. MySQL DB Version 8
 1. Clone the [Fides repo](https://github.com/ethyca/fides)
