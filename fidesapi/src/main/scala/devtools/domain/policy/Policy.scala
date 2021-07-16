@@ -1,6 +1,5 @@
 package devtools.domain.policy
-import devtools.domain.definition.{WithFidesKey, OrganizationId, VersionStamp}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
 
 import java.sql.Timestamp
 
@@ -28,7 +27,7 @@ object Policy {
     Some(
       p.id,
       p.organizationId,
-      sanitizeUniqueIdentifier(p.fidesKey),
+      p.fidesKey,
       p.versionStamp,
       p.name,
       p.description,

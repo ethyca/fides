@@ -15,6 +15,7 @@ class PolicyRuleValidator(daos: DAOs) extends Validator[PolicyRule, Long] {
     validateDataCategories(rule.organizationId, rule.dataCategories.values, errors)
     validateDataUses(rule.organizationId, rule.dataUses.values, errors)
     rule.dataQualifier.foreach(validateQualifier(rule.organizationId, _, errors))
+    validateFidesKey(rule.fidesKey, errors)
     errors.asFuture()
   }
 

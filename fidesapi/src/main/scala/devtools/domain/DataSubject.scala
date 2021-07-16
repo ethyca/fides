@@ -1,7 +1,6 @@
 package devtools.domain
 
-import devtools.domain.definition.{CanBeTree, WithFidesKey, IdType, OrganizationId, TreeItem}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.domain.definition.{CanBeTree, OrganizationId, TreeItem, WithFidesKey}
 
 import scala.collection.mutable
 
@@ -28,7 +27,7 @@ final case class DataSubject(
 object DataSubject {
   type Tupled = (Long, Option[Long], Long, String, Option[String], Option[String])
   def toInsertable(s: DataSubject): Option[Tupled] =
-    Some(s.id, s.parentId, s.organizationId, sanitizeUniqueIdentifier(s.fidesKey), s.name, s.description)
+    Some(s.id, s.parentId, s.organizationId, s.fidesKey, s.name, s.description)
 
   def fromInsertable(t: Tupled): DataSubject =
     new DataSubject(t._1, t._2, t._3, t._4, t._5, t._6)

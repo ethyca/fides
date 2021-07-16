@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.domain.definition._
 import devtools.util.JsonSupport
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -37,7 +36,7 @@ object Registry {
     Some(
       s.id,
       s.organizationId,
-      sanitizeUniqueIdentifier(s.fidesKey),
+      s.fidesKey,
       s.versionStamp,
       s.metadata.map(JsonSupport.dumps),
       s.name,

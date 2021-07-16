@@ -4,6 +4,7 @@ import devtools.controller.RequestContext
 import devtools.domain.DatasetField
 import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
+import devtools.util.Sanitization.isValidDatasetFieldReference
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,6 +19,9 @@ class DatasetFieldValidator(val daos: DAOs)(implicit val executionContext: Execu
   def validateForCreate(t: DatasetField, ctx: RequestContext): Future[Unit] = {
 
     val errors = new MessageCollector
+    if (!isValidDatasetFieldReference(t.name)) {
+      errors.addError(s"The field name ${t.name} is invalid")
+    }
     val orgIdAction: Query[Rep[Long], Long, Seq] = for {
       a <-
         datasetQuery

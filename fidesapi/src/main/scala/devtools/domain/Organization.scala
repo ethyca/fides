@@ -1,7 +1,6 @@
 package devtools.domain
 
-import devtools.domain.definition.{WithFidesKey, VersionStamp}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.domain.definition.{VersionStamp, WithFidesKey}
 
 import java.sql.Timestamp
 
@@ -22,7 +21,7 @@ object Organization {
   def toInsertable(s: Organization): Option[Tupled] =
     Some(
       s.id,
-      sanitizeUniqueIdentifier(s.fidesKey),
+      s.fidesKey,
       s.versionStamp,
       s.name,
       s.description,

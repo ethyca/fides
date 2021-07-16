@@ -4,7 +4,6 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.Generators.{DeclarationGen, blankSystem, fidesKey, requestContext}
 import devtools.domain.enums.AuditAction.{CREATE, DELETE, UPDATE}
 import devtools.persist.dao.{AuditLogDAO, OrganizationDAO, SystemDAO}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -26,13 +25,12 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
   }
 
   test("test crud operations set versions and audit logs") {
-    val unsanitizedFidesKey = s"$fidesKey x"
-    val sanitizedFidesKey   = sanitizeUniqueIdentifier(unsanitizedFidesKey)
+    val key = s"$fidesKey"
     val v =
       waitFor(
         systemService.create(
           blankSystem.copy(
-            fidesKey = unsanitizedFidesKey,
+            fidesKey = key,
             privacyDeclarations =
               Some(Seq(DeclarationGen.sample.get.copy(datasetReferences = Set("test_dataset", "test_dataset.field1"))))
           ),
@@ -43,8 +41,8 @@ class SystemServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLogg
     // we should have 1 create record in the audit log
     waitFor(findAuditLogs(v.id, "SystemObject", CREATE)).size shouldEqual 1
 
-    val saved = waitFor(systemService.findByUniqueKey(1, sanitizedFidesKey)).get
-    saved.fidesKey shouldEqual sanitizedFidesKey
+    val saved = waitFor(systemService.findByUniqueKey(1, key)).get
+    saved.fidesKey shouldEqual key
     //dataset and field datasetReferences are also sanitized
     saved.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet shouldEqual Set(
       "test_dataset",

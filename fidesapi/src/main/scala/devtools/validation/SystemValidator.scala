@@ -1,10 +1,10 @@
 package devtools.validation
 
 import devtools.controller.RequestContext
-import devtools.domain.{Dataset, SystemObject}
+import devtools.domain.{Dataset, PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.util.Sanitization.isValidDatasetReference
 import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,6 +16,7 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   def validateForCreate(sys: SystemObject, ctx: RequestContext): Future[Unit] = {
     val errors = new MessageCollector
     validateDeclarations(sys, errors)
+    validateFidesKey(sys.fidesKey, errors)
     checkForSelfReference(sys, errors)
     requireOrganizationIdExists(sys.organizationId, errors)
       .flatMap(_ => validateRegistryExists(sys, errors))
@@ -83,38 +84,50 @@ class SystemValidator(val daos: DAOs)(implicit val executionContext: ExecutionCo
   def validateDatasets(sys: SystemObject, errors: MessageCollector): Future[Unit] = {
     // rawDatasets as declared in the privacy declarations. These may be of the form
     // "dataset" or "dataset.field"
-    val datasetIdentifiers =
-      sys.privacyDeclarations.getOrElse(Seq()).flatMap(_.datasetReferences).toSet
 
-    // the actual names of just the dataset part for searching
-    val datasetNames = datasetIdentifiers.map(Dataset.baseName)
+    val declarations: Seq[PrivacyDeclaration] = sys.privacyDeclarations.getOrElse(Seq())
+    val declaredDatasetNames                  = declarations.flatMap(_.datasetReferences).toSet
+    val refErrs = declarations.flatMap(pd =>
+      declaredDatasetNames.filterNot(isValidDatasetReference).collect {
+        case err if err.nonEmpty =>
+          s"The dataset references in declaration ${pd.name} are invalid: [${err.mkString(",")}]"
+      }
+    )
 
-    val query = for {
-      (dataset, field) <-
-        datasetQuery
-          .filter(d => d.organizationId === sys.organizationId && d.fidesKey.inSet(datasetNames))
-          .joinLeft(datasetFieldQuery)
-          .on(_.id === _.datasetId)
-    } yield (dataset.fidesKey, field.map(_.name))
+    // if there are validation errors return immediately
+    if (refErrs.nonEmpty) {
+      refErrs.foreach(errors.addError)
+      Future.successful(())
+    } else {
+      // the actual names of just the dataset part for searching
+      val datasetNames =
+        declarations.flatMap(_.datasetReferences).map(Dataset.baseName).filter(_.isDefined).map(_.get).toSet
 
-    for {
-      foundCompositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
-        {
-          ts.map {
-            case (dsName, Some(fName)) => s"$dsName.$fName"
-            case (dsName, None)        => dsName
-          }.toSet
+      val query = for {
+        (dataset, field) <-
+          datasetQuery
+            .filter(d => d.organizationId === sys.organizationId && d.fidesKey.inSet(datasetNames))
+            .joinLeft(datasetFieldQuery)
+            .on(_.id === _.datasetId)
+      } yield (dataset.fidesKey, field.map(_.name))
+
+      for {
+        foundCompositeNames <- daos.datasetDAO.runAction(query.result).map { ts =>
+          {
+            ts.map {
+              case (dsName, Some(fName)) => s"$dsName.$fName"
+              case (dsName, None)        => dsName
+            }.toSet
+          }
         }
-      }
-      foundBaseNames = foundCompositeNames.map(Dataset.baseName)
+        foundBaseNames = foundCompositeNames.map(Dataset.baseName).filter(_.isDefined).map(_.get)
+        diff           = declaredDatasetNames.diff(foundCompositeNames ++ foundBaseNames)
+        _ = if (diff.nonEmpty) {
+          errors.addError(s"The values [$diff] given as dataset fidesKeys do not exist.")
+        }
 
-      diff = datasetIdentifiers.diff(foundCompositeNames ++ foundBaseNames)
-      _ = if (diff.nonEmpty) {
-        errors.addError(s"The values [$diff] given as dataset fidesKeys do not exist.")
-      }
-
-    } yield ()
-
+      } yield ()
+    }
   }
 
 }

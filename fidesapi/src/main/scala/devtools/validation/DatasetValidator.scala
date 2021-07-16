@@ -42,12 +42,6 @@ class DatasetValidator(val daos: DAOs)(implicit val executionContext: ExecutionC
     } yield e
   }
 
-  /** A dataset fides key name has the additional constraint that it cannot contain a '.'
-    * to disambiguate field references in "table.field" syntax
-    */
-  def validateFidesKey(s: String, errors: MessageCollector) =
-    if (s.contains('.')) { errors.addError("Dataset fides keys can not contain a '.'") }
-
   /** if fides key is in use, fail.
     */
   override def validateForDelete(pk: Long, existing: Dataset, ctx: RequestContext): Future[Unit] = {

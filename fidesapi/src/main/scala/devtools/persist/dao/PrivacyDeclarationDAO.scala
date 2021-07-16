@@ -4,7 +4,7 @@ import devtools.domain._
 import devtools.persist.dao.definition.{AutoIncrementing, DAO}
 import devtools.persist.db.Tables.{PrivacyDeclarationQuery, privacyDeclarationQuery, systemQuery}
 import devtools.util.JsonSupport
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
+import devtools.util.Sanitization.{isValidFidesKey, sanitizeUniqueIdentifier}
 import slick.jdbc.GetResult
 import slick.jdbc.MySQLProfile.api._
 
@@ -67,9 +67,7 @@ class PrivacyDeclarationDAO(val db: Database)(implicit val executionContext: Exe
     keys: Seq[String],
     memberName: String
   ): Future[Seq[String]] = {
-
     val sanitized = JsonSupport.dumps(keys.map(sanitizeUniqueIdentifier))
-
     db.run(
       sql"""select DISTINCT A.FIDES_KEY from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = #$organizationId AND B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('#$sanitized',B.#$memberName) > 0"""
         .as[String]
@@ -77,13 +75,12 @@ class PrivacyDeclarationDAO(val db: Database)(implicit val executionContext: Exe
   }
 
   /** search in json array field for any value with an existing key. This applies to privacy_declaration.{data_categories, data_subjects, dataset_references}. */
-  def findSystemsWithJsonArrayMember(organizationId: Long, key: String, memberName: String): Future[Seq[String]] = {
+  def findSystemsWithJsonArrayMember(organizationId: Long, key: String, memberName: String): Future[Seq[String]] =
+    if (isValidFidesKey(key))
+      db.run(
+        sql"""select DISTINCT A.FIDES_KEY from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = #$organizationId AND B.SYSTEM_ID = A.ID AND '#$key' MEMBER OF (B.#$memberName)"""
+          .as[String]
+      )
+    else Future.successful(Seq())
 
-    val sanitized = sanitizeUniqueIdentifier(key)
-    db.run(
-      sql"""select DISTINCT A.FIDES_KEY from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = #$organizationId AND B.SYSTEM_ID = A.ID AND '#$sanitized' MEMBER OF (B.#$memberName)"""
-        .as[String]
-    )
-
-  }
 }

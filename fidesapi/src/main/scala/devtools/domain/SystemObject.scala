@@ -3,7 +3,6 @@ package devtools.domain
 import devtools.domain.definition.{OrganizationId, VersionStamp, WithFidesKey}
 import devtools.util.JsonSupport
 import devtools.util.JsonSupport.{dumps, parseToObj}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 import java.sql.Timestamp
 
@@ -58,7 +57,7 @@ object SystemObject {
       s.id,
       s.organizationId,
       s.registryId,
-      sanitizeUniqueIdentifier(s.fidesKey),
+      s.fidesKey,
       s.versionStamp,
       s.metadata.map(JsonSupport.dumps),
       s.name,

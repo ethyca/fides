@@ -65,18 +65,17 @@ object App {
   val caches = new Caches(dataSubjectDAO, dataCategoryDAO, dataUseDAO, dataQualifierDAO)
 
   //validators
-  val datasetFieldValidator       = new DatasetFieldValidator(daos)
-  val datasetValidator            = new DatasetValidator(daos)
-  val systemValidator             = new SystemValidator(daos)
-  val policyValidator             = new PolicyValidator(daos)
-  val registryValidator           = new RegistryValidator(daos)
-  val policyRuleValidator         = new PolicyRuleValidator(daos)
-  val dataUseValidator            = new DataUseValidator(daos)
-  val dataQualifierValidator      = new DataQualifierValidator(daos)
-  val dataCategoryValidator       = new DataCategoryValidator(daos)
-  val dataSubjectValidator        = new DataSubjectValidator(daos)
-  val privacyDeclarationValidator = new PrivacyDeclarationValidator(daos)
-  val policyRuleEvaluator         = new PolicyRuleEvaluator(daos)
+  val datasetFieldValidator  = new DatasetFieldValidator(daos)
+  val datasetValidator       = new DatasetValidator(daos)
+  val systemValidator        = new SystemValidator(daos)
+  val policyValidator        = new PolicyValidator(daos)
+  val registryValidator      = new RegistryValidator(daos)
+  val policyRuleValidator    = new PolicyRuleValidator(daos)
+  val dataUseValidator       = new DataUseValidator(daos)
+  val dataQualifierValidator = new DataQualifierValidator(daos)
+  val dataCategoryValidator  = new DataCategoryValidator(daos)
+  val dataSubjectValidator   = new DataSubjectValidator(daos)
+  val policyRuleEvaluator    = new PolicyRuleEvaluator(daos)
   //service
   val approvalService     = new ApprovalService(approvalDAO)
   val auditLogService     = new AuditLogService(auditLogDAO)
@@ -93,7 +92,7 @@ object App {
     new DataQualifierService(dataQualifierDAO, auditLogDAO, organizationDAO, dataQualifierValidator)
 
   val policyService             = new PolicyService(daos, policyRuleService, policyValidator)
-  val privacyDeclarationService = new PrivacyDeclarationService(daos, privacyDeclarationValidator)
+  val privacyDeclarationService = new PrivacyDeclarationService(daos)
   val systemService             = new SystemService(daos, privacyDeclarationService, systemValidator)(executionContext)
 
   val registryService = new RegistryService(daos, registryValidator)(executionContext)

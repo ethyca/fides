@@ -2,7 +2,6 @@ package devtools.domain
 
 import devtools.domain.definition.IdType
 import devtools.util.JsonSupport
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 
 final case class PrivacyDeclaration(
   id: Long,
@@ -25,12 +24,16 @@ object PrivacyDeclaration {
   /** collection of mixture of dataset, dataset.field to the set of unique referenced
     * rawDatasets. e.g. [dataset1.f1, dataset2.f1, dataset2] => [dataset1, dataset2]
     */
-  def extractDatasets(references: Iterable[String]): Set[String] = references.map(Dataset.baseName).toSet
+  def extractDatasets(references: Iterable[String]): Set[String] = references
+    .map(Dataset.baseName)
+    .collect { case Some(s) =>
+      s
+    }
+    .toSet
 
   type Tupled = (Long, Long, String, String, DataUseName, DataQualifierName, String, String, String)
 
   def toInsertable(s: PrivacyDeclaration): Option[Tupled] = {
-    val datasetReferences = s.datasetReferences.map(sanitizeUniqueIdentifier)
     Some(
       s.id,
       s.systemId,
@@ -39,8 +42,8 @@ object PrivacyDeclaration {
       s.dataUse,
       s.dataQualifier,
       JsonSupport.dumps(s.dataSubjects),
-      JsonSupport.dumps(datasetReferences),
-      JsonSupport.dumps(extractDatasets(datasetReferences))
+      JsonSupport.dumps(s.datasetReferences),
+      JsonSupport.dumps(extractDatasets(s.datasetReferences))
     )
   }
 

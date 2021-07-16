@@ -3,7 +3,6 @@ import com.typesafe.scalalogging.LazyLogging
 import devtools.Generators._
 import devtools.domain.enums.AuditAction._
 import devtools.domain.{Dataset, DatasetField}
-import devtools.util.Sanitization.sanitizeUniqueIdentifier
 import devtools.util.waitFor
 import devtools.{App, TestUtils}
 import org.scalatest.BeforeAndAfterAll
@@ -91,22 +90,6 @@ class DatasetServiceTest extends AnyFunSuite with BeforeAndAfterAll with LazyLog
     val fieldIds = response.fields.getOrElse(Seq()).map(_.id) ++ updatedResponse.fields.getOrElse(Seq()).map(_.id)
 
     waitFor(datasetFieldDAO.filter(_.id.inSet(fieldIds.toSet))).isEmpty shouldEqual true
-  }
-
-  test("test dataset keys and dataset field names sanitized") {
-    val unSanitizedFieldName = s"Not sanitized; $fidesKey"
-    val unSanitizedTableName = s"Not sanitized; $fidesKey"
-    val ds                   = datasetOf(unSanitizedTableName, datasetFieldOf(unSanitizedFieldName))
-    val response             = datasetService.create(ds, requestContext)
-    response.map(ds => {
-      datasetIds.add(ds.id)
-      ds.fidesKey shouldBe sanitizeUniqueIdentifier(unSanitizedTableName)
-      ds.fields match {
-        case Some(f :: _) => f.name shouldBe sanitizeUniqueIdentifier(unSanitizedFieldName)
-        case _            => fail("did not get correct fields back")
-      }
-
-    })
   }
 
 }
