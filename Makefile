@@ -5,7 +5,7 @@
 ####################
 
 REGISTRY := ethyca
-IMAGE_TAG := $(shell git fetch --tags && git describe --tags --dirty --always)
+IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
 # Server
 SERVER_IMAGE_NAME := fidesapi
@@ -82,22 +82,18 @@ server-shell: check-db
 
 # CLI
 cli-build:
-	@echo "Building the $(CLI_IMAGE) image..."
 	docker build --tag $(CLI_IMAGE) fidesctl/
 
 cli-push: cli-build
-	@echo "Pushing the $(CLI_IMAGE) image to $(DOCKER_REGISTRY)..."
 	docker tag $(CLI_IMAGE) $(CLI_IMAGE_LATEST)
 	docker push $(CLI_IMAGE)
 	docker push $(CLI_IMAGE_LATEST)
 
 # Server
 server-build:
-	@echo "Building the $(SERVER_IMAGE) image..."
 	docker build --tag $(SERVER_IMAGE) fidesapi/
 
 server-push: server-build
-	@echo "Pushing the $(SERVER_IMAGE) image to $(DOCKER_REGISTRY)..."
 	docker tag $(SERVER_IMAGE) $(SERVER_IMAGE_LATEST)
 	docker push $(SERVER_IMAGE)
 	docker push $(SERVER_IMAGE_LATEST)
