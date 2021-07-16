@@ -4,7 +4,7 @@ This page describes the various objects that make up the Fides platform.
 
 ## Object Relationship Diagram
 
-![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
+![alt text](../img/Object_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 
@@ -69,6 +69,8 @@ A Data Category describes the kind of data that is being used.
 | clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data categories are supported without any loss of functionality |
 | description | String | A description of what this data category means or encapsulates |
 
+For the default set of data categories, see [Default Data Categories](privacy_taxonomy.md#default-data-categories).
+
 ### Data Use
 
 A Data Use describes what the data is being used for.
@@ -101,6 +103,8 @@ A Data Use describes what the data is being used for.
 | name | String | A name for this data use |
 | description | String | A description of what this data use means or encapsulates |
 
+ For the default set of data uses, see [Default Data Uses](privacy_taxonomy.md#default-data-uses).
+
 ### Data Subject
 
 A Data Subject describes who the data belongs to.
@@ -130,6 +134,7 @@ A Data Subject describes who the data belongs to.
 | name | String | A name for this data subject |
 | description | String | A description of what this data subject means or encapsulates |
 
+For the default set of data subjects, see [Default Data Subjects](privacy_taxonomy.md#default-data-subjects).
 ### Data Qualifier
 
 A Data Qualifier describes how private the data being used is. The hierarchy for Data Qualifiers is in order of increasing exposure.
@@ -162,6 +167,8 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 | name | String | A name for this data qualifier |
 | clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data qualifiers are supported without any loss of functionality. |
 | description | String | A description of what this data qualifier means or encapsulates |
+
+For the default set of data subjects, see [Default Data Qualifiers](privacy_taxonomy.md#default-data-qualifiers).
 
 ---
 

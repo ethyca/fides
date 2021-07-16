@@ -7,7 +7,7 @@ Fides uses four different terms to describe privacy.  You describe your privacy 
 
  - These types apply _only_ to the organization that has defined them.
 
-# Data Categories
+# Default Data Categories
 |   name    | Clause (ISO-19944-1)    | description  |
 |   :---    |   :---    |   :---    |
 |   Customer content data    | 8.2.2    | Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device. Notice that the locally executing application may or may not choose to share that data with the cloud service and yet the data would still fit in this extended definition. This includes content directly created by customers and their users and all data, including all text, sound, software or image files that customers provide to the cloud service, or are provided to the cloud service on behalf of customers, through the capabilities of the service or application. This also includes data that the user intentionally creates through the use of the application or cloud service, such as documents, processed data sets, modified images, recorded sounds, etc. When customer content data local to the device is transmitted to the cloud service, it becomes cloud service customer data.<br /><br />Specific types of information in customer content data may require explicit use statements by the cloud services provider to the extent that the CSPs are aware of their presence.  |
@@ -43,7 +43,7 @@ Fides uses four different terms to describe privacy.  You describe your privacy 
 |   Account or administration contact information    | 8.2.5.2    | This refers to the contact information for a customer of an application or cloud service and any cloud service administrators and cloud service business managers designated to administer and control the use of the service. Account or administration contact information is a sub-type of account data.  |
 |   Payment instrument data    | 8.2.5.3    | This refers to data provided by the cloud service customer for the purpose of making payment for the services, or to pay for products or services bought through the services. Payment instrument data is a subset of account data.  |
 
-# Data Use
+# Default Data Uses
 |   name    | Clause (ISO-19944-1)    | description  |
 |   :---    |   :---    |   :---    |
 |   Provide    | 9.3.2    | Provide means the use of specified data categories:<br />— from the source scope by an applications and services scope to provide and protect the current<br />capabilities of a results scope;<br />— to communicate with the customer about the status and availability of the current capabilities of the result scope;<br />— including providing support for the result scope and to protect at a minimum the specified data category from the source scope.<br />Provide can include the use of specified data categories to protect the rights and property of the cloud service provider and to prevent loss of life or serious injury to anyone. For example:<br />Example 1:<br />This cloud service uses derived data only to provide the cloud services defined in the cloud services agreement.<br />NOTE 1 In this example, use of derived data is restricted to provide the service contracted for in the cloud service agreement, including operational support system (OSS) and business support system (BSS) for exclusively those services. In the case of a single contracted service, “This application” or “This service” can also define the scope (see 9.4.2.3).<br />NOTE 2 The data use statement structure used in this example is described in Clause 10.<br />In the case where a single scope is involved, provide also means to protect the customer content data that exists within this scope and to provide and communicate with the customer about the status and availability of the current capabilities of this scope.  |
@@ -60,7 +60,7 @@ Fides uses four different terms to describe privacy.  You describe your privacy 
 |   Collect    | 9.3.8    | Collect includes collecting, preparing, pre-processing and storing specified data categories from the source scope in preparation for other uses such as training machine learning algorithms.  |
 |   Train (AI system)    | 9.3.9    | Use the specified data categories from the source scope to train, retrain or test an artificial intelligence (AI) system. The AI system can use machine learning technologies, or it can use other technologies.<br />Cloud service providers describing the use of data to train AI systems should include a statement addressing the extent to which individuals are directly identified in the resulting AI system. The data identification qualifiers in 8.3 could be used as the basis for this description. If there is PII in the resulting AI system, then additional statements are likely required, e.g. about data retention periods.  |
 
-# Data Subject
+# Default Data Subjects
 
 |   name    |       |
 |   :---    |   :---    |
@@ -81,7 +81,7 @@ Fides uses four different terms to describe privacy.  You describe your privacy 
 |   Visitor    |   |
 
 
-# Data Qualifier
+# Default Data Qualifiers
 |   name    | Clause (ISO-19944-1)    | description  |
 |   :---    |   :---    |   :---    |
 |   Aggregated data    | 8.3.6    | Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attributes are not identifiable.<br />Aggregated data can also be created from information about non-human entities such that individual- level attributes are not identifiable. Such aggregated data can be OPD.  |
