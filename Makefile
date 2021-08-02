@@ -5,12 +5,7 @@
 ####################
 
 REGISTRY := ethyca
-# If running in CI, inherit the SHA; otherwise, calculate it from git
-GIT_COMMIT_SHA ?= $(CI_COMMIT_SHORT_SHA)
-ifeq ($(strip $(GIT_COMMIT_SHA)),)
-GIT_COMMIT_SHA := $(shell git rev-parse --short HEAD)
-endif
-IMAGE_TAG := $(GIT_COMMIT_SHA)
+IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
 # Server
 SERVER_IMAGE_NAME := fidesapi
@@ -23,7 +18,27 @@ CLI_IMAGE_LATEST := $(REGISTRY)/$(CLI_IMAGE_NAME):latest
 
 .PHONY: help
 help:
-	@echo "Under construction, please read the Makefile directly to see available targets"
+	@echo --------------------
+	@echo Development Targets:
+	@echo ----
+	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc.
+	@echo ----
+	@echo cli - Spins up the database, the api, and starts a shell within a docker container with the local fidesctl files mounted.
+	@echo ----
+	@echo cli-build - Builds the fidesctl Docker image.
+	@echo ----
+	@echo fidesctl-check-all - Run all of the available CI checks for fidesctl locally.
+	@echo ----
+	@echo init-db - Initializes the database docker container and runs migrations. Run this if your database seems to be the cause of test failures.
+	@echo ----
+	@echo server - Spins up the database and fidesapi, reachable from the host machine at localhost.
+	@echo ----
+	@echo server-build - Builds the fidesapi Docker image.
+	@echo ----
+	@echo server-shell - Spins up the database, and starts a shell within a docker container with the local fidesapi files mounted.
+	@echo ----
+	@echo server-test - Run the tests for the fidesapi in a local docker container.
+	@echo --------------------
 
 ####################
 # Dev
@@ -32,6 +47,7 @@ help:
 # CLI
 cli: compose-build check-db
 	@docker-compose run $(CLI_IMAGE_NAME)
+	@make teardown
 
 # Server
 .PHONY: check-db
@@ -46,22 +62,19 @@ init-db: compose-build
 	@docker-compose down
 	@docker volume prune -f
 	@docker-compose run $(SERVER_IMAGE_NAME) /bin/bash -c "sleep 10 && sbt flywayMigrate"
+	@make teardown
 
 .PHONY: server
 server: check-db
 	@echo "Spinning up the webserver..."
 	@docker-compose up $(SERVER_IMAGE_NAME)
-	@echo "Exited webserver, tearing down environment..."
-	@docker-compose down
-	@echo "Teardown complete!"
+	@make teardown
 
 .PHONY: shell
 server-shell: check-db
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker-compose run $(SERVER_IMAGE_NAME) /bin/bash
-	@echo "Exited development shell, tearing down environment..."
-	@docker-compose down
-	@echo "Teardown complete!"
+	@make teardown
 
 ####################
 # Docker
@@ -69,22 +82,18 @@ server-shell: check-db
 
 # CLI
 cli-build:
-	@echo "Building the $(CLI_IMAGE) image..."
 	docker build --tag $(CLI_IMAGE) fidesctl/
 
 cli-push: cli-build
-	@echo "Pushing the $(CLI_IMAGE) image to $(DOCKER_REGISTRY)..."
 	docker tag $(CLI_IMAGE) $(CLI_IMAGE_LATEST)
 	docker push $(CLI_IMAGE)
 	docker push $(CLI_IMAGE_LATEST)
 
 # Server
 server-build:
-	@echo "Building the $(SERVER_IMAGE) image..."
 	docker build --tag $(SERVER_IMAGE) fidesapi/
 
 server-push: server-build
-	@echo "Pushing the $(SERVER_IMAGE) image to $(DOCKER_REGISTRY)..."
 	docker tag $(SERVER_IMAGE) $(SERVER_IMAGE_LATEST)
 	docker push $(SERVER_IMAGE)
 	docker push $(SERVER_IMAGE_LATEST)
@@ -94,12 +103,17 @@ server-push: server-build
 ####################
 
 # General
-test-all: server-test cli-check-all
+test-all: server-test fidesctl-check-all
 	@echo "Running all tests and checks..."
 
-# CLI
-cli-check: black pylint mypy pytest
+# Fidesctl
+fidesctl-check-all: black pylint mypy pytest
 	@echo "Running formatter, linter, typechecker and tests..."
+
+fidesctl-check-install:
+	@echo "Checking that fidesctl is installed..."
+	@docker-compose run $(CLI_IMAGE_NAME) \
+	fidesctl
 
 black: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
@@ -145,6 +159,12 @@ clean:
 	@docker system prune -f
 	@docker-compose run $(SERVER_IMAGE_NAME) sbt clean cleanFiles
 	@echo "Clean complete!"
+
+.PHONY: teardown
+teardown:
+	@echo "Tearing down the dev environment..."
+	@docker-compose down
+	@echo "Teardown complete"
 
 .PHONY: compose-build
 compose-build:

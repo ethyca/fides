@@ -511,83 +511,75 @@ Additionally, when a registry is evaluated, we also check that
 
 === "Sample Evaluation Object"
 
-    ```json
-    {
-      "id":40,
-      "organizationId":1,
-      "registryId":20,
-      "userId":1,
-      "versionStamp":216,
-      "action":"evaluate",
-    #the overall response status. This will be the worst of any individual system responses
-    # in descending order:
-    #  - ERROR: at least one component was invalid; the registry can't be evaluated
-    #  - FAIL: at least one component failed validation
-    #  - MANUAL: at least one component requires manual approval
-    #  - PASS: none of the above conditions were found
-      "details":{
-        "overall":{
-          "FAIL":[
-            "system1"
-          ],
-          "ERROR":[
-            "system3"
-          ]
-        },
+```yaml
+# The organization version stamp. This is maintained per organization and is incremented on
+# each state change
+versionStamp: 65
+organizationId: 1
+userId: 1
+action: dry-run
+id: 0
+#the overall response status. This will be the worst of any individual system responses
+# in descending order:
+#  - ERROR: at least one component was invalid; the registry can't be evaluated
+#  - FAIL: at least one component failed validation
+#  - MANUAL: at least one component requires manual approval
+#  - PASS: none of the above conditions were found
+status: ERROR
+registryId: 6
+details:
+  overall:
+    FAIL:
+    - system2
+    ERROR:
+    - system1
+  # detailed evaluations
+  # Here, for example, system3 failed because its privacy declaration "sensitive data"
+  # violated  policy1.any identified data;
+  evaluations:
+    system3:
+      FAIL:
+        policy1.any identified data:
+        - sensitiveData
+      warnings:
+      - 'The system system2 includes privacy declarations
+        that do not exist in system3 : identified
+        credentials for providing,operations data for improvement'
+      errors: []
+    system2:
+      FAIL:
+        policy1.any identified data:
+        - operations data for improvement
+        - identified credentials for providing
+      warnings:
+        # this warning shows that the system declares useage of a dataset that contains
+        # privacy data that the system does not declare. For example, here the dataset
+        # contains identified (i.e. unencrypted) customer content data but the system
+        # declarations do not state that they are exposing identified customner content
+        # data. This is returned as a warning since datasets may often contain a wide
+        # privacy range.
+      - 'The system system3 includes privacy declarations
+        that do not exist in system2 : sensitiveData'
+      errors: []
+    system1:
+      FAIL:
+        policy1.any identified data:
+        - test1
+        - identified end-user data for prospecting
+        - identified account data for prospecting
+      warnings: []
+      errors:
+        # this error indicated that a data set or field referenced in the privacy declaration
+        # contained more sensitive data then the declaration claimed
+      - The dataset d1 contains categories [operations_data]
+        under data qualifier [identified_data] not accounted for in the privacy declaration
+        test1
+      - The dataset field d1.d1f3 contains categories
+        [operations_data] under data qualifier [identified_data] not accounted for
+        in the privacy declaration identified account data for prospecting
+  warnings:
+    #system references containing dependency cycles will generate a warning
+  - cyclic reference: system3->system2->system3'
 
-      # detailed evaluations
-      # Here, system1 failed because its privacy declaration "declaration1" violated
-      # policy2 rule3, declaration3 violated policy1, rule2, and so on.
-        "evaluations":{
-          "system1":{
-            "FAIL":{
-              "policy2.rule3":[
-                "declaration1"
-              ],
-              "policy1.rule2":[
-                "declaration2",
-                "declaration3"
-              ],
-              "policy1.rule1":[
-                "declaration3"
-              ],
-              "policy2.rule4":[
-                "declaration1",
-                "declaration2",
-                "declaration3"
-              ]
-            },
-            "warnings":[
-            # this warning shows that the system declares useage of a dataset that contains
-            # privacy data that the system does not declare. For example, here the dataset
-            # contains identified (i.e. unencrypted) customer content data but the system
-            # declarations do not state that they are exposing identified customner content
-            # data. This is returned as a warning since datasets may often contain a wide
-            # privacy range.
-              "Dataset:d1: These categories exist for qualifier identified_data in this dataset but do not appear with that qualifier in the dependant system system1:[customer_content_data,derived_data,cloud_service_provider_data]",
-            # Similar to the warning for datasets, but for the privacy declared by
-            # dependant systems.
-              "The system b includes privacy declarations that do not exist in a:[profiling_data,political_opinions],
-            "errors":[
 
-            ]
-          },
-          "system3":{
-            "warnings":[
-
-            ],
-              # fatal errors. Here "system3" declared a dependence on datasets and systems
-              # that did not exist.
-            "errors":[
-              "The referenced datasets missing_dataset_1,missing_dataset_2 were not found.",
-              "The referenced systems system2 were not found."
-            ]
-          }
-        },
-        "warnings":[
-          "The referenced objects don't exist in the given values:system2",
-          "cyclic reference: system3->system3"
-        ]
-      }
-    }
-    ```
+```
