@@ -148,6 +148,11 @@ dataCategory:
     description: "State issued personal identification number."
 
   # User Provided Data -> Government ID
+  - fidesKey: national_identification_number
+    name: "National Identification Number"
+    parentKey: government_id
+    description: "State issued personal identification number."
+
   - fidesKey: drivers_license_number
     name: "Driver's License Number"
     parentKey: government_id
@@ -167,6 +172,16 @@ dataCategory:
     name: "User Identifiable Data"
     parentKey: derived_data
     description: "Derived data that is linked to, or identifies a user."
+
+  - fidesKey: organization_identifiable_data
+    name: "Organization Identifiable Data"
+    parentKey: derived_data
+    description: "Derived data that is linked to, or identifies an organization."
+
+  - fidesKey: sensor_data
+    name: "Sensor Data"
+    parentKey: derived_data
+    description: "Non-user identifiable measurement data derived from sensors and monitoring systems."
 
   # Derived Data -> User Identifiable Data
   - fidesKey: gender
@@ -199,16 +214,6 @@ dataCategory:
     parentKey: user_identifiable_data
     description: "Religion or religious belief."
 
-  - fidesKey: organization_identifiable_data
-    name: "Organization Identifiable Data"
-    parentKey: derived_data
-    description: "Derived data that is linked to, or identifies an organization."
-
-  - fidesKey: sensor_data
-    name: "Sensor Data"
-    parentKey: derived_data
-    description: "Non-user identifiable measurement data derived from sensors and monitoring systems."
-
   - fidesKey: telemetry_data
     name: "Telemetry Data"
     parentKey: user_identifiable_data
@@ -219,21 +224,6 @@ dataCategory:
     parentKey: user_identifiable_data
     description: "Data related to a user's device, configuration and setting."
 
-  - fidesKey: device_id
-    name: "Device ID"
-    parentKey: device_data
-    description: "Device unique identification number."
-
-  - fidesKey: cookie_id
-    name: "Cookie ID"
-    parentKey: device_data
-    description: "Cookie unique identification number."
-
-  - fidesKey: ip_address
-    name: "IP Address"
-    parentKey: device_data
-    description: "Unique identifier related to device connection."
-
   - fidesKey: observed_data
     name: "Observed Data"
     parentKey: user_identifiable_data
@@ -243,11 +233,6 @@ dataCategory:
     name: "Demographic Information"
     parentKey: user_identifiable_data
     description: "Demographic information about a user."
-
-  - fidesKey: non_specific_age
-    name: "Non-Specific Age"
-    parentKey: demographic_information
-    description: "Age range information."
 
   - fidesKey: profiling_data
     name: "Profiling Data"
@@ -293,6 +278,28 @@ dataCategory:
     name: "User Sensor Data"
     parentKey: user_identifiable_data
     description: "Measurement data derived about a user's environment through system use."
+
+  # Derived Data -> Device Data
+  - fidesKey: device_id
+    name: "Device ID"
+    parentKey: device_data
+    description: "Device unique identification number."
+
+  - fidesKey: cookie_id
+    name: "Cookie ID"
+    parentKey: device_data
+    description: "Cookie unique identification number."
+
+  - fidesKey: ip_address
+    name: "IP Address"
+    parentKey: device_data
+    description: "Unique identifier related to device connection."
+
+  # Derived Data -> Demographic Information
+  - fidesKey: non_specific_age
+    name: "Non-Specific Age"
+    parentKey: demographic_information
+    description: "Age range information."
 
   # System Data
   - fidesKey: system_data
