@@ -1,0 +1,16 @@
+dataCategory:
+  - fidesKey: user_provided_data
+    name: "User Provided Data"
+    description: "Data provided or created directly by a user of the system."
+
+  - fidesKey: derived_data
+    name: "Derived Data"
+    description: "Data derived from user provided data or as a result of user actions in the system."
+
+  - fidesKey: system_data
+    name: "System Data"
+    description: "Data unique to, and under control fo the system."
+
+  - fidesKey: account_data
+    name: "Account Data"
+    description: "Data unique to, and under control of the system"
