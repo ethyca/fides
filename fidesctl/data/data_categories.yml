@@ -1,16 +1,50 @@
 dataCategory:
+  # User Provided Data
   - fidesKey: user_provided_data
     name: "User Provided Data"
     description: "Data provided or created directly by a user of the system."
 
+  # Derived Data
   - fidesKey: derived_data
     name: "Derived Data"
     description: "Data derived from user provided data or as a result of user actions in the system."
 
+  - fidesKey: user_identifiable_data
+    name: "User Identifiable Data"
+    parentKey: derived_data
+    description: "Derived data that is linked to, or identifies a user."
+
+  - fidesKey: organization_identifiable_data
+    name: "Organization Identifiable Data"
+    parentKey: derived_data
+    description: "Derived data that is linked to, or identifies an organization."
+
+  # System Data
   - fidesKey: system_data
     name: "System Data"
     description: "Data unique to, and under control fo the system."
 
+  - fidesKey: authentication_data
+    name: "Authentication Data"
+    parentKey: system_data
+    description: "Data used to manage access to the system."
+
+  - fidesKey: operations_data
+    name: "Operations Data"
+    parentKey: system_data
+    description: "Data used for system operations."
+
+  # Account Data
   - fidesKey: account_data
     name: "Account Data"
     description: "Data unique to, and under control of the system"
+
+  - fidesKey: account_contact_information
+    name: "Account Contact Information"
+    parentKey: account_data
+    description: "Account data related to user contact information."
+
+  - fidesKey: payment_information
+    name: "Payment Information"
+    parentKey: account_data
+    description: "Payment data related to user's account."
