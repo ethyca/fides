@@ -1,4 +1,4 @@
-dataQualifier:
+data-qualifier:
   - fidesKey: "identified_data"
     name: "Identified Data"
     description: |

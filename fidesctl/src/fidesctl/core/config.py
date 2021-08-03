@@ -43,7 +43,9 @@ def read_config(config_path: str = "") -> Dict[str, str]:
                 parser.read(file_location)
                 user_id = parser["User"]["id"]
                 api_key = parser["User"]["api-key"]
+                user_dict = {"user_id": user_id, "api_key": api_key}
+                return user_dict
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
             break
-    return {"user_id": user_id, "api_key": api_key}
+    return {"user_id": "demo", "api_key": "test_api_key"}
