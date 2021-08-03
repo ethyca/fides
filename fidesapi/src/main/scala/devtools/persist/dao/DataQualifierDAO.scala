@@ -38,7 +38,7 @@ class DataQualifierDAO(val db: Database)(implicit
     } yield i
 
   override implicit def getResult: GetResult[DataQualifier] =
-    r => DataQualifier(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String])
+    r => DataQualifier(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String], r.<<?[String])
 
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: Rep[_]](value: String): DataQualifierQuery => Rep[Option[Boolean]] = {

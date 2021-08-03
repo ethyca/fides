@@ -35,7 +35,7 @@ class DataCategoryDAO(val db: Database)(implicit
     } yield i
 
   override implicit def getResult: GetResult[DataCategory] =
-    r => DataCategory(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String])
+    r => DataCategory(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String], r.<<?[String])
 
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: Rep[_]](value: String): DataCategoryQuery => Rep[Option[Boolean]] = {

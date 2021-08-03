@@ -4,8 +4,7 @@ nav:
   - Home: index.md
   - License: license.md
   - Fides Objects:
-    - Object Types: fides_objects/object_types.md
-    - Default Privacy Values: fides_objects/privacy_taxonomy.md
+      - Object Types: fides_objects/object_types.md
   - Getting Started:
       - getting_started/docker.md
       - getting_started/local.md

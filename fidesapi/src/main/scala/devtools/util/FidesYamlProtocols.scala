@@ -139,12 +139,12 @@ object FidesYamlProtocols extends DefaultYamlProtocol with LazyLogging {
   implicit lazy val ApprovalFormat: YamlFormat[Approval] = withOptionalLongId[Approval](yamlFormat12(Approval.apply))
   implicit val AuditLogFormat: YamlFormat[AuditLog]      = withOptionalLongId[AuditLog](yamlFormat11(AuditLog.apply))
   implicit val DataQualifierFormat: YamlFormat[DataQualifier] =
-    withOptionalLongId[DataQualifier](yamlFormat7(DataQualifier.apply))
-  implicit val DataUseFormat: YamlFormat[DataUse] = withOptionalLongId[DataUse](yamlFormat7(DataUse.apply))
+    withOptionalLongId[DataQualifier](yamlFormat8(DataQualifier.apply))
+  implicit val DataUseFormat: YamlFormat[DataUse] = withOptionalLongId[DataUse](yamlFormat8(DataUse.apply))
   implicit val SubjectCategoryFormat: YamlFormat[DataSubject] =
-    withOptionalLongId[DataSubject](yamlFormat6(DataSubject.apply))
+    withOptionalLongId[DataSubject](yamlFormat7(DataSubject.apply))
   implicit val DataCategoryFormat: YamlFormat[DataCategory] =
-    withOptionalLongId[DataCategory](yamlFormat7(DataCategory.apply))
+    withOptionalLongId[DataCategory](yamlFormat8(DataCategory.apply))
   implicit val PrivacyDeclarationFormat: YamlFormat[PrivacyDeclaration] =
     withOptionalValues(Map("id" -> 0L, "systemId" -> 0L), yamlFormat8(PrivacyDeclaration.apply))
   implicit val SystemObjectFormat: YamlFormat[SystemObject] =

@@ -232,8 +232,8 @@ object Tables {
     extends BaseAutoIncTable[DataCategory](tag, "DATA_CATEGORY") with OrganizationIdTable[DataCategory] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
-    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -243,6 +243,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataCategory.fromInsertable, DataCategory.toInsertable)
@@ -251,8 +252,8 @@ object Tables {
   class DataUseQuery(tag: Tag) extends BaseAutoIncTable[DataUse](tag, "DATA_USE") with OrganizationIdTable[DataUse] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
-    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -262,6 +263,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataUse.fromInsertable, DataUse.toInsertable)
@@ -272,8 +274,8 @@ object Tables {
     extends BaseAutoIncTable[DataQualifier](tag, "DATA_QUALIFIER") with OrganizationIdTable[DataQualifier] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
-    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -283,6 +285,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataQualifier.fromInsertable, DataQualifier.toInsertable)
@@ -292,8 +295,8 @@ object Tables {
     extends BaseAutoIncTable[DataSubject](tag, "DATA_SUBJECT") with OrganizationIdTable[DataSubject] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
-    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val description: Rep[Option[String]] = column[Option[String]]("description")
 
     def * =
@@ -303,6 +306,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         description
       ) <> (DataSubject.fromInsertable, DataSubject.toInsertable)
   }
