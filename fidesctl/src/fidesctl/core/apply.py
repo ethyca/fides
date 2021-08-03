@@ -154,3 +154,7 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
             update_list,
             unchanged_list,
         )
+
+        echo_green(f"Created {len(create_list)} {object_type} objects.")
+        echo_green(f"Updated {len(update_list)} {object_type} objects.")
+        echo_green(f"Skipped {len(unchanged_list)} unchanged {object_type} objects.")

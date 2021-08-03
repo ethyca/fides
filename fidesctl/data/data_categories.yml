@@ -19,23 +19,23 @@ data-category:
     parentKey: user_provided_data
     description: "User's date of birth."
 
-  - fidesKey: gender
-    name: "Gender"
+  - fidesKey: user_provided_gender
+    name: "User Provided Gender"
     parentKey: user_provided_data
     description: "Gender of an individual."
 
-  - fidesKey: race
-    name: "Race"
+  - fidesKey: user_provided_race
+    name: "User Provided Race"
     parentKey: user_provided_data
     description: "Racial or ethnic origin data."
 
-  - fidesKey: sexual_orientation
-    name: "Sexual Orientation"
+  - fidesKey: user_provided_sexual_orientation
+    name: "User Provided Sexual Orientation"
     parentKey: user_provided_data
     description: "Personal sex life or sexual information."
 
-  - fidesKey: non_specific_age
-    name: "Non-Specific Age"
+  - fidesKey: user_provided_non_specific_age
+    name: "User Provided Non-Specific Age"
     parentKey: user_provided_data
     description: "Age range information."
 
@@ -44,13 +44,13 @@ data-category:
     parentKey: user_provided_data
     description: "Professional information."
 
-  - fidesKey: workplace
-    name: "Workplace"
+  - fidesKey: user_provided_workplace
+    name: "User Provided Workplace"
     parentKey: user_provided_data
     description: "Organization of employment."
 
-  - fidesKey: religious_belief
-    name: "Religious Belief"
+  - fidesKey: user_provided_religious_belief
+    name: "User Provided Religious Belief"
     parentKey: user_provided_data
     description: "Religion or religious belief."
 
@@ -79,8 +79,8 @@ data-category:
     parentKey: user_provided_data
     description: "Data relating to children."
 
-  - fidesKey: political_opinions
-    name: "Political Opinions"
+  - fidesKey: political_opinion
+    name: "Political Opinion"
     parentKey: user_provided_data
     description: "Data related to the individual's political opinions."
 
@@ -95,8 +95,8 @@ data-category:
     description: "State provided identification information."
 
   # User Provided Data -> Financial Data
-  - fidesKey: provided_financial_account_number
-    name: "Financial Account Number"
+  - fidesKey: user_provided_financial_account_number
+    name: "User Provided Financial Account Number"
     parentKey: financial_data
     description: "User's account number for a payment card, bank account, or other financial system."
 
@@ -106,46 +106,46 @@ data-category:
     parentKey: credentials
     description: "Password for system authentication."
 
+  - fidesKey: biometric_credentials
+    name: "Biometric Credentials"
+    parentKey: credentials
+    description: "Credentials for system authentication."
+
   # User Provided Data -> Provided Contact Information
-  - fidesKey: provided_email
-    name: "Provided Email"
+  - fidesKey: user_provided_email
+    name: "User Provided Email"
     parentKey: provided_contact_information
     description: "User's provided email address."
 
-  - fidesKey: provided_street
-    name: "Provided Street"
+  - fidesKey: user_provided_street
+    name: "User Provided Street"
     parentKey: provided_contact_information
     description: "User's street level address information."
 
-  - fidesKey: provided_city
-    name: "Provided City"
+  - fidesKey: user_provided_city
+    name: "User Provided City"
     parentKey: provided_contact_information
     description: "User's city level address information."
 
-  - fidesKey: provided_state
-    name: "Provided State"
+  - fidesKey: user_provided_state
+    name: "User Provided State"
     parentKey: provided_contact_information
     description: "User's state level address information."
 
-  - fidesKey: provided_postal_code
-    name: "Provided Postal Code"
+  - fidesKey: user_provided_postal_code
+    name: "User Provided Postal Code"
     parentKey: provided_contact_information
     description: "User's postal code."
 
-  - fidesKey: provided_country
-    name: "Provided Country"
+  - fidesKey: user_provided_country
+    name: "User Provided Country"
     parentKey: provided_contact_information
     description: "User's country level address information."
 
-  - fidesKey: provided_phone_number
-    name: "Provided Phone Number"
+  - fidesKey: user_provided_phone_number
+    name: "User Provided Phone Number"
     parentKey: provided_contact_information
     description: "User's phone number."
-
-  - fidesKey: national_identification_number
-    name: "National Identification Number"
-    parentKey: government_id
-    description: "State issued personal identification number."
 
   # User Provided Data -> Government ID
   - fidesKey: national_identification_number
@@ -184,36 +184,6 @@ data-category:
     description: "Non-user identifiable measurement data derived from sensors and monitoring systems."
 
   # Derived Data -> User Identifiable Data
-  - fidesKey: gender
-    name: "Gender"
-    parentKey: user_identifiable_data
-    description: "Gender of an individual."
-
-  - fidesKey: race
-    name: "Race"
-    parentKey: user_identifiable_data
-    description: "Racial or ethnic origin data."
-
-  - fidesKey: sexual_orientation
-    name: "Sexual Orientation"
-    parentKey: user_identifiable_data
-    description: "Personal sex life or sexual information."
-
-  - fidesKey: non_specific_age
-    name: "Non-Specific Age"
-    parentKey: user_identifiable_data
-    description: "Age range information."
-
-  - fidesKey: workplace
-    name: "Workplace"
-    parentKey: user_identifiable_data
-    description: "Organization of employment."
-
-  - fidesKey: religious_belief
-    name: "Religious Belief"
-    parentKey: user_identifiable_data
-    description: "Religion or religious belief."
-
   - fidesKey: telemetry_data
     name: "Telemetry Data"
     parentKey: user_identifiable_data
@@ -279,6 +249,36 @@ data-category:
     parentKey: user_identifiable_data
     description: "Measurement data derived about a user's environment through system use."
 
+  - fidesKey: derived_gender
+    name: "Derived Gender"
+    parentKey: user_identifiable_data
+    description: "Gender of an individual."
+
+  - fidesKey: derived_race
+    name: "Derived Race"
+    parentKey: user_identifiable_data
+    description: "Racial or ethnic origin data."
+
+  - fidesKey: derived_sexual_orientation
+    name: "Derived Sexual Orientation"
+    parentKey: user_identifiable_data
+    description: "Personal sex life or sexual information."
+
+  - fidesKey: derived_non_specific_age
+    name: "Derived Non-Specific Age"
+    parentKey: user_identifiable_data
+    description: "Age range information."
+
+  - fidesKey: derived_workplace
+    name: "Derived Workplace"
+    parentKey: user_identifiable_data
+    description: "Organization of employment."
+
+  - fidesKey: derived_religious_belief
+    name: "Derived Religious Belief"
+    parentKey: user_identifiable_data
+    description: "Religion or religious belief."
+
   # Derived Data -> Device Data
   - fidesKey: device_id
     name: "Device ID"
@@ -295,16 +295,10 @@ data-category:
     parentKey: device_data
     description: "Unique identifier related to device connection."
 
-  # Derived Data -> Demographic Information
-  - fidesKey: non_specific_age
-    name: "Non-Specific Age"
-    parentKey: demographic_information
-    description: "Age range information."
-
   # System Data
   - fidesKey: system_data
     name: "System Data"
-    description: "Data unique to, and under control fo the system."
+    description: "Data unique to, and under control of the system."
 
   - fidesKey: authentication_data
     name: "Authentication Data"
@@ -368,7 +362,7 @@ data-category:
     description: "User's phone number."
 
   # Account Data -> Payment Information
-  - fidesKey: payment_financial_account_number
-    name: "Financial Account Number"
+  - fidesKey: accounts_financial_account_number
+    name: "Account's Financial Account Number"
     parentKey: payment_information
     description: "User's account number for a payment card, bank account, or other financial system."
