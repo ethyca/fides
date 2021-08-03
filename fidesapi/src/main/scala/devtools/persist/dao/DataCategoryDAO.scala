@@ -42,6 +42,7 @@ class DataCategoryDAO(val db: Database)(implicit
     t: DataCategoryQuery =>
       (t.fidesKey like value) ||
       (t.name like value) ||
+      (t.parentKey like value) ||
       (t.description like value) ||
       (t.clause like value)
   }

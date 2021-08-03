@@ -166,12 +166,13 @@ CREATE TABLE IF NOT EXISTS DATASET_FIELD(
 );
 
 -- ------------------------------
---  Taxonomny types
+--  Taxonomy types
 -- ------------------------------
 CREATE TABLE IF NOT EXISTS DATA_SUBJECT (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     organization_id BIGINT,
     parent_id INT,
+    parent_key VARCHAR(100),
     fides_key VARCHAR(100) NOT NULL,
     `name` VARCHAR(100),
     description VARCHAR(2000),
@@ -183,6 +184,7 @@ CREATE TABLE IF NOT EXISTS DATA_CATEGORY (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     organization_id BIGINT,
     parent_id INT,
+    parent_key VARCHAR(100),
     fides_key VARCHAR(100) NOT NULL,
     `name` VARCHAR(100),
     clause VARCHAR(100),
@@ -194,7 +196,8 @@ CREATE TABLE IF NOT EXISTS DATA_CATEGORY (
 CREATE TABLE IF NOT EXISTS DATA_USE (
      id BIGINT PRIMARY KEY AUTO_INCREMENT,
      organization_id BIGINT,
-     parent_id INT,
+    parent_id INT,
+    parent_key VARCHAR(100),
      fides_key VARCHAR(100) NOT NULL,
      `name` VARCHAR(100),
      clause VARCHAR(100),
@@ -207,6 +210,7 @@ CREATE TABLE IF NOT EXISTS DATA_QUALIFIER (
      id BIGINT PRIMARY KEY AUTO_INCREMENT,
      organization_id BIGINT,
      parent_id INT,
+    parent_key VARCHAR(100),
      fides_key VARCHAR(100) NOT NULL,
      `name` VARCHAR(100),
      clause VARCHAR(100),

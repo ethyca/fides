@@ -42,6 +42,7 @@ class DataSubjectDAO(val db: Database)(implicit
   ): DataSubjectQuery => Rep[Option[Boolean]] = { t: DataSubjectQuery =>
     (t.fidesKey like value) ||
     (t.name like value) ||
+    (t.parentKey like value) ||
     (t.description like value)
   }
 }

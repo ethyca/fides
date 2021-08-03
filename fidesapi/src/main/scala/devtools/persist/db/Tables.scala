@@ -232,6 +232,7 @@ object Tables {
     extends BaseAutoIncTable[DataCategory](tag, "DATA_CATEGORY") with OrganizationIdTable[DataCategory] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
+    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
@@ -250,6 +251,7 @@ object Tables {
   class DataUseQuery(tag: Tag) extends BaseAutoIncTable[DataUse](tag, "DATA_USE") with OrganizationIdTable[DataUse] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
+    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
@@ -270,6 +272,7 @@ object Tables {
     extends BaseAutoIncTable[DataQualifier](tag, "DATA_QUALIFIER") with OrganizationIdTable[DataQualifier] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
+    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
@@ -289,6 +292,7 @@ object Tables {
     extends BaseAutoIncTable[DataSubject](tag, "DATA_SUBJECT") with OrganizationIdTable[DataSubject] {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
+    val parentKey: Rep[String]           = column[String]("parent_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
     val description: Rep[Option[String]] = column[Option[String]]("description")
 
