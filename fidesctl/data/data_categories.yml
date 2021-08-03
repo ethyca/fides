@@ -337,27 +337,27 @@ data-category:
     description: "User account's street level address."
 
   - fidesKey: account_city
-    name: "Provided City"
+    name: "Account City"
     parentKey: account_contact_information
     description: "User's city level address information."
 
   - fidesKey: account_state
-    name: "Provided State"
+    name: "Account State"
     parentKey: account_contact_information
     description: "User's state level address information."
 
   - fidesKey: account_postal_code
-    name: "Provided Postal Code"
+    name: "Account Postal Code"
     parentKey: account_contact_information
     description: "User's postal code."
 
   - fidesKey: account_country
-    name: "Provided Country"
+    name: "Account Country"
     parentKey: account_contact_information
     description: "User's country level address information."
 
   - fidesKey: account_phone_number
-    name: "Provided Phone Number"
+    name: "Account Phone Number"
     parentKey: account_contact_information
     description: "User's phone number."
 
