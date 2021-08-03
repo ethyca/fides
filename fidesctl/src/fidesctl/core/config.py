@@ -48,4 +48,4 @@ def read_config(config_path: str = "") -> Dict[str, str]:
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
             break
-    return {"user_id": "demo", "api_key": "test_api_key"}
+    return {"user_id": 1, "api_key": "test_api_key"}

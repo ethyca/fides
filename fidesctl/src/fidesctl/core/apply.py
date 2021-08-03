@@ -143,14 +143,14 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
 
         # Determine which objects should be created, updated, or are unchanged
         create_list, update_list, unchanged_list = sort_create_update_unchanged(
-            manifest_object_list=manifest_object_list,
-            server_object_list=server_object_list,
+            manifest_object_list,
+            server_object_list,
         )
         execute_create_update_unchanged(
-            url=url,
-            headers=headers,
-            object_type=object_type,
-            create_list=create_list,
-            update_list=update_list,
-            unchanged_list=unchanged_list,
+            url,
+            headers,
+            object_type,
+            create_list,
+            update_list,
+            unchanged_list,
         )
