@@ -8,15 +8,38 @@ dataSubject:
   - fidesKey: "commuter"
     name: "Commuter"
 
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (4,NULL,1, 'consultant', 'Consultant','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (5,NULL,1, 'customer', 'Customer','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (6,NULL,1, 'employee', 'Employee','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (7,NULL,1, 'job_applicant', 'Job Applicant','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (8,NULL,1, 'next_of_kin', 'Next of Kin','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (9,NULL,1, 'passenger', 'Passenger','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (10,NULL,1, 'patient', 'Patient','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (11,NULL,1, 'prospect', 'Prospect','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (12,NULL,1, 'shareholder', 'Shareholder','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (13,NULL,1, 'supplier_vendor', 'Supplier / Vendor','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (14,NULL,1, 'trainee', 'Trainee','');
-insert into DATA_SUBJECT(id, parent_id, organization_id, fides_key, `name`, description) values (15,NULL,1,'visitor', 'Visitor','');
+  - fidesKey: "consultant"
+    name: "Consultant"
+
+  - fidesKey: "customer"
+    name: "Custom"
+
+  - fidesKey: "employee"
+    name: "Employee"
+
+  - fidesKey: "job_applicant"
+    name: "Job Applicant"
+
+  - fidesKey: "next_of_kin"
+    name: "Next of Kin"
+
+  - fidesKey: "passenger"
+    name: "Passenger"
+
+  - fidesKey: "patient"
+    name: "Patient"
+
+  - fidesKey: "prospect"
+    name: "Prospect"
+
+  - fidesKey: "shareholder"
+    name: "Shareholder"
+
+  - fidesKey: "supplier_vendor"
+    name: "Supplier/Vendor"
+
+  - fidesKey: "trainee"
+    name: "Trainee"
+
+  - fidesKey: "visitor"
+    name: "Visitor"
