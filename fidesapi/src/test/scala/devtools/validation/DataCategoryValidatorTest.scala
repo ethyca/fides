@@ -22,7 +22,7 @@ class DataCategoryValidatorTest
   var child: DataCategory            = _
   override def beforeAll(): Unit = {
     newKey = fidesKey
-    newTaxonomyValue = waitFor(dao.create(DataCategory(0, None, 1, newKey, None, None, None)))
+    newTaxonomyValue = waitFor(dao.create(DataCategory(0, None, 1, newKey, None, None, None, None)))
     Thread.sleep(100)
     newId = newTaxonomyValue.id
     newSystem = waitFor(
@@ -38,7 +38,7 @@ class DataCategoryValidatorTest
       )
     )
     createdIds.add(newId)
-    child = waitFor(dao.create(DataCategory(0, Some(newId), 1, newKey + "child", None, None, None)))
+    child = waitFor(dao.create(DataCategory(0, Some(newId), 1, newKey + "child", None, None, None, None)))
     createdIds.add(child.id)
   }
 
@@ -65,7 +65,7 @@ class DataCategoryValidatorTest
   test("update or delete with fides key in use by system fails") {
     //attempt to update with new key
     updateValidationErrors(
-      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in systems")
     //attempt to delete with the new key
@@ -73,7 +73,7 @@ class DataCategoryValidatorTest
 
     // test in policy rules
     updateValidationErrors(
-      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in policy rules")
     //attempt to delete with the new key
@@ -82,7 +82,7 @@ class DataCategoryValidatorTest
     //delete system, update and delete should pass
     waitFor(systemService.dao.delete(newSystem.id))
     updateValidationErrors(
-      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("systems")
 
@@ -91,7 +91,7 @@ class DataCategoryValidatorTest
     //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
-      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataCategory(newId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("is in use in policy rules")
     //attempt to delete with the new key

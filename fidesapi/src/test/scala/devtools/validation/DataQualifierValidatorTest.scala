@@ -20,7 +20,7 @@ class DataQualifierValidatorTest
   var child: DataQualifier            = _
   override def beforeAll(): Unit = {
     newKey = fidesKey
-    newTaxonomyValue = waitFor(dao.create(DataQualifier(0, None, 1, newKey, None, None, None)))
+    newTaxonomyValue = waitFor(dao.create(DataQualifier(0, None, 1, newKey, None, None, None, None)))
     Thread.sleep(100)
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
@@ -34,7 +34,7 @@ class DataQualifierValidatorTest
     )
 
     createdIds.add(newKeyId)
-    child = waitFor(dao.create(DataQualifier(0, Some(newKeyId), 1, newKey + "child", None, None, None)))
+    child = waitFor(dao.create(DataQualifier(0, Some(newKeyId), 1, newKey + "child", None, None, None, None)))
     createdIds.add(child.id)
   }
 
@@ -61,7 +61,7 @@ class DataQualifierValidatorTest
   test("update or delete with fides key in use by system fails") {
     //attempt to update with new key
     updateValidationErrors(
-      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in systems")
     //attempt to delete with the new key
@@ -69,7 +69,7 @@ class DataQualifierValidatorTest
 
     // test in policy rules
     updateValidationErrors(
-      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in policy rules")
     //attempt to delete with the new key
@@ -78,7 +78,7 @@ class DataQualifierValidatorTest
     //delete system, update and delete should pass
     waitFor(systemService.dao.delete(newSystem.id))
     updateValidationErrors(
-      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("systems")
 
@@ -87,7 +87,7 @@ class DataQualifierValidatorTest
     //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
-      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
+      DataQualifier(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("is in use in policy rules")
     //attempt to delete with the new key
