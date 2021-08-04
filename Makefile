@@ -117,7 +117,7 @@ fidesctl-check-install:
 
 black: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	black src/
+	black --check src/
 
 pylint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
