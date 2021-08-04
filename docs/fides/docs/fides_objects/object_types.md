@@ -76,7 +76,7 @@ A Data Use describes what the data is being used for.
 
     ```yaml
     data-use:
-    - fidesKey: "provide_operational_support_for_contracted_service
+    - fidesKey: "provide_operational_support_for_contracted_service"
       name: "Provide Operational Support for Contracted Service"
       parentKey: "provide"
       description: "This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service."
