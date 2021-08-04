@@ -4,7 +4,7 @@ either from local files or the server.
 """
 from typing import Dict
 
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 from .models import MODEL_DICT, FidesModel
 from .utils import echo_red
