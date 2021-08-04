@@ -233,6 +233,7 @@ object Tables {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -242,6 +243,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataCategory.fromInsertable, DataCategory.toInsertable)
@@ -251,6 +253,7 @@ object Tables {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -260,6 +263,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataUse.fromInsertable, DataUse.toInsertable)
@@ -271,6 +275,7 @@ object Tables {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val clause: Rep[Option[String]]      = column[Option[String]]("clause")
     val description: Rep[Option[String]] = column[Option[String]]("description")
     def * =
@@ -280,6 +285,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         clause,
         description
       ) <> (DataQualifier.fromInsertable, DataQualifier.toInsertable)
@@ -290,6 +296,7 @@ object Tables {
     val parentId: Rep[Option[Long]]      = column[Option[Long]]("parent_id")
     val fidesKey: Rep[String]            = column[String]("fides_key")
     val name: Rep[Option[String]]        = column[Option[String]]("name")
+    val parentKey: Rep[Option[String]]   = column[Option[String]]("parent_key")
     val description: Rep[Option[String]] = column[Option[String]]("description")
 
     def * =
@@ -299,6 +306,7 @@ object Tables {
         organizationId,
         fidesKey,
         name,
+        parentKey,
         description
       ) <> (DataSubject.fromInsertable, DataSubject.toInsertable)
   }

@@ -7,19 +7,35 @@ from pydantic import BaseModel, validator
 
 class DataCategory(BaseModel):
     id: Optional[int]
-    organizationId: int
+    organizationId: int = 1
     fidesKey: str
     name: str
-    clause: str
+    parentKey: Optional[str]
     description: str
 
 
 class DataQualifier(BaseModel):
     id: Optional[int]
-    organizationId: int
+    organizationId: int = 1
     fidesKey: str
     name: str
-    clause: str
+    description: str
+
+
+class DataSubject(BaseModel):
+    id: Optional[int]
+    organizationId: int = 1
+    fidesKey: str
+    name: str
+    description: Optional[str]
+
+
+class DataUse(BaseModel):
+    id: Optional[int]
+    organizationId: int = 1
+    fidesKey: str
+    name: str
+    parentKey: Optional[str]
     description: str
 
 
@@ -48,23 +64,6 @@ class Dataset(BaseModel):
     def sort_list_objects(cls, v: List) -> List:
         v.sort(key=lambda x: x.name)
         return v
-
-
-class DataSubject(BaseModel):
-    id: Optional[int]
-    organizationId: int
-    fidesKey: str
-    name: str
-    description: str
-
-
-class DataUse(BaseModel):
-    id: Optional[int]
-    organizationId: int
-    fidesKey: str
-    name: str
-    clause: str
-    description: str
 
 
 class PrivacyRule(BaseModel):

@@ -24,7 +24,7 @@ class DataUseControllerTest extends ScalatraFunSuite with TestUtils with BeforeA
   }
   test("test validations on insert") {
     val newKey  = faker.Name.last_name
-    val dataUse = DataUse(0, None, randomInt, newKey, None, None, None)
+    val dataUse = DataUse(0, None, randomInt, newKey, None, None, None, None)
 
     post(path, jdumps(dataUse), withTestHeaders("Content-Type" -> "application/json")) {
       val response = jParseToObj[ApiResponse[DataUse]](body)

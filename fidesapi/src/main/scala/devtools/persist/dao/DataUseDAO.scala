@@ -33,13 +33,14 @@ class DataUseDAO(val db: Database)(implicit
     } yield i
 
   override implicit def getResult: GetResult[DataUse] =
-    r => DataUse(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String])
+    r => DataUse(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String], r.<<?[String])
 
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: Rep[_]](value: String): DataUseQuery => Rep[Option[Boolean]] = {
     t: DataUseQuery =>
       (t.fidesKey like value) ||
       (t.name like value) ||
+      (t.parentKey like value) ||
       (t.description like value) ||
       (t.clause like value)
   }

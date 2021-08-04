@@ -1,10 +1,10 @@
-# Fides Objects
+# Fides Object Types
 
 This page describes the various objects that make up the Fides platform.
 
 ## Object Relationship Diagram
 
-![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
+![alt text](../img/Object_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 
@@ -29,7 +29,7 @@ An organization is a logical grouping of objects, and all objects must belong to
 
 ## Privacy Classifiers
 
-Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types are initially populated within the server but are extensible with custom values. All of these types support organization into hierarchical trees.
+Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types support organization into hierarchical trees.
 
 ### Data Category
 
@@ -39,34 +39,33 @@ A Data Category describes the kind of data that is being used.
 
     ```yaml
     data-category:
-    - organizationId: 1
-      fidesKey: "customer_content_data"
-      name: "Customer Content Data"
-      clause: "8.8.2"
-      description: "Customer content data is cloud service customer data extended to include similar data objects provided to applications executing locally on the device."
+    - fidesKey: "date_of_birth"
+      name: "Date of Birth"
+      parentKey: "user_provided_data"
+      description: "User's date of birth."
     ```
 
 === "Example Hierarchy"
 
     ```yaml
-    - customer content data
-        - credentials
-        - personal health data
+    - user_provided_data
+        - date_of_birth
+        - job_title
     - derived data
-        - end user identifiable information
-            - telemetry data
-            - connectivity data
+      - sensor_data
+      - user_identifiable_data
+        - telemetry_data
     - account data
-        - account or administration contact information
-        - payment instrument data
+        - account_contact_information
+        - payment_information
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this data category belongs to |
+| organizationId | Optional[Int] | Id of the organization this data category belongs to, defaults to 1 |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String |  A name for this data category |
-| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data categories are supported without any loss of functionality |
+| parentKey | Optional[String] | the fidesKey of the parent category |
 | description | String | A description of what this data category means or encapsulates |
 
 ### Data Use
@@ -77,10 +76,10 @@ A Data Use describes what the data is being used for.
 
     ```yaml
     data-use:
-    - organizationId: 1
-      fidesKey: "personalize"
-      name: "Personalize"
-      description: "Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions, etc."
+    - fidesKey: "provide_operational_support_for_contracted_service"
+      name: "Provide Operational Support for Contracted Service"
+      parentKey: "provide"
+      description: "This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service."
     ```
 
 === "Example Hierarchy"
@@ -88,17 +87,18 @@ A Data Use describes what the data is being used for.
     ```yaml
     - personalize
     - share
-        - share when required to provide the service
+        - share_when_required_to_provide_the_service
     - promote
-        - promote based on contextual information
-        - promote based on personalization
+        - promote_based_on_contextual_information
+        - promote_based_on_personalization
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this data use belongs to |
+| organizationId | Optional[Int] | Id of the organization this data use belongs to, defaults to 1 |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data use |
+| parentKey | Optional[String] | the fidesKey of the parent category |
 | description | String | A description of what this data use means or encapsulates |
 
 ### Data Subject
@@ -109,8 +109,7 @@ A Data Subject describes who the data belongs to.
 
     ```yaml
     data-subject:
-    - organizationId: 1
-      fidesKey: "anonymous_user"
+    - fidesKey: "anonymous_user"
       name: "Anonymous User"
       description: "A user without any identifiable information tied to them."
     ```
@@ -125,9 +124,10 @@ A Data Subject describes who the data belongs to.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this data subject belongs to |
+| organizationId | Optional[Int] | Id of the organization this data subject belongs to, defaults to 1 |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data subject |
+| parentKey | Optional[String] | the fidesKey of the parent category |
 | description | String | A description of what this data subject means or encapsulates |
 
 ### Data Qualifier
@@ -138,10 +138,8 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
     ```yaml
     data-qualifier:
-    - organizationId: 1
-      fidesKey: "aggregated_data"
+    - fidesKey: "aggregated_data"
       name: "Aggregated Data"
-      clause: "8.3.6"
       description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
     ```
 
@@ -157,10 +155,10 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this data qualifier belongs to |
+| organizationId | Optional[Int] | Id of the organization this data qualifier belongs to, defaults to 1 |
 | fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data qualifier |
-| clause | String | This field refers to the clause in the draft ISO-19944-1 that this is derived from. This value is optional and custom hierarchies of data qualifiers are supported without any loss of functionality. |
+| parentKey | Optional[String] | the fidesKey of the parent category |
 | description | String | A description of what this data qualifier means or encapsulates |
 
 ---

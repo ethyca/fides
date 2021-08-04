@@ -133,7 +133,7 @@ def test_evaluate_registry_pass(server_url, objects_dict):
     response = evaluate.evaluate(
         url=server_url,
         object_type="registry",
-        fides_key="test",
+        fides_key="default_registry",
         tag="tag",
         message="message",
         headers=test_headers,

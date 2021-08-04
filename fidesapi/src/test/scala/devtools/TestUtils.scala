@@ -220,7 +220,7 @@ object Generators {
       id: Int <- Gen.posNum[Int]
       clause  <- Gen.option(genVersionString)
       name    <- genLongName
-    } yield DataCategory(id, None, 1, fidesKey, Some(name), clause, Some(randomText()))
+    } yield DataCategory(id, None, 1, fidesKey, Some(name), Some(name), clause, Some(randomText()))
   /*
     Dataset types
    */
@@ -275,19 +275,19 @@ object Generators {
       id: Int <- Gen.posNum[Int]
       clause  <- Gen.option(genVersionString)
       name    <- genName
-    } yield DataUse(id, None, 1, fidesKey, Some(name), clause, Some(randomText()))
+    } yield DataUse(id, None, 1, fidesKey, Some(name), Some(name), clause, Some(randomText()))
 
   val DataQualifierGen: Gen[DataQualifier] =
     for {
       id: Int <- Gen.posNum[Int]
       clause  <- Gen.option(genVersionString)
       name    <- Gen.resultOf { _: Int => faker.Name.name }
-    } yield DataQualifier(id, None, 1, fidesKey, Some(name), clause, Some(randomText()))
+    } yield DataQualifier(id, None, 1, fidesKey, Some(name), Some(name), clause, Some(randomText()))
   val DataSubjectGen: Gen[DataSubject] =
     for {
       id: Int <- Gen.posNum[Int]
       name    <- Gen.resultOf { _: Int => faker.Name.name }
-    } yield DataSubject(id, None, 1, fidesKey, Some(name), Some(randomText()))
+    } yield DataSubject(id, None, 1, fidesKey, Some(name), Some(name), Some(randomText()))
   val DeclarationGen: Gen[PrivacyDeclaration] =
     for {
       name      <- genName

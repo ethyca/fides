@@ -26,7 +26,7 @@ class DataSubjectValidatorTest
   var child: DataSubject            = _
   override def beforeAll(): Unit = {
     newKey = fidesKey
-    newTaxonomyValue = waitFor(dao.create(DataSubject(0, None, 1, newKey, None, None)))
+    newTaxonomyValue = waitFor(dao.create(DataSubject(0, None, 1, newKey, None, None, None)))
     Thread.sleep(100)
     newKeyId = newTaxonomyValue.id
     newSystem = waitFor(
@@ -42,7 +42,7 @@ class DataSubjectValidatorTest
       )
     )
     createdIds.add(newKeyId)
-    child = waitFor(dao.create(DataSubject(0, Some(newKeyId), 1, newKey + "child", None, None)))
+    child = waitFor(dao.create(DataSubject(0, Some(newKeyId), 1, newKey + "child", None, None, None)))
     createdIds.add(child.id)
   }
 
@@ -69,7 +69,7 @@ class DataSubjectValidatorTest
   test("update or delete with fides key in use by system fails") {
     //attempt to update with new key
     updateValidationErrors(
-      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),
+      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in systems")
     //attempt to delete with the new key
@@ -77,7 +77,7 @@ class DataSubjectValidatorTest
 
     // test in policy rules
     updateValidationErrors(
-      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),
+      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue
     ) should containMatchString("is in use in policy rules")
     //attempt to delete with the new key
@@ -86,7 +86,7 @@ class DataSubjectValidatorTest
     //delete system, update and delete should pass
     waitFor(systemService.delete(newSystem.id, requestContext))
     updateValidationErrors(
-      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),
+      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("systems")
 
@@ -95,7 +95,7 @@ class DataSubjectValidatorTest
     //delete policyRule, update and delete should pass
     waitFor(prDao.delete(newPolicyRule.id))
     updateValidationErrors(
-      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None),
+      DataSubject(newKeyId, None, 1, "tryingToChangeTheFidesKeyOfAnInUseValue", None, None, None),
       newTaxonomyValue
     ) shouldNot containMatchString("is in use in policy rules")
     //attempt to delete with the new key

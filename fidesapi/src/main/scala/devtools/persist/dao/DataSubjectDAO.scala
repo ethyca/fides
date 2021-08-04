@@ -34,7 +34,7 @@ class DataSubjectDAO(val db: Database)(implicit
     } yield i
 
   override implicit def getResult: GetResult[DataSubject] =
-    r => DataSubject(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String])
+    r => DataSubject(r.<<[Long], r.<<?[Long], r.<<[Long], r.<<[String], r.<<?[String], r.<<?[String], r.<<?[String])
 
   /** Search clause by string fields */
   override def searchInOrganizationAction[C <: Rep[_]](
@@ -42,6 +42,7 @@ class DataSubjectDAO(val db: Database)(implicit
   ): DataSubjectQuery => Rep[Option[Boolean]] = { t: DataSubjectQuery =>
     (t.fidesKey like value) ||
     (t.name like value) ||
+    (t.parentKey like value) ||
     (t.description like value)
   }
 }
