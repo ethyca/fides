@@ -169,13 +169,13 @@ def apply(manifest_dir: str, config_path: str) -> None:
 
 
 @cli.command()
-def ping(config_path: str) -> None:
+def ping(config_path: str = "") -> None:
     """
     Ping the Server.
     """
     config = get_config(config_path)
-    click.secho(f"Pinging {config.server_url}...", fg="green")
-    _api.ping(config.server_url)
+    click.secho(f"Pinging {config.cli.server_url}...", fg="green")
+    _api.ping(config.cli.server_url)
     click.secho("Ping Successful!", fg="green")
 
 
@@ -210,10 +210,9 @@ def dry_evaluate(manifest_dir: str, fides_key: str, config_path: str) -> None:
     based on organizational policies.
     """
     config = get_config(config_path)
-    request_headers = generate_request_headers(config.user_id, config.user_api_key)
     handle_cli_response(
         _evaluate.dry_evaluate(
-            config.server_url, manifest_dir, fides_key, request_headers
+            config.server_url, manifest_dir, fides_key, config.user.request_headers
         )
     )
 
@@ -238,18 +237,16 @@ def evaluate(
     based on organizational policies.
     """
 
-    # if the version tag is none, use git tag if available
     if tag is None:
         tag = fidesctl.__version__
     config = get_config(config_path)
-    request_headers = generate_request_headers(config.user_id, config.user_api_key)
     handle_cli_response(
         _evaluate.evaluate(
-            config.server_url,
+            config.cli.server_url,
             object_type,
             fides_key,
             tag,
             message,
-            request_headers,
+            config.user.request_headers,
         )
     )

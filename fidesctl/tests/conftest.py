@@ -6,11 +6,12 @@ import pytest
 import yaml
 
 from fidesctl.core import models
+from fidesctl.core.config import get_config
 
 
 @pytest.fixture()
-def server_url():
-    yield os.getenv("FIDES_SERVER_URL")
+def test_config():
+    yield get_config("tests/test_config.ini")
 
 
 @pytest.fixture()
