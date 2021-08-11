@@ -7,6 +7,7 @@ import click
 import requests
 
 
+from fidesctl.core.config import get_config
 from fidesctl.core.models import MODEL_LIST
 
 
@@ -41,20 +42,6 @@ def config_option(command: Callable) -> Callable:
         "config_path",
         default="",
         help="Optional configuration file",
-    )(command)
-    return command
-
-
-def url_option(command: Callable) -> Callable:
-    """
-    Apply the url option.
-    """
-    command = click.option(
-        "--url",
-        "-u",
-        "url",
-        default=lambda: os.getenv("FIDES_SERVER_URL", ""),
-        help="URL of the Fides Server",
     )(command)
     return command
 

@@ -2,6 +2,8 @@
 import logging
 from functools import partial
 from json.decoder import JSONDecodeError
+from typing import Dict
+
 import click
 import jwt
 import requests
@@ -53,3 +55,14 @@ def jwt_encode(user_id: int, api_key: str) -> str:
     Encode user information into server-required JWT token
     """
     return jwt.encode({"uid": user_id}, api_key, algorithm="HS256")
+
+
+def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
+    """
+    Generate the headers for a request.
+    """
+    return {
+        "Content-Type": "application/json",
+        "user-id": str(user_id),
+        "Authorization": "Bearer {}".format(jwt_encode(1, api_key)),
+    }
