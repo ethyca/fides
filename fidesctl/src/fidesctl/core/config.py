@@ -1,5 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
+## Add this as a pydantic model
+
 import os
 import configparser
 from typing import Dict
