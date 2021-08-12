@@ -40,7 +40,7 @@ def version() -> None:
 
 @cli.command()
 @config_option
-def config(config_path: str) -> None:
+def view_config(config_path: str) -> None:
     """
     Print out the config values.
     """
@@ -212,7 +212,7 @@ def dry_evaluate(manifest_dir: str, fides_key: str, config_path: str) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _evaluate.dry_evaluate(
-            config.server_url, manifest_dir, fides_key, config.user.request_headers
+            config.cli.server_url, manifest_dir, fides_key, config.user.request_headers
         )
     )
 

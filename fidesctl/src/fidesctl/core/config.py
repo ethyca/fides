@@ -1,22 +1,28 @@
 """This module handles finding and parsing fides configuration files."""
 
-## Add this as a pydantic model
-
 import os
 import configparser
-from typing import Dict
+from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from fidesctl.core.utils import echo_red, generate_request_headers
+
+
+class MissingConfig(Exception):
+    """Custom exception for when no valid configuration file is provided."""
+
+    def __init__(self) -> None:
+        message: str = "No configuration file provided!"
+        super().__init__(message)
 
 
 class UserConfig(BaseModel):
     """Class used to store values from the 'user' section of the config."""
 
-    user_id: int = 1
-    api_key: str = "test_api_key"
-    request_headers: Dict[str, str] = generate_request_headers(user_id, api_key)
+    user_id: int
+    api_key: str
+    request_headers: Optional[Dict[str, str]]
 
 
 class CLIConfig(BaseModel):
@@ -58,8 +64,12 @@ def get_config(config_path: str = "") -> Config:
                 user_config = UserConfig.parse_obj(parser["user"])
                 cli_config = CLIConfig.parse_obj(parser["cli"])
                 config = Config(user=user_config, cli=cli_config)
-                return config
+                config.user.request_headers = generate_request_headers(
+                    config.user.user_id, config.user.api_key
+                )
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
             break
-    return Config()
+    else:
+        raise MissingConfig
+    return config

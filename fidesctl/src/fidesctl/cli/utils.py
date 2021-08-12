@@ -1,13 +1,11 @@
 """Contains reusable utils for the CLI commands."""
 import json
-import os
 import sys
 from typing import Dict, Callable
 import click
 import requests
 
 
-from fidesctl.core.config import get_config
 from fidesctl.core.models import MODEL_LIST
 
 
