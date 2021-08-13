@@ -2,7 +2,7 @@
 
 import os
 import configparser
-from typing import Dict, Optional
+from typing import Dict
 
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ class UserConfig(BaseModel):
 
     user_id: int
     api_key: str
-    request_headers: Optional[Dict[str, str]]
+    request_headers: Dict[str, str] = dict()
 
 
 class CLIConfig(BaseModel):
@@ -63,7 +63,10 @@ def get_config(config_path: str = "") -> Config:
                 parser.read(file_location)
                 user_config = UserConfig.parse_obj(parser["user"])
                 cli_config = CLIConfig.parse_obj(parser["cli"])
-                config = Config(user=user_config, cli=cli_config)
+                config = Config(
+                    user=user_config,
+                    cli=cli_config,
+                )
                 config.user.request_headers = generate_request_headers(
                     config.user.user_id, config.user.api_key
                 )

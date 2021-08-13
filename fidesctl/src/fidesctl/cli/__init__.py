@@ -9,7 +9,7 @@ from fidesctl.core import api as _api
 from fidesctl.core import apply as _apply
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import generate_dataset as _generate_dataset
-from fidesctl.core.config import get_config, generate_request_headers
+from fidesctl.core.config import get_config
 
 from .utils import (
     config_option,
@@ -55,7 +55,7 @@ def view_config(config_path: str) -> None:
 @object_type_argument
 @manifest_option
 @config_option
-def create(object_type: str, manifest: str, config_path: str = None) -> None:
+def create(object_type: str, manifest: str, config_path: str) -> None:
     """
     Create a new object directly from a JSON object.
     """
@@ -63,10 +63,10 @@ def create(object_type: str, manifest: str, config_path: str = None) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _api.create(
-            config.cli.server_url,
-            object_type,
-            parsed_manifest,
-            config.user.request_headers,
+            url=config.cli.server_url,
+            object_type=object_type,
+            json_object=parsed_manifest,
+            headers=config.user.request_headers,
         )
     )
 
@@ -82,7 +82,10 @@ def delete(object_type: str, object_id: str, config_path: str) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _api.delete(
-            config.cli.server_url, object_type, object_id, config.user.request_headers
+            url=config.cli.server_url,
+            object_type=object_type,
+            object_id=object_id,
+            headers=config.user.request_headers,
         )
     )
 
@@ -98,7 +101,10 @@ def find(object_type: str, object_id: str, config_path: str) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _api.find(
-            config.cli.server_url, object_type, object_id, config.user.request_headers
+            url=config.cli.server_url,
+            object_type=object_type,
+            object_key=object_id,
+            headers=config.user.request_headers,
         )
     )
 
@@ -114,7 +120,10 @@ def get(object_type: str, object_id: str, config_path: str) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _api.get(
-            config.cli.server_url, object_type, object_id, config.user.request_headers
+            url=config.cli.server_url,
+            object_type=object_type,
+            object_id=object_id,
+            headers=config.user.request_headers,
         )
     )
 
@@ -128,7 +137,11 @@ def show(object_type: str, config_path: str) -> None:
     """
     config = get_config(config_path)
     handle_cli_response(
-        _api.show(config.cli.server_url, object_type, config.user.request_headers)
+        _api.show(
+            url=config.cli.server_url,
+            object_type=object_type,
+            headers=config.user.request_headers,
+        )
     )
 
 
@@ -165,10 +178,15 @@ def apply(manifest_dir: str, config_path: str) -> None:
     Send the manifest files to the server.
     """
     config = get_config(config_path)
-    _apply.apply(config.cli.server_url, manifest_dir, config.user.request_headers)
+    _apply.apply(
+        url=config.cli.server_url,
+        manifests_dir=manifest_dir,
+        headers=config.user.request_headers,
+    )
 
 
 @cli.command()
+@config_option
 def ping(config_path: str = "") -> None:
     """
     Ping the Server.
@@ -212,7 +230,10 @@ def dry_evaluate(manifest_dir: str, fides_key: str, config_path: str) -> None:
     config = get_config(config_path)
     handle_cli_response(
         _evaluate.dry_evaluate(
-            config.cli.server_url, manifest_dir, fides_key, config.user.request_headers
+            url=config.cli.server_url,
+            manifests_dir=manifest_dir,
+            fides_key=fides_key,
+            headers=config.user.request_headers,
         )
     )
 
@@ -242,11 +263,11 @@ def evaluate(
     config = get_config(config_path)
     handle_cli_response(
         _evaluate.evaluate(
-            config.cli.server_url,
-            object_type,
-            fides_key,
-            tag,
-            message,
-            config.user.request_headers,
+            url=config.cli.server_url,
+            object_type=object_type,
+            fides_key=fides_key,
+            tag=tag,
+            message=message,
+            headers=config.user.request_headers,
         )
     )

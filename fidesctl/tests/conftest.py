@@ -10,8 +10,13 @@ from fidesctl.core.config import get_config
 
 
 @pytest.fixture()
-def test_config():
-    yield get_config("tests/test_config.ini")
+def test_config_path():
+    yield "tests/test_config.ini"
+
+
+@pytest.fixture()
+def test_config(test_config_path):
+    yield get_config(test_config_path)
 
 
 @pytest.fixture()
