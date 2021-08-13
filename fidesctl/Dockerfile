@@ -11,13 +11,13 @@ RUN apt-get install -y \
 RUN pip install -U pip
 COPY requirements.txt requirements.txt
 COPY dev-requirements.txt dev-requirements.txt
-COPY tests/.fides.conf.example .fides.conf
 RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
 
 # Copy in the application files and install it locally
 COPY . /fidesctl
 WORKDIR /fidesctl
+RUN mypy --install-types --non-interactive src/
 RUN pip install -e .
 
 CMD ["/bin/bash"]

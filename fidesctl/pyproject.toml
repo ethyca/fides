@@ -50,6 +50,7 @@ disable=[
     "missing-module-docstring",
     "raise-missing-from",
     "fixme"]
+extension-pkg-whitelist = "pydantic"
 
 [tool.pylint.reports]
 reports="no"

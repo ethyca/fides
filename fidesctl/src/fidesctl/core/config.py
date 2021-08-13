@@ -4,21 +4,41 @@ import os
 import configparser
 from typing import Dict
 
-from fidesctl.core.utils import echo_red, jwt_encode
+from pydantic import BaseModel
+
+from fidesctl.core.utils import echo_red, generate_request_headers
 
 
-def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
-    """
-    Generate the headers for a request.
-    """
-    return {
-        "Content-Type": "application/json",
-        "user-id": str(user_id),
-        "Authorization": "Bearer {}".format(jwt_encode(1, api_key)),
-    }
+class MissingConfig(Exception):
+    """Custom exception for when no valid configuration file is provided."""
+
+    def __init__(self) -> None:
+        message: str = "No configuration file provided!"
+        super().__init__(message)
 
 
-def read_config(config_path: str = "") -> Dict[str, str]:
+class UserConfig(BaseModel):
+    """Class used to store values from the 'user' section of the config."""
+
+    user_id: int
+    api_key: str
+    request_headers: Dict[str, str] = dict()
+
+
+class CLIConfig(BaseModel):
+    """Class used to store values from the 'cli' section of the config."""
+
+    server_url: str
+
+
+class Config(BaseModel):
+    """Umbrella class that encapsulates all of the config subsections."""
+
+    user: UserConfig
+    cli: CLIConfig
+
+
+def get_config(config_path: str = "") -> Config:
     """
     Attempt to read config file from:
     a) passed in configuration, if it exists
@@ -32,8 +52,8 @@ def read_config(config_path: str = "") -> Dict[str, str]:
     possible_config_locations = [
         config_path,
         os.getenv("FIDES_CONFIG_PATH", ""),
-        os.path.join(os.curdir, ".fides.conf"),
-        os.path.join(os.path.expanduser("~"), ".fides.conf"),
+        os.path.join(os.curdir, "fides.ini"),
+        os.path.join(os.path.expanduser("~"), "fides.ini"),
     ]
 
     for file_location in possible_config_locations:
@@ -41,11 +61,18 @@ def read_config(config_path: str = "") -> Dict[str, str]:
             try:
                 parser = configparser.ConfigParser()
                 parser.read(file_location)
-                user_id = parser["User"]["id"]
-                api_key = parser["User"]["api-key"]
-                user_dict = {"user_id": user_id, "api_key": api_key}
-                return user_dict
+                user_config = UserConfig.parse_obj(parser["user"])
+                cli_config = CLIConfig.parse_obj(parser["cli"])
+                config = Config(
+                    user=user_config,
+                    cli=cli_config,
+                )
+                config.user.request_headers = generate_request_headers(
+                    config.user.user_id, config.user.api_key
+                )
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
             break
-    return {"user_id": "1", "api_key": "test_api_key"}
+    else:
+        raise MissingConfig
+    return config

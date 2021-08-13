@@ -7,11 +7,7 @@ from fidesctl.core import apply, evaluate, manifests, models
 test_headers: Dict[str, str] = generate_request_headers(1, "test_api_key")
 
 
-def test_evaluate():
-    assert True
-
-
-def test_dry_evaluate_system_pass(server_url, objects_dict):
+def test_dry_evaluate_system_pass(test_config, objects_dict):
     test_system = objects_dict["system"]
     test_manifest = {"system": [test_system.dict()]}
 
@@ -19,10 +15,10 @@ def test_dry_evaluate_system_pass(server_url, objects_dict):
     original_ingest_manifests = manifests.ingest_manifests
     manifests.ingest_manifests = mock.Mock(return_value=test_manifest)
     response = evaluate.dry_evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         manifests_dir="test",
         fides_key="test_system",
-        headers=test_headers,
     )
     manifests.ingest_manifests = original_ingest_manifests
 
@@ -31,7 +27,7 @@ def test_dry_evaluate_system_pass(server_url, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
-def test_dry_evaluate_registry_pass(server_url, objects_dict):
+def test_dry_evaluate_registry_pass(test_config, objects_dict):
     test_system = objects_dict["registry"]
     test_manifest = {"registry": [test_system.dict()]}
 
@@ -39,10 +35,10 @@ def test_dry_evaluate_registry_pass(server_url, objects_dict):
     original_ingest_manifests = manifests.ingest_manifests
     manifests.ingest_manifests = mock.Mock(return_value=test_manifest)
     response = evaluate.dry_evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         manifests_dir="test",
         fides_key="test_registry",
-        headers=test_headers,
     )
     manifests.ingest_manifests = original_ingest_manifests
 
@@ -51,7 +47,7 @@ def test_dry_evaluate_registry_pass(server_url, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
-def test_dry_evaluate_system_error(server_url, objects_dict):
+def test_dry_evaluate_system_error(test_config, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
     failing_declaration = [
@@ -70,10 +66,10 @@ def test_dry_evaluate_system_error(server_url, objects_dict):
     original_ingest_manifests = manifests.ingest_manifests
     manifests.ingest_manifests = mock.Mock(return_value=test_manifest)
     response = evaluate.dry_evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         manifests_dir="test",
         fides_key="test_system",
-        headers=test_headers,
     )
     manifests.ingest_manifests = original_ingest_manifests
 
@@ -83,7 +79,7 @@ def test_dry_evaluate_system_error(server_url, objects_dict):
     assert response.json()["errors"]
 
 
-def test_dry_evaluate_system_fail(server_url, objects_dict):
+def test_dry_evaluate_system_fail(test_config, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
     failing_declaration = [
@@ -102,10 +98,10 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
     original_ingest_manifests = manifests.ingest_manifests
     manifests.ingest_manifests = mock.Mock(return_value=test_manifest)
     response = evaluate.dry_evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         manifests_dir="test",
         fides_key="test_system",
-        headers=test_headers,
     )
     manifests.ingest_manifests = original_ingest_manifests
 
@@ -114,14 +110,14 @@ def test_dry_evaluate_system_fail(server_url, objects_dict):
     assert response.json()["data"]["status"] == "FAIL"
 
 
-def test_evaluate_system_pass(server_url, objects_dict):
+def test_evaluate_system_pass(test_config, objects_dict):
     response = evaluate.evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         object_type="system",
         fides_key="test_system_1",
         tag="tag",
         message="message",
-        headers=test_headers,
     )
 
     print(response.json())
@@ -129,14 +125,14 @@ def test_evaluate_system_pass(server_url, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
-def test_evaluate_registry_pass(server_url, objects_dict):
+def test_evaluate_registry_pass(test_config, objects_dict):
     response = evaluate.evaluate(
-        url=server_url,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         object_type="registry",
         fides_key="default_registry",
         tag="tag",
         message="message",
-        headers=test_headers,
     )
 
     print(response.json())
@@ -144,16 +140,20 @@ def test_evaluate_registry_pass(server_url, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
-def test_apply_evaluate_example_manifests(server_url):
+def test_apply_evaluate_example_manifests(test_config):
     """
     This test is designed to verify that the example manifests
     included in the repo are valid and can be used within the docs tutorial.
     """
 
-    apply.apply(server_url, "data/sample/", headers=test_headers)
+    apply.apply(
+        test_config.cli.server_url,
+        "data/sample/",
+        headers=test_config.user.request_headers,
+    )
     evaluate_response = evaluate.evaluate(
-        url=server_url,
-        headers=test_headers,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
         object_type="system",
         fides_key="demoSystem",
         tag="test",

@@ -1,8 +1,8 @@
 system:
   - organizationId: 1
-    fidesKey: "demoSystem"
-    name: "Demo System"
-    description: "A system used for demos."
+    fidesKey: "demoPassingSystem"
+    name: "Demo Passing System"
+    description: "A passing system used for demos."
     systemType: "Service"
     privacyDeclarations:
       - name: "Analyze Anonymous Content"
@@ -12,6 +12,22 @@ system:
         dataQualifier: "anonymized_data"
         dataSubjects:
           - "anonymous_user"
+        datasetReferences:
+          - "sample_db_dataset.Email"
+    systemDependencies: []
+  - organizationId: 1
+    fidesKey: "demoFailingSystem"
+    name: "Demo Failing System"
+    description: "A failing system used for demos."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Analyze Anonymous Content"
+        dataCategories:
+          - "profiling_data"
+        dataUse: "offer_upgrades_or_upsell"
+        dataQualifier: "pseudonymized_data"
+        dataSubjects:
+          - "trainee"
         datasetReferences:
           - "sample_db_dataset.Email"
     systemDependencies: []
