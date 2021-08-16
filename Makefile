@@ -118,6 +118,10 @@ fidesctl-check-install:
 black: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	black --check src/
+	
+mypy: compose-build
+	@docker-compose run $(CLI_IMAGE_NAME) \
+	mypy --ignore-missing-imports src/
 
 pylint: compose-build
 	@docker-compose run $(CLI_IMAGE_NAME) \
@@ -127,10 +131,6 @@ pytest: compose-build init-db
 	@docker-compose up -d
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	/bin/bash -c "sleep 90 & pytest"
-
-mypy: compose-build
-	@docker-compose run $(CLI_IMAGE_NAME) \
-	mypy --ignore-missing-imports src/
 
 # Server
 .PHONY: check
