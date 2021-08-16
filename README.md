@@ -7,32 +7,30 @@
 
 ## Overview
 
-Fides (Latin: Fidēs) enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
+Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
 
-With Fides, anyone working with risky types of data (e.g. personally identifiable information), can declare or describe their data intentions and Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+- **A Privacy Grammar for Engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g. personally identifiable information) directly in your code. 
 
-This approach ensures that privacy is described within your source code, thereby making privacy easier to manage and a proactive part of your existing software development practices.
+- **Privacy Policies That Aren't Just for Lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
 
-## Principles
+- **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
-* Data Lineage Declarations
-* Privacy controls at the CI layer
-* Predefined Privacy Taxonomy
-* Translation layer between engineers and lawyers
+- **Built to Scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
-## Quick Guide
 
-To make things more concrete, the following is a brief overview of the steps required to set up a new project with Fides as used by a monorepo:
+## Getting Started
 
-1. Create a new directory for your Fides objects to live in, for examples `fides_manifests/`.
+Getting set up with Fides for a monorepo just 5 steps:
 
-1. The next step is to define Fides objects as manifest files. This would include defining datasets, extending the privacy classifiers, and anything else needed to describe the state of the project's privacy.
+1. Create a new directory for your Fides objects to live in, for example, `fides_manifests/`.
 
-1. Apply the manifests using `fidesctl apply fides_manifests/`. This command will create/update objects via the Fides API.
+1. Define and extend existing Fides objects as "manifest files". You can define datasets, extend the privacy classifiers, and anything else needed to describe the state of your business' privacy.
+
+1. Apply the manifest files using `fidesctl apply fides_manifests/`. This command will create and update objects via the Fides API.
 
 1. Set up a CI pipeline to run when the system file is changed. It should use the `fidesctl dry-evaluate <system_manifest> <system_key>` command to check that a system is still valid after it has been update.
 
-1. Upon merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
+1. On merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
 
 For more information on getting started, see the [tutorial docs]().
 
