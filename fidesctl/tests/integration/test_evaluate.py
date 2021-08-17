@@ -155,7 +155,7 @@ def test_apply_evaluate_example_manifests(test_config):
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         object_type="system",
-        fides_key="demoSystem",
+        fides_key="demoPassingSystem",
         tag="test",
         message="test",
     ).json()

@@ -45,13 +45,16 @@ def execute_create_update_unchanged(
     url: str,
     headers: Dict[str, str],
     object_type: str,
-    create_list: List[FidesModel] = list(),
-    update_list: List[FidesModel] = list(),
-    unchanged_list: List[FidesModel] = list(),
+    create_list: Optional[List[FidesModel]] = None,
+    update_list: Optional[List[FidesModel]] = None,
+    unchanged_list: Optional[List[FidesModel]] = None,
 ) -> None:
     """
     Create, update, or just log objects based on which list they're in.
     """
+    create_list = create_list or []
+    update_list = update_list or []
+    unchanged_list = unchanged_list or []
     success_echo = "{} {} with fidesKey: {}"
 
     for create_object in create_list:
@@ -90,9 +93,7 @@ def get_server_objects(
     raw_server_object_list: Iterable[Dict] = filter(
         None,
         [
-            api.find(url=url, object_type=object_type, object_key=key, headers=headers)
-            .json()
-            .get("data")
+            api.find(url, object_type, key, headers).json().get("data")
             for key in existing_keys
         ],
     )
