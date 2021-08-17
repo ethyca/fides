@@ -9,7 +9,7 @@ from .utils import echo_green
 
 def sort_create_update_unchanged(
     manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
-) -> Tuple[List[FidesModel], List[Dict[str, FidesModel]], List[Dict[str, FidesModel]]]:
+) -> Tuple[List[FidesModel], List[FidesModel], List[FidesModel]]:
     """
     Check the contents of the object lists and populate separate
     new lists for object creation, updating, or no change.
@@ -52,42 +52,36 @@ def execute_create_update_unchanged(
     """
     Create, update, or just log objects based on which list they're in.
     """
+    create_list = create_list or []
+    update_list = update_list or []
+    unchanged_list = unchanged_list or []
     success_echo = "{} {} with fidesKey: {}"
 
-    if create_list:
-        for create_object in create_list:
-            handle_cli_response(
-                api.create(
-                    url=url,
-                    headers=headers,
-                    object_type=object_type,
-                    json_object=create_object.json(exclude_none=True),
-                )
+    for create_object in create_list:
+        handle_cli_response(
+            api.create(
+                url=url,
+                headers=headers,
+                object_type=object_type,
+                json_object=create_object.json(exclude_none=True),
             )
-            echo_green(
-                success_echo.format("Created", object_type, create_object.fidesKey)
+        )
+        echo_green(success_echo.format("Created", object_type, create_object.fidesKey))
+    for update_object in update_list:
+        handle_cli_response(
+            api.update(
+                url=url,
+                headers=headers,
+                object_type=object_type,
+                object_id=update_object.id,
+                json_object=update_object.json(exclude_none=True),
             )
-    if update_list:
-        for update_object in update_list:
-            handle_cli_response(
-                api.update(
-                    url=url,
-                    headers=headers,
-                    object_type=object_type,
-                    object_id=update_object.id,
-                    json_object=update_object.json(exclude_none=True),
-                )
-            )
-            echo_green(
-                success_echo.format("Updated", object_type, update_object.fidesKey)
-            )
-    if unchanged_list:
-        for unchanged_object in unchanged_list:
-            echo_green(
-                success_echo.format(
-                    "No changes to", object_type, unchanged_object.fidesKey
-                )
-            )
+        )
+        echo_green(success_echo.format("Updated", object_type, update_object.fidesKey))
+    for unchanged_object in unchanged_list:
+        echo_green(
+            success_echo.format("No changes to", object_type, unchanged_object.fidesKey)
+        )
 
 
 def get_server_objects(
@@ -117,18 +111,11 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
     """
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
 
-    # Parse all of the manifest objects into their Python models
-    excluded_keys = ["version"]
-    filtered_manifests = {
-        key: value
-        for key, value in ingested_manifests.items()
-        if key not in excluded_keys
-    }
     parsed_manifests: Dict[str, List[FidesModel]] = {
         object_type: [
             parse.parse_manifest(object_type, _object) for _object in object_list
         ]
-        for object_type, object_list in filtered_manifests.items()
+        for object_type, object_list in ingested_manifests.items()
     }
 
     # Loop through each type of object and check for operations
