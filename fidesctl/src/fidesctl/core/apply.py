@@ -9,7 +9,7 @@ from .utils import echo_green
 
 def sort_create_update_unchanged(
     manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
-) -> Tuple[List[FidesModel], List[Dict[str, FidesModel]], List[Dict[str, FidesModel]]]:
+) -> Tuple[List[FidesModel], List[FidesModel], List[FidesModel]]:
     """
     Check the contents of the object lists and populate separate
     new lists for object creation, updating, or no change.
@@ -45,49 +45,40 @@ def execute_create_update_unchanged(
     url: str,
     headers: Dict[str, str],
     object_type: str,
-    create_list: Optional[List[FidesModel]] = None,
-    update_list: Optional[List[FidesModel]] = None,
-    unchanged_list: Optional[List[FidesModel]] = None,
+    create_list: List[FidesModel] = list(),
+    update_list: List[FidesModel] = list(),
+    unchanged_list: List[FidesModel] = list(),
 ) -> None:
     """
     Create, update, or just log objects based on which list they're in.
     """
     success_echo = "{} {} with fidesKey: {}"
 
-    if create_list:
-        for create_object in create_list:
-            handle_cli_response(
-                api.create(
-                    url=url,
-                    headers=headers,
-                    object_type=object_type,
-                    json_object=create_object.json(exclude_none=True),
-                )
+    for create_object in create_list:
+        handle_cli_response(
+            api.create(
+                url=url,
+                headers=headers,
+                object_type=object_type,
+                json_object=create_object.json(exclude_none=True),
             )
-            echo_green(
-                success_echo.format("Created", object_type, create_object.fidesKey)
+        )
+        echo_green(success_echo.format("Created", object_type, create_object.fidesKey))
+    for update_object in update_list:
+        handle_cli_response(
+            api.update(
+                url=url,
+                headers=headers,
+                object_type=object_type,
+                object_id=update_object.id,
+                json_object=update_object.json(exclude_none=True),
             )
-    if update_list:
-        for update_object in update_list:
-            handle_cli_response(
-                api.update(
-                    url=url,
-                    headers=headers,
-                    object_type=object_type,
-                    object_id=update_object.id,
-                    json_object=update_object.json(exclude_none=True),
-                )
-            )
-            echo_green(
-                success_echo.format("Updated", object_type, update_object.fidesKey)
-            )
-    if unchanged_list:
-        for unchanged_object in unchanged_list:
-            echo_green(
-                success_echo.format(
-                    "No changes to", object_type, unchanged_object.fidesKey
-                )
-            )
+        )
+        echo_green(success_echo.format("Updated", object_type, update_object.fidesKey))
+    for unchanged_object in unchanged_list:
+        echo_green(
+            success_echo.format("No changes to", object_type, unchanged_object.fidesKey)
+        )
 
 
 def get_server_objects(
@@ -99,7 +90,9 @@ def get_server_objects(
     raw_server_object_list: Iterable[Dict] = filter(
         None,
         [
-            api.find(url, object_type, key, headers).json().get("data")
+            api.find(url=url, object_type=object_type, object_key=key, headers=headers)
+            .json()
+            .get("data")
             for key in existing_keys
         ],
     )
