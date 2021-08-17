@@ -107,7 +107,7 @@ test-all: server-test fidesctl-check-all
 	@echo "Running all tests and checks..."
 
 # Fidesctl
-fidesctl-check-all: black pylint mypy pytest
+fidesctl-check-all: fidesctl-check-install black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 fidesctl-check-install:
@@ -131,6 +131,15 @@ pytest: compose-build init-db
 	@docker-compose up -d
 	@docker-compose run $(CLI_IMAGE_NAME) \
 	/bin/bash -c "sleep 90 & pytest"
+
+xenon: compose-build
+	@docker-compose run $(CLI_IMAGE_NAME) \
+	xenon src \
+	--max-absolute B \
+	--max-modules A \
+	--max-average A \
+	--ignore "data, tests, docs" \
+	--exclude "src/fidesctl/_version.py"
 
 # Server
 .PHONY: check

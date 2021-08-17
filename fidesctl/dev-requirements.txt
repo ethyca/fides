@@ -1,9 +1,10 @@
 black==20.8b1
 ipython
+mypy==0.910
 packaging==20.9
 pre-commit==2.9.3
 pylint==2.6.0
 pytest==6.2.2
 pytest-cov==2.11.1
 requests-mock==1.8.0
-mypy==0.910
+xenon==0.7.3

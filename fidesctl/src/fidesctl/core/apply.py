@@ -117,18 +117,11 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
     """
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
 
-    # Parse all of the manifest objects into their Python models
-    excluded_keys = ["version"]
-    filtered_manifests = {
-        key: value
-        for key, value in ingested_manifests.items()
-        if key not in excluded_keys
-    }
     parsed_manifests: Dict[str, List[FidesModel]] = {
         object_type: [
             parse.parse_manifest(object_type, _object) for _object in object_list
         ]
-        for object_type, object_list in filtered_manifests.items()
+        for object_type, object_list in ingested_manifests.items()
     }
 
     # Loop through each type of object and check for operations
