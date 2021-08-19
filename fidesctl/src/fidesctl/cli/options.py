@@ -15,21 +15,6 @@ def object_type_argument(command: Callable) -> Callable:
     return command
 
 
-def manifest_option(command: Callable) -> Callable:
-    """
-    Apply the manifest option.
-    """
-    command = click.option(
-        "--manifest",
-        "-m",
-        "manifest",
-        required=True,
-        type=click.Path(exists=True),
-        help="Path to the manifest file",
-    )(command)
-    return command
-
-
 def id_argument(command: Callable) -> Callable:
     """
     Apply the id argument.

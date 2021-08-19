@@ -60,7 +60,19 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_failed_dry_evaluate(test_config_path: str, test_cli_runner: CliRunner):
+def test_dry_evaluate_registry_success(
+    test_config_path: str, test_cli_runner: CliRunner
+):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "dry-evaluate", "data/sample/", "demo_registry"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "dry-evaluate", "data/sample/", "demoPassingSystem"],
@@ -70,7 +82,7 @@ def test_failed_dry_evaluate(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_success_dry_evaluate(test_config_path: str, test_cli_runner: CliRunner):
+def test_dry_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "dry-evaluate", "data/sample/", "demoFailingSystem"],
@@ -80,5 +92,30 @@ def test_success_dry_evaluate(test_config_path: str, test_cli_runner: CliRunner)
 
 
 @pytest.mark.integration
-def test_evaluate(test_config_path: str, test_cli_runner: CliRunner):
-    assert True
+def test_evaluate_registry_success(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "registry", "default_registry"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "system", "demoPassingSystem"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "system", "demoFailingSystem"],
+    )
+    print(result.output)
+    assert result.exit_code == 1

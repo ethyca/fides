@@ -7,4 +7,6 @@ pylint==2.6.0
 pytest==6.2.2
 pytest-cov==2.11.1
 requests-mock==1.8.0
+types-PyYAML
+types-requests
 xenon==0.7.3

@@ -1,11 +1,8 @@
 """Contains all of the CLI commands for Fides."""
-import json
-
 import click
 
 from fidesctl.cli.options import (
     id_argument,
-    manifest_option,
     object_type_argument,
 )
 from fidesctl.cli.utils import (
