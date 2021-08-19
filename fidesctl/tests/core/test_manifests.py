@@ -4,11 +4,14 @@ import yaml
 from fidesctl.core import manifests
 
 
+# Helpers
 @pytest.fixture()
 def sample_manifest():
     yield manifests.load_yaml_into_dict("tests/data/sample_manifest.yml")
 
 
+# Unit
+@pytest.mark.unit
 def test_load_yaml_into_dict(sample_manifest):
     """
     Make sure that the yaml loaded from the sample manifest matches
@@ -30,6 +33,7 @@ def test_load_yaml_into_dict(sample_manifest):
     assert expected_result == sample_manifest
 
 
+@pytest.mark.unit
 def test_write_manifest(tmp_path):
     test_object = {"foo": "bar", "bar": "baz"}
     test_path = str(tmp_path) + "/test.yml"
@@ -41,6 +45,7 @@ def test_write_manifest(tmp_path):
     assert actual_result == test_object
 
 
+@pytest.mark.unit
 def test_union_manifests(test_manifests):
     expected_result = {
         "dataset": [
@@ -86,6 +91,7 @@ def test_union_manifests(test_manifests):
     assert expected_result == actual_result
 
 
+@pytest.mark.unit
 def test_ingest_manifests(populated_manifest_dir, tmp_path):
     actual_result = manifests.ingest_manifests(str(tmp_path))
 

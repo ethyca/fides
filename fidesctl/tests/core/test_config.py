@@ -3,6 +3,8 @@ import pytest
 from fidesctl.core.config import get_config, UserConfig, CLIConfig, Config
 
 
+# Unit
+@pytest.mark.unit
 def test_get_config():
     """Test that the actual config matches what the function returns."""
     config = get_config("tests/test_config.ini")
