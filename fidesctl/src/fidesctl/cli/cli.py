@@ -31,45 +31,6 @@ def view_config(ctx: click.Context) -> None:
 ########################
 ### Generic Commands ###
 ########################
-@click.command(hidden=True)
-@click.pass_context
-@object_type_argument
-@manifest_option
-def create(ctx: click.Context, object_type: str, manifest: str) -> None:
-    """
-    Create a new object directly from a JSON object.
-    """
-    parsed_manifest = json.loads(manifest)
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.create(
-            url=config.cli.server_url,
-            object_type=object_type,
-            json_object=parsed_manifest,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command(hidden=True)
-@click.pass_context
-@object_type_argument
-@id_argument
-def delete(ctx: click.Context, object_type: str, object_id: str) -> None:
-    """
-    Delete an object by its id.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.delete(
-            url=config.cli.server_url,
-            object_type=object_type,
-            object_id=object_id,
-            headers=config.user.request_headers,
-        )
-    )
-
-
 @click.command()
 @click.pass_context
 @object_type_argument
@@ -84,6 +45,25 @@ def find(ctx: click.Context, object_type: str, object_id: str) -> None:
             url=config.cli.server_url,
             object_type=object_type,
             object_key=object_id,
+            headers=config.user.request_headers,
+        )
+    )
+
+
+@click.command()
+@click.pass_context
+@object_type_argument
+@id_argument
+def delete(ctx: click.Context, object_type: str, object_id: str) -> None:
+    """
+    Delete an object by its id.
+    """
+    config = ctx.obj["CONFIG"]
+    handle_cli_response(
+        _api.delete(
+            url=config.cli.server_url,
+            object_type=object_type,
+            object_id=object_id,
             headers=config.user.request_headers,
         )
     )
@@ -121,28 +101,6 @@ def show(ctx: click.Context, object_type: str) -> None:
             url=config.cli.server_url,
             object_type=object_type,
             headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command(hidden=True)
-@click.pass_context
-@manifest_option
-@object_type_argument
-@id_argument
-def update(ctx: click.Context, object_type: str, object_id: str, manifest: str) -> None:
-    """
-    Update an existing object by its id.
-    """
-    parsed_manifest = json.loads(manifest)
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.update(
-            config.cli.server_url,
-            object_type,
-            object_id,
-            parsed_manifest,
-            config.user.request_headers,
         )
     )
 

@@ -49,7 +49,7 @@ def test_generate_object_urls_with_id(test_config):
     assert expected_url == result_url
 
 
-# Tests
+# Integration Tests
 @pytest.mark.integration
 def test_api_ping(test_config):
     assert _api.ping(test_config.cli.server_url).status_code == 200
