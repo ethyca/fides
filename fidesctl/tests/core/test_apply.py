@@ -4,6 +4,7 @@ import pytest
 from fidesctl.core import apply, models
 
 
+# Helpers
 @pytest.fixture()
 def server_object_list():
     yield [
@@ -17,6 +18,8 @@ def server_object_key_pairs():
     yield {"testKey": 1, "anotherTestKey": 2}
 
 
+# Unit
+@pytest.mark.unit
 def test_sort_create_update_unchanged_create():
     object_1 = models.DataCategory(
         organizationId=1,
@@ -46,6 +49,7 @@ def test_sort_create_update_unchanged_create():
     assert unchanged_result == []
 
 
+@pytest.mark.unit
 def test_sort_create_update_unchanged_update():
     object_1 = models.DataCategory(
         id=1,
@@ -76,6 +80,7 @@ def test_sort_create_update_unchanged_update():
     assert [] == unchanged_result
 
 
+@pytest.mark.unit
 def test_sort_create_update_unchanged_unchanged():
     object_1 = models.DataCategory(
         id=1,
@@ -106,6 +111,7 @@ def test_sort_create_update_unchanged_unchanged():
     assert expected_unchanged_result == unchanged_result
 
 
+@pytest.mark.unit
 def test_execute_create_update_unchanged_empty():
     apply.execute_create_update_unchanged(
         url="test", headers={"test": "test"}, object_type="test"

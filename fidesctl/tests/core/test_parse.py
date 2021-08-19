@@ -1,6 +1,9 @@
+import pytest
+
 from fidesctl.core import models, parse
 
 
+@pytest.mark.unit
 def test_parse_manifest():
     expected_result = models.DataCategory(
         organizationId=1,

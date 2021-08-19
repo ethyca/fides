@@ -1,12 +1,15 @@
 from typing import Dict
 
+import pytest
 from unittest import mock
 from fidesctl.core.config import generate_request_headers
 from fidesctl.core import apply, evaluate, manifests, models
 
+# Helpers
 test_headers: Dict[str, str] = generate_request_headers(1, "test_api_key")
 
 
+@pytest.mark.integration
 def test_dry_evaluate_system_pass(test_config, objects_dict):
     test_system = objects_dict["system"]
     test_manifest = {"system": [test_system.dict()]}
@@ -27,6 +30,7 @@ def test_dry_evaluate_system_pass(test_config, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
+@pytest.mark.integration
 def test_dry_evaluate_registry_pass(test_config, objects_dict):
     test_system = objects_dict["registry"]
     test_manifest = {"registry": [test_system.dict()]}
@@ -47,6 +51,7 @@ def test_dry_evaluate_registry_pass(test_config, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
+@pytest.mark.integration
 def test_dry_evaluate_system_error(test_config, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
@@ -79,6 +84,7 @@ def test_dry_evaluate_system_error(test_config, objects_dict):
     assert response.json()["errors"]
 
 
+@pytest.mark.integration
 def test_dry_evaluate_system_fail(test_config, objects_dict):
     # Set up the test system
     test_system = objects_dict["system"]
@@ -110,6 +116,7 @@ def test_dry_evaluate_system_fail(test_config, objects_dict):
     assert response.json()["data"]["status"] == "FAIL"
 
 
+@pytest.mark.integration
 def test_evaluate_system_pass(test_config, objects_dict):
     response = evaluate.evaluate(
         url=test_config.cli.server_url,
@@ -125,6 +132,7 @@ def test_evaluate_system_pass(test_config, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
+@pytest.mark.integration
 def test_evaluate_registry_pass(test_config, objects_dict):
     response = evaluate.evaluate(
         url=test_config.cli.server_url,
@@ -140,6 +148,7 @@ def test_evaluate_registry_pass(test_config, objects_dict):
     assert response.json()["data"]["status"] == "PASS"
 
 
+@pytest.mark.integration
 def test_apply_evaluate_example_manifests(test_config):
     """
     This test is designed to verify that the example manifests

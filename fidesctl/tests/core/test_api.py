@@ -24,11 +24,38 @@ def get_id_from_key(test_config: str, object_type: str, object_key: str) -> int:
     ).json()["data"]["id"]
 
 
+# Unit Tests
+@pytest.mark.unit
+def test_generate_object_urls_no_id(test_config):
+    """
+    Test that the URL generator works as intended.
+    """
+    expected_url = f"{test_config}/v1/test/"
+    result_url = _api.generate_object_url(
+        url=test_config, object_type="test", version="v1"
+    )
+    assert expected_url == result_url
+
+
+@pytest.mark.unit
+def test_generate_object_urls_with_id(test_config):
+    """
+    Test that the URL generator works as intended.
+    """
+    expected_url = f"{test_config}/v1/test/1"
+    result_url = _api.generate_object_url(
+        url=test_config, object_type="test", version="v1", object_id="1"
+    )
+    assert expected_url == result_url
+
+
 # Tests
+@pytest.mark.integration
 def test_api_ping(test_config):
     assert _api.ping(test_config.cli.server_url).status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_show(test_config, endpoint):
     result = _api.show(
@@ -40,6 +67,7 @@ def test_api_show(test_config, endpoint):
     assert result.status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_create(test_config, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
@@ -54,6 +82,7 @@ def test_api_create(test_config, objects_dict, endpoint):
     assert result.status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_get(test_config, endpoint):
     existing_id = get_existing_id(test_config, endpoint)
@@ -67,6 +96,7 @@ def test_api_get(test_config, endpoint):
     assert result.status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_find(test_config, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
@@ -81,6 +111,7 @@ def test_api_find(test_config, objects_dict, endpoint):
     assert result.status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_sent_is_received(test_config, objects_dict, endpoint):
     """
@@ -109,6 +140,7 @@ def test_sent_is_received(test_config, objects_dict, endpoint):
     assert parsed_result == manifest
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_update(test_config, objects_dict, endpoint):
 
@@ -126,6 +158,7 @@ def test_api_update(test_config, objects_dict, endpoint):
     assert result.status_code == 200
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("endpoint", MODEL_LIST)
 def test_api_delete(test_config, objects_dict, endpoint):
     manifest = objects_dict[endpoint]
