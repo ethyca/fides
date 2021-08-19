@@ -1,6 +1,6 @@
 registry:
-  organizationId: 1
-  fidesKey: demo_registry,
-  name: "Demo Registry"
-  description: "Demo Regsitry"
-  systems: []
+  - organizationId: 1
+    fidesKey: "demoRegistry"
+    name: "Demo Registry"
+    description: "Demo Regsitry"
+    systems: []

@@ -39,7 +39,6 @@ def dry_evaluate(
     }
 
     # Look for a matching fidesKey in the system/registry objects
-    print(filtered_manifests)
     eval_dict: Dict[str, FidesModel] = {
         object_type: parse.parse_manifest(object_type, _object)
         for object_type, object_list in filtered_manifests.items()
