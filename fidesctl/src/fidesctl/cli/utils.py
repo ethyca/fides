@@ -19,7 +19,6 @@ def handle_cli_response(response: requests.Response) -> requests.Response:
         pretty_echo(response.json(), "green")
     else:
         try:
-            print(response.text)
             pretty_echo(response.json(), "red")
         except json.JSONDecodeError:
             click.secho(response.text, fg="red")
