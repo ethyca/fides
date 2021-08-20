@@ -20,7 +20,7 @@ class MissingConfig(Exception):
 class UserConfig(BaseModel):
     """Class used to store values from the 'user' section of the config."""
 
-    user_id: int
+    user_id: str
     api_key: str
     request_headers: Dict[str, str] = dict()
 
