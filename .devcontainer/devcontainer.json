@@ -10,7 +10,8 @@
 		"ms-python.python",
 		"ms-python.vscode-pylance",
 		"davidanson.vscode-markdownlint",
-		"bungcip.better-toml"
+		"bungcip.better-toml",
+		"github.vscode-pull-request-github"
 	],
 	"settings": {
 		"editor.formatOnSave": true,
