@@ -80,7 +80,6 @@ project/metals.sbt
 
 # Editors
 .vscode/
-fidesctl/.devcontainer/
 .idea/
 
 # Vagrant
@@ -206,5 +205,3 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-fidesctl/cli-setup.sh

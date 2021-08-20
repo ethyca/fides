@@ -46,7 +46,7 @@ help:
 
 # CLI
 cli: compose-build check-db
-	@docker-compose run $(CLI_IMAGE_NAME)
+	@docker-compose run $(CLI_IMAGE_NAME) /bin/bash
 	@make teardown
 
 # Server

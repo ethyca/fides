@@ -2,7 +2,7 @@
 	"name": "Fidesctl",
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "fidesctl",
-	"workspaceFolder": "/fidesctl",
+	"workspaceFolder": "/fides",
 	"shutdownAction": "stopCompose",
 	"extensions": [
 		"ms-azuretools.vscode-docker",

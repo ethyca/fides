@@ -22,7 +22,7 @@ system:
     description: "A failing system used for demos."
     systemType: "Service"
     privacyDeclarations:
-      - name: "Analyze Anonymous Content"
+      - name: "Upsell Trainees"
         dataCategories:
           - "profiling_data"
         dataUse: "offer_upgrades_or_upsell"

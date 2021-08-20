@@ -9,8 +9,8 @@ services:
         condition: service_healthy
     volumes:
       - type: bind
-        source: ./fidesctl
-        target: /fidesctl
+        source: .
+        target: /fides
         read_only: False
     env_file:
       - env_files/fidesctl.env
