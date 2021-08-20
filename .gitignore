@@ -80,6 +80,7 @@ project/metals.sbt
 
 # Editors
 .vscode/
+fidesctl/.devcontainer/
 .idea/
 
 # Vagrant
