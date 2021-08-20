@@ -1,0 +1,7 @@
+{
+    "name": "Fidesctl",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "fidesctl",
+    "workspaceFolder": "/fidesctl",
+    "shutdownAction": "stopCompose"
+}

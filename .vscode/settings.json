@@ -1,1 +1,7 @@
-# VS Code settings
+{
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "python.formatting.provider": "black",
+    "python.linting.mypyEnabled": true,
+}
