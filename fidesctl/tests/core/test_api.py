@@ -3,7 +3,6 @@ from typing import Dict
 
 import pytest
 
-from fidesctl.core.config import generate_request_headers
 from fidesctl.core import api as _api, parse
 from fidesctl.core.models import MODEL_LIST
 
