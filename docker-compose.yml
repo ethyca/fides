@@ -22,7 +22,8 @@ services:
       target: local
     command: sbt ~jetty:start
     depends_on:
-      - fides-db
+      fides-db:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 20s
