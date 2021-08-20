@@ -18,6 +18,15 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
+def test_apply(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "apply", "data/sample/"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_find(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "find", "system", "demoPassingSystem"]
@@ -43,13 +52,6 @@ def test_get(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_show(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "show", "system"])
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_apply(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "apply", "data/"])
     print(result.output)
     assert result.exit_code == 0
 

@@ -3,7 +3,7 @@ services:
     build:
       context: fidesctl
       dockerfile: Dockerfile
-    command: /bin/bash
+    command: /bin/bash -c "sleep infinity"
     depends_on:
       fidesapi:
         condition: service_healthy
