@@ -9,10 +9,12 @@ from fidesctl.cli.utils import (
     handle_cli_response,
     pretty_echo,
 )
-from fidesctl.core import api as _api
-from fidesctl.core import apply as _apply
-from fidesctl.core import evaluate as _evaluate
-from fidesctl.core import generate_dataset as _generate_dataset
+from fidesctl.core import (
+    api as _api,
+    apply as _apply,
+    evaluate as _evaluate,
+    generate_dataset as _generate_dataset,
+)
 
 
 @click.command()
