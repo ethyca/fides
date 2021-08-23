@@ -103,6 +103,8 @@ def get_server_objects(
     ]
     return server_object_list
 
+# Add a diffing function here
+
 
 def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
     """
