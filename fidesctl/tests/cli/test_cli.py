@@ -27,9 +27,18 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
+def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_find(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "find", "system", "demoPassingSystem"]
+        cli, ["-f", test_config_path, "find", "system", "dataAnalyticsSystem"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -77,7 +86,7 @@ def test_dry_evaluate_registry_success(
 def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "demoPassingSystem"],
+        ["-f", test_config_path, "dry-evaluate", "data/sample/", "dataAnalyticsSystem"],
     )
     print(result.output)
     assert result.exit_code == 0
@@ -87,7 +96,13 @@ def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: Cli
 def test_dry_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "demoFailingSystem"],
+        [
+            "-f",
+            test_config_path,
+            "dry-evaluate",
+            "data/sample/",
+            "customerDataSharingSystem",
+        ],
     )
     print(result.output)
     assert result.exit_code == 1
@@ -117,7 +132,7 @@ def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunn
 def test_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "system", "demoFailingSystem"],
+        ["-f", test_config_path, "evaluate", "system", "customerDataSharingSystem"],
     )
     print(result.output)
     assert result.exit_code == 1

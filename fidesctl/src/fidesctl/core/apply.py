@@ -104,7 +104,9 @@ def get_server_objects(
     return server_object_list
 
 
-def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
+def apply(
+    url: str, manifests_dir: str, headers: Dict[str, str], dry: bool = False
+) -> None:
     """
     Apply the current manifest file state to the server.
     Excludes systems and registries.
@@ -118,7 +120,6 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
         for object_type, object_list in ingested_manifests.items()
     }
 
-    # Loop through each type of object and check for operations
     for object_type, manifest_object_list in parsed_manifests.items():
 
         existing_keys = [
@@ -133,15 +134,25 @@ def apply(url: str, manifests_dir: str, headers: Dict[str, str]) -> None:
             manifest_object_list,
             server_object_list,
         )
-        execute_create_update_unchanged(
-            url,
-            headers,
-            object_type,
-            create_list,
-            update_list,
-            unchanged_list,
-        )
 
-        echo_green(f"Created {len(create_list)} {object_type} objects.")
-        echo_green(f"Updated {len(update_list)} {object_type} objects.")
-        echo_green(f"Skipped {len(unchanged_list)} unchanged {object_type} objects.")
+        if dry:
+            echo_green(f"Would Create {len(create_list)} {object_type} objects.")
+            echo_green(f"Would Update {len(update_list)} {object_type} objects.")
+            echo_green(
+                f"Would Skip {len(unchanged_list)} unchanged {object_type} objects."
+            )
+        else:
+            execute_create_update_unchanged(
+                url,
+                headers,
+                object_type,
+                create_list,
+                update_list,
+                unchanged_list,
+            )
+
+            echo_green(f"Created {len(create_list)} {object_type} objects.")
+            echo_green(f"Updated {len(update_list)} {object_type} objects.")
+            echo_green(
+                f"Skipped {len(unchanged_list)} unchanged {object_type} objects."
+            )

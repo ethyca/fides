@@ -29,6 +29,4 @@ system:
         dataQualifier: "identified_data"
         dataSubjects:
           - "customer"
-        datasetReferences:
-          - "sample_db_dataset.Email"
     systemDependencies: []
