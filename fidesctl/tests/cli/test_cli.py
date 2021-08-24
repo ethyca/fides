@@ -36,6 +36,24 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
+def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "apply", "data/sample/", "--diff"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry", "--diff"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_find(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "find", "system", "dataAnalyticsSystem"]

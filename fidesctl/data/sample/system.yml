@@ -1,6 +1,6 @@
 system:
   - organizationId: 1
-    fidesKey: "dataAnalyticSystem"
+    fidesKey: "dataAnalyticsSystem"
     name: "Data Analytics System"
     description: "A system used for analyzing customer behaviour."
     systemType: "Service"
@@ -18,7 +18,7 @@ system:
 
   - organizationId: 1
     fidesKey: "customerDataSharingSystem"
-    name: "Customer Data Sharin System"
+    name: "Customer Data Sharing System"
     description: "Share data about our users with third-parties."
     systemType: "Service"
     privacyDeclarations:

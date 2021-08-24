@@ -1,4 +1,5 @@
 """This module handles the logic required for applying manifest files to the server."""
+from pprint import pprint
 from typing import Dict, List, Tuple, Optional, Iterable
 
 from deepdiff import DeepDiff
@@ -41,12 +42,14 @@ def sort_create_update_unchanged(
                 unchanged_list.append(manifest_object)
             else:
                 if diff:
-                    print(DeepDiff(server_object, manifest_object))
+                    print(f"\nUpdated object with fidesKey: {manifest_object.fidesKey}")
+                    pprint(DeepDiff(server_object, manifest_object))
                 update_list.append(manifest_object)
 
         else:
             if diff:
-                print(manifest_object)
+                print(f"\nNew object with fidesKey: {manifest_object.fidesKey}")
+                pprint(manifest_object)
             create_list.append(manifest_object)
 
     return create_list, update_list, unchanged_list
