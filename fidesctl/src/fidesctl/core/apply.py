@@ -1,6 +1,8 @@
 """This module handles the logic required for applying manifest files to the server."""
 from typing import Dict, List, Tuple, Optional, Iterable
 
+from deepdiff import DeepDiff
+
 from fidesctl.core import api, manifests, parse
 from fidesctl.core.models import FidesModel
 from fidesctl.cli.utils import handle_cli_response
@@ -8,11 +10,16 @@ from .utils import echo_green
 
 
 def sort_create_update_unchanged(
-    manifest_object_list: List[FidesModel], server_object_list: List[FidesModel]
+    manifest_object_list: List[FidesModel],
+    server_object_list: List[FidesModel],
+    diff: bool = False,
 ) -> Tuple[List[FidesModel], List[FidesModel], List[FidesModel]]:
     """
     Check the contents of the object lists and populate separate
     new lists for object creation, updating, or no change.
+
+    The `diff` flag will print out the differences between the server objects
+    the local resource files.
     """
     server_object_dict = {
         server_object.fidesKey: server_object for server_object in server_object_list
@@ -33,9 +40,13 @@ def sort_create_update_unchanged(
             if manifest_object == server_object:
                 unchanged_list.append(manifest_object)
             else:
+                if diff:
+                    print(DeepDiff(server_object, manifest_object))
                 update_list.append(manifest_object)
 
         else:
+            if diff:
+                print(manifest_object)
             create_list.append(manifest_object)
 
     return create_list, update_list, unchanged_list
@@ -64,7 +75,8 @@ def execute_create_update_unchanged(
                 headers=headers,
                 object_type=object_type,
                 json_object=create_object.json(exclude_none=True),
-            )
+            ),
+            verbose=False,
         )
         echo_green(success_echo.format("Created", object_type, create_object.fidesKey))
     for update_object in update_list:
@@ -75,7 +87,8 @@ def execute_create_update_unchanged(
                 object_type=object_type,
                 object_id=update_object.id,
                 json_object=update_object.json(exclude_none=True),
-            )
+            ),
+            verbose=False,
         )
         echo_green(success_echo.format("Updated", object_type, update_object.fidesKey))
     for unchanged_object in unchanged_list:
@@ -104,23 +117,45 @@ def get_server_objects(
     return server_object_list
 
 
+def echo_results(action: str, object_type: str, resource_list: List) -> None:
+    """
+    Echo out the results of the apply.
+    """
+    echo_green(f"{action.upper()} {len(resource_list)} {object_type} objects.")
+
+
+def parse_manifests(
+    raw_manifests: Dict[str, List[Dict]]
+) -> Dict[str, List[FidesModel]]:
+    """
+    Parse the raw resource manifests into resource objects.
+    """
+    parsed_manifests = {
+        object_type: [
+            parse.parse_manifest(object_type, _object) for _object in object_list
+        ]
+        for object_type, object_list in raw_manifests.items()
+    }
+    return parsed_manifests
+
+
 def apply(
-    url: str, manifests_dir: str, headers: Dict[str, str], dry: bool = False
+    url: str,
+    manifests_dir: str,
+    headers: Dict[str, str],
+    dry: bool = False,
+    diff: bool = False,
 ) -> None:
     """
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
     ingested_manifests = manifests.ingest_manifests(manifests_dir)
-
-    parsed_manifests: Dict[str, List[FidesModel]] = {
-        object_type: [
-            parse.parse_manifest(object_type, _object) for _object in object_list
-        ]
-        for object_type, object_list in ingested_manifests.items()
-    }
+    parsed_manifests = parse_manifests(ingested_manifests)
 
     for object_type, manifest_object_list in parsed_manifests.items():
+        # Doing some echos here to make a pretty output
+        echo_green("-" * 10)
 
         existing_keys = [
             manifest_object.fidesKey for manifest_object in manifest_object_list
@@ -131,16 +166,13 @@ def apply(
 
         # Determine which objects should be created, updated, or are unchanged
         create_list, update_list, unchanged_list = sort_create_update_unchanged(
-            manifest_object_list,
-            server_object_list,
+            manifest_object_list, server_object_list, diff
         )
 
         if dry:
-            echo_green(f"Would Create {len(create_list)} {object_type} objects.")
-            echo_green(f"Would Update {len(update_list)} {object_type} objects.")
-            echo_green(
-                f"Would Skip {len(unchanged_list)} unchanged {object_type} objects."
-            )
+            echo_results("would create", object_type, create_list)
+            echo_results("would update", object_type, update_list)
+            echo_results("would skip", object_type, unchanged_list)
         else:
             execute_create_update_unchanged(
                 url,
@@ -151,8 +183,7 @@ def apply(
                 unchanged_list,
             )
 
-            echo_green(f"Created {len(create_list)} {object_type} objects.")
-            echo_green(f"Updated {len(update_list)} {object_type} objects.")
-            echo_green(
-                f"Skipped {len(unchanged_list)} unchanged {object_type} objects."
-            )
+            echo_results("created", object_type, create_list)
+            echo_results("updated", object_type, update_list)
+            echo_results("skipped", object_type, unchanged_list)
+    echo_green("-" * 10)

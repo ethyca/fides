@@ -13,10 +13,13 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     click.secho(json.dumps(dict_object, indent=2), fg=color)
 
 
-def handle_cli_response(response: requests.Response) -> requests.Response:
+def handle_cli_response(
+    response: requests.Response, verbose: bool = True
+) -> requests.Response:
     """Viewable CLI response"""
     if response.status_code >= 200 and response.status_code <= 299:
-        pretty_echo(response.json(), "green")
+        if verbose:
+            pretty_echo(response.json(), "green")
     else:
         try:
             pretty_echo(response.json(), "red")
