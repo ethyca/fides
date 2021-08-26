@@ -6,6 +6,8 @@ from unittest import mock
 from fidesctl.core import generate_dataset
 
 
+# Unit
+@pytest.mark.unit
 def test_generate_table_manifests():
     test_object = {"foo": ["1", "2"], "bar": ["4", "5"]}
     expected_result = [
@@ -42,6 +44,8 @@ def test_generate_table_manifests():
     assert actual_result == expected_result
 
 
+# Integration
+@pytest.mark.integration
 def test_generate_dataset_info():
     test_url = "mysql+mysqlconnector://foo:bar@test-db:3306/test"
     test_engine = sqlalchemy.create_engine(test_url)
@@ -61,6 +65,7 @@ def test_generate_dataset_info():
     assert actual_result == expected_result
 
 
+@pytest.mark.integration
 def test_get_db_tables():
     # Test Setup
     inspector = mock.Mock()

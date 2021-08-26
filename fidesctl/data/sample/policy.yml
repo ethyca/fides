@@ -6,15 +6,12 @@ policy:
     rules:
       - organizationId: 1
         fidesKey: "rejectTargetedMarketing"
-        name: "Reject Targeted Marketing"
-        description: "Disallow marketing that is targeted towards users."
+        name: "Reject Targeted Biometric Marketing"
+        description: "Disallow targeted marketing towards customers based on biometric data."
         dataCategories:
           inclusion: "ANY"
           values:
-            - profiling_data
-            - account_data
-            - derived_data
-            - cloud_service_provider_data
+            - biometric_data
         dataUses:
           inclusion: ANY
           values:
@@ -23,32 +20,26 @@ policy:
         dataSubjects:
           inclusion: ANY
           values:
-            - trainee
-            - commuter
-        dataQualifier: pseudonymized_data
+            - customer
+        dataQualifier: "identified_data"
         action: REJECT
+
       - organizationId: 1
-        fidesKey: rejectSome
-        name: "Reject Some Marketing"
-        description: "Disallow some marketing that is targeted towards users."
+        fidesKey: rejectSharingPoliticalOpinions
+        name: "Disallow Sharing Political Opinions"
+        description: "Disallow sharing political opinions with third-parties."
         dataCategories:
           inclusion: ANY
           values:
-            - user_location
-            - personal_health_data_and_medical_records
-            - connectivity_data
-            - credentials
+            - political_opinion
         dataUses:
           inclusion: ALL
           values:
-            - improvement_of_business_support_for_contracted_service
-            - personalize
-            - share_when_required_to_provide_the_service
+            - share
         dataSubjects:
-          inclusion: NONE
+          inclusion: ANY
           values:
-            - trainee
-            - commuter
+            - customer
             - patient
-        dataQualifier: pseudonymized_data
+        dataQualifier: "identified_data"
         action: REJECT

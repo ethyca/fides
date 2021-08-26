@@ -46,7 +46,7 @@ help:
 
 # CLI
 cli: compose-build check-db
-	@docker-compose run $(CLI_IMAGE_NAME)
+	@docker-compose run $(CLI_IMAGE_NAME) /bin/bash
 	@make teardown
 
 # Server
@@ -107,30 +107,39 @@ test-all: server-test fidesctl-check-all
 	@echo "Running all tests and checks..."
 
 # Fidesctl
-fidesctl-check-all: black pylint mypy pytest
+fidesctl-check-all: fidesctl-check-install black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 fidesctl-check-install:
 	@echo "Checking that fidesctl is installed..."
-	@docker-compose run $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
 	fidesctl
 
 black: compose-build
-	@docker-compose run $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
 	black --check src/
+	
+mypy: compose-build
+	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	mypy
 
 pylint: compose-build
-	@docker-compose run $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
 	pylint src/
 
 pytest: compose-build init-db
 	@docker-compose up -d
 	@docker-compose run $(CLI_IMAGE_NAME) \
-	/bin/bash -c "sleep 90 & pytest"
+	pytest
 
-mypy: compose-build
-	@docker-compose run $(CLI_IMAGE_NAME) \
-	mypy --ignore-missing-imports src/
+xenon: compose-build
+	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	xenon src \
+	--max-absolute B \
+	--max-modules A \
+	--max-average A \
+	--ignore "data, tests, docs" \
+	--exclude "src/fidesctl/_version.py"
 
 # Server
 .PHONY: check

@@ -1,33 +1,34 @@
 system:
   - organizationId: 1
-    fidesKey: "demoPassingSystem"
-    name: "Demo Passing System"
-    description: "A passing system used for demos."
+    fidesKey: "dataAnalyticsSystem"
+    name: "Data Analytics System"
+    description: "A system used for analyzing customer behaviour."
     systemType: "Service"
     privacyDeclarations:
       - name: "Analyze Anonymous Content"
         dataCategories:
           - "account_data"
-        dataUse: "provide"
+        dataUse: "improve"
         dataQualifier: "anonymized_data"
         dataSubjects:
-          - "anonymous_user"
+          - "customer"
         datasetReferences:
-          - "sample_db_dataset.Email"
+          - "sample_db_dataset.Food_Preference"
     systemDependencies: []
+
   - organizationId: 1
-    fidesKey: "demoFailingSystem"
-    name: "Demo Failing System"
-    description: "A failing system used for demos."
+    fidesKey: "customerDataSharingSystem"
+    name: "Customer Data Sharing System"
+    description: "Share data about our users with third-parties."
     systemType: "Service"
     privacyDeclarations:
-      - name: "Analyze Anonymous Content"
+      - name: "Share Political Opinions"
         dataCategories:
-          - "profiling_data"
-        dataUse: "offer_upgrades_or_upsell"
-        dataQualifier: "pseudonymized_data"
+          - "political_opinion"
+        dataUse: "share"
+        dataQualifier: "identified_data"
         dataSubjects:
-          - "trainee"
+          - "customer"
         datasetReferences:
           - "sample_db_dataset.Email"
     systemDependencies: []

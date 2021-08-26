@@ -39,15 +39,13 @@ def dry_evaluate(
     }
 
     # Look for a matching fidesKey in the system/registry objects
-    try:
-        eval_dict: Dict[str, FidesModel] = {
-            object_type: parse.parse_manifest(object_type, _object)
-            for object_type, object_list in filtered_manifests.items()
-            for _object in object_list
-            if _object["fidesKey"] == fides_key
-        }
-        assert eval_dict != {}
-    except AssertionError:
+    eval_dict: Dict[str, FidesModel] = {
+        object_type: parse.parse_manifest(object_type, _object)
+        for object_type, object_list in filtered_manifests.items()
+        for _object in object_list
+        if _object["fidesKey"] == fides_key
+    }
+    if eval_dict == {}:
         echo_red(
             "Failed to find a system or registry with fidesKey: {}".format(fides_key)
         )
