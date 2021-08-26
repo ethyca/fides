@@ -1,5 +1,3 @@
 # Fides Docs
 
-1. `pip install -r requirements.txt`
-1. `cd fides`
-1. `mkdocs serve`
+This is where the docs site for Fides lives. To run the docs locally, use `make docs-serve` and visit `localhost:8081`
