@@ -11,9 +11,6 @@ class PrivacyRule(BaseModel):
 
 
 class PolicyRule(FidesModel):
-    organizationId: int
-    name: str
-    description: str
     dataCategories: PrivacyRule
     dataUses: PrivacyRule
     dataSubjects: PrivacyRule
@@ -22,9 +19,6 @@ class PolicyRule(FidesModel):
 
 
 class Policy(FidesModel):
-    organizationId: int
-    name: str
-    description: str
     rules: List[PolicyRule]
 
     @validator("rules")

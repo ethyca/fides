@@ -14,10 +14,7 @@ class DatasetField(BaseModel):
 
 
 class Dataset(FidesModel):
-    organizationId: int
     metadata: Optional[Dict[str, str]]
-    name: str
-    description: str
     dataCategories: Optional[List[str]]
     dataQualifier: Optional[str]
     location: str

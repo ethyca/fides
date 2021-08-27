@@ -15,11 +15,8 @@ class PrivacyDeclaration(BaseModel):
 
 
 class System(FidesModel):
-    organizationId: int
     registryId: Optional[int]
     metadata: Optional[Dict[str, str]]
     systemType: str
-    name: str
-    description: str
     privacyDeclarations: List[PrivacyDeclaration]
     systemDependencies: Optional[List[str]]
