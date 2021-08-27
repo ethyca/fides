@@ -11,7 +11,7 @@ from fidesctl.core.config import get_config
 
 @pytest.fixture()
 def test_config_path():
-    yield "tests/test_config.ini"
+    yield "tests/test_config.toml"
 
 
 @pytest.fixture()
@@ -133,14 +133,6 @@ def objects_dict():
                 )
             ],
             systemDependencies=[],
-        ),
-        "user": models.User(
-            organizationId=1,
-            userName="ethyca",
-            firstName="privacy",
-            lastName="engineering",
-            role="ADMIN",
-            apiKey="some_key",
         ),
     }
     yield objects_dict

@@ -9,4 +9,5 @@ pytest-cov==2.11.1
 requests-mock==1.8.0
 types-PyYAML
 types-requests
+types-toml
 xenon==0.7.3
