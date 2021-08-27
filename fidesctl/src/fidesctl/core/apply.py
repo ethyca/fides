@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Optional, Iterable
 from deepdiff import DeepDiff
 
 from fidesctl.core import api, manifests, parse
-from fidesctl.core.models import FidesModel
+from fidesctl.lang import FidesModel
 from fidesctl.cli.utils import handle_cli_response
 from .utils import echo_green
 

@@ -6,8 +6,8 @@ from typing import Dict
 
 from pydantic import ValidationError
 
-from .models import MODEL_DICT, FidesModel
-from .utils import echo_red
+from fidesctl.lang import model_map, FidesModel
+from fidesctl.core.utils import echo_red
 
 
 def parse_manifest(
@@ -18,7 +18,7 @@ def parse_manifest(
     """
     object_source = "server" if from_server else "manifest file"
     try:
-        parsed_manifest = MODEL_DICT[object_type].parse_obj(_object)
+        parsed_manifest = model_map[object_type].parse_obj(_object)
     except ValidationError as err:
         echo_red(f"Failed to parse this object: {_object} with the following errors:")
         raise SystemExit(err) from err

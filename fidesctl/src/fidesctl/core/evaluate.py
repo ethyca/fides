@@ -5,7 +5,7 @@ from typing import Dict
 import requests
 
 from fidesctl.core import api, manifests, parse
-from fidesctl.core.models import FidesModel
+from fidesctl.lang import FidesModel
 
 from .utils import echo_red
 
