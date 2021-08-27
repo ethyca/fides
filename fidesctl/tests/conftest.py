@@ -5,7 +5,7 @@ from typing import Any, Dict
 import pytest
 import yaml
 
-from fidesctl.core import models
+import fidesctl.lang as models
 from fidesctl.core.config import get_config
 
 

@@ -10,9 +10,8 @@ class PrivacyRule(BaseModel):
     values: List[str]
 
 
-class PolicyRule(BaseModel):
+class PolicyRule(FidesModel):
     organizationId: int
-    fidesKey: str
     name: str
     description: str
     dataCategories: PrivacyRule
@@ -23,9 +22,7 @@ class PolicyRule(BaseModel):
 
 
 class Policy(FidesModel):
-    id: Optional[int]
     organizationId: int
-    fidesKey: str
     name: str
     description: str
     rules: List[PolicyRule]

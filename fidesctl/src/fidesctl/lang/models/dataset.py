@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
-from fidesctl.lang.validation import sort_list_objects
 from fidesctl.lang.models.fides_model import FidesModel
 
 
@@ -15,7 +14,6 @@ class DatasetField(BaseModel):
 
 
 class Dataset(FidesModel):
-    id: Optional[int]
     organizationId: int
     metadata: Optional[Dict[str, str]]
     name: str
@@ -27,4 +25,6 @@ class Dataset(FidesModel):
     fields: List[DatasetField]
 
     @validator("fields")
-    sort_list_objects(cls, values)
+    def sort_list_objects(cls, values: List) -> List:
+        values.sort(key=lambda value: value.name)
+        return values

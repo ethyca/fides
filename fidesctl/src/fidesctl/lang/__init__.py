@@ -1,15 +1,19 @@
 from typing import Dict, Type
 
+# Export the Models
 from fidesctl.lang.models.data_category import DataCategory
 from fidesctl.lang.models.data_qualifier import DataQualifier
 from fidesctl.lang.models.data_subject import DataSubject
-from fidesctl.lang.models.data_use import DataUse
 from fidesctl.lang.models.dataset import Dataset
+from fidesctl.lang.models.dataset import DatasetField
+from fidesctl.lang.models.data_use import DataUse
 from fidesctl.lang.models.fides_model import FidesModel
 from fidesctl.lang.models.organization import Organization
 from fidesctl.lang.models.policy import Policy
+from fidesctl.lang.models.policy import PolicyRule
 from fidesctl.lang.models.registry import Registry
 from fidesctl.lang.models.system import System
+from fidesctl.lang.models.system import PrivacyDeclaration
 
 model_map: Dict[str, Type[FidesModel]] = {
     "data-category": DataCategory,

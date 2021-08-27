@@ -1,7 +1,7 @@
 from typing import Dict
 
 import pytest
-from fidesctl.core import evaluate, manifests, models
+from fidesctl.core import evaluate
 
 
 @pytest.mark.unit

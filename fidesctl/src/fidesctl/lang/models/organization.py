@@ -5,8 +5,6 @@ from pydantic import BaseModel
 from fidesctl.lang.models.fides_model import FidesModel
 
 
-class Organization(BaseModel):
-    id: Optional[int]
-    fidesKey: str
+class Organization(FidesModel):
     name: str
     description: str
