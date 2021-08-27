@@ -21,5 +21,5 @@ class System(FidesModel):
     systemType: str
     name: str
     description: str
-    privacyDeclarations: Optional[List[PrivacyDeclaration]]
+    privacyDeclarations: List[PrivacyDeclaration]
     systemDependencies: Optional[List[str]]
