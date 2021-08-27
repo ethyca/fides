@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
-from fidesctl.lang.models.fides_model import FidesModel
+from fideslang.models.fides_model import FidesModel
 
 
 class PrivacyRule(BaseModel):

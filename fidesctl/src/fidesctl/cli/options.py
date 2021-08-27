@@ -2,7 +2,7 @@ from typing import Callable
 
 import click
 
-from fidesctl.lang import model_list
+from fideslang import model_list
 
 
 def object_type_argument(command: Callable) -> Callable:

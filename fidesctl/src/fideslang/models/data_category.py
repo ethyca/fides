@@ -1,9 +1,9 @@
 from typing import Optional
 
-from fidesctl.lang.models.fides_model import FidesModel
+from fideslang.models.fides_model import FidesModel
 
 
-class DataUse(FidesModel):
+class DataCategory(FidesModel):
     organizationId: int = 1
     name: str
     parentKey: Optional[str]

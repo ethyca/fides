@@ -2,7 +2,7 @@
 import pytest
 
 from fidesctl.core import apply
-import fidesctl.lang as models
+import fideslang as models
 
 
 # Helpers

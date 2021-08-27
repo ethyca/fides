@@ -6,7 +6,7 @@ from typing import Dict
 
 from pydantic import ValidationError
 
-from fidesctl.lang import model_map, FidesModel
+from fideslang import model_map, FidesModel
 from fidesctl.core.utils import echo_red
 
 

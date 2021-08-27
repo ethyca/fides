@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from fidesctl.lang import manifests
+from fideslang import manifests
 
 
 # Helpers

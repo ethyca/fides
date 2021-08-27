@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from fidesctl.lang.models.fides_model import FidesModel
+from fideslang.models.fides_model import FidesModel
 
 
 class PrivacyDeclaration(BaseModel):

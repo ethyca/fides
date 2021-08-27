@@ -4,10 +4,10 @@ from typing import Dict, List, Tuple, Optional, Iterable
 
 from deepdiff import DeepDiff
 
-from fidesctl.core import api
-from fidesctl.lang import FidesModel, manifests, parse
 from fidesctl.cli.utils import handle_cli_response
+from fidesctl.core import api
 from fidesctl.core.utils import echo_green
+from fideslang import FidesModel, manifests, parse
 
 
 def sort_create_update_unchanged(

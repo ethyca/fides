@@ -4,7 +4,7 @@ from typing import Dict
 import pytest
 
 from fidesctl.core import api as _api
-from fidesctl.lang import parse, model_list
+from fideslang import parse, model_list
 
 # Helper Functions
 def get_existing_id(test_config, object_type: str) -> int:

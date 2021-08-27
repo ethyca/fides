@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from fidesctl.lang.models import fides_model
+from fideslang.models import fides_model
 
 
 def test_fides_model_valid():

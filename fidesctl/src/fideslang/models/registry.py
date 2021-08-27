@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fidesctl.lang.models.fides_model import FidesModel
+from fideslang.models.fides_model import FidesModel
 
 
 class Registry(FidesModel):
