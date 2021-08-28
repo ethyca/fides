@@ -10,7 +10,7 @@ class FidesKey(ConstrainedStr):
     A FidesKey should only contain alphanumeric characters or '_'
     """
 
-    regex = re.compile(r"^[\w]+$")
+    regex = re.compile(r"^[a-zA-Z_]+$")
 
 
 class FidesModel(BaseModel):
