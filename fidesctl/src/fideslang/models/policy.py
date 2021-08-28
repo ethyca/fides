@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, validator
@@ -6,8 +7,19 @@ from fideslang.models.fides_model import FidesModel, FidesKey
 from fideslang.models.validation import sort_list_objects
 
 
+class InclusionEnum(str, Enum):
+    ANY = "ANY"
+    ALL = "ALL"
+    NONE = "NONE"
+
+
+class ActionEnum(str, Enum):
+    ACCEPT = "ACCEPT"
+    REJECT = "REJECT"
+
+
 class PrivacyRule(BaseModel):
-    inclusion: str  # TODO make this an Enum of Any, All, None
+    inclusion: InclusionEnum
     values: List[FidesKey]
 
 
@@ -16,7 +28,7 @@ class PolicyRule(FidesModel):
     dataUses: PrivacyRule
     dataSubjects: PrivacyRule
     dataQualifier: FidesKey
-    action: str  # TODO Make this an Enum or Reject or Approve
+    action: ActionEnum
 
 
 class Policy(FidesModel):

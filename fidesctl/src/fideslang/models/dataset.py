@@ -2,8 +2,8 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
-from fideslang.models.validation import sort_list_objects
-from fideslang.models.fides_model import FidesModel, FidesKey
+from fideslang.models.validation import FidesKey, sort_list_objects
+from fideslang.models.fides_model import FidesModel
 
 
 class DatasetField(BaseModel):

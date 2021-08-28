@@ -4,6 +4,7 @@ from fideslang.models.system import System, PrivacyDeclaration
 from fideslang.models.validation import FidesValidationError
 
 
+@pytest.mark.unit
 def test_create_valid_system():
     System(
         organizationId=1,
@@ -27,6 +28,7 @@ def test_create_valid_system():
     assert True
 
 
+@pytest.mark.unit
 def test_circular_dependency_system():
     with pytest.raises(FidesValidationError):
         System(

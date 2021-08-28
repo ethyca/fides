@@ -1,11 +1,13 @@
 """This module handles finding and parsing fides configuration files."""
+# pylint: disable=C0115,C0116, E0213
 
 import os
-import toml
 from typing import Dict, Optional, Tuple
 
+import toml
+
 from pydantic.env_settings import SettingsSourceCallable
-from pydantic import BaseModel, BaseSettings, Field, validator, AnyHttpUrl
+from pydantic import BaseModel, BaseSettings, validator, AnyHttpUrl
 
 from fidesctl.core.utils import echo_red, generate_request_headers
 

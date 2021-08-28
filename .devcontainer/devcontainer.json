@@ -5,13 +5,13 @@
 	"workspaceFolder": "/fides",
 	"shutdownAction": "stopCompose",
 	"extensions": [
+		"ms-python.python",
 		"ms-azuretools.vscode-docker",
 		"redhat.vscode-yaml",
-		"ms-python.python",
-		"ms-python.vscode-pylance",
 		"davidanson.vscode-markdownlint",
 		"bungcip.better-toml",
-		"github.vscode-pull-request-github"
+		"github.vscode-pull-request-github",
+		"ms-python.vscode-pylance"
 	],
 	"settings": {
 		"editor.formatOnSave": true,

@@ -1,16 +1,8 @@
-import re
 from typing import Optional
 
 from pydantic import BaseModel
-from pydantic.types import ConstrainedStr
 
-
-class FidesKey(ConstrainedStr):
-    """
-    A FidesKey should only contain alphanumeric characters or '_'
-    """
-
-    regex = re.compile(r"^[a-zA-Z_]+$")
+from fideslang.models.validation import FidesKey
 
 
 class FidesModel(BaseModel):
