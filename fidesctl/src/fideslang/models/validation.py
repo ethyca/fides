@@ -5,6 +5,13 @@ from pydantic import BaseModel, ValidationError
 from fideslang.models.fides_model import FidesKey
 
 
+class FidesValidationError(Exception):
+    """Custom exception for when the pydantic ValidationError can't be used."""
+
+    def __init__(self, message) -> None:
+        super().__init__(message)
+
+
 def sort_list_objects(values: List) -> List:
     """Sort objects in a list by their name. This makes object comparisons deterministic."""
     values.sort(key=lambda value: value.name)
@@ -12,6 +19,7 @@ def sort_list_objects(values: List) -> List:
 
 
 def no_self_reference(value, values: Dict, **kwargs) -> FidesKey:
+    print(value)
     if value == values["fidesKey"]:
-        raise SystemError
+        raise FidesValidationError("FidesKey can not self-reference!")
     return value

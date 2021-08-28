@@ -20,9 +20,7 @@ class System(FidesModel):
     metadata: Optional[Dict[str, str]]
     systemType: str
     privacyDeclarations: List[PrivacyDeclaration]
-    systemDependencies: Optional[
-        List[str]
-    ]  # TODO Make sure that self-reference can't happen
+    systemDependencies: Optional[List[FidesKey]]
 
     _sort_privacy_declarations = validator("privacyDeclarations", allow_reuse=True)(
         sort_list_objects
@@ -30,4 +28,4 @@ class System(FidesModel):
 
     _no_self_reference = validator(
         "systemDependencies", allow_reuse=True, each_item=True
-    )
+    )(no_self_reference)
