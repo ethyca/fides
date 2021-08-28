@@ -13,3 +13,6 @@ class FidesModel(BaseModel):
     name: str
     description: Optional[str]
     fidesKey: FidesKey
+
+    class Config:
+        extra = "forbid"
