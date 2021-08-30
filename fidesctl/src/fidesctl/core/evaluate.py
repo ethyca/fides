@@ -9,6 +9,7 @@ from fideslang import FidesModel, manifests, parse
 
 from .utils import echo_red
 
+## TODO: replace the logic here that just calls the server with logic that will perform the evaluation client-side
 
 def check_eval_result(response: requests.Response) -> requests.Response:
     """
