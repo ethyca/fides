@@ -7,7 +7,13 @@ from deepdiff import DeepDiff
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.utils import echo_green
-from fideslang import FidesModel, manifests, parse
+from fideslang import FidesModel
+from fideslang.manifests import ingest_manifests
+from fideslang.models.validation import FidesKey
+from fideslang.parse import (
+    load_manifests_into_taxonomy,
+    parse_manifest,
+)
 
 
 def sort_create_update_unchanged(
@@ -101,7 +107,7 @@ def execute_create_update_unchanged(
 
 
 def get_server_objects(
-    url: str, object_type: str, existing_keys: List[str], headers: Dict[str, str]
+    url: str, object_type: str, existing_keys: List[FidesKey], headers: Dict[str, str]
 ) -> List[FidesModel]:
     """
     Get a list of objects from the server that match the provided keys.
@@ -114,7 +120,7 @@ def get_server_objects(
         ],
     )
     server_object_list: List[FidesModel] = [
-        parse.parse_manifest(object_type, _object, from_server=True)
+        parse_manifest(object_type, _object, from_server=True)
         for _object in raw_server_object_list
     ]
     return server_object_list
@@ -125,21 +131,6 @@ def echo_results(action: str, object_type: str, resource_list: List) -> None:
     Echo out the results of the apply.
     """
     echo_green(f"{action.upper()} {len(resource_list)} {object_type} objects.")
-
-
-def parse_manifests(
-    raw_manifests: Dict[str, List[Dict]]
-) -> Dict[str, List[FidesModel]]:
-    """
-    Parse the raw resource manifests into resource objects.
-    """
-    parsed_manifests = {
-        object_type: [
-            parse.parse_manifest(object_type, _object) for _object in object_list
-        ]
-        for object_type, object_list in raw_manifests.items()
-    }
-    return parsed_manifests
 
 
 def apply(
@@ -153,23 +144,26 @@ def apply(
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
-    ingested_manifests = manifests.ingest_manifests(manifests_dir)
-    parsed_manifests = parse_manifests(ingested_manifests)
+    ingested_manifests = ingest_manifests(manifests_dir)
+    taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
-    for object_type, manifest_object_list in parsed_manifests.items():
+    for object_type, resource_list in taxonomy.dict(
+        by_alias=True, exclude_none=True
+    ).items():
         # Doing some echos here to make a pretty output
         echo_green("-" * 10)
 
-        existing_keys = [
-            manifest_object.fidesKey for manifest_object in manifest_object_list
+        resource_list = [
+            parse_manifest(object_type, resource) for resource in resource_list
         ]
+        existing_keys = [resource.fidesKey for resource in resource_list]
         server_object_list = get_server_objects(
             url, object_type, existing_keys, headers
         )
 
         # Determine which objects should be created, updated, or are unchanged
         create_list, update_list, unchanged_list = sort_create_update_unchanged(
-            manifest_object_list, server_object_list, diff
+            resource_list, server_object_list, diff
         )
 
         if dry:

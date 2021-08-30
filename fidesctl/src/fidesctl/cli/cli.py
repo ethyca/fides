@@ -118,15 +118,15 @@ def show(ctx: click.Context, object_type: str) -> None:
     is_flag=True,
     help="Outputs a detailed diff of the local resource files compared to the server resources.",
 )
-@click.argument("manifest_dir", type=click.Path())
-def apply(ctx: click.Context, dry: bool, diff: bool, manifest_dir: str) -> None:
+@manifests_dir_argument
+def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Send the manifest files to the server.
     """
     config = ctx.obj["CONFIG"]
     _apply.apply(
         url=config.cli.server_url,
-        manifests_dir=manifest_dir,
+        manifests_dir=manifests_dir,
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
@@ -170,7 +170,6 @@ def generate_dataset(
 ################
 @click.command()
 @click.pass_context
-@object_type_argument
 @click.argument(
     "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
 )

@@ -2,11 +2,11 @@
 This module handles everything related to parsing models,
 either from local files or the server.
 """
-from typing import Dict
+from typing import List, Dict
 
 from pydantic import ValidationError
 
-from fideslang import model_map, FidesModel
+from fideslang import model_map, FidesModel, Taxonomy
 from fidesctl.core.utils import echo_red
 
 
@@ -33,3 +33,19 @@ def parse_manifest(
         )
         raise err
     return parsed_manifest
+
+
+def load_manifests_into_taxonomy(raw_manifests: Dict[str, List[Dict]]) -> Taxonomy:
+    """
+    Parse the raw resource manifests into resource objects.
+    """
+
+    taxonomy = Taxonomy.parse_obj(
+        {
+            object_type: [
+                parse_manifest(object_type, _object) for _object in object_list
+            ]
+            for object_type, object_list in raw_manifests.items()
+        }
+    )
+    return taxonomy

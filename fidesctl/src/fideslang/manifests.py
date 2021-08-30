@@ -22,6 +22,11 @@ def load_yaml_into_dict(file_path: str) -> Dict:
         return yaml.load(yaml_file, Loader=yaml.FullLoader)
 
 
+def filter_manifest_by_type(manifests: Dict[str, List], filter_types: List[str]):
+    "Filter the resources so that only the specified resource types are returned."
+    return {key: value for key, value in manifests.items() if key in filter_types}
+
+
 def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
     """
     Combine all of the manifests into a single dictionary,

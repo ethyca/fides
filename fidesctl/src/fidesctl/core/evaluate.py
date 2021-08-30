@@ -1,12 +1,14 @@
 """Module for evaluating systems and registries."""
 from json.decoder import JSONDecodeError
-from typing import Dict
+from typing import Dict, List, Optional
 
 import requests
 
 from fidesctl.core import api
 from fidesctl.core.utils import echo_red
-from fideslang import FidesModel, manifests, parse
+from fideslang import FidesModel
+from fideslang.manifests import filter_manifest_by_type, ingest_manifests
+from fideslang.parse import load_manifests_into_taxonomy, parse_manifest
 
 
 def check_eval_result(response: requests.Response) -> requests.Response:
@@ -36,16 +38,18 @@ def evaluate(
     """
     Rate a registry against all of the policies within an organization.
     """
-    ingested_manifests = manifests.ingest_manifests(manifests_dir)
-    filtered_manifests = {
-        key: value
-        for key, value in ingested_manifests.items()
-        if key in ["system", "registry"]
-    }
+    ingested_manifests = ingest_manifests(manifests_dir)
+    taxonomy = load_manifests_into_taxonomy(ingested_manifests)
+
+    print(taxonomy)
+
+    filtered_manifests = filter_manifest_by_type(
+        ingested_manifests, ["system", "registry"]
+    )
 
     # Look for a matching fidesKey in the system/registry objects
     eval_dict: Dict[str, FidesModel] = {
-        object_type: parse.parse_manifest(object_type, _object)
+        object_type: parse_manifest(object_type, _object)
         for object_type, object_list in filtered_manifests.items()
         for _object in object_list
         if _object["fidesKey"] == fides_key
