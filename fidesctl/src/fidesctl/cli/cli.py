@@ -170,9 +170,6 @@ def generate_dataset(
 ################
 @click.command()
 @click.pass_context
-@click.argument(
-    "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
-)
 @fides_key_argument
 @manifests_dir_argument
 @click.option(
@@ -181,7 +178,6 @@ def generate_dataset(
 @dry_flag
 def evaluate(
     ctx: click.Context,
-    object_type: str,
     fides_key: str,
     manifests_dir: str,
     message: str,
@@ -208,7 +204,6 @@ def evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
-        object_type=object_type,
         fides_key=fides_key,
         message=message,
         dry=dry,

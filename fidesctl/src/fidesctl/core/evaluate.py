@@ -1,4 +1,5 @@
 """Module for evaluating systems and registries."""
+import inspect
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Optional
 
@@ -6,9 +7,10 @@ import requests
 
 from fidesctl.core import api
 from fidesctl.core.utils import echo_red
-from fideslang import FidesModel
-from fideslang.manifests import filter_manifest_by_type, ingest_manifests
+from fideslang import FidesModel, Taxonomy
+from fideslang.manifests import ingest_manifests
 from fideslang.parse import load_manifests_into_taxonomy, parse_manifest
+from fideslang.relationships import find_referenced_fides_keys
 
 
 def check_eval_result(response: requests.Response) -> requests.Response:
@@ -26,12 +28,26 @@ def check_eval_result(response: requests.Response) -> requests.Response:
     return response
 
 
+def get_resource_by_fides_key(
+    taxonomy: Taxonomy, fides_key: str
+) -> Optional[Dict[str, FidesModel]]:
+    "Get a specific resource from a taxonomy by its fides_key."
+
+    return {
+        object_type: parse_manifest(object_type, resource)
+        for object_type, object_list in taxonomy.dict(
+            exclude_none=True, by_alias=True
+        ).items()
+        for resource in object_list
+        if resource["fidesKey"] == fides_key
+    } or None
+
+
 def evaluate(
     url: str,
     manifests_dir: str,
     headers: Dict[str, str],
     fides_key: str,
-    object_type: str,
     message: str,
     dry: bool,
 ) -> requests.Response:
@@ -40,33 +56,22 @@ def evaluate(
     """
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
+    filtered_taxonomy = taxonomy.copy(include={"systems", "registries"})
 
-    print(taxonomy)
-
-    filtered_manifests = filter_manifest_by_type(
-        ingested_manifests, ["system", "registry"]
-    )
-
-    # Look for a matching fidesKey in the system/registry objects
-    eval_dict: Dict[str, FidesModel] = {
-        object_type: parse_manifest(object_type, _object)
-        for object_type, object_list in filtered_manifests.items()
-        for _object in object_list
-        if _object["fidesKey"] == fides_key
-    }
-    if eval_dict == {}:
+    resource_to_evaluate = get_resource_by_fides_key(filtered_taxonomy, fides_key)
+    if not resource_to_evaluate:
         echo_red(
             "Failed to find a system or registry with fidesKey: {}".format(fides_key)
         )
         raise SystemExit
 
-    object_type = list(eval_dict.keys())[0]
-    _object = list(eval_dict.values())[0]
+    object_type = list(resource_to_evaluate.keys())[0]
+    resource = list(resource_to_evaluate.values())[0]
 
-    response = api.dry_evaluate(
-        url=url,
-        object_type=object_type,
-        json_object=_object.json(exclude_none=True),
-        headers=headers,
-    )
-    return check_eval_result(response)
+    find_referenced_fides_keys(resource)
+
+    ## TODO: evaluation logic
+
+    ## TODO: If not dry, create an evaluation object and full send it
+
+    return
