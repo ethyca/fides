@@ -14,7 +14,7 @@ system:
           - "customer"
         datasetReferences:
           - "sample_db_dataset.Food_Preference"
-    systemDependencies: []
+    systemDependencies: [customerDataSharingSystem]
 
   - organizationId: 1
     fidesKey: "customerDataSharingSystem"
