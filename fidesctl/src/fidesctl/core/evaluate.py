@@ -5,11 +5,9 @@ from typing import Dict
 import requests
 
 from fidesctl.core import api
+from fidesctl.core.utils import echo_red
 from fideslang import FidesModel, manifests, parse
 
-from .utils import echo_red
-
-## TODO: replace the logic here that just calls the server with logic that will perform the evaluation client-side
 
 def check_eval_result(response: requests.Response) -> requests.Response:
     """
@@ -26,8 +24,14 @@ def check_eval_result(response: requests.Response) -> requests.Response:
     return response
 
 
-def dry_evaluate(
-    url: str, manifests_dir: str, headers: Dict[str, str], fides_key: str = ""
+def evaluate(
+    url: str,
+    manifests_dir: str,
+    headers: Dict[str, str],
+    fides_key: str,
+    object_type: str,
+    message: str,
+    dry: bool,
 ) -> requests.Response:
     """
     Rate a registry against all of the policies within an organization.
@@ -59,26 +63,6 @@ def dry_evaluate(
         url=url,
         object_type=object_type,
         json_object=_object.json(exclude_none=True),
-        headers=headers,
-    )
-    return check_eval_result(response)
-
-
-def evaluate(
-    url: str,
-    object_type: str,
-    fides_key: str,
-    tag: str,
-    message: str,
-    headers: Dict[str, str],
-) -> requests.Response:
-    """Run an evaluation on an existing system."""
-    response = api.evaluate(
-        url=url,
-        object_type=object_type,
-        fides_key=fides_key,
-        tag=tag,
-        message=message,
         headers=headers,
     )
     return check_eval_result(response)

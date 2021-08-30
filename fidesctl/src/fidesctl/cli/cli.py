@@ -2,7 +2,10 @@
 import click
 
 from fidesctl.cli.options import (
+    dry_flag,
+    fides_key_argument,
     id_argument,
+    manifests_dir_argument,
     object_type_argument,
 )
 from fidesctl.cli.utils import (
@@ -33,8 +36,8 @@ def view_config(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @object_type_argument
-@id_argument
-def find(ctx: click.Context, object_type: str, object_id: str) -> None:
+@fides_key_argument
+def find(ctx: click.Context, object_type: str, fides_key: str) -> None:
     """
     Get an object by its fidesKey.
     """
@@ -43,7 +46,7 @@ def find(ctx: click.Context, object_type: str, object_id: str) -> None:
         _api.find(
             url=config.cli.server_url,
             object_type=object_type,
-            object_key=object_id,
+            object_key=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -109,11 +112,7 @@ def show(ctx: click.Context, object_type: str) -> None:
 ########################
 @click.command()
 @click.pass_context
-@click.option(
-    "--dry",
-    is_flag=True,
-    help="Runs the apply command without any side-effects.",
-)
+@dry_flag
 @click.option(
     "--diff",
     is_flag=True,
@@ -171,54 +170,47 @@ def generate_dataset(
 ################
 @click.command()
 @click.pass_context
-@click.argument("manifest_dir", type=click.Path())
-@click.argument("fides_key", type=str)
-def dry_evaluate(ctx: click.Context, manifest_dir: str, fides_key: str) -> None:
-    """
-    Dry-Run evaluate a registry or system, either approving or denying
-    based on organizational policies.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _evaluate.dry_evaluate(
-            url=config.cli.server_url,
-            manifests_dir=manifest_dir,
-            fides_key=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
-@click.option("-t", "--tag", help="optional commit tag")
-@click.option("-m", "--message", help="optional commit message")
+@object_type_argument
 @click.argument(
     "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
 )
-@click.argument("fides_key", type=str)
+@fides_key_argument
+@manifests_dir_argument
+@click.option(
+    "-m", "--message", help="Description of the changes this evaluation encapsulates."
+)
+@dry_flag
 def evaluate(
     ctx: click.Context,
     object_type: str,
     fides_key: str,
-    tag: str,
+    manifests_dir: str,
     message: str,
+    dry: bool,
 ) -> None:
     """
     Evaluate a registry or system, either approving or denying
     based on organizational policies.
+
+    Evaluate will always run the "apply" command before the
+    evaluation, either dry or not depending on the flag
+    passed to "evaluate".
     """
 
-    if tag is None:
-        tag = "DEFAULT_TAG"
     config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _evaluate.evaluate(
-            url=config.cli.server_url,
-            object_type=object_type,
-            fides_key=fides_key,
-            tag=tag,
-            message=message,
-            headers=config.user.request_headers,
-        )
+    _apply.apply(
+        url=config.cli.server_url,
+        manifests_dir=manifests_dir,
+        headers=config.user.request_headers,
+        dry=dry,
+    )
+
+    _evaluate.evaluate(
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        object_type=object_type,
+        fides_key=fides_key,
+        message=message,
+        dry=dry,
     )
