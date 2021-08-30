@@ -15,4 +15,4 @@ class FidesModel(BaseModel):
     fidesKey: FidesKey
 
     class Config:
-        extra = "forbid"
+        extra = "ignore"

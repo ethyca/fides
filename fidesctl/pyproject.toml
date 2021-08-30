@@ -14,6 +14,7 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 #######
 [tool.black]
 py39 = true
+line-length = 88
 include = '\.pyi?$'
 exclude = '''
 /(

@@ -12,15 +12,6 @@ def test_fides_model_valid():
 
 
 @pytest.mark.unit
-def test_fides_model_extras_invalid():
-    with pytest.raises(ValidationError):
-        FidesModel.parse_obj(
-            {"fidesKey": "foo_bar", "name": "Foo Bar", "extra": "extra"}
-        )
-    assert True
-
-
-@pytest.mark.unit
 def test_fides_model_fides_key_invalid():
     "Check for a bunch of different possible bad characters here."
     with pytest.raises(FidesValidationError):

@@ -11,6 +11,7 @@ from fideslang.models.fides_model import FidesModel
 from fideslang.models.organization import Organization
 from fideslang.models.policy import Policy
 from fideslang.models.policy import PolicyRule
+from fideslang.models.policy import PrivacyRule
 from fideslang.models.registry import Registry
 from fideslang.models.system import System
 from fideslang.models.system import PrivacyDeclaration
