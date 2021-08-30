@@ -1,39 +1,8 @@
 repos:
-  - repo: https://github.com/softwaremill/scala-pre-commit-hooks
-    rev: v0.3.0
+  - repo: local
     hooks:
-     - id: sbt-scalafmt
-
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
-repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.4
-    hooks:
-    - id: flake8
--   repo: https://github.com/ambv/black
-    rev: 20.8b1
-    hooks:
-    - id: black
-      language_version: python3.8
-- repo: https://github.com/PyCQA/bandit
-  rev: 1.7.0
-  hooks:
-    - id: bandit
-      args: ['-iii', '-ll']
-- repo: local
-  hooks:
-    - id: pylint
-      name: pylint
-      entry: pylint
-      verbose: true
-      language: system
-      types: [python]
-      exclude: "[a-zA-Z]*/(migrations|tests)/(.)*"
+      - id: black
+        name: black
+        entry: make black
+        language: python
+        always_run: True

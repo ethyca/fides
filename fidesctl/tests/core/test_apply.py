@@ -1,7 +1,8 @@
 """Unit tests for the Commands module."""
 import pytest
 
-from fidesctl.core import apply, models
+from fidesctl.core import apply
+import fideslang as models
 
 
 # Helpers

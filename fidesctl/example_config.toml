@@ -1,0 +1,6 @@
+[user]
+user_id = "1"
+api_key = "test_api_key"
+
+[cli]
+server_url = "http://fidesapi:8080"

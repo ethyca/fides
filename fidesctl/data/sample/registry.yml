@@ -3,4 +3,3 @@ registry:
     fidesKey: "demoRegistry"
     name: "Demo Registry"
     description: "Demo Regsitry"
-    systems: []

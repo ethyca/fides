@@ -1,6 +1,7 @@
 import pytest
 
-from fidesctl.core import models, parse
+import fideslang as models
+from fideslang import parse
 
 
 @pytest.mark.unit

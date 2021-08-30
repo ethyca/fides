@@ -5,6 +5,7 @@ RUN apt-get update
 RUN apt-get install -y \
     git \
     ipython \
+    make \
     vim
 
 # Update pip and install requirements

@@ -14,6 +14,7 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 #######
 [tool.black]
 py39 = true
+line-length = 88
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -36,6 +37,9 @@ exclude = '''
 ########
 # Pylint
 ########
+[tool.pylint.master]
+ignore="models"
+
 [tool.pylint.messages_control]
 disable=[
     "line-too-long",

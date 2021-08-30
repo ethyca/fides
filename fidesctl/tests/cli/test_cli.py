@@ -19,9 +19,7 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.integration
 def test_apply(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/"]
-    )
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "apply", "data/"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -140,7 +138,7 @@ def test_evaluate_registry_success(test_config_path: str, test_cli_runner: CliRu
 def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "system", "demoPassingSystem"],
+        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem"],
     )
     print(result.output)
     assert result.exit_code == 0
