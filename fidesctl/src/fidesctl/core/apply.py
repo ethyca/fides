@@ -147,15 +147,11 @@ def apply(
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
-    for object_type, resource_list in taxonomy.dict(
-        by_alias=True, exclude_none=True
-    ).items():
+    for object_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output
         echo_green("-" * 10)
+        resource_list = getattr(taxonomy, object_type)
 
-        resource_list = [
-            parse_manifest(object_type, resource) for resource in resource_list
-        ]
         existing_keys = [resource.fidesKey for resource in resource_list]
         server_object_list = get_server_objects(
             url, object_type, existing_keys, headers

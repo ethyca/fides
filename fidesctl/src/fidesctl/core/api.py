@@ -10,7 +10,7 @@ def generate_object_url(
     """
     Generate an object's URL using a base url, the object type and a version.
     """
-    return f"{url}/{version}/{object_type}/{object_id}"
+    return f"{url}/{version}/{object_type.replace('_', '-')}/{object_id}"
 
 
 def find(

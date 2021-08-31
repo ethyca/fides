@@ -27,7 +27,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry"]
+        cli, ["-f", test_config_path, "apply", "data/", "--dry"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -36,7 +36,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--diff"]
+        cli, ["-f", test_config_path, "apply", "data/", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -45,7 +45,7 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry", "--diff"]
+        cli, ["-f", test_config_path, "apply", "data/", "--dry", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -92,7 +92,7 @@ def test_dry_evaluate_registry_success(
 ):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "demo_registry"],
+        ["-f", test_config_path, "dry-evaluate", "data/", "demo_registry"],
     )
     print(result.output)
     assert result.exit_code == 0
@@ -102,7 +102,7 @@ def test_dry_evaluate_registry_success(
 def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "dataAnalyticsSystem"],
+        ["-f", test_config_path, "dry-evaluate", "data/", "dataAnalyticsSystem"],
     )
     print(result.output)
     assert result.exit_code == 0
@@ -116,7 +116,7 @@ def test_dry_evaluate_system_failing(test_config_path: str, test_cli_runner: Cli
             "-f",
             test_config_path,
             "dry-evaluate",
-            "data/sample/",
+            "data/",
             "customerDataSharingSystem",
         ],
     )

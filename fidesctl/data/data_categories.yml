@@ -1,4 +1,4 @@
-data-category:
+data_category:
   # User Provided Data
   - fidesKey: user_provided_data
     name: "User Provided Data"

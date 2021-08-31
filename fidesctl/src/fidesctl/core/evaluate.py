@@ -34,12 +34,10 @@ def get_resource_by_fides_key(
     "Get a specific resource from a taxonomy by its fides_key."
 
     return {
-        object_type: parse_manifest(object_type, resource)
-        for object_type, object_list in taxonomy.dict(
-            exclude_none=True, by_alias=True
-        ).items()
-        for resource in object_list
-        if resource["fidesKey"] == fides_key
+        object_type: resource
+        for object_type in taxonomy.__fields_set__
+        for resource in getattr(taxonomy, object_type)
+        if resource.fidesKey == fides_key
     } or None
 
 
@@ -56,7 +54,10 @@ def evaluate(
     """
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
-    filtered_taxonomy = taxonomy.copy(include={"systems", "registries"})
+    # Need to reparse instead of just copy so the __fields_set__ attr is correct
+    filtered_taxonomy = taxonomy.parse_obj(
+        taxonomy.dict(include={"system", "registry"})
+    )
 
     resource_to_evaluate = get_resource_by_fides_key(filtered_taxonomy, fides_key)
     if not resource_to_evaluate:

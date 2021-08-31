@@ -1,3 +1,8 @@
+"""
+This module is responsible for calculating what resources are referenced
+by each other and building a dependency graph of relationships.
+"""
+
 import inspect
 from typing import Dict, List, Set
 

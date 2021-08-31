@@ -1,4 +1,4 @@
-data-subject:
+data_subject:
   - fidesKey: "anonymous_user"
     name: "Anonymous User"
 

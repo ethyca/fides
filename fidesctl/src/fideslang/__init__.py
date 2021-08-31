@@ -14,11 +14,11 @@ from fideslang.models.system import PrivacyDeclaration, System
 from fideslang.models.taxonomy import Taxonomy
 
 model_map: Dict[str, Type[FidesModel]] = {
-    "data-category": DataCategory,
-    "data-qualifier": DataQualifier,
+    "data_category": DataCategory,
+    "data_qualifier": DataQualifier,
+    "data_subject": DataSubject,
+    "data_use": DataUse,
     "dataset": Dataset,
-    "data-subject": DataSubject,
-    "data-use": DataUse,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,
