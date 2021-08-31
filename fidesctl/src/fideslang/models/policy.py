@@ -34,6 +34,6 @@ class PolicyRule(FidesModel):
 class Policy(FidesModel):
     rules: List[PolicyRule]
     ## TODO: When the server is updated, make this non-optional
-    systems: Optional[List[FidesKey]]
+    ## Add the ability to specify what server the policy applies to
 
     _sort_rules = validator("rules", allow_reuse=True)(sort_list_objects)

@@ -51,11 +51,16 @@ def ingest_manifests(manifests_dir: str) -> Dict[str, List[Dict]]:
     Ingest all of the manifests available in a directory and concatenate
     them into a single object.
     """
-    manifest_list = [
-        manifests_dir + "/" + file
-        for file in os.listdir(manifests_dir)
-        if "." in file and file.split(".")[1] in ["yml", "yaml"]
-    ]
-    loaded_manifests = [load_yaml_into_dict(file) for file in manifest_list]
-    unioned_manifests = union_manifests(loaded_manifests)
-    return unioned_manifests
+    yml_endings = ["yml", "yaml"]
+    if manifests_dir.split(".")[-1] in yml_endings:
+        loaded_manifests = load_yaml_into_dict(manifests_dir)
+        return loaded_manifests
+    else:
+        manifest_list = [
+            manifests_dir + "/" + file
+            for file in os.listdir(manifests_dir)
+            if "." in file and file.split(".")[1] in yml_endings
+        ]
+        loaded_manifests = [load_yaml_into_dict(file) for file in manifest_list]
+        unioned_manifests = union_manifests(loaded_manifests)
+        return unioned_manifests
