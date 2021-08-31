@@ -61,7 +61,7 @@ def delete(
     return requests.delete(object_url, headers=headers)
 
 
-def show(url: str, object_type: str, headers: Dict[str, str]) -> requests.Response:
+def ls(url: str, object_type: str, headers: Dict[str, str]) -> requests.Response:
     """
     Get a list of all of the objects of a certain type.
     """

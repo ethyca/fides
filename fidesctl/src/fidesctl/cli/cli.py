@@ -93,13 +93,13 @@ def get(ctx: click.Context, object_type: str, object_id: str) -> None:
 @click.command()
 @click.pass_context
 @object_type_argument
-def show(ctx: click.Context, object_type: str) -> None:
+def ls(ctx: click.Context, object_type: str) -> None:
     """
     List all objects of a certain type.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        _api.show(
+        _api.ls(
             url=config.cli.server_url,
             object_type=object_type,
             headers=config.user.request_headers,
@@ -170,16 +170,18 @@ def generate_dataset(
 ################
 @click.command()
 @click.pass_context
-@fides_key_argument
 @manifests_dir_argument
+@click.option(
+    "-k", "--fides-key", help="The fidesKey for the specific Policy to be evaluated."
+)
 @click.option(
     "-m", "--message", help="Description of the changes this evaluation encapsulates."
 )
 @dry_flag
 def evaluate(
     ctx: click.Context,
-    fides_key: str,
     manifests_dir: str,
+    fides_key: str,
     message: str,
     dry: bool,
 ) -> None:

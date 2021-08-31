@@ -3,6 +3,9 @@ policy:
     fidesKey: "primaryPrivacyPolicy"
     name: "Primary Privacy Policy"
     description: "The main privacy policy for the organization."
+    systems:
+      - dataAnanlyticsSystem
+      - customerDataSharingSystem
     rules:
       - organizationId: 1
         fidesKey: "rejectTargetedMarketing"
