@@ -3,7 +3,12 @@ from typing import Optional, Pattern
 
 from pydantic import BaseModel, ConstrainedStr
 
-from fideslang.models.validation import FidesValidationError
+
+class FidesValidationError(Exception):
+    """Custom exception for when the pydantic ValidationError can't be used."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
 
 
 class FidesKey(ConstrainedStr):

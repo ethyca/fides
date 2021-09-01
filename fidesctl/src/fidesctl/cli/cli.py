@@ -202,7 +202,7 @@ def evaluate(
         dry=dry,
     )
 
-    evaluation = _evaluate.evaluate(
+    _evaluate.evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
@@ -210,5 +210,3 @@ def evaluate(
         message=message,
         dry=dry,
     )
-    if evaluation.status != "PASS":
-        sys.exit(1)

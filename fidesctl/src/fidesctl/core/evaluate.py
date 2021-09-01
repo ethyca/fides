@@ -10,7 +10,7 @@ from fidesctl.core.utils import echo_green
 from fidesctl.core.api_helpers import get_server_resources
 from fideslang import Policy, Evaluation, Taxonomy
 from fideslang.manifests import ingest_manifests
-from fideslang.models.evaluation import Evaluation, StatusEnum
+from fideslang.models.evaluation import Evaluation, EvaluationError, StatusEnum
 from fideslang.models.policy import InclusionEnum
 from fideslang.models.validation import FidesKey
 from fideslang.parse import load_manifests_into_taxonomy
@@ -108,7 +108,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
                         ]
                     ):
                         evaluation_detail_list += [
-                            "Declaration: ({}) of System: ({}) failed Rule: ({}) from Policy: ({})".format(
+                            "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
                                 declaration.name,
                                 system.fidesKey,
                                 rule.name,
@@ -166,14 +166,17 @@ def evaluate(
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(hydrated_taxonomy)
     evaluation.message = message
-    echo_color = "red" if evaluation.status == "FAIL" else "green"
-    pretty_echo(evaluation.dict(), color=echo_color)
+    if evaluation.status == "FAIL":
+        pretty_echo(evaluation.dict(), color="red")
+        raise EvaluationError
+    else:
+        echo_color = "red" if evaluation.status == "FAIL" else "green"
 
     ## TODO: If not dry, create an evaluation object and full send it
     ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
         echo_green("Sending the evaluation results to the server...")
         pass
-    echo_green("Evaluation Complete!")
+    echo_green("Evaluation passed!")
 
     return evaluation
