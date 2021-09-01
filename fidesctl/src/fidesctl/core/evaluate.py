@@ -1,6 +1,8 @@
 """Module for evaluating systems and registries."""
-from json.decoder import JSONDecodeError
-from typing import Set, Dict, Union, List, Optional
+import pprint
+from typing import Dict, List, Optional, Callable
+from fideslang.models.evaluation import StatusEnum
+from fideslang.models.policy import InclusionEnum
 from fideslang.models.validation import FidesKey
 
 import requests
@@ -16,21 +18,6 @@ from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
 )
-
-
-def check_eval_result(response: requests.Response) -> requests.Response:
-    """
-    Check for the result of the evaluation and flip
-    the status_code to 500 if it isn't passing.
-    """
-
-    try:
-        data = response.json()["data"]
-        if (not "status" in data) or data["status"] != "PASS":
-            response.status_code = 500
-    except JSONDecodeError:
-        pass
-    return response
 
 
 def get_all_server_policies(
@@ -57,12 +44,83 @@ def get_all_server_policies(
     return policy_list
 
 
+def compare_rule_to_declaration(
+    rule_types: List[FidesKey],
+    declaration_types: List[FidesKey],
+    rule_inclusion: InclusionEnum,
+) -> bool:
+    "Compare the rules against the declarations to determine whether the rule is broken."
+    inclusion_map: Dict[InclusionEnum, Callable] = {
+        InclusionEnum.ANY: any,
+        InclusionEnum.ALL: all,
+        InclusionEnum.NONE: lambda x: not any(x),
+    }
+
+    matching_data_categories = [
+        True for data_category in declaration_types if data_category in rule_types
+    ]
+    result = inclusion_map[rule_inclusion](matching_data_categories)
+    return result
+
+
 def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     """
     Check stated constraints of the Privacy Policy against what is declared in
     a system or registry.
     """
-    pass
+
+    evaluation_detail_list = []
+    for policy in taxonomy.policy:
+        for rule in policy.rules:
+            for system in taxonomy.system:
+                for declaration in system.privacyDeclarations:
+                    ## TODO: Check the stated dependent dataset field as well
+
+                    data_category_result = compare_rule_to_declaration(
+                        rule_types=rule.dataCategories.values,
+                        declaration_types=declaration.dataCategories,
+                        rule_inclusion=rule.dataCategories.inclusion,
+                    )
+
+                    # A declaration only has one data use, so it gets put in a list
+                    data_use_result = compare_rule_to_declaration(
+                        rule_types=rule.dataUses.values,
+                        declaration_types=[declaration.dataUse],
+                        rule_inclusion=rule.dataUses.inclusion,
+                    )
+
+                    data_subject_result = compare_rule_to_declaration(
+                        rule_types=rule.dataSubjects.values,
+                        declaration_types=declaration.dataSubjects,
+                        rule_inclusion=rule.dataSubjects.inclusion,
+                    )
+
+                    data_qualifier_result = (
+                        declaration.dataQualifier == rule.dataQualifier
+                    )
+
+                    if all(
+                        [
+                            data_category_result,
+                            data_subject_result,
+                            data_use_result,
+                            data_qualifier_result,
+                        ]
+                    ):
+                        evaluation_detail_list += [
+                            "Declaration: ({}) of System: ({}) failed Rule: ({}) from Policy: ({})".format(
+                                declaration.name,
+                                system.fidesKey,
+                                rule.name,
+                                policy.fidesKey,
+                            )
+                        ]
+
+    status_enum = (
+        StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
+    )
+    evaluation = Evaluation(status=status_enum, details=evaluation_detail_list)
+    return evaluation
 
 
 def evaluate(
@@ -97,13 +155,12 @@ def evaluate(
         dehydrated_taxonomy=taxonomy,
     )
 
-    ## TODO: evaluation logic
-    ## How does a system know which policy to be evaluated against?
-    execute_evaluation(hydrated_taxonomy)
+    evaluation = execute_evaluation(hydrated_taxonomy)
+    evaluation.message = message
 
     ## TODO: If not dry, create an evaluation object and full send it
     ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
         pass
 
-    return
+    return evaluation

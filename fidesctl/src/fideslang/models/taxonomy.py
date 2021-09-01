@@ -14,7 +14,13 @@ from fideslang.models.system import System
 
 
 class Taxonomy(BaseModel):
-    "Represents an entire taxonomy of Fides Resources."
+    """
+    Represents an entire taxonomy of Fides Resources.
+
+    The choice to not use pluralized forms of each resource name
+    was deliberate, as this would have caused huge amounts of complexity
+    elsewhere across the codebase.
+    """
 
     data_category: List[DataCategory] = Field(default_factory=list)
     data_subject: Optional[List[DataSubject]] = Field(default_factory=list)
