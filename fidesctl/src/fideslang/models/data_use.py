@@ -2,8 +2,8 @@ from typing import Optional
 
 from pydantic import validator
 
-from fideslang.models.fides_model import FidesModel
-from fideslang.models.validation import FidesKey, no_self_reference
+from fideslang.models.fides_model import FidesModel, FidesKey
+from fideslang.models.validation import no_self_reference
 
 
 class DataUse(FidesModel):

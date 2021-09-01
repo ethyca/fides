@@ -73,7 +73,6 @@ def execute_create_update_unchanged(
     """
     create_list = create_list or []
     update_list = update_list or []
-    unchanged_list = unchanged_list or []
     success_echo = "{} {} with fidesKey: {}"
 
     for create_object in create_list:
@@ -86,7 +85,6 @@ def execute_create_update_unchanged(
             ),
             verbose=False,
         )
-        echo_green(success_echo.format("Created", object_type, create_object.fidesKey))
     for update_object in update_list:
         handle_cli_response(
             api.update(
@@ -97,11 +95,6 @@ def execute_create_update_unchanged(
                 json_object=update_object.json(exclude_none=True),
             ),
             verbose=False,
-        )
-        echo_green(success_echo.format("Updated", object_type, update_object.fidesKey))
-    for unchanged_object in unchanged_list:
-        echo_green(
-            success_echo.format("No changes to", object_type, unchanged_object.fidesKey)
         )
 
 
@@ -123,12 +116,13 @@ def apply(
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
+    echo_green(f"Loading resource manifests from {manifests_dir}")
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
     for object_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output
-        echo_green("-" * 10)
+        print("-" * 10)
         resource_list = getattr(taxonomy, object_type)
 
         existing_keys = [resource.fidesKey for resource in resource_list]
@@ -146,7 +140,7 @@ def apply(
             echo_results("would update", object_type, update_list)
             echo_results("would skip", object_type, unchanged_list)
         else:
-            execute_create_update_unchanged(
+            actions_performed = execute_create_update_unchanged(
                 url,
                 headers,
                 object_type,
@@ -158,4 +152,4 @@ def apply(
             echo_results("created", object_type, create_list)
             echo_results("updated", object_type, update_list)
             echo_results("skipped", object_type, unchanged_list)
-    echo_green("-" * 10)
+    print("-" * 10)

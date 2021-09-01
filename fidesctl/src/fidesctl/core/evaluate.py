@@ -1,18 +1,18 @@
-"""Module for evaluating systems and registries."""
-import pprint
+"""Module for evaluating policies."""
 from typing import Dict, List, Optional, Callable
-from fideslang.models.evaluation import StatusEnum
-from fideslang.models.policy import InclusionEnum
-from fideslang.models.validation import FidesKey
 
 import requests
 from pydantic import AnyHttpUrl
 
-from fidesctl.cli.utils import handle_cli_response
+from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
+from fidesctl.core.utils import echo_green
 from fidesctl.core.api_helpers import get_server_resources
 from fideslang import Policy, Evaluation, Taxonomy
 from fideslang.manifests import ingest_manifests
+from fideslang.models.evaluation import Evaluation, StatusEnum
+from fideslang.models.policy import InclusionEnum
+from fideslang.models.validation import FidesKey
 from fideslang.parse import load_manifests_into_taxonomy
 from fideslang.relationships import (
     get_referenced_missing_keys,
@@ -147,6 +147,14 @@ def evaluate(
     else:
         taxonomy.policy == policy_list
 
+    echo_green(
+        "Evaluating the following policies:\n{}".format(
+            "\n".join([key.fidesKey for key in taxonomy.policy])
+        )
+    )
+    print("-" * 10)
+
+    echo_green("Fetching missing resources from the server...")
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
     hydrated_taxonomy = hydrate_missing_resources(
         url=url,
@@ -155,12 +163,17 @@ def evaluate(
         dehydrated_taxonomy=taxonomy,
     )
 
+    echo_green("Executing evaluations...")
     evaluation = execute_evaluation(hydrated_taxonomy)
     evaluation.message = message
+    echo_color = "red" if evaluation.status == "FAIL" else "green"
+    pretty_echo(evaluation.dict(), color=echo_color)
 
     ## TODO: If not dry, create an evaluation object and full send it
     ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
+        echo_green("Sending the evaluation results to the server...")
         pass
+    echo_green("Evaluation Complete!")
 
     return evaluation
