@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from fideslang.models.fides_model import FidesKey
+from fideslang.models.fides_model import FidesKey, FidesValidationError
 
 
 def sort_list_objects(values: List) -> List:

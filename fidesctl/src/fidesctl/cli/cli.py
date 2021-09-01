@@ -93,7 +93,7 @@ def get(ctx: click.Context, object_type: str, object_id: str) -> None:
 @click.command()
 @click.pass_context
 @object_type_argument
-def ls(ctx: click.Context, object_type: str) -> None:
+def ls(ctx: click.Context, object_type: str) -> None:  # pylint: disable=invalid-name
     """
     List all objects of a certain type.
     """

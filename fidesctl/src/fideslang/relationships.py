@@ -35,6 +35,10 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
 
 
 def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[FidesKey]:
+    """
+    Iterate through the Taxonomy and create a set of all of the FidesKeys
+    that are contained within it.
+    """
     # TODO: Flatten every object's signature so nested references aren't missed
 
     referenced_keys: List[Set[FidesKey]] = [
@@ -42,7 +46,9 @@ def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[FidesKey]:
         for resource_type in taxonomy.__fields_set__
         for resource in getattr(taxonomy, resource_type)
     ]
-    key_set: Set[FidesKey] = set(reduce(lambda x, y: x.union(y), referenced_keys))
+    key_set: Set[FidesKey] = set(
+        reduce(lambda x, y: set().union(x).union(y), referenced_keys)
+    )
     keys_not_in_taxonomy = [
         fides_key
         for fides_key in key_set

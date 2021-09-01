@@ -8,7 +8,7 @@ from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
 from fidesctl.core.utils import echo_green
 from fidesctl.core.api_helpers import get_server_resources
-from fideslang import Policy, Evaluation, Taxonomy
+from fideslang import Policy, Taxonomy
 from fideslang.manifests import ingest_manifests
 from fideslang.models.evaluation import Evaluation, EvaluationError, StatusEnum
 from fideslang.models.policy import InclusionEnum
@@ -142,10 +142,7 @@ def evaluate(
         [policy.fidesKey for policy in taxonomy.policy] if taxonomy.policy else None
     )
     policy_list = get_all_server_policies(url, headers, exclude=local_policy_keys)
-    if taxonomy.policy:
-        taxonomy.policy += policy_list
-    else:
-        taxonomy.policy == policy_list
+    taxonomy.policy += policy_list
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
@@ -169,14 +166,11 @@ def evaluate(
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
         raise EvaluationError
-    else:
-        echo_color = "red" if evaluation.status == "FAIL" else "green"
 
     ## TODO: If not dry, create an evaluation object and full send it
     ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
         echo_green("Sending the evaluation results to the server...")
-        pass
     echo_green("Evaluation passed!")
 
     return evaluation

@@ -1,6 +1,6 @@
 """This module handles the logic required for applying manifest files to the server."""
 from pprint import pprint
-from typing import Dict, List, Tuple, Optional, Iterable
+from typing import Dict, List, Tuple, Optional
 
 from deepdiff import DeepDiff
 
@@ -73,7 +73,6 @@ def execute_create_update_unchanged(
     """
     create_list = create_list or []
     update_list = update_list or []
-    success_echo = "{} {} with fidesKey: {}"
 
     for create_object in create_list:
         handle_cli_response(
@@ -140,7 +139,7 @@ def apply(
             echo_results("would update", object_type, update_list)
             echo_results("would skip", object_type, unchanged_list)
         else:
-            actions_performed = execute_create_update_unchanged(
+            execute_create_update_unchanged(
                 url,
                 headers,
                 object_type,
