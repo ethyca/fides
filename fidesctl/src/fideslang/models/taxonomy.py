@@ -16,14 +16,14 @@ from fideslang.models.system import System
 class Taxonomy(BaseModel):
     "Represents an entire taxonomy of Fides Resources."
 
-    data_category: Optional[List[DataCategory]]
-    data_subject: Optional[List[DataSubject]]
-    data_use: Optional[List[DataUse]]
-    data_qualifier: Optional[List[DataQualifier]]
+    data_category: List[DataCategory] = Field(default_factory=list)
+    data_subject: Optional[List[DataSubject]] = Field(default_factory=list)
+    data_use: Optional[List[DataUse]] = Field(default_factory=list)
+    data_qualifier: Optional[List[DataQualifier]] = Field(default_factory=list)
 
-    dataset: Optional[List[Dataset]]
-    system: Optional[List[System]]
-    policy: Optional[List[Policy]]
+    dataset: Optional[List[Dataset]] = Field(default_factory=list)
+    system: Optional[List[System]] = Field(default_factory=list)
+    policy: Optional[List[Policy]] = Field(default_factory=list)
 
-    registry: Optional[List[Registry]]
-    organization: Optional[List[Organization]]
+    registry: Optional[List[Registry]] = Field(default_factory=list)
+    organization: List[Organization] = Field(default_factory=list)

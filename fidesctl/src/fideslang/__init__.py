@@ -6,6 +6,7 @@ from fideslang.models.data_qualifier import DataQualifier
 from fideslang.models.data_subject import DataSubject
 from fideslang.models.data_use import DataUse
 from fideslang.models.dataset import Dataset, DatasetField
+from fideslang.models.evaluation import Evaluation
 from fideslang.models.fides_model import FidesModel
 from fideslang.models.organization import Organization
 from fideslang.models.policy import Policy, PolicyRule, PrivacyRule

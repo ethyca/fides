@@ -7,12 +7,11 @@ from deepdiff import DeepDiff
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.utils import echo_green
+from fidesctl.core.api_helpers import get_server_resources
 from fideslang import FidesModel
 from fideslang.manifests import ingest_manifests
-from fideslang.models.validation import FidesKey
 from fideslang.parse import (
     load_manifests_into_taxonomy,
-    parse_manifest,
 )
 
 
@@ -106,26 +105,6 @@ def execute_create_update_unchanged(
         )
 
 
-def get_server_objects(
-    url: str, object_type: str, existing_keys: List[FidesKey], headers: Dict[str, str]
-) -> List[FidesModel]:
-    """
-    Get a list of objects from the server that match the provided keys.
-    """
-    raw_server_object_list: Iterable[Dict] = filter(
-        None,
-        [
-            api.find(url, object_type, key, headers).json().get("data")
-            for key in existing_keys
-        ],
-    )
-    server_object_list: List[FidesModel] = [
-        parse_manifest(object_type, _object, from_server=True)
-        for _object in raw_server_object_list
-    ]
-    return server_object_list
-
-
 def echo_results(action: str, object_type: str, resource_list: List) -> None:
     """
     Echo out the results of the apply.
@@ -153,7 +132,7 @@ def apply(
         resource_list = getattr(taxonomy, object_type)
 
         existing_keys = [resource.fidesKey for resource in resource_list]
-        server_object_list = get_server_objects(
+        server_object_list = get_server_resources(
             url, object_type, existing_keys, headers
         )
 

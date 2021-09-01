@@ -1,6 +1,6 @@
 """Module for evaluating systems and registries."""
 from json.decoder import JSONDecodeError
-from typing import Dict, Union, List, Optional
+from typing import Set, Dict, Union, List, Optional
 from fideslang.models.validation import FidesKey
 
 import requests
@@ -8,10 +8,14 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
-from fideslang import Policy, System, Registry, FidesModel, Taxonomy
+from fidesctl.core.api_helpers import get_server_resources
+from fideslang import Policy, Evaluation, Taxonomy
 from fideslang.manifests import ingest_manifests
-from fideslang.parse import load_manifests_into_taxonomy, parse_manifest
-from fideslang.relationships import get_referenced_keys
+from fideslang.parse import load_manifests_into_taxonomy
+from fideslang.relationships import (
+    get_referenced_missing_keys,
+    hydrate_missing_resources,
+)
 
 
 def check_eval_result(response: requests.Response) -> requests.Response:
@@ -29,16 +33,9 @@ def check_eval_result(response: requests.Response) -> requests.Response:
     return response
 
 
-def execute_evaluation(policy: Policy, resource: Union[System, Registry]) -> bool:
-    """
-    Check stated constraints of the Privacy Policy against what is declared in
-    a system or registry.
-    """
-
-
 def get_all_server_policies(
     url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
-) -> List[FidesModel]:
+) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
 
@@ -54,22 +51,18 @@ def get_all_server_policies(
         for resource in ls_response.json().get("data")
         if resource["fidesKey"] not in exclude
     ]
-    raw_policy_list = [
-        handle_cli_response(api.find(url, "policy", key, headers), verbose=False)
-        .json()
-        .get("data")
-        for key in policy_keys
-    ]
-    policy_list = [parse_manifest("policy", resource) for resource in raw_policy_list]
+    policy_list = get_server_resources(
+        url=url, object_type="policy", headers=headers, existing_keys=policy_keys
+    )
     return policy_list
 
 
-def hydrate_missing_resources(
-    missing_resource_keys: Set[FidesKey], taxonomy: Taxonomy
-) -> Taxonomy:
+def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     """
-    Query the server for all of the missing resource keys and hydrate the provided taxonomy with them.
+    Check stated constraints of the Privacy Policy against what is declared in
+    a system or registry.
     """
+    pass
 
 
 def evaluate(
@@ -96,17 +89,20 @@ def evaluate(
     else:
         taxonomy.policy == policy_list
 
-    ## TODO: add logic to fetch any missing resources, this will require looping
-    ## through each endpoint since we don't know what kind of object it refers to
-    missing_resource_keys = get_referenced_keys(taxonomy)
-    hydrated_taxonomy = hydrate_missing_resources(missing_resource_keys, taxonomy)
+    missing_resource_keys = get_referenced_missing_keys(taxonomy)
+    hydrated_taxonomy = hydrate_missing_resources(
+        url=url,
+        headers=headers,
+        missing_resource_keys=missing_resource_keys,
+        dehydrated_taxonomy=taxonomy,
+    )
 
     ## TODO: evaluation logic
     ## How does a system know which policy to be evaluated against?
-    for policy in taxonomy.policy:
-        execute_evaluation(policy)
+    execute_evaluation(hydrated_taxonomy)
 
     ## TODO: If not dry, create an evaluation object and full send it
+    ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
         pass
 
