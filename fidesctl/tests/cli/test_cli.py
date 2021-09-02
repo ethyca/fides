@@ -75,8 +75,8 @@ def test_get(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_show(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "show", "system"])
+def test_ls(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -87,55 +87,7 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_dry_evaluate_registry_success(
-    test_config_path: str, test_cli_runner: CliRunner
-):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "dry-evaluate", "data/", "demo_registry"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "dry-evaluate", "data/", "dataAnalyticsSystem"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        [
-            "-f",
-            test_config_path,
-            "dry-evaluate",
-            "data/",
-            "customerDataSharingSystem",
-        ],
-    )
-    print(result.output)
-    assert result.exit_code == 1
-
-
-@pytest.mark.integration
-def test_evaluate_registry_success(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "registry", "default_registry"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem"],
@@ -145,10 +97,30 @@ def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunn
 
 
 @pytest.mark.integration
-def test_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_fail(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "system", "customerDataSharingSystem"],
     )
     print(result.output)
     assert result.exit_code == 1
+
+
+@pytest.mark.integration
+def test_dry_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem", "--dry"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_evaluate_fail(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem", "--dry"],
+    )
+    print(result.output)
+    assert result.exit_code == 0

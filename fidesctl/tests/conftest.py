@@ -26,14 +26,14 @@ def objects_dict():
     Fides objects.
     """
     objects_dict: Dict[str, Any] = {
-        "data-category": models.DataCategory(
+        "data_category": models.DataCategory(
             organizationId=1,
             fidesKey="customer_content_test_data",
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
         ),
-        "data-qualifier": models.DataQualifier(
+        "data_qualifier": models.DataQualifier(
             organizationId=1,
             fidesKey="test_data_qualifier",
             name="aggregated_data",
@@ -69,14 +69,14 @@ def objects_dict():
                 ),
             ],
         ),
-        "data-subject": models.DataSubject(
+        "data_subject": models.DataSubject(
             organizationId=1,
             fidesKey="customer_content_data",
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
         ),
-        "data-use": models.DataUse(
+        "data_use": models.DataUse(
             organizationId=1,
             fidesKey="customer_content_data",
             name="customer_content_data",
@@ -96,7 +96,7 @@ def objects_dict():
             description="Test Policy",
             rules=[],
         ),
-        "policy-rule": models.PolicyRule(
+        "policy_rule": models.PolicyRule(
             organizationId=1,
             policyId=1,
             fidesKey="test_policy",
