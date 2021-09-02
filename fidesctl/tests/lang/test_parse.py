@@ -20,5 +20,5 @@ def test_parse_manifest():
         "clause": "Test Clause",
         "description": "Test Description",
     }
-    actual_result = parse.parse_manifest("data-category", test_dict)
+    actual_result = parse.parse_manifest("data_category", test_dict)
     assert actual_result == expected_result

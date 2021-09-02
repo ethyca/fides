@@ -1,5 +1,4 @@
 """Common fixtures to be used across tests."""
-import os
 from typing import Any, Dict
 
 import pytest

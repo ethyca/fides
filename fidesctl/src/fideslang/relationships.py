@@ -19,7 +19,10 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
     """
     Use type-signature introspection to figure out which fields
     include the FidesKey type and return all of those values.
+
+    Note that this finds _all_ FidesKeys, including the object's own FidesKey
     """
+    # TODO: Flatten every object's signature so nested references aren't missed
 
     referenced_fides_keys: Set[FidesKey] = set()
     signature = inspect.signature(type(resource), follow_wrapped=True)
@@ -39,8 +42,6 @@ def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[FidesKey]:
     Iterate through the Taxonomy and create a set of all of the FidesKeys
     that are contained within it.
     """
-    # TODO: Flatten every object's signature so nested references aren't missed
-
     referenced_keys: List[Set[FidesKey]] = [
         find_referenced_fides_keys(resource)
         for resource_type in taxonomy.__fields_set__

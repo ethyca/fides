@@ -74,6 +74,7 @@ testpaths="tests"
 log_level = "DEBUG"
 addopts = ["--cov=fidesctl.core",
             "--cov=fidesctl.cli",
+            "--cov=fideslang",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",

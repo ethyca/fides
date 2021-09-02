@@ -87,40 +87,10 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem"],
     )
     print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_evaluate_fail(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "system", "customerDataSharingSystem"],
-    )
-    print(result.output)
-    assert result.exit_code == 1
-
-
-@pytest.mark.integration
-def test_dry_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem", "--dry"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_evaluate_fail(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem", "--dry"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
+    assert result.exit_code == 2
