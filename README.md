@@ -18,31 +18,122 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 - **Built to Scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
 
-## Getting Started
+## :rocket: Getting Started 
 
-Getting set up with Fides for a monorepo just 5 steps:
+We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's just as easy to jump right in with 5 easy steps:
 
-1. Create a new directory for your Fides objects to live in, for example, `fides_manifests/`.
+1. Install the fides CLI using Docker ([detailed instructions here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md))
+```
+docker pull ethyca/fidesctl:latest
+```
 
-1. Define and extend existing Fides objects as "manifest files". You can define datasets, extend the privacy classifiers, and anything else needed to describe the state of your business' privacy.
+2. Create a directory for your Fides resources to live in, like `fides_resources/`.
+```
+mkdir fides_resources/
+```
 
-1. Apply the manifest files using `fidesctl apply fides_manifests/`. This command will create and update objects via the Fides API.
+3. Let's make our first policy, you don't even need a lawyer :wink:  using our template, modify and add what ever rules you'd like
+<details>
+  <summary>Here's an example policy .yaml to get you started</summary>
+  
+  ```yaml
+policy:
+  - organizationId: 1
+    fidesKey: "primaryPrivacyPolicy"
+    name: "Primary Privacy Policy"
+    description: "The main privacy policy for the organization."
+    rules:
+      - organizationId: 1
+        fidesKey: "rejectTargetedMarketing"
+        name: "Reject Targeted Marketing"
+        description: "Disallow marketing that is targeted towards users."
+        dataCategories:
+          inclusion: "ANY"
+          values:
+            - profiling_data
+            - account_data
+            - derived_data
+            - cloud_service_provider_data
+        dataUses:
+          inclusion: ANY
+          values:
+            - market_advertise_or_promote
+            - offer_upgrades_or_upsell
+        dataSubjects:
+          inclusion: ANY
+          values:
+            - trainee
+            - commuter
+        dataQualifier: pseudonymized_data
+        action: REJECT
+      - organizationId: 1
+        fidesKey: rejectSome
+        name: "Reject Some Marketing"
+        description: "Disallow some marketing that is targeted towards users."
+        dataCategories:
+          inclusion: ANY
+          values:
+            - user_location
+            - personal_health_data_and_medical_records
+            - connectivity_data
+            - credentials
+        dataUses:
+          inclusion: ALL
+          values:
+            - improvement_of_business_support_for_contracted_service
+            - personalize
+            - share_when_required_to_provide_the_service
+        dataSubjects:
+          inclusion: NONE
+          values:
+            - trainee
+            - commuter
+            - patient
+        dataQualifier: pseudonymized_data
+        action: REJECT
+  ```
+</details>
 
-1. Set up a CI pipeline to run when the system file is changed. It should use the `fidesctl dry-evaluate <system_manifest> <system_key>` command to check that a system is still valid after it has been update.
 
-1. On merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
+4. And now, create a data system for Fides to check your data privacy policy against. 
+<details>
+  <summary>Here's an example system .yaml to get you started</summary>
+  
+  ```yaml
+system:
+  - organizationId: 1
+    fidesKey: "demoSystem"
+    name: "Demo System"
+    description: "A system used for demos."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Analyze Anonymous Content"
+        dataCategories:
+          - "account_data"
+        dataUse: "provide"
+        dataQualifier: "anonymized_data"
+        dataSubjects:
+          - "anonymous_user"
+        datasetReferences:
+          - "sample_db_dataset.Email"
+    systemDependencies: []
+  ```
+</details>
 
-For more information on getting started, see the [tutorial docs]().
+
+5. Send all your resources to the server using `fidesctl apply fides_manifests/` and that's it! See how your data set stacks up against the policy by using `fidesctl evaluate`
+
+And did we mention, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md)? It's helpful to contextualize how you can use Fides in your organization, today.
 
 ## Resources
 
 ### Documentation
 
-Fides' documentation is available [here]().
+Fides' documentation is available [here](https://github.com/ethyca/fides/tree/main/docs/fides/docs).
 
 ### Contributing
 
-Read about the Fides [community]() or dive in to the [development guides]() for information about contributions, documentation, code style, testing and more.
+Read about the Fides [community](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community) or dive in to the [development guides](https://github.com/ethyca/fides/tree/main/docs/fides/docs/development) for information about contributions, documentation, code style, testing and more.
 
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/
