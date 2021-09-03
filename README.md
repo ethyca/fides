@@ -36,62 +36,62 @@ mkdir fides_resources/
   <details>
     <summary>Here's an example policy .yaml to get you started</summary>
 
-    ```yaml
-  policy:
-    - organizationId: 1
-      fidesKey: "primaryPrivacyPolicy"
-      name: "Primary Privacy Policy"
-      description: "The main privacy policy for the organization."
-      rules:
-        - organizationId: 1
-          fidesKey: "rejectTargetedMarketing"
-          name: "Reject Targeted Marketing"
-          description: "Disallow marketing that is targeted towards users."
-          dataCategories:
-            inclusion: "ANY"
-            values:
-              - profiling_data
-              - account_data
-              - derived_data
-              - cloud_service_provider_data
-          dataUses:
-            inclusion: ANY
-            values:
-              - market_advertise_or_promote
-              - offer_upgrades_or_upsell
-          dataSubjects:
-            inclusion: ANY
-            values:
-              - trainee
-              - commuter
-          dataQualifier: pseudonymized_data
-          action: REJECT
-        - organizationId: 1
-          fidesKey: rejectSome
-          name: "Reject Some Marketing"
-          description: "Disallow some marketing that is targeted towards users."
-          dataCategories:
-            inclusion: ANY
-            values:
-              - user_location
-              - personal_health_data_and_medical_records
-              - connectivity_data
-              - credentials
-          dataUses:
-            inclusion: ALL
-            values:
-              - improvement_of_business_support_for_contracted_service
-              - personalize
-              - share_when_required_to_provide_the_service
-          dataSubjects:
-            inclusion: NONE
-            values:
-              - trainee
-              - commuter
-              - patient
-          dataQualifier: pseudonymized_data
-          action: REJECT
-    ```
+  ```yaml
+policy:
+  - organizationId: 1
+    fidesKey: "primaryPrivacyPolicy"
+    name: "Primary Privacy Policy"
+    description: "The main privacy policy for the organization."
+    rules:
+      - organizationId: 1
+        fidesKey: "rejectTargetedMarketing"
+        name: "Reject Targeted Marketing"
+        description: "Disallow marketing that is targeted towards users."
+        dataCategories:
+          inclusion: "ANY"
+          values:
+            - profiling_data
+            - account_data
+            - derived_data
+            - cloud_service_provider_data
+        dataUses:
+          inclusion: ANY
+          values:
+            - market_advertise_or_promote
+            - offer_upgrades_or_upsell
+        dataSubjects:
+          inclusion: ANY
+          values:
+            - trainee
+            - commuter
+        dataQualifier: pseudonymized_data
+        action: REJECT
+      - organizationId: 1
+        fidesKey: rejectSome
+        name: "Reject Some Marketing"
+        description: "Disallow some marketing that is targeted towards users."
+        dataCategories:
+          inclusion: ANY
+          values:
+            - user_location
+            - personal_health_data_and_medical_records
+            - connectivity_data
+            - credentials
+        dataUses:
+          inclusion: ALL
+          values:
+            - improvement_of_business_support_for_contracted_service
+            - personalize
+            - share_when_required_to_provide_the_service
+        dataSubjects:
+          inclusion: NONE
+          values:
+            - trainee
+            - commuter
+            - patient
+        dataQualifier: pseudonymized_data
+        action: REJECT
+  ```
   </details>
 
 
@@ -99,25 +99,25 @@ mkdir fides_resources/
   <details>
       <summary>Here's an example system .yaml to get you started</summary>
 
-    ```yaml
-  system:
-    - organizationId: 1
-      fidesKey: "demoSystem"
-      name: "Demo System"
-      description: "A system used for demos."
-      systemType: "Service"
-      privacyDeclarations:
-        - name: "Analyze Anonymous Content"
-          dataCategories:
-            - "account_data"
-          dataUse: "provide"
-          dataQualifier: "anonymized_data"
-          dataSubjects:
-            - "anonymous_user"
-          datasetReferences:
-            - "sample_db_dataset.Email"
-      systemDependencies: []
-    ```
+  ```yaml
+system:
+  - organizationId: 1
+    fidesKey: "demoSystem"
+    name: "Demo System"
+    description: "A system used for demos."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Analyze Anonymous Content"
+        dataCategories:
+          - "account_data"
+        dataUse: "provide"
+        dataQualifier: "anonymized_data"
+        dataSubjects:
+          - "anonymous_user"
+        datasetReferences:
+          - "sample_db_dataset.Email"
+    systemDependencies: []
+  ```
   </details>
 
 
