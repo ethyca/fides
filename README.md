@@ -123,7 +123,7 @@ system:
 
 5. Send all your resources to the server using `fidesctl apply fides_manifests/` and that's it! See how your data set stacks up against the policy by using `fidesctl evaluate`
 
-And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md)? It's helpful to contextualize how you can use Fides in your organization, today.
+And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). It's helpful to contextualize how you can use Fides in your organization, today!
 
 ## :book: Resources
 
