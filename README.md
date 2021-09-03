@@ -20,7 +20,7 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 ## :rocket: Getting Started 
 
-We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's just as easy to jump right in with 5 easy steps:
+We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's simple to jump right in with 5 easy steps:
 
 1. Install the fides CLI using Docker ([detailed instructions here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md))
 ```
@@ -129,7 +129,7 @@ And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fi
 
 ### Documentation
 
-Fides' documentation is available [here](https://github.com/ethyca/fides/tree/main/docs/fides/docs).
+Full Fides documentation is available [here](https://github.com/ethyca/fides/tree/main/docs/fides/docs).
 
 ### Contributing
 
