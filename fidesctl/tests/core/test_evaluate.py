@@ -1,5 +1,7 @@
 import pytest
+
 from fidesctl.core import evaluate
+from fideslang import Taxonomy, System, Policy
 
 
 @pytest.mark.integration
@@ -64,3 +66,13 @@ def test_compare_rule_to_declaration_none_false():
         rule_inclusion="NONE",
     )
     assert not result
+
+
+@pytest.mark.integration
+def test_execute_evaluation_pass():
+    assert True
+
+
+@pytest.mark.integration
+def test_execute_evaluation_fail():
+    assert True

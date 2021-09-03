@@ -90,7 +90,7 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 def test_evaluate(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem"],
+        ["-f", test_config_path, "evaluate", "data/"],
     )
     print(result.output)
-    assert result.exit_code == 2
+    assert result.exit_code == 0
