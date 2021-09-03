@@ -1,7 +1,6 @@
 """Module for evaluating policies."""
 from typing import Dict, List, Optional, Callable
 
-import requests
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
@@ -57,8 +56,10 @@ def compare_rule_to_declaration(
     }
 
     matching_data_categories = [
-        True for data_category in declaration_types if data_category in rule_types
+        True if data_category in rule_types else False
+        for data_category in declaration_types
     ]
+    print(matching_data_categories)
     result = inclusion_map[rule_inclusion](matching_data_categories)
     return result
 
@@ -74,7 +75,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacyDeclarations:
-                    ## TODO: Check the stated dependent dataset field as well
+                    ## TODO: Check the declared dataset field as well
 
                     data_category_result = compare_rule_to_declaration(
                         rule_types=rule.dataCategories.values,
@@ -130,10 +131,11 @@ def evaluate(
     headers: Dict[str, str],
     message: str,
     dry: bool,
-) -> requests.Response:
+) -> Evaluation:
     """
     Rate a registry against all of the policies within an organization.
     """
+    ## TODO: allow evaluating a specific policy
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
