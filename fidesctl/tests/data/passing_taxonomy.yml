@@ -79,7 +79,7 @@ data_qualifier:
 
 dataset:
   - organizationId: 1
-    fidesKey: "test_failing_db_dataset"
+    fidesKey: "test_passing_db_dataset"
     name: "Sample DB Dataset"
     description: "This is a Sample Database Dataset"
     datasetType: "MySQL"
@@ -87,7 +87,7 @@ dataset:
     fields:
       - name: "First_Name"
         description: "A First Name Field"
-        path: "sample_db_dataset.first_name"
+        path: "test_passing_db_dataset.first_name"
         dataCategories:
           - "name"
         dataQualifier: "identified_data"
@@ -99,7 +99,7 @@ dataset:
         dataQualifier: "identified_data"
       - name: "political_opinion"
         description: "User's political opinion"
-        path: "sample_db_dataset.political_opinion"
+        path: "test_passing_db_dataset.political_opinion"
         dataCategories:
           - "political_opinion"
         dataQualifier: "pseudonymized_data"
@@ -134,7 +134,7 @@ system:
         dataSubjects:
           - "customer"
         datasetReferences:
-          - "test_failing_db_dataset.Email"
+          - "sample_db_dataset.Email"
     systemDependencies: []
 
 policy:
@@ -160,7 +160,7 @@ policy:
           inclusion: ANY
           values:
             - customer
-        dataQualifier: "identified_data"
+        dataQualifier: "anonymized_data"
         action: REJECT
 
       - organizationId: 1
@@ -180,5 +180,5 @@ policy:
           values:
             - customer
             - patient
-        dataQualifier: "identified_data"
+        dataQualifier: "anonymized_data"
         action: REJECT

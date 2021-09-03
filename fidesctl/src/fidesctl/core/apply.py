@@ -122,6 +122,7 @@ def apply(
     for object_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output
         print("-" * 10)
+        echo_green(f"Processing {object_type} resources...")
         resource_list = getattr(taxonomy, object_type)
 
         existing_keys = [resource.fidesKey for resource in resource_list]

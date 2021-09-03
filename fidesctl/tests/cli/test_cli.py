@@ -87,10 +87,20 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_evaluate(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "data/"],
+        ["-f", test_config_path, "evaluate", "tests/data/passing_taxonomy.yml"],
     )
     print(result.output)
     assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_evaluate_failed(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "tests/data/failing_taxonomy.yml"],
+    )
+    print(result.output)
+    assert result.exit_code == 1

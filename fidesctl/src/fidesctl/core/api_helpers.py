@@ -11,6 +11,8 @@ def get_server_resources(
 ) -> List[FidesModel]:
     """
     Get a list of objects from the server that match the provided keys.
+
+    If the object does not exist on the server, an error will _not_ be thrown.
     """
     raw_server_object_list: Iterable[Dict] = filter(
         None,

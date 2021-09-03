@@ -10,6 +10,7 @@ from typing import List, Set, Dict
 from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.utils import echo_red
 from fideslang.models.fides_model import FidesModel, FidesKey
 from fideslang.models.taxonomy import Taxonomy
 from fideslang.utils import get_resource_by_fides_key
@@ -69,16 +70,20 @@ def hydrate_missing_resources(
     hydrate a copy of the dehydrated taxonomy with them.
     """
 
-    hydrated_taxonomy = dehydrated_taxonomy.copy(deep=True)
-    for resource_name in hydrated_taxonomy.__fields__:
+    resources_found = 0
+    for resource_name in dehydrated_taxonomy.__fields__:
         server_resources = get_server_resources(
             url=url,
             object_type=resource_name,
             headers=headers,
             existing_keys=missing_resource_keys,
         )
-        hydrated_taxonomy.__setattr__(
+        resources_found += len(server_resources)
+        dehydrated_taxonomy.__setattr__(
             resource_name,
-            getattr(hydrated_taxonomy, resource_name) + server_resources,
+            getattr(dehydrated_taxonomy, resource_name) + server_resources,
         )
-    return hydrated_taxonomy
+    if resources_found < len(missing_resource_keys):
+        echo_red("Refereneced FidesKeys do not exist!")
+        raise SystemExit()
+    return dehydrated_taxonomy

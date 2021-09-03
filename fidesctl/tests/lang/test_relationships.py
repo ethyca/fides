@@ -93,3 +93,35 @@ def test_hydrate_missing_resources(test_config):
         missing_resource_keys={"credentials", "user_provided_data"},
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
+
+
+@pytest.mark.integration
+def test_hydrate_missing_resources_fail(test_config):
+    with pytest.raises(SystemExit):
+        dehydrated_taxonomy = Taxonomy(
+            data_category=[
+                DataCategory(
+                    name="test_dc",
+                    fidesKey="test_dc",
+                    description="test description",
+                    parentKey="credentials",
+                ),
+            ],
+            system=[
+                System.construct(
+                    name="test_dc",
+                    fidesKey="test_dc",
+                    description="test description",
+                    systemDependencies=["key_3", "key_4"],
+                    systemType="user_provided_data",
+                    privacyDeclarations=None,
+                )
+            ],
+        )
+        relationships.hydrate_missing_resources(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            dehydrated_taxonomy=dehydrated_taxonomy,
+            missing_resource_keys={"non_existent_key", "user_provided_data"},
+        )
+    assert True

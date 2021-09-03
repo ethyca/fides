@@ -25,7 +25,7 @@ def get_all_server_policies(
     """
     Get a list of all of the Policies that exist on the server.
 
-    If 'exclude' is passed those specific Policies won't be pulled from the server
+    If 'exclude' is passed those specific Policies won't be pulled from the server.
     """
 
     exclude = exclude if exclude else []
@@ -48,7 +48,11 @@ def compare_rule_to_declaration(
     declaration_types: List[FidesKey],
     rule_inclusion: InclusionEnum,
 ) -> bool:
-    "Compare the rules against the declarations to determine whether the rule is broken."
+    """
+    Compare the list of FidesKeys within the rule against the list
+    of FidesKeys from the declaration and use the rule's inclusion
+    field to determine whether the rule is triggered or not.
+    """
     inclusion_map: Dict[InclusionEnum, Callable] = {
         InclusionEnum.ANY: any,
         InclusionEnum.ALL: all,
@@ -56,18 +60,16 @@ def compare_rule_to_declaration(
     }
 
     matching_data_categories = [
-        True if data_category in rule_types else False
-        for data_category in declaration_types
+        bool(data_category in rule_types) for data_category in declaration_types
     ]
-    print(matching_data_categories)
     result = inclusion_map[rule_inclusion](matching_data_categories)
     return result
 
 
 def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     """
-    Check stated constraints of the Privacy Policy against what is declared in
-    a system or registry.
+    Check the stated constraints of each Privacy Policy's rules against
+    what is declared each system's privacy declarations.
     """
 
     evaluation_detail_list = []
@@ -75,7 +77,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacyDeclarations:
-                    ## TODO: Check the declared dataset field as well
+                    ## TODO: Check the declared dataset fields as well
 
                     data_category_result = compare_rule_to_declaration(
                         rule_types=rule.dataCategories.values,
@@ -133,7 +135,10 @@ def evaluate(
     dry: bool,
 ) -> Evaluation:
     """
-    Rate a registry against all of the policies within an organization.
+    Perform an evaluation for all of the Policies within an organization.
+
+    All policies are evaluated, but local Policy definition files will be used
+    as opposed to their server-definitions if available.
     """
     ## TODO: allow evaluating a specific policy
     ingested_manifests = ingest_manifests(manifests_dir)
@@ -153,17 +158,24 @@ def evaluate(
     )
     print("-" * 10)
 
-    echo_green("Fetching missing resources from the server...")
+    echo_green("Checking for missing resources...")
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
-    hydrated_taxonomy = hydrate_missing_resources(
-        url=url,
-        headers=headers,
-        missing_resource_keys=missing_resource_keys,
-        dehydrated_taxonomy=taxonomy,
-    )
+    if missing_resource_keys:
+        echo_green(
+            "Fetching the following missing resources from the server:\n{}".format(
+                "\n".join(missing_resource_keys)
+            )
+        )
+        echo_green("Hydrating the taxonomy...")
+        taxonomy = hydrate_missing_resources(
+            url=url,
+            headers=headers,
+            missing_resource_keys=missing_resource_keys,
+            dehydrated_taxonomy=taxonomy,
+        )
 
     echo_green("Executing evaluations...")
-    evaluation = execute_evaluation(hydrated_taxonomy)
+    evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
