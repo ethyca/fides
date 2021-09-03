@@ -5,12 +5,11 @@ import fidesctl
 from fidesctl.cli.cli import (
     apply,
     delete,
-    dry_evaluate,
     evaluate,
     find,
     generate_dataset,
     get,
-    show,
+    ls,
     ping,
     view_config,
 )
@@ -47,11 +46,10 @@ def version() -> None:
 
 cli.add_command(apply)
 cli.add_command(delete)
-cli.add_command(dry_evaluate)
 cli.add_command(evaluate)
 cli.add_command(find)
 cli.add_command(generate_dataset)
 cli.add_command(get)
-cli.add_command(show)
+cli.add_command(ls)
 cli.add_command(ping)
 cli.add_command(view_config)

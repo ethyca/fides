@@ -1,4 +1,4 @@
-data-use:
+data_use:
   - fidesKey: "provide"
     name: "Provide"
     description: |

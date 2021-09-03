@@ -1,20 +1,18 @@
 """Integration tests for the API module."""
-from typing import Dict
-
 import pytest
 
-from fidesctl.core import api as _api
+from fidesctl.core import api as _api, config
 from fideslang import parse, model_list
 
 # Helper Functions
 def get_existing_id(test_config, object_type: str) -> int:
     """Get an ID that is known to exist."""
-    return _api.show(
+    return _api.ls(
         test_config.cli.server_url, object_type, test_config.user.request_headers
     ).json()["data"][-1]["id"]
 
 
-def get_id_from_key(test_config: str, object_type: str, object_key: str) -> int:
+def get_id_from_key(test_config, object_type: str, object_key: str) -> int:
     return _api.find(
         test_config.cli.server_url,
         object_type,
@@ -56,8 +54,8 @@ def test_api_ping(test_config):
 
 @pytest.mark.integration
 @pytest.mark.parametrize("endpoint", model_list)
-def test_api_show(test_config, endpoint):
-    result = _api.show(
+def test_api_ls(test_config, endpoint):
+    result = _api.ls(
         url=test_config.cli.server_url,
         object_type=endpoint,
         headers=test_config.user.request_headers,

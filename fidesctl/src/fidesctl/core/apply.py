@@ -1,13 +1,18 @@
 """This module handles the logic required for applying manifest files to the server."""
 from pprint import pprint
-from typing import Dict, List, Tuple, Optional, Iterable
+from typing import Dict, List, Tuple, Optional
 
 from deepdiff import DeepDiff
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.utils import echo_green
-from fideslang import FidesModel, manifests, parse
+from fidesctl.core.api_helpers import get_server_resources
+from fideslang import FidesModel
+from fideslang.manifests import ingest_manifests
+from fideslang.parse import (
+    load_manifests_into_taxonomy,
+)
 
 
 def sort_create_update_unchanged(
@@ -68,8 +73,6 @@ def execute_create_update_unchanged(
     """
     create_list = create_list or []
     update_list = update_list or []
-    unchanged_list = unchanged_list or []
-    success_echo = "{} {} with fidesKey: {}"
 
     for create_object in create_list:
         handle_cli_response(
@@ -81,7 +84,6 @@ def execute_create_update_unchanged(
             ),
             verbose=False,
         )
-        echo_green(success_echo.format("Created", object_type, create_object.fidesKey))
     for update_object in update_list:
         handle_cli_response(
             api.update(
@@ -93,31 +95,6 @@ def execute_create_update_unchanged(
             ),
             verbose=False,
         )
-        echo_green(success_echo.format("Updated", object_type, update_object.fidesKey))
-    for unchanged_object in unchanged_list:
-        echo_green(
-            success_echo.format("No changes to", object_type, unchanged_object.fidesKey)
-        )
-
-
-def get_server_objects(
-    url: str, object_type: str, existing_keys: List[str], headers: Dict[str, str]
-) -> List[FidesModel]:
-    """
-    Get a list of objects from the server that match the provided keys.
-    """
-    raw_server_object_list: Iterable[Dict] = filter(
-        None,
-        [
-            api.find(url, object_type, key, headers).json().get("data")
-            for key in existing_keys
-        ],
-    )
-    server_object_list: List[FidesModel] = [
-        parse.parse_manifest(object_type, _object, from_server=True)
-        for _object in raw_server_object_list
-    ]
-    return server_object_list
 
 
 def echo_results(action: str, object_type: str, resource_list: List) -> None:
@@ -125,21 +102,6 @@ def echo_results(action: str, object_type: str, resource_list: List) -> None:
     Echo out the results of the apply.
     """
     echo_green(f"{action.upper()} {len(resource_list)} {object_type} objects.")
-
-
-def parse_manifests(
-    raw_manifests: Dict[str, List[Dict]]
-) -> Dict[str, List[FidesModel]]:
-    """
-    Parse the raw resource manifests into resource objects.
-    """
-    parsed_manifests = {
-        object_type: [
-            parse.parse_manifest(object_type, _object) for _object in object_list
-        ]
-        for object_type, object_list in raw_manifests.items()
-    }
-    return parsed_manifests
 
 
 def apply(
@@ -153,23 +115,24 @@ def apply(
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
-    ingested_manifests = manifests.ingest_manifests(manifests_dir)
-    parsed_manifests = parse_manifests(ingested_manifests)
+    echo_green(f"Loading resource manifests from {manifests_dir}")
+    ingested_manifests = ingest_manifests(manifests_dir)
+    taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
-    for object_type, manifest_object_list in parsed_manifests.items():
+    for object_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output
-        echo_green("-" * 10)
+        print("-" * 10)
+        echo_green(f"Processing {object_type} resources...")
+        resource_list = getattr(taxonomy, object_type)
 
-        existing_keys = [
-            manifest_object.fidesKey for manifest_object in manifest_object_list
-        ]
-        server_object_list = get_server_objects(
+        existing_keys = [resource.fidesKey for resource in resource_list]
+        server_object_list = get_server_resources(
             url, object_type, existing_keys, headers
         )
 
         # Determine which objects should be created, updated, or are unchanged
         create_list, update_list, unchanged_list = sort_create_update_unchanged(
-            manifest_object_list, server_object_list, diff
+            resource_list, server_object_list, diff
         )
 
         if dry:
@@ -189,4 +152,4 @@ def apply(
             echo_results("created", object_type, create_list)
             echo_results("updated", object_type, update_list)
             echo_results("skipped", object_type, unchanged_list)
-    echo_green("-" * 10)
+    print("-" * 10)

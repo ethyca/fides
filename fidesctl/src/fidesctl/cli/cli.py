@@ -2,7 +2,10 @@
 import click
 
 from fidesctl.cli.options import (
+    dry_flag,
+    fides_key_argument,
     id_argument,
+    manifests_dir_argument,
     object_type_argument,
 )
 from fidesctl.cli.utils import (
@@ -33,8 +36,8 @@ def view_config(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @object_type_argument
-@id_argument
-def find(ctx: click.Context, object_type: str, object_id: str) -> None:
+@fides_key_argument
+def find(ctx: click.Context, object_type: str, fides_key: str) -> None:
     """
     Get an object by its fidesKey.
     """
@@ -43,7 +46,7 @@ def find(ctx: click.Context, object_type: str, object_id: str) -> None:
         _api.find(
             url=config.cli.server_url,
             object_type=object_type,
-            object_key=object_id,
+            object_key=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -90,13 +93,13 @@ def get(ctx: click.Context, object_type: str, object_id: str) -> None:
 @click.command()
 @click.pass_context
 @object_type_argument
-def show(ctx: click.Context, object_type: str) -> None:
+def ls(ctx: click.Context, object_type: str) -> None:  # pylint: disable=invalid-name
     """
     List all objects of a certain type.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        _api.show(
+        _api.ls(
             url=config.cli.server_url,
             object_type=object_type,
             headers=config.user.request_headers,
@@ -109,25 +112,21 @@ def show(ctx: click.Context, object_type: str) -> None:
 ########################
 @click.command()
 @click.pass_context
-@click.option(
-    "--dry",
-    is_flag=True,
-    help="Runs the apply command without any side-effects.",
-)
+@dry_flag
 @click.option(
     "--diff",
     is_flag=True,
     help="Outputs a detailed diff of the local resource files compared to the server resources.",
 )
-@click.argument("manifest_dir", type=click.Path())
-def apply(ctx: click.Context, dry: bool, diff: bool, manifest_dir: str) -> None:
+@manifests_dir_argument
+def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Send the manifest files to the server.
     """
     config = ctx.obj["CONFIG"]
     _apply.apply(
         url=config.cli.server_url,
-        manifests_dir=manifest_dir,
+        manifests_dir=manifests_dir,
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
@@ -171,54 +170,43 @@ def generate_dataset(
 ################
 @click.command()
 @click.pass_context
-@click.argument("manifest_dir", type=click.Path())
-@click.argument("fides_key", type=str)
-def dry_evaluate(ctx: click.Context, manifest_dir: str, fides_key: str) -> None:
-    """
-    Dry-Run evaluate a registry or system, either approving or denying
-    based on organizational policies.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _evaluate.dry_evaluate(
-            url=config.cli.server_url,
-            manifests_dir=manifest_dir,
-            fides_key=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
-@click.option("-t", "--tag", help="optional commit tag")
-@click.option("-m", "--message", help="optional commit message")
-@click.argument(
-    "object_type", type=click.Choice(["system", "registry"], case_sensitive=False)
+@manifests_dir_argument
+@click.option(
+    "-k", "--fides-key", help="The fidesKey for the specific Policy to be evaluated."
 )
-@click.argument("fides_key", type=str)
+@click.option(
+    "-m", "--message", help="Description of the changes this evaluation encapsulates."
+)
+@dry_flag
 def evaluate(
     ctx: click.Context,
-    object_type: str,
+    manifests_dir: str,
     fides_key: str,
-    tag: str,
     message: str,
+    dry: bool,
 ) -> None:
     """
     Evaluate a registry or system, either approving or denying
     based on organizational policies.
+
+    Evaluate will always run the "apply" command before the
+    evaluation, either dry or not depending on the flag
+    passed to "evaluate".
     """
 
-    if tag is None:
-        tag = "DEFAULT_TAG"
     config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _evaluate.evaluate(
-            url=config.cli.server_url,
-            object_type=object_type,
-            fides_key=fides_key,
-            tag=tag,
-            message=message,
-            headers=config.user.request_headers,
-        )
+    _apply.apply(
+        url=config.cli.server_url,
+        manifests_dir=manifests_dir,
+        headers=config.user.request_headers,
+        dry=dry,
+    )
+
+    _evaluate.evaluate(
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        fides_key=fides_key,
+        message=message,
+        dry=dry,
     )

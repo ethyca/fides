@@ -13,7 +13,7 @@ def test_create_valid_data_category():
         clause="testDataClause",
         description="Test Data Category",
     )
-    assert True
+    assert DataCategory
 
 
 @pytest.mark.unit

@@ -1,0 +1,184 @@
+data_category:
+  - fidesKey: user_provided_data
+    name: "User Provided Data"
+    description: "Data provided or created directly by a user of the system."
+
+  - fidesKey: political_opinion
+    name: "Political Opinion"
+    parentKey: user_provided_data
+    description: "Data related to the individual's political opinions."
+
+  - fidesKey: name
+    name: "Name"
+    parentKey: user_provided_data
+    description: "User's real name."
+
+data_subject:
+  - fidesKey: "anonymous_user"
+    name: "Anonymous User"
+
+  - fidesKey: "citizen_voter"
+    name: "Citizen Voter"
+
+  - fidesKey: "commuter"
+    name: "Commuter"
+
+  - fidesKey: "consultant"
+    name: "Consultant"
+
+  - fidesKey: "customer"
+    name: "Custom"
+
+data_use:
+  - fidesKey: "provide"
+    name: "Provide"
+    description: |
+      Provide means the use of specified data categories:
+      — from the source scope by an applications and services scope to provide and protect the current
+        capabilities of a results scope;
+      — to communicate with the customer about the status and availability of the current capabilities of the result scope;
+      — including providing support for the result scope and to protect at a minimum the specified data category from the source scope.
+      Provide can include the use of specified data categories to protect the rights and property of the cloud service provider and to prevent loss of life or serious injury to anyone. For example:
+      Example 1:
+      This cloud service uses derived data only to provide the cloud services defined in the cloud services agreement.
+      NOTE 1 In this example, use of derived data is restricted to provide the service contracted for in the cloud service agreement, including operational support system (OSS) and business support system (BSS) for exclusively those services. In the case of a single contracted service, “This application” or “This service” can also define the scope (see 9.4.2.3).
+      NOTE 2 The data use statement structure used in this example is described in Clause 10.
+      In the case where a single scope is involved, provide also means to protect the customer content data that exists within this scope and to provide and communicate with the customer about the status and availability of the current capabilities of this scope.
+
+  - fidesKey: "provide_operational_support_for_contracted_service"
+    name: "Provide Operational Support for Contracted Service"
+    parentKey: "provide"
+    description: |
+      This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service. This includes:
+      — service usage data to be used for capacity planning;
+      — monitoring of user behaviour to identify potential attackers and to perform forensic analyses;
+      — logging data for system and network maintenance and optimization;
+      — correlation of service usage data and system events for fault tracking and root cause analysis.
+
+  - fidesKey: "improvement_of_business_support_for_contracted_service"
+    name: "Improvement of Business Support for Contracted Service"
+    parentKey: "provide"
+    description: |
+      This usage is related to acquisition, processing and storage of data on the usage of contracted services (derived data) being used for business support related to this service. This includes:
+      — evaluation of service usage data to determine user preference about use of the current capabilities of the services contracted for in the SLA;
+      — financial controlling, budgeting and resource planning.
+
+data_qualifier:
+  - fidesKey: "identified_data"
+    name: "Identified Data"
+    description: |
+      Identified data is data that can unambiguously be associated with a specific person because PII is observable in the information. Guidance on what can be considered as identifiers can be found in ISO/IEC 29100:2011, 4.4.1.
+      Identified data can be either PII or OPD.
+
+  - fidesKey: "pseudonymized_data"
+    name: "Pseudonymized Data"
+    description: |
+      Pseudonymized data is data for which all identifiers are substituted by aliases for which the alias assignment is such that it cannot be reversed by reasonable efforts of anyone other than the party that performed them.
+      This corresponds to data resulting from the process of “pseudonymization” in ISO/IEC 29100:2011, 2.24 and described as “pseudonymous data” in ISO/IEC 29100:2011, 4.4.4.
+      Pseudonymized data can be either PII or OPD.
+
+dataset:
+  - organizationId: 1
+    fidesKey: "test_failing_db_dataset"
+    name: "Sample DB Dataset"
+    description: "This is a Sample Database Dataset"
+    datasetType: "MySQL"
+    location: "US East"
+    fields:
+      - name: "First_Name"
+        description: "A First Name Field"
+        path: "sample_db_dataset.first_name"
+        dataCategories:
+          - "name"
+        dataQualifier: "identified_data"
+      - name: "Email"
+        description: "User's Email"
+        path: "sample_db_dataset.email"
+        dataCategories:
+          - "user_provided_data"
+        dataQualifier: "identified_data"
+      - name: "political_opinion"
+        description: "User's political opinion"
+        path: "sample_db_dataset.political_opinion"
+        dataCategories:
+          - "political_opinion"
+        dataQualifier: "pseudonymized_data"
+
+system:
+  - organizationId: 1
+    fidesKey: "dataAnalyticsSystem"
+    name: "Data Analytics System"
+    description: "A system used for analyzing customer behaviour."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Analyze Anonymous Content"
+        dataCategories:
+          - "user_provided_data"
+        dataUse: "provide"
+        dataQualifier: "pseudonymized_data"
+        dataSubjects:
+          - "customer"
+    systemDependencies: [customerDataSharingSystem]
+
+  - organizationId: 1
+    fidesKey: "customerDataSharingSystem"
+    name: "Customer Data Sharing System"
+    description: "Share data about our users with third-parties."
+    systemType: "Service"
+    privacyDeclarations:
+      - name: "Share Political Opinions"
+        dataCategories:
+          - "political_opinion"
+        dataUse: "share"
+        dataQualifier: "identified_data"
+        dataSubjects:
+          - "customer"
+        datasetReferences:
+          - "test_failing_db_dataset.Email"
+    systemDependencies: []
+
+policy:
+  - organizationId: 1
+    fidesKey: "primaryPrivacyPolicy"
+    name: "Primary Privacy Policy"
+    description: "The main privacy policy for the organization."
+    rules:
+      - organizationId: 1
+        fidesKey: "rejectTargetedMarketing"
+        name: "Reject Targeted Biometric Marketing"
+        description: "Disallow targeted marketing towards customers based on biometric data."
+        dataCategories:
+          inclusion: "ANY"
+          values:
+            - biometric_data
+        dataUses:
+          inclusion: ANY
+          values:
+            - market_advertise_or_promote
+            - offer_upgrades_or_upsell
+        dataSubjects:
+          inclusion: ANY
+          values:
+            - customer
+        dataQualifier: "identified_data"
+        action: REJECT
+
+      - organizationId: 1
+        fidesKey: rejectSharingPoliticalOpinions
+        name: "Disallow Sharing Political Opinions"
+        description: "Disallow sharing political opinions with third-parties."
+        dataCategories:
+          inclusion: ANY
+          values:
+            - political_opinion
+        dataUses:
+          inclusion: ALL
+          values:
+            - share
+        dataSubjects:
+          inclusion: ANY
+          values:
+            - customer
+            - patient
+        dataQualifier: "identified_data"
+        action: REJECT

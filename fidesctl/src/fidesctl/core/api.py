@@ -10,7 +10,7 @@ def generate_object_url(
     """
     Generate an object's URL using a base url, the object type and a version.
     """
-    return f"{url}/{version}/{object_type}/{object_id}"
+    return f"{url}/{version}/{object_type.replace('_', '-')}/{object_id}"
 
 
 def find(
@@ -61,7 +61,9 @@ def delete(
     return requests.delete(object_url, headers=headers)
 
 
-def show(url: str, object_type: str, headers: Dict[str, str]) -> requests.Response:
+def ls(  # pylint: disable=invalid-name
+    url: str, object_type: str, headers: Dict[str, str]
+) -> requests.Response:
     """
     Get a list of all of the objects of a certain type.
     """

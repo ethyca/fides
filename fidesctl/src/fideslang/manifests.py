@@ -22,6 +22,13 @@ def load_yaml_into_dict(file_path: str) -> Dict:
         return yaml.load(yaml_file, Loader=yaml.FullLoader)
 
 
+def filter_manifest_by_type(
+    manifests: Dict[str, List], filter_types: List[str]
+) -> Dict[str, List]:
+    "Filter the resources so that only the specified resource types are returned."
+    return {key: value for key, value in manifests.items() if key in filter_types}
+
+
 def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
     """
     Combine all of the manifests into a single dictionary,
@@ -43,14 +50,20 @@ def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
 
 def ingest_manifests(manifests_dir: str) -> Dict[str, List[Dict]]:
     """
-    Ingest all of the manifests available in a directory and concatenate
-    them into a single object.
+    Ingest eiher a single file or all of the manifests available in a
+    directory and concatenate them into a single object.
     """
-    manifest_list = [
-        manifests_dir + "/" + file
-        for file in os.listdir(manifests_dir)
-        if "." in file and file.split(".")[1] in ["yml", "yaml"]
-    ]
-    loaded_manifests = [load_yaml_into_dict(file) for file in manifest_list]
-    unioned_manifests = union_manifests(loaded_manifests)
-    return unioned_manifests
+    yml_endings = ["yml", "yaml"]
+    if manifests_dir.split(".")[-1] in yml_endings:
+        manifests = load_yaml_into_dict(manifests_dir)
+
+    else:
+        manifest_list = [
+            manifests_dir + "/" + file
+            for file in os.listdir(manifests_dir)
+            if "." in file and file.split(".")[1] in yml_endings
+        ]
+        manifests = union_manifests(
+            [load_yaml_into_dict(file) for file in manifest_list]
+        )
+    return manifests

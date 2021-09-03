@@ -27,7 +27,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry"]
+        cli, ["-f", test_config_path, "apply", "data/", "--dry"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -36,7 +36,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--diff"]
+        cli, ["-f", test_config_path, "apply", "data/", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -45,7 +45,7 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/sample/", "--dry", "--diff"]
+        cli, ["-f", test_config_path, "apply", "data/", "--dry", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -75,8 +75,8 @@ def test_get(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_show(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "show", "system"])
+def test_ls(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -87,68 +87,20 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_dry_evaluate_registry_success(
-    test_config_path: str, test_cli_runner: CliRunner
-):
+def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "demo_registry"],
+        ["-f", test_config_path, "evaluate", "tests/data/passing_taxonomy.yml"],
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_dry_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_failed(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "dry-evaluate", "data/sample/", "dataAnalyticsSystem"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        [
-            "-f",
-            test_config_path,
-            "dry-evaluate",
-            "data/sample/",
-            "customerDataSharingSystem",
-        ],
-    )
-    print(result.output)
-    assert result.exit_code == 1
-
-
-@pytest.mark.integration
-def test_evaluate_registry_success(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "registry", "default_registry"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_evaluate_system_success(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "system", "dataAnalyticsSystem"],
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_evaluate_system_failing(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "evaluate", "system", "customerDataSharingSystem"],
+        ["-f", test_config_path, "evaluate", "tests/data/failing_taxonomy.yml"],
     )
     print(result.output)
     assert result.exit_code == 1
