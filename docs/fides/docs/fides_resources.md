@@ -4,7 +4,7 @@ This page describes the various objects that make up the Fides platform.
 
 ## Object Relationship Diagram
 
-![alt text](../img/Object_Relations.svg "Fides Manifest Workflow")
+![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 

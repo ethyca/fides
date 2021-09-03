@@ -14,7 +14,7 @@ First create a directory for the manifests to live in:
 
 `mkdir fides_manifests/`
 
-Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required objects for Fides to function. For an exhaustive set of example manifests see the [Fides Objects](fides_objects.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
+Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required objects for Fides to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
 
 === "fides_manifests/policy.yml"
 

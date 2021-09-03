@@ -183,4 +183,5 @@ compose-build:
 
 .PHONY: docs-serve
 docs-serve:
+	@docker-compose build docs
 	@docker-compose up docs

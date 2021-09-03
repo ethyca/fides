@@ -51,7 +51,9 @@ services:
       - env_files/mysql_db.env
 
   docs:
-    image: squidfunk/mkdocs-material
+    build:
+      context: docs/fides/
+      dockerfile: Dockerfile
     volumes:
       - ./docs/fides:/docs
     expose:

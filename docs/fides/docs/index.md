@@ -37,138 +37,11 @@ If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](htt
 
 ![alt text](img/CI_Workflow.svg "Fides CI Workflow")
 
-## Quick Guide
-
-To make things more concrete, the following is a brief overview of the steps required to set up a new project with Fides as used by a monorepo:
-
-1. Create a new directory for your Fides objects to live in, for examples `fides_manifests/`.
-
-1. The next step is to define Fides objects as manifest files. This would include defining datasets, extending the privacy classifiers, and anything else needed to describe the state of the project's privacy.
-
-1. Apply the manifests using `fidesctl apply fides_manifests/`. This command will create/update objects via the Fides API.
-
-1. Set up a CI pipeline to run when the system file is changed. It should use the `fidesctl dry-evaluate <system_manifest> <system_key>` command to check that a system is still valid after it has been update.
-
-1. Upon merge to the main branch, a pipeline should run to re-apply the `fides_manifests/` folder.
-
-The following is a set of example manifests a project could use to get started:
-
-=== "fides_manifests/policy.yml"
-
-    ```yaml
-    policy:
-      - organizationId: 1
-        fidesKey: "primaryPrivacyPolicy"
-        name: "Primary Privacy Policy"
-        description: "The main privacy policy for the organization."
-        rules:
-          - organizationId: 1
-            fidesKey: "rejectTargetedMarketing"
-            name: "Reject Targeted Marketing"
-            description: "Disallow marketing that is targeted towards users."
-            dataCategories:
-              inclusion: "ANY"
-              values:
-                - profiling_data
-                - account_data
-                - derived_data
-                - cloud_service_provider_data
-            dataUses:
-              inclusion: ANY
-              values:
-                - market_advertise_or_promote
-                - offer_upgrades_or_upsell
-            dataSubjects:
-              inclusion: ANY
-              values:
-                - trainee
-                - commuter
-            dataQualifier: pseudonymized_data
-            action: REJECT
-          - organizationId: 1
-            fidesKey: rejectSome
-            name: "Reject Some Marketing"
-            description: "Disallow some marketing that is targeted towards users."
-            dataCategories:
-              inclusion: ANY
-              values:
-                - user_location
-                - personal_health_data_and_medical_records
-                - connectivity_data
-                - credentials
-            dataUses:
-              inclusion: ALL
-              values:
-                - improvement_of_business_support_for_contracted_service
-                - personalize
-                - share_when_required_to_provide_the_service
-            dataSubjects:
-              inclusion: NONE
-              values:
-                - trainee
-                - commuter
-                - patient
-            dataQualifier: pseudonymized_data
-            action: REJECT
-    ```
-
-=== "fides_manifests/dataset.yml"
-
-    ```yaml
-    dataset:
-      - organizationId: 1
-        fidesKey: "sample_db_dataset"
-        name: "Sample DB Dataset"
-        description: "This is a Sample Database Dataset"
-        datasetType: "MySQL"
-        location: "US East"
-        fields:
-          - name: "First_Name"
-            description: "A First Name Field"
-            path: "sample_db_dataset.first_name"
-            dataCategories:
-              - "derived_data"
-            dataQualifier: "identified_data"
-          - name: "Email"
-            description: "User's Email"
-            path: "sample_db_dataset.email"
-            dataCategories:
-              - "account_data"
-            dataQualifier: "anonymized_data"
-          - name: "Food_Preference"
-            description: "User's favorite food"
-            path: "sample_db_dataset.food_preference"
-    ```
-
-=== "fides_manifests/system.yml"
-
-    ```yaml
-    system:
-      - organizationId: 1
-        fidesKey: "demoSystem"
-        name: "Demo System"
-        description: "A system used for demos."
-        systemType: "Service"
-        privacyDeclarations:
-          - name: "Analyze Anonymous Content"
-            dataCategories:
-              - "account_data"
-            dataUse: "provide"
-            dataQualifier: "anonymized_data"
-            dataSubjects:
-              - "anonymous_user"
-            datasetReferences:
-              - "sample_db_dataset.Email"
-        systemDependencies: []
-    ```
-
-For a more in-depth guide, see the [Tutorial](tutorial.md) page.
-
 ---
 
 ## Core Components
 
-Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Objects](fides_objects.md) page.
+Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Resources](fides_resources.md) page.
 
 ### Systems
 
@@ -208,4 +81,6 @@ Fides defines data privacy in four dimensions, called Data Privacy Classifiers. 
 
 ## Next Steps
 
-For further context on how to setup and configure Fides, visit one of the `Getting Started` pages ([Getting Started with Docker](getting_started/docker.md) or [Getting Started Locally](getting_started/local.md)) and the [Fides Objects](fides_objects.md) pages.
+For further context on how to setup and configure Fides, visit the `Getting Started` page ([Getting Started with Docker](getting_started/docker.md) or [Getting Started Locally](getting_started/local.md)).
+
+For an in-depth tutorial, visit the [Tutorial](tutorial.md) page.

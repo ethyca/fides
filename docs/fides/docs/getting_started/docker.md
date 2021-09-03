@@ -2,21 +2,22 @@
 
 ---
 
-The easiest way to get started with Fides is to launch it using the supplied `make` commands, which in turn call Docker to do the heavy lifting.
+The recommended way to get Fides running is to launch it using the supplied `make` commands. The make commands wrap docker-compose commands that will spin up each piece of the project.
 
 ## Requirements
 
 1. Install Make
-1. Install Docker
+1. Install Docker (Docker compose is bundled with Docker in current versions)
 1. Clone the [Fides repo](https://github.com/ethyca/fides)
 
 ## Docker Setup
 
 The following commands should all be run from the top-level Fides directory (where the Makefile is)
 
-1. `make cli` -> this will build the required images, spin up the database, and open a shell inside of a container with `fidesctl` installed
-1. About 15 seconds after the `fidesctl` shell initializes, run the `fidesctl ping` command to verify that `fidesctl` can communicate with the server. If it fails, wait a bit longer and try again until you get a successful response.
-1. `fidesctl` -> this command will list all of the possible `fidesctl` commands
+1. `make compose-build` -> This will build all of the required images
+1. `make init-db` -> Spins up the database and runs the initialization scripts
+1. `make cli` -> This will spin up the entire project and open a shell within the Fidesctl container, with the FidesAPI being accessible. This command will "hang" for a bit, as Fidesctl will wait for the FidesAPI service to be healthy before spinning up the terminal.
+1. `fidesctl` -> Lists all of the possible `fidesctl` commands! You're now ready to start enforcing privacy with Fides!
 
 ## Next Steps
 
