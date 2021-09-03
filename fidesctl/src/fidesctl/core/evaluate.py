@@ -77,7 +77,6 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacyDeclarations:
-                    ## TODO: Check the declared dataset fields as well
 
                     data_category_result = compare_rule_to_declaration(
                         rule_types=rule.dataCategories.values,
@@ -140,7 +139,6 @@ def evaluate(
     All policies are evaluated, but local Policy definition files will be used
     as opposed to their server-definitions if available.
     """
-    ## TODO: allow evaluating a specific policy
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
 
@@ -181,7 +179,6 @@ def evaluate(
         pretty_echo(evaluation.dict(), color="red")
         raise EvaluationError
 
-    ## TODO: If not dry, create an evaluation object and full send it
     ## This is waiting for the server to have an /evaluations endpoint
     if not dry:
         echo_green("Sending the evaluation results to the server...")

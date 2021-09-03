@@ -23,7 +23,6 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
 
     Note that this finds _all_ FidesKeys, including the object's own FidesKey
     """
-    # TODO: Flatten every object's signature so nested references aren't missed
 
     referenced_fides_keys: Set[FidesKey] = set()
     signature = inspect.signature(type(resource), follow_wrapped=True)
