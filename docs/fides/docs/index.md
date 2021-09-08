@@ -41,7 +41,7 @@ If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](htt
 
 ## Core Components
 
-Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each object and their respective schemas, see the [Fides Resources](fides_resources.md) page.
+Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each resource and their respective schemas, see the [Fides Resources](fides_resources.md) page.
 
 ### Systems
 
