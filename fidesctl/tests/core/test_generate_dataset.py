@@ -9,7 +9,7 @@ from fidesctl.core import generate_dataset
 # Unit
 @pytest.mark.unit
 def test_generate_table_manifests():
-    test_object = {"foo": ["1", "2"], "bar": ["4", "5"]}
+    test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
     expected_result = [
         {
             "name": "foo",
@@ -40,7 +40,7 @@ def test_generate_table_manifests():
             ],
         },
     ]
-    actual_result = generate_dataset.generate_table_manifests(test_object)
+    actual_result = generate_dataset.generate_table_manifests(test_resource)
     assert actual_result == expected_result
 
 

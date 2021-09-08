@@ -9,15 +9,15 @@ from fideslang import parse
 def test_parse_manifest():
     expected_result = models.DataCategory(
         organizationId=1,
-        fidesKey="some_object",
-        name="Test Object 1",
+        fidesKey="some_resource",
+        name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     test_dict = {
         "organizationId": 1,
-        "fidesKey": "some_object",
-        "name": "Test Object 1",
+        "fidesKey": "some_resource",
+        "name": "Test resource 1",
         "clause": "Test Clause",
         "description": "Test Description",
     }
@@ -30,7 +30,7 @@ def test_parse_manifest_validation_error():
     with pytest.raises(SystemExit):
         test_dict = {
             "organizationId": 1,
-            "name": "Test Object 1",
+            "name": "Test resource 1",
             "clause": "Test Clause",
             "description": "Test Description",
         }
@@ -43,8 +43,8 @@ def test_parse_manifest_key_error():
     with pytest.raises(SystemExit):
         test_dict = {
             "organizationId": 1,
-            "fidesKey": "some_object",
-            "name": "Test Object 1",
+            "fidesKey": "some_resource",
+            "name": "Test resource 1",
             "clause": "Test Clause",
             "description": "Test Description",
         }

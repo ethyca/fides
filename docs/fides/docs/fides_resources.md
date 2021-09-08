@@ -1,14 +1,14 @@
-# Fides Object Types
+# Fides Resource Types
 
-This page describes the various objects that make up the Fides platform.
+This page describes the various resources that make up the Fides platform.
 
-## Object Relationship Diagram
+## Resource Relationship Diagram
 
-![alt text](img/Object_Relations.svg "Fides Manifest Workflow")
+![alt text](img/Resource_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 
-An organization is a logical grouping of objects, and all objects must belong to an organization. Fides includes a default organization with an id of 1.
+An organization is a logical grouping of resources, and all resources must belong to an organization. Fides includes a default organization with an id of 1.
 
 === "Example Manifest"
 
@@ -225,7 +225,7 @@ A system represents the privacy usage of a single software project, service, cod
 
 ### Privacy Declaration
 
-A Privacy Declaration describes the usage of data within a system. It is included as a composite object within a system declaration.
+A Privacy Declaration describes the usage of data within a system. It is included as a composite resource within a system declaration.
 
 | Name | Type | Description |
 |  --- | --- | --- |
@@ -241,7 +241,7 @@ A Privacy Declaration can be read as "This system uses data in categories `dataC
 
 ## Dataset
 
-A Dataset represents any kind of place where data is stored and includes a sub-object that describes the fields within that dataset.
+A Dataset represents any kind of place where data is stored and includes a sub-resource that describes the fields within that dataset.
 
 === "Example Manifest"
 
@@ -293,7 +293,7 @@ A Field describes a single column or array of data within a dataset. Data descri
 
 ## Policies
 
-Policies group together sets of privacy rules into a single object. These are the objects that systems and registries will be evaluated against.
+Policies group together sets of privacy rules into a single resource. These are the resources that systems and registries will be evaluated against.
 
 === "Example Manifest"
 

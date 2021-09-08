@@ -9,8 +9,7 @@ nav:
       - getting_started/local.md
   - Tutorial: tutorial.md
   - Deployment: deployment.md
-  - Fidesctl: fidesctl.md
-  - FidesAPI: api.md
+  - CLI: cli.md
   - Development:
       - Overview: development/overview.md
       - Contributing: development/contributing.md

@@ -9,8 +9,8 @@ def get_resource_by_fides_key(
     "Get a specific resource from a taxonomy by its fides_key."
 
     return {
-        object_type: resource
-        for object_type in taxonomy.__fields_set__
-        for resource in getattr(taxonomy, object_type)
+        resource_type: resource
+        for resource_type in taxonomy.__fields_set__
+        for resource in getattr(taxonomy, resource_type)
         if resource.fidesKey == fides_key
     } or None

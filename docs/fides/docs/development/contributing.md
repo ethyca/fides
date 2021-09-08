@@ -14,7 +14,7 @@ When making changes to the codebase, make sure to follow the [Pull Request Guide
 1. sbt ~jetty:start
 1. Endpoints should now be available @ `http://localhost:8080`
 1. Current mapping of endpoints can be seen @ src/main/scala/ScalatraBootstrap
-1. Current structure of domain objects can be seen with `sbt test:runMain devtools.Generators`
+1. Current structure of domain resources can be seen with `sbt test:runMain devtools.Generators`
 
 ### Scala Tasks
 

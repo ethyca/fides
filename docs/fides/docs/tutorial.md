@@ -8,13 +8,13 @@ Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](
 
 ## Writing Manifest Files
 
-The next step is to write the manifest files that describe your privacy data usage with the Fides privacy ontology. Manifest files are written in YAML and are used to create and update objects via the FidesAPI.
+The next step is to write the manifest files that describe your privacy data usage with the Fides privacy ontology. Manifest files are written in YAML and are used to create and update resources via the FidesAPI.
 
 First create a directory for the manifests to live in:
 
 `mkdir fides_manifests/`
 
-Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required objects for Fides to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
+Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fides to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
 
 === "fides_manifests/policy.yml"
 
@@ -127,7 +127,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
 
 ## Applying Manifest Files
 
-Once you've finished writing your manifest files, it's time to apply them to the server. This is done with a single `fidesctl` command that handles both creating _and_ updating objects. If an object with the same type and fidesKey already exists, that object will be updated if a change has been made.
+Once you've finished writing your manifest files, it's time to apply them to the server. This is done with a single `fidesctl` command that handles both creating _and_ updating resources. If a resource with the same type and fidesKey already exists, that resource will be updated if a change has been made.
 
 If we assume the same directory name as before for where our manifests are located, the command would be:
 

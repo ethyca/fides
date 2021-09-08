@@ -139,7 +139,7 @@ system:
 
 policy:
   - organizationId: 1
-    fidesKey: "primaryPrivacyPolicy"
+    fidesKey: "passingPrivacyPolicy"
     name: "Primary Privacy Policy"
     description: "The main privacy policy for the organization."
     rules:

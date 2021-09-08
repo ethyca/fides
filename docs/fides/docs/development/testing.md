@@ -37,7 +37,7 @@ Fides's tests are stored in the `tests` directory.
 Tests should have descriptive names that make it clear what you're testing. If necessary, add a docstring or comment to explain why you're testing this specific thing.
 
 ```python
-def test_dry_evaluate_system_fail(server_url, objects_dict):
+def test_dry_evaluate_system_fail(server_url, resources_dict):
     ...
 
 # bad test name

@@ -5,10 +5,10 @@ import click
 from fideslang import model_list
 
 
-def object_type_argument(command: Callable) -> Callable:
-    "Add the object_type option."
+def resource_type_argument(command: Callable) -> Callable:
+    "Add the resource_type option."
     command = click.argument(
-        "object_type", type=click.Choice(model_list, case_sensitive=False)
+        "resource_type", type=click.Choice(model_list, case_sensitive=False)
     )(command)
     return command
 
@@ -16,7 +16,7 @@ def object_type_argument(command: Callable) -> Callable:
 def id_argument(command: Callable) -> Callable:
     "Add the id argument."
     command = click.argument(
-        "object_id",
+        "resource_id",
         type=str,
     )(command)
     return command
