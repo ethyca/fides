@@ -90,7 +90,14 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "tests/data/passing_taxonomy.yml"],
+        [
+            "-f",
+            test_config_path,
+            "evaluate",
+            "tests/data/passing_taxonomy.yml",
+            "-k",
+            "passingPrivacyPolicy",
+        ],
     )
     print(result.output)
     assert result.exit_code == 0

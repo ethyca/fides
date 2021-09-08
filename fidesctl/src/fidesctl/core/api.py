@@ -4,44 +4,44 @@ from typing import Dict
 import requests
 
 
-def generate_object_url(
-    url: str, object_type: str = "", object_id: str = "", version: str = "v1"
+def generate_resource_url(
+    url: str, resource_type: str = "", resource_id: str = "", version: str = "v1"
 ) -> str:
     """
-    Generate an object's URL using a base url, the object type and a version.
+    Generate an resource's URL using a base url, the resource type and a version.
     """
-    return f"{url}/{version}/{object_type.replace('_', '-')}/{object_id}"
+    return f"{url}/{version}/{resource_type.replace('_', '-')}/{resource_id}"
 
 
 def find(
-    url: str, object_type: str, object_key: str, headers: Dict[str, str]
+    url: str, resource_type: str, resource_key: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Get an object by its fidesKey.
+    Get an resource by its fidesKey.
     """
-    object_url = generate_object_url(url, object_type)
-    find_url = f"{object_url}find/{object_key}"
+    resource_url = generate_resource_url(url, resource_type)
+    find_url = f"{resource_url}find/{resource_key}"
     return requests.get(find_url, headers=headers)
 
 
 def get(
-    url: str, object_type: str, object_id: str, headers: Dict[str, str]
+    url: str, resource_type: str, resource_id: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Get an object by its id.
+    Get an resource by its id.
     """
-    object_url = generate_object_url(url, object_type, object_id)
-    return requests.get(object_url, headers=headers)
+    resource_url = generate_resource_url(url, resource_type, resource_id)
+    return requests.get(resource_url, headers=headers)
 
 
 def create(
-    url: str, object_type: str, json_object: str, headers: Dict[str, str]
+    url: str, resource_type: str, json_resource: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Create a new object.
+    Create a new resource.
     """
-    object_url = generate_object_url(url, object_type)
-    return requests.post(object_url, headers=headers, data=json_object)
+    resource_url = generate_resource_url(url, resource_type)
+    return requests.post(resource_url, headers=headers, data=json_resource)
 
 
 def ping(url: str) -> requests.Response:
@@ -52,53 +52,53 @@ def ping(url: str) -> requests.Response:
 
 
 def delete(
-    url: str, object_type: str, object_id: str, headers: Dict[str, str]
+    url: str, resource_type: str, resource_id: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Delete an object by its id.
+    Delete an resource by its id.
     """
-    object_url = generate_object_url(url, object_type, object_id)
-    return requests.delete(object_url, headers=headers)
+    resource_url = generate_resource_url(url, resource_type, resource_id)
+    return requests.delete(resource_url, headers=headers)
 
 
 def ls(  # pylint: disable=invalid-name
-    url: str, object_type: str, headers: Dict[str, str]
+    url: str, resource_type: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Get a list of all of the objects of a certain type.
+    Get a list of all of the resources of a certain type.
     """
-    object_url = generate_object_url(url, object_type)
-    return requests.get(object_url, headers=headers)
+    resource_url = generate_resource_url(url, resource_type)
+    return requests.get(resource_url, headers=headers)
 
 
 def update(
     url: str,
-    object_type: str,
-    object_id: str,
-    json_object: Dict,
+    resource_type: str,
+    resource_id: str,
+    json_resource: Dict,
     headers: Dict[str, str],
 ) -> requests.Response:
     """
-    Update an existing object.
+    Update an existing resource.
     """
-    object_url = generate_object_url(url, object_type, object_id)
-    return requests.post(object_url, headers=headers, data=json_object)
+    resource_url = generate_resource_url(url, resource_type, resource_id)
+    return requests.post(resource_url, headers=headers, data=json_resource)
 
 
 def dry_evaluate(
-    url: str, object_type: str, json_object: str, headers: Dict[str, str]
+    url: str, resource_type: str, json_resource: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
     Dry Evaluate a registry based on organizational policies.
     """
-    object_url = generate_object_url(url, object_type)
-    url = f"{object_url}evaluate/dry-run"
-    return requests.post(url, headers=headers, data=json_object)
+    resource_url = generate_resource_url(url, resource_type)
+    url = f"{resource_url}evaluate/dry-run"
+    return requests.post(url, headers=headers, data=json_resource)
 
 
 def evaluate(
     url: str,
-    object_type: str,
+    resource_type: str,
     fides_key: str,
     tag: str,
     message: str,
@@ -107,6 +107,6 @@ def evaluate(
     """
     Evaluate a registry based on organizational policies.
     """
-    object_url = generate_object_url(url, object_type)
-    url = f"{object_url}evaluate/{fides_key}"
+    resource_url = generate_resource_url(url, resource_type)
+    url = f"{resource_url}evaluate/{fides_key}"
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})

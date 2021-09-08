@@ -21,7 +21,7 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
     Use type-signature introspection to figure out which fields
     include the FidesKey type and return all of those values.
 
-    Note that this finds _all_ FidesKeys, including the object's own FidesKey
+    Note that this finds _all_ FidesKeys, including the resource's own FidesKey
     """
 
     referenced_fides_keys: Set[FidesKey] = set()
@@ -73,7 +73,7 @@ def hydrate_missing_resources(
     for resource_name in dehydrated_taxonomy.__fields__:
         server_resources = get_server_resources(
             url=url,
-            object_type=resource_name,
+            resource_type=resource_name,
             headers=headers,
             existing_keys=missing_resource_keys,
         )

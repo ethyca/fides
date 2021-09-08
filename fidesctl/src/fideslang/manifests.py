@@ -32,7 +32,7 @@ def filter_manifest_by_type(
 def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
     """
     Combine all of the manifests into a single dictionary,
-    appending object values with the same keys.
+    appending resource values with the same keys.
     """
 
     key_lists: List[List[str]] = [list(manifest.keys()) for manifest in manifests]

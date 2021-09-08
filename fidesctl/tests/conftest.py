@@ -19,12 +19,12 @@ def test_config(test_config_path):
 
 
 @pytest.fixture()
-def objects_dict():
+def resources_dict():
     """
-    Yields an object containing sample representations of different
-    Fides objects.
+    Yields an resource containing sample representations of different
+    Fides resources.
     """
-    objects_dict: Dict[str, Any] = {
+    resources_dict: Dict[str, Any] = {
         "data_category": models.DataCategory(
             organizationId=1,
             fidesKey="customer_content_test_data",
@@ -134,7 +134,7 @@ def objects_dict():
             systemDependencies=[],
         ),
     }
-    yield objects_dict
+    yield resources_dict
 
 
 @pytest.fixture()

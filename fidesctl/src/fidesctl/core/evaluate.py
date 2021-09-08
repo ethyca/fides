@@ -30,7 +30,7 @@ def get_all_server_policies(
 
     exclude = exclude if exclude else []
     ls_response = handle_cli_response(
-        api.ls(url=url, object_type="policy", headers=headers), verbose=False
+        api.ls(url=url, resource_type="policy", headers=headers), verbose=False
     )
     policy_keys = [
         resource["fidesKey"]
@@ -38,7 +38,7 @@ def get_all_server_policies(
         if resource["fidesKey"] not in exclude
     ]
     policy_list = get_server_resources(
-        url=url, object_type="policy", headers=headers, existing_keys=policy_keys
+        url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
     )
     return policy_list
 

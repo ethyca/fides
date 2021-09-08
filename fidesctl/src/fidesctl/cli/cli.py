@@ -6,7 +6,7 @@ from fidesctl.cli.options import (
     fides_key_argument,
     id_argument,
     manifests_dir_argument,
-    object_type_argument,
+    resource_type_argument,
 )
 from fidesctl.cli.utils import (
     handle_cli_response,
@@ -35,18 +35,18 @@ def view_config(ctx: click.Context) -> None:
 ########################
 @click.command()
 @click.pass_context
-@object_type_argument
+@resource_type_argument
 @fides_key_argument
-def find(ctx: click.Context, object_type: str, fides_key: str) -> None:
+def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Get an object by its fidesKey.
+    Get an resource by its fidesKey.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.find(
             url=config.cli.server_url,
-            object_type=object_type,
-            object_key=fides_key,
+            resource_type=resource_type,
+            resource_key=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -54,18 +54,18 @@ def find(ctx: click.Context, object_type: str, fides_key: str) -> None:
 
 @click.command()
 @click.pass_context
-@object_type_argument
+@resource_type_argument
 @id_argument
-def delete(ctx: click.Context, object_type: str, object_id: str) -> None:
+def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
     """
-    Delete an object by its id.
+    Delete an resource by its id.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.delete(
             url=config.cli.server_url,
-            object_type=object_type,
-            object_id=object_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
             headers=config.user.request_headers,
         )
     )
@@ -73,18 +73,18 @@ def delete(ctx: click.Context, object_type: str, object_id: str) -> None:
 
 @click.command(hidden=True)
 @click.pass_context
-@object_type_argument
+@resource_type_argument
 @id_argument
-def get(ctx: click.Context, object_type: str, object_id: str) -> None:
+def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
     """
-    Get an object by its id.
+    Get an resource by its id.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.get(
             url=config.cli.server_url,
-            object_type=object_type,
-            object_id=object_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
             headers=config.user.request_headers,
         )
     )
@@ -92,16 +92,16 @@ def get(ctx: click.Context, object_type: str, object_id: str) -> None:
 
 @click.command()
 @click.pass_context
-@object_type_argument
-def ls(ctx: click.Context, object_type: str) -> None:  # pylint: disable=invalid-name
+@resource_type_argument
+def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
     """
-    List all objects of a certain type.
+    List all resources of a certain type.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.ls(
             url=config.cli.server_url,
-            object_type=object_type,
+            resource_type=resource_type,
             headers=config.user.request_headers,
         )
     )
