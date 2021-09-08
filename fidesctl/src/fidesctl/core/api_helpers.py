@@ -22,7 +22,7 @@ def get_server_resources(
         ],
     )
     server_resource_list: List[FidesModel] = [
-        parse_manifest(resource_type, _resource, from_server=True)
-        for _resource in raw_server_resource_list
+        parse_manifest(resource_type, resource, from_server=True)
+        for resource in raw_server_resource_list
     ]
     return server_resource_list

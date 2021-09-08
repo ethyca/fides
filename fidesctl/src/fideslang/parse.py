@@ -45,7 +45,7 @@ def load_manifests_into_taxonomy(raw_manifests: Dict[str, List[Dict]]) -> Taxono
     taxonomy = Taxonomy.parse_obj(
         {
             resource_type: [
-                parse_manifest(resource_type, _resource) for _resource in resource_list
+                parse_manifest(resource_type, resource) for resource in resource_list
             ]
             for resource_type, resource_list in raw_manifests.items()
         }
