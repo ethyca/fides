@@ -12,11 +12,10 @@ nav:
   - CLI: cli.md
   - Development:
       - Overview: development/overview.md
-      - Contributing: development/contributing.md
-      - Pull Requests: development/pull_requests.md
       - Code Style: development/code_style.md
       - Documentation: development/documentation.md
       - Testing: development/testing.md
+      - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
   - Community:
       - GitHub: community/github.md

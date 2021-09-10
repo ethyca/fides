@@ -26,16 +26,7 @@ Other Fides terms, like "Data Category" or "System", should also be capitalized 
 
 Documentation (including both concepts and API references) is built and deployed with every merge to Fides's master branch.
 
-To launch a documentation preview you'll need to run the following commands:
-
-```bash
-pip install -r docs/requirements.txt
-mkdocs serve
-```
-
-_Note: Docs will hot-reload every time you save a file._
-
-Alternatively you can also view the docs within a Docker container, but due to certain limitations hot-loading does not work with this method.
+If you're using VS Code Dev Containers, the docs will automatically be available at `localhost:8000`, otherwise you'll need to run the following command:
 
 ```bash
 make docs-serve
