@@ -51,14 +51,14 @@ data_use:
 
   # Third Party Sharing
   - fidesKey: "third_party_sharing"
-    name: "Marketing, Advertising or Promotion"
+    name: "Third Party Sharing"
 
-  - fidesKey: "processing_payments"
-    name: "Processing Payments"
+  - fidesKey: "sharing_for_processing_payments"
+    name: "Sharing for Processing Payments"
     parentKey: "third_party_sharing"
 
-  - fidesKey: "third_party_shared_personalized_advertising"
-    name: "Third Party Shared Personalized Advertising"
+  - fidesKey: "sharing_for_personalized_advertising"
+    name: "Sharing for Personalized Advertising"
     parentKey: "third_party_sharing"
 
   - fidesKey: "sharing_for_legal_obligation"
