@@ -7,8 +7,6 @@
 
 ## :zap: Overview
 
----
-
 Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
 
 - **A Privacy Grammar for Engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g. personally identifiable information) directly in your code.
@@ -20,8 +18,6 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 - **Built to Scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
 ## :rocket: Getting Started
-
----
 
 We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's simple to jump right in with 5 easy steps:
 
@@ -135,8 +131,6 @@ And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fi
 
 ## :book: Resources
 
----
-
 Fides provides a variety of resources to help guide you to a successful outcome.
 
 We are commmitted to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community/code_of_conduct.md).
@@ -151,8 +145,6 @@ Read about the Fides [community](https://github.com/ethyca/fides/tree/main/docs/
 
 ## Installation
 
----
-
 ### Requirements
 
 Fides requires Python 3.8+. If you're new to Python, we recommend installing the [Anaconda distribution](https://www.anaconda.com/products/individual).
@@ -161,7 +153,9 @@ Fides requires Python 3.8+. If you're new to Python, we recommend installing the
 
 To install Fides, run:
 
-`pip install fidesctl`
+```bash
+pip install fidesctl
+```
 
 ### Bleeding Edge
 
@@ -175,8 +169,6 @@ pip install -e .
 ```
 
 ## License
-
----
 
 Fides is licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
