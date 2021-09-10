@@ -1,111 +1,74 @@
 data_use:
-  - fidesKey: "provide"
-    name: "Provide"
-    description: |
-      Provide means the use of specified data categories:
-      — from the source scope by an applications and services scope to provide and protect the current
-        capabilities of a results scope;
-      — to communicate with the customer about the status and availability of the current capabilities of the result scope;
-      — including providing support for the result scope and to protect at a minimum the specified data category from the source scope.
-      Provide can include the use of specified data categories to protect the rights and property of the cloud service provider and to prevent loss of life or serious injury to anyone. For example:
-      Example 1:
-      This cloud service uses derived data only to provide the cloud services defined in the cloud services agreement.
-      NOTE 1 In this example, use of derived data is restricted to provide the service contracted for in the cloud service agreement, including operational support system (OSS) and business support system (BSS) for exclusively those services. In the case of a single contracted service, “This application” or “This service” can also define the scope (see 9.4.2.3).
-      NOTE 2 The data use statement structure used in this example is described in Clause 10.
-      In the case where a single scope is involved, provide also means to protect the customer content data that exists within this scope and to provide and communicate with the customer about the status and availability of the current capabilities of this scope.
+  # Provided Data
+  - fidesKey: "provide_the_product_or_service"
+    name: "Provide the Product or Service"
 
-  - fidesKey: "provide_operational_support_for_contracted_service"
-    name: "Provide Operational Support for Contracted Service"
-    parentKey: "provide"
-    description: |
-      This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service. This includes:
-      — service usage data to be used for capacity planning;
-      — monitoring of user behaviour to identify potential attackers and to perform forensic analyses;
-      — logging data for system and network maintenance and optimization;
-      — correlation of service usage data and system events for fault tracking and root cause analysis.
+  - fidesKey: "support_the_product_or_service"
+    name: "Support the Product or Service"
+    parentKey: "provide_the_product_or_service"
 
-  - fidesKey: "improvement_of_business_support_for_contracted_service"
-    name: "Improvement of Business Support for Contracted Service"
-    parentKey: "provide"
-    description: |
-      This usage is related to acquisition, processing and storage of data on the usage of contracted services (derived data) being used for business support related to this service. This includes:
-      — evaluation of service usage data to determine user preference about use of the current capabilities of the services contracted for in the SLA;
-      — financial controlling, budgeting and resource planning.
+  - fidesKey: "support_optimization"
+    name: "Support Optimization"
+    parentKey: "provide_the_product_or_service"
 
-  - fidesKey: "improve"
-    name: "Improve"
-    description: |
-      Improve means to use specified data categories from the source scope to improve or increase the quality of the existing functional capabilities of the result scope.
-      Improve can be used with a single scope. In this case, it means that data acquired or created by applications and services in the scope is used to improve the existing functional capabilities and to add new capabilities to the scope, available to all users.
+  - fidesKey: "offers_of_product_or_service_upgrades"
+    name: "Offers of Product or Service Upgrades"
+    parentKey: "provide_the_product_or_service"
 
-  - fidesKey: "personalize"
-    name: "Personalize"
-    description: |
-      Personalize means to use specified data categories from the source scope to change the presentation of the capabilities of the result scope or to change the selection and presentation of data or promotions accessed through the capabilities of the result scope to be specific to the user, based on information about the user gathered by applications and services in the source scope.
-      The same changes may apply to multiple users, for example all users of a particular customer or all of the users sharing common characteristics may receive the same changes.
-      Personalize can be used with a single scope, in which case data acquired or created by applications and services in the provided scope is used to change the presentation of the capabilities of that scope or to change the selection and presentation of content by the applications and services in the scope to be specific to a user.
-      Example 2:
-      Customer content data from this service is used to personalize cloud service provider’s services outside of the services listed in the cloud service agreement.
-      Example 2 describes personalizing of services unrelated to the contracted service based on usage of customer data regarding the contracted service to improve services that are not contracted by the customer. Since data on service usage provide information on the preferences of the cloud service user, their collection and correlation with other data sources can be used to trigger, maintain and improve a large variety of supplementary services. This includes use of other services, not explicitly contracted by user, as listed in the following examples.
-      — The usage of location data from mobile devices to provide location-based services to the user according to his or her past behaviour.
-      — Add-on advertisement services based on search engine queries, combined with data on past user behaviour.
-      NOTE The data use statement structure used in this example is described in Clause 10.
+  # Improvement Data
+  - fidesKey: "improve_the_product_or_service"
+    name: "Improve the Product or Service"
 
-  - fidesKey: "offer_upgrades_or_upsell"
-    name: "Offer Upgrades or Upsell"
-    description: |
-      Offer upgrades or upsell means to use specified data categories from the source scope to offer to the customer increased capacity or resources for the capabilities of the result scope or new capabilities currently outside of the result, in exchange for compensation.
-      The source of new capabilities may be defined as a scope. For example: “...to upsell capabilities to customers from any of our products and services.”
-      Offer upgrades or upsell requires the definition of the person or group of people who are the target audience.
+  # Personalize Data
+  - fidesKey: "personalize_the_product_or_service"
+    name: "Personalize the Product or Service"
 
-  - fidesKey: "market_advertize_or_promote"
-    name: "Market/Advertize/Promote"
-    description: |
-      Market/advertize/promote means to promote specified products and services to users or customers of a results scope based on data from the source scope.
-      Promotion is targeted at an individual or a group of individuals. Market/advertize/promote requires the definition of the person or group of people who are the target audience.
+  # Marketing, Advertising or Promotion Data
+  - fidesKey: "marketing_advertising_or_promotion"
+    name: "Marketing, Advertising or Promotion"
 
-  - fidesKey: "promote_based_on_contextual_information"
-    name: "Promote Based on Contextual Information."
-    parentKey: "market_advertize_or_promote"
-    description: |
-      Market/advertise/promote based on data derived from the use of the current capability or based on the services and application scope, without the use of data derived from the user’s prior use of the services.
+  - fidesKey: "first_party_advertising"
+    name: "First Party Advertising"
+    parentKey: "marketing_advertising_or_promotion"
 
-  - fidesKey: "promote_based_on_personalization"
-    name: "Promote Based on Personalization."
-    parentKey: "market_advertize_or_promote"
-    description: |
-      Use specified data categories from the source scope to change the content of a promotion to the result scope to be specific to the user. The same content may be presented to multiple users, for example, all users of a customer or all of the users sharing a profile may receive the same changes.
+  - fidesKey: "third_party_advertising"
+    name: "Third Party Advertising"
+    parentKey: "marketing_advertising_or_promotion"
 
-  - fidesKey: "share"
-    name: "Share"
-    description: |
-      Share means to transfer specified data categories from the source scope to an entity other than the cloud service provider of the source scope. This entity may be defined as the cloud service provider of a result scope, e.g. “... share pseudonymized operations data with cloud service providers of similar commercial cloud services.”
-      Example 3:
-      This service shares customer content data with third parties.
-      This example is a poor use statement in that it does not provide clarity of the purpose for which the data are being shared nor of the extent of the data being shared. CSPs are strongly encouraged to provide as much detail as possible in data use statements so that it is clear to the CSC what is being done with which data.
-      NOTE 1 The data use statement structure used in this example is described in Clause 10.
-      Cloud service providers should specify a purpose for sharing data by including a use definition. Example 4:
-      This service shares payment instrument data with third-party partners and data processors to provide the cloud service.
-      This example adds some clarity to how retail services provide payment instrument data (i.e. credit card information) to third parties, for example for billing purposes, for the specific purpose of providing the service.
-      NOTE 2 The data use statement structure used in this example is described in Clause 10.
-      Cloud service providers should use scope characteristics (see 9.4.3) for the source scope and for the
-      receiving entity or result scope to further specify the sharing.
-      Cloud service providers should include a description of the network connection between scopes (see
-      9.4.4) following the statement structure described in data sharing (see 10.2.9).
+  # Marketing, Advertising or Promotion -> First Party Advertising
+  - fidesKey: "first_party_contextual_advertising"
+    name: "First Party Contextual Advertising"
+    parentKey: "first_party_advertising"
 
-  - fidesKey: "share_when_required_to_provide_the_service"
-    name: "Share when Required to Provide the Service"
-    parentKey: "share"
-    description: |
-      There are conditions where CSP are required to share data: by contract, applicable laws and regulations, resulting in the transfer of specified data categories to third parties to provide the service. This can include sharing data to comply with applicable law or respond to valid legal processes from competent authorities, including from law enforcement or other government agencies and providing data to law enforcement to protect the service and uphold the terms governing the use of the service. This use statement only includes the use of data provided by the third parties to provide the services in the scope.
+  - fidesKey: "first_party_personalized_advertising"
+    name: "First Party Personalized Advertising"
+    parentKey: "first_party_advertising"
 
+  # Marketing, Advertising or Promotion -> Third Party Advertising
+  - fidesKey: "third_party_personalized_advertising"
+    name: "Third Party Personalized Advertising"
+    parentKey: "third_party_advertising"
+
+  # Third Party Sharing
+  - fidesKey: "third_party_sharing"
+    name: "Third Party Sharing"
+
+  - fidesKey: "sharing_for_processing_payments"
+    name: "Sharing for Processing Payments"
+    parentKey: "third_party_sharing"
+
+  - fidesKey: "sharing_for_personalized_advertising"
+    name: "Sharing for Personalized Advertising"
+    parentKey: "third_party_sharing"
+
+  - fidesKey: "sharing_for_legal_obligation"
+    name: "Sharing for Legal Obligation"
+    parentKey: "third_party_sharing"
+
+  # Collect
   - fidesKey: "collect"
     name: "Collect"
-    description: |
-      Collect includes collecting, preparing, pre-processing and storing specified data categories from the source scope in preparation for other uses such as training machine learning algorithms.
 
+  # Train AI System
   - fidesKey: "train_ai_system"
-    name: "Train (AI System)"
-    description: |
-      Use the specified data categories from the source scope to train, retrain or test an artificial intelligence (AI) system. The AI system can use machine learning technologies, or it can use other technologies.
-      Cloud service providers describing the use of data to train AI systems should include a statement addressing the extent to which individuals are directly identified in the resulting AI system. The data identification qualifiers in 8.3 could be used as the basis for this description. If there is PII in the resulting AI system, then additional statements are likely required, e.g. about data retention periods.
+    name: "Train AI System"
