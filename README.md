@@ -19,22 +19,22 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 ## :bulb: Concepts
 
-Fides has two fundamental pieces at its core. The first is the its 4 data privacy types, and the second is the resources that are defined and described in terms of how they interact with the 4 data privacy types.
+Fides has two fundamental pieces at its core. The first is the 4 data privacy types, and the second is the resources that are defined and described in terms of their data privacy type composition.
 
-The 4 data privacy types that it defines, they are as follow:
+The 4 data privacy types are as follows:
 
 - Data Categories - _What_ kind of data is it?
 - Data Subjects - _Who's_ data is it?
 - Data Uses - _How_ is it being used?
 - Data Qualifiers - How _identifiable_ is it?
 
-With these 4 privacy types defined, other resources can now be defined within the context of these data privacy types, for instance:
+With the data privacy types defined, additional resources can now be defined within their context, for instance:
 
 - Dataset - Defined as a combination of Data Categories and Data Qualifiers
-- System - Defined as a list of declarations comprising  all 4 data privacy types
+- System - Defined as a list of declarations comprising all 4 data privacy types
 - Policy - Defined as a list of rules comprising all 4 data privacy types, specifiying which combinations are either permitted or forbidden
 
-Using these primitives as well as some addiitional abstractions for syntactic sugar, Fides allows comprehensive declaration of an organization's entire datascape.
+Using these primitives as well as some addiitional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
 
 ## :rocket: Getting Started
 
