@@ -19,6 +19,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(version=fidesctl.__version__)
 @click.option(
     "--config-path",
     "-f",
@@ -34,14 +35,6 @@ def cli(ctx: click.Context, config_path: str) -> None:
     """
     ctx.ensure_object(dict)
     ctx.obj["CONFIG"] = get_config(config_path)
-
-
-@cli.command()
-def version() -> None:
-    """
-    Get the current Fidesctl version.
-    """
-    click.echo(fidesctl.__version__)
 
 
 cli.add_command(apply)

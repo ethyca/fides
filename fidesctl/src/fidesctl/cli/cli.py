@@ -30,9 +30,6 @@ def view_config(ctx: click.Context) -> None:
     pretty_echo(config.dict(), color="green")
 
 
-########################
-### Generic Commands ###
-########################
 @click.command()
 @click.pass_context
 @resource_type_argument
@@ -106,10 +103,6 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
         )
     )
 
-
-########################
-### Special Commands ###
-########################
 @click.command()
 @click.pass_context
 @dry_flag
@@ -164,10 +157,6 @@ def generate_dataset(
 
     _generate_dataset.generate_dataset(connection_string, output_filename)
 
-
-################
-### Evaluate ###
-################
 @click.command()
 @click.pass_context
 @manifests_dir_argument
