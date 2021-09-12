@@ -20,9 +20,7 @@ def parse_manifest(
     try:
         parsed_manifest = model_map[resource_type].parse_obj(resource)
     except ValidationError as err:
-        echo_red(
-            f"Failed to parse this resource: {resource} with the following errors:"
-        )
+        echo_red(f"Failed to parse resource: {resource} with the following errors:")
         raise SystemExit(err) from err
     except KeyError as err:
         echo_red(f"This resource type does not exist: {resource_type}")

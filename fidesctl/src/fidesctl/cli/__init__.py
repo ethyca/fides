@@ -10,6 +10,7 @@ from fidesctl.cli.cli import (
     generate_dataset,
     get,
     ls,
+    parse,
     ping,
     view_config,
 )
@@ -44,5 +45,6 @@ cli.add_command(find)
 cli.add_command(generate_dataset)
 cli.add_command(get)
 cli.add_command(ls)
+cli.add_command(parse)
 cli.add_command(ping)
 cli.add_command(view_config)
