@@ -19,7 +19,7 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 ## :bulb: Concepts
 
-Fides has two fundamental pieces at its core. The first is the 4 data privacy types, and the second is the resources that are defined and described in terms of their data privacy type composition.
+Fides has two fundamental pieces at its core. The first piece is the 4 data privacy types, and the second piece is the resources that are defined and described in terms of their data privacy type composition.
 
 The 4 data privacy types are as follows:
 
@@ -40,11 +40,7 @@ Using these primitives as well as some addiitional abstractions for syntactic su
 
 We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's simple to jump right in with 5 easy steps:
 
-1. Install Fides via pip:
-
-    ```bash
-    pip install fidesctl
-    ```
+1. Install Fides via Docker (you can follow [this guide](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md))
 
 1. Create a directory for your Fides resources to live in, like `fides_resources/`.
 
@@ -52,10 +48,10 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
     mkdir fides_resources/
     ```
 
-1. Let's make our first policy, you don't even need a lawyer :wink: using our template, modify and add what ever rules you'd like
+1. Let's make our first Policy, you don't even need a lawyer :wink: using our template, modify and add what ever rules you'd like
 
     <details>
-    <summary>Here's an example policy .yaml to get you started</summary>
+    <summary>Here's an example policy.yaml to get you started</summary>
 
       ```yaml
     policy:
@@ -116,7 +112,7 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
 
     </details>
 
-1. And now, create a data system for Fides to check your data privacy policy against.
+1. And now, create a System for Fides to check your Policy
 
     <details>
         <summary>Here's an example system .yaml to get you started</summary>
@@ -144,7 +140,7 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
 
     </details>
 
-1. Send all your resources to the server using `fidesctl apply fides_manifests/` and that's it! See how your data set stacks up against the policy by using `fidesctl evaluate`
+1. Check your System's compliance by using `fidesctl evaluate fides_resources/`. This will create all of your defined objects on the server and then run an evaluation. You've now finished a simple Fides workflow!
 
 And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). It's helpful to contextualize how you can use Fides in your organization, today!
 
