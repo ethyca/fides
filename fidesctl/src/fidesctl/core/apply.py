@@ -6,13 +6,10 @@ from deepdiff import DeepDiff
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
-from fidesctl.core.utils import echo_green
 from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.parse import parse
+from fidesctl.core.utils import echo_green
 from fideslang import FidesModel
-from fideslang.manifests import ingest_manifests
-from fideslang.parse import (
-    load_manifests_into_taxonomy,
-)
 
 
 def sort_create_update_unchanged(
@@ -118,9 +115,7 @@ def apply(
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
-    echo_green(f"Loading resource manifests from {manifests_dir}")
-    ingested_manifests = ingest_manifests(manifests_dir)
-    taxonomy = load_manifests_into_taxonomy(ingested_manifests)
+    taxonomy = parse(manifests_dir)
 
     for resource_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output

@@ -5,14 +5,13 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
-from fidesctl.core.utils import echo_green
 from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.parse import parse
+from fidesctl.core.utils import echo_green
 from fideslang import Policy, Taxonomy
-from fideslang.manifests import ingest_manifests
 from fideslang.models.evaluation import Evaluation, EvaluationError, StatusEnum
 from fideslang.models.policy import InclusionEnum
 from fideslang.models.validation import FidesKey
-from fideslang.parse import load_manifests_into_taxonomy
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
@@ -139,8 +138,7 @@ def evaluate(
     All policies are evaluated, but local Policy definition files will be used
     as opposed to their server-definitions if available.
     """
-    ingested_manifests = ingest_manifests(manifests_dir)
-    taxonomy = load_manifests_into_taxonomy(ingested_manifests)
+    taxonomy = parse(manifests_dir)
 
     # Get all of the policies to evaluate
     local_policy_keys = (

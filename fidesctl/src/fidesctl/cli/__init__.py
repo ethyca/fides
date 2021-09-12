@@ -10,6 +10,7 @@ from fidesctl.cli.cli import (
     generate_dataset,
     get,
     ls,
+    parse,
     ping,
     view_config,
 )
@@ -19,6 +20,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(version=fidesctl.__version__)
 @click.option(
     "--config-path",
     "-f",
@@ -36,14 +38,6 @@ def cli(ctx: click.Context, config_path: str) -> None:
     ctx.obj["CONFIG"] = get_config(config_path)
 
 
-@cli.command()
-def version() -> None:
-    """
-    Get the current Fidesctl version.
-    """
-    click.echo(fidesctl.__version__)
-
-
 cli.add_command(apply)
 cli.add_command(delete)
 cli.add_command(evaluate)
@@ -51,5 +45,6 @@ cli.add_command(find)
 cli.add_command(generate_dataset)
 cli.add_command(get)
 cli.add_command(ls)
+cli.add_command(parse)
 cli.add_command(ping)
 cli.add_command(view_config)

@@ -17,99 +17,10 @@ from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
+    parse as _parse,
 )
 
 
-@click.command()
-@click.pass_context
-def view_config(ctx: click.Context) -> None:
-    """
-    Print out the config values.
-    """
-    config = ctx.obj["CONFIG"]
-    pretty_echo(config.dict(), color="green")
-
-
-########################
-### Generic Commands ###
-########################
-@click.command()
-@click.pass_context
-@resource_type_argument
-@fides_key_argument
-def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
-    """
-    Get an resource by its fidesKey.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.find(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_key=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
-@resource_type_argument
-@id_argument
-def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
-    """
-    Delete an resource by its id.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.delete(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_id=resource_id,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command(hidden=True)
-@click.pass_context
-@resource_type_argument
-@id_argument
-def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
-    """
-    Get an resource by its id.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.get(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_id=resource_id,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
-@resource_type_argument
-def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
-    """
-    List all resources of a certain type.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.ls(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-########################
-### Special Commands ###
-########################
 @click.command()
 @click.pass_context
 @dry_flag
@@ -135,39 +46,23 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 
 @click.command()
 @click.pass_context
-def ping(ctx: click.Context, config_path: str = "") -> None:
+@resource_type_argument
+@id_argument
+def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
     """
-    Ping the Server.
+    Delete an resource by its id.
     """
     config = ctx.obj["CONFIG"]
-    click.secho(f"Pinging {config.cli.server_url}...", fg="green")
-    _api.ping(config.cli.server_url)
-    click.secho("Ping Successful!", fg="green")
+    handle_cli_response(
+        _api.delete(
+            url=config.cli.server_url,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            headers=config.user.request_headers,
+        )
+    )
 
 
-@click.command()
-@click.pass_context
-@click.argument("connection_string", type=str)
-@click.argument("output_filename", type=str)
-def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str
-) -> None:
-    """
-    Generates a comprehensive dataset manifest from a database.
-
-    Args:
-
-        connection_string (str): A SQLAlchemy-compatible connection string
-
-        output_filename (str): A path to where the manifest will be written
-    """
-
-    _generate_dataset.generate_dataset(connection_string, output_filename)
-
-
-################
-### Evaluate ###
-################
 @click.command()
 @click.pass_context
 @manifests_dir_argument
@@ -210,3 +105,111 @@ def evaluate(
         message=message,
         dry=dry,
     )
+
+
+@click.command()
+@click.pass_context
+@resource_type_argument
+@fides_key_argument
+def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
+    """
+    Get an resource by its fidesKey.
+    """
+    config = ctx.obj["CONFIG"]
+    handle_cli_response(
+        _api.find(
+            url=config.cli.server_url,
+            resource_type=resource_type,
+            resource_key=fides_key,
+            headers=config.user.request_headers,
+        )
+    )
+
+
+@click.command()
+@click.pass_context
+@click.argument("connection_string", type=str)
+@click.argument("output_filename", type=str)
+def generate_dataset(
+    ctx: click.Context, connection_string: str, output_filename: str
+) -> None:
+    """
+    Generates a comprehensive dataset manifest from a database.
+
+    Args:
+
+        connection_string (str): A SQLAlchemy-compatible connection string
+
+        output_filename (str): A path to where the manifest will be written
+    """
+
+    _generate_dataset.generate_dataset(connection_string, output_filename)
+
+
+@click.command(hidden=True)
+@click.pass_context
+@resource_type_argument
+@id_argument
+def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
+    """
+    Get an resource by its id.
+    """
+    config = ctx.obj["CONFIG"]
+    handle_cli_response(
+        _api.get(
+            url=config.cli.server_url,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            headers=config.user.request_headers,
+        )
+    )
+
+
+@click.command()
+@click.pass_context
+@resource_type_argument
+def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
+    """
+    List all resources of a certain type.
+    """
+    config = ctx.obj["CONFIG"]
+    handle_cli_response(
+        _api.ls(
+            url=config.cli.server_url,
+            resource_type=resource_type,
+            headers=config.user.request_headers,
+        )
+    )
+
+
+@click.command()
+@click.pass_context
+@manifests_dir_argument
+def parse(ctx: click.Context, manifests_dir: str) -> None:
+    """
+    Parse the file(s) at the provided path into a Taxonomy and surface any validation errors.
+    """
+
+    _parse.parse(manifests_dir)
+
+
+@click.command()
+@click.pass_context
+def ping(ctx: click.Context, config_path: str = "") -> None:
+    """
+    Ping the Server.
+    """
+    config = ctx.obj["CONFIG"]
+    click.secho(f"Pinging {config.cli.server_url}...", fg="green")
+    _api.ping(config.cli.server_url)
+    click.secho("Ping Successful!", fg="green")
+
+
+@click.command()
+@click.pass_context
+def view_config(ctx: click.Context) -> None:
+    """
+    Print out the config values.
+    """
+    config = ctx.obj["CONFIG"]
+    pretty_echo(config.dict(), color="green")
