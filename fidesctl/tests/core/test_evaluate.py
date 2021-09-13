@@ -1,7 +1,6 @@
 import pytest
 
 from fidesctl.core import evaluate
-from fideslang import Taxonomy, System, Policy
 
 
 @pytest.mark.integration

@@ -19,22 +19,22 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 ## :bulb: Concepts
 
-Fides has two fundamental pieces at its core. The first piece is the 4 data privacy types, and the second piece is the resources that are defined and described in terms of their data privacy type composition.
+Fides has two fundamental parts at its core. The first part is the 4 privacy data types that Fides defines:
 
 The 4 data privacy types are as follows:
 
-- Data Categories - _What_ kind of data is it?
-- Data Subjects - _Who's_ data is it?
-- Data Uses - _How_ is it being used?
-- Data Qualifiers - How _identifiable_ is it?
+- Data Category - _What_ kind of data is it?
+- Data Subject - _Who's_ data is it?
+- Data Use - _How_ is it being used?
+- Data Qualifier - How _identifiable_ is it?
 
-With the data privacy types defined, additional resources can now be defined within their context, for instance:
+With these privacy data types defined, subsequent resources can now be defined within their scopes. Those subsequent resources comprise the second part of Fides, they are as follows:
 
-- Dataset - Defined as a combination of Data Categories and Data Qualifiers
-- System - Defined as a list of declarations comprising all 4 data privacy types
-- Policy - Defined as a list of rules comprising all 4 data privacy types, specifiying which combinations are either permitted or forbidden
+- Dataset - Tables and fields described as a combination of Data Categories and Data Qualifiers
+- System - Defined as a list of declarations comprising all 4 privacy data types
+- Policy - Defined as a list of rules comprising all 4 privacy data types, specifiying which combinations are either permitted or forbidden
 
-Using these primitives as well as some addiitional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
+Using these primitives, as well as some addiitional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
 
 ## :rocket: Getting Started
 
