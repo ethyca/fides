@@ -6,7 +6,7 @@ services:
     command: /bin/bash -c "sleep infinity"
     depends_on:
       fidesapi:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - type: bind
         source: .
@@ -17,27 +17,23 @@ services:
 
   fidesapi:
     build:
-      context: fidesapi
+      context: fidesctl
       dockerfile: Dockerfile
-      target: local
-    command: sbt ~jetty:start
+    command: python /fides/fidesctl/src/fidesapi/main.py
     depends_on:
       fides-db:
         condition: service_started
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
     expose:
       - 8080
     ports:
       - "8080:8080"
     volumes:
-      - ./fidesapi:/usr/src/fidesapi
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
     env_file:
-      - env_files/fides_server.env
+      - env_files/fidesctl.env
 
   fides-db:
     image: mysql:8

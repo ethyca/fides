@@ -65,13 +65,13 @@ init-db: compose-build
 	@make teardown
 
 .PHONY: server
-server: check-db
+server: 
 	@echo "Spinning up the webserver..."
 	@docker-compose up $(SERVER_IMAGE_NAME)
 	@make teardown
 
 .PHONY: shell
-server-shell: check-db
+server-shell:
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker-compose run $(SERVER_IMAGE_NAME) /bin/bash
 	@make teardown
