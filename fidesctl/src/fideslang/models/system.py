@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
-from fideslang.models.validation import sort_list_objects, no_self_reference
+from fideslang.models.validation import sort_list_objects_by_name, no_self_reference
 from fideslang.models.fides_model import FidesModel, FidesKey
 
 
@@ -23,7 +23,7 @@ class System(FidesModel):
     systemDependencies: Optional[List[FidesKey]]
 
     _sort_privacy_declarations = validator("privacyDeclarations", allow_reuse=True)(
-        sort_list_objects
+        sort_list_objects_by_name
     )
 
     _no_self_reference = validator(

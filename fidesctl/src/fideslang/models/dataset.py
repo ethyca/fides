@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, validator
 
-from fideslang.models.validation import sort_list_objects
+from fideslang.models.validation import sort_list_objects_by_name
 from fideslang.models.fides_model import FidesModel, FidesKey
 
 
@@ -22,4 +22,4 @@ class Dataset(FidesModel):
     datasetType: str
     fields: List[DatasetField]
 
-    _sort_fields = validator("fields", allow_reuse=True)(sort_list_objects)
+    _sort_fields = validator("fields", allow_reuse=True)(sort_list_objects_by_name)

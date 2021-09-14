@@ -33,7 +33,7 @@ class FidesModel(BaseModel):
 
     id: Optional[int]
     organizationId: int = 1
-    name: str
+    name: Optional[str]
     description: Optional[str]
     fidesKey: FidesKey
 

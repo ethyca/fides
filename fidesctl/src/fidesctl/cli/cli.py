@@ -67,7 +67,10 @@ def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
 @click.pass_context
 @manifests_dir_argument
 @click.option(
-    "-k", "--fides-key", help="The fidesKey for the specific Policy to be evaluated."
+    "-k",
+    "--fides-key",
+    default="",
+    help="The fidesKey for the specific Policy to be evaluated.",
 )
 @click.option(
     "-m", "--message", help="Description of the changes this evaluation encapsulates."
