@@ -1,7 +1,9 @@
 FROM python:3.8-slim-buster
 
 # Install auxiliary software
-RUN apt-get update
+RUN apt-get update \
+    && apt-get -y install libpq-dev gcc
+    
 RUN apt-get install -y \
     git \
     ipython \
