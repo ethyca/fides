@@ -6,7 +6,11 @@ RUN apt-get install -y \
     git \
     ipython \
     make \
-    vim
+    vim \
+    gcc
+
+# libpq-dev provides all requirements for building Psycopg2
+RUN apt-get -y install libpq-dev
 
 # Update pip and install requirements
 RUN pip install -U pip
