@@ -103,7 +103,7 @@ def get_config(config_path: str = "") -> FidesConfig:
             try:
                 settings = toml.load(file_location)
                 fides_config = FidesConfig(
-                    api=CLISettings.parse_obj(settings["api"]),
+                    api=APISettings.parse_obj(settings["api"]),
                     cli=CLISettings.parse_obj(settings["cli"]),
                     user=UserSettings.parse_obj(settings["user"]),
                 )

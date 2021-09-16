@@ -19,7 +19,7 @@ services:
     build:
       context: fidesctl
       dockerfile: Dockerfile
-    command: python /fides/fidesctl/src/fidesapi/main.py
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     depends_on:
       fides-db:
         condition: service_started

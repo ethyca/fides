@@ -1,17 +1,22 @@
 from fastapi import FastAPI
-import uvicorn
 
-import crud
+from fidesapi import crud
+from fidesctl.core.config import get_config
 
-fidesapi = FastAPI()
+from fidesapi import db_session
 
-for router in crud.routers:
-    fidesapi.include_router(router)
-
-
-def main():
-    uvicorn.run("main:fidesapi", host="0.0.0.0", port=8080, reload=True)
+app = FastAPI()
 
 
-if __name__ == "__main__":
-    main()
+def configure_routes():
+    for router in crud.routers:
+        app.include_router(router)
+
+
+def configure_db(database_url: str):
+    db_session.global_init(database_url)
+
+
+config = get_config()
+configure_routes()
+configure_db(config.api.database_url)

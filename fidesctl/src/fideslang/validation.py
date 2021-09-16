@@ -1,15 +1,13 @@
 import re
-from typing import Optional, Pattern
+from typing import List, Dict, Pattern
 
-from pydantic import BaseModel, ConstrainedStr
-
+from pydantic import ConstrainedStr
 
 class FidesValidationError(Exception):
     """Custom exception for when the pydantic ValidationError can't be used."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
-
 
 class FidesKey(ConstrainedStr):
     """
@@ -28,14 +26,20 @@ class FidesKey(ConstrainedStr):
         return value
 
 
-class FidesModel(BaseModel):
-    """The base model for all Fides Resources."""
 
-    id: Optional[int]
-    organizationId: int = 1
-    name: Optional[str]
-    description: Optional[str]
-    fidesKey: FidesKey
+def sort_list_objects_by_name(values: List) -> List:
+    """Sort objects in a list by their name. This makes resource comparisons deterministic."""
+    values.sort(key=lambda value: value.name)
+    return values
 
-    class Config:
-        extra = "ignore"
+
+def sort_list_objects_by_key(values: List) -> List:
+    """Sort objects in a list by their name. This makes resource comparisons deterministic."""
+    values.sort(key=lambda value: value.fidesKey)
+    return values
+
+
+def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
+    if value == values["fides_key"]:
+        raise FidesValidationError("FidesKey can not self-reference!")
+    return value

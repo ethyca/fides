@@ -1,18 +1,24 @@
 from typing import Dict, Type
 
 # Export the Models
-from fideslang.models.data_category import DataCategory
-from fideslang.models.data_qualifier import DataQualifier
-from fideslang.models.data_subject import DataSubject
-from fideslang.models.data_use import DataUse
-from fideslang.models.dataset import Dataset, DatasetField
-from fideslang.models.evaluation import Evaluation
-from fideslang.models.fides_model import FidesModel
-from fideslang.models.organization import Organization
-from fideslang.models.policy import Policy, PolicyRule, PrivacyRule
-from fideslang.models.registry import Registry
-from fideslang.models.system import PrivacyDeclaration, System
-from fideslang.models.taxonomy import Taxonomy
+from .models import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+    Dataset,
+    DatasetField,
+    Evaluation,
+    FidesModel,
+    Organization,
+    Policy,
+    PolicyRule,
+    PrivacyRule,
+    Registry,
+    PrivacyDeclaration,
+    System,
+    Taxonomy,
+)
 
 model_map: Dict[str, Type[FidesModel]] = {
     "data_category": DataCategory,

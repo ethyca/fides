@@ -1,3 +1,7 @@
+from typing import Dict
+
 from .data_category import DataCategory
 
-from fidesapi.database import base
+sql_model_map: Dict= {
+    "data_category": DataCategory,
+}
