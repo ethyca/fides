@@ -23,6 +23,7 @@ class FidesModel(BaseModel):
 
     class Config:
         extra = "ignore"
+        orm_mode = True
 
 
 # Privacy Data Types
