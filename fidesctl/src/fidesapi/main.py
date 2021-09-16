@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 import uvicorn
 
+import crud
+
 fidesapi = FastAPI()
 
-
-@fidesapi.get("/")
-async def root():
-    return {"message": "Hello, World"}
+for router in crud.routers:
+    fidesapi.include_router(router)
 
 
 def main():

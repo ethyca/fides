@@ -7,6 +7,8 @@ from fideslang.models.validation import no_self_reference
 
 
 class DataCategory(FidesModel):
+    """The DataCategory resource model."""
+
     parentKey: Optional[FidesKey]
 
     _no_self_reference = validator("parentKey", allow_reuse=True)(no_self_reference)
