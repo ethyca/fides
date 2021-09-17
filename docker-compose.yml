@@ -13,7 +13,7 @@ services:
         target: /fides
         read_only: False
     env_file:
-      - env_files/fidesctl.env
+      - env_files/fides.env
 
   fidesapi:
     build:
@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     depends_on:
-      fides-db:
+      fidesdb:
         condition: service_started
     expose:
       - 8080
@@ -33,18 +33,18 @@ services:
         target: /fides
         read_only: False
     env_file:
-      - env_files/fidesctl.env
+      - env_files/fides.env
 
-  fides-db:
-    image: mysql:8
+  fidesdb:
+    image: postgres:12
     volumes:
-      - mysql:/var/lib/mysql
+      - postgres:/var/lib/postgresql/data
     expose:
-      - 3306
+      - 5432
     ports:
-      - "3306:3306"
+      - "5432:5432"
     env_file:
-      - env_files/mysql_db.env
+      - env_files/db.env
 
   docs:
     build:
@@ -58,4 +58,4 @@ services:
       - "8000:8000"
 
 volumes:
-  mysql:
+  postgres:
