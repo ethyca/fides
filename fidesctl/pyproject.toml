@@ -37,9 +37,6 @@ exclude = '''
 ########
 # Pylint
 ########
-[tool.pylint.master]
-ignore="models"
-
 [tool.pylint.messages_control]
 disable=[
     "line-too-long",

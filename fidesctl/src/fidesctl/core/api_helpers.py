@@ -2,7 +2,7 @@ from typing import List, Dict, Iterable
 
 from fidesctl.core import api
 from fideslang import FidesModel
-from fideslang.models.validation import FidesKey
+from fideslang.validation import FidesKey
 from fideslang.parse import parse_manifest
 
 

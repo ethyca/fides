@@ -8,10 +8,15 @@ from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green
-from fideslang import Policy, Taxonomy
-from fideslang.models.evaluation import Evaluation, EvaluationError, StatusEnum
-from fideslang.models.policy import InclusionEnum
-from fideslang.models.validation import FidesKey
+from fideslang.models import (
+    Evaluation,
+    EvaluationError,
+    StatusEnum,
+    InclusionEnum,
+    Policy,
+    Taxonomy,
+)
+from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,

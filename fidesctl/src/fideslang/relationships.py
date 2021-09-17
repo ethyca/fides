@@ -11,8 +11,7 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_red
-from fideslang.models.fides_model import FidesModel, FidesKey
-from fideslang.models.taxonomy import Taxonomy
+from fideslang.models import FidesModel, FidesKey, Taxonomy
 from fideslang.utils import get_resource_by_fides_key
 
 
