@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from fidesapi import db_session
 from fideslang import model_map
@@ -16,10 +16,7 @@ for resource_type, resource_model in model_map.items():
         prefix=f"/{resource_type}",
     )
 
-    @router.post(
-        "/",
-        response_model=resource_model,
-    )
+    @router.post("/", response_model=resource_model)
     async def create(
         resource: resource_model,
         resource_type: str = get_resource_type(router),
@@ -52,6 +49,24 @@ for resource_type, resource_model in model_map.items():
     @router.post("/{fides_key}", response_model=resource_model)
     async def update(fides_key: str, resource: resource_model):
         """Update a resource by its fides_key."""
+        session = db_session.create_session()
+        sql_model = sql_model_map[resource_type]
+
+        try:
+            sql_resource = (
+                session.query(sql_model)
+                .filter(sql_model.fides_key == fides_key)
+                .first()
+            )
+            if not sql_resource:
+                return {
+                    "error": {"message": f"{fides_key} is not an existing FidesKey!"}
+                }
+            session.delete(sql_resource)
+            session.commit()
+            return {"data": {"message": "True"}}
+        finally:
+            session.close()
 
     @router.delete("/{fides_key}")
     async def delete(fides_key: str, resource_type: str = get_resource_type(router)):

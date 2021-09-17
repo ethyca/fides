@@ -11,7 +11,11 @@ __factory: Optional[Callable[[], Session]] = None
 
 
 def global_init(database_url: str):
-    global __factory, __async_engine
+    """
+    This runs once when the application first starts to
+    set up the database connection and session factories.
+    """
+    global __factory
 
     if __factory:
         return
