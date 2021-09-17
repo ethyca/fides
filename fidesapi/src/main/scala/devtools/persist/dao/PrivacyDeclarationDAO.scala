@@ -6,7 +6,7 @@ import devtools.persist.db.Tables.{PrivacyDeclarationQuery, privacyDeclarationQu
 import devtools.util.JsonSupport
 import devtools.util.Sanitization.{isValidFidesKey, sanitizeUniqueIdentifier}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

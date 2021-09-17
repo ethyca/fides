@@ -4,7 +4,7 @@ import devtools.domain.User
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Tables.{UserQuery, userQuery}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import java.sql.Timestamp
 import scala.concurrent.ExecutionContext

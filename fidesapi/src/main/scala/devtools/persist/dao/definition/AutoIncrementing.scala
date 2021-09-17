@@ -3,7 +3,7 @@ package devtools.persist.dao.definition
 import devtools.domain.definition.IdType
 import devtools.persist.db.BaseAutoIncTable
 import slick.dbio.Effect
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.sql.FixedSqlAction
 
 /** Support for tables with a primary key that auto increments.

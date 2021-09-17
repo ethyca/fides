@@ -5,7 +5,7 @@ import devtools.persist.dao.OrganizationDAO
 import devtools.persist.db.Tables.OrganizationQuery
 import devtools.persist.service.definition.{Service, UniqueKeySearch}
 import devtools.validation.{OrganizationValidator, Validator}
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
 

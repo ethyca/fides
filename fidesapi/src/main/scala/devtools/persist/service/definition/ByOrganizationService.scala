@@ -6,7 +6,7 @@ import devtools.persist.dao.definition.{ByOrganizationDAO, DAO}
 import devtools.persist.db.{BaseAutoIncTable, BaseTable, OrganizationIdTable}
 import devtools.util.Pagination
 import devtools.validation.Validator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

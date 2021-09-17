@@ -5,7 +5,7 @@ import devtools.persist.dao.ApprovalDAO
 import devtools.persist.db.Tables.ApprovalQuery
 import devtools.persist.service.definition.ByOrganizationService
 import devtools.validation.Validator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -5,7 +5,7 @@ import devtools.persist.dao.{AuditLogDAO, DataSubjectDAO, OrganizationDAO}
 import devtools.persist.db.Tables.DataSubjectQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.DataSubjectValidator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
 

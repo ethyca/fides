@@ -8,16 +8,16 @@ Fides can also be spun up locally without relying on Docker or Make, however the
 1. pip Version 21 or later
 1. Java 11
 1. sbt Version 2.12
-1. MySQL DB Version 8
+1. PostgreSQL DB Version 13
 1. Clone the [Fides repo](https://github.com/ethyca/fides)
 
 ## Local Setup
 
-1. Spin up the MySQL database with your desired credentials
+1. Spin up the Postgres database with your desired credentials
 1. `cd fidesapi/`
 1. Update the `application.conf` in `src/main/resources/` with the database credentials
 1. `sbt flywayMigrate`
-1. `sbt ~jetty:start` -> You now have a Fides Server instance up and running powered by MySQL!
+1. `sbt ~jetty:start` -> You now have a Fides Server instance up and running powered by Postgres!
 1. In a new shell -> `cd fidesctl/ && pip install -e .`
 1. Set the `FIDES_SERVER_URL` environment variable to `localhost:8080` and restart your shell as needed
 1. Set the `FIDES_CONFIG_PATH` environment variable and write a config based off of the `fidesctl/example_config.ini`, changing fields as needed.

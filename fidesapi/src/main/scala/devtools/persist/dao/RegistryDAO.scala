@@ -4,7 +4,7 @@ import devtools.domain.{Registry, SystemObject}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Tables.{RegistryQuery, registryQuery, systemQuery}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.CanBeQueryCondition
 
 import java.sql.Timestamp

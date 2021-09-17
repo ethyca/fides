@@ -128,7 +128,7 @@ trait TestUtils extends LazyLogging {
   def currentVersionStamp(organizationId: Int): Long                  = waitFor(organizationDAO.getVersion(organizationId)).get
 
   def findAuditLogs(objectId: Long, typeName: String, action: AuditAction): Future[Seq[AuditLog]] = {
-    import slick.jdbc.MySQLProfile.api._
+    import slick.jdbc.PostgresProfile.api._
     App.auditLogDAO.filter(a => a.objectId === objectId && a.typeName === typeName && a.action === action.toString)
   }
 }
@@ -354,7 +354,7 @@ object Generators {
     } yield Policy(id, 1, fidesKey, Some(0L), Some(name), Some(randomText()), None, timestamp(), timestamp())
 
   /** A Generated object that will pass validation checks. */
-  import slick.jdbc.MySQLProfile.api._
+  import slick.jdbc.PostgresProfile.api._
   val SystemObjectGen: Gen[SystemObject] = {
 
     for {

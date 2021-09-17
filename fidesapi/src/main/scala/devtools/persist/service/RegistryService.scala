@@ -7,7 +7,7 @@ import devtools.persist.dao._
 import devtools.persist.db.Tables.{RegistryQuery, systemQuery}
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.RegistryValidator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -3,7 +3,7 @@ package devtools.persist.dao.definition
 import devtools.domain.definition.{IdType, OrganizationId}
 import devtools.persist.db.{BaseTable, OrganizationIdTable}
 import devtools.util.Pagination
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.Future
 

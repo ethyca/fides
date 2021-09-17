@@ -71,7 +71,7 @@ lazy val root = (project in file("."))
       "com.github.blemale" %% "scaffeine" % "5.0.0",
       // db support
       "c3p0"               % "c3p0"                 % "0.9.1.2",
-      "mysql"              % "mysql-connector-java" % "8.0.25",
+      "org.postgresql"     % "postgresql"           % "42.2.16",
       "com.typesafe.slick" % "slick_2.12"           % "3.3.3", // excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
       "com.typesafe.slick" % "slick-codegen_2.12"   % "3.3.3", // excludeAll ExclusionRule("org.scala-lang.modules", "scala-collection-compat_2.12"),
       //testing
@@ -98,8 +98,8 @@ flywayLocations := Seq("filesystem:db/migrations")
 slickCodegenDatabaseUrl := dbConfUrl
 slickCodegenDatabaseUser := dbConfUser
 slickCodegenDatabasePassword := dbConfPass
-slickCodegenDriver := slick.jdbc.MySQLProfile
-slickCodegenJdbcDriver := "com.mysql.cj.jdbc.Driver"
+slickCodegenDriver := slick.jdbc.PostgresProfile
+slickCodegenJdbcDriver := "org.postgresql.Driver"
 slickCodegenOutputPackage := "devtools.persist.tables.generated"
 slickCodegenOutputDir := file("src/main/scala")
 

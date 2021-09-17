@@ -8,7 +8,7 @@ import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.PolicyQuery
 import devtools.persist.service.definition.{AuditingService, UniqueKeySearch}
 import devtools.validation.PolicyValidator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

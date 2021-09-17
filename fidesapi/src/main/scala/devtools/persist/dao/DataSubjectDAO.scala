@@ -5,7 +5,7 @@ import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO
 import devtools.persist.db.Tables.{DataSubjectQuery, dataSubjectQuery}
 import devtools.util.TreeCache
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success

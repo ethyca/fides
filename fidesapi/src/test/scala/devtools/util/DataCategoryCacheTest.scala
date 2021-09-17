@@ -6,7 +6,7 @@ import devtools.{App, TestUtils}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers.{a, be, contain}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.collection.mutable.{Set => MSet}
 
@@ -19,7 +19,7 @@ class DataCategoryCacheTest extends AnyFunSuite with TestUtils {
     val roots: Seq[Int] =
       waitFor(
         dao.db.run(
-          sql"""SELECT id FROM #${dao.query.baseTableRow.tableName} WHERE parent_id IS NULL AND organization_id = 1"""
+          sql"""SELECT id FROM "#${dao.query.baseTableRow.tableName}" WHERE parent_id IS NULL AND organization_id = 1"""
             .as[Int]
         )
       )

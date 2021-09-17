@@ -7,7 +7,7 @@ import devtools.persist.db.Tables.UserQuery
 import devtools.persist.service.definition.{ByOrganizationService, UniqueKeySearch}
 import devtools.util.JwtUtil
 import devtools.validation.Validator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

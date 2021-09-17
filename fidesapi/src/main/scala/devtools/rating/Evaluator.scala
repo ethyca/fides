@@ -3,7 +3,7 @@ package devtools.rating
 import devtools.domain.policy.Policy
 import devtools.domain.{Approval, Dataset, Registry, SystemObject}
 import devtools.persist.dao.DAOs
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

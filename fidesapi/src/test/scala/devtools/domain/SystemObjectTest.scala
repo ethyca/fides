@@ -6,7 +6,7 @@ import devtools.util.{FidesYamlProtocols, waitFor}
 import faker._
 import org.scalatest.matchers.must.Matchers.be
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 class SystemObjectTest
   extends DomainObjectTestBase[SystemObject, Long](
@@ -23,7 +23,7 @@ class SystemObjectTest
   def categoryReferencesCt(categoryName: String): Int = {
     val v = waitFor(
       db.run(
-        sql"""select COUNT(DISTINCT A.ID) from SYSTEM_OBJECT A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
+        sql"""select COUNT(DISTINCT A.ID) from "SYSTEM_OBJECT" A, PRIVACY_DECLARATION B where A.ORGANIZATION_ID = 1 AND
            B.SYSTEM_ID = A.ID AND JSON_OVERLAPS('["#$categoryName"]',B.data_categories) > 0""".as[Int]
       )
     )

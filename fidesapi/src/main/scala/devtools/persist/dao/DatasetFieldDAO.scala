@@ -4,7 +4,7 @@ import devtools.domain.DatasetField
 import devtools.persist.dao.definition.{AutoIncrementing, DAO}
 import devtools.persist.db.Tables.{DatasetFieldQuery, datasetFieldQuery}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import java.sql.Timestamp
 import scala.concurrent.ExecutionContext

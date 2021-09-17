@@ -4,7 +4,7 @@ import devtools.controller.definition.ApiResponse.asyncResponse
 import devtools.controller.definition.ControllerSupport
 import devtools.persist.dao.DAOs
 import org.scalatra.swagger.Swagger
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

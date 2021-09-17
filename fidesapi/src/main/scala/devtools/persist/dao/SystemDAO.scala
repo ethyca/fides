@@ -4,8 +4,8 @@ import devtools.domain.{PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Tables.{SystemQuery, privacyDeclarationQuery, systemQuery}
 import slick.dbio.{Effect, NoStream}
-import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.{GetResult, MySQLProfile}
+import slick.jdbc.PostgresProfile.api._
+import slick.jdbc.{GetResult, PostgresProfile}
 import slick.lifted.CanBeQueryCondition
 import slick.sql.FixedSqlAction
 
@@ -55,9 +55,9 @@ class SystemDAO(val db: Database)(implicit val executionContext: ExecutionContex
   }
 
   /** Search clause by string fields */
-  override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
+  override def searchInOrganizationAction[C <: PostgresProfile.api.Rep[_]](
     value: String
-  ): SystemQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: SystemQuery =>
+  ): SystemQuery => PostgresProfile.api.Rep[Option[Boolean]] = { t: SystemQuery =>
     (t.fidesKey.toUpperCase like value) ||
     (t.systemType like value) ||
     (t.name like value) ||

@@ -4,7 +4,7 @@ We recommend deploying Fides with `Docker` using the included docker-compose fil
 
 ## Requirements
 
-1. Install MySQL 8
+1. Install PostgreSQL 13
 1. Install Python 3.8 or newer (including pip)
 1. Install Docker
 
@@ -12,16 +12,15 @@ We recommend deploying Fides with `Docker` using the included docker-compose fil
 
 The setup is done via Docker, with configuration values injected at runtime into the container.
 
-1. Spin up a MySQL DB with the following env vars:
+1. Spin up a PostgreSQL DB with the following env vars:
 
     ```env
-    MYSQL_ROOT_PASSWORD="<root_password>"
-    MYSQL_USER="<user>"
-    MYSQL_PASSWORD="<user_password>"
-    MYSQL_DATABASE="<db>"
+    POSTGRES_USER="<user>"
+    POSTGRES_PASSWORD="<user_password>"
+    POSTGRES_DB="<db>"
     ```
 
-1. Start the FidesAPI -> `docker run -p "127.0.0.1:8080:8080/tcp" --env FIDES_DB_JDBC_URL="jdbc:mysql://<server_address>:3306/<db>" --env FIDES_DB_JDBC_USER="<user>" --env FIDES_DB_JDBC_PASSWORD="<user_password>" ethyca/fidesapi:latest /bin/bash -c "sbt flywayMigrate && sbt ~jetty:start"`
+1. Start the FidesAPI -> `docker run -p "127.0.0.1:8080:8080/tcp" --env FIDES_DB_JDBC_URL="jdbc:postgresql://<server_address>:5432/<db>" --env FIDES_DB_JDBC_USER="<user>" --env FIDES_DB_JDBC_PASSWORD="<user_password>" ethyca/fidesapi:latest /bin/bash -c "sbt flywayMigrate && sbt ~jetty:start"`
 1. Install Fidesctl -> `pip install fidesctl`
 1. Configuration of Fidesctl will be done via an `ini` file that will then be mounted onto the docker container. Fidesctl will automatically look for a file called `fides.ini` in the local directory, or at a location set by the `FIDES_CONFIG_PATH` environment variable. 
     <details>

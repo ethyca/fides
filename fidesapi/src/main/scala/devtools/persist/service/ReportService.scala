@@ -3,7 +3,7 @@ package devtools.persist.service
 import devtools.controller.RequestContext
 import devtools.domain.{Approval, ReportLine}
 import devtools.persist.dao.ApprovalDAO
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

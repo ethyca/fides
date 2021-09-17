@@ -6,7 +6,7 @@ import devtools.util.Sanitization
 import devtools.util.Sanitization.isValidFidesKey
 import slick.dbio.Effect
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.sql.FixedSqlAction
 
 import java.sql.Timestamp

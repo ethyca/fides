@@ -5,7 +5,7 @@ import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO
 import devtools.persist.db.Tables.{PolicyQuery, policyQuery, policyRuleQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.CanBeQueryCondition
 import slick.sql.FixedSqlAction
 

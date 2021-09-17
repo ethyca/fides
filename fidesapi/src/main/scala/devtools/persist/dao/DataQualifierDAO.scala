@@ -6,7 +6,7 @@ import devtools.persist.db.Tables.dataQualifierQuery
 import devtools.persist.db.Tables.DataQualifierQuery
 import devtools.util.TreeCache
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success

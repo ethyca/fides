@@ -4,8 +4,8 @@ import devtools.domain.AuditLog
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Tables.auditLogQuery
 import devtools.persist.db.Tables.AuditLogQuery
-import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.{GetResult, MySQLProfile}
+import slick.jdbc.PostgresProfile.api._
+import slick.jdbc.{GetResult, PostgresProfile}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,9 +36,9 @@ class AuditLogDAO(val db: Database)(implicit val executionContext: ExecutionCont
       )
 
   /** Search clause by string fields */
-  override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
+  override def searchInOrganizationAction[C <: PostgresProfile.api.Rep[_]](
     value: String
-  ): AuditLogQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: AuditLogQuery =>
+  ): AuditLogQuery => PostgresProfile.api.Rep[Option[Boolean]] = { t: AuditLogQuery =>
     (t.typeName.toUpperCase like value) || (t.action like value) || (t.change like value)
 
   }

@@ -9,7 +9,7 @@ import devtools.persist.service.AuditLogService
 import devtools.util.FidesYamlProtocols
 import net.jcazevedo.moultingyaml.YamlFormat
 import org.scalatra.swagger.Swagger
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try

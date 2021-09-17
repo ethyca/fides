@@ -5,7 +5,7 @@ import devtools.domain.{Dataset, PrivacyDeclaration, SystemObject}
 import devtools.persist.dao.DAOs
 import devtools.persist.db.Tables.{datasetFieldQuery, datasetQuery}
 import devtools.util.Sanitization.isValidDatasetReference
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

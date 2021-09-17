@@ -3,7 +3,7 @@ package devtools.persist.db
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import devtools.util.ConfigLoader.{optionally, requiredProperty}
 import org.slf4j.{Logger, LoggerFactory}
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.duration.DurationInt
 

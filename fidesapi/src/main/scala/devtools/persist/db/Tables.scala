@@ -4,7 +4,7 @@ import devtools.domain.{PrivacyDeclaration, _}
 import devtools.domain.definition.{IdType, OrganizationId, VersionStamp}
 import devtools.domain.policy.{Policy, PolicyRule}
 import org.slf4j.{Logger, LoggerFactory}
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import java.sql.Timestamp

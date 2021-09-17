@@ -3,7 +3,7 @@ package devtools.validation
 import devtools.controller.RequestContext
 import devtools.domain.DataSubject
 import devtools.persist.dao.DAOs
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

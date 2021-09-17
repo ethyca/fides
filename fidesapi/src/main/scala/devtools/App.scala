@@ -8,7 +8,7 @@ import devtools.rating.PolicyRuleEvaluator
 import devtools.util.{Caches, ConfigLoader}
 import devtools.validation._
 import org.slf4j.{Logger, LoggerFactory}
-import slick.jdbc.MySQLProfile
+import slick.jdbc.PostgresProfile
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -25,7 +25,7 @@ object App {
   //context
   implicit val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
   //database
-  val database: MySQLProfile.api.Database = DB.db
+  val database: PostgresProfile.api.Database = DB.db
 
   //service
   val approvalDAO           = new ApprovalDAO(database)

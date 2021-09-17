@@ -6,7 +6,7 @@ import devtools.persist.db.BaseTable
 import devtools.util.Pagination
 import slick.dbio.{DBIOAction, Effect, NoStream}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.{CanBeQueryCondition, Ordered}
 import slick.sql.FixedSqlAction
 

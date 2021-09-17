@@ -3,8 +3,8 @@ package devtools.persist.dao
 import devtools.domain.{Dataset, DatasetField}
 import devtools.persist.dao.definition.{AutoIncrementing, ByOrganizationDAO, DAO}
 import devtools.persist.db.Tables.{DatasetQuery, datasetFieldQuery, datasetQuery}
-import slick.jdbc.MySQLProfile.api._
-import slick.jdbc.{GetResult, MySQLProfile}
+import slick.jdbc.PostgresProfile.api._
+import slick.jdbc.{GetResult, PostgresProfile}
 import slick.lifted.CanBeQueryCondition
 
 import java.sql.Timestamp
@@ -33,9 +33,9 @@ class DatasetDAO(val db: Database)(implicit val executionContext: ExecutionConte
       )
 
   /** Search clause by string fields */
-  override def searchInOrganizationAction[C <: MySQLProfile.api.Rep[_]](
+  override def searchInOrganizationAction[C <: PostgresProfile.api.Rep[_]](
     value: String
-  ): DatasetQuery => MySQLProfile.api.Rep[Option[Boolean]] = { t: DatasetQuery =>
+  ): DatasetQuery => PostgresProfile.api.Rep[Option[Boolean]] = { t: DatasetQuery =>
     (t.fidesKey.toUpperCase like value) ||
     (t.fidesKey like value) ||
     (t.name like value) ||

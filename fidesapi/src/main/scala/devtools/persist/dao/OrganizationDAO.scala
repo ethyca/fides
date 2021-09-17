@@ -6,7 +6,7 @@ import devtools.persist.dao.definition.{AutoIncrementing, DAO}
 import devtools.persist.db.Tables.{OrganizationQuery, organizationQuery}
 import slick.dbio.{Effect, NoStream}
 import slick.jdbc.GetResult
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 import slick.sql.FixedSqlAction
 
 import java.sql.Timestamp
@@ -33,7 +33,7 @@ class OrganizationDAO(val db: Database)(implicit val executionContext: Execution
   def getAndIncrementVersionAction(id: Long): DBIOAction[Option[Long], NoStream, Effect with Effect.Read] = {
     for {
       _ <-
-        sql"""UPDATE ORGANIZATION SET VERSION_STAMP = VERSION_STAMP + 1,  LAST_UPDATE_TIME = CURRENT_TIMESTAMP WHERE ID = $id"""
+        sql"""UPDATE "ORGANIZATION" SET VERSION_STAMP = VERSION_STAMP + 1,  LAST_UPDATE_TIME = CURRENT_TIMESTAMP WHERE ID = $id"""
           .as[Long]
       version: Option[Option[Long]] <- query.filter(_.id === id).map(_.versionStamp).result.headOption
     } yield version match {

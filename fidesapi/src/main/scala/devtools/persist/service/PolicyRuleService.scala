@@ -5,7 +5,7 @@ import devtools.persist.dao.PolicyRuleDAO
 import devtools.persist.db.Tables.PolicyRuleQuery
 import devtools.persist.service.definition.{Service, UniqueKeySearch}
 import devtools.validation.Validator
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext
 
