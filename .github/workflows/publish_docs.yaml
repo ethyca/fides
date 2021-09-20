@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - run: pip install --upgrade pip && pip install mkdocs mkdocs-material mkdocs-minify-plugin
+      - run: pip install -r docs/fides/requirements.txt
       - name: Publish docs
-        run: mkdocs gh-deploy
+        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml
