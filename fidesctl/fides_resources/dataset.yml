@@ -1,6 +1,6 @@
 dataset:
   - organizationId: 1
-    fidesKey: "sample_db_dataset"
+    fides_key: "sample_db_dataset"
     name: "Sample DB Dataset"
     description: "This is a Sample Database Dataset"
     datasetType: "MySQL"

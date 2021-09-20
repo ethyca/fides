@@ -7,7 +7,7 @@ from fideslang import relationships, DataCategory, System, Taxonomy
 def test_find_referenced_fides_keys_1():
     test_data_category = DataCategory(
         name="test_dc",
-        fidesKey="test_dc",
+        fides_key="test_dc",
         description="test description",
         parentKey="key_1",
     )
@@ -20,7 +20,7 @@ def test_find_referenced_fides_keys_1():
 def test_find_referenced_fides_keys_2():
     test_system = System.construct(
         name="test_dc",
-        fidesKey="test_dc",
+        fides_key="test_dc",
         description="test description",
         systemDependencies=["key_1", "key_2"],
         systemType="test",
@@ -37,13 +37,13 @@ def test_get_referenced_missing_keys():
         data_category=[
             DataCategory(
                 name="test_dc",
-                fidesKey="test_dc",
+                fides_key="test_dc",
                 description="test description",
                 parentKey="key_1",
             ),
             DataCategory(
                 name="test_dc",
-                fidesKey="test_dc",
+                fides_key="test_dc",
                 description="test description",
                 parentKey="key_1",
             ),
@@ -51,7 +51,7 @@ def test_get_referenced_missing_keys():
         system=[
             System.construct(
                 name="test_dc",
-                fidesKey="test_dc",
+                fides_key="test_dc",
                 description="test description",
                 systemDependencies=["key_3", "key_4"],
                 systemType="test",
@@ -70,7 +70,7 @@ def test_hydrate_missing_resources(test_config):
         data_category=[
             DataCategory(
                 name="test_dc",
-                fidesKey="test_dc",
+                fides_key="test_dc",
                 description="test description",
                 parentKey="credentials",
             ),
@@ -78,7 +78,7 @@ def test_hydrate_missing_resources(test_config):
         system=[
             System.construct(
                 name="test_dc",
-                fidesKey="test_dc",
+                fides_key="test_dc",
                 description="test description",
                 systemDependencies=["key_3", "key_4"],
                 systemType="user_provided_data",
@@ -102,7 +102,7 @@ def test_hydrate_missing_resources_fail(test_config):
             data_category=[
                 DataCategory(
                     name="test_dc",
-                    fidesKey="test_dc",
+                    fides_key="test_dc",
                     description="test description",
                     parentKey="credentials",
                 ),
@@ -110,7 +110,7 @@ def test_hydrate_missing_resources_fail(test_config):
             system=[
                 System.construct(
                     name="test_dc",
-                    fidesKey="test_dc",
+                    fides_key="test_dc",
                     description="test description",
                     systemDependencies=["key_3", "key_4"],
                     systemType="user_provided_data",

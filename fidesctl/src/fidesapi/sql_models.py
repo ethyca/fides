@@ -37,12 +37,14 @@ class DataSubject(SqlAlchemyBase, FidesBase):
 
 class DataUse(SqlAlchemyBase, FidesBase):
     __tablename__ = "data_use"
+
     parent_key = Column(Text)
 
 
 # Dataset
 class Dataset(FidesBase, SqlAlchemyBase):
     __tablename__ = "dataset"
+
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(ARRAY(String))
@@ -53,7 +55,7 @@ class Dataset(FidesBase, SqlAlchemyBase):
 
 class DatasetField(SqlAlchemyBase, SqlModelBase):
     __tablename__ = "dataset_field"
-    parent_id = Column(Integer, ForeignKey("dataset.id"))
+
     name = Column(String)
     description = Column(String)
     path = Column(String)
@@ -64,6 +66,7 @@ class DatasetField(SqlAlchemyBase, SqlModelBase):
 # Evaluation
 class Evaluation(SqlAlchemyBase, SqlModelBase):
     __tablename__ = "evaluation"
+
     status = Column(String)
     details = Column(ARRAY(String))
     message = Column(String)
@@ -73,18 +76,20 @@ class Evaluation(SqlAlchemyBase, SqlModelBase):
 class Organization(SqlAlchemyBase, FidesBase):
     # It inherits this from FidesModel but Organization's don't have this field
     __tablename__ = "organization"
+
     organiztion_parent_key = Column(String, nullable=True)
 
 
 # Policy
 class Policy(SqlAlchemyBase, FidesBase):
     __tablename__ = "policy"
+
     rules = relationship("PolicyRule")
 
 
 class PolicyRule(FidesBase, SqlAlchemyBase):
     __tablename__ = "policy_rule"
-    parent_id = Column(Integer, ForeignKey("policy.id"))
+
     data_categories = relationship("PrivacyRule", back_populates="policy_rule")
     data_uses = relationship("PrivacyRule", back_populates="policy_rule")
     data_subjects = relationship("PrivacyRule", back_populates="policy_rule")
@@ -94,7 +99,7 @@ class PolicyRule(FidesBase, SqlAlchemyBase):
 
 class PrivacyRule(SqlAlchemyBase, SqlModelBase):
     __tablename__ = "privacy_rule"
-    parent_id = Column(Integer, ForeignKey("policy_rule.id"))
+
     inclusion = Column(String)
     values = Column(ARRAY(String))
 
@@ -107,6 +112,7 @@ class Registry(FidesBase, SqlAlchemyBase):
 # System
 class System(FidesBase, SqlAlchemyBase):
     __tablename__ = "system"
+
     registry_id = Column(String)
     meta = Column(JSON)
     system_type = Column(String)
@@ -116,6 +122,7 @@ class System(FidesBase, SqlAlchemyBase):
 
 class PrivacyDeclaration(SqlAlchemyBase, SqlModelBase):
     __tablename__ = "privacy_declaration"
+
     name = Column(String)
     data_categories = Column(ARRAY(String))
     data_use = Column(String)

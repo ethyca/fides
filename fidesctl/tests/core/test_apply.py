@@ -9,8 +9,8 @@ import fideslang as models
 @pytest.fixture()
 def server_resource_list():
     yield [
-        {"fidesKey": "testKey", "id": 1, "name": "Some resource"},
-        {"fidesKey": "anotherTestKey", "id": 2, "name": "Another resource"},
+        {"fides_key": "testKey", "id": 1, "name": "Some resource"},
+        {"fides_key": "anotherTestKey", "id": 2, "name": "Another resource"},
     ]
 
 
@@ -24,14 +24,14 @@ def server_resource_key_pairs():
 def test_sort_create_update_unchanged_create():
     resource_1 = models.DataCategory(
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organizationId=1,
-        fidesKey="another_system",
+        fides_key="another_system",
         name="Test System 2",
         clause="Test Clause",
         description="Test Description",
@@ -55,14 +55,14 @@ def test_sort_create_update_unchanged_update():
     resource_1 = models.DataCategory(
         id=1,
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test System 2",
         clause="Test Clause",
         description="Test Description",
@@ -86,14 +86,14 @@ def test_sort_create_update_unchanged_unchanged():
     resource_1 = models.DataCategory(
         id=1,
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",

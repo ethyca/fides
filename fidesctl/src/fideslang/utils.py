@@ -12,5 +12,5 @@ def get_resource_by_fides_key(
         resource_type: resource
         for resource_type in taxonomy.__fields_set__
         for resource in getattr(taxonomy, resource_type)
-        if resource.fidesKey == fides_key
+        if resource.fides_key == fides_key
     } or None

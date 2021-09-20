@@ -53,7 +53,7 @@ def test_generate_dataset_info():
         "dataset": [
             {
                 "organizationId": 1,
-                "fidesKey": "test",
+                "fides_key": "test",
                 "name": "test",
                 "description": f"Fides Generated Description for Dataset: test",
                 "datasetType": "mysql",

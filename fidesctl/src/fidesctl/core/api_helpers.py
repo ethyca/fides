@@ -2,12 +2,15 @@ from typing import List, Dict, Iterable
 
 from fidesctl.core import api
 from fideslang import FidesModel
-from fideslang.validation import FidesKey
+from fideslang.validation import fides_key
 from fideslang.parse import parse_manifest
 
 
 def get_server_resources(
-    url: str, resource_type: str, existing_keys: List[FidesKey], headers: Dict[str, str]
+    url: str,
+    resource_type: str,
+    existing_keys: List[fides_key],
+    headers: Dict[str, str],
 ) -> List[FidesModel]:
     """
     Get a list of resources from the server that match the provided keys.

@@ -56,12 +56,12 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
       ```yaml
     policy:
       - organizationId: 1
-        fidesKey: "primary_privacy_policy"
+        fides_key: "primary_privacy_policy"
         name: "Primary Privacy Policy"
         description: "The main privacy policy for the organization."
         rules:
           - organizationId: 1
-            fidesKey: "reject_targeted_marketing"
+            fides_key: "reject_targeted_marketing"
             name: "Reject Targeted Marketing"
             description: "Disallow marketing that is targeted towards users."
             dataCategories:
@@ -84,7 +84,7 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
             dataQualifier: pseudonymized_data
             action: REJECT
           - organizationId: 1
-            fidesKey: "reject_some_marketing"
+            fides_key: "reject_some_marketing"
             name: "Reject Some Marketing"
             description: "Disallow some marketing that is targeted towards users."
             dataCategories:
@@ -120,7 +120,7 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
       ```yaml
     system:
       - organizationId: 1
-        fidesKey: "demo_system"
+        fides_key: "demo_system"
         name: "Demo System"
         description: "A system used for demos."
         systemType: "Service"

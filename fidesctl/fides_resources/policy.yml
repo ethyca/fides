@@ -1,11 +1,11 @@
 policy:
   - organizationId: 1
-    fidesKey: "primaryPrivacyPolicy"
+    fides_key: "primaryPrivacyPolicy"
     name: "Primary Privacy Policy"
     description: "The main privacy policy for the organization."
     rules:
       - organizationId: 1
-        fidesKey: "rejectTargetedMarketing"
+        fides_key: "rejectTargetedMarketing"
         name: "Reject Targeted Biometric Marketing"
         description: "Disallow targeted marketing towards customers based on biometric data."
         dataCategories:
@@ -25,7 +25,7 @@ policy:
         action: REJECT
 
       - organizationId: 1
-        fidesKey: rejectSharingPoliticalOpinions
+        fides_key: rejectSharingPoliticalOpinions
         name: "Disallow Sharing Political Opinions"
         description: "Disallow sharing political opinions with third-parties."
         dataCategories:

@@ -19,7 +19,9 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "parse", "data/"])
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "parse", "default_taxonomy/"]
+    )
     print(result.output)
     assert result.exit_code == 0
 

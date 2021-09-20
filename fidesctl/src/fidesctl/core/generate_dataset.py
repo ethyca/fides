@@ -60,7 +60,7 @@ def generate_dataset_info(engine: Engine) -> Dict[str, List]:
         "dataset": [
             {
                 "organizationId": 1,
-                "fidesKey": name,
+                "fides_key": name,
                 "name": name,
                 "description": f"Fides Generated Description for Dataset: {name}",
                 "datasetType": dataset_type,

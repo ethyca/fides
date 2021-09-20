@@ -1,74 +1,74 @@
 data_use:
   # Provided Data
-  - fidesKey: "provide_the_product_or_service"
+  - fides_key: "provide_the_product_or_service"
     name: "Provide the Product or Service"
 
-  - fidesKey: "support_the_product_or_service"
+  - fides_key: "support_the_product_or_service"
     name: "Support the Product or Service"
     parentKey: "provide_the_product_or_service"
 
-  - fidesKey: "support_optimization"
+  - fides_key: "support_optimization"
     name: "Support Optimization"
     parentKey: "provide_the_product_or_service"
 
-  - fidesKey: "offers_of_product_or_service_upgrades"
+  - fides_key: "offers_of_product_or_service_upgrades"
     name: "Offers of Product or Service Upgrades"
     parentKey: "provide_the_product_or_service"
 
   # Improvement Data
-  - fidesKey: "improve_the_product_or_service"
+  - fides_key: "improve_the_product_or_service"
     name: "Improve the Product or Service"
 
   # Personalize Data
-  - fidesKey: "personalize_the_product_or_service"
+  - fides_key: "personalize_the_product_or_service"
     name: "Personalize the Product or Service"
 
   # Marketing, Advertising or Promotion Data
-  - fidesKey: "marketing_advertising_or_promotion"
+  - fides_key: "marketing_advertising_or_promotion"
     name: "Marketing, Advertising or Promotion"
 
-  - fidesKey: "first_party_advertising"
+  - fides_key: "first_party_advertising"
     name: "First Party Advertising"
     parentKey: "marketing_advertising_or_promotion"
 
-  - fidesKey: "third_party_advertising"
+  - fides_key: "third_party_advertising"
     name: "Third Party Advertising"
     parentKey: "marketing_advertising_or_promotion"
 
   # Marketing, Advertising or Promotion -> First Party Advertising
-  - fidesKey: "first_party_contextual_advertising"
+  - fides_key: "first_party_contextual_advertising"
     name: "First Party Contextual Advertising"
     parentKey: "first_party_advertising"
 
-  - fidesKey: "first_party_personalized_advertising"
+  - fides_key: "first_party_personalized_advertising"
     name: "First Party Personalized Advertising"
     parentKey: "first_party_advertising"
 
   # Marketing, Advertising or Promotion -> Third Party Advertising
-  - fidesKey: "third_party_personalized_advertising"
+  - fides_key: "third_party_personalized_advertising"
     name: "Third Party Personalized Advertising"
     parentKey: "third_party_advertising"
 
   # Third Party Sharing
-  - fidesKey: "third_party_sharing"
+  - fides_key: "third_party_sharing"
     name: "Third Party Sharing"
 
-  - fidesKey: "sharing_for_processing_payments"
+  - fides_key: "sharing_for_processing_payments"
     name: "Sharing for Processing Payments"
     parentKey: "third_party_sharing"
 
-  - fidesKey: "sharing_for_personalized_advertising"
+  - fides_key: "sharing_for_personalized_advertising"
     name: "Sharing for Personalized Advertising"
     parentKey: "third_party_sharing"
 
-  - fidesKey: "sharing_for_legal_obligation"
+  - fides_key: "sharing_for_legal_obligation"
     name: "Sharing for Legal Obligation"
     parentKey: "third_party_sharing"
 
   # Collect
-  - fidesKey: "collect"
+  - fides_key: "collect"
     name: "Collect"
 
   # Train AI System
-  - fidesKey: "train_ai_system"
+  - fides_key: "train_ai_system"
     name: "Train AI System"

@@ -70,7 +70,7 @@ def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
     "-k",
     "--fides-key",
     default="",
-    help="The fidesKey for the specific Policy to be evaluated.",
+    help="The fides_key for the specific Policy to be evaluated.",
 )
 @click.option(
     "-m", "--message", help="Description of the changes this evaluation encapsulates."
@@ -116,7 +116,7 @@ def evaluate(
 @fides_key_argument
 def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Get an resource by its fidesKey.
+    Get an resource by its fides_key.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(

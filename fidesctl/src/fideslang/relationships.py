@@ -11,42 +11,42 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_red
-from fideslang.models import FidesModel, FidesKey, Taxonomy
+from fideslang.models import FidesModel, fides_key, Taxonomy
 from fideslang.utils import get_resource_by_fides_key
 
 
-def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
+def find_referenced_fides_keys(resource: FidesModel) -> Set[fides_key]:
     """
     Use type-signature introspection to figure out which fields
-    include the FidesKey type and return all of those values.
+    include the fides_key type and return all of those values.
 
-    Note that this finds _all_ FidesKeys, including the resource's own FidesKey
+    Note that this finds _all_ fides_keys, including the resource's own fides_key
     """
 
-    referenced_fides_keys: Set[FidesKey] = set()
+    referenced_fides_keys: Set[fides_key] = set()
     signature = inspect.signature(type(resource), follow_wrapped=True)
     parameter_values = signature.parameters.values()
     for parameter in parameter_values:
         parameter_value = resource.__getattribute__(parameter.name)
-        if parameter.annotation == FidesKey and parameter_value:
+        if parameter.annotation == fides_key and parameter_value:
             referenced_fides_keys.add(parameter_value)
-        elif parameter.annotation == List[FidesKey] and parameter_value:
+        elif parameter.annotation == List[fides_key] and parameter_value:
             referenced_fides_keys.update(resource.__getattribute__(parameter.name))
 
     return referenced_fides_keys
 
 
-def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[FidesKey]:
+def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[fides_key]:
     """
-    Iterate through the Taxonomy and create a set of all of the FidesKeys
+    Iterate through the Taxonomy and create a set of all of the fides_keys
     that are contained within it.
     """
-    referenced_keys: List[Set[FidesKey]] = [
+    referenced_keys: List[Set[fides_key]] = [
         find_referenced_fides_keys(resource)
         for resource_type in taxonomy.__fields_set__
         for resource in getattr(taxonomy, resource_type)
     ]
-    key_set: Set[FidesKey] = set(
+    key_set: Set[fides_key] = set(
         reduce(lambda x, y: set().union(x).union(y), referenced_keys)
     )
     keys_not_in_taxonomy = [
@@ -60,7 +60,7 @@ def get_referenced_missing_keys(taxonomy: Taxonomy) -> List[FidesKey]:
 def hydrate_missing_resources(
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    missing_resource_keys: List[FidesKey],
+    missing_resource_keys: List[fides_key],
     dehydrated_taxonomy: Taxonomy,
 ) -> Taxonomy:
     """
@@ -82,6 +82,6 @@ def hydrate_missing_resources(
             getattr(dehydrated_taxonomy, resource_name) + server_resources,
         )
     if resources_found < len(missing_resource_keys):
-        echo_red("Refereneced FidesKeys do not exist!")
+        echo_red("Refereneced fides_keys do not exist!")
         raise SystemExit()
     return dehydrated_taxonomy

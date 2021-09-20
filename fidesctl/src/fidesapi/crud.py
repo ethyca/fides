@@ -60,7 +60,7 @@ for resource_type, resource_model in model_map.items():
             )
             if not sql_resource:
                 return {
-                    "error": {"message": f"{fides_key} is not an existing FidesKey!"}
+                    "error": {"message": f"{fides_key} is not an existing fides_key!"}
                 }
             session.delete(sql_resource)
             session.commit()
@@ -82,7 +82,7 @@ for resource_type, resource_model in model_map.items():
             )
             if not sql_resource:
                 return {
-                    "error": {"message": f"{fides_key} is not an existing FidesKey!"}
+                    "error": {"message": f"{fides_key} is not an existing fides_key!"}
                 }
             session.delete(sql_resource)
             session.commit()

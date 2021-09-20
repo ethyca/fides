@@ -9,14 +9,14 @@ from fideslang import parse
 def test_parse_manifest():
     expected_result = models.DataCategory(
         organizationId=1,
-        fidesKey="some_resource",
+        fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     test_dict = {
         "organizationId": 1,
-        "fidesKey": "some_resource",
+        "fides_key": "some_resource",
         "name": "Test resource 1",
         "clause": "Test Clause",
         "description": "Test Description",
@@ -43,7 +43,7 @@ def test_parse_manifest_key_error():
     with pytest.raises(SystemExit):
         test_dict = {
             "organizationId": 1,
-            "fidesKey": "some_resource",
+            "fides_key": "some_resource",
             "name": "Test resource 1",
             "clause": "Test Clause",
             "description": "Test Description",
@@ -58,12 +58,12 @@ def test_load_manifests_into_taxonomy():
         "data_category": [
             {
                 "name": "User Provided Data",
-                "fidesKey": "user_provided_data",
+                "fides_key": "user_provided_data",
                 "description": "Data provided or created directly by a user of the system.",
             },
             {
                 "name": "Credentials",
-                "fidesKey": "credentials",
+                "fides_key": "credentials",
                 "description": "User provided authentication data.",
             },
         ]
@@ -73,12 +73,12 @@ def test_load_manifests_into_taxonomy():
         data_category=[
             models.DataCategory(
                 name="User Provided Data",
-                fidesKey="user_provided_data",
+                fides_key="user_provided_data",
                 description="Data provided or created directly by a user of the system.",
             ),
             models.DataCategory(
                 name="Credentials",
-                fidesKey="credentials",
+                fides_key="credentials",
                 description="User provided authentication data.",
             ),
         ]

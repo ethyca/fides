@@ -16,7 +16,7 @@ from fideslang.models import (
     Policy,
     Taxonomy,
 )
-from fideslang.validation import FidesKey
+from fideslang.validation import fides_key
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
@@ -24,7 +24,7 @@ from fideslang.relationships import (
 
 
 def get_all_server_policies(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
+    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[fides_key]] = None
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
@@ -37,9 +37,9 @@ def get_all_server_policies(
         api.ls(url=url, resource_type="policy", headers=headers), verbose=False
     )
     policy_keys = [
-        resource["fidesKey"]
+        resource["fides_key"]
         for resource in ls_response.json().get("data")
-        if resource["fidesKey"] not in exclude
+        if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
         url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
@@ -48,13 +48,13 @@ def get_all_server_policies(
 
 
 def compare_rule_to_declaration(
-    rule_types: List[FidesKey],
-    declaration_types: List[FidesKey],
+    rule_types: List[fides_key],
+    declaration_types: List[fides_key],
     rule_inclusion: InclusionEnum,
 ) -> bool:
     """
-    Compare the list of FidesKeys within the rule against the list
-    of FidesKeys from the declaration and use the rule's inclusion
+    Compare the list of fides_keys within the rule against the list
+    of fides_keys from the declaration and use the rule's inclusion
     field to determine whether the rule is triggered or not.
     """
     inclusion_map: Dict[InclusionEnum, Callable] = {
@@ -116,9 +116,9 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
                         evaluation_detail_list += [
                             "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
                                 declaration.name,
-                                system.fidesKey,
+                                system.fides_key,
                                 rule.name,
-                                policy.fidesKey,
+                                policy.fides_key,
                             )
                         ]
 
@@ -147,14 +147,14 @@ def evaluate(
 
     # Get all of the policies to evaluate
     local_policy_keys = (
-        [policy.fidesKey for policy in taxonomy.policy] if taxonomy.policy else None
+        [policy.fides_key for policy in taxonomy.policy] if taxonomy.policy else None
     )
     policy_list = get_all_server_policies(url, headers, exclude=local_policy_keys)
     taxonomy.policy += policy_list
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
-            "\n".join([key.fidesKey for key in taxonomy.policy])
+            "\n".join([key.fides_key for key in taxonomy.policy])
         )
     )
     print("-" * 10)

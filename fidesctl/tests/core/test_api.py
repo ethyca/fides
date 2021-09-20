@@ -97,7 +97,7 @@ def test_api_get(test_config, endpoint):
 @pytest.mark.parametrize("endpoint", model_list)
 def test_api_find(test_config, resources_dict, endpoint):
     manifest = resources_dict[endpoint]
-    resource_key = manifest.fidesKey if endpoint != "user" else manifest.userName
+    resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
     result = _api.find(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -116,7 +116,7 @@ def test_sent_is_received(test_config, resources_dict, endpoint):
     same as the resource that the server returns.
     """
     manifest = resources_dict[endpoint]
-    resource_key = manifest.fidesKey if endpoint != "user" else manifest.userName
+    resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
     print(manifest.json(exclude_none=True))
     result = _api.find(
@@ -159,7 +159,7 @@ def test_api_update(test_config, resources_dict, endpoint):
 @pytest.mark.parametrize("endpoint", model_list)
 def test_api_delete(test_config, resources_dict, endpoint):
     manifest = resources_dict[endpoint]
-    resource_key = manifest.fidesKey if endpoint != "user" else manifest.userName
+    resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
     delete_id = get_id_from_key(test_config, endpoint, resource_key)
 
     assert delete_id != 1

@@ -21,12 +21,12 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     ```yaml
     policy:
       - organizationId: 1
-        fidesKey: "primaryPrivacyPolicy"
+        fides_key: "primaryPrivacyPolicy"
         name: "Primary Privacy Policy"
         description: "The main privacy policy for the organization."
         rules:
           - organizationId: 1
-            fidesKey: "rejectTargetedMarketing"
+            fides_key: "rejectTargetedMarketing"
             name: "Reject Targeted Marketing"
             description: "Disallow marketing that is targeted towards users."
             dataCategories:
@@ -49,7 +49,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             dataQualifier: pseudonymized_data
             action: REJECT
           - organizationId: 1
-            fidesKey: rejectSome
+            fides_key: rejectSome
             name: "Reject Some Marketing"
             description: "Disallow some marketing that is targeted towards users."
             dataCategories:
@@ -80,7 +80,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     ```yaml
     dataset:
       - organizationId: 1
-        fidesKey: "sample_db_dataset"
+        fides_key: "sample_db_dataset"
         name: "Sample DB Dataset"
         description: "This is a Sample Database Dataset"
         datasetType: "MySQL"
@@ -108,7 +108,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
     ```yaml
     system:
       - organizationId: 1
-        fidesKey: "demoSystem"
+        fides_key: "demoSystem"
         name: "Demo System"
         description: "A system used for demos."
         systemType: "Service"
@@ -127,7 +127,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
 
 ## Applying Manifest Files
 
-Once you've finished writing your manifest files, it's time to apply them to the server. This is done with a single `fidesctl` command that handles both creating _and_ updating resources. If a resource with the same type and fidesKey already exists, that resource will be updated if a change has been made.
+Once you've finished writing your manifest files, it's time to apply them to the server. This is done with a single `fidesctl` command that handles both creating _and_ updating resources. If a resource with the same type and fides_key already exists, that resource will be updated if a change has been made.
 
 If we assume the same directory name as before for where our manifests are located, the command would be:
 

@@ -17,7 +17,7 @@ def find(
     url: str, resource_type: str, resource_key: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Get an resource by its fidesKey.
+    Get an resource by its fides_key.
     """
     resource_url = generate_resource_url(url, resource_type)
     find_url = f"{resource_url}find/{resource_key}"

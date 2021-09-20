@@ -52,7 +52,7 @@ def test_union_manifests(test_manifests):
             {
                 "name": "Test Dataset 1",
                 "description": "Test Dataset 1",
-                "fidesKey": "some_dataset",
+                "fides_key": "some_dataset",
                 "organizationId": 1,
                 "datasetType": {},
                 "datasetLocation": "somedb:3306",
@@ -61,7 +61,7 @@ def test_union_manifests(test_manifests):
             {
                 "name": "Test Dataset 2",
                 "description": "Test Dataset 2",
-                "fidesKey": "another_dataset",
+                "fides_key": "another_dataset",
                 "organizationId": 1,
                 "datasetType": {},
                 "datasetLocation": "somedb:3306",
@@ -74,14 +74,14 @@ def test_union_manifests(test_manifests):
                 "organizationId": 1,
                 "systemType": "mysql",
                 "description": "Test System 1",
-                "fidesKey": "some_system",
+                "fides_key": "some_system",
             },
             {
                 "name": "Test System 2",
                 "organizationId": 1,
                 "systemType": "mysql",
                 "description": "Test System 2",
-                "fidesKey": "another_system",
+                "fides_key": "another_system",
             },
         ],
     }
@@ -106,7 +106,7 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
             "datasetType": {},
             "datasetLocation": "somedb:3306",
             "description": "Test Dataset 1",
-            "fidesKey": "some_dataset",
+            "fides_key": "some_dataset",
             "datasetTables": [],
         },
         {
@@ -115,7 +115,7 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
             "organizationId": 1,
             "datasetType": {},
             "datasetLocation": "somedb:3306",
-            "fidesKey": "another_dataset",
+            "fides_key": "another_dataset",
             "datasetTables": [],
         },
     ]
@@ -125,13 +125,13 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
             "organizationId": 1,
             "systemType": "mysql",
             "description": "Test System 1",
-            "fidesKey": "some_system",
+            "fides_key": "some_system",
         },
         {
             "name": "Test System 2",
             "organizationId": 1,
             "systemType": "mysql",
             "description": "Test System 2",
-            "fidesKey": "another_system",
+            "fides_key": "another_system",
         },
     ]

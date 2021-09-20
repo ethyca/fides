@@ -1,45 +1,45 @@
 data_subject:
-  - fidesKey: "anonymous_user"
+  - fides_key: "anonymous_user"
     name: "Anonymous User"
 
-  - fidesKey: "citizen_voter"
+  - fides_key: "citizen_voter"
     name: "Citizen Voter"
 
-  - fidesKey: "commuter"
+  - fides_key: "commuter"
     name: "Commuter"
 
-  - fidesKey: "consultant"
+  - fides_key: "consultant"
     name: "Consultant"
 
-  - fidesKey: "customer"
+  - fides_key: "customer"
     name: "Custom"
 
-  - fidesKey: "employee"
+  - fides_key: "employee"
     name: "Employee"
 
-  - fidesKey: "job_applicant"
+  - fides_key: "job_applicant"
     name: "Job Applicant"
 
-  - fidesKey: "next_of_kin"
+  - fides_key: "next_of_kin"
     name: "Next of Kin"
 
-  - fidesKey: "passenger"
+  - fides_key: "passenger"
     name: "Passenger"
 
-  - fidesKey: "patient"
+  - fides_key: "patient"
     name: "Patient"
 
-  - fidesKey: "prospect"
+  - fides_key: "prospect"
     name: "Prospect"
 
-  - fidesKey: "shareholder"
+  - fides_key: "shareholder"
     name: "Shareholder"
 
-  - fidesKey: "supplier_vendor"
+  - fides_key: "supplier_vendor"
     name: "Supplier/Vendor"
 
-  - fidesKey: "trainee"
+  - fides_key: "trainee"
     name: "Trainee"
 
-  - fidesKey: "visitor"
+  - fides_key: "visitor"
     name: "Visitor"

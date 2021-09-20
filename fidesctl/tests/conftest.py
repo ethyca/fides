@@ -27,21 +27,21 @@ def resources_dict():
     resources_dict: Dict[str, Any] = {
         "data_category": models.DataCategory(
             organizationId=1,
-            fidesKey="customer_content_test_data",
+            fides_key="customer_content_test_data",
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
         ),
         "data_qualifier": models.DataQualifier(
             organizationId=1,
-            fidesKey="test_data_qualifier",
+            fides_key="test_data_qualifier",
             name="aggregated_data",
             clause="testDataClause",
             description="Test Data Qualifier",
         ),
         "dataset": models.Dataset(
             organizationId=1,
-            fidesKey="test_sample_db_dataset",
+            fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
             datasetType="MySQL",
@@ -70,26 +70,26 @@ def resources_dict():
         ),
         "data_subject": models.DataSubject(
             organizationId=1,
-            fidesKey="customer_content_data",
+            fides_key="customer_content_data",
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
         ),
         "data_use": models.DataUse(
             organizationId=1,
-            fidesKey="customer_content_data",
+            fides_key="customer_content_data",
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
         ),
         "organization": models.Organization(
-            fidesKey="test_organization",
+            fides_key="test_organization",
             name="Test Organization",
             description="Test Organization",
         ),
         "policy": models.Policy(
             organizationId=1,
-            fidesKey="test_policy",
+            fides_key="test_policy",
             name="Test Policy",
             version="1.3",
             description="Test Policy",
@@ -98,7 +98,7 @@ def resources_dict():
         "policy_rule": models.PolicyRule(
             organizationId=1,
             policyId=1,
-            fidesKey="test_policy",
+            fides_key="test_policy",
             name="Test Policy",
             description="Test Policy",
             dataCategories=models.PrivacyRule(inclusion="NONE", values=[]),
@@ -109,7 +109,7 @@ def resources_dict():
         ),
         "registry": models.Registry(
             organizationId=1,
-            fidesKey="test_registry",
+            fides_key="test_registry",
             name="Test Registry",
             description="Test Regsitry",
             systems=[],
@@ -117,7 +117,7 @@ def resources_dict():
         "system": models.System(
             organizationId=1,
             registryId=1,
-            fidesKey="test_system",
+            fides_key="test_system",
             systemType="SYSTEM",
             name="Test System",
             description="Test Policy",
@@ -148,7 +148,7 @@ def test_manifests():
                     "datasetType": {},
                     "datasetLocation": "somedb:3306",
                     "description": "Test Dataset 1",
-                    "fidesKey": "some_dataset",
+                    "fides_key": "some_dataset",
                     "datasetTables": [],
                 }
             ],
@@ -158,7 +158,7 @@ def test_manifests():
                     "organizationId": 1,
                     "systemType": "mysql",
                     "description": "Test System 1",
-                    "fidesKey": "some_system",
+                    "fides_key": "some_system",
                 }
             ],
         },
@@ -170,7 +170,7 @@ def test_manifests():
                     "organizationId": 1,
                     "datasetType": {},
                     "datasetLocation": "somedb:3306",
-                    "fidesKey": "another_dataset",
+                    "fides_key": "another_dataset",
                     "datasetTables": [],
                 }
             ],
@@ -180,7 +180,7 @@ def test_manifests():
                     "organizationId": 1,
                     "systemType": "mysql",
                     "description": "Test System 2",
-                    "fidesKey": "another_system",
+                    "fides_key": "another_system",
                 }
             ],
         },
