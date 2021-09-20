@@ -135,7 +135,7 @@ If we assume the same directory name as before for where our manifests are locat
 
 This will load all files ending in either `.yaml` or `.yml` within that directory. Any file formatting issues within the manifests will be caught and shown to the user.
 
-## Evaluatation
+## Evaluation
 
 Systems and Registries have a slightly different workflow as they are also designed to be incorporated into CI pipelines.
 
