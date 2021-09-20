@@ -7,14 +7,9 @@
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
-# Server
-SERVER_IMAGE_NAME := fidesapi
-SERVER_IMAGE := $(REGISTRY)/$(SERVER_IMAGE_NAME):$(IMAGE_TAG)
-SERVER_IMAGE_LATEST := $(REGISTRY)/$(SERVER_IMAGE_NAME):latest
-# CLI
-CLI_IMAGE_NAME := fidesctl
-CLI_IMAGE := $(REGISTRY)/$(CLI_IMAGE_NAME):$(IMAGE_TAG)
-CLI_IMAGE_LATEST := $(REGISTRY)/$(CLI_IMAGE_NAME):latest
+IMAGE_NAME := fidesctl
+IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 .PHONY: help
 help:
@@ -31,21 +26,15 @@ help:
 	@echo ----
 	@echo init-db - Initializes the database docker container and runs migrations. Run this if your database seems to be the cause of test failures.
 	@echo ----
-	@echo server - Spins up the database and fidesapi, reachable from the host machine at localhost.
+	@echo api - Spins up the database and fidesapi, reachable from the host machine at localhost.
 	@echo ----
-	@echo server-shell - Spins up the database, and starts a shell within a docker container with the local fidesapi files mounted.
+	@echo cli - Spins up the database, fidesapi, and starts a shell within the fidesapi container to run fidesctl commands
 	@echo --------------------
 
 ####################
 # Dev
 ####################
 
-# CLI
-cli: compose-build check-db
-	@docker-compose run $(CLI_IMAGE_NAME) /bin/bash
-	@make teardown
-
-# Server
 .PHONY: check-db
 check-db: compose-build
 	@echo "Check for new migrations to run..."
@@ -59,30 +48,30 @@ init-db: compose-build
 	@docker volume prune -f
 	@make teardown
 
-.PHONY: server
-server: 
+.PHONY: api
+api: compose-build
 	@echo "Spinning up the webserver..."
-	@docker-compose up $(SERVER_IMAGE_NAME)
+	@docker-compose up $(IMAGE_NAME)
 	@make teardown
 
-.PHONY: shell
-server-shell:
+.PHONY: cli
+cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@docker-compose run $(SERVER_IMAGE_NAME) /bin/bash
+	@docker-compose up -d $(IMAGE_NAME)
+	@docker-compose run $(IMAGE_NAME) /bin/bash
 	@make teardown
 
 ####################
 # Docker
 ####################
 
-# CLI
 build:
-	docker build --tag $(CLI_IMAGE) fidesctl/
+	docker build --tag $(IMAGE) fidesctl/
 
-push: cli-build
-	docker tag $(CLI_IMAGE) $(CLI_IMAGE_LATEST)
-	docker push $(CLI_IMAGE)
-	docker push $(CLI_IMAGE_LATEST)
+push: build
+	docker tag $(IMAGE) $(IMAGE_LATEST)
+	docker push $(IMAGE)
+	docker push $(IMAGE_LATEST)
 
 ####################
 # CI
@@ -93,28 +82,28 @@ check-all: check-install black pylint mypy xenon pytest
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(IMAGE_NAME) \
 	fidesctl
 
 black: compose-build
-	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(IMAGE_NAME) \
 	black --check src/
 	
 mypy: compose-build
-	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(IMAGE_NAME) \
 	mypy
 
 pylint: compose-build
-	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(IMAGE_NAME) \
 	pylint src/
 
 pytest: compose-build init-db
 	@docker-compose up -d
-	@docker-compose run $(CLI_IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	pytest
 
 xenon: compose-build
-	@docker-compose run --no-deps $(CLI_IMAGE_NAME) \
+	@docker-compose run --no-deps $(IMAGE_NAME) \
 	xenon src \
 	--max-absolute B \
 	--max-modules A \
@@ -129,7 +118,7 @@ xenon: compose-build
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
-	@docker system prune -f
+	@docker system prune -a --volumes
 	@echo "Clean complete!"
 
 .PHONY: teardown

@@ -3,22 +3,6 @@ services:
     build:
       context: fidesctl
       dockerfile: Dockerfile
-    command: /bin/bash -c "sleep infinity"
-    depends_on:
-      fidesapi:
-        condition: service_started
-    volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
-    env_file:
-      - env_files/fides.env
-
-  fidesapi:
-    build:
-      context: fidesctl
-      dockerfile: Dockerfile
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     depends_on:
       fidesdb:
