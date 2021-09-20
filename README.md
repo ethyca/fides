@@ -9,13 +9,13 @@
 
 Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
 
-- **A Privacy Grammar for Engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g. personally identifiable information) directly in your code.
+- **A Privacy Grammar for engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g., personally identifiable information) directly in your code.
 
-- **Privacy Policies That Aren't Just for Lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
+- **Privacy Policies that aren't just for lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
 
 - **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
-- **Built to Scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
+- **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
 ## :bulb: Concepts
 
@@ -23,8 +23,8 @@ Fides has two fundamental parts at its core. The first part is the 4 privacy dat
 
 The 4 data privacy types are as follows:
 
+- Data Subject - _Whose_ data is it?
 - Data Category - _What_ kind of data is it?
-- Data Subject - _Who's_ data is it?
 - Data Use - _How_ is it being used?
 - Data Qualifier - How _identifiable_ is it?
 
@@ -34,7 +34,34 @@ With these privacy data types defined, subsequent resources can now be defined w
 - System - Defined as a list of declarations comprising all 4 privacy data types
 - Policy - Defined as a list of rules comprising all 4 privacy data types, specifiying which combinations are either permitted or forbidden
 
-Using these primitives, as well as some addiitional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
+Using these primitives, as well as some additional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
+
+
+## :wrench: Installation
+
+### Requirements
+
+Fides requires Python 3.8+. If you're new to Python, we recommend installing the [Anaconda distribution](https://www.anaconda.com/products/individual).
+
+### Latest Release
+
+To install Fides, run:
+
+```bash
+pip install fidesctl
+```
+
+### Bleeding Edge
+
+For development or just to try out the latest features, you may want to install Fides directly from source.
+
+Please note that the main branch of Fides is not guaranteed to be stable, and is not suitable for production environments.
+
+```bash
+git clone https://github.com/ethyca/fides.git
+pip install -e .
+```
+
 
 ## :rocket: Getting Started
 
@@ -58,7 +85,7 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
       - organizationId: 1
         fidesKey: "primary_privacy_policy"
         name: "Primary Privacy Policy"
-        description: "The main privacy policy for the organization."
+        description: "The main privacy policy for our organization."
         rules:
           - organizationId: 1
             fidesKey: "reject_targeted_marketing"
@@ -140,15 +167,16 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
 
     </details>
 
-1. Check your System's compliance by using `fidesctl evaluate fides_resources/`. This will create all of your defined objects on the server and then run an evaluation. You've now finished a simple Fides workflow!
+1. Check your `system` compliance by using `fidesctl evaluate fides_resources/`. This will create all of your defined objects on the server and then run an evaluation. You've now finished a simple Fides workflow!
 
 And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). It's helpful to contextualize how you can use Fides in your organization, today!
+
 
 ## :book: Resources
 
 Fides provides a variety of resources to help guide you to a successful outcome.
 
-We are commmitted to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community/code_of_conduct.md).
+We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community/code_of_conduct.md).
 
 ### Documentation
 
@@ -158,30 +186,6 @@ Full Fides documentation is available [here](https://github.com/ethyca/fides/tre
 
 Read about the Fides [community](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community) or dive in to the [development guides](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/overview.md) for information about contributions, documentation, code style, testing and more.
 
-## Installation
-
-### Requirements
-
-Fides requires Python 3.8+. If you're new to Python, we recommend installing the [Anaconda distribution](https://www.anaconda.com/products/individual).
-
-### Latest Release
-
-To install Fides, run:
-
-```bash
-pip install fidesctl
-```
-
-### Bleeding Edge
-
-For development or just to try out the latest features, you may want to install Fides directly from source.
-
-Please note that the main branch of Fides is not guaranteed to be stable, and is not suitable for production environments.
-
-```bash
-git clone https://github.com/ethyca/fides.git
-pip install -e .
-```
 
 ## License
 
