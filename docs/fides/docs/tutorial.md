@@ -75,7 +75,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             action: REJECT
     ```
 
-=== "fides_manifests/dataset.yml"
+### "fides_manifests/dataset.yml"
 
     ```yaml
     dataset:
@@ -149,7 +149,7 @@ If that command returns a "PASS" evaluation, then you're now in a known-good sta
 
 To set up CI/CD for Fides evaluations, there are a few suggested steps to follow:
 
-=== "Pull Request"
+### "Pull Request"
 
     1. Set up a new CI workflow that gets triggered whenever a system or registry file gets changed within a pull request.
     1. Configure the new workflow to run `fidesctl dry-evaluate fides_manifests/ <fides_key>` when it gets triggered.
@@ -157,7 +157,7 @@ To set up CI/CD for Fides evaluations, there are a few suggested steps to follow
 
     Use the result of this job to determine whether or not a system change is safe to merge or not. If the command fails, check the error messages to see why the evaluation failed.
 
-=== "Merge Event"
+### "Merge Event"
 
     1. Set up a new CI workflow that gets triggered whenever something in your manifests directory changes and the branch gets merged to the main branch.
     1. Configure the new workflow to run two few jobs:
