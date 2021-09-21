@@ -15,5 +15,5 @@ jobs:
       - uses: actions/setup-python@v2
       - run: pip install -r docs/fides/requirements.txt
       - name: Publish docs
-        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml
+        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
         
