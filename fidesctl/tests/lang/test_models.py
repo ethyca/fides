@@ -18,7 +18,7 @@ from fideslang.validation import FidesValidationError
 @pytest.mark.unit
 def test_create_valid_data_category():
     DataCategory(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="customer_content_test_data",
         name="customer_content_data",
         clause="testDataClause",
@@ -31,7 +31,7 @@ def test_create_valid_data_category():
 def test_circular_dependency_data_category():
     with pytest.raises(FidesValidationError):
         DataCategory(
-            organizationId=1,
+            organization_fides_key=1,
             fides_key="customer_content_test_data",
             name="customer_content_data",
             clause="testDataClause",
@@ -44,7 +44,7 @@ def test_circular_dependency_data_category():
 @pytest.mark.unit
 def test_create_valid_data_category():
     DataUse(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="customer_content_test_data",
         name="customer_content_data",
         clause="testDataClause",
@@ -57,7 +57,7 @@ def test_create_valid_data_category():
 def test_circular_dependency_data_category():
     with pytest.raises(FidesValidationError):
         DataUse(
-            organizationId=1,
+            organization_fides_key=1,
             fides_key="customer_content_test_data",
             name="customer_content_data",
             clause="testDataClause",
@@ -118,7 +118,7 @@ def test_invalid_inclusion_privacy_rule():
 @pytest.mark.unit
 def test_valid_policy_rule():
     PolicyRule(
-        organizationId=1,
+        organization_fides_key=1,
         policyId=1,
         fides_key="test_policy",
         name="Test Policy",
@@ -136,7 +136,7 @@ def test_valid_policy_rule():
 def test_invalid_action_enum_policy_rule():
     with pytest.raises(ValidationError):
         PolicyRule(
-            organizationId=1,
+            organization_fides_key=1,
             policyId=1,
             fides_key="test_policy",
             name="Test Policy",
@@ -153,7 +153,7 @@ def test_invalid_action_enum_policy_rule():
 @pytest.mark.unit
 def test_valid_policy():
     Policy(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="test_policy",
         name="Test Policy",
         version="1.3",
@@ -166,7 +166,7 @@ def test_valid_policy():
 @pytest.mark.unit
 def test_create_valid_system():
     System(
-        organizationId=1,
+        organization_fides_key=1,
         registryId=1,
         fides_key="test_system",
         systemType="SYSTEM",
@@ -191,7 +191,7 @@ def test_create_valid_system():
 def test_circular_dependency_system():
     with pytest.raises(FidesValidationError):
         System(
-            organizationId=1,
+            organization_fides_key=1,
             registryId=1,
             fides_key="test_system",
             systemType="SYSTEM",

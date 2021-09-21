@@ -78,7 +78,7 @@ data_qualifier:
       Pseudonymized data can be either PII or OPD.
 
 dataset:
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "test_failing_db_dataset"
     name: "Sample DB Dataset"
     description: "This is a Sample Database Dataset"
@@ -105,7 +105,7 @@ dataset:
         dataQualifier: "pseudonymized_data"
 
 system:
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "dataAnalyticsSystem"
     name: "Data Analytics System"
     description: "A system used for analyzing customer behaviour."
@@ -120,7 +120,7 @@ system:
           - "customer"
     systemDependencies: [customerDataSharingSystem]
 
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "customerDataSharingSystem"
     name: "Customer Data Sharing System"
     description: "Share data about our users with third-parties."
@@ -138,12 +138,12 @@ system:
     systemDependencies: []
 
 policy:
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "primaryPrivacyPolicy"
     name: "Primary Privacy Policy"
     description: "The main privacy policy for the organization."
     rules:
-      - organizationId: 1
+      - organization_fides_key: 1
         fides_key: "rejectTargetedMarketing"
         name: "Reject Targeted Biometric Marketing"
         description: "Disallow targeted marketing towards customers based on biometric data."
@@ -163,7 +163,7 @@ policy:
         dataQualifier: "identified_data"
         action: REJECT
 
-      - organizationId: 1
+      - organization_fides_key: 1
         fides_key: rejectSharingPoliticalOpinions
         name: "Disallow Sharing Political Opinions"
         description: "Disallow sharing political opinions with third-parties."

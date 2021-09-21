@@ -23,14 +23,14 @@ def server_resource_key_pairs():
 @pytest.mark.unit
 def test_sort_create_update_unchanged_create():
     resource_1 = models.DataCategory(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="another_system",
         name="Test System 2",
         clause="Test Clause",
@@ -54,14 +54,14 @@ def test_sort_create_update_unchanged_create():
 def test_sort_create_update_unchanged_update():
     resource_1 = models.DataCategory(
         id=1,
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="some_resource",
         name="Test System 2",
         clause="Test Clause",
@@ -85,14 +85,14 @@ def test_sort_create_update_unchanged_update():
 def test_sort_create_update_unchanged_unchanged():
     resource_1 = models.DataCategory(
         id=1,
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
-        organizationId=1,
+        organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
         clause="Test Clause",

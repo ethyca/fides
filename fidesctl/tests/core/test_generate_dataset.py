@@ -52,7 +52,7 @@ def test_generate_dataset_info():
     expected_result = {
         "dataset": [
             {
-                "organizationId": 1,
+                "organization_fides_key": 1,
                 "fides_key": "test",
                 "name": "test",
                 "description": f"Fides Generated Description for Dataset: test",

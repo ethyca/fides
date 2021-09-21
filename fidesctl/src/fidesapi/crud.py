@@ -94,7 +94,7 @@ for resource_type, resource_model in model_map.items():
         finally:
             session.close()
 
-    @router.delete("/{fides_key}")
+    @router.delete("/{fides_key}", status_code=status.HTTP_204_NO_CONTENT)
     async def delete(fides_key: str, resource_type: str = get_resource_type(router)):
         """Delete a resource by its fides_key."""
         session = db_session.create_session()
@@ -112,7 +112,6 @@ for resource_type, resource_model in model_map.items():
                 }
             session.delete(result_sql_resource)
             session.commit()
-            return {"data": {"message": "True"}}
         finally:
             session.close()
 
