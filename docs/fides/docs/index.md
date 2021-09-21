@@ -6,13 +6,13 @@
 
 Fides (Latin: Fidēs) enables engineers and data teams to declaratively enforce data privacy requirements within the Software Development Life-Cycle.
 
-With Fides, anyone working with risky types of data (e.g. personally identifiable information), can declare or describe their data intentions and Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+With Fides, anyone working with risky types of data (e.g., personally identifiable information), can declare or describe their data intentions. Fides will continually evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
 This approach ensures that privacy is described within your source code, thereby making privacy easier to manage and a proactive part of your existing software development practices.
 
 ## Why Fides?
 
-Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for "honor and credibility" in every aspect of Roman life, in addition to this Fides also means reliability; "reliability between two parties, which is always reciprocal".
+Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for "honor and credibility" in every aspect of Roman life. In addition to this, Fides means "reliability": _reliability between two parties, which is always reciprocal_.
 
 Our goal with this project is to kickstart a privacy ontology and set of tools that equips every developer, whether in software or data engineering, with an easy to implement and consistently enforceable understanding of data privacy. As we looked at naming conventions, Fides stood out for its embodiment of this project's philosophy - to provide developers with a reliable and trustworthy definition language for privacy.
 
@@ -20,9 +20,9 @@ If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](htt
 
 ## Principles
 
-* Data Lineage Declarations
+* Data lineage declarations
 * Privacy controls at the CI layer
-* Predefined Privacy Taxonomy
+* Predefined privacy taxonomy
 * Translation layer between engineers and lawyers
 
 ---
@@ -45,7 +45,7 @@ Conceptually, there are a few key parts to Fides privacy management. For more in
 
 ### Systems
 
-A System is a standalone application, software project, service, etc. that has an independant lifecycle and potential usage of privacy data. As far as Fides is concerned, the important parts of a system are:
+A System is a standalone application, software project, service, etc. that has an independent lifecycle and potential usage of privacy data. As far as Fides is concerned, the important parts of a system are:
 
 * Its declared usage of privacy data
 * What other systems it depends on, since those other systems may also use privacy data
@@ -68,15 +68,15 @@ Privacy Policies describe what kinds of data are acceptable for what kinds of us
 
 ### Describing Data Privacy
 
-Fides defines data privacy in four dimensions, called Data Privacy Classifiers. Each of these classifiers can be defined on an organization-wide basis, and allow for hierarchical definition.
+Fides defines data privacy in four dimensions, called Data Privacy Classifiers. Each of these classifiers can be defined on an organization-wide basis, and allow for hierarchical definition:
 
-* data category: What kind of data is contained here?
+* Data category: What kind of data is contained here?
 (personal health data, account data, telemetry data...)
-* data use: What is this data being used for?
+* Data use: What is this data being used for?
 (examples: promotion, operational support, business improvement...)
-* data subject category: What kind of person does this data refer to?
+* Data subject category: What kind of person does this data refer to?
 (customer, job applicant, supplier...)
-* data qualifier: How explicitly is this data being stored?
+* Data qualifier: How explicitly is this data being stored?
 (anonymized, fully identified, aggregated...)
 
 ## Next Steps
