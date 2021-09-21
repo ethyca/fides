@@ -38,8 +38,6 @@ def sort_create_update_unchanged(
         # Check if the resource's fides_key matches one from the server
         if resource_key in server_resource_dict.keys():
             server_resource = server_resource_dict[resource_key]
-            # Copy the ID since manifest files don't have them
-            manifest_resource.id = server_resource.id
 
             if manifest_resource == server_resource:
                 unchanged_list.append(manifest_resource)

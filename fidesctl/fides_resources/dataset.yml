@@ -1,23 +1,23 @@
 dataset:
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "sample_db_dataset"
     name: "Sample DB Dataset"
     description: "This is a Sample Database Dataset"
-    datasetType: "MySQL"
+    dataset_type: "MySQL"
     location: "US East"
     fields:
       - name: "First_Name"
         description: "A First Name Field"
         path: "sample_db_dataset.first_name"
-        dataCategories:
+        data_categories:
           - "derived_data"
-        dataQualifier: "identified_data"
+        data_qualifier: "identified_data"
       - name: "Email"
         description: "User's Email"
         path: "sample_db_dataset.email"
-        dataCategories:
+        data_categories:
           - "account_data"
-        dataQualifier: "anonymized_data"
+        data_qualifier: "anonymized_data"
       - name: "Food_Preference"
         description: "User's favorite food"
         path: "sample_db_dataset.food_preference"

@@ -6,7 +6,6 @@ from fidesctl.cli.cli import (
     apply,
     delete,
     evaluate,
-    find,
     generate_dataset,
     get,
     ls,
@@ -41,7 +40,6 @@ def cli(ctx: click.Context, config_path: str) -> None:
 cli.add_command(apply)
 cli.add_command(delete)
 cli.add_command(evaluate)
-cli.add_command(find)
 cli.add_command(generate_dataset)
 cli.add_command(get)
 cli.add_command(ls)

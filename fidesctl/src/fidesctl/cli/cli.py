@@ -112,25 +112,6 @@ def evaluate(
 
 @click.command()
 @click.pass_context
-@resource_type_argument
-@fides_key_argument
-def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
-    """
-    Get an resource by its fides_key.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.find(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_key=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 def generate_dataset(

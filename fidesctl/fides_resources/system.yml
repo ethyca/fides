@@ -1,34 +1,34 @@
 system:
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "dataAnalyticsSystem"
     name: "Data Analytics System"
     description: "A system used for analyzing customer behaviour."
-    systemType: "Service"
-    privacyDeclarations:
+    system_type: "Service"
+    privacy_declarations:
       - name: "Analyze Anonymous Content"
-        dataCategories:
+        data_categories:
           - "account_data"
-        dataUse: "improve"
-        dataQualifier: "anonymized_data"
-        dataSubjects:
+        data_use: "improve"
+        data_qualifier: "anonymized_data"
+        data_subjects:
           - "customer"
-        datasetReferences:
+        dataset_references:
           - "sample_db_dataset.Food_Preference"
-    systemDependencies: [customerDataSharingSystem]
+    system_dependencies: [customerDataSharingSystem]
 
-  - organizationId: 1
+  - organization_fides_key: 1
     fides_key: "customerDataSharingSystem"
     name: "Customer Data Sharing System"
     description: "Share data about our users with third-parties."
-    systemType: "Service"
-    privacyDeclarations:
+    system_type: "Service"
+    privacy_declarations:
       - name: "Share Political Opinions"
-        dataCategories:
+        data_categories:
           - "political_opinion"
-        dataUse: "share"
-        dataQualifier: "anonymized_data"
-        dataSubjects:
+        data_use: "share"
+        data_qualifier: "anonymized_data"
+        data_subjects:
           - "customer"
-        datasetReferences:
+        dataset_references:
           - "sample_db_dataset.Email"
-    systemDependencies: []
+    system_dependencies: []

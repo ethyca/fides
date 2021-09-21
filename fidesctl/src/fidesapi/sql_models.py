@@ -9,13 +9,15 @@ import sqlalchemy.ext.declarative
 class SqlModelBase:
     """This is the base class used to describe columns that every object should have."""
 
-    id = Column(Integer, primary_key=True, index=True, unique=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True)
 
 
 class FidesBase(SqlModelBase):
     """The base SQL model for all top-level Fides Resources."""
 
-    fides_key = Column(postgresql.VARCHAR(200), primary_key=True, index=True)
+    fides_key = Column(
+        postgresql.VARCHAR(200), primary_key=True, index=True, unique=True
+    )
     organization_fides_key = Column(Text)
     name = Column(Text)
     description = Column(Text)
@@ -93,7 +95,7 @@ class Organization(SqlAlchemyBase, FidesBase):
 class Policy(SqlAlchemyBase, FidesBase):
     __tablename__ = "policies"
 
-    rules = relationship("PolicyRule", back_populates="rules")
+    rules = relationship("PolicyRule")
 
 
 class PolicyRule(SqlAlchemyBase):

@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import InvalidRequestError
+from fastapi import APIRouter, HTTPException, status
 
 from fidesapi import db_session
 from fideslang import model_map
@@ -8,17 +7,21 @@ from fidesapi.sql_models import sql_model_map
 
 
 def get_resource_type(router: APIRouter):
+    "Extracts the name of the resource type from the prefix."
     return router.prefix[1:]
 
 
 routers = []
 for resource_type, resource_model in model_map.items():
+    # Programmatically define routers for each resource type
     router = APIRouter(
         tags=[resource_model.__name__],
         prefix=f"/{resource_type}",
     )
 
-    @router.post("/", response_model=resource_model)
+    @router.post(
+        "/", response_model=resource_model, status_code=status.HTTP_201_CREATED
+    )
     async def create(
         resource: resource_model,
         resource_type: str = get_resource_type(router),
@@ -31,8 +34,6 @@ for resource_type, resource_model in model_map.items():
             session.commit()
             return sql_resource
         except FidesValidationError as err:
-            raise HTTPException(status_code=404, detail=err)
-        except InvalidRequestError as err:
             raise HTTPException(status_code=404, detail=err)
         finally:
             session.close()

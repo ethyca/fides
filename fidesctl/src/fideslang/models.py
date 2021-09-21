@@ -15,7 +15,6 @@ from fideslang.validation import (
 class FidesModel(BaseModel):
     """The base model for all Fides Resources."""
 
-    id: Optional[int]
     organization_fides_key: int = 1
     name: Optional[str]
     description: Optional[str]
