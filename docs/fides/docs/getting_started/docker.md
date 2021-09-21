@@ -5,15 +5,8 @@ The recommended way to get Fides running is to launch it using the supplied `mak
 ## System Requirements
 
 1. Install `make` locally (see [Make on Homebrew (Mac)](https://formulae.brew.sh/formula/make), [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm), or your preferred installation)
-1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation)
+1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation; use a recent enough version so that `docker-compose` is also available)
 1. Clone the [Fides repo](https://github.com/ethyca/fides) and `cd` into the `fides` directory
-1. Run `make preinstall` to confirm:
-```
-~/git/fides% make preinstall
-Checking if Docker is installed and running...
-Checking if Docker Compose is available...
-Ready to start! Use 'make cli' to launch a new shell with the CLI and server built & running.
-```
 
 ## Docker Setup
 

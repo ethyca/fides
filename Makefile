@@ -162,14 +162,6 @@ server-package: compose-build
 # Utils
 ####################
 
-.PHONY: preinstall
-preinstall:
-	@echo "Checking if Docker is installed and running..."
-	@docker info > /dev/null || (echo "Error running 'docker info', please check to see if you have docker installed and running!"; exit 1)
-	@echo "Checking if Docker Compose is available..."
-	@docker-compose version > /dev/null || (echo "Error running 'docker-compose', please check to see if you have docker-compose installed!"; exit 1)
-	@echo "Ready to start! Use 'make cli' to launch a new shell with the CLI and server built & running."
-
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
