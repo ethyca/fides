@@ -38,9 +38,9 @@ Using these primitives, as well as some addiitional abstractions for syntactic s
 
 ## :rocket: Getting Started
 
-We recommend getting started with [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but it's simple to jump right in with 5 easy steps:
+We recommend getting started with [our tutorial here](https://ethyca.github.io/fides/tutorial/), but it's simple to jump right in with 5 easy steps:
 
-1. Install Fides via Docker (you can follow [this guide](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md))
+1. Install Fides via Docker (you can follow [this guide](https://ethyca.github.io/fides/getting_started/docker/))
 
 1. Create a directory for your Fides resources to live in, like `fides_resources/`.
 
@@ -142,13 +142,13 @@ We recommend getting started with [our tutorial here](https://github.com/ethyca/
 
 1. Check your System's compliance by using `fidesctl evaluate fides_resources/`. This will create all of your defined objects on the server and then run an evaluation. You've now finished a simple Fides workflow!
 
-And ICYMI, we really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). It's helpful to contextualize how you can use Fides in your organization, today!
+And ICYMI, we really recommend doing [the tutorial](https://ethyca.github.io/fides/tutorial/). It's helpful to contextualize how you can use Fides in your organization, today!
 
 ## :book: Resources
 
 Fides provides a variety of resources to help guide you to a successful outcome.
 
-We are commmitted to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community/code_of_conduct.md).
+We are commmitted to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
@@ -156,7 +156,7 @@ Full Fides documentation is available [here](https://github.com/ethyca/fides/tre
 
 ### Contributing
 
-Read about the Fides [community](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community) or dive in to the [development guides](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/overview.md) for information about contributions, documentation, code style, testing and more.
+Read about the Fides [community](https://ethyca.github.io/fides/community/github/) or dive in to the [development guides](https://ethyca.github.io/fides/development/overview/) for information about contributions, documentation, code style, testing and more.
 
 ## Installation
 
