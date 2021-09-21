@@ -174,12 +174,11 @@ Congrats, you've successfully declared a few resources and evaluated a policy!
 
 Now we'd really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
 
-
 ## :book: Learning More
 
 Fides provides a variety of docs to help guide you to a successful outcome.
 
-We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community/code_of_conduct.md).
+We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
@@ -187,7 +186,7 @@ Full Fides documentation is available [here](https://github.com/ethyca/fides/tre
 
 ### Contributing
 
-Read about the Fides [community](https://github.com/ethyca/fides/tree/main/docs/fides/docs/community) or dive in to the [development guides](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/overview.md) for information about contributions, documentation, code style, testing and more.
+Read about the Fides [community](https://ethyca.github.io/fides/community/github/) or dive in to the [development guides](https://ethyca.github.io/fides/development/overview/) for information about contributions, documentation, code style, testing and more.
 
 
 ## License

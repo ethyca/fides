@@ -1,5 +1,5 @@
 site_name: Fides
-site_url: https://example.com/
+site_url: https://ethyca.github.io/fides/
 nav:
   - Home: index.md
   - License: license.md
