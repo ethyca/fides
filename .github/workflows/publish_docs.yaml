@@ -2,8 +2,6 @@ name: Publish updated docs to gh-pages
 
 on:
   push:
-    branches:
-      - main
     paths:
       - "docs/"
   
@@ -16,3 +14,4 @@ jobs:
       - run: pip install -r docs/fides/requirements.txt
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml
+        
