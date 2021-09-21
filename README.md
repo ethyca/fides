@@ -174,7 +174,7 @@ Congrats, you've successfully declared a few resources and evaluated a policy!
 
 Now we'd really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
 
-## :book: Learning More
+## :book: Learn More
 
 Fides provides a variety of docs to help guide you to a successful outcome.
 
