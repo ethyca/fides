@@ -3,7 +3,7 @@ name: Publish updated docs to gh-pages
 on:
   push:
     paths:
-      - "docs/"
+      - "docs/**"
   
 jobs:
   publish_docs:
