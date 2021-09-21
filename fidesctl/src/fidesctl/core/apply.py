@@ -88,7 +88,7 @@ def execute_create_update_unchanged(
                 url=url,
                 headers=headers,
                 resource_type=resource_type,
-                resource_id=update_resource.id,
+                resource_id=update_resource.fides_key,
                 json_resource=update_resource.json(exclude_none=True),
             ),
             verbose=False,

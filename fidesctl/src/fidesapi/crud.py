@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import List
+
+from fastapi import APIRouter, status
 
 from fidesapi import db_session
 from fideslang import model_map
-from fideslang.validation import FidesValidationError
 from fidesapi.sql_models import sql_model_map
+from sqlalchemy import update as _update
 
 
 def get_resource_type(router: APIRouter):
@@ -33,8 +35,17 @@ for resource_type, resource_model in model_map.items():
             session.add(sql_resource)
             session.commit()
             return sql_resource
-        except FidesValidationError as err:
-            raise HTTPException(status_code=404, detail=err)
+        finally:
+            session.close()
+
+    @router.get("/", response_model=List[resource_model], name="List")
+    async def ls(resource_type: str = get_resource_type(router)):
+        """Get a list of all of the resources of this type."""
+        session = db_session.create_session()
+        sql_model = sql_model_map[resource_type]
+        try:
+            sql_resource = session.query(sql_model).all()
+            return sql_resource
         finally:
             session.close()
 
@@ -54,24 +65,32 @@ for resource_type, resource_model in model_map.items():
             session.close()
 
     @router.post("/{fides_key}", response_model=resource_model)
-    async def update(fides_key: str, resource: resource_model):
+    async def update(
+        fides_key: str,
+        resource: resource_model,
+        resource_type: str = get_resource_type(router),
+    ):
         """Update a resource by its fides_key."""
         session = db_session.create_session()
         sql_model = sql_model_map[resource_type]
 
         try:
-            sql_resource = (
+            session.execute(
+                _update(sql_model)
+                .where(sql_model.fides_key == fides_key)
+                .values(resource.dict())
+            )
+            session.commit()
+            result_sql_resource = (
                 session.query(sql_model)
                 .filter(sql_model.fides_key == fides_key)
                 .first()
             )
-            if not sql_resource:
+            if not result_sql_resource:
                 return {
                     "error": {"message": f"{fides_key} is not an existing fides_key!"}
                 }
-            session.delete(sql_resource)
-            session.commit()
-            return {"data": {"message": "True"}}
+            return result_sql_resource
         finally:
             session.close()
 
@@ -82,16 +101,16 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
 
         try:
-            sql_resource = (
+            result_sql_resource = (
                 session.query(sql_model)
                 .filter(sql_model.fides_key == fides_key)
                 .first()
             )
-            if not sql_resource:
+            if not result_sql_resource:
                 return {
                     "error": {"message": f"{fides_key} is not an existing fides_key!"}
                 }
-            session.delete(sql_resource)
+            session.delete(result_sql_resource)
             session.commit()
             return {"data": {"message": "True"}}
         finally:

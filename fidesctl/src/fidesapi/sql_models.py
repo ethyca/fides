@@ -1,8 +1,6 @@
 from typing import Dict
 
-from sqlalchemy import Column, Integer, Text, String, ARRAY, ForeignKey, JSON
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, Text, String, ARRAY, JSON
 import sqlalchemy.ext.declarative
 
 
@@ -15,9 +13,7 @@ class SqlModelBase:
 class FidesBase(SqlModelBase):
     """The base SQL model for all top-level Fides Resources."""
 
-    fides_key = Column(
-        postgresql.VARCHAR(200), primary_key=True, index=True, unique=True
-    )
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
     organization_fides_key = Column(Text)
     name = Column(Text)
     description = Column(Text)
@@ -29,10 +25,6 @@ SqlAlchemyBase = sqlalchemy.ext.declarative.declarative_base(cls=SqlModelBase)
 class DataCategory(SqlAlchemyBase, FidesBase):
     __tablename__ = "data_categories"
 
-    fides_key = Column(postgresql.VARCHAR(200), primary_key=True, index=True)
-    organization_fides_key = Column(Text)
-    name = Column(Text)
-    description = Column(Text)
     parent_key = Column(Text)
 
 
@@ -60,18 +52,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     location = Column(String)
     dataset_type = Column(String)
 
-    fields = relationship("DatasetField")
-
-
-class DatasetField(SqlAlchemyBase):
-    __tablename__ = "dataset_fields"
-
-    dataset_id = Column(Integer, ForeignKey("datasets.id"))
-    name = Column(String)
-    description = Column(String)
-    path = Column(String)
-    data_categories = Column(ARRAY(String))
-    data_qualifier = Column(ARRAY(String))
+    fields = Column(JSON)
 
 
 # Evaluation
@@ -95,26 +76,7 @@ class Organization(SqlAlchemyBase, FidesBase):
 class Policy(SqlAlchemyBase, FidesBase):
     __tablename__ = "policies"
 
-    rules = relationship("PolicyRule")
-
-
-class PolicyRule(SqlAlchemyBase):
-    __tablename__ = "policy_rules"
-
-    policy_id = Column(Integer, ForeignKey("policies.id"))
-    data_categories = relationship("PrivacyRule")
-    data_uses = relationship("PrivacyRule")
-    data_subjects = relationship("PrivacyRule")
-    data_qualifier = Column(String)
-    action = Column(String)
-
-
-class PrivacyRule(SqlAlchemyBase):
-    __tablename__ = "privacy_rules"
-
-    policy_rule_id = Column(Integer, ForeignKey("policy_rules.id"))
-    inclusion = Column(String)
-    values = Column(ARRAY(String))
+    rules = Column(JSON)
 
 
 # Registry
@@ -130,19 +92,7 @@ class System(SqlAlchemyBase, FidesBase):
     meta = Column(JSON)
     system_type = Column(String)
     system_dependencies = Column(ARRAY(String))
-    privacy_declarations = relationship("PrivacyDeclaration")
-
-
-class PrivacyDeclaration(SqlAlchemyBase):
-    __tablename__ = "privacy_declarations"
-
-    system_id = Column(Integer, ForeignKey("systems.id"))
-    name = Column(String)
-    data_categories = Column(ARRAY(String))
-    data_use = Column(String)
-    data_qualifier = Column(String)
-    data_subjects = Column(ARRAY(String))
-    dataset_references = Column(ARRAY(String))
+    privacy_declarations = Column(JSON)
 
 
 sql_model_map: Dict = {

@@ -60,7 +60,7 @@ class DatasetField(BaseModel):
 
 
 class Dataset(FidesModel):
-    metadata: Optional[Dict[str, str]]
+    meta: Optional[Dict[str, str]]
     data_categories: Optional[List[fides_key]]
     data_qualifier: Optional[fides_key]
     location: str
@@ -145,7 +145,7 @@ class PrivacyDeclaration(BaseModel):
 
 class System(FidesModel):
     registry_id: Optional[int]
-    metadata: Optional[Dict[str, str]]
+    meta: Optional[Dict[str, str]]
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[fides_key]]
