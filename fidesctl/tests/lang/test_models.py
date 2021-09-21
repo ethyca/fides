@@ -36,13 +36,13 @@ def test_circular_dependency_data_category():
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
-            parentKey="customer_content_test_data",
+            parent_key="customer_content_test_data",
         )
     assert True
 
 
 @pytest.mark.unit
-def test_create_valid_data_category():
+def test_create_valid_data_use():
     DataUse(
         organization_fides_key=1,
         fides_key="customer_content_test_data",
@@ -54,7 +54,7 @@ def test_create_valid_data_category():
 
 
 @pytest.mark.unit
-def test_circular_dependency_data_category():
+def test_circular_dependency_data_use():
     with pytest.raises(FidesValidationError):
         DataUse(
             organization_fides_key=1,
@@ -62,7 +62,7 @@ def test_circular_dependency_data_category():
             name="customer_content_data",
             clause="testDataClause",
             description="Test Data Category",
-            parentKey="customer_content_test_data",
+            parent_key="customer_content_test_data",
         )
     assert True
 
@@ -123,10 +123,10 @@ def test_valid_policy_rule():
         fides_key="test_policy",
         name="Test Policy",
         description="Test Policy",
-        dataCategories=PrivacyRule(inclusion="NONE", values=[]),
-        dataUses=PrivacyRule(inclusion="NONE", values=["provide"]),
-        dataSubjects=PrivacyRule(inclusion="ANY", values=[]),
-        dataQualifier="unlinked_pseudonymized_data",
+        data_categories=PrivacyRule(inclusion="NONE", values=[]),
+        data_uses=PrivacyRule(inclusion="NONE", values=["provide"]),
+        data_subjects=PrivacyRule(inclusion="ANY", values=[]),
+        data_qualifier="unlinked_pseudonymized_data",
         action="REJECT",
     ),
     assert True
@@ -141,10 +141,10 @@ def test_invalid_action_enum_policy_rule():
             fides_key="test_policy",
             name="Test Policy",
             description="Test Policy",
-            dataCategories=PrivacyRule(inclusion="NONE", values=[]),
-            dataUses=PrivacyRule(inclusion="NONE", values=["provide"]),
-            dataSubjects=PrivacyRule(inclusion="ANY", values=[]),
-            dataQualifier="unlinked_pseudonymized_data",
+            data_categories=PrivacyRule(inclusion="NONE", values=[]),
+            data_uses=PrivacyRule(inclusion="NONE", values=["provide"]),
+            data_subjects=PrivacyRule(inclusion="ANY", values=[]),
+            data_qualifier="unlinked_pseudonymized_data",
             action="REJT",
         ),
     assert True
@@ -169,20 +169,20 @@ def test_create_valid_system():
         organization_fides_key=1,
         registryId=1,
         fides_key="test_system",
-        systemType="SYSTEM",
+        system_type="SYSTEM",
         name="Test System",
         description="Test Policy",
-        privacyDeclarations=[
+        privacy_declarations=[
             PrivacyDeclaration(
                 name="declaration-name",
-                dataCategories=[],
-                dataUse="provide",
-                dataSubjects=[],
-                dataQualifier="aggregated_data",
-                datasetReferences=[],
+                data_categories=[],
+                data_use="provide",
+                data_subjects=[],
+                data_qualifier="aggregated_data",
+                dataset_references=[],
             )
         ],
-        systemDependencies=["another_system", "yet_another_system"],
+        system_dependencies=["another_system", "yet_another_system"],
     )
     assert True
 
@@ -194,19 +194,19 @@ def test_circular_dependency_system():
             organization_fides_key=1,
             registryId=1,
             fides_key="test_system",
-            systemType="SYSTEM",
+            system_type="SYSTEM",
             name="Test System",
             description="Test Policy",
-            privacyDeclarations=[
+            privacy_declarations=[
                 PrivacyDeclaration(
                     name="declaration-name",
-                    dataCategories=[],
-                    dataUse="provide",
-                    dataSubjects=[],
-                    dataQualifier="aggregated_data",
-                    datasetReferences=["test_system"],
+                    data_categories=[],
+                    data_use="provide",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=["test_system"],
                 )
             ],
-            systemDependencies=["test_system"],
+            system_dependencies=["test_system"],
         )
     assert True

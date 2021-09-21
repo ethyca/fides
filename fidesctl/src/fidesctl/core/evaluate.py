@@ -16,7 +16,7 @@ from fideslang.models import (
     Policy,
     Taxonomy,
 )
-from fideslang.validation import fides_key
+from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
@@ -24,7 +24,7 @@ from fideslang.relationships import (
 
 
 def get_all_server_policies(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[fides_key]] = None
+    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
@@ -38,7 +38,7 @@ def get_all_server_policies(
     )
     policy_keys = [
         resource["fides_key"]
-        for resource in ls_response.json().get("data")
+        for resource in ls_response.json()
         if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
@@ -48,8 +48,8 @@ def get_all_server_policies(
 
 
 def compare_rule_to_declaration(
-    rule_types: List[fides_key],
-    declaration_types: List[fides_key],
+    rule_types: List[FidesKey],
+    declaration_types: List[FidesKey],
     rule_inclusion: InclusionEnum,
 ) -> bool:
     """
@@ -80,29 +80,29 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     for policy in taxonomy.policy:
         for rule in policy.rules:
             for system in taxonomy.system:
-                for declaration in system.privacyDeclarations:
+                for declaration in system.privacy_declarations:
 
                     data_category_result = compare_rule_to_declaration(
-                        rule_types=rule.dataCategories.values,
-                        declaration_types=declaration.dataCategories,
-                        rule_inclusion=rule.dataCategories.inclusion,
+                        rule_types=rule.data_categories.values,
+                        declaration_types=declaration.data_categories,
+                        rule_inclusion=rule.data_categories.inclusion,
                     )
 
                     # A declaration only has one data use, so it gets put in a list
                     data_use_result = compare_rule_to_declaration(
-                        rule_types=rule.dataUses.values,
-                        declaration_types=[declaration.dataUse],
-                        rule_inclusion=rule.dataUses.inclusion,
+                        rule_types=rule.data_uses.values,
+                        declaration_types=[declaration.data_use],
+                        rule_inclusion=rule.data_uses.inclusion,
                     )
 
                     data_subject_result = compare_rule_to_declaration(
-                        rule_types=rule.dataSubjects.values,
-                        declaration_types=declaration.dataSubjects,
-                        rule_inclusion=rule.dataSubjects.inclusion,
+                        rule_types=rule.data_subjects.values,
+                        declaration_types=declaration.data_subjects,
+                        rule_inclusion=rule.data_subjects.inclusion,
                     )
 
                     data_qualifier_result = (
-                        declaration.dataQualifier == rule.dataQualifier
+                        declaration.data_qualifier == rule.data_qualifier
                     )
 
                     if all(

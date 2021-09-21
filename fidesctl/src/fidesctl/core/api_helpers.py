@@ -2,14 +2,14 @@ from typing import List, Dict, Iterable
 
 from fidesctl.core import api
 from fideslang import FidesModel
-from fideslang.validation import fides_key
+from fideslang.validation import FidesKey
 from fideslang.parse import parse_manifest
 
 
 def get_server_resources(
     url: str,
     resource_type: str,
-    existing_keys: List[fides_key],
+    existing_keys: List[FidesKey],
     headers: Dict[str, str],
 ) -> List[FidesModel]:
     """

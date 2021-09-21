@@ -59,6 +59,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
 class Evaluation(SqlAlchemyBase):
     __tablename__ = "evaluations"
 
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
     status = Column(String)
     details = Column(ARRAY(String))
     message = Column(String)
@@ -101,7 +102,6 @@ sql_model_map: Dict = {
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
-    "evaluation": Evaluation,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,

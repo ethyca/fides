@@ -82,6 +82,9 @@ def resources_dict():
             clause="testDataClause",
             description="Test Data Category",
         ),
+        "evaluation": models.Evaluation(
+            fides_key="test_evaluation", status="PASS", details=["foo"], message="bar"
+        ),
         "organization": models.Organization(
             fides_key="test_organization",
             name="Test Organization",

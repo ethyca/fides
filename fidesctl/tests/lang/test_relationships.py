@@ -9,7 +9,7 @@ def test_find_referenced_fides_keys_1():
         name="test_dc",
         fides_key="test_dc",
         description="test description",
-        parentKey="key_1",
+        parent_key="key_1",
     )
     expected_referenced_key = {"key_1", "test_dc"}
     referenced_keys = relationships.find_referenced_fides_keys(test_data_category)
@@ -22,9 +22,9 @@ def test_find_referenced_fides_keys_2():
         name="test_dc",
         fides_key="test_dc",
         description="test description",
-        systemDependencies=["key_1", "key_2"],
-        systemType="test",
-        privacyDeclarations=None,
+        system_dependencies=["key_1", "key_2"],
+        system_type="test",
+        privacy_declarations=None,
     )
     expected_referenced_key = {"key_1", "key_2", "test_dc"}
     referenced_keys = relationships.find_referenced_fides_keys(test_system)
@@ -39,13 +39,13 @@ def test_get_referenced_missing_keys():
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                parentKey="key_1",
+                parent_key="key_1",
             ),
             DataCategory(
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                parentKey="key_1",
+                parent_key="key_1",
             ),
         ],
         system=[
@@ -53,9 +53,9 @@ def test_get_referenced_missing_keys():
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                systemDependencies=["key_3", "key_4"],
-                systemType="test",
-                privacyDeclarations=None,
+                system_dependencies=["key_3", "key_4"],
+                system_type="test",
+                privacy_declarations=None,
             )
         ],
     )
@@ -72,7 +72,7 @@ def test_hydrate_missing_resources(test_config):
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                parentKey="credentials",
+                parent_key="credentials",
             ),
         ],
         system=[
@@ -80,9 +80,9 @@ def test_hydrate_missing_resources(test_config):
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                systemDependencies=["key_3", "key_4"],
-                systemType="user_provided_data",
-                privacyDeclarations=None,
+                system_dependencies=["key_3", "key_4"],
+                system_type="user_provided_data",
+                privacy_declarations=None,
             )
         ],
     )
@@ -104,7 +104,7 @@ def test_hydrate_missing_resources_fail(test_config):
                     name="test_dc",
                     fides_key="test_dc",
                     description="test description",
-                    parentKey="credentials",
+                    parent_key="credentials",
                 ),
             ],
             system=[
@@ -112,9 +112,9 @@ def test_hydrate_missing_resources_fail(test_config):
                     name="test_dc",
                     fides_key="test_dc",
                     description="test description",
-                    systemDependencies=["key_3", "key_4"],
-                    systemType="user_provided_data",
-                    privacyDeclarations=None,
+                    system_dependencies=["key_3", "key_4"],
+                    system_type="user_provided_data",
+                    privacy_declarations=None,
                 )
             ],
         )

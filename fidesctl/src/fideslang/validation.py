@@ -11,12 +11,21 @@ class FidesValidationError(Exception):
         super().__init__(message)
 
 
-class fides_key(ConstrainedStr):
+class FidesKey(ConstrainedStr):
     """
-    A fides_key should only contain alphanumeric characters or '_'
+    A FidesKey should only contain alphanumeric characters or '_'
     """
 
     regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_]+$")
+
+    @classmethod  # This overrides the default method to throw the custom FidesValidationError
+    def validate(cls, value: str) -> str:
+        if not cls.regex.match(value):
+            raise FidesValidationError(
+                "FidesKey must only contain alphanumeric characters or '_'."
+            )
+
+        return value
 
 
 def sort_list_objects_by_name(values: List) -> List:
@@ -31,7 +40,7 @@ def sort_list_objects_by_key(values: List) -> List:
     return values
 
 
-def no_self_reference(value: fides_key, values: Dict) -> fides_key:
+def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
     if value == values["fides_key"]:
-        raise FidesValidationError("fides_key can not self-reference!")
+        raise FidesValidationError("FidesKey can not self-reference!")
     return value

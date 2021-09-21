@@ -1,7 +1,8 @@
 """Integration tests for the API module."""
+
 import pytest
 
-from fidesctl.core import api as _api, config
+from fidesctl.core import api as _api
 from fideslang import parse, model_list
 
 # Helper Functions
@@ -45,18 +46,6 @@ def test_api_ping(test_config):
 
 @pytest.mark.integration
 @pytest.mark.parametrize("endpoint", model_list)
-def test_api_ls(test_config, endpoint):
-    result = _api.ls(
-        url=test_config.cli.server_url,
-        resource_type=endpoint,
-        headers=test_config.user.request_headers,
-    )
-    print(result.text)
-    assert result.status_code == 200
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
 def test_api_create(test_config, resources_dict, endpoint):
     manifest = resources_dict[endpoint]
     print(manifest.json(exclude_none=True))
@@ -68,6 +57,18 @@ def test_api_create(test_config, resources_dict, endpoint):
     )
     print(result.text)
     assert result.status_code == 201
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("endpoint", model_list)
+def test_api_ls(test_config, endpoint):
+    result = _api.ls(
+        url=test_config.cli.server_url,
+        resource_type=endpoint,
+        headers=test_config.user.request_headers,
+    )
+    print(result.text)
+    assert result.status_code == 200
 
 
 @pytest.mark.integration

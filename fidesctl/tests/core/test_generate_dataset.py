@@ -14,7 +14,7 @@ def test_generate_table_manifests():
         {
             "name": "foo",
             "description": "Fides Generated Description for Table: foo",
-            "datasetFields": [
+            "dataset_fields": [
                 {
                     "name": "1",
                     "description": "Fides Generated Description for Column: 1",
@@ -28,7 +28,7 @@ def test_generate_table_manifests():
         {
             "name": "bar",
             "description": "Fides Generated Description for Table: bar",
-            "datasetFields": [
+            "dataset_fields": [
                 {
                     "name": "4",
                     "description": "Fides Generated Description for Column: 4",
@@ -47,17 +47,17 @@ def test_generate_table_manifests():
 # Integration
 @pytest.mark.integration
 def test_generate_dataset_info():
-    test_url = "mysql+mysqlconnector://foo:bar@test-db:3306/test"
+    test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     test_engine = sqlalchemy.create_engine(test_url)
     expected_result = {
         "dataset": [
             {
                 "organization_fides_key": 1,
-                "fides_key": "test",
-                "name": "test",
-                "description": f"Fides Generated Description for Dataset: test",
-                "datasetType": "mysql",
-                "datasetLocation": "test-db:3306",
+                "fides_key": "fidesdb",
+                "name": "fidesdb",
+                "description": f"Fides Generated Description for Dataset: fidesdb",
+                "dataset_type": "postgresql",
+                "dataset_location": "fidesdb:5432",
             }
         ]
     }

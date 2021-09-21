@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from pydantic import validator, BaseModel, Field
 
 from fideslang.validation import (
-    fides_key,
+    FidesKey,
     sort_list_objects_by_key,
     sort_list_objects_by_name,
     no_self_reference,
@@ -18,7 +18,7 @@ class FidesModel(BaseModel):
     organization_fides_key: int = 1
     name: Optional[str]
     description: Optional[str]
-    fides_key: fides_key
+    fides_key: FidesKey
 
     class Config:
         extra = "ignore"
@@ -29,7 +29,7 @@ class FidesModel(BaseModel):
 class DataCategory(FidesModel):
     """The DataCategory resource model."""
 
-    parent_key: Optional[fides_key]
+    parent_key: Optional[FidesKey]
 
     _no_self_reference = validator("parent_key", allow_reuse=True)(no_self_reference)
 
@@ -45,7 +45,7 @@ class DataSubject(FidesModel):
 
 
 class DataUse(FidesModel):
-    parent_key: Optional[fides_key]
+    parent_key: Optional[FidesKey]
 
     _no_self_reference = validator("parent_key", allow_reuse=True)(no_self_reference)
 
@@ -55,14 +55,14 @@ class DatasetField(BaseModel):
     name: str
     description: str
     path: str
-    data_categories: Optional[List[fides_key]]
-    data_qualifier: Optional[fides_key]
+    data_categories: Optional[List[FidesKey]]
+    data_qualifier: Optional[FidesKey]
 
 
 class Dataset(FidesModel):
     meta: Optional[Dict[str, str]]
-    data_categories: Optional[List[fides_key]]
-    data_qualifier: Optional[fides_key]
+    data_categories: Optional[List[FidesKey]]
+    data_qualifier: Optional[FidesKey]
     location: str
     dataset_type: str
     fields: List[DatasetField]
@@ -85,7 +85,7 @@ class StatusEnum(str, Enum):
 
 class Evaluation(BaseModel):
 
-    status: StatusEnum = StatusEnum.PASS
+    status: StatusEnum
     details: List[str]
     message: str = ""
 
@@ -111,14 +111,14 @@ class ActionEnum(str, Enum):
 
 class PrivacyRule(BaseModel):
     inclusion: InclusionEnum
-    values: List[fides_key]
+    values: List[FidesKey]
 
 
 class PolicyRule(FidesModel):
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
-    data_qualifier: fides_key
+    data_qualifier: FidesKey
     action: ActionEnum
 
 
@@ -136,10 +136,10 @@ class Registry(FidesModel):
 # System
 class PrivacyDeclaration(BaseModel):
     name: str
-    data_categories: List[fides_key]
-    data_use: fides_key
-    data_qualifier: fides_key
-    data_subjects: List[fides_key]
+    data_categories: List[FidesKey]
+    data_use: FidesKey
+    data_qualifier: FidesKey
+    data_subjects: List[FidesKey]
     dataset_references: Optional[List[str]]
 
 
@@ -148,7 +148,7 @@ class System(FidesModel):
     meta: Optional[Dict[str, str]]
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
-    system_dependencies: Optional[List[fides_key]]
+    system_dependencies: Optional[List[FidesKey]]
 
     _sort_privacy_declarations = validator("privacy_declarations", allow_reuse=True)(
         sort_list_objects_by_name
