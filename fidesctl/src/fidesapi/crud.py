@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import InvalidRequestError
 
 from fidesapi import db_session
 from fideslang import model_map
+from fideslang.validation import FidesValidationError
 from fidesapi.sql_models import sql_model_map
 
 
@@ -12,7 +14,7 @@ def get_resource_type(router: APIRouter):
 routers = []
 for resource_type, resource_model in model_map.items():
     router = APIRouter(
-        tags=[resource_type],
+        tags=[resource_model.__name__],
         prefix=f"/{resource_type}",
     )
 
@@ -28,6 +30,10 @@ for resource_type, resource_model in model_map.items():
             session.add(sql_resource)
             session.commit()
             return sql_resource
+        except FidesValidationError as err:
+            raise HTTPException(status_code=404, detail=err)
+        except InvalidRequestError as err:
+            raise HTTPException(status_code=404, detail=err)
         finally:
             session.close()
 

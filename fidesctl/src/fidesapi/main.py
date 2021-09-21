@@ -17,7 +17,7 @@ def configure_db(database_url: str):
     db_session.global_init(database_url)
 
 
-@app.get("/")
+@app.get("/", tags=["Healthcheck"])
 async def healthcheck():
     return {"data": {"message": "Fides service is healthy!"}}
 

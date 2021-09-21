@@ -7,11 +7,13 @@ import sqlalchemy.ext.declarative
 
 
 class SqlModelBase:
-    id = Column(Integer, primary_key=True, index=True)
+    """This is the base class used to describe columns that every object should have."""
+
+    id = Column(Integer, primary_key=True, index=True, unique=True)
 
 
 class FidesBase(SqlModelBase):
-    """The base SQL model for all Fides Resources."""
+    """The base SQL model for all top-level Fides Resources."""
 
     fides_key = Column(postgresql.VARCHAR(200), primary_key=True, index=True)
     organization_fides_key = Column(Text)
@@ -19,43 +21,50 @@ class FidesBase(SqlModelBase):
     description = Column(Text)
 
 
-SqlAlchemyBase = sqlalchemy.ext.declarative.declarative_base()
+SqlAlchemyBase = sqlalchemy.ext.declarative.declarative_base(cls=SqlModelBase)
 
 
 class DataCategory(SqlAlchemyBase, FidesBase):
-    __tablename__ = "data_category"
+    __tablename__ = "data_categories"
+
+    fides_key = Column(postgresql.VARCHAR(200), primary_key=True, index=True)
+    organization_fides_key = Column(Text)
+    name = Column(Text)
+    description = Column(Text)
     parent_key = Column(Text)
 
 
 class DataQualifier(SqlAlchemyBase, FidesBase):
-    __tablename__ = "data_qualifier"
+    __tablename__ = "data_qualifiers"
 
 
 class DataSubject(SqlAlchemyBase, FidesBase):
-    __tablename__ = "data_subject"
+    __tablename__ = "data_subjects"
 
 
 class DataUse(SqlAlchemyBase, FidesBase):
-    __tablename__ = "data_use"
+    __tablename__ = "data_uses"
 
     parent_key = Column(Text)
 
 
 # Dataset
-class Dataset(FidesBase, SqlAlchemyBase):
-    __tablename__ = "dataset"
+class Dataset(SqlAlchemyBase, FidesBase):
+    __tablename__ = "datasets"
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(ARRAY(String))
     location = Column(String)
     dataset_type = Column(String)
+
     fields = relationship("DatasetField")
 
 
-class DatasetField(SqlAlchemyBase, SqlModelBase):
-    __tablename__ = "dataset_field"
+class DatasetField(SqlAlchemyBase):
+    __tablename__ = "dataset_fields"
 
+    dataset_id = Column(Integer, ForeignKey("datasets.id"))
     name = Column(String)
     description = Column(String)
     path = Column(String)
@@ -64,8 +73,8 @@ class DatasetField(SqlAlchemyBase, SqlModelBase):
 
 
 # Evaluation
-class Evaluation(SqlAlchemyBase, SqlModelBase):
-    __tablename__ = "evaluation"
+class Evaluation(SqlAlchemyBase):
+    __tablename__ = "evaluations"
 
     status = Column(String)
     details = Column(ARRAY(String))
@@ -75,43 +84,45 @@ class Evaluation(SqlAlchemyBase, SqlModelBase):
 # Organization
 class Organization(SqlAlchemyBase, FidesBase):
     # It inherits this from FidesModel but Organization's don't have this field
-    __tablename__ = "organization"
+    __tablename__ = "organizations"
 
     organiztion_parent_key = Column(String, nullable=True)
 
 
 # Policy
 class Policy(SqlAlchemyBase, FidesBase):
-    __tablename__ = "policy"
+    __tablename__ = "policies"
 
-    rules = relationship("PolicyRule")
+    rules = relationship("PolicyRule", back_populates="rules")
 
 
-class PolicyRule(FidesBase, SqlAlchemyBase):
-    __tablename__ = "policy_rule"
+class PolicyRule(SqlAlchemyBase):
+    __tablename__ = "policy_rules"
 
-    data_categories = relationship("PrivacyRule", back_populates="policy_rule")
-    data_uses = relationship("PrivacyRule", back_populates="policy_rule")
-    data_subjects = relationship("PrivacyRule", back_populates="policy_rule")
+    policy_id = Column(Integer, ForeignKey("policies.id"))
+    data_categories = relationship("PrivacyRule")
+    data_uses = relationship("PrivacyRule")
+    data_subjects = relationship("PrivacyRule")
     data_qualifier = Column(String)
     action = Column(String)
 
 
-class PrivacyRule(SqlAlchemyBase, SqlModelBase):
-    __tablename__ = "privacy_rule"
+class PrivacyRule(SqlAlchemyBase):
+    __tablename__ = "privacy_rules"
 
+    policy_rule_id = Column(Integer, ForeignKey("policy_rules.id"))
     inclusion = Column(String)
     values = Column(ARRAY(String))
 
 
 # Registry
-class Registry(FidesBase, SqlAlchemyBase):
-    __tablename__ = "registry"
+class Registry(SqlAlchemyBase, FidesBase):
+    __tablename__ = "registries"
 
 
 # System
-class System(FidesBase, SqlAlchemyBase):
-    __tablename__ = "system"
+class System(SqlAlchemyBase, FidesBase):
+    __tablename__ = "systems"
 
     registry_id = Column(String)
     meta = Column(JSON)
@@ -120,9 +131,10 @@ class System(FidesBase, SqlAlchemyBase):
     privacy_declarations = relationship("PrivacyDeclaration")
 
 
-class PrivacyDeclaration(SqlAlchemyBase, SqlModelBase):
-    __tablename__ = "privacy_declaration"
+class PrivacyDeclaration(SqlAlchemyBase):
+    __tablename__ = "privacy_declarations"
 
+    system_id = Column(Integer, ForeignKey("systems.id"))
     name = Column(String)
     data_categories = Column(ARRAY(String))
     data_use = Column(String)
@@ -137,6 +149,7 @@ sql_model_map: Dict = {
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
+    "evaluation": Evaluation,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,

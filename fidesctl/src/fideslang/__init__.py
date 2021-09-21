@@ -26,6 +26,7 @@ model_map: Dict[str, Type[FidesModel]] = {
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
+    "evaluation": Evaluation,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,
