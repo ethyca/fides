@@ -3,7 +3,7 @@ name: Publish updated docs to gh-pages
 on:
   push:
     branches:
-      - earmenda-publish-docs-ci
+      - main
     paths:
       - "docs/**"
   

@@ -1,4 +1,4 @@
-# Fides Documentation(test2)
+# Fides Documentation
 
 ---
 
