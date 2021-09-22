@@ -1,4 +1,4 @@
-alembic==1.7.1
+alembic==1.6.5
 click==7.1.2
 colorama==0.4.4
 deepdiff==5.5.0

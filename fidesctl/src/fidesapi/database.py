@@ -48,6 +48,6 @@ def reset_db(database_url: str) -> None:
     SqlAlchemyBase.metadata.drop_all(connection)
 
     migration_context = MigrationContext.configure(connection)
-    version = migration_context._version
+    version = migration_context._version  # pylint: disable=protected-access
     if version.exists(connection):
         version.drop(connection)
