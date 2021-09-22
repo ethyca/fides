@@ -38,6 +38,7 @@ exclude = '''
 # Pylint
 ########
 [tool.pylint.messages_control]
+ignore="migrations"
 disable=[
     "line-too-long",
     "too-few-public-methods",

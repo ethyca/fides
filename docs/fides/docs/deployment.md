@@ -12,44 +12,50 @@ For production deployments of Fidesctl, we suggest deploying everything individu
 
 ### Step 1: Database
 
-1. Spin up a Postgresql DB with the following env vars:
+Spin up a Postgresql DB and configure a user, password and database for Fides to use. For example:
 
-    ```env
-    POSTGRES_USER="<user>"
-    POSTGRES_PASSWORD="<password>"
-    POSTGRES_DATABASE="fidesdb"
-    ```
-
-1. Next, run the initial database setup via the fidesctl CLI:
-
-    ```bash
-    fidesctl initdb
-    ```
+```env
+POSTGRES_USER="fidesdb"
+POSTGRES_PASSWORD="f1desdB"
+POSTGRES_DATABASE="fidesdb"
+```
 
 ### Step 2: Create a Config
 
-The next step is to create a `fides.toml` config file. This is used to pass important variables to the Fidesctl applications for connections to the database, api, etc.
+The next step is to create a `fides.toml` config file. This is used to pass important variables to the Fidesctl applications for connections to the database, api, etc. Make sure that the username, password and database in the `database_url` connection string match what you used to configure your database.
+
+Fidesctl will automatically look for the `fides.toml` file in the current directory, in the user directory, or at the path specified by an optional `FIDES_CONFIG_PATH` environment variable.
+
+Additionally, any variable can be overriden by using a properly formatted environment variable. For instance to overwrite the `database_url` configuration value, you would set the `FIDES__API__DATABASE_URL` environment variable.
 
 The following is an example `fides.toml`:
 
 ```toml
-[user]
-user_id = "1"
-api_key = "test_api_key"
-
 [cli]
-server_url = "http://fidesctl:8080"
+server_url = "http://localhost:8080"
 
 [api]
-database_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
+database_url = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
 ```
 
-### Step 2: Fidesctl API
+### Step 3: Fidesctl API
 
-The next step is to spin up the Fidesctl API. Make sure to do this in a separate terminal/process as it will run there indefinitely:
+Next we need to prepare the database to be used by the API. Run the initial database setup via the fidesctl CLI:
+
+```bash
+fidesctl initdb
+```
+
+Now open a new terminal to run the API, as it will run there indefinitely:
 
 `fidesctl webserver`
 
-The webserver should now be available at `localhost:8080`, and docs are available at `localhost:8080/docs`, however the API docs can for the most part safely be ignored, as the Fidesctl CLI will abstract away the API layer.
+The webserver should now be available at `localhost:8080`, and docs are available at `localhost:8080/docs`, however the API docs can be safely ignored, as the Fidesctl CLI will abstract the API layer.
 
-### Step 3: Fidesctl CLI
+### Step 4: Fidesctl CLI
+
+The last step is to check that everything is working! Open a new terminal window and run the following:
+
+`fidesctl ping`
+
+If everything is configured correctly, it will let you know that the command was successful! You've now successfully completed a complete Fidesctl deployment.
