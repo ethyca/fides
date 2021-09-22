@@ -8,9 +8,11 @@ from fidesctl.cli.cli import (
     evaluate,
     generate_dataset,
     get,
+    initdb,
     ls,
     parse,
     ping,
+    resetdb,
     view_config,
     webserver,
 )
@@ -43,8 +45,10 @@ cli.add_command(delete)
 cli.add_command(evaluate)
 cli.add_command(generate_dataset)
 cli.add_command(get)
+cli.add_command(initdb)
 cli.add_command(ls)
 cli.add_command(parse)
 cli.add_command(ping)
+cli.add_command(resetdb)
 cli.add_command(view_config)
 cli.add_command(webserver)
