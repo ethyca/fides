@@ -1,10 +1,10 @@
 # Tutorial
 
-This tutorial walks you through the process of getting up and running with Fides.
+This tutorial walks you through the process of getting up and running with Fidesctl.
 
 ## Getting Started
 
-Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](getting_started/local.md) guide to get Fides up and running on your machine.
+Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](getting_started/local.md) guide to get Fidesctl up and running on your machine.
 
 ## Writing Manifest Files
 

@@ -1,13 +1,19 @@
-# Fidesctl
+# Fidesctl CLI
 
-Fidesctl wraps the functionality of the Fides Server into a CLI tool to be used by either engineers or within CI/CD pipelines.
+---
+
+The Fidesctl CLI wraps the entire functionality of the Fidesctl into a CLI tool to be used by either engineers or in CI/CD pipelines.
 
 ## Commands
 
+This is a non-exhaustive list of available Fidesctl CLI commands:
+
 * `fidesctl apply <manifest_dir> [--dry] [--diff]` - Creates or Updates resources found within the YAML file(s) at the specified path.
 * `fidesctl evaluate [-k,--fides-key] [-m, --message] [--dry]` - Runs an evaluation of all policies, but a single policy can be specified using the `--fides-key` parameter.
-* `fidesctl find <resource_type> <fides_key>` - Looks up a specific resource on the server by its type and `fides_key`.
-* `fidesctl ls <resource_type>` - Shows a list of resources of a certain type that exist on the server.
-* `fidesctl ping` - Pings the server to make sure that a connection can be established.
+* `fidesctl initdb` - Sets up the database by running all missing migrations.
+* `fidesctl get <resource_type> <fides_key>` - Looks up a specific resource on the server by its type and `fides_key`.
+* `fidesctl ls <resource_type>` - Shows a list of all resources of a certain type that exist on the server.
+* `fidesctl ping` - Pings the API's healthcheck endpoint to make sure that it is reachable and ready for requests.
+* `fidesctl resetdb` - Tears down the database, erasing all data.
 * `fidesctl version` - Shows the version of Fides that is installed.
-* `fidesctl view-config`- Show a JSON representation of the config that Fides is using.
+* `fidesctl view-config`- Show a JSON representation of the config that Fidesctl is using.
