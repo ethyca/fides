@@ -1,8 +1,8 @@
-"""empty message
+"""initial migration
 
-Revision ID: c703c465f1c0
+Revision ID: 26934c96ec80
 Revises: 
-Create Date: 2021-09-21 18:44:34.387034
+Create Date: 2021-09-22 04:12:38.479740
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c703c465f1c0'
+revision = '26934c96ec80'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -78,11 +78,13 @@ def upgrade():
     op.create_index(op.f('ix_datasets_id'), 'datasets', ['id'], unique=True)
     op.create_table('evaluations',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('fides_key', sa.String(), nullable=False),
     sa.Column('status', sa.String(), nullable=True),
     sa.Column('details', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('message', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id', 'fides_key')
     )
+    op.create_index(op.f('ix_evaluations_fides_key'), 'evaluations', ['fides_key'], unique=True)
     op.create_index(op.f('ix_evaluations_id'), 'evaluations', ['id'], unique=True)
     op.create_table('organizations',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -149,6 +151,7 @@ def downgrade():
     op.drop_index(op.f('ix_organizations_fides_key'), table_name='organizations')
     op.drop_table('organizations')
     op.drop_index(op.f('ix_evaluations_id'), table_name='evaluations')
+    op.drop_index(op.f('ix_evaluations_fides_key'), table_name='evaluations')
     op.drop_table('evaluations')
     op.drop_index(op.f('ix_datasets_id'), table_name='datasets')
     op.drop_index(op.f('ix_datasets_fides_key'), table_name='datasets')

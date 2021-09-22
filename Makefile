@@ -39,13 +39,15 @@ help:
 check-db: compose-build
 	@echo "Check for new migrations to run..."
 	@docker-compose down
+	@docker-compose run $(IMAGE_NAME) alembic upgrade head
+	@make teardown
 
-# TODO: FIX THIS
 .PHONY: init-db
 init-db: compose-build
-	@echo "Reset the db and run the migrations..."
+	@echo "Drop the db and run the migrations..."
 	@docker-compose down
 	@docker volume prune -f
+	@docker-compose run $(IMAGE_NAME) alembic upgrade head
 	@make teardown
 
 .PHONY: api
