@@ -30,7 +30,7 @@ async def healthcheck() -> Dict:
     return {"data": {"message": "Fides service is healthy!"}}
 
 
-def start_webserver():
+def start_webserver() -> None:
     "Run the webserver."
     uvicorn.run(app, host="0.0.0.0", port=8080)
 
