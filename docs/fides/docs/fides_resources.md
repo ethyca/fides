@@ -14,14 +14,14 @@ An organization is a logical grouping of resources, and all resources must belon
 
     ```yaml
     organization:
-      fidesKey: "test_organization"
+      fides_key: "test_organization"
       name: "Test Organization"
       description: "A test organization used to check the validity of changes."
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String |  A name for this organization |
 | description | String | A description of what this organiztion encapsulates |
 
@@ -39,7 +39,7 @@ A Data Category describes the kind of data that is being used.
 
     ```yaml
     data-category:
-    - fidesKey: "date_of_birth"
+    - fides_key: "date_of_birth"
       name: "Date of Birth"
       parentKey: "user_provided_data"
       description: "User's date of birth."
@@ -63,9 +63,9 @@ A Data Category describes the kind of data that is being used.
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Optional[Int] | Id of the organization this data category belongs to, defaults to 1 |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String |  A name for this data category |
-| parentKey | Optional[String] | the fidesKey of the parent category |
+| parentKey | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data category means or encapsulates |
 
 ### Data Use
@@ -76,7 +76,7 @@ A Data Use describes what the data is being used for.
 
     ```yaml
     data-use:
-    - fidesKey: "provide_operational_support_for_contracted_service"
+    - fides_key: "provide_operational_support_for_contracted_service"
       name: "Provide Operational Support for Contracted Service"
       parentKey: "provide"
       description: "This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service."
@@ -96,9 +96,9 @@ A Data Use describes what the data is being used for.
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Optional[Int] | Id of the organization this data use belongs to, defaults to 1 |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data use |
-| parentKey | Optional[String] | the fidesKey of the parent category |
+| parentKey | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data use means or encapsulates |
 
 ### Data Subject
@@ -109,7 +109,7 @@ A Data Subject describes who the data belongs to.
 
     ```yaml
     data-subject:
-    - fidesKey: "anonymous_user"
+    - fides_key: "anonymous_user"
       name: "Anonymous User"
       description: "A user without any identifiable information tied to them."
     ```
@@ -125,9 +125,9 @@ A Data Subject describes who the data belongs to.
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Optional[Int] | Id of the organization this data subject belongs to, defaults to 1 |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data subject |
-| parentKey | Optional[String] | the fidesKey of the parent category |
+| parentKey | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data subject means or encapsulates |
 
 ### Data Qualifier
@@ -138,7 +138,7 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
     ```yaml
     data-qualifier:
-    - fidesKey: "aggregated_data"
+    - fides_key: "aggregated_data"
       name: "Aggregated Data"
       description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
     ```
@@ -156,9 +156,9 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Optional[Int] | Id of the organization this data qualifier belongs to, defaults to 1 |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this data qualifier |
-| parentKey | Optional[String] | the fidesKey of the parent category |
+| parentKey | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data qualifier means or encapsulates |
 
 ---
@@ -172,7 +172,7 @@ A registry can optionally be used to group systems.
     ```yaml
     registry:
     - organizationId: 1
-      fidesKey: "user_systems_registry"
+      fides_key: "user_systems_registry"
       name: "User Systems Registry"
       description: "A registry for all of the user-related systems."
     ```
@@ -180,7 +180,7 @@ A registry can optionally be used to group systems.
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this registry belongs to |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
 | name | String |  A name for this registry |
 | description | String | A description of what this registry means or encapsulates |
 
@@ -197,7 +197,7 @@ A system represents the privacy usage of a single software project, service, cod
       - organizationId: 1
         fidesOrganizationKey: "Ethyca"
         registryId: 1
-        fidesKey: "demoSystem"
+        fides_key: "demoSystem"
         systemType: "service"
         metadata:
           name: "Demo System"
@@ -217,11 +217,11 @@ A system represents the privacy usage of a single software project, service, cod
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
 | registryId | Optional[Int] | Id of the registry this system belongs to |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | systemType | String | The type of system being declared |
 | metadata | Map[String, String] | A key-value pair field to add various additional info |
 | privacyDeclarations | List[privacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
-| systemDependencies | List[fidesKey] | Systems that this system depends on, identified by their fidesKey |
+| systemDependencies | List[fides_key] | Systems that this system depends on, identified by their fides_key |
 
 ### Privacy Declaration
 
@@ -248,7 +248,7 @@ A Dataset represents any kind of place where data is stored and includes a sub-r
     ```yaml
     dataset:
       - organizationId: 1
-        fidesKey: "sample_db_dataset"
+        fides_key: "sample_db_dataset"
         name: "Sample DB Dataset"
         description: "This is a Sample Database Dataset"
         datasetType: "MySQL"
@@ -271,7 +271,7 @@ A Dataset represents any kind of place where data is stored and includes a sub-r
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | name | String | A name for this dataset |
 | description | String | A description of what this dataset exists for |
 | datasetType | String | The type of dataset being declared |
@@ -300,9 +300,9 @@ Policies group together sets of privacy rules into a single resource. These are 
     ```yaml
     policy:
       organizationId: 1
-      fidesKey: "primaryPrivacyPolicy"
+      fides_key: "primaryPrivacyPolicy"
       privacyRules:
-        - fidesKey: "rejectTargetedMarketing"
+        - fides_key: "rejectTargetedMarketing"
           dataCategories:
             inclusion: "ANY"
             values:
@@ -322,7 +322,7 @@ Policies group together sets of privacy rules into a single resource. These are 
               - commuter
           dataQualifier: pseudonymized_data
           action: REJECT
-        - fidesKey: rejectSome
+        - fides_key: rejectSome
           dataCategories:
             inclusion: ANY
             values:
@@ -349,7 +349,7 @@ Policies group together sets of privacy rules into a single resource. These are 
 | Name | Type | Description |
 | --- | --- | --- |
 | organizationId | Int | Id of the organization this system belongs to |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | privacyRules | List[privacyRule] | A list of privacy rules (see `Privacy Rule` below) |
 
 ### Privacy Rule
@@ -358,7 +358,7 @@ A Privacy Rule describes a single combination of data privacy classifiers that a
 
 | Name | Type | Description |
 | --- | --- | --- |
-| fidesKey | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
 | dataCategories | List[dataRule] | A list of data rules (see `Data Rule` below) |
 | dataUses | List[dataRule] | A list of data rules (see `Data Rule` below) |
 | dataSubjects | List[dataRule] | A list of data rules (see `Data Rule` below) |
@@ -372,7 +372,7 @@ A Data Rule states what inclusion operator to use as well as a list of values to
 | Name | Type | Description |
 | --- | --- | --- |
 | inclusion | Choice | A string, either `ALL`, `NONE` or `ANY` |
-| values | List[fidesKey] | A list of specific data privacy classifier fidesKeys |
+| values | List[fides_key] | A list of specific data privacy classifier fides_keys |
 
 ### Policy Rule Application
 
@@ -383,7 +383,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     ```yaml
     # Example Privacy Rule:
 
-    - fidesKey: "rejectTargetedMarketing"
+    - fides_key: "rejectTargetedMarketing"
       dataCategories:
         inclusion: "ANY"
         values:
@@ -435,7 +435,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     ```yaml
     # Example Privacy Rule:
 
-    - fidesKey: "rejectTargetedMarketing"
+    - fides_key: "rejectTargetedMarketing"
       dataCategories:
         inclusion: "ANY"
         values:

@@ -6,13 +6,13 @@ from fidesctl.cli.cli import (
     apply,
     delete,
     evaluate,
-    find,
     generate_dataset,
     get,
     ls,
     parse,
     ping,
     view_config,
+    webserver,
 )
 from fidesctl.core.config import get_config
 
@@ -41,10 +41,10 @@ def cli(ctx: click.Context, config_path: str) -> None:
 cli.add_command(apply)
 cli.add_command(delete)
 cli.add_command(evaluate)
-cli.add_command(find)
 cli.add_command(generate_dataset)
 cli.add_command(get)
 cli.add_command(ls)
 cli.add_command(parse)
 cli.add_command(ping)
 cli.add_command(view_config)
+cli.add_command(webserver)

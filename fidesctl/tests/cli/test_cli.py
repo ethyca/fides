@@ -19,14 +19,16 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "parse", "data/"])
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "parse", "default_taxonomy/"]
+    )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
 def test_apply(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "apply", "data/"])
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "apply", "default_taxonomy/"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -34,7 +36,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/", "--dry"]
+        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--dry"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -43,7 +45,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/", "--diff"]
+        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -52,30 +54,16 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "data/", "--dry", "--diff"]
+        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--dry", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_find(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "find", "system", "dataAnalyticsSystem"]
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_delete(test_config_path: str, test_cli_runner: CliRunner):
-    assert True
 
 
 @pytest.mark.integration
 def test_get(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "get", "organization", "1"]
+        cli, ["-f", test_config_path, "get", "data_category", "user_provided_data"]
     )
     print(result.output)
     assert result.exit_code == 0

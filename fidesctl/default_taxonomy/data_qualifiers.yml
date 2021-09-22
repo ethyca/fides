@@ -1,0 +1,15 @@
+data_qualifier:
+  - fides_key: "identified_data"
+    name: "Identified Data"
+
+  - fides_key: "pseudonymized_data"
+    name: "Pseudonymized Data"
+
+  - fides_key: "unlinked_pseudonymized_data"
+    name: "Unlinked Pseudonymized Data"
+
+  - fides_key: "anonymized_data"
+    name: "Anonymized Data"
+
+  - fides_key: "aggregated_data"
+    name: "Aggregated Data"

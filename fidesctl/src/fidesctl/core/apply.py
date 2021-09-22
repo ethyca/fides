@@ -25,7 +25,7 @@ def sort_create_update_unchanged(
     the local resource files.
     """
     server_resource_dict = {
-        server_resource.fidesKey: server_resource
+        server_resource.fides_key: server_resource
         for server_resource in server_resource_list
     }
 
@@ -33,27 +33,25 @@ def sort_create_update_unchanged(
     update_list = []
     unchanged_list = []
     for manifest_resource in manifest_resource_list:
-        resource_key = manifest_resource.fidesKey
+        resource_key = manifest_resource.fides_key
 
-        # Check if the resource's fidesKey matches one from the server
+        # Check if the resource's fides_key matches one from the server
         if resource_key in server_resource_dict.keys():
             server_resource = server_resource_dict[resource_key]
-            # Copy the ID since manifest files don't have them
-            manifest_resource.id = server_resource.id
 
             if manifest_resource == server_resource:
                 unchanged_list.append(manifest_resource)
             else:
                 if diff:
                     print(
-                        f"\nUpdated resource with fidesKey: {manifest_resource.fidesKey}"
+                        f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
                     )
                     pprint(DeepDiff(server_resource, manifest_resource))
                 update_list.append(manifest_resource)
 
         else:
             if diff:
-                print(f"\nNew resource with fidesKey: {manifest_resource.fidesKey}")
+                print(f"\nNew resource with fides_key: {manifest_resource.fides_key}")
                 pprint(manifest_resource)
             create_list.append(manifest_resource)
 
@@ -90,7 +88,7 @@ def execute_create_update_unchanged(
                 url=url,
                 headers=headers,
                 resource_type=resource_type,
-                resource_id=update_resource.id,
+                resource_id=update_resource.fides_key,
                 json_resource=update_resource.json(exclude_none=True),
             ),
             verbose=False,
@@ -123,7 +121,7 @@ def apply(
         echo_green(f"Processing {resource_type} resources...")
         resource_list = getattr(taxonomy, resource_type)
 
-        existing_keys = [resource.fidesKey for resource in resource_list]
+        existing_keys = [resource.fides_key for resource in resource_list]
         server_resource_list = get_server_resources(
             url, resource_type, existing_keys, headers
         )

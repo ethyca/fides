@@ -86,12 +86,12 @@ For a detailed walkthrough, we recommend following [our tutorial here](https://g
       ```yaml
     policy:
       - organizationId: 1
-        fidesKey: "primary_privacy_policy"
+        fides_key: "primary_privacy_policy"
         name: "Primary Privacy Policy"
         description: "The main privacy policy for our organization."
         rules:
           - organizationId: 1
-            fidesKey: "reject_targeted_marketing"
+            fides_key: "reject_targeted_marketing"
             name: "Reject Targeted Marketing"
             description: "Disallow marketing that is targeted towards users."
             dataCategories:
@@ -114,7 +114,7 @@ For a detailed walkthrough, we recommend following [our tutorial here](https://g
             dataQualifier: pseudonymized_data
             action: REJECT
           - organizationId: 1
-            fidesKey: "reject_some_marketing"
+            fides_key: "reject_some_marketing"
             name: "Reject Some Marketing"
             description: "Disallow some marketing that is targeted towards users."
             dataCategories:
@@ -182,7 +182,7 @@ We are committed to fostering a safe and collaborative environment, such that al
 
 ### Documentation
 
-Full Fides documentation is available [here](https://github.com/ethyca/fides/tree/main/docs/fides/docs).
+Full Fides documentation is available [here](https://ethyca.github.io/fides/).
 
 ### Contributing
 

@@ -1,5 +1,0 @@
-registry:
-  - organizationId: 1
-    fidesKey: "demoRegistry"
-    name: "Demo Registry"
-    description: "Demo Regsitry"
