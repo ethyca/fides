@@ -6,7 +6,7 @@ services:
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     depends_on:
       fidesdb:
-        condition: service_started
+        condition: service_healthy
     expose:
       - 8080
     ports:
@@ -21,6 +21,11 @@ services:
 
   fidesdb:
     image: postgres:12
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres:/var/lib/postgresql/data
     expose:
