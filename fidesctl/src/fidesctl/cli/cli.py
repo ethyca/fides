@@ -2,7 +2,7 @@
 import click
 
 from fidesapi.main import start_webserver
-from fidesapi import database
+from fidesapi.database import reset_db, init_db
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -154,9 +154,10 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 def initdb(ctx: click.Context) -> None:
     """
-    Initialize the database by running all of the existing migrations.
+    Initialize or upgrade the database by running all of the existing migrations.
     """
-    database.upgrade()
+    config = ctx.obj["CONFIG"]
+    init_db(config.api.database_url)
 
 
 @click.command()
@@ -206,7 +207,14 @@ def resetdb(ctx: click.Context) -> None:
     Drop all tables and metadata from the database.
     """
     config = ctx.obj["CONFIG"]
-    database.resetdb(config.api.database_url)
+    are_you_sure = input(
+        "This will drop all data from the Fides database! Are you sure [y/n]?"
+    )
+    if are_you_sure.lower() == "y":
+        reset_db(config.api.database_url)
+        print("Database reset!")
+    else:
+        print("Aborting!")
 
 
 @click.command()
