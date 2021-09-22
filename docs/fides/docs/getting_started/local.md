@@ -1,4 +1,4 @@
-# Running Fides Locally
+# Getting Started with Fides Locally (without Docker)
 
 Fides can also be spun up locally without relying on Docker or Make, however there are significantly more prerequisites. This is __not the recommended way to run Fides!__ Please see the [Getting Started with Docker](docker.md) guide for the recommended setup experience.
 

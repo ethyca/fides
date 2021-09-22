@@ -90,7 +90,7 @@ check-install:
 black: compose-build
 	@docker-compose run --no-deps $(IMAGE_NAME) \
 	black --check src/
-	
+
 mypy: compose-build
 	@docker-compose run --no-deps $(IMAGE_NAME) \
 	mypy
