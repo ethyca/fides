@@ -1,14 +1,20 @@
-from typing import List
+"""
+Contains all of the generic CRUD endpoints that can be
+generated programmatically for each resource.
+"""
+# pylint: disable=redefined-outer-name,cell-var-from-loop
+
+from typing import List, Dict
 
 from fastapi import APIRouter, status
-
-from fidesapi import db_session
-from fideslang import model_map
-from fidesapi.sql_models import sql_model_map
 from sqlalchemy import update as _update
 
+from fidesapi import db_session
+from fidesapi.sql_models import sql_model_map
+from fideslang import model_map
 
-def get_resource_type(router: APIRouter):
+
+def get_resource_type(router: APIRouter) -> str:
     "Extracts the name of the resource type from the prefix."
     return router.prefix[1:]
 
@@ -27,7 +33,7 @@ for resource_type, resource_model in model_map.items():
     async def create(
         resource: resource_model,
         resource_type: str = get_resource_type(router),
-    ):
+    ) -> Dict:
         """Create a resource."""
         session = db_session.create_session()
         try:
@@ -39,7 +45,9 @@ for resource_type, resource_model in model_map.items():
             session.close()
 
     @router.get("/", response_model=List[resource_model], name="List")
-    async def ls(resource_type: str = get_resource_type(router)):
+    async def ls(  # pylint: disable=invalid-name
+        resource_type: str = get_resource_type(router),
+    ) -> Dict:
         """Get a list of all of the resources of this type."""
         session = db_session.create_session()
         sql_model = sql_model_map[resource_type]
@@ -50,7 +58,9 @@ for resource_type, resource_model in model_map.items():
             session.close()
 
     @router.get("/{fides_key}", response_model=resource_model)
-    async def get(fides_key: str, resource_type: str = get_resource_type(router)):
+    async def get(
+        fides_key: str, resource_type: str = get_resource_type(router)
+    ) -> Dict:
         """Get a resource by its fides_key."""
         session = db_session.create_session()
         sql_model = sql_model_map[resource_type]
@@ -69,7 +79,7 @@ for resource_type, resource_model in model_map.items():
         fides_key: str,
         resource: resource_model,
         resource_type: str = get_resource_type(router),
-    ):
+    ) -> Dict:
         """Update a resource by its fides_key."""
         session = db_session.create_session()
         sql_model = sql_model_map[resource_type]
@@ -95,7 +105,9 @@ for resource_type, resource_model in model_map.items():
             session.close()
 
     @router.delete("/{fides_key}", status_code=status.HTTP_204_NO_CONTENT)
-    async def delete(fides_key: str, resource_type: str = get_resource_type(router)):
+    async def delete(
+        fides_key: str, resource_type: str = get_resource_type(router)
+    ) -> Dict:
         """Delete a resource by its fides_key."""
         session = db_session.create_session()
         sql_model = sql_model_map[resource_type]
@@ -114,5 +126,6 @@ for resource_type, resource_model in model_map.items():
             session.commit()
         finally:
             session.close()
+        return {}
 
     routers += [router]

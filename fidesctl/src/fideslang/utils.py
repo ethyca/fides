@@ -1,3 +1,7 @@
+"""
+Utils for use within various fideslang modules.
+"""
+
 from typing import Dict, Optional
 
 from fideslang import FidesModel, Taxonomy
@@ -6,7 +10,9 @@ from fideslang import FidesModel, Taxonomy
 def get_resource_by_fides_key(
     taxonomy: Taxonomy, fides_key: str
 ) -> Optional[Dict[str, FidesModel]]:
-    "Get a specific resource from a taxonomy by its fides_key."
+    """
+    Recurse through a taxonomy to find a specific resource its fides_key.
+    """
 
     return {
         resource_type: resource

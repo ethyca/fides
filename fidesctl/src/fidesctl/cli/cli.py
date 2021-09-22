@@ -4,7 +4,6 @@ import click
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
-    id_argument,
     manifests_dir_argument,
     resource_type_argument,
 )
@@ -47,8 +46,8 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @click.command()
 @click.pass_context
 @resource_type_argument
-@id_argument
-def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
+@fides_key_argument
+def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete an resource by its id.
     """
@@ -57,7 +56,7 @@ def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
         _api.delete(
             url=config.cli.server_url,
             resource_type=resource_type,
-            resource_id=resource_id,
+            resource_id=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -133,8 +132,8 @@ def generate_dataset(
 @click.command(hidden=True)
 @click.pass_context
 @resource_type_argument
-@id_argument
-def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
+@fides_key_argument
+def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Get an resource by its id.
     """
@@ -143,7 +142,7 @@ def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
         _api.get(
             url=config.cli.server_url,
             resource_type=resource_type,
-            resource_id=resource_id,
+            resource_id=fides_key,
             headers=config.user.request_headers,
         )
     )

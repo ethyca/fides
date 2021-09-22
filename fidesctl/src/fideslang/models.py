@@ -1,3 +1,6 @@
+"""
+Contains all of the Fides resources modeled as Pydantic models.
+"""
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -21,6 +24,7 @@ class FidesModel(BaseModel):
     fides_key: FidesKey
 
     class Config:
+        "Config for the FidesModel"
         extra = "ignore"
         orm_mode = True
 
@@ -31,27 +35,33 @@ class DataCategory(FidesModel):
 
     parent_key: Optional[FidesKey]
 
-    _no_self_reference = validator("parent_key", allow_reuse=True)(no_self_reference)
+    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
+        no_self_reference
+    )
 
 
 class DataQualifier(FidesModel):
     """The DataQualifier resource model."""
 
-    pass
-
 
 class DataSubject(FidesModel):
-    pass
+    """The DataSubject resource model."""
 
 
 class DataUse(FidesModel):
+    """The DataUse resource model."""
+
     parent_key: Optional[FidesKey]
 
-    _no_self_reference = validator("parent_key", allow_reuse=True)(no_self_reference)
+    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
+        no_self_reference
+    )
 
 
 # Dataset
 class DatasetField(BaseModel):
+    "The DatasetField resource model. This resource is nested within a Dataset."
+
     name: str
     description: str
     path: str
@@ -60,6 +70,8 @@ class DatasetField(BaseModel):
 
 
 class Dataset(FidesModel):
+    "The Dataset resource model."
+
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
     data_qualifier: Optional[FidesKey]
@@ -67,7 +79,9 @@ class Dataset(FidesModel):
     dataset_type: str
     fields: List[DatasetField]
 
-    _sort_fields = validator("fields", allow_reuse=True)(sort_list_objects_by_name)
+    _sort_fields: classmethod = validator("fields", allow_reuse=True)(
+        sort_list_objects_by_name
+    )
 
 
 # Evaluation
@@ -79,11 +93,18 @@ class EvaluationError(Exception):
 
 
 class StatusEnum(str, Enum):
+    "The model for possible evaluation results."
+
     FAIL = "FAIL"
     PASS = "PASS"
 
 
 class Evaluation(BaseModel):
+    """
+    The Evaluation resource model.
+
+    This resource is created after an evaluation is executed.
+    """
 
     status: StatusEnum
     details: List[str]
@@ -92,29 +113,60 @@ class Evaluation(BaseModel):
 
 # Organization
 class Organization(FidesModel):
+    """
+    The Organization resource model.
+
+    This resource is used as a way to organize all other resources.
+    """
+
     # It inherits this from FidesModel but Organization's don't have this field
     organiztion_parent_key: None = None
 
 
 # Policy
 class InclusionEnum(str, Enum):
+    """
+    The InclusionEnum resouce model.
+
+    Determines how the listed resources are included in the evaluation logic.
+    """
+
     ANY = "ANY"
     ALL = "ALL"
     NONE = "NONE"
 
 
 class ActionEnum(str, Enum):
+    """
+    The ActionEnum resource model.
+
+    Describes what the result of the PolicyRule should be if it is fulfilled.
+    """
+
     ACCEPT = "ACCEPT"
     REJECT = "REJECT"
     REQUIRE = "REQUIRE"
 
 
 class PrivacyRule(BaseModel):
+    """
+    The PrivacyRule resource model.
+
+    A list of privacy data types and what inclusion method to use.
+    """
+
     inclusion: InclusionEnum
     values: List[FidesKey]
 
 
 class PolicyRule(FidesModel):
+    """
+    The PolicyRule resource model.
+
+    Describes combination of the various types of privacy data types
+    and what action that combination constitutes.
+    """
+
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
@@ -123,18 +175,38 @@ class PolicyRule(FidesModel):
 
 
 class Policy(FidesModel):
+    """
+    The Policy resource model.
+
+    An object used to organize a list of PolicyRules.
+    """
+
     rules: List[PolicyRule]
 
-    _sort_rules = validator("rules", allow_reuse=True)(sort_list_objects_by_key)
+    _sort_rules: classmethod = validator("rules", allow_reuse=True)(
+        sort_list_objects_by_key
+    )
 
 
 # Registry
 class Registry(FidesModel):
-    pass
+    """
+    The Registry resource model.
+
+    Systems can be assigned to this resource, but it doesn't inherently
+    point to any other resources.
+    """
 
 
 # System
 class PrivacyDeclaration(BaseModel):
+    """
+    The PrivacyDeclaration resource model.
+
+    States a function of a system, and describes how it relates
+    to the privacy data types.
+    """
+
     name: str
     data_categories: List[FidesKey]
     data_use: FidesKey
@@ -144,17 +216,23 @@ class PrivacyDeclaration(BaseModel):
 
 
 class System(FidesModel):
+    """
+    The System resource model.
+
+    Describes an application and includes a list of PrivacyDeclaration resources.
+    """
+
     registry_id: Optional[int]
     meta: Optional[Dict[str, str]]
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
 
-    _sort_privacy_declarations = validator("privacy_declarations", allow_reuse=True)(
-        sort_list_objects_by_name
-    )
+    _sort_privacy_declarations: classmethod = validator(
+        "privacy_declarations", allow_reuse=True
+    )(sort_list_objects_by_name)
 
-    _no_self_reference = validator(
+    _no_self_reference: classmethod = validator(
         "system_dependencies", allow_reuse=True, each_item=True
     )(no_self_reference)
 

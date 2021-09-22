@@ -1,3 +1,7 @@
+"""
+Reusable utilities meant to make repetitive api-related tasks easier.
+"""
+
 from typing import List, Dict, Iterable
 
 from fidesctl.core import api
@@ -16,6 +20,7 @@ def get_server_resources(
     Get a list of resources from the server that match the provided keys.
 
     If the resource does not exist on the server, an error will _not_ be thrown.
+    Instead, an empty object will be stored and then filtered out.
     """
     raw_server_resource_list: Iterable[Dict] = filter(
         None,

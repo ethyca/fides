@@ -1,3 +1,7 @@
+"""
+Contains all of the additional validation for the resource models.
+"""
+
 import re
 from typing import List, Dict, Pattern
 
@@ -8,7 +12,8 @@ class FidesValidationError(Exception):
     """Custom exception for when the pydantic ValidationError can't be used."""
 
     def __init__(self, message: str) -> None:
-        super().__init__(message)
+        self.message = message
+        super().__init__()
 
 
 class FidesKey(ConstrainedStr):
@@ -29,18 +34,31 @@ class FidesKey(ConstrainedStr):
 
 
 def sort_list_objects_by_name(values: List) -> List:
-    """Sort objects in a list by their name. This makes resource comparisons deterministic."""
+    """
+    Sort objects in a list by their name.
+    This makes resource comparisons deterministic.
+    """
     values.sort(key=lambda value: value.name)
     return values
 
 
 def sort_list_objects_by_key(values: List) -> List:
-    """Sort objects in a list by their name. This makes resource comparisons deterministic."""
+    """
+    Sort objects in a list by their fides_key.
+    This makes resource comparisons deterministic.
+    """
     values.sort(key=lambda value: value.fides_key)
     return values
 
 
 def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
+    """
+    Check to make sure that the fides_key doesn't match other fides_key
+    references within an object.
+
+    i.e. DataCategory.parent_key != DataCategory.fides_key
+    """
+
     if value == values["fides_key"]:
         raise FidesValidationError("FidesKey can not self-reference!")
     return value
