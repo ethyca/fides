@@ -11,8 +11,7 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_red
-from fideslang.models.fides_model import FidesModel, FidesKey
-from fideslang.models.taxonomy import Taxonomy
+from fideslang.models import FidesModel, FidesKey, Taxonomy
 from fideslang.utils import get_resource_by_fides_key
 
 
@@ -21,7 +20,7 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
     Use type-signature introspection to figure out which fields
     include the FidesKey type and return all of those values.
 
-    Note that this finds _all_ FidesKeys, including the resource's own FidesKey
+    Note that this finds _all_ fides_keys, including the resource's own fides_key
     """
 
     referenced_fides_keys: Set[FidesKey] = set()

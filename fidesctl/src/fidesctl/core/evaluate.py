@@ -8,10 +8,15 @@ from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green
-from fideslang import Policy, Taxonomy
-from fideslang.models.evaluation import Evaluation, EvaluationError, StatusEnum
-from fideslang.models.policy import InclusionEnum
-from fideslang.models.validation import FidesKey
+from fideslang.models import (
+    Evaluation,
+    EvaluationError,
+    StatusEnum,
+    InclusionEnum,
+    Policy,
+    Taxonomy,
+)
+from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
@@ -32,9 +37,9 @@ def get_all_server_policies(
         api.ls(url=url, resource_type="policy", headers=headers), verbose=False
     )
     policy_keys = [
-        resource["fidesKey"]
-        for resource in ls_response.json().get("data")
-        if resource["fidesKey"] not in exclude
+        resource["fides_key"]
+        for resource in ls_response.json()
+        if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
         url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
@@ -48,8 +53,8 @@ def compare_rule_to_declaration(
     rule_inclusion: InclusionEnum,
 ) -> bool:
     """
-    Compare the list of FidesKeys within the rule against the list
-    of FidesKeys from the declaration and use the rule's inclusion
+    Compare the list of fides_keys within the rule against the list
+    of fides_keys from the declaration and use the rule's inclusion
     field to determine whether the rule is triggered or not.
     """
     inclusion_map: Dict[InclusionEnum, Callable] = {
@@ -75,29 +80,29 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     for policy in taxonomy.policy:
         for rule in policy.rules:
             for system in taxonomy.system:
-                for declaration in system.privacyDeclarations:
+                for declaration in system.privacy_declarations:
 
                     data_category_result = compare_rule_to_declaration(
-                        rule_types=rule.dataCategories.values,
-                        declaration_types=declaration.dataCategories,
-                        rule_inclusion=rule.dataCategories.inclusion,
+                        rule_types=rule.data_categories.values,
+                        declaration_types=declaration.data_categories,
+                        rule_inclusion=rule.data_categories.inclusion,
                     )
 
                     # A declaration only has one data use, so it gets put in a list
                     data_use_result = compare_rule_to_declaration(
-                        rule_types=rule.dataUses.values,
-                        declaration_types=[declaration.dataUse],
-                        rule_inclusion=rule.dataUses.inclusion,
+                        rule_types=rule.data_uses.values,
+                        declaration_types=[declaration.data_use],
+                        rule_inclusion=rule.data_uses.inclusion,
                     )
 
                     data_subject_result = compare_rule_to_declaration(
-                        rule_types=rule.dataSubjects.values,
-                        declaration_types=declaration.dataSubjects,
-                        rule_inclusion=rule.dataSubjects.inclusion,
+                        rule_types=rule.data_subjects.values,
+                        declaration_types=declaration.data_subjects,
+                        rule_inclusion=rule.data_subjects.inclusion,
                     )
 
                     data_qualifier_result = (
-                        declaration.dataQualifier == rule.dataQualifier
+                        declaration.data_qualifier == rule.data_qualifier
                     )
 
                     if all(
@@ -111,9 +116,9 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
                         evaluation_detail_list += [
                             "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
                                 declaration.name,
-                                system.fidesKey,
+                                system.fides_key,
                                 rule.name,
-                                policy.fidesKey,
+                                policy.fides_key,
                             )
                         ]
 
@@ -142,14 +147,14 @@ def evaluate(
 
     # Get all of the policies to evaluate
     local_policy_keys = (
-        [policy.fidesKey for policy in taxonomy.policy] if taxonomy.policy else None
+        [policy.fides_key for policy in taxonomy.policy] if taxonomy.policy else None
     )
     policy_list = get_all_server_policies(url, headers, exclude=local_policy_keys)
     taxonomy.policy += policy_list
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
-            "\n".join([key.fidesKey for key in taxonomy.policy])
+            "\n".join([key.fides_key for key in taxonomy.policy])
         )
     )
     print("-" * 10)

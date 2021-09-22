@@ -10,4 +10,4 @@ def test_get_config():
     config = get_config("tests/test_config.toml")
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
-    assert config.cli.server_url == "http://fidesapi:8080"
+    assert config.cli.server_url == "http://fidesctl:8080"

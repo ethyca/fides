@@ -34,7 +34,7 @@ def generate_table_manifests(
         {
             "name": table,
             "description": f"Fides Generated Description for Table: {table}",
-            "datasetFields": [
+            "dataset_fields": [
                 {
                     "name": column,
                     "description": f"Fides Generated Description for Column: {column}",
@@ -59,12 +59,12 @@ def generate_dataset_info(engine: Engine) -> Dict[str, List]:
     dataset_info = {
         "dataset": [
             {
-                "organizationId": 1,
-                "fidesKey": name,
+                "organization_fides_key": 1,
+                "fides_key": name,
                 "name": name,
                 "description": f"Fides Generated Description for Dataset: {name}",
-                "datasetType": dataset_type,
-                "datasetLocation": dataset_location,
+                "dataset_type": dataset_type,
+                "dataset_location": dataset_location,
             }
         ]
     }

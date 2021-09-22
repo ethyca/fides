@@ -1,3 +1,7 @@
+"""
+Contains all of the options/arguments used by the CLI commands.
+"""
+
 from typing import Callable
 
 import click
@@ -9,15 +13,6 @@ def resource_type_argument(command: Callable) -> Callable:
     "Add the resource_type option."
     command = click.argument(
         "resource_type", type=click.Choice(model_list, case_sensitive=False)
-    )(command)
-    return command
-
-
-def id_argument(command: Callable) -> Callable:
-    "Add the id argument."
-    command = click.argument(
-        "resource_id",
-        type=str,
     )(command)
     return command
 

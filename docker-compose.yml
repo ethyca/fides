@@ -3,52 +3,37 @@ services:
     build:
       context: fidesctl
       dockerfile: Dockerfile
-    command: /bin/bash -c "sleep infinity"
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     depends_on:
-      fidesapi:
+      fidesdb:
         condition: service_healthy
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
     volumes:
       - type: bind
         source: .
         target: /fides
         read_only: False
     env_file:
-      - env_files/fidesctl.env
+      - env_files/fides.env
 
-  fidesapi:
-    build:
-      context: fidesapi
-      dockerfile: Dockerfile
-      target: local
-    command: sbt ~jetty:start
-    depends_on:
-      fides-db:
-        condition: service_started
+  fidesdb:
+    image: postgres:12
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    expose:
-      - 8080
-    ports:
-      - "8080:8080"
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
-      - ./fidesapi:/usr/src/fidesapi
-    env_file:
-      - env_files/fides_server.env
-
-  fides-db:
-    image: mysql:8
-    volumes:
-      - mysql:/var/lib/mysql
+      - postgres:/var/lib/postgresql/data
     expose:
-      - 3306
+      - 5432
     ports:
-      - "3306:3306"
+      - "5432:5432"
     env_file:
-      - env_files/mysql_db.env
+      - env_files/db.env
 
   docs:
     build:
@@ -62,4 +47,4 @@ services:
       - "8000:8000"
 
 volumes:
-  mysql:
+  postgres:

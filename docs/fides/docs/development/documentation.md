@@ -20,7 +20,7 @@ Other Fides terms, like "Data Category" or "System", should also be capitalized 
 
 > When a System is applied, it is either created or updated through the FidesAPI.
 >
-> The System model requires a field called `fidesKey`.
+> The System model requires a field called `fides_key`.
 
 ## Previewing docs locally
 

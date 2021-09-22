@@ -52,8 +52,8 @@ def test_union_manifests(test_manifests):
             {
                 "name": "Test Dataset 1",
                 "description": "Test Dataset 1",
-                "fidesKey": "some_dataset",
-                "organizationId": 1,
+                "fides_key": "some_dataset",
+                "organization_fides_key": 1,
                 "datasetType": {},
                 "datasetLocation": "somedb:3306",
                 "datasetTables": [],
@@ -61,8 +61,8 @@ def test_union_manifests(test_manifests):
             {
                 "name": "Test Dataset 2",
                 "description": "Test Dataset 2",
-                "fidesKey": "another_dataset",
-                "organizationId": 1,
+                "fides_key": "another_dataset",
+                "organization_fides_key": 1,
                 "datasetType": {},
                 "datasetLocation": "somedb:3306",
                 "datasetTables": [],
@@ -71,17 +71,17 @@ def test_union_manifests(test_manifests):
         "system": [
             {
                 "name": "Test System 1",
-                "organizationId": 1,
+                "organization_fides_key": 1,
                 "systemType": "mysql",
                 "description": "Test System 1",
-                "fidesKey": "some_system",
+                "fides_key": "some_system",
             },
             {
                 "name": "Test System 2",
-                "organizationId": 1,
+                "organization_fides_key": 1,
                 "systemType": "mysql",
                 "description": "Test System 2",
-                "fidesKey": "another_system",
+                "fides_key": "another_system",
             },
         ],
     }
@@ -102,36 +102,36 @@ def test_ingest_manifests(populated_manifest_dir, tmp_path):
     assert sorted(actual_result["dataset"], key=lambda x: x["name"]) == [
         {
             "name": "Test Dataset 1",
-            "organizationId": 1,
+            "organization_fides_key": 1,
             "datasetType": {},
             "datasetLocation": "somedb:3306",
             "description": "Test Dataset 1",
-            "fidesKey": "some_dataset",
+            "fides_key": "some_dataset",
             "datasetTables": [],
         },
         {
             "name": "Test Dataset 2",
             "description": "Test Dataset 2",
-            "organizationId": 1,
+            "organization_fides_key": 1,
             "datasetType": {},
             "datasetLocation": "somedb:3306",
-            "fidesKey": "another_dataset",
+            "fides_key": "another_dataset",
             "datasetTables": [],
         },
     ]
     assert sorted(actual_result["system"], key=lambda x: x["name"]) == [
         {
             "name": "Test System 1",
-            "organizationId": 1,
+            "organization_fides_key": 1,
             "systemType": "mysql",
             "description": "Test System 1",
-            "fidesKey": "some_system",
+            "fides_key": "some_system",
         },
         {
             "name": "Test System 2",
-            "organizationId": 1,
+            "organization_fides_key": 1,
             "systemType": "mysql",
             "description": "Test System 2",
-            "fidesKey": "another_system",
+            "fides_key": "another_system",
         },
     ]

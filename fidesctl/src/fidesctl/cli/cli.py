@@ -4,7 +4,6 @@ import click
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
-    id_argument,
     manifests_dir_argument,
     resource_type_argument,
 )
@@ -19,6 +18,7 @@ from fidesctl.core import (
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
+from fidesapi.main import start_webserver
 
 
 @click.command()
@@ -47,8 +47,8 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @click.command()
 @click.pass_context
 @resource_type_argument
-@id_argument
-def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
+@fides_key_argument
+def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete an resource by its id.
     """
@@ -57,7 +57,7 @@ def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
         _api.delete(
             url=config.cli.server_url,
             resource_type=resource_type,
-            resource_id=resource_id,
+            resource_id=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -70,7 +70,7 @@ def delete(ctx: click.Context, resource_type: str, resource_id: str) -> None:
     "-k",
     "--fides-key",
     default="",
-    help="The fidesKey for the specific Policy to be evaluated.",
+    help="The fides_key for the specific Policy to be evaluated.",
 )
 @click.option(
     "-m", "--message", help="Description of the changes this evaluation encapsulates."
@@ -112,25 +112,6 @@ def evaluate(
 
 @click.command()
 @click.pass_context
-@resource_type_argument
-@fides_key_argument
-def find(ctx: click.Context, resource_type: str, fides_key: str) -> None:
-    """
-    Get an resource by its fidesKey.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.find(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_key=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 def generate_dataset(
@@ -152,8 +133,8 @@ def generate_dataset(
 @click.command(hidden=True)
 @click.pass_context
 @resource_type_argument
-@id_argument
-def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
+@fides_key_argument
+def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Get an resource by its id.
     """
@@ -162,7 +143,7 @@ def get(ctx: click.Context, resource_type: str, resource_id: str) -> None:
         _api.get(
             url=config.cli.server_url,
             resource_type=resource_type,
-            resource_id=resource_id,
+            resource_id=fides_key,
             headers=config.user.request_headers,
         )
     )
@@ -216,3 +197,12 @@ def view_config(ctx: click.Context) -> None:
     """
     config = ctx.obj["CONFIG"]
     pretty_echo(config.dict(), color="green")
+
+
+@click.command()
+@click.pass_context
+def webserver(ctx: click.Context) -> None:
+    """
+    Starts the API webserver.
+    """
+    start_webserver()

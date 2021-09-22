@@ -27,8 +27,8 @@ def parse_manifest(
         raise SystemExit
     except Exception as err:
         echo_red(
-            "Failed to parse {} from {} with fidesKey: {}".format(
-                resource_type, resource_source, resource["fidesKey"]
+            "Failed to parse {} from {} with fides_key: {}".format(
+                resource_type, resource_source, resource["fides_key"]
             )
         )
         raise err

@@ -63,11 +63,21 @@ class CLISettings(FidesSettings):
         env_prefix = "FIDES__CLI__"
 
 
+class APISettings(FidesSettings):
+    """Class used to store values from the 'cli' section of the config."""
+
+    database_url: str
+
+    class Config:
+        env_prefix = "FIDES__API__"
+
+
 class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    user: UserSettings
+    api: APISettings
     cli: CLISettings
+    user: UserSettings
 
 
 def get_config(config_path: str = "") -> FidesConfig:
@@ -93,8 +103,9 @@ def get_config(config_path: str = "") -> FidesConfig:
             try:
                 settings = toml.load(file_location)
                 fides_config = FidesConfig(
-                    user=UserSettings.parse_obj(settings["user"]),
+                    api=APISettings.parse_obj(settings["api"]),
                     cli=CLISettings.parse_obj(settings["cli"]),
+                    user=UserSettings.parse_obj(settings["user"]),
                 )
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
