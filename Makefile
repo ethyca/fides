@@ -39,7 +39,7 @@ help:
 check-db: compose-build
 	@echo "Check for new migrations to run..."
 	@docker-compose down
-	@docker-compose run $(IMAGE_NAME) alembic upgrade head
+	@docker-compose run $(IMAGE_NAME) initdb
 	@make teardown
 
 .PHONY: init-db
@@ -47,7 +47,7 @@ init-db: compose-build
 	@echo "Drop the db and run the migrations..."
 	@docker-compose down
 	@docker volume prune -f
-	@docker-compose run $(IMAGE_NAME) alembic upgrade head
+	@docker-compose run $(IMAGE_NAME) fidesctl initdb
 	@make teardown
 
 .PHONY: api
