@@ -4,6 +4,7 @@ Contains the code that sets up the API.
 
 from typing import Dict
 
+import uvicorn
 from fastapi import FastAPI
 
 from fidesapi import crud, db_session
@@ -27,6 +28,11 @@ def configure_db(database_url: str) -> None:
 async def healthcheck() -> Dict:
     "Define a simple healthcheck endpoint that will confirm if the API is running."
     return {"data": {"message": "Fides service is healthy!"}}
+
+
+def start_webserver():
+    "Run the webserver."
+    uvicorn.run(app, host="0.0.0.0", port=8080)
 
 
 config = get_config()

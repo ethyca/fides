@@ -18,6 +18,7 @@ from fidesctl.core import (
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
+from fidesapi.main import start_webserver
 
 
 @click.command()
@@ -196,3 +197,12 @@ def view_config(ctx: click.Context) -> None:
     """
     config = ctx.obj["CONFIG"]
     pretty_echo(config.dict(), color="green")
+
+
+@click.command()
+@click.pass_context
+def webserver(ctx: click.Context) -> None:
+    """
+    Starts the API webserver.
+    """
+    start_webserver()

@@ -12,6 +12,7 @@ from fidesctl.cli.cli import (
     parse,
     ping,
     view_config,
+    webserver,
 )
 from fidesctl.core.config import get_config
 
@@ -46,3 +47,4 @@ cli.add_command(ls)
 cli.add_command(parse)
 cli.add_command(ping)
 cli.add_command(view_config)
+cli.add_command(webserver)
