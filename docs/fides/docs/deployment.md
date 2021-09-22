@@ -4,9 +4,8 @@ We recommend deploying Fides with `Docker` using the included docker-compose fil
 
 ## Requirements
 
-1. Install MySQL 8
+1. Install Postgres 12
 1. Install Python 3.8 or newer (including pip)
-1. Install Docker
 
 ## Setup
 
