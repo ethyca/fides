@@ -36,49 +36,52 @@ With these privacy data types defined, subsequent resources can now be defined w
 
 Using these primitives, as well as some additional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
 
+## :rocket: Quick Start
 
-## :wrench: Installation
-
-### Requirements
-
-Fides requires Python 3.8+. If you're new to Python, we recommend installing the [Anaconda distribution](https://www.anaconda.com/products/individual).
-
-### Latest Release
-
-To install Fides, run:
-
+First, follow the [Getting Started with Docker](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md) guide until you're able to run `fidesctl ping` successfully:
 ```bash
-pip install fidesctl
+root@796cfde906f1:/fides/fidesctl# fidesctl ping
+Pinging http://fidesapi:8080...
+Ping Successful!
 ```
 
-### Bleeding Edge
+For a detailed walkthrough, we recommend following [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but if you're looking for a quick start you can follow these 5 easy steps:
 
-For development or just to try out the latest features, you may want to install Fides directly from source.
+1. Launch a shell with `make cli` and confirm you can `fidesctl ping` (see above).
 
-Please note that the main branch of Fides is not guaranteed to be stable, and is not suitable for production environments.
-
-```bash
-git clone https://github.com/ethyca/fides.git
-pip install -e .
-```
-
-
-## :rocket: Getting Started
-
-We recommend getting started with [our tutorial here](https://ethyca.github.io/fides/tutorial/), but it's simple to jump right in with 5 easy steps:
-
-1. Install Fides via Docker (you can follow [this guide](https://ethyca.github.io/fides/getting_started/docker/))
-
-1. Create a directory for your Fides resources to live in, like `fides_resources/`.
+1. Create a directory for your Fides resources to live in:
 
     ```bash
     mkdir fides_resources/
     ```
 
-1. Let's make our first Policy, you don't even need a lawyer :wink: using our template, modify and add what ever rules you'd like
+1. Copy the example `System` resource to a new file, `fides_resources/system.yaml`. It's a basic demo system with a single declaration which demonstrates the basic syntax:
 
     <details>
-    <summary>Here's an example policy.yaml to get you started</summary>
+        <summary>Example system.yaml to get you started</summary>
+
+      ```yaml
+    system:
+      - organizationId: 1
+        fidesKey: "demo_system"
+        name: "Demo System"
+        description: "A system used for demos."
+        systemType: "Service"
+        privacyDeclarations:
+          - name: "Analyze Anonymous Content"
+            dataCategories:
+              - "account_data"
+            dataUse: "provide"
+            dataQualifier: "anonymized_data"
+            dataSubjects:
+              - "customer"
+      ```
+    </details>
+
+1. Copy the example `Policy` resource to a new file, `fides_resources/policy.yaml`. It contains two example rules that you can evaluate against:
+
+    <details>
+    <summary>Example policy.yaml to get you started</summary>
 
       ```yaml
     policy:
@@ -139,48 +142,47 @@ We recommend getting started with [our tutorial here](https://ethyca.github.io/f
 
     </details>
 
-1. And now, create a System for Fides to check your Policy
+1. Evaluate your `System` and `Policy` resources using `fidesctl evaluate fides_resources/`. This will parse those resource files and evaluate the policy rules against the system to ensure everything is compliant:
+```
+root@55550d834f96:/fides/fidesctl# fidesctl evaluate fides_resources/
+Loading resource manifests from: fides_resources/
+Taxonomy successfully created.
+----------
+Processing system resources...
+CREATED 1 system resources.
+UPDATED 0 system resources.
+SKIPPED 0 system resources.
+----------
+Processing policy resources...
+CREATED 1 policy resources.
+UPDATED 0 policy resources.
+SKIPPED 0 policy resources.
+----------
+Loading resource manifests from: fides_resources/
+Taxonomy successfully created.
+Evaluating the following policies:
+primary_privacy_policy
+test_policy_1
+----------
+Checking for missing resources...
+Executing evaluations...
+Sending the evaluation results to the server...
+Evaluation passed!
+```
 
-    <details>
-        <summary>Here's an example system .yaml to get you started</summary>
+Congrats, you've successfully declared a few resources and evaluated a policy!
 
-      ```yaml
-    system:
-      - organizationId: 1
-        fides_key: "demo_system"
-        name: "Demo System"
-        description: "A system used for demos."
-        systemType: "Service"
-        privacyDeclarations:
-          - name: "Analyze Anonymous Content"
-            dataCategories:
-              - "account_data"
-            dataUse: "provide"
-            dataQualifier: "anonymized_data"
-            dataSubjects:
-              - "anonymous_user"
-            datasetReferences:
-              - "sample_db_dataset.Email"
-        systemDependencies:
-          - user_service
-      ```
+Now we'd really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
 
-    </details>
+## :book: Learn More
 
-1. Check your `system` compliance by using `fidesctl evaluate fides_resources/`. This will create all of your defined objects on the server and then run an evaluation. You've now finished a simple Fides workflow!
-
-And ICYMI, we really recommend doing [the tutorial](https://ethyca.github.io/fides/tutorial/). It's helpful to contextualize how you can use Fides in your organization, today!
-
-
-## :book: Resources
-
-Fides provides a variety of resources to help guide you to a successful outcome.
+Fides provides a variety of docs to help guide you to a successful outcome.
 
 We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
-Full Fides documentation is available [here](https://github.com/ethyca/fides/tree/main/docs/fides/docs).
+Full Fides documentation is available [here](https://ethyca.github.io/fides/).
 
 ### Contributing
 

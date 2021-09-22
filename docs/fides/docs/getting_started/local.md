@@ -1,4 +1,4 @@
-# Running Fidesctl Locally
+# Getting Started with Fides Locally (without Docker)
 
 ---
 
