@@ -1,6 +1,8 @@
 """Contains all of the CLI commands for Fides."""
 import click
 
+from fidesapi.main import start_webserver
+from fidesapi import database
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -18,7 +20,6 @@ from fidesctl.core import (
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
-from fidesapi.main import start_webserver
 
 
 @click.command()
@@ -130,7 +131,7 @@ def generate_dataset(
     _generate_dataset.generate_dataset(connection_string, output_filename)
 
 
-@click.command(hidden=True)
+@click.command()
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
@@ -147,6 +148,16 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
             headers=config.user.request_headers,
         )
     )
+
+
+@click.command()
+@click.pass_context
+def init_db(ctx: click.Context) -> None:
+    """
+    Initialize or upgrade the database by running all of the existing migrations.
+    """
+    config = ctx.obj["CONFIG"]
+    database.init_db(config.api.database_url)
 
 
 @click.command()
@@ -187,6 +198,23 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     click.secho(f"Pinging {config.cli.server_url}...", fg="green")
     _api.ping(config.cli.server_url)
     click.secho("Ping Successful!", fg="green")
+
+
+@click.command()
+@click.pass_context
+def reset_db(ctx: click.Context) -> None:
+    """
+    Drop all tables and metadata from the database.
+    """
+    config = ctx.obj["CONFIG"]
+    are_you_sure = input(
+        "This will drop all data from the Fides database! Are you sure [y/n]?"
+    )
+    if are_you_sure.lower() == "y":
+        database.reset_db(config.api.database_url)
+        print("Database reset!")
+    else:
+        print("Aborting!")
 
 
 @click.command()

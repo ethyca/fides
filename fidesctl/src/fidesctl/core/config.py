@@ -7,7 +7,7 @@ from typing import Dict, Optional, Tuple
 import toml
 
 from pydantic.env_settings import SettingsSourceCallable
-from pydantic import BaseModel, BaseSettings, validator, AnyHttpUrl
+from pydantic import BaseModel, BaseSettings, validator
 
 from fidesctl.core.utils import echo_red, generate_request_headers
 
@@ -39,8 +39,8 @@ class FidesSettings(BaseSettings):
 class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    user_id: str
-    api_key: str
+    user_id: str = "1"
+    api_key: str = "test_api_key"
     request_headers: Dict[str, str] = dict()
 
     # Automatically generate the request_headers on object creation
@@ -51,25 +51,25 @@ class UserSettings(FidesSettings):
         return generate_request_headers(values["user_id"], values["api_key"])
 
     class Config:
-        env_prefix = "FIDES__USER__"
+        env_prefix = "FIDESCTL__USER__"
 
 
 class CLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    server_url: AnyHttpUrl
+    server_url: str = "http://localhost:8080"
 
     class Config:
-        env_prefix = "FIDES__CLI__"
+        env_prefix = "FIDESCTL__CLI__"
 
 
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    database_url: str
+    database_url: str = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
 
     class Config:
-        env_prefix = "FIDES__API__"
+        env_prefix = "FIDESCTL__API__"
 
 
 class FidesConfig(BaseModel):
@@ -93,9 +93,9 @@ def get_config(config_path: str = "") -> FidesConfig:
 
     possible_config_locations = [
         config_path,
-        os.getenv("FIDES_CONFIG_PATH", ""),
-        os.path.join(os.curdir, "fides.toml"),
-        os.path.join(os.path.expanduser("~"), "fides.toml"),
+        os.getenv("FIDESCTL_CONFIG_PATH", ""),
+        os.path.join(os.curdir, "fidesctl.toml"),
+        os.path.join(os.path.expanduser("~"), "fidesctl.toml"),
     ]
 
     for file_location in possible_config_locations:
@@ -103,9 +103,9 @@ def get_config(config_path: str = "") -> FidesConfig:
             try:
                 settings = toml.load(file_location)
                 fides_config = FidesConfig(
-                    api=APISettings.parse_obj(settings["api"]),
-                    cli=CLISettings.parse_obj(settings["cli"]),
-                    user=UserSettings.parse_obj(settings["user"]),
+                    api=APISettings.parse_obj(settings.get("api", {})),
+                    cli=CLISettings.parse_obj(settings.get("cli", {})),
+                    user=UserSettings.parse_obj(settings.get("user", {})),
                 )
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")

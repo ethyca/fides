@@ -1,22 +1,22 @@
 # Tutorial
 
-This tutorial walks you through the process of getting up and running with Fides.
+This tutorial walks you through the process of getting up and running with Fidesctl.
 
 ## Getting Started
 
-Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](getting_started/local.md) guide to get Fides up and running on your machine.
+Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](getting_started/local.md) guide to get Fidesctl up and running on your machine.
 
 ## Writing Manifest Files
 
-The next step is to write the manifest files that describe your privacy data usage with the Fides privacy ontology. Manifest files are written in YAML and are used to create and update resources via the FidesAPI.
+The next step is to write the manifest files that describe your privacy data usage with the Fides privacy ontology. Manifest files are written in YAML and are used to create and update resources via the Fidesctl API.
 
 First create a directory for the manifests to live in:
 
-`mkdir fides_manifests/`
+`mkdir fides_resources/`
 
 Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fides to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
 
-=== "fides_manifests/policy.yml"
+=== "fides_resources/policy.yml"
 
     ```yaml
     policy:
@@ -75,7 +75,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             action: REJECT
     ```
 
-### "fides_manifests/dataset.yml"
+### "fides_resources/dataset.yml"
 
     ```yaml
     dataset:
@@ -103,7 +103,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
             path: "sample_db_dataset.food_preference"
     ```
 
-=== "fides_manifests/system.yml"
+=== "fides_resources/system.yml"
 
     ```yaml
     system:
@@ -131,9 +131,9 @@ Once you've finished writing your manifest files, it's time to apply them to the
 
 If we assume the same directory name as before for where our manifests are located, the command would be:
 
-`fidesctl apply fides_manifests/`
+`fidesctl apply fides_resources/`
 
-This will load all files ending in either `.yaml` or `.yml` within that directory. Any file formatting issues within the manifests will be caught and shown to the user.
+This will load all files ending in either `.yaml` or `.yml` within that directory. Any invalid resource definitions within the manifests will be caught and shown to the user.
 
 ## Evaluation
 

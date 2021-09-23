@@ -16,38 +16,30 @@ help:
 	@echo --------------------
 	@echo Development Targets:
 	@echo ----
-	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc.
+	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc. This will wipe out everything!
 	@echo ----
-	@echo cli - Spins up the database, the api, and starts a shell within a docker container with the local fidesctl files mounted.
+	@echo cli - Spins up the database, the api, and starts a shell within a Docker container with the local Fidesctl files mounted.
 	@echo ----
-	@echo build - Builds the fidesctl Docker image.
+	@echo build - Builds the Fidesctl Docker image.
 	@echo ----
-	@echo check-all - Run all of the available CI checks for fidesctl locally.
+	@echo check-all - Run all of the available CI checks for Fidesctl locally.
 	@echo ----
-	@echo init-db - Initializes the database docker container and runs migrations. Run this if your database seems to be the cause of test failures.
+	@echo init-db - Run any available migrations.
 	@echo ----
-	@echo api - Spins up the database and fidesapi, reachable from the host machine at localhost.
+	@echo api - Spins up the database and API, reachable from the host machine at localhost.
 	@echo ----
-	@echo cli - Spins up the database, fidesapi, and starts a shell within the fidesapi container to run fidesctl commands
+	@echo cli - Spins up the database, API, and starts a shell within the API container to run Fidesctl CLI commands.
 	@echo --------------------
 
 ####################
 # Dev
 ####################
 
-.PHONY: check-db
-check-db: compose-build
-	@echo "Check for new migrations to run..."
-	@docker-compose down
-	@docker-compose run $(IMAGE_NAME) alembic upgrade head
-	@make teardown
-
 .PHONY: init-db
 init-db: compose-build
-	@echo "Drop the db and run the migrations..."
+	@echo "Check for new migrations to run..."
 	@docker-compose down
-	@docker volume prune -f
-	@docker-compose run $(IMAGE_NAME) alembic upgrade head
+	@docker-compose run $(IMAGE_NAME) fidesctl init-db
 	@make teardown
 
 .PHONY: api
