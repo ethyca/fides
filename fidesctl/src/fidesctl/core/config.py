@@ -51,7 +51,7 @@ class UserSettings(FidesSettings):
         return generate_request_headers(values["user_id"], values["api_key"])
 
     class Config:
-        env_prefix = "FIDES__USER__"
+        env_prefix = "FIDESCTL__USER__"
 
 
 class CLISettings(FidesSettings):
@@ -60,7 +60,7 @@ class CLISettings(FidesSettings):
     server_url: str = "http://localhost:8080"
 
     class Config:
-        env_prefix = "FIDES__CLI__"
+        env_prefix = "FIDESCTL__CLI__"
 
 
 class APISettings(FidesSettings):
@@ -69,7 +69,7 @@ class APISettings(FidesSettings):
     database_url: str = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
 
     class Config:
-        env_prefix = "FIDES__API__"
+        env_prefix = "FIDESCTL__API__"
 
 
 class FidesConfig(BaseModel):
@@ -93,9 +93,9 @@ def get_config(config_path: str = "") -> FidesConfig:
 
     possible_config_locations = [
         config_path,
-        os.getenv("FIDES_CONFIG_PATH", ""),
-        os.path.join(os.curdir, "fides.toml"),
-        os.path.join(os.path.expanduser("~"), "fides.toml"),
+        os.getenv("FIDESCTL_CONFIG_PATH", ""),
+        os.path.join(os.curdir, "fidesctl.toml"),
+        os.path.join(os.path.expanduser("~"), "fidesctl.toml"),
     ]
 
     for file_location in possible_config_locations:

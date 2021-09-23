@@ -12,30 +12,30 @@ For production deployments of Fidesctl, we suggest deploying everything individu
 
 ### Step 1: Database
 
-Spin up a Postgresql DB and configure a user, password and database for Fides to use. For example:
+Spin up a Postgresql DB and configure a user, password and database for Fidesctl to use. For example:
 
 ```env
-POSTGRES_USER="fidesdb"
-POSTGRES_PASSWORD="f1desdB"
-POSTGRES_DATABASE="fidesdb"
+POSTGRES_USER="fidesctl_db"
+POSTGRES_PASSWORD="f1d3sctl_dB"
+POSTGRES_DATABASE="fidesctl_db"
 ```
 
 ### Step 2: Create a Config
 
-The next step is to create a `fides.toml` config file. This is used to pass important variables to the Fidesctl applications for connections to the database, api, etc. Make sure that the username, password and database in the `database_url` connection string match what you used to configure your database.
+The next step is to create a `fidesctl.toml` config file. This is used to pass important variables to the Fidesctl applications for connections to the database, api, etc. Make sure that the username, password and database in the `database_url` connection string match what you used to configure your database.
 
-Fidesctl will automatically look for the `fides.toml` file in the current directory, in the user directory, or at the path specified by an optional `FIDES_CONFIG_PATH` environment variable.
+Fidesctl will automatically look for the `fidesctl.toml` file in the current directory, in the user directory, or at the path specified by an optional `FIDESCTL_CONFIG_PATH` environment variable.
 
-Additionally, any variable can be overriden by using a properly formatted environment variable. For instance to overwrite the `database_url` configuration value, you would set the `FIDES__API__DATABASE_URL` environment variable.
+Additionally, any variable can be overriden by using a properly formatted environment variable. For instance to overwrite the `database_url` configuration value, you would set the `FIDESCTL__API__DATABASE_URL` environment variable.
 
-The following is an example `fides.toml`:
+The following is an example `fidesctl.toml`:
 
 ```toml
 [cli]
 server_url = "http://localhost:8080"
 
 [api]
-database_url = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
+database_url = "postgresql+psycopg2://fidesctl_db:fidesdb@localhost:5432/fidesctl_db"
 ```
 
 ### Step 3: Fidesctl API
@@ -43,7 +43,7 @@ database_url = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
 Next we need to prepare the database to be used by the API. Run the initial database setup via the fidesctl CLI:
 
 ```bash
-fidesctl initdb
+fidesctl init-db
 ```
 
 Now open a new terminal to run the API, as it will run there indefinitely:

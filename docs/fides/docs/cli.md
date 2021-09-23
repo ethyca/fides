@@ -2,7 +2,7 @@
 
 ---
 
-The Fidesctl CLI wraps the entire functionality of the Fidesctl into a CLI tool to be used by either engineers or in CI/CD pipelines.
+The Fidesctl CLI wraps the entire functionality of Fidesctl into a few succint commands.
 
 ## Commands
 

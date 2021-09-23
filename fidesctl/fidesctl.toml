@@ -1,0 +1,5 @@
+[cli]
+server_url = "http://fidesctl:8080"
+
+[api]
+database_url = "postgresql+psycopg2://fidesctl:fidesctl@fidesctl-db:5432/fidesctl"

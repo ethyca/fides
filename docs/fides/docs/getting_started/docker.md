@@ -2,13 +2,13 @@
 
 ---
 
-The recommended way to get Fides running is to launch it using the supplied `make` commands. The `make` commands wrap `docker-compose` commands that will spin up each piece of the project.
+The recommended way to get Fidesctl running is to launch it using the supplied `make` commands. The `make` commands wrap `docker-compose` commands that will spin up each piece of the project.
 
 ## System Requirements
 
 1. Install `make` locally (see [Make on Homebrew (Mac)](https://formulae.brew.sh/formula/make), [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm), or your preferred installation)
 1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation; use a recent enough version so that `docker-compose` is also available)
-1. Clone the [Fides repo](https://github.com/ethyca/fides) and `cd` into the `fides` directory
+1. Clone the [Fidesctl repo](https://github.com/ethyca/fides) and `cd` into the `fides` directory
 
 ## Docker Setup
 
@@ -60,6 +60,6 @@ The following commands should all be run from the top-level `fides` directory (w
 
 ## Next Steps
 
-Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fides!
+Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!
 
-See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
+See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.
