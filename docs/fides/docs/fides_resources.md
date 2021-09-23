@@ -41,7 +41,7 @@ A Data Category describes the kind of data that is being used.
     data-category:
     - fides_key: "date_of_birth"
       name: "Date of Birth"
-      parentKey: "user_provided_data"
+      parent_key: "user_provided_data"
       description: "User's date of birth."
     ```
 
