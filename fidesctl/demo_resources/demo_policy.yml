@@ -5,41 +5,20 @@ policy:
     description: "The main privacy policy for the organization."
     rules:
       - organization_fides_key: 1
-        fides_key: "rejectTargetedMarketing"
-        name: "Reject Targeted Biometric Marketing"
-        description: "Disallow targeted marketing towards customers based on biometric data."
+        fides_key: "rejectDirectMarketing"
+        name: "Reject Direct Marketing"
+        description: "Disallow collecting any user contact info to use for marketing."
         data_categories:
-          inclusion: "ANY"
+          inclusion: ANY
           values:
-            - biometric_data
+            - provided_contact_information
         data_uses:
           inclusion: ANY
           values:
-            - market_advertise_or_promote
-            - offer_upgrades_or_upsell
+            - marketing_advertising_or_promotion
         data_subjects:
           inclusion: ANY
           values:
             - customer
-        data_qualifier: "identified_data"
-        action: REJECT
-
-      - organizationId: 1
-        fides_key: rejectSharingPoliticalOpinions
-        name: "Disallow Sharing Political Opinions"
-        description: "Disallow sharing political opinions with third-parties."
-        data_categories:
-          inclusion: ANY
-          values:
-            - political_opinion
-        data_uses:
-          inclusion: ALL
-          values:
-            - share
-        data_subjects:
-          inclusion: ANY
-          values:
-            - customer
-            - patient
-        data_qualifier: "identified_data"
+        data_qualifier: identified_data
         action: REJECT
