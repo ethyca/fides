@@ -65,7 +65,7 @@ A Data Category describes the kind of data that is being used.
 | organization_parent_key | Optional[Int] | Id of the organization this data category belongs to, defaults to 1 |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String |  A name for this data category |
-| parent_key | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[FidesKey] | the fides_key of the parent category |
 | description | String | A description of what this data category means or encapsulates |
 
 ### Data Use
@@ -98,7 +98,7 @@ A Data Use describes what the data is being used for.
 | organization_parent_key | Optional[Int] | Id of the organization this data use belongs to, defaults to 1 |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data use |
-| parent_key | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[FidesKey] | the fides_key of the parent category |
 | description | String | A description of what this data use means or encapsulates |
 
 ### Data Subject
@@ -127,7 +127,6 @@ A Data Subject describes who the data belongs to.
 | organization_parent_key | Optional[Int] | Id of the organization this data subject belongs to, defaults to 1 |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data subject |
-| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data subject means or encapsulates |
 
 ### Data Qualifier
@@ -158,7 +157,6 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 | organization_parent_key | Optional[Int] | Id of the organization this data qualifier belongs to, defaults to 1 |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data qualifier |
-| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data qualifier means or encapsulates |
 
 ---
@@ -218,7 +216,7 @@ A system represents the privacy usage of a single software project, service, cod
 | registry_id | Optional[Int] | Id of the registry this system belongs to |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | system_type | String | The type of system being declared |
-| meta | Map[String, String] | A key-value pair field to add various additional info |
+| meta | Dict[String, String] | A key-value pair field to add various additional info |
 | privacy_declarations | List[PrivacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
 | system_dependencies | List[FidesKey] | Systems that this system depends on, identified by their fides_key |
 
