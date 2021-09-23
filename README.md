@@ -36,7 +36,7 @@ With these privacy data types defined, subsequent resources can now be defined w
 
 Using these primitives, as well as some additional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
 
-## :rocket: Quick Demo
+## :rocket: Quick Start
 
 If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). But for a quick demo you can tinker with, follow these 5 easy steps:
 
