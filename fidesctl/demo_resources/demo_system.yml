@@ -1,0 +1,31 @@
+system:
+  - organization_fides_key: 1
+    fides_key: "dataAnalyticsSystem"
+    name: "Data Analytics System"
+    description: "A system used for analyzing customer behaviour."
+    system_type: "Service"
+    privacy_declarations:
+      - name: "Analyze user behaviour for improvements."
+        data_categories:
+          - provided_contact_information
+          - browsing_history
+          - cookie_id
+        data_use: improve_the_product_or_service
+        data_qualifier: identified_data
+        data_subjects:
+          - customer
+
+  - organization_fides_key: 1
+    fides_key: "marketingSystem"
+    name: "Customer Marketing System"
+    description: "Collect data about our users for marketing."
+    system_type: "Service"
+    privacy_declarations:
+      - name: "Collect for marketing"
+        data_categories:
+          - browsing_history
+          - cookie_id
+        data_use: marketing_advertising_or_promotion
+        data_subjects:
+          - customer
+        data_qualifier: identified_data
