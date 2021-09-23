@@ -20,12 +20,12 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
 
     ```yaml
     policy:
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: "primaryPrivacyPolicy"
         name: "Primary Privacy Policy"
         description: "The main privacy policy for the organization."
         rules:
-          - organizationId: 1
+          - organization_parent_key: 1
             fides_key: "rejectTargetedMarketing"
             name: "Reject Targeted Marketing"
             description: "Disallow marketing that is targeted towards users."
@@ -48,7 +48,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
                 - commuter
             dataQualifier: pseudonymized_data
             action: REJECT
-          - organizationId: 1
+          - organization_parent_key: 1
             fides_key: rejectSome
             name: "Reject Some Marketing"
             description: "Disallow some marketing that is targeted towards users."
@@ -79,7 +79,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
 
     ```yaml
     dataset:
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: "sample_db_dataset"
         name: "Sample DB Dataset"
         description: "This is a Sample Database Dataset"
@@ -107,7 +107,7 @@ Next, you'll need to write a System manifest file and a Policy manifest file. Th
 
     ```yaml
     system:
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: "demoSystem"
         name: "Demo System"
         description: "A system used for demos."

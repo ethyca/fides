@@ -24,7 +24,7 @@ policy:
         data_qualifier: "identified_data"
         action: REJECT
 
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: rejectSharingPoliticalOpinions
         name: "Disallow Sharing Political Opinions"
         description: "Disallow sharing political opinions with third-parties."

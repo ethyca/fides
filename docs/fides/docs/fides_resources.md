@@ -21,7 +21,7 @@ An organization is a logical grouping of resources, and all resources must belon
 
 | Name | Type | Description |
 | --- | --- | --- |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String |  A name for this organization |
 | description | String | A description of what this organiztion encapsulates |
 
@@ -38,10 +38,10 @@ A Data Category describes the kind of data that is being used.
 === "Example Manifest"
 
     ```yaml
-    data-category:
+    data_category:
     - fides_key: "date_of_birth"
       name: "Date of Birth"
-      parentKey: "user_provided_data"
+      parent_key: "user_provided_data"
       description: "User's date of birth."
     ```
 
@@ -62,10 +62,10 @@ A Data Category describes the kind of data that is being used.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Optional[Int] | Id of the organization this data category belongs to, defaults to 1 |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Optional[Int] | Id of the organization this data category belongs to, defaults to 1 |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String |  A name for this data category |
-| parentKey | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data category means or encapsulates |
 
 ### Data Use
@@ -75,10 +75,10 @@ A Data Use describes what the data is being used for.
 === "Example Manifest"
 
     ```yaml
-    data-use:
+    data_use:
     - fides_key: "provide_operational_support_for_contracted_service"
       name: "Provide Operational Support for Contracted Service"
-      parentKey: "provide"
+      parent_key: "provide"
       description: "This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service."
     ```
 
@@ -95,10 +95,10 @@ A Data Use describes what the data is being used for.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Optional[Int] | Id of the organization this data use belongs to, defaults to 1 |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Optional[Int] | Id of the organization this data use belongs to, defaults to 1 |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data use |
-| parentKey | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data use means or encapsulates |
 
 ### Data Subject
@@ -108,7 +108,7 @@ A Data Subject describes who the data belongs to.
 === "Example Manifest"
 
     ```yaml
-    data-subject:
+    data_subject:
     - fides_key: "anonymous_user"
       name: "Anonymous User"
       description: "A user without any identifiable information tied to them."
@@ -124,10 +124,10 @@ A Data Subject describes who the data belongs to.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Optional[Int] | Id of the organization this data subject belongs to, defaults to 1 |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Optional[Int] | Id of the organization this data subject belongs to, defaults to 1 |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data subject |
-| parentKey | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data subject means or encapsulates |
 
 ### Data Qualifier
@@ -137,7 +137,7 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 === "Example Manifest"
 
     ```yaml
-    data-qualifier:
+    data_qualifier:
     - fides_key: "aggregated_data"
       name: "Aggregated Data"
       description: "Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable."
@@ -155,10 +155,10 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Optional[Int] | Id of the organization this data qualifier belongs to, defaults to 1 |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Optional[Int] | Id of the organization this data qualifier belongs to, defaults to 1 |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this data qualifier |
-| parentKey | Optional[String] | the fides_key of the parent category |
+| parent_key | Optional[String] | the fides_key of the parent category |
 | description | String | A description of what this data qualifier means or encapsulates |
 
 ---
@@ -171,7 +171,7 @@ A registry can optionally be used to group systems.
 
     ```yaml
     registry:
-    - organizationId: 1
+    - organization_parent_key: 1
       fides_key: "user_systems_registry"
       name: "User Systems Registry"
       description: "A registry for all of the user-related systems."
@@ -179,8 +179,8 @@ A registry can optionally be used to group systems.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this registry belongs to |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Int | Id of the organization this registry belongs to |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String |  A name for this registry |
 | description | String | A description of what this registry means or encapsulates |
 
@@ -194,34 +194,33 @@ A system represents the privacy usage of a single software project, service, cod
 
     ```yaml
     system:
-      - organizationId: 1
-        fidesOrganizationKey: "Ethyca"
-        registryId: 1
+      - organization_parent_key: 1
+        registry_id: 1
         fides_key: "demoSystem"
-        systemType: "service"
-        metadata:
+        system_type: "service"
+        meta:
           name: "Demo System"
-        privacyDeclarations:
-          - dataCategories:
+        privacy_declarations:
+          - data_categories:
               - "customer_content_data"
-            dataUse: "provide"
-            dataQualifier: "anonymized_data"
-            dataSubjects:
+            data_use: "provide"
+            data_qualifier: "anonymized_data"
+            data_subjects:
               - "anonymous_user"
-            dataSets:
+            dataset_references:
               - "user_data"
-        systemDependencies: []
+        system_dependencies: []
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this system belongs to |
-| registryId | Optional[Int] | Id of the registry this system belongs to |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
-| systemType | String | The type of system being declared |
-| metadata | Map[String, String] | A key-value pair field to add various additional info |
-| privacyDeclarations | List[privacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
-| systemDependencies | List[fides_key] | Systems that this system depends on, identified by their fides_key |
+| organization_parent_key | Int | Id of the organization this system belongs to |
+| registry_id | Optional[Int] | Id of the registry this system belongs to |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
+| system_type | String | The type of system being declared |
+| meta | Map[String, String] | A key-value pair field to add various additional info |
+| privacy_declarations | List[PrivacyDeclaration] | A list of privacy declarations (see `Privacy Declaration` below) |
+| system_dependencies | List[FidesKey] | Systems that this system depends on, identified by their fides_key |
 
 ### Privacy Declaration
 
@@ -229,13 +228,13 @@ A Privacy Declaration describes the usage of data within a system. It is include
 
 | Name | Type | Description |
 |  --- | --- | --- |
-| dataCategories | List[String] | Id of the organization this system belongs to |
-| dataSubjects | List[String] | Id of the organization this system belongs to |
-| dataUse | String | Id of the organization this system belongs to |
-| dataQualifier | String | Id of the organization this system belongs to |
-| dataSets | String | Id of the organization this system belongs to |
+| data_categories | List[FidesKey] | The DataCategories for this PrivacyDeclaration |
+| data_subjects | List[FidesKey] | The DataSubjects for this PrivacyDeclaration |
+| data_use | List[FidesKey] | The DataUse of this PrivacyDeclaration |
+| data_qualifier | List[FidesKey] | The DataQualifier for this PrivacyDeclaration |
+| dataset_refereneces | List[FidesKey] | The fides_key(s) of the DatasetFields that this PrivacyDeclaration leverages. |
 
-A Privacy Declaration can be read as "This system uses data in categories `dataCategories` for `dataSubjects` with the purpose of `dataUse` at a qualified privacy level of `dataQualifier`"
+A Privacy Declaration can be read as "This system uses data in categories `data_categories` for `data_subjects` with the purpose of `data_use` at a qualified privacy level of `data_qualifier`"
 
 ---
 
@@ -247,47 +246,47 @@ A Dataset represents any kind of place where data is stored and includes a sub-r
 
     ```yaml
     dataset:
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: "sample_db_dataset"
         name: "Sample DB Dataset"
         description: "This is a Sample Database Dataset"
-        datasetType: "MySQL"
+        dataset_type: "MySQL"
         location: "US East" # Geographic location of the dataset
-        fields:
+        dataset_fields:
           - name: "first_name"
             description: "A First Name Field"
-            dataCategories:
+            data_categories:
               - "derived_data"
-            dataQualifier: "identified_data"
+            data_qualifier: "identified_data"
           - name: "email"
             description: "User's Email"
-            dataCategories:
+            data_categories:
               - "account_data"
-            dataQualifier: "identified_data"
+            data_qualifier: "identified_data"
           - name: "Food Preference"
             description: "User's favorite food"
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this system belongs to |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
+| organization_parent_key | Int | Id of the organization this system belongs to |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String | A name for this dataset |
 | description | String | A description of what this dataset exists for |
-| datasetType | String | The type of dataset being declared |
+| dataset_type | String | The type of dataset being declared |
 | location | String | The physical location of the dataset |
-| fields | List[Fields] | A list of fields (see `Field` below) |
+| dataset_fields | List[DatasetField] | A list of fields (see `DatasetField` below) |
 
-### Field
+### Dataset Fields
 
-A Field describes a single column or array of data within a dataset. Data descriptions for dataset fields do not contain data use or data subject values as those refer specifically to data usage.
+A Dataset Field describes a single column or array of data within a dataset. Data descriptions for dataset fields do not contain data use or data subject values as those refer specifically to data usage.
 
 | Name | Type | Description |
 |  --- | --- | --- |
 | name | String | A name for this field |
 | description | String | A description of what this field contains |
-| dataCategories | List[String] | The data categories that apply to this field |
-| dataQualifier | String | The data qualifier for this data |
+| data_categories | List[FidesKey] | The data categories that apply to this field |
+| data_qualifier | FidesKey | The data qualifier for this data |
 
 ---
 
@@ -299,58 +298,58 @@ Policies group together sets of privacy rules into a single resource. These are 
 
     ```yaml
     policy:
-      organizationId: 1
-      fides_key: "primaryPrivacyPolicy"
-      privacyRules:
-        - fides_key: "rejectTargetedMarketing"
-          dataCategories:
+      organization_parent_key: 1
+      fides_key: "primary_privacy_policy"
+      privacy_rules:
+        - fides_key: "reject_targeted_marketing"
+          data_categories:
             inclusion: "ANY"
             values:
               - profiling_data
               - account_data
               - derived_data
               - cloud_service_provider_data
-          dataUses:
+          data_uses:
             inclusion: ANY
             values:
               - market_advertise_or_promote
               - offer_upgrades_or_upsell
-          dataSubjects:
+          data_subjects:
             inclusion: ANY
             values:
               - trainee
               - commuter
-          dataQualifier: pseudonymized_data
+          data_qualifier: pseudonymized_data
           action: REJECT
-        - fides_key: rejectSome
-          dataCategories:
+        - fides_key: reject_some
+          data_categories:
             inclusion: ANY
             values:
               - user_location
               - personal_health_data_and_medical_records
               - connectivity_data
               - credentials
-          dataUses:
+          data_uses:
             inclusion: ALL
             values:
               - improvement_of_business_support_for_contracted_service
               - personalize
               - share_when_required_to_provide_the_service
-          dataSubjects:
+          data_subjects:
             inclusion: NONE
             values:
               - trainee
               - commuter
               - patient
-          dataQualifier: pseudonymized_data
+          data_qualifier: pseudonymized_data
           action: REJECT
     ```
 
 | Name | Type | Description |
 | --- | --- | --- |
-| organizationId | Int | Id of the organization this system belongs to |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
-| privacyRules | List[privacyRule] | A list of privacy rules (see `Privacy Rule` below) |
+| organization_parent_key | Int | Id of the organization this system belongs to |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
+| privacyRules | List[PrivacyRule] | see `Privacy Rule` below |
 
 ### Privacy Rule
 
@@ -358,11 +357,11 @@ A Privacy Rule describes a single combination of data privacy classifiers that a
 
 | Name | Type | Description |
 | --- | --- | --- |
-| fides_key | String | A fides key is an identifier label that must be unique within your organizations systems. A fides key  can only contain alphanumeric characters, '_', and '-' |
-| dataCategories | List[dataRule] | A list of data rules (see `Data Rule` below) |
-| dataUses | List[dataRule] | A list of data rules (see `Data Rule` below) |
-| dataSubjects | List[dataRule] | A list of data rules (see `Data Rule` below) |
-| dataQualifier | String | A data qualifier for this privacy rule |
+| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' ||
+| data_categories | List[DataRule] | A list of data rules (see `Data Rule` below) |
+| data_uses | List[DataRule] | A list of data rules (see `Data Rule` below) |
+| data_subjects | List[DataRule] | A list of data rules (see `Data Rule` below) |
+| data_qualifier | String | A data qualifier for this privacy rule |
 | action | Choice | A string, either `ACCEPT` or `REJECT` |
 
 ### Data Rule
@@ -371,8 +370,8 @@ A Data Rule states what inclusion operator to use as well as a list of values to
 
 | Name | Type | Description |
 | --- | --- | --- |
-| inclusion | Choice | A string, either `ALL`, `NONE` or `ANY` |
-| values | List[fides_key] | A list of specific data privacy classifier fides_keys |
+| inclusion | Enum | A string, either `ALL`, `NONE` or `ANY` |
+| values | List[FidesKey] | A list of specific data privacy classifier fides_keys |
 
 ### Policy Rule Application
 
@@ -384,35 +383,35 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     # Example Privacy Rule:
 
     - fides_key: "rejectTargetedMarketing"
-      dataCategories:
+      data_categories:
         inclusion: "ANY"
         values:
           - customer_content_data
           - cloud_service_provider_data
-      dataUses:
+      data_uses:
         inclusion: ANY
         values:
           - provide
           - market_advertise_or_promote
           - offer_upgrades_or_upsell
-      dataSubjectCategories:
+      data_subjects:
         inclusion: ANY
         values:
           - trainee
           - commuter
-      dataQualifier: pseudonymized_data
+      data_qualifier: pseudonymized_data
       action: REJECT
 
     # Example Privacy Declaration:
 
-    - dataCategories:
+    - data_categories:
         - "customer_content_data"
-      dataUses: "provide"
-      dataSubjects:
+      data_uses: "provide"
+      data_subjects:
         - "anonymous_user"
         - "commuter"
-      dataQualifier: "psuedonymized_data"
-      dataSets:
+      data_qualifier: "psuedonymized_data"
+      datasets:
         - "user_data"
 
     # Example Evaluation Logic:
@@ -436,34 +435,34 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     # Example Privacy Rule:
 
     - fides_key: "rejectTargetedMarketing"
-      dataCategories:
+      data_categories:
         inclusion: "ANY"
         values:
           - customer_content_data
           - cloud_service_provider_data
-      dataUses:
+      data_uses:
         inclusion: ANY
         values:
           - provide
           - market_advertise_or_promote
           - offer_upgrades_or_upsell
-      dataSubjects:
+      data_subjects:
         inclusion: NONE
         values:
           - trainee
           - commuter
-      dataQualifier: pseudonymized_data
+      data_qualifier: pseudonymized_data
       action: REJECT
 
     # Example Privacy Declaration:
 
-    - dataCategories:
+    - data_categories:
         - "customer_content_data"
-      dataUses: "provide"
-      dataSubjects:
+      data_uses: "provide"
+      data_subjects:
         - "anonymous_user"
-      dataQualifier: "anonymized_data"
-      dataSets:
+      data_qualifier: "anonymized_data"
+      datasets:
         - "user_data"
 
     # Example Evaluation Logic:
@@ -484,93 +483,3 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
 When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.
 
 ---
-
-## Evaluation
-
-Fides evaluates both systems and registries. Since a registry is a graph of systems, a registry evaluation is an evaluation of each individual system as well as a few additional checks on the graph as a whole.
-
-When the evaluation of a registry or system is triggered, the following actions take place:
-
-- If the privacy declarations are narrower than the declared privacy exposure of its dependent datasets, Fides generates a warning. For example, the system declares that it uses a dataset that includes "customer content data" at the "anonymized" level, but the system doesn't declare that it's exposing that.
-- If the system's privacy declarations are narrower than the declared privacy exposure of a dependent system, we generate a warning. This is similar to the above restriction, except that we examine the privacy declarations of a dependent system rather than a dataset.
-- For each policy rule we check each system declaration and take action on any declaration that falls within that policy rule's scope. For example, if a policy rule declares that **profiling_data** that is **identified_data** is disallowed, and the system contains a declaration that includes such data, an error will be generated.
-
-Additionally, when a registry is evaluated, we also check that
-
-- The registry system graph contains a dependency cycle (that is, **system_a** declares that it depends on **system_b** that declares that it depends on **system_a**).
-- A system declares a dependency on a system that is not referenced in the registry.
-
-=== "Sample Evaluation Object"
-
-```yaml
-# The organization version stamp. This is maintained per organization and is incremented on
-# each state change
-versionStamp: 65
-organizationId: 1
-userId: 1
-action: dry-run
-id: 0
-#the overall response status. This will be the worst of any individual system responses
-# in descending order:
-#  - ERROR: at least one component was invalid; the registry can't be evaluated
-#  - FAIL: at least one component failed validation
-#  - MANUAL: at least one component requires manual approval
-#  - PASS: none of the above conditions were found
-status: ERROR
-registryId: 6
-details:
-  overall:
-    FAIL:
-    - system2
-    ERROR:
-    - system1
-  # detailed evaluations
-  # Here, for example, system3 failed because its privacy declaration "sensitive data"
-  # violated  policy1.any identified data;
-  evaluations:
-    system3:
-      FAIL:
-        policy1.any identified data:
-        - sensitiveData
-      warnings:
-      - 'The system system2 includes privacy declarations
-        that do not exist in system3 : identified
-        credentials for providing,operations data for improvement'
-      errors: []
-    system2:
-      FAIL:
-        policy1.any identified data:
-        - operations data for improvement
-        - identified credentials for providing
-      warnings:
-        # this warning shows that the system declares useage of a dataset that contains
-        # privacy data that the system does not declare. For example, here the dataset
-        # contains identified (i.e. unencrypted) customer content data but the system
-        # declarations do not state that they are exposing identified customner content
-        # data. This is returned as a warning since datasets may often contain a wide
-        # privacy range.
-      - 'The system system3 includes privacy declarations
-        that do not exist in system2 : sensitiveData'
-      errors: []
-    system1:
-      FAIL:
-        policy1.any identified data:
-        - test1
-        - identified end-user data for prospecting
-        - identified account data for prospecting
-      warnings: []
-      errors:
-        # this error indicated that a data set or field referenced in the privacy declaration
-        # contained more sensitive data then the declaration claimed
-      - The dataset d1 contains categories [operations_data]
-        under data qualifier [identified_data] not accounted for in the privacy declaration
-        test1
-      - The dataset field d1.d1f3 contains categories
-        [operations_data] under data qualifier [identified_data] not accounted for
-        in the privacy declaration identified account data for prospecting
-  warnings:
-    #system references containing dependency cycles will generate a warning
-  - cyclic reference: system3->system2->system3'
-
-
-```

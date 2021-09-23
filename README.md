@@ -62,7 +62,7 @@ For a detailed walkthrough, we recommend following [our tutorial here](https://g
 
       ```yaml
     system:
-      - organizationId: 1
+      - organization_parent_key: 1
         fidesKey: "demo_system"
         name: "Demo System"
         description: "A system used for demos."
@@ -85,12 +85,12 @@ For a detailed walkthrough, we recommend following [our tutorial here](https://g
 
       ```yaml
     policy:
-      - organizationId: 1
+      - organization_parent_key: 1
         fides_key: "primary_privacy_policy"
         name: "Primary Privacy Policy"
         description: "The main privacy policy for our organization."
         rules:
-          - organizationId: 1
+          - organization_parent_key: 1
             fides_key: "reject_targeted_marketing"
             name: "Reject Targeted Marketing"
             description: "Disallow marketing that is targeted towards users."
@@ -113,7 +113,7 @@ For a detailed walkthrough, we recommend following [our tutorial here](https://g
                 - commuter
             dataQualifier: pseudonymized_data
             action: REJECT
-          - organizationId: 1
+          - organization_parent_key: 1
             fides_key: "reject_some_marketing"
             name: "Reject Some Marketing"
             description: "Disallow some marketing that is targeted towards users."
