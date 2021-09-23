@@ -1,4 +1,4 @@
-name: Test Fidesctl & Fides Server
+name: Test Fidesctl
 
 # Only test on Pull Requests that target main
 on:
@@ -21,17 +21,17 @@ jobs:
       - name: Check fidesctl installed
         run: make check-install
 
-      - name: Format Fidesctl
+      - name: Format
         run: make black
 
-      - name: Lint Fidesctl
+      - name: Lint
         run: make pylint
 
-      - name: TypeCheck Fidesctl
+      - name: TypeCheck
         run: make mypy
 
       - name: Complexity Check
         run: make xenon
 
-      - name: Test Fidesctl
+      - name: Test
         run: make pytest
