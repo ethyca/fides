@@ -5,12 +5,12 @@ data_category:
 
   - fides_key: political_opinion
     name: "Political Opinion"
-    parentKey: user_provided_data
+    parent_key: user_provided_data
     description: "Data related to the individual's political opinions."
 
   - fides_key: name
     name: "Name"
-    parentKey: user_provided_data
+    parent_key: user_provided_data
     description: "User's real name."
 
 data_subject:
@@ -47,7 +47,7 @@ data_use:
 
   - fides_key: "provide_operational_support_for_contracted_service"
     name: "Provide Operational Support for Contracted Service"
-    parentKey: "provide"
+    parent_key: "provide"
     description: |
       This usage is related to the acquisition, processing and storage of data about the usage of a cloud service (derived data) contracted by a specific cloud service customer in order to operate and protect the systems and processes necessary for the provision of this cloud service. This includes:
       — service usage data to be used for capacity planning;
@@ -57,7 +57,7 @@ data_use:
 
   - fides_key: "improvement_of_business_support_for_contracted_service"
     name: "Improvement of Business Support for Contracted Service"
-    parentKey: "provide"
+    parent_key: "provide"
     description: |
       This usage is related to acquisition, processing and storage of data on the usage of contracted services (derived data) being used for business support related to this service. This includes:
       — evaluation of service usage data to determine user preference about use of the current capabilities of the services contracted for in the SLA;
