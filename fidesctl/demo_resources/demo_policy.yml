@@ -11,7 +11,7 @@ policy:
         data_categories:
           inclusion: ANY
           values:
-            - provided_contact_information
+            - user.provided.identifiable.contact
         data_uses:
           inclusion: ANY
           values:

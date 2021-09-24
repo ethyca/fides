@@ -7,8 +7,8 @@ system:
     privacy_declarations:
       - name: "Analyze customer behaviour for improvements."
         data_categories:
-          - provided_contact_information
-          - cookie_id
+          - user.provided.identifiable.contact
+          - user.derived.identifiable.device.cookie_id
         data_use: improve_the_product_or_service
         data_subjects:
           - customer
@@ -24,8 +24,8 @@ system:
     privacy_declarations:
       - name: "Collect data for marketing"
         data_categories:
-          # - provided_contact_information # uncomment to add this category to the system
-          - cookie_id
+          # - user.provided.identifiable.contact # uncomment to add this category to the system
+          - user.derived.identifiable.device.cookie_id
         data_use: marketing_advertising_or_promotion
         data_subjects:
           - customer
