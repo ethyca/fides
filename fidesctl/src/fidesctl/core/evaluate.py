@@ -158,7 +158,7 @@ def evaluate(
         for policy in taxonomy.policy
         if (not fides_key or policy.fides_key == fides_key)
     ]
-    
+
     echo_green(
         "Evaluating the following policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
