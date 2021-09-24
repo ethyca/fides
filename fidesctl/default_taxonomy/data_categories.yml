@@ -203,7 +203,7 @@ data_category:
 
   - fides_key: user.derived.nonidentifiable
     name: Derived User Non-Identifiable Data
-    parent_key: user.derived.nonidentifiable
+    parent_key: user.derived
     description: Non-user identifiable data derived related to a user as a result of user actions in the system.
 
   - fides_key: user.derived.nonidentifiable.sensor
@@ -380,4 +380,3 @@ data_category:
     name: User Provided Non-Identifiable Data
     parent_key: user
     description: Data provided or created directly by a user that is not identifiable.
-

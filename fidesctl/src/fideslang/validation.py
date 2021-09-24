@@ -13,7 +13,7 @@ class FidesValidationError(Exception):
 
     def __init__(self, message: str) -> None:
         self.message = message
-        super().__init__()
+        super().__init__(message)
 
 
 class FidesKey(ConstrainedStr):
@@ -21,13 +21,13 @@ class FidesKey(ConstrainedStr):
     A FidesKey should only contain alphanumeric characters or '_'
     """
 
-    regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_]+$")
+    regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_.]+$")
 
     @classmethod  # This overrides the default method to throw the custom FidesValidationError
     def validate(cls, value: str) -> str:
         if not cls.regex.match(value):
             raise FidesValidationError(
-                "FidesKey must only contain alphanumeric characters or '_'."
+                "FidesKey must only contain alphanumeric characters, '.' or '_'."
             )
 
         return value
