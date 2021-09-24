@@ -152,6 +152,13 @@ def evaluate(
     policy_list = get_all_server_policies(url, headers, exclude=local_policy_keys)
     taxonomy.policy += policy_list
 
+    # If a fides_key is provided then we only want to evaluate that policy
+    taxonomy.policy = [
+        policy
+        for policy in taxonomy.policy
+        if (not fides_key or policy.fides_key == fides_key)
+    ]
+    
     echo_green(
         "Evaluating the following policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
