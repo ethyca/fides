@@ -19,9 +19,8 @@ from fideslang.validation import FidesValidationError
 def test_create_valid_data_category():
     DataCategory(
         organization_fides_key=1,
-        fides_key="customer_content_test_data",
-        name="customer_content_data",
-        clause="testDataClause",
+        fides_key="user.provided.identifiable",
+        name="User Provided Identifiable Data",
         description="Test Data Category",
     )
     assert DataCategory
@@ -32,11 +31,10 @@ def test_circular_dependency_data_category():
     with pytest.raises(FidesValidationError):
         DataCategory(
             organization_fides_key=1,
-            fides_key="customer_content_test_data",
-            name="customer_content_data",
-            clause="testDataClause",
+            fides_key="user.provided.identifiable",
+            name="User Provided Identifiable Data",
             description="Test Data Category",
-            parent_key="customer_content_test_data",
+            parent_key="user.provided.identifiable",
         )
     assert True
 
@@ -45,9 +43,8 @@ def test_circular_dependency_data_category():
 def test_create_valid_data_use():
     DataUse(
         organization_fides_key=1,
-        fides_key="customer_content_test_data",
-        name="customer_content_data",
-        clause="testDataClause",
+        fides_key="provide_the_product_or_service",
+        name="Provide the Product or Service",
         description="Test Data Use",
     )
     assert True
@@ -58,11 +55,10 @@ def test_circular_dependency_data_use():
     with pytest.raises(FidesValidationError):
         DataUse(
             organization_fides_key=1,
-            fides_key="customer_content_test_data",
-            name="customer_content_data",
-            clause="testDataClause",
-            description="Test Data Category",
-            parent_key="customer_content_test_data",
+            fides_key="provide_the_product_or_service",
+            name="Provide the Product or Service",
+            description="Test Data Use",
+            parent_key="provide_the_product_or_service",
         )
     assert True
 
@@ -124,7 +120,7 @@ def test_valid_policy_rule():
         name="Test Policy",
         description="Test Policy",
         data_categories=PrivacyRule(inclusion="NONE", values=[]),
-        data_uses=PrivacyRule(inclusion="NONE", values=["provide"]),
+        data_uses=PrivacyRule(inclusion="NONE", values=["provide_the_product_or_service"]),
         data_subjects=PrivacyRule(inclusion="ANY", values=[]),
         data_qualifier="unlinked_pseudonymized_data",
         action="REJECT",
@@ -142,7 +138,7 @@ def test_invalid_action_enum_policy_rule():
             name="Test Policy",
             description="Test Policy",
             data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(inclusion="NONE", values=["provide"]),
+            data_uses=PrivacyRule(inclusion="NONE", values=["provide_the_product_or_service"]),
             data_subjects=PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJT",
@@ -176,7 +172,7 @@ def test_create_valid_system():
             PrivacyDeclaration(
                 name="declaration-name",
                 data_categories=[],
-                data_use="provide",
+                data_use="provide_the_product_or_service",
                 data_subjects=[],
                 data_qualifier="aggregated_data",
                 dataset_references=[],
@@ -201,7 +197,7 @@ def test_circular_dependency_system():
                 PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
+                    data_use="provide_the_product_or_service",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=["test_system"],
