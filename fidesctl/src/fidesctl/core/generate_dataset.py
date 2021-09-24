@@ -38,6 +38,7 @@ def generate_table_manifests(
                 {
                     "name": column,
                     "description": f"Fides Generated Description for Column: {column}",
+                    "data_categories": []
                 }
                 for column in db_tables[table]
             ],

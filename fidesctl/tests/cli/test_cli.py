@@ -63,7 +63,7 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_get(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "get", "data_category", "user_provided_data"]
+        cli, ["-f", test_config_path, "get", "data_category", "user.provided.identifiable"]
     )
     print(result.output)
     assert result.exit_code == 0

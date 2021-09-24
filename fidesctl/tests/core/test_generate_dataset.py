@@ -18,10 +18,12 @@ def test_generate_table_manifests():
                 {
                     "name": "1",
                     "description": "Fides Generated Description for Column: 1",
+                    "data_categories": [],
                 },
                 {
                     "name": "2",
                     "description": "Fides Generated Description for Column: 2",
+                    "data_categories": [],
                 },
             ],
         },
@@ -32,10 +34,12 @@ def test_generate_table_manifests():
                 {
                     "name": "4",
                     "description": "Fides Generated Description for Column: 4",
+                    "data_categories": [],
                 },
                 {
                     "name": "5",
                     "description": "Fides Generated Description for Column: 5",
+                    "data_categories": [],
                 },
             ],
         },

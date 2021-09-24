@@ -72,7 +72,7 @@ def test_hydrate_missing_resources(test_config):
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
-                parent_key="credentials",
+                parent_key="user.provided.identifiable.credentials",
             ),
         ],
         system=[
@@ -81,7 +81,7 @@ def test_hydrate_missing_resources(test_config):
                 fides_key="test_dc",
                 description="test description",
                 system_dependencies=["key_3", "key_4"],
-                system_type="user_provided_data",
+                system_type="user.provided",
                 privacy_declarations=None,
             )
         ],
@@ -90,7 +90,7 @@ def test_hydrate_missing_resources(test_config):
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         dehydrated_taxonomy=dehydrated_taxonomy,
-        missing_resource_keys={"credentials", "user_provided_data"},
+        missing_resource_keys={"user.provided.identifiable.credentials", "user.provided"},
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
 
@@ -104,7 +104,7 @@ def test_hydrate_missing_resources_fail(test_config):
                     name="test_dc",
                     fides_key="test_dc",
                     description="test description",
-                    parent_key="credentials",
+                    parent_key="user.provided.identifiable.credentials",
                 ),
             ],
             system=[
@@ -113,7 +113,7 @@ def test_hydrate_missing_resources_fail(test_config):
                     fides_key="test_dc",
                     description="test description",
                     system_dependencies=["key_3", "key_4"],
-                    system_type="user_provided_data",
+                    system_type="user.provided",
                     privacy_declarations=None,
                 )
             ],
@@ -122,6 +122,6 @@ def test_hydrate_missing_resources_fail(test_config):
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
             dehydrated_taxonomy=dehydrated_taxonomy,
-            missing_resource_keys={"non_existent_key", "user_provided_data"},
+            missing_resource_keys={"non_existent_key", "user.provided"},
         )
     assert True

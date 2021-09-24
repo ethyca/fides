@@ -11,14 +11,12 @@ def test_parse_manifest():
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     test_dict = {
         "organization_fides_key": 1,
         "fides_key": "some_resource",
         "name": "Test resource 1",
-        "clause": "Test Clause",
         "description": "Test Description",
     }
     actual_result = parse.parse_manifest("data_category", test_dict)
@@ -31,7 +29,6 @@ def test_parse_manifest_validation_error():
         test_dict = {
             "organization_fides_key": 1,
             "name": "Test resource 1",
-            "clause": "Test Clause",
             "description": "Test Description",
         }
         parse.parse_manifest("data_category", test_dict)
@@ -45,7 +42,6 @@ def test_parse_manifest_key_error():
             "organization_fides_key": 1,
             "fides_key": "some_resource",
             "name": "Test resource 1",
-            "clause": "Test Clause",
             "description": "Test Description",
         }
         parse.parse_manifest("data-category", test_dict)
@@ -58,12 +54,12 @@ def test_load_manifests_into_taxonomy():
         "data_category": [
             {
                 "name": "User Provided Data",
-                "fides_key": "user_provided_data",
+                "fides_key": "user.provided",
                 "description": "Data provided or created directly by a user of the system.",
             },
             {
                 "name": "Credentials",
-                "fides_key": "credentials",
+                "fides_key": "user.provided.identifiable.credentials",
                 "description": "User provided authentication data.",
             },
         ]
@@ -73,12 +69,12 @@ def test_load_manifests_into_taxonomy():
         data_category=[
             models.DataCategory(
                 name="User Provided Data",
-                fides_key="user_provided_data",
+                fides_key="user.provided",
                 description="Data provided or created directly by a user of the system.",
             ),
             models.DataCategory(
                 name="Credentials",
-                fides_key="credentials",
+                fides_key="user.provided.identifiable.credentials",
                 description="User provided authentication data.",
             ),
         ]
