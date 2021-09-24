@@ -23,10 +23,10 @@ Fides has two fundamental parts at its core. The first part is the 4 privacy dat
 
 The 4 data privacy types are as follows:
 
-- Data Subject - _Whose_ data is it?
 - Data Category - _What_ kind of data is it?
-- Data Use - _How_ is it being used?
-- Data Qualifier - How _identifiable_ is it?
+- Data Use - _Why_ is it being used?
+- Data Subject - _Whose_ data is it?
+- Data Qualifier - _How_ is the data being protected?
 
 With these privacy data types defined, subsequent resources can now be defined within their scopes. Those subsequent resources comprise the second part of Fides, they are as follows:
 
@@ -38,141 +38,190 @@ Using these primitives, as well as some additional abstractions for syntactic su
 
 ## :rocket: Quick Start
 
-First, follow the [Getting Started with Docker](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md) guide until you're able to run `fidesctl ping` successfully:
-```bash
-root@796cfde906f1:/fides/fidesctl# fidesctl ping
-Pinging http://fidesapi:8080...
-Ping Successful!
-```
+If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). But for a quick demo you can tinker with, follow these 5 easy steps:
 
-For a detailed walkthrough, we recommend following [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md), but if you're looking for a quick start you can follow these 5 easy steps:
-
-1. Launch a shell with `make cli` and confirm you can `fidesctl ping` (see above).
-
-1. Create a directory for your Fides resources to live in:
-
+1. First, follow the [Getting Started with Docker](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md) guide until you're able to run `fidesctl ping` successfully
     ```bash
-    mkdir fides_resources/
+    root@fa175a43c077:/fides/fidesctl# fidesctl ping
+    Pinging http://fidesctl:8080...
+    Ping Successful!
     ```
 
-1. Copy the example `System` resource to a new file, `fides_resources/system.yaml`. It's a basic demo system with a single declaration which demonstrates the basic syntax:
+1. Run `ls demo_resources/` to inspect the contents of the demo directory, which includes some pre-made examples of the core Fides resource files (systems, datasets, policies, etc.)
 
-    <details>
-        <summary>Example system.yaml to get you started</summary>
+    ```bash
+    root@fa175a43c077:/fides/fidesctl# ls demo_resources/
+    demo_dataset.yml  demo_policy.yml  demo_registry.yml  demo_system.yml
+    ```
 
-      ```yaml
+    In particular, let's look at the `demo_resources/demo_system.yml` file. It describes two basic systems: an analytics system and a marketing system, and demonstrates the basic syntax for making privacy declarations using `data_categories`, `data_uses`, `data_subjects`, and `data_qualifiers`.
+    ```yaml
     system:
-      - organization_parent_key: 1
-        fidesKey: "demo_system"
-        name: "Demo System"
-        description: "A system used for demos."
-        systemType: "Service"
-        privacyDeclarations:
-          - name: "Analyze Anonymous Content"
-            dataCategories:
-              - "account_data"
-            dataUse: "provide"
-            dataQualifier: "anonymized_data"
-            dataSubjects:
-              - "customer"
-      ```
-    </details>
+      - organization_fides_key: 1
+        fides_key: "demo_analytics_system"
+        name: "Demo Analytics System"
+        description: "A system used for analyzing customer behaviour."
+        system_type: "Service"
+        privacy_declarations:
+          - name: "Analyze customer behaviour for improvements."
+            data_categories:
+              - provided_contact_information
+              - cookie_id
+            data_use: improve_the_product_or_service
+            data_subjects:
+              - customer
+            data_qualifier: identified_data
+            dataset_references:
+              - demo_users_dataset
 
-1. Copy the example `Policy` resource to a new file, `fides_resources/policy.yaml`. It contains two example rules that you can evaluate against:
+      - organization_fides_key: 1
+        fides_key: "demo_marketing_system"
+        name: "Demo Marketing System"
+        description: "Collect data about our users for marketing."
+        system_type: "Service"
+        privacy_declarations:
+          - name: "Collect data for marketing"
+            data_categories:
+              # - provided_contact_information # uncomment to add this category to the system
+              - cookie_id
+            data_use: marketing_advertising_or_promotion
+            data_subjects:
+              - customer
+            data_qualifier: identified_data
+    ```
 
-    <details>
-    <summary>Example policy.yaml to get you started</summary>
+1. Run `fidesctl evaluate demo_resources`. This will parse all the resource files, sync them to the `fidesctl` server, and then evaluate the defined policy rules to ensure all the systems are compliant:
+    ```
+    root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
+    Loading resource manifests from: demo_resources
+    Taxonomy successfully created.
+    ----------
+    Processing registry resources...
+    CREATED 1 registry resources.
+    UPDATED 0 registry resources.
+    SKIPPED 0 registry resources.
+    ----------
+    Processing dataset resources...
+    CREATED 1 dataset resources.
+    UPDATED 0 dataset resources.
+    SKIPPED 0 dataset resources.
+    ----------
+    Processing policy resources...
+    CREATED 1 policy resources.
+    UPDATED 0 policy resources.
+    SKIPPED 0 policy resources.
+    ----------
+    Processing system resources...
+    CREATED 2 system resources.
+    UPDATED 0 system resources.
+    SKIPPED 0 system resources.
+    ----------
+    Loading resource manifests from: demo_resources
+    Taxonomy successfully created.
+    Evaluating the following policies:
+    demo_privacy_policy
+    ----------
+    Checking for missing resources...
+    Executing evaluations...
+    Sending the evaluation results to the server...
+    Evaluation passed!
+    ```
 
-      ```yaml
+    Congrats, you've successfully ran your first `fidesctl evaluate` command!
+
+1. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an automated privacy policy for our demo project. This demo policy just includes one rule: reject systems that collect user provided contact information for a marketing use case.
+
+    ```yaml
     policy:
-      - organization_parent_key: 1
-        fides_key: "primary_privacy_policy"
-        name: "Primary Privacy Policy"
-        description: "The main privacy policy for our organization."
+      - organization_fides_key: 1
+        fides_key: "demo_privacy_policy"
+        name: "Demo Privacy Policy"
+        description: "The main privacy policy for the organization."
         rules:
-          - organization_parent_key: 1
-            fides_key: "reject_targeted_marketing"
-            name: "Reject Targeted Marketing"
-            description: "Disallow marketing that is targeted towards users."
-            dataCategories:
-              inclusion: "ANY"
-              values:
-                - profiling_data
-                - account_data
-                - derived_data
-                - cloud_service_provider_data
-            dataUses:
+          - organization_fides_key: 1
+            fides_key: "reject_direct_marketing"
+            name: "Reject Direct Marketing"
+            description: "Disallow collecting any user contact info to use for marketing."
+            data_categories:
               inclusion: ANY
               values:
-                - market_advertise_or_promote
-                - offer_upgrades_or_upsell
-            dataSubjects:
+                - provided_contact_information
+            data_uses:
               inclusion: ANY
               values:
-                - trainee
-                - commuter
-            dataQualifier: pseudonymized_data
+                - marketing_advertising_or_promotion
+            data_subjects:
+              inclusion: ANY
+              values:
+                - customer
+            data_qualifier: identified_data
             action: REJECT
-          - organization_parent_key: 1
-            fides_key: "reject_some_marketing"
-            name: "Reject Some Marketing"
-            description: "Disallow some marketing that is targeted towards users."
-            dataCategories:
-              inclusion: ANY
-              values:
-                - user_location
-                - personal_health_data_and_medical_records
-                - connectivity_data
-                - credentials
-            dataUses:
-              inclusion: ALL
-              values:
-                - improvement_of_business_support_for_contracted_service
-                - personalize
-                - share_when_required_to_provide_the_service
-            dataSubjects:
-              inclusion: NONE
-              values:
-                - trainee
-                - commuter
-                - patient
-            dataQualifier: pseudonymized_data
-            action: REJECT
-      ```
+    ```
 
-    </details>
+1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
+  - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
+  - Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
 
-1. Evaluate your `System` and `Policy` resources using `fidesctl evaluate fides_resources/`. This will parse those resource files and evaluate the policy rules against the system to ensure everything is compliant:
-```
-root@55550d834f96:/fides/fidesctl# fidesctl evaluate fides_resources/
-Loading resource manifests from: fides_resources/
-Taxonomy successfully created.
-----------
-Processing system resources...
-CREATED 1 system resources.
-UPDATED 0 system resources.
-SKIPPED 0 system resources.
-----------
-Processing policy resources...
-CREATED 1 policy resources.
-UPDATED 0 policy resources.
-SKIPPED 0 policy resources.
-----------
-Loading resource manifests from: fides_resources/
-Taxonomy successfully created.
-Evaluating the following policies:
-primary_privacy_policy
-test_policy_1
-----------
-Checking for missing resources...
-Executing evaluations...
-Sending the evaluation results to the server...
-Evaluation passed!
-```
+    ```bash
+    root@fa175a43c077:/fides/fidesctl# vim demo_resources/demo_system.yml
 
-Congrats, you've successfully declared a few resources and evaluated a policy!
+    root@fa175a43c077:/fides/fidesctl# git diff demo_resources/demo_system.yml
+    diff --git a/fidesctl/demo_resources/demo_system.yml b/fidesctl/demo_resources/demo_system.yml
+    index a707df4..e84a637 100644
+    --- a/fidesctl/demo_resources/demo_system.yml
+    +++ b/fidesctl/demo_resources/demo_system.yml
+    @@ -24,7 +24,7 @@ system:
+         privacy_declarations:
+           - name: "Collect data for marketing"
+             data_categories:
+    -          # - provided_contact_information # uncomment to add this category to the system
+    +          - provided_contact_information # uncomment to add this category to the system
+               - cookie_id
+             data_use: marketing_advertising_or_promotion
+             data_subjects:
 
-Now we'd really recommend doing [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
+    root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
+    Loading resource manifests from: demo_resources
+    Taxonomy successfully created.
+    ----------
+    Processing registry resources...
+    CREATED 0 registry resources.
+    UPDATED 0 registry resources.
+    SKIPPED 1 registry resources.
+    ----------
+    Processing system resources...
+    CREATED 0 system resources.
+    UPDATED 1 system resources.
+    SKIPPED 1 system resources.
+    ----------
+    Processing policy resources...
+    CREATED 0 policy resources.
+    UPDATED 0 policy resources.
+    SKIPPED 1 policy resources.
+    ----------
+    Processing dataset resources...
+    CREATED 0 dataset resources.
+    UPDATED 0 dataset resources.
+    SKIPPED 1 dataset resources.
+    ----------
+    Loading resource manifests from: demo_resources
+    Taxonomy successfully created.
+    Evaluating the following policies:
+    demo_privacy_policy
+    ----------
+    Checking for missing resources...
+    Executing evaluations...
+    {
+      "status": "FAIL",
+      "details": [
+        "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
+      ],
+      "message": null
+    }
+    ```
+
+
+At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
 
 ## :book: Learn More
 
