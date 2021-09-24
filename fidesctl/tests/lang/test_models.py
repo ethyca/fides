@@ -16,6 +16,19 @@ from fideslang.validation import FidesValidationError
 
 
 @pytest.mark.unit
+def test_fides_key_doesnt_match_stated_parent_key():
+    DataCategory(
+        organization_fides_key=1,
+        fides_key="user.some.customer_content_test_data",
+        name="customer_content_data",
+        clause="testDataClause",
+        description="Test Data Category",
+        parent_key="user.test",
+    )
+    assert DataCategory
+
+
+@pytest.mark.unit
 def test_create_valid_data_category():
     DataCategory(
         organization_fides_key=1,

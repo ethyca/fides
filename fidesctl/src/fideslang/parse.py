@@ -1,5 +1,5 @@
 """
-This module handles everything related to parsing models,
+This module handles everything related to parsing resources into Pydantic models,
 either from local files or the server.
 """
 from typing import List, Dict
@@ -17,14 +17,14 @@ def parse_manifest(
     Parse an individual resource into its Python model.
     """
     resource_source = "server" if from_server else "manifest file"
+    if resource_type not in list(model_map.keys()):
+        echo_red(f"This resource type does not exist: {resource_type}")
+        raise SystemExit
     try:
         parsed_manifest = model_map[resource_type].parse_obj(resource)
     except ValidationError as err:
         echo_red(f"Failed to parse resource: {resource} with the following errors:")
         raise SystemExit(err) from err
-    except KeyError as err:
-        echo_red(f"This resource type does not exist: {resource_type}")
-        raise SystemExit
     except Exception as err:
         echo_red(
             "Failed to parse {} from {} with fides_key: {}".format(

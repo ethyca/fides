@@ -62,3 +62,24 @@ def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
     if value == values["fides_key"]:
         raise FidesValidationError("FidesKey can not self-reference!")
     return value
+
+
+def matching_parent_key(value: FidesKey, values: Dict) -> FidesKey:
+    """
+    Confirm that the parent_key matches the parent parsed from the FidesKey.
+    """
+
+    fides_key = values["fides_key"]
+    split_fides_key = fides_key.split(".")
+
+    # Check if it is a top-level resource
+    if len(split_fides_key) == 1 and not value:
+        return value
+
+    # Reform the parent_key from the fides_key and compare
+    parent_key_from_fides_key = ".".join(split_fides_key[:-1])
+    if parent_key_from_fides_key != value:
+        raise FidesValidationError(
+            "The parent_key does not match the parent parsed from the fides_key!"
+        )
+    return value

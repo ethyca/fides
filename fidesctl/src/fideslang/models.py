@@ -11,6 +11,7 @@ from fideslang.validation import (
     sort_list_objects_by_key,
     sort_list_objects_by_name,
     no_self_reference,
+    matching_parent_key,
 )
 
 
@@ -39,6 +40,10 @@ class DataCategory(FidesModel):
         no_self_reference
     )
 
+    _matching_parent_key: classmethod = validator("parent_key", allow_reuse=True, always=True)(
+        matching_parent_key
+    )
+
 
 class DataQualifier(FidesModel):
     """The DataQualifier resource model."""
@@ -55,6 +60,10 @@ class DataUse(FidesModel):
 
     _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
         no_self_reference
+    )
+
+    _matching_parent_key: classmethod = validator("parent_key", allow_reuse=True, always=True)(
+        matching_parent_key
     )
 
 
