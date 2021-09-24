@@ -24,7 +24,7 @@ system:
     privacy_declarations:
       - name: "Collect data for marketing"
         data_categories:
-          - provided_contact_information # uncomment to add this category to the system
+          # - provided_contact_information # uncomment to add this category to the system
           - cookie_id
         data_use: marketing_advertising_or_promotion
         data_subjects:
