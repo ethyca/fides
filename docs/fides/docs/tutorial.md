@@ -14,7 +14,7 @@ First create a directory for the manifests to live in:
 
 `mkdir fides_resources/`
 
-Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fidesctl to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
+Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fidesctl to function. For an exhaustive set of example manifests see the [Fides Resources](https://ethyca.github.io/fides/fides_resources/) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
 
 === fides_resources/policy.yml
 
