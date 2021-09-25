@@ -51,7 +51,7 @@ dataset:
     fides_key: test_db_dataset
     name: Sample DB Dataset
     description: This is a Sample Database Dataset
-    datasetType: MySQL
+    dataset_type: MySQL
     location: US East
     fields:
       - name: First_Name
@@ -75,7 +75,7 @@ dataset:
 
 system:
   - organization_fides_key: 1
-    fides_key: dataAnalyticsSystem
+    fides_key: data_analytics_system
     name: Data Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
@@ -87,10 +87,10 @@ system:
         data_qualifier: pseudonymized_data
         data_subjects:
           - customer
-    system_dependencies: [customerDataSharingSystem]
+    system_dependencies: [customer_data_sharing_system]
 
   - organization_fides_key: 1
-    fides_key: customerDataSharingSystem
+    fides_key: customer_data_sharing_system
     name: Customer Data Sharing System
     description: Share data about our users with third-parties.
     system_type: Service
@@ -102,18 +102,18 @@ system:
         data_qualifier: identified_data
         data_subjects:
           - customer
-        datasetReferences:
+        dataset_references:
           - test_db_dataset.Email
     system_dependencies: []
 
 policy:
   - organization_fides_key: 1
-    fides_key: failingPrivacyPolicy
+    fides_key: failing_privacy_policy
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:
       - organization_fides_key: 1
-        fides_key: rejectTargetedMarketing
+        fides_key: reject_targeted_marketing
         name: Reject Targeted Biometric Marketing
         description: Disallow targeted marketing towards customers based on biometric data.
         data_categories:
@@ -133,7 +133,7 @@ policy:
         action: REJECT
 
       - organization_fides_key: 1
-        fides_key: rejectSharingPoliticalOpinions
+        fides_key: reject_sharing_political_opinions
         name: Disallow Sharing Political Opinions
         description: Disallow sharing political opinions with third-parties.
         data_categories:
