@@ -27,16 +27,16 @@ data_subject:
     name: Custom
 
 data_use:
-  - fides_key: provide_the_product_or_service
+  - fides_key: provide_product_or_service
     name: Provide the Product or Service
 
-  - fides_key: support_the_product_or_service
+  - fides_key: provide_product_or_service.support
     name: Support the Product or Service
-    parent_key: provide_the_product_or_service
+    parent_key: provide_product_or_service
 
-  - fides_key: support_optimization
+  - fides_key: provide_product_or_service.support_optimization
     name: Support Optimization
-    parent_key: provide_the_product_or_service
+    parent_key: provide_product_or_service
 
 
 data_qualifier:
@@ -83,7 +83,7 @@ system:
       - name: Analyze Anonymous Content
         data_categories:
           - user.provided.identifiable
-        data_use: provide_the_product_or_service
+        data_use: provide_product_or_service
         data_qualifier: pseudonymized_data
         data_subjects:
           - customer
@@ -124,7 +124,7 @@ policy:
           inclusion: ANY
           values:
             - marketing_advertising_or_promotion
-            - offers_of_product_or_service_upgrades
+            - provide_product_or_service.offer_upgrades
         data_subjects:
           inclusion: ANY
           values:

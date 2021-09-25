@@ -56,7 +56,7 @@ def test_circular_dependency_data_category():
 def test_create_valid_data_use():
     DataUse(
         organization_fides_key=1,
-        fides_key="provide_the_product_or_service",
+        fides_key="provide_product_or_service",
         name="Provide the Product or Service",
         description="Test Data Use",
     )
@@ -68,10 +68,10 @@ def test_circular_dependency_data_use():
     with pytest.raises(FidesValidationError):
         DataUse(
             organization_fides_key=1,
-            fides_key="provide_the_product_or_service",
+            fides_key="provide_product_or_service",
             name="Provide the Product or Service",
             description="Test Data Use",
-            parent_key="provide_the_product_or_service",
+            parent_key="provide_product_or_service",
         )
     assert True
 
@@ -133,7 +133,7 @@ def test_valid_policy_rule():
         name="Test Policy",
         description="Test Policy",
         data_categories=PrivacyRule(inclusion="NONE", values=[]),
-        data_uses=PrivacyRule(inclusion="NONE", values=["provide_the_product_or_service"]),
+        data_uses=PrivacyRule(inclusion="NONE", values=["provide_product_or_service"]),
         data_subjects=PrivacyRule(inclusion="ANY", values=[]),
         data_qualifier="unlinked_pseudonymized_data",
         action="REJECT",
@@ -151,7 +151,7 @@ def test_invalid_action_enum_policy_rule():
             name="Test Policy",
             description="Test Policy",
             data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(inclusion="NONE", values=["provide_the_product_or_service"]),
+            data_uses=PrivacyRule(inclusion="NONE", values=["provide_product_or_service"]),
             data_subjects=PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJT",
@@ -185,7 +185,7 @@ def test_create_valid_system():
             PrivacyDeclaration(
                 name="declaration-name",
                 data_categories=[],
-                data_use="provide_the_product_or_service",
+                data_use="provide_product_or_service",
                 data_subjects=[],
                 data_qualifier="aggregated_data",
                 dataset_references=[],
@@ -210,7 +210,7 @@ def test_circular_dependency_system():
                 PrivacyDeclaration(
                     name="declaration-name",
                     data_categories=[],
-                    data_use="provide_the_product_or_service",
+                    data_use="provide_product_or_service",
                     data_subjects=[],
                     data_qualifier="aggregated_data",
                     dataset_references=["test_system"],

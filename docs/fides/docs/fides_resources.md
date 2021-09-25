@@ -79,22 +79,22 @@ A Data Use describes what the data is being used for.
 
     ```yaml
     data_use:
-    - fides_key: support_the_product_or_service
+    - fides_key: provide_product_or_service.support
       name: Support the Product or Service
-      parent_key: provide_the_product_or_service
+      parent_key: provide_product_or_service
     ```
 
 === Example Hierarchy
 
     ```yaml
-    - provide_the_product_or_service
-      - support_the_product_or_service
-      - support_optimization
-      - offers_of_product_or_service_upgrades
+    - provide_product_or_service
+      - provide_product_or_service.support
+      - provide_product_or_service.support_optimization
+      - provide_product_or_service.offer_upgrades
     - third_party_sharing
-      - sharing_for_processing_payments
-      - sharing_for_personalized_advertising
-      - sharing_for_legal_obligation
+      - third_party_sharing.payment_processing
+      - third_party_sharing.personalized_advertising
+      - third_party_sharing.legal_obligation
     ```
 
 | Name | Type | Description |
@@ -206,7 +206,7 @@ A system represents the privacy usage of a single software project, service, cod
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
-            data_use: improve_the_product_or_service
+            data_use: improve_product_or_service
             data_subjects:
               - customer
             data_qualifier: identified_data

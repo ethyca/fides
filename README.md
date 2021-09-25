@@ -67,7 +67,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
-            data_use: improve_the_product_or_service
+            data_use: improve_product_or_service
             data_subjects:
               - customer
             data_qualifier: identified_data
