@@ -27,15 +27,16 @@ def resources_dict():
     resources_dict: Dict[str, Any] = {
         "data_category": models.DataCategory(
             organization_fides_key=1,
-            fides_key="user.provided.identifiable",
-            name="User Provided Identifiable Data",
-            description="Test Data Category",
+            fides_key="user.provided.identifiable.custom",
+            parent_key="user.provided.identifiable",
+            name="Custom Data Category",
+            description="Custom Data Category",
         ),
         "data_qualifier": models.DataQualifier(
             organization_fides_key=1,
-            fides_key="test_data_qualifier",
-            name="aggregated_data",
-            description="Test Data Qualifier",
+            fides_key="custom_data_qualifier",
+            name="Custom Data Qualifier",
+            description="Custom Data Qualifier",
         ),
         "dataset": models.Dataset(
             organization_fides_key=1,
@@ -68,15 +69,15 @@ def resources_dict():
         ),
         "data_subject": models.DataSubject(
             organization_fides_key=1,
-            fides_key="customer",
-            name="customer",
-            description="Test Data Subject",
+            fides_key="custom_subject",
+            name="Custom Data Subject",
+            description="Custom Data Subject",
         ),
         "data_use": models.DataUse(
             organization_fides_key=1,
-            fides_key="provide_the_product_or_service",
-            name="Provide the Product or Service",
-            description="Test Data Use",
+            fides_key="custom_data_use",
+            name="Custom Data Use",
+            description="Custom Data Use",
         ),
         "evaluation": models.Evaluation(
             fides_key="test_evaluation", status="PASS", details=["foo"], message="bar"
