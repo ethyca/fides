@@ -91,7 +91,7 @@ def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
             "evaluate",
             "tests/data/passing_taxonomy.yml",
             "-k",
-            "passingPrivacyPolicy",
+            "passing_privacy_policy",
         ],
     )
     print(result.output)

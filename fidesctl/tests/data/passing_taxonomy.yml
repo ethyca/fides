@@ -108,7 +108,7 @@ system:
 
 policy:
   - organization_fides_key: 1
-    fides_key: passing_privacy_policy
+    fides_key: primary_privacy_policy
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:

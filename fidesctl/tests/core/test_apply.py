@@ -26,14 +26,12 @@ def test_sort_create_update_unchanged_create():
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organization_fides_key=1,
         fides_key="another_system",
         name="Test System 2",
-        clause="Test Clause",
         description="Test Description",
     )
     expected_create_result = [resource_2]
@@ -57,14 +55,12 @@ def test_sort_create_update_unchanged_update():
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test System 2",
-        clause="Test Clause",
         description="Test Description",
     )
     expected_update_result = [resource_2]
@@ -88,14 +84,12 @@ def test_sort_create_update_unchanged_unchanged():
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     expected_unchanged_result = [resource_2]
