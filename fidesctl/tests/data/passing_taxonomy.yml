@@ -1,6 +1,14 @@
 data_category:
+  - fides_key: user
+    name: User Data
+
+  - fides_key: user.provided
+    name: User Provided Data
+    parent_key: user
+
   - fides_key: user.provided.identifiable
     name: User Provided Identifiable Data
+    parent_key: user.provided
 
   - fides_key: user.provided.identifiable.political_opinion
     name: Political Opinion

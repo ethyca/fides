@@ -31,6 +31,7 @@ def test_parse_manifest_validation_error():
             "name": "Test resource 1",
             "description": "Test Description",
         }
+        # TODO: this hits a key error in the validators due to missing FidesKey... but shouldn't it explode earlier since FidesKey is not Optional?
         parse.parse_manifest("data_category", test_dict)
     assert True
 
@@ -53,14 +54,15 @@ def test_load_manifests_into_taxonomy():
     manifest_dict = {
         "data_category": [
             {
-                "name": "User Provided Data",
-                "fides_key": "user.provided",
-                "description": "Data provided or created directly by a user of the system.",
+                "name": "User Data",
+                "fides_key": "user",
+                "description": "Test top-level category"
             },
             {
-                "name": "Credentials",
-                "fides_key": "user.provided.identifiable.credentials",
-                "description": "User provided authentication data.",
+                "name": "User Provided Data",
+                "fides_key": "user.provided",
+                "parent_key": "user",
+                "description": "Test sub-category"
             },
         ]
     }
@@ -68,14 +70,15 @@ def test_load_manifests_into_taxonomy():
     expected_taxonomy = models.Taxonomy(
         data_category=[
             models.DataCategory(
-                name="User Provided Data",
-                fides_key="user.provided",
-                description="Data provided or created directly by a user of the system.",
+                name="User Data",
+                fides_key="user",
+                description="Test top-level category",
             ),
             models.DataCategory(
-                name="Credentials",
-                fides_key="user.provided.identifiable.credentials",
-                description="User provided authentication data.",
+                name="User Provided Data",
+                fides_key="user.provided",
+                parent_key="user",
+                description="Test sub-category",
             ),
         ]
     )

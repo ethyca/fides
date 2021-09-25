@@ -18,7 +18,7 @@ class FidesValidationError(Exception):
 
 class FidesKey(ConstrainedStr):
     """
-    A FidesKey should only contain alphanumeric characters or '_'
+    A FidesKey should only contain alphanumeric characters, '.' or '_'
     """
 
     regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_.]+$")
@@ -79,8 +79,7 @@ def matching_parent_key(value: FidesKey, values: Dict) -> FidesKey:
     # Reform the parent_key from the fides_key and compare
     parent_key_from_fides_key = ".".join(split_fides_key[:-1])
     if parent_key_from_fides_key != value:
-        pass # TODO: reenable
-        # raise FidesValidationError(
-        #     "The parent_key does not match the parent parsed from the fides_key!"
-        # )
+        raise FidesValidationError(
+            f"The parent_key ({value}) does not match the parent parsed ({parent_key_from_fides_key}) from the fides_key ({fides_key})!"
+        )
     return value
