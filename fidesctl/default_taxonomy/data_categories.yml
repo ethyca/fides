@@ -193,7 +193,7 @@ data_category:
 
   - fides_key: user.derived.identifiable.organization
     name: Organization Identifiable Data
-    parent_key: user.derived
+    parent_key: user.derived.identifiable
     description: Derived data that is linked to, or identifies an organization.
 
   - fides_key: user.derived.identifiable.workplace
@@ -218,165 +218,165 @@ data_category:
 
   - fides_key: user.provided.identifiable
     name: User Provided Identifiable Data
-    parent_key: user
+    parent_key: user.provided
     description: Data provided or created directly by a user that is linked to or identifies a user.
 
   - fides_key: user.provided.identifiable.biometric
     name: Biometric Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Encoded characteristics provided by a user.
 
   - fides_key: user.provided.identifiable.childrens
     name: Children's Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Data relating to children.
 
   - fides_key: user.provided.identifiable.contact
     name: Provided Contact Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: User provided contact data for purposes other than account management.
 
   - fides_key: user.provided.identifiable.contact.city
     name: User Provided City
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's city level address data.
 
   - fides_key: user.provided.identifiable.contact.country
     name: User Provided Country
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's country level address data.
 
   - fides_key: user.provided.identifiable.contact.email
     name: User Provided Email
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's provided email address.
 
   - fides_key: user.provided.identifiable.contact.phone_number
     name: User Provided Phone Number
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's phone number.
 
   - fides_key: user.provided.identifiable.contact.postal_code
     name: User Provided Postal Code
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's postal code.
 
   - fides_key: user.provided.identifiable.contact.state
     name: User Provided State
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's state level address data.
 
   - fides_key: user.provided.identifiable.contact.street
     name: User Provided Street
-    parent_key: user.provided.identifable.contact
+    parent_key: user.provided.identifiable.contact
     description: User's street level address data.
 
   - fides_key: user.provided.identifiable.credentials
     name: Credentials
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: User provided authentication data.
 
   - fides_key: user.provided.identifiable.credentials.biometric_credentials
     name: Biometric Credentials
-    parent_key: user.provided.identifable.credentials
+    parent_key: user.provided.identifiable.credentials
     description: Credentials for system authentication.
 
   - fides_key: user.provided.identifiable.credentials.password
     name: Password
-    parent_key: user.provided.identifable.credentials
+    parent_key: user.provided.identifiable.credentials
     description: Password for system authentication.
 
   - fides_key: user.provided.identifiable.date_of_birth
     name: Date of Birth
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: User's date of birth.
 
   - fides_key: user.provided.identifiable.financial
     name: Financial Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Payment data and financial history.
 
   - fides_key: user.provided.identifiable.financial.account_number
     name: User Provided Financial Account Number
-    parent_key: user.provided.identifable.financial
+    parent_key: user.provided.identifiable.financial
     description: User's account number for a payment card, bank account, or other financial system.
 
   - fides_key: user.provided.identifiable.gender
     name: User Provided Gender
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Gender of an individual.
 
   - fides_key: user.provided.identifiable.genetic
     name: Genetic Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Data about the genetic makeup provided by a user.
 
   - fides_key: user.provided.identifiable.government_id
     name: Government ID
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: State provided identification data.
 
   - fides_key: user.provided.identifiable.government_id.drivers_license_number
     name: Driver's License Number
-    parent_key: user.provided.identifable.government_id
+    parent_key: user.provided.identifiable.government_id
     description: State issued driving identification number.
 
   - fides_key: user.provided.identifiable.government_id.national_identification_number
     name: National Identification Number
-    parent_key: user.provided.identifable.government_id
+    parent_key: user.provided.identifiable.government_id
     description: State issued personal identification number.
 
   - fides_key: user.provided.identifiable.government_id.passport_number
     name: Passport Number
-    parent_key: user.provided.identifable.government_id
+    parent_key: user.provided.identifiable.government_id
     description: State issued passport data.
 
   - fides_key: user.provided.identifiable.health_and_medical
     name: Health and Medical Data
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Health records or individual's personal medical data.
 
   - fides_key: user.provided.identifiable.job_title
     name: Job Title
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Professional data.
 
   - fides_key: user.provided.identifiable.name
     name: Name
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: User's real name.
 
   - fides_key: user.provided.identifiable.non_specific_age
     name: User Provided Non-Specific Age
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Age range data.
 
   - fides_key: user.provided.identifiable.political_opinion
     name: Political Opinion
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Data related to the individual's political opinions.
 
   - fides_key: user.provided.identifiable.race
     name: User Provided Race
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Racial or ethnic origin data.
 
   - fides_key: user.provided.identifiable.religious_belief
     name: User Provided Religious Belief
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Religion or religious belief.
 
   - fides_key: user.provided.identifiable.sexual_orientation
     name: User Provided Sexual Orientation
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Personal sex life or sexual data.
 
   - fides_key: user.provided.identifiable.workplace
     name: User Provided Workplace
-    parent_key: user.provided.identifable
+    parent_key: user.provided.identifiable
     description: Organization of employment.
 
   - fides_key: user.provided.nonidentifiable
     name: User Provided Non-Identifiable Data
-    parent_key: user
+    parent_key: user.provided
     description: Data provided or created directly by a user that is not identifiable.
