@@ -82,8 +82,8 @@ system:
     privacy_declarations:
       - name: Analyze Anonymous Content
         data_categories:
-          - user_provided_data
-        data_use: provide
+          - user.provided.identifiable
+        data_use: provide_the_product_or_service
         data_qualifier: pseudonymized_data
         data_subjects:
           - customer
