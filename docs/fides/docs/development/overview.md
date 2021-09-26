@@ -15,16 +15,16 @@ To clone Fides for development, run `git clone https://github.com/ethyca/fides`.
 Once that is complete, there are a few different ways to spin up the project and get coding!
 
 * __Recommended__: If you're using VS Code, the recommended way to work on Fides is by leveraginng the Dev Container feature. The repo has a `.devcontainer/devcontainer.json` file already included that will set up a complete environment in VS Code, including the suggested VS Code extensions and settings.
-* If you're using an editor besides VS Code, then the next best way to work on Fides is by utilizing the `Makefile` commands. See the guide [here](https://ethyca.github.io/fides/getting_started/docker/) for more information on getting setting up via the `Makefile`.
+* If you're using an editor besides VS Code, then the next best way to work on Fides is by utilizing the `Makefile` commands. See the guide [here](../getting_started/docker.md) for more information on getting setting up via the `Makefile`.
 
 ### Write your code
 
 We have no doubt you can write amazing code! However, we want to help you ensure your code plays nicely with the rest of the Fides ecosystem. Many projects describe code style and documentation as a suggestion; in Fides it's a CI-checked requirement.
 
-* To learn how to style your code, see the [style guide](https://ethyca.github.io/fides/development/code_style/).
-* To learn how to document your code, see the [docs guide](https://ethyca.github.io/fides/development/documentation/).
-* To learn how to test your code, see the [tests guide](https://ethyca.github.io/fides/development/testing/).
-* To learn what format your PR should follow, make sure to follow the [pull request guidelines](https://ethyca.github.io/fides/development/pull_requests/).
+* To learn how to style your code, see the [style guide](code_style.md).
+* To learn how to document your code, see the [docs guide](documentation.md).
+* To learn how to test your code, see the [tests guide](testing.md).
+* To learn what format your PR should follow, make sure to follow the [pull request guidelines](pull_requests.md).
 
 ### Submit your code
 

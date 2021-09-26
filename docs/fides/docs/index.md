@@ -41,7 +41,7 @@ If you'd like a quick Roman mythology lesson, check out [Fides on Wikipedia](htt
 
 ## Core Components
 
-Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each resource and their respective schemas, see the [Fides Resources](https://ethyca.github.io/fides/fides_resources/) page.
+Conceptually, there are a few key parts to Fides privacy management. For more in-depth info on each resource and their respective schemas, see the [Fides Resources](fides_resources.md) page.
 
 ### Systems
 
@@ -81,6 +81,6 @@ Fides defines data privacy in four dimensions, called Data Privacy Classifiers. 
 
 ## Next Steps
 
-For further context on how to setup and configure Fides, visit the `Getting Started` page ([Getting Started with Docker](https://ethyca.github.io/fides/getting_started/docker/) or [Getting Started Locally](https://ethyca.github.io/fides/getting_started/local/)).
+For further context on how to setup and configure Fides, visit the `Getting Started` page ([Getting Started with Docker](getting_started/docker.md) or [Getting Started Locally](getting_started/local.md)).
 
-For an in-depth tutorial, visit the [Tutorial](https://ethyca.github.io/fides/tutorial/) page.
+For an in-depth tutorial, visit the [Tutorial](tutorial.md) page.

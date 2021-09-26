@@ -2,7 +2,7 @@
 
 ---
 
-The Fides project welcomes issues, contributions and discussion from all users, regardless of background or experience level. In order to create a positive and welcoming environment, all interactions are governed by the Fides [Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+The Fides project welcomes issues, contributions and discussion from all users, regardless of background or experience level. In order to create a positive and welcoming environment, all interactions are governed by the Fides [Code of Conduct](code_of_conduct.md).
 
 ## GitHub
 
