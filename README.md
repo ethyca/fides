@@ -58,12 +58,12 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```yaml
     system:
       - organization_fides_key: 1
-        fides_key: "demo_analytics_system"
-        name: "Demo Analytics System"
-        description: "A system used for analyzing customer behaviour."
-        system_type: "Service"
+        fides_key: demo_analytics_system
+        name: Demo Analytics System
+        description: A system used for analyzing customer behaviour.
+        system_type: Service
         privacy_declarations:
-          - name: "Analyze customer behaviour for improvements."
+          - name: Analyze customer behaviour for improvements.
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
@@ -75,12 +75,12 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
               - demo_users_dataset
 
       - organization_fides_key: 1
-        fides_key: "demo_marketing_system"
-        name: "Demo Marketing System"
-        description: "Collect data about our users for marketing."
-        system_type: "Service"
+        fides_key: demo_marketing_system
+        name: Demo Marketing System
+        description: Collect data about our users for marketing.
+        system_type: Service
         privacy_declarations:
-          - name: "Collect data for marketing"
+          - name: Collect data for marketing
             data_categories:
               # - user.provided.identifiable.contact # uncomment to add this category to the system
               - user.derived.identifiable.device.cookie_id
@@ -134,14 +134,14 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```yaml
     policy:
       - organization_fides_key: 1
-        fides_key: "demo_privacy_policy"
-        name: "Demo Privacy Policy"
-        description: "The main privacy policy for the organization."
+        fides_key: demo_privacy_policy
+        name: Demo Privacy Policy
+        description: The main privacy policy for the organization.
         rules:
           - organization_fides_key: 1
-            fides_key: "reject_direct_marketing"
-            name: "Reject Direct Marketing"
-            description: "Disallow collecting any user contact info to use for marketing."
+            fides_key: reject_direct_marketing
+            name: Reject Direct Marketing
+            description: Disallow collecting any user contact info to use for marketing.
             data_categories:
               inclusion: ANY
               values:
@@ -172,7 +172,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     +++ b/fidesctl/demo_resources/demo_system.yml
     @@ -24,7 +24,7 @@ system:
          privacy_declarations:
-           - name: "Collect data for marketing"
+           - name: Collect data for marketing
              data_categories:
     -          # - user.provided.identifiable.contact # uncomment to add this category to the system
     +          - user.provided.identifiable.contact # uncomment to add this category to the system
