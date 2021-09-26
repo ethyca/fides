@@ -59,7 +59,8 @@ def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
     i.e. DataCategory.parent_key != DataCategory.fides_key
     """
 
-    if value == values["fides_key"]:
+    fides_key = FidesKey.validate(values.get("fides_key", ""))
+    if value == fides_key:
         raise FidesValidationError("FidesKey can not self-reference!")
     return value
 
@@ -69,7 +70,7 @@ def matching_parent_key(value: FidesKey, values: Dict) -> FidesKey:
     Confirm that the parent_key matches the parent parsed from the FidesKey.
     """
 
-    fides_key = values["fides_key"]
+    fides_key = FidesKey.validate(values.get("fides_key", ""))
     split_fides_key = fides_key.split(".")
 
     # Check if it is a top-level resource
@@ -80,6 +81,8 @@ def matching_parent_key(value: FidesKey, values: Dict) -> FidesKey:
     parent_key_from_fides_key = ".".join(split_fides_key[:-1])
     if parent_key_from_fides_key != value:
         raise FidesValidationError(
-            f"The parent_key ({value}) does not match the parent parsed ({parent_key_from_fides_key}) from the fides_key ({fides_key})!"
+            "The parent_key ({0}) does not match the parent parsed ({1}) from the fides_key ({2})!".format(
+                value, parent_key_from_fides_key, fides_key
+            )
         )
     return value

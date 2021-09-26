@@ -1,8 +1,8 @@
+from fideslang import validation
 import pytest
-from pydantic import ValidationError
 
 import fideslang as models
-from fideslang import parse
+from fideslang import parse, validation
 
 
 @pytest.mark.unit
@@ -19,25 +19,24 @@ def test_parse_manifest():
         "name": "Test resource 1",
         "description": "Test Description",
     }
-    actual_result = parse.parse_manifest("data_category", test_dict)
+    actual_result = parse.parse_dict("data_category", test_dict)
     assert actual_result == expected_result
 
 
 @pytest.mark.unit
-def test_parse_manifest_validation_error():
-    with pytest.raises(SystemExit):
+def test_parse_manifest_no_fides_key_validation_error():
+    with pytest.raises(validation.FidesValidationError):
         test_dict = {
             "organization_fides_key": 1,
             "name": "Test resource 1",
             "description": "Test Description",
         }
-        # TODO: this hits a key error in the validators due to missing FidesKey... but shouldn't it explode earlier since FidesKey is not Optional?
-        parse.parse_manifest("data_category", test_dict)
+        parse.parse_dict("data_category", test_dict)
     assert True
 
 
 @pytest.mark.unit
-def test_parse_manifest_key_error():
+def test_parse_manifest_resource_type_error():
     with pytest.raises(SystemExit):
         test_dict = {
             "organization_fides_key": 1,
@@ -45,7 +44,7 @@ def test_parse_manifest_key_error():
             "name": "Test resource 1",
             "description": "Test Description",
         }
-        parse.parse_manifest("data-category", test_dict)
+        parse.parse_dict("data-category", test_dict)
     assert True
 
 
@@ -56,13 +55,13 @@ def test_load_manifests_into_taxonomy():
             {
                 "name": "User Data",
                 "fides_key": "user",
-                "description": "Test top-level category"
+                "description": "Test top-level category",
             },
             {
                 "name": "User Provided Data",
                 "fides_key": "user.provided",
                 "parent_key": "user",
-                "description": "Test sub-category"
+                "description": "Test sub-category",
             },
         ]
     }

@@ -16,6 +16,17 @@ from fideslang.validation import FidesValidationError
 
 
 @pytest.mark.unit
+def test_top_level_resource():
+    DataCategory(
+        organization_fides_key=1,
+        fides_key="user",
+        name="Custom Test Data",
+        description="Custom Test Data Category",
+    )
+    assert DataCategory
+
+
+@pytest.mark.unit
 def test_fides_key_doesnt_match_stated_parent_key():
     with pytest.raises(FidesValidationError):
         DataCategory(
@@ -24,6 +35,30 @@ def test_fides_key_doesnt_match_stated_parent_key():
             name="Custom Test Data",
             description="Custom Test Data Category",
             parent_key="user.derived",
+        )
+    assert DataCategory
+
+
+@pytest.mark.unit
+def test_fides_key_matches_stated_parent_key():
+    DataCategory(
+        organization_fides_key=1,
+        fides_key="user.provided.identifiable.custom_test_data",
+        name="Custom Test Data",
+        description="Custom Test Data Category",
+        parent_key="user.provided.identifiable",
+    )
+    assert DataCategory
+
+
+@pytest.mark.unit
+def test_no_parent_key_but_fides_key_contains_parent_key():
+    with pytest.raises(FidesValidationError):
+        DataCategory(
+            organization_fides_key=1,
+            fides_key="user.provided.identifiable.custom_test_data",
+            name="Custom Test Data",
+            description="Custom Test Data Category",
         )
     assert DataCategory
 
@@ -152,7 +187,9 @@ def test_invalid_action_enum_policy_rule():
             name="Test Policy",
             description="Test Policy",
             data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(inclusion="NONE", values=["provide_product_or_service"]),
+            data_uses=PrivacyRule(
+                inclusion="NONE", values=["provide_product_or_service"]
+            ),
             data_subjects=PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJT",

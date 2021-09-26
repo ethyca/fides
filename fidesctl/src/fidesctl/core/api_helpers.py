@@ -7,7 +7,7 @@ from typing import List, Dict, Iterable
 from fidesctl.core import api
 from fideslang import FidesModel
 from fideslang.validation import FidesKey
-from fideslang.parse import parse_manifest
+from fideslang.parse import parse_dict
 
 
 def get_server_resources(
@@ -27,7 +27,7 @@ def get_server_resources(
         [api.get(url, resource_type, key, headers).json() for key in existing_keys],
     )
     server_resource_list: List[FidesModel] = [
-        parse_manifest(resource_type, resource, from_server=True)
+        parse_dict(resource_type, resource, from_server=True)
         for resource in raw_server_resource_list
     ]
     return server_resource_list
