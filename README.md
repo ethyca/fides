@@ -38,9 +38,9 @@ Using these primitives, as well as some additional abstractions for syntactic su
 
 ## :rocket: Quick Start
 
-If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md). But for a quick demo you can tinker with, follow these 5 easy steps:
+If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
 
-1. First, follow the [Getting Started with Docker](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md) guide until you're able to run `fidesctl ping` successfully
+1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
     ```bash
     root@fa175a43c077:/fides/fidesctl# fidesctl ping
     Pinging http://fidesctl:8080...
@@ -58,16 +58,16 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```yaml
     system:
       - organization_fides_key: 1
-        fides_key: "demo_analytics_system"
-        name: "Demo Analytics System"
-        description: "A system used for analyzing customer behaviour."
-        system_type: "Service"
+        fides_key: demo_analytics_system
+        name: Demo Analytics System
+        description: A system used for analyzing customer behaviour.
+        system_type: Service
         privacy_declarations:
-          - name: "Analyze customer behaviour for improvements."
+          - name: Analyze customer behaviour for improvements.
             data_categories:
-              - provided_contact_information
-              - cookie_id
-            data_use: improve_the_product_or_service
+              - user.provided.identifiable.contact
+              - user.derived.identifiable.device.cookie_id
+            data_use: improve_product_or_service
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -75,15 +75,15 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
               - demo_users_dataset
 
       - organization_fides_key: 1
-        fides_key: "demo_marketing_system"
-        name: "Demo Marketing System"
-        description: "Collect data about our users for marketing."
-        system_type: "Service"
+        fides_key: demo_marketing_system
+        name: Demo Marketing System
+        description: Collect data about our users for marketing.
+        system_type: Service
         privacy_declarations:
-          - name: "Collect data for marketing"
+          - name: Collect data for marketing
             data_categories:
-              # - provided_contact_information # uncomment to add this category to the system
-              - cookie_id
+              # - user.provided.identifiable.contact # uncomment to add this category to the system
+              - user.derived.identifiable.device.cookie_id
             data_use: marketing_advertising_or_promotion
             data_subjects:
               - customer
@@ -134,18 +134,18 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```yaml
     policy:
       - organization_fides_key: 1
-        fides_key: "demo_privacy_policy"
-        name: "Demo Privacy Policy"
-        description: "The main privacy policy for the organization."
+        fides_key: demo_privacy_policy
+        name: Demo Privacy Policy
+        description: The main privacy policy for the organization.
         rules:
           - organization_fides_key: 1
-            fides_key: "reject_direct_marketing"
-            name: "Reject Direct Marketing"
-            description: "Disallow collecting any user contact info to use for marketing."
+            fides_key: reject_direct_marketing
+            name: Reject Direct Marketing
+            description: Disallow collecting any user contact info to use for marketing.
             data_categories:
               inclusion: ANY
               values:
-                - provided_contact_information
+                - user.provided.identifiable.contact
             data_uses:
               inclusion: ANY
               values:
@@ -172,11 +172,11 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     +++ b/fidesctl/demo_resources/demo_system.yml
     @@ -24,7 +24,7 @@ system:
          privacy_declarations:
-           - name: "Collect data for marketing"
+           - name: Collect data for marketing
              data_categories:
-    -          # - provided_contact_information # uncomment to add this category to the system
-    +          - provided_contact_information # uncomment to add this category to the system
-               - cookie_id
+    -          # - user.provided.identifiable.contact # uncomment to add this category to the system
+    +          - user.provided.identifiable.contact # uncomment to add this category to the system
+               - user.derived.identifiable.device.cookie_id
              data_use: marketing_advertising_or_promotion
              data_subjects:
 
@@ -221,7 +221,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```
 
 
-At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://github.com/ethyca/fides/blob/main/docs/fides/docs/tutorial.md) to keep learning.
+At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
 
 ## :book: Learn More
 

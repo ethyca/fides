@@ -1,5 +1,5 @@
 registry:
   - organizationId: 1
-    fides_key: "demo_registry"
-    name: "Demo Registry"
-    description: "Demo Registry"
+    fides_key: demo_registry
+    name: Demo Registry
+    description: Demo Registry

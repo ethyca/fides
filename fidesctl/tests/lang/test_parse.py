@@ -1,8 +1,8 @@
+from fideslang import validation
 import pytest
-from pydantic import ValidationError
 
 import fideslang as models
-from fideslang import parse
+from fideslang import parse, validation
 
 
 @pytest.mark.unit
@@ -11,44 +11,40 @@ def test_parse_manifest():
         organization_fides_key=1,
         fides_key="some_resource",
         name="Test resource 1",
-        clause="Test Clause",
         description="Test Description",
     )
     test_dict = {
         "organization_fides_key": 1,
         "fides_key": "some_resource",
         "name": "Test resource 1",
-        "clause": "Test Clause",
         "description": "Test Description",
     }
-    actual_result = parse.parse_manifest("data_category", test_dict)
+    actual_result = parse.parse_dict("data_category", test_dict)
     assert actual_result == expected_result
 
 
 @pytest.mark.unit
-def test_parse_manifest_validation_error():
-    with pytest.raises(SystemExit):
+def test_parse_manifest_no_fides_key_validation_error():
+    with pytest.raises(validation.FidesValidationError):
         test_dict = {
             "organization_fides_key": 1,
             "name": "Test resource 1",
-            "clause": "Test Clause",
             "description": "Test Description",
         }
-        parse.parse_manifest("data_category", test_dict)
+        parse.parse_dict("data_category", test_dict)
     assert True
 
 
 @pytest.mark.unit
-def test_parse_manifest_key_error():
+def test_parse_manifest_resource_type_error():
     with pytest.raises(SystemExit):
         test_dict = {
             "organization_fides_key": 1,
             "fides_key": "some_resource",
             "name": "Test resource 1",
-            "clause": "Test Clause",
             "description": "Test Description",
         }
-        parse.parse_manifest("data-category", test_dict)
+        parse.parse_dict("data-category", test_dict)
     assert True
 
 
@@ -57,14 +53,15 @@ def test_load_manifests_into_taxonomy():
     manifest_dict = {
         "data_category": [
             {
-                "name": "User Provided Data",
-                "fides_key": "user_provided_data",
-                "description": "Data provided or created directly by a user of the system.",
+                "name": "User Data",
+                "fides_key": "user",
+                "description": "Test top-level category",
             },
             {
-                "name": "Credentials",
-                "fides_key": "credentials",
-                "description": "User provided authentication data.",
+                "name": "User Provided Data",
+                "fides_key": "user.provided",
+                "parent_key": "user",
+                "description": "Test sub-category",
             },
         ]
     }
@@ -72,14 +69,15 @@ def test_load_manifests_into_taxonomy():
     expected_taxonomy = models.Taxonomy(
         data_category=[
             models.DataCategory(
-                name="User Provided Data",
-                fides_key="user_provided_data",
-                description="Data provided or created directly by a user of the system.",
+                name="User Data",
+                fides_key="user",
+                description="Test top-level category",
             ),
             models.DataCategory(
-                name="Credentials",
-                fides_key="credentials",
-                description="User provided authentication data.",
+                name="User Provided Data",
+                fides_key="user.provided",
+                parent_key="user",
+                description="Test sub-category",
             ),
         ]
     )

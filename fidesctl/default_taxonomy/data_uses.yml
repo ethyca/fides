@@ -1,74 +1,74 @@
 data_use:
   # Provided Data
-  - fides_key: "provide_the_product_or_service"
-    name: "Provide the Product or Service"
+  - fides_key: provide_product_or_service
+    name: Provide the Product or Service
 
-  - fides_key: "support_the_product_or_service"
-    name: "Support the Product or Service"
-    parent_key: "provide_the_product_or_service"
+  - fides_key: provide_product_or_service.support
+    name: Support the Product or Service
+    parent_key: provide_product_or_service
 
-  - fides_key: "support_optimization"
-    name: "Support Optimization"
-    parent_key: "provide_the_product_or_service"
+  - fides_key: provide_product_or_service.support_optimization
+    name: Support Optimization
+    parent_key: provide_product_or_service
 
-  - fides_key: "offers_of_product_or_service_upgrades"
-    name: "Offers of Product or Service Upgrades"
-    parent_key: "provide_the_product_or_service"
+  - fides_key: provide_product_or_service.offer_upgrades
+    name: Offers of Product or Service Upgrades
+    parent_key: provide_product_or_service
 
   # Improvement Data
-  - fides_key: "improve_the_product_or_service"
-    name: "Improve the Product or Service"
+  - fides_key: improve_product_or_service
+    name: Improve the Product or Service
 
   # Personalize Data
-  - fides_key: "personalize_the_product_or_service"
-    name: "Personalize the Product or Service"
+  - fides_key: personalize_product_or_service
+    name: Personalize the Product or Service
 
   # Marketing, Advertising or Promotion Data
-  - fides_key: "marketing_advertising_or_promotion"
-    name: "Marketing, Advertising or Promotion"
+  - fides_key: marketing_advertising_or_promotion
+    name: Marketing, Advertising or Promotion
 
-  - fides_key: "first_party_advertising"
-    name: "First Party Advertising"
-    parent_key: "marketing_advertising_or_promotion"
+  - fides_key: marketing_advertising_or_promotion.first_party
+    name: First Party Advertising
+    parent_key: marketing_advertising_or_promotion
 
-  - fides_key: "third_party_advertising"
-    name: "Third Party Advertising"
-    parent_key: "marketing_advertising_or_promotion"
+  - fides_key: marketing_advertising_or_promotion.third_party
+    name: Third Party Advertising
+    parent_key: marketing_advertising_or_promotion
 
   # Marketing, Advertising or Promotion -> First Party Advertising
-  - fides_key: "first_party_contextual_advertising"
-    name: "First Party Contextual Advertising"
-    parent_key: "first_party_advertising"
+  - fides_key: marketing_advertising_or_promotion.first_party.contextual
+    name: First Party Contextual Advertising
+    parent_key: marketing_advertising_or_promotion.first_party
 
-  - fides_key: "first_party_personalized_advertising"
-    name: "First Party Personalized Advertising"
-    parent_key: "first_party_advertising"
+  - fides_key: marketing_advertising_or_promotion.first_party.personalized
+    name: First Party Personalized Advertising
+    parent_key: marketing_advertising_or_promotion.first_party
 
   # Marketing, Advertising or Promotion -> Third Party Advertising
-  - fides_key: "third_party_personalized_advertising"
-    name: "Third Party Personalized Advertising"
-    parent_key: "third_party_advertising"
+  - fides_key: marketing_advertising_or_promotion.third_party.personalized
+    name: Third Party Personalized Advertising
+    parent_key: marketing_advertising_or_promotion.third_party
 
   # Third Party Sharing
-  - fides_key: "third_party_sharing"
-    name: "Third Party Sharing"
+  - fides_key: third_party_sharing
+    name: Third Party Sharing
 
-  - fides_key: "sharing_for_processing_payments"
-    name: "Sharing for Processing Payments"
-    parent_key: "third_party_sharing"
+  - fides_key: third_party_sharing.payment_processing
+    name: Sharing for Processing Payments
+    parent_key: third_party_sharing
 
-  - fides_key: "sharing_for_personalized_advertising"
-    name: "Sharing for Personalized Advertising"
-    parent_key: "third_party_sharing"
+  - fides_key: third_party_sharing.personalized_advertising
+    name: Sharing for Personalized Advertising
+    parent_key: third_party_sharing
 
-  - fides_key: "sharing_for_legal_obligation"
-    name: "Sharing for Legal Obligation"
-    parent_key: "third_party_sharing"
+  - fides_key: third_party_sharing.legal_obligation
+    name: Sharing for Legal Obligation
+    parent_key: third_party_sharing
 
   # Collect
-  - fides_key: "collect"
-    name: "Collect"
+  - fides_key: collect
+    name: Collect
 
   # Train AI System
-  - fides_key: "train_ai_system"
-    name: "Train AI System"
+  - fides_key: train_ai_system
+    name: Train AI System

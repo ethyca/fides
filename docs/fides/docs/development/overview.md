@@ -15,7 +15,7 @@ To clone Fides for development, run `git clone https://github.com/ethyca/fides`.
 Once that is complete, there are a few different ways to spin up the project and get coding!
 
 * __Recommended__: If you're using VS Code, the recommended way to work on Fides is by leveraginng the Dev Container feature. The repo has a `.devcontainer/devcontainer.json` file already included that will set up a complete environment in VS Code, including the suggested VS Code extensions and settings.
-* If you're using an editor besides VS Code, then the next best way to work on Fides is by utilizing the `Makefile` commands. See the guide [here](https://github.com/ethyca/fides/blob/main/docs/fides/docs/getting_started/docker.md) for more information on getting setting up via the `Makefile`.
+* If you're using an editor besides VS Code, then the next best way to work on Fides is by utilizing the `Makefile` commands. See the guide [here](../getting_started/docker.md) for more information on getting setting up via the `Makefile`.
 
 ### Write your code
 
