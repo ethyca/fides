@@ -4,7 +4,7 @@ This tutorial walks you through the process of getting up and running with Fides
 
 ## Getting Started
 
-Use either the [Docker](https://ethyca.github.io/fides/getting_started/docker/) (**recommended**) or [Local](https://ethyca.github.io/fides/getting_started/local/) guide to get Fidesctl up and running on your machine.
+Use either the [Docker](getting_started/docker.md) (**recommended**) or [Local](getting_started/local.md) guide to get Fidesctl up and running on your machine.
 
 ## Writing Manifest Files
 
@@ -14,7 +14,7 @@ First create a directory for the manifests to live in:
 
 `mkdir fides_resources/`
 
-Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fidesctl to function. For an exhaustive set of example manifests see the [Fides Resources](https://ethyca.github.io/fides/fides_resources/) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
+Next, you'll need to write a System manifest file and a Policy manifest file. These are the only two required resources for Fidesctl to function. For an exhaustive set of example manifests see the [Fides Resources](fides_resources.md) page. Included below are the examples we'll assume are being used for the sake of the tutorial.
 
 === fides_resources/policy.yml
 
