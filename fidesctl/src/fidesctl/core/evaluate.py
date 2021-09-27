@@ -48,7 +48,7 @@ def get_evaluation_policies(
             headers=headers,
         )
         return [server_policy_found] if server_policy_found else []
-        
+
     local_policy_keys = (
         [policy.fides_key for policy in local_policies] if local_policies else None
     )
