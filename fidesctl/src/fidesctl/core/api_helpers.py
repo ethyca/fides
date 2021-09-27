@@ -22,12 +22,41 @@ def get_server_resources(
     If the resource does not exist on the server, an error will _not_ be thrown.
     Instead, an empty object will be stored and then filtered out.
     """
-    raw_server_resource_list: Iterable[Dict] = filter(
-        None,
-        [api.get(url, resource_type, key, headers).json() for key in existing_keys],
+    return list(
+        filter(
+            None,
+            [
+                get_server_resource(
+                    url=url,
+                    resource_type=resource_type,
+                    resource_key=key,
+                    headers=headers,
+                )
+                for key in existing_keys
+            ],
+        )
     )
-    server_resource_list: List[FidesModel] = [
-        parse_manifest(resource_type, resource, from_server=True)
-        for resource in raw_server_resource_list
-    ]
-    return server_resource_list
+
+
+def get_server_resource(
+    url: str,
+    resource_type: str,
+    resource_key: str,
+    headers: Dict[str, str],
+) -> FidesModel:
+    """
+    Get a given resource from the server
+
+    Returns None if the object does not exist on the server
+    """
+    raw_server_response: Dict = api.get(
+        url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
+    ).json()
+
+    return (
+        parse_manifest(
+            resource_type=resource_type, resource=raw_server_response, from_server=True
+        )
+        if raw_server_response
+        else None
+    )

@@ -5,9 +5,9 @@ from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
-from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.api_helpers import get_server_resources, get_server_resource
 from fidesctl.core.parse import parse
-from fidesctl.core.utils import echo_green
+from fidesctl.core.utils import echo_green, echo_red
 from fideslang.models import (
     Evaluation,
     EvaluationError,
@@ -21,6 +21,40 @@ from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
 )
+
+
+def get_evaluation_policies(
+    local_policies: List[Policy],
+    evaluate_fides_key: str,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+) -> List[Policy]:
+    """
+    Returns policies to be evaluated. If 'evaluate_fides_key' is
+    passed then only that policy will be returned. Otherwise, returns
+    all policies.
+    """
+    if evaluate_fides_key:
+        local_policy_found = any(
+            policy for policy in local_policies if policy == evaluate_fides_key
+        )
+        if local_policy_found:
+            return [local_policy_found]
+        else:
+            server_policy_found = get_server_resource(
+                url=url,
+                resource_type="policy",
+                resource_key=evaluate_fides_key,
+                headers=headers,
+            )
+            return [server_policy_found] if server_policy_found else []
+    else:
+        local_policy_keys = (
+            [policy.fides_key for policy in local_policies] if local_policies else None
+        )
+        return local_policies + get_all_server_policies(
+            url=url, headers=headers, exclude=local_policy_keys
+        )
 
 
 def get_all_server_policies(
@@ -138,26 +172,29 @@ def evaluate(
     dry: bool,
 ) -> Evaluation:
     """
-    Perform an evaluation for all of the Policies within an organization.
+    Perform evaluation for a given Policy. If a policy key is not
+    provided, perform an evaluation for all of the Policies in an organzation
 
-    All policies are evaluated, but local Policy definition files will be used
-    as opposed to their server-definitions if available.
+    Local Policy definition files will be used as opposed to their
+    server-definitions if available.
     """
     taxonomy = parse(manifests_dir)
 
-    # Get all of the policies to evaluate
-    local_policy_keys = (
-        [policy.fides_key for policy in taxonomy.policy] if taxonomy.policy else None
+    # Populate all of the policies to evaluate
+    taxonomy.policy = get_evaluation_policies(
+        local_policies=taxonomy.policy,
+        evaluate_fides_key=fides_key,
+        url=url,
+        headers=headers,
     )
-    policy_list = get_all_server_policies(url, headers, exclude=local_policy_keys)
-    taxonomy.policy += policy_list
 
-    # If a fides_key is provided then we only want to evaluate that policy
-    taxonomy.policy = [
-        policy
-        for policy in taxonomy.policy
-        if (not fides_key or policy.fides_key == fides_key)
-    ]
+    if not taxonomy.policy:
+        echo_red(
+            "Policy {} could not be found".format(fides_key)
+            if fides_key
+            else "No Policies found to evaluate"
+        )
+        raise EvaluationError
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
