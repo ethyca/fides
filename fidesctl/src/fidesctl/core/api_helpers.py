@@ -59,4 +59,4 @@ def get_server_resource(
         )
         if raw_server_response
         else None
-    )    
+    )
