@@ -2,7 +2,7 @@
 Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
-from typing import List, Dict, Iterable
+from typing import List, Dict
 
 from fidesctl.core import api
 from fideslang import FidesModel

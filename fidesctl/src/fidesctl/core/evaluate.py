@@ -40,14 +40,14 @@ def get_evaluation_policies(
         )
         if local_policy_found:
             return [local_policy_found]
-        else:
-            server_policy_found = get_server_resource(
-                url=url,
-                resource_type="policy",
-                resource_key=evaluate_fides_key,
-                headers=headers,
-            )
-            return [server_policy_found] if server_policy_found else []
+            
+        server_policy_found = get_server_resource(
+            url=url,
+            resource_type="policy",
+            resource_key=evaluate_fides_key,
+            headers=headers,
+        )
+        return [server_policy_found] if server_policy_found else []
     else:
         local_policy_keys = (
             [policy.fides_key for policy in local_policies] if local_policies else None
