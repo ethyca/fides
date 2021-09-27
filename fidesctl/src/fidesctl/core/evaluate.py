@@ -40,7 +40,7 @@ def get_evaluation_policies(
         )
         if local_policy_found:
             return [local_policy_found]
-            
+
         server_policy_found = get_server_resource(
             url=url,
             resource_type="policy",
