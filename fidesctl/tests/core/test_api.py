@@ -104,7 +104,7 @@ def test_sent_is_received(test_config, resources_dict, endpoint):
     )
     print(result.text)
     assert result.status_code == 200
-    parsed_result = parse.parse_manifest(endpoint, result.json())
+    parsed_result = parse.parse_dict(endpoint, result.json())
 
     assert parsed_result == manifest
 

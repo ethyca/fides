@@ -1,17 +1,17 @@
 policy:
   - organization_fides_key: 1
-    fides_key: "primaryPrivacyPolicy"
-    name: "Primary Privacy Policy"
-    description: "The main privacy policy for the organization."
+    fides_key: demo_privacy_policy
+    name: Demo Privacy Policy
+    description: The main privacy policy for the organization.
     rules:
       - organization_fides_key: 1
-        fides_key: "rejectDirectMarketing"
-        name: "Reject Direct Marketing"
-        description: "Disallow collecting any user contact info to use for marketing."
+        fides_key: reject_direct_marketing
+        name: Reject Direct Marketing
+        description: Disallow collecting any user contact info to use for marketing.
         data_categories:
           inclusion: ANY
           values:
-            - provided_contact_information
+            - user.provided.identifiable.contact
         data_uses:
           inclusion: ANY
           values:

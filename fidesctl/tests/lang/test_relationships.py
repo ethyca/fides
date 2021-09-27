@@ -7,11 +7,11 @@ from fideslang import relationships, DataCategory, System, Taxonomy
 def test_find_referenced_fides_keys_1():
     test_data_category = DataCategory(
         name="test_dc",
-        fides_key="test_dc",
+        fides_key="key_1.test_dc",
         description="test description",
         parent_key="key_1",
     )
-    expected_referenced_key = {"key_1", "test_dc"}
+    expected_referenced_key = {"key_1", "key_1.test_dc"}
     referenced_keys = relationships.find_referenced_fides_keys(test_data_category)
     assert referenced_keys == set(expected_referenced_key)
 
@@ -37,21 +37,21 @@ def test_get_referenced_missing_keys():
         data_category=[
             DataCategory(
                 name="test_dc",
-                fides_key="test_dc",
+                fides_key="key_1.test_dc",
                 description="test description",
                 parent_key="key_1",
             ),
             DataCategory(
-                name="test_dc",
-                fides_key="test_dc",
+                name="test_dc2",
+                fides_key="key_1.test_dc2",
                 description="test description",
                 parent_key="key_1",
             ),
         ],
         system=[
             System.construct(
-                name="test_dc",
-                fides_key="test_dc",
+                name="test_system",
+                fides_key="test_system",
                 description="test description",
                 system_dependencies=["key_3", "key_4"],
                 system_type="test",
@@ -70,9 +70,9 @@ def test_hydrate_missing_resources(test_config):
         data_category=[
             DataCategory(
                 name="test_dc",
-                fides_key="test_dc",
+                fides_key="key_1.test_dc",
                 description="test description",
-                parent_key="credentials",
+                parent_key="key_1",
             ),
         ],
         system=[
@@ -81,7 +81,7 @@ def test_hydrate_missing_resources(test_config):
                 fides_key="test_dc",
                 description="test description",
                 system_dependencies=["key_3", "key_4"],
-                system_type="user_provided_data",
+                system_type="test",
                 privacy_declarations=None,
             )
         ],
@@ -90,7 +90,7 @@ def test_hydrate_missing_resources(test_config):
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         dehydrated_taxonomy=dehydrated_taxonomy,
-        missing_resource_keys={"credentials", "user_provided_data"},
+        missing_resource_keys={"user.provided.identifiable.credentials", "user.provided"},
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
 
@@ -102,9 +102,9 @@ def test_hydrate_missing_resources_fail(test_config):
             data_category=[
                 DataCategory(
                     name="test_dc",
-                    fides_key="test_dc",
+                    fides_key="key_1.test_dc",
                     description="test description",
-                    parent_key="credentials",
+                    parent_key="key_1",
                 ),
             ],
             system=[
@@ -113,7 +113,7 @@ def test_hydrate_missing_resources_fail(test_config):
                     fides_key="test_dc",
                     description="test description",
                     system_dependencies=["key_3", "key_4"],
-                    system_type="user_provided_data",
+                    system_type="test",
                     privacy_declarations=None,
                 )
             ],
@@ -122,6 +122,6 @@ def test_hydrate_missing_resources_fail(test_config):
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
             dehydrated_taxonomy=dehydrated_taxonomy,
-            missing_resource_keys={"non_existent_key", "user_provided_data"},
+            missing_resource_keys={"non_existent_key", "key_3"},
         )
     assert True

@@ -7,7 +7,7 @@ from typing import List, Dict, Iterable
 from fidesctl.core import api
 from fideslang import FidesModel
 from fideslang.validation import FidesKey
-from fideslang.parse import parse_manifest
+from fideslang.parse import parse_dict
 
 
 def get_server_resources(
@@ -59,4 +59,4 @@ def get_server_resource(
         )
         if raw_server_response
         else None
-    )
+    )    
