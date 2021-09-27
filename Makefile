@@ -76,19 +76,19 @@ check-all: check-install black pylint mypy xenon pytest
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@docker-compose run --no-deps $(IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	fidesctl
 
 black: compose-build
-	@docker-compose run --no-deps $(IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	black --check src/
 
 mypy: compose-build
-	@docker-compose run --no-deps $(IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	mypy
 
 pylint: compose-build
-	@docker-compose run --no-deps $(IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	pylint src/
 
 pytest: compose-build init-db
@@ -97,7 +97,7 @@ pytest: compose-build init-db
 	pytest
 
 xenon: compose-build
-	@docker-compose run --no-deps $(IMAGE_NAME) \
+	@docker-compose run $(IMAGE_NAME) \
 	xenon src \
 	--max-absolute B \
 	--max-modules A \
