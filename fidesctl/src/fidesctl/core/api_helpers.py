@@ -54,7 +54,7 @@ def get_server_resource(
     ).json()
 
     return (
-        parse_manifest(
+        parse_dict(
             resource_type=resource_type, resource=raw_server_response, from_server=True
         )
         if raw_server_response
