@@ -1,4 +1,5 @@
 data_category:
+  # Account Data -- Data related to an account in the system.
   - fides_key: account
     name: Account Data
     description: Data related to a system account.
@@ -53,6 +54,7 @@ data_category:
     parent_key: account.payment
     description: Financial account number for an account's payment card, bank account, or other financial system.
 
+  # System Data -- Data unique to and under management of the system.
   - fides_key: system
     name: System Data
     description: Data unique to, and under control of the system.
@@ -67,15 +69,18 @@ data_category:
     parent_key: system
     description: Data used for system operations.
 
+  # User Data -- Data related to an individual user of the system.
   - fides_key: user
     name: User Data
     description: Data related to the user of the system, either provided directly or derived based on their usage.
 
+  # User Derived Data -- Data related to an individual, derived from their actions in the system.
   - fides_key: user.derived
     name: Derived Data
     parent_key: user
     description: Data derived from user provided data or as a result of user actions in the system.
 
+  # User Derived, Identifiable Data -- Data derived from a users actions that identifies them.
   - fides_key: user.derived.identifiable
     name: Derived User Identifiable Data
     parent_key: user.derived
@@ -201,6 +206,7 @@ data_category:
     parent_key: user.derived.identifiable
     description: Organization of employment.
 
+  # User Derived, Non-identifiable Data -- Data derived from a users actions that does not identify them.
   - fides_key: user.derived.nonidentifiable
     name: Derived User Non-Identifiable Data
     parent_key: user.derived
@@ -211,11 +217,13 @@ data_category:
     parent_key: user.derived.nonidentifiable
     description: Non-user identifiable measurement data derived from sensors and monitoring systems.
 
+  # User Provided Data -- Data related to an individual, provided directly by the individual.
   - fides_key: user.provided
     name: User Provided Data
     parent_key: user
     description: Data provided or created directly by a user of the system.
 
+  # User Provided, Identifiable Data -- Data provided by a user that identifies them.
   - fides_key: user.provided.identifiable
     name: User Provided Identifiable Data
     parent_key: user.provided
@@ -334,7 +342,7 @@ data_category:
   - fides_key: user.provided.identifiable.health_and_medical
     name: Health and Medical Data
     parent_key: user.provided.identifiable
-    description: Health records or individual's personal medical data.
+    description: Health records or individual's personal medical information.
 
   - fides_key: user.provided.identifiable.job_title
     name: Job Title
@@ -376,6 +384,7 @@ data_category:
     parent_key: user.provided.identifiable
     description: Organization of employment.
 
+  # User Provided, Non-identifiable Data -- Data provided by a user that does not identify them.
   - fides_key: user.provided.nonidentifiable
     name: User Provided Non-Identifiable Data
     parent_key: user.provided
