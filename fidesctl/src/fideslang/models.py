@@ -76,7 +76,7 @@ class DatasetField(BaseModel):
     """
 
     name: str
-    description: str
+    description: Optional[str]
     data_categories: Optional[List[FidesKey]]
     data_qualifier: Optional[FidesKey]
 
@@ -90,6 +90,8 @@ class DatasetCollection(BaseModel):
 
     name: str
     description: Optional[str]
+    data_categories: Optional[List[FidesKey]]
+    data_qualifier: Optional[FidesKey]
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
@@ -103,8 +105,6 @@ class Dataset(FidesModel):
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
     data_qualifier: Optional[FidesKey]
-    location: str
-    dataset_type: str
     collections: List[DatasetCollection]
 
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(

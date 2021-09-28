@@ -4,7 +4,7 @@ from typing import Any, Dict
 import pytest
 import yaml
 
-import fideslang as models
+from fideslang import models
 from fidesctl.core.config import get_config
 
 
@@ -43,28 +43,33 @@ def resources_dict():
             fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
-            dataset_type="MySQL",
-            location="US East",
-            fields=[
-                models.DatasetField(
-                    name="Food_Preference",
-                    description="User's favorite food",
-                    path="some.path",
-                ),
-                models.DatasetField(
-                    name="First_Name",
-                    description="A First Name Field",
-                    path="another.path",
-                    data_categories=["user.provided.identifiable.name"],
-                    data_qualifier="identified_data",
-                ),
-                models.DatasetField(
-                    name="Email",
-                    description="User's Email",
-                    path="another.another.path",
-                    data_categories=["user.provided.identifiable.contact.email"],
-                    data_qualifier="identified_data",
-                ),
+            collections=[
+                models.DatasetCollection(
+                    name="user",
+                    fields=[
+                        models.DatasetField(
+                            name="Food_Preference",
+                            description="User's favorite food",
+                            path="some.path",
+                        ),
+                        models.DatasetField(
+                            name="First_Name",
+                            description="A First Name Field",
+                            path="another.path",
+                            data_categories=["user.provided.identifiable.name"],
+                            data_qualifier="identified_data",
+                        ),
+                        models.DatasetField(
+                            name="Email",
+                            description="User's Email",
+                            path="another.another.path",
+                            data_categories=[
+                                "user.provided.identifiable.contact.email"
+                            ],
+                            data_qualifier="identified_data",
+                        ),
+                    ],
+                )
             ],
         ),
         "data_subject": models.DataSubject(
@@ -102,7 +107,9 @@ def resources_dict():
             name="Test Policy",
             description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=models.PrivacyRule(inclusion="NONE", values=["provide_product_or_service"]),
+            data_uses=models.PrivacyRule(
+                inclusion="NONE", values=["provide_product_or_service"]
+            ),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJECT",

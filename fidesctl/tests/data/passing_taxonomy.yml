@@ -46,7 +46,6 @@ data_use:
     name: Support Optimization
     parent_key: provide_product_or_service
 
-
 data_qualifier:
   - fides_key: identified_data
     name: Identified Data
@@ -55,31 +54,28 @@ data_qualifier:
     name: Pseudonymized Data
 
 dataset:
-  - organization_fides_key: 1
-    fides_key: test_db_dataset
+  - fides_key: test_db_dataset
     name: Sample DB Dataset
     description: This is a Sample Database Dataset
-    dataset_type: MySQL
-    location: US East
-    fields:
-      - name: First_Name
-        description: A First Name Field
-        path: test_db_dataset.first_name
-        data_categories:
-          - user.provided.identifiable.name
-        data_qualifier: identified_data
-      - name: Email
-        description: User's Email
-        path: test_db_dataset.email
-        data_categories:
-          - user.provided.identifiable
-        data_qualifier: identified_data
-      - name: political_opinion
-        description: User's political opinion
-        path: test_db_dataset.political_opinion
-        data_categories:
-          - user.provided.identifiable.political_opinion
-        data_qualifier: pseudonymized_data
+    collections:
+      - name: users
+        description: User's information
+        fields:
+          - name: First_Name
+            description: A First Name Field
+            data_categories:
+              - user.provided.identifiable.name
+            data_qualifier: identified_data
+          - name: Email
+            description: User's Email
+            data_categories:
+              - user.provided.identifiable
+            data_qualifier: identified_data
+          - name: political_opinion
+            description: User's political opinion
+            data_categories:
+              - user.provided.identifiable.political_opinion
+            data_qualifier: pseudonymized_data
 
 system:
   - organization_fides_key: 1

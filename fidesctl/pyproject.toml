@@ -77,3 +77,7 @@ addopts = ["--cov=fidesctl.core",
             "-vv",
             "--no-cov-on-fail",
             "--disable-pytest-warnings"]
+markers = [
+    "unit: only runs tests that don't require external dependencies (i.e. a database)",
+    "integration: only runs tests that require external dependencies (i.e. a database)"
+]

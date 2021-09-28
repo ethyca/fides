@@ -9,6 +9,7 @@ from .utils import get_db_engine, echo_green
 
 # Update this to use the proper Fideslang objects now that they exist
 
+
 def get_db_tables(engine: Engine) -> Dict[str, List[str]]:
     """
     Return an object containing all of the tables within
