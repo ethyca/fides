@@ -38,7 +38,8 @@ def get_evaluation_policies(
         local_policy_found = next(
             filter(
                 lambda policy: policy.fides_key == evaluate_fides_key, local_policies
-            )
+            ),
+            None,
         )
         if local_policy_found:
             return [local_policy_found]
