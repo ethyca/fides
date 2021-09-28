@@ -35,10 +35,10 @@ def get_evaluation_policies(
     all policies.
     """
     if evaluate_fides_key:
-        local_policy_found = any(
-            policy
-            for policy in local_policies
-            if policy.fides_key == evaluate_fides_key
+        local_policy_found = next(
+            filter(
+                lambda policy: policy.fides_key == evaluate_fides_key, local_policies
+            )
         )
         if local_policy_found:
             return [local_policy_found]

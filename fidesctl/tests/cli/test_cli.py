@@ -101,7 +101,7 @@ def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunne
             "evaluate",
             "tests/data/passing_taxonomy.yml",
             "-k",
-            "passing_privacy_policy",
+            "primary_privacy_policy",
         ],
     )
     print(result.output)
