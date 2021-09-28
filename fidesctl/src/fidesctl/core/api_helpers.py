@@ -2,7 +2,7 @@
 Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from fidesctl.core import api
 from fideslang import FidesModel
@@ -22,7 +22,7 @@ def get_server_resources(
     If the resource does not exist on the server, an error will _not_ be thrown.
     Instead, an empty object will be stored and then filtered out.
     """
-    return list(
+    server_resources: List[FidesModel] = list(
         filter(
             None,
             [
@@ -36,6 +36,7 @@ def get_server_resources(
             ],
         )
     )
+    return server_resources
 
 
 def get_server_resource(
@@ -43,7 +44,7 @@ def get_server_resource(
     resource_type: str,
     resource_key: str,
     headers: Dict[str, str],
-) -> FidesModel:
+) -> Optional[FidesModel]:
     """
     Get a given resource from the server
 
@@ -53,10 +54,11 @@ def get_server_resource(
         url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
     ).json()
 
-    return (
+    server_resource: Optional[FidesModel] = (
         parse_dict(
             resource_type=resource_type, resource=raw_server_response, from_server=True
         )
         if raw_server_response
         else None
     )
+    return server_resource

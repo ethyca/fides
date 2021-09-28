@@ -36,7 +36,9 @@ def get_evaluation_policies(
     """
     if evaluate_fides_key:
         local_policy_found = any(
-            policy for policy in local_policies if policy == evaluate_fides_key
+            policy
+            for policy in local_policies
+            if policy.fides_key == evaluate_fides_key
         )
         if local_policy_found:
             return [local_policy_found]
@@ -52,9 +54,10 @@ def get_evaluation_policies(
     local_policy_keys = (
         [policy.fides_key for policy in local_policies] if local_policies else None
     )
-    return local_policies + get_all_server_policies(
+    all_policies = local_policies + get_all_server_policies(
         url=url, headers=headers, exclude=local_policy_keys
     )
+    return all_policies
 
 
 def get_all_server_policies(
@@ -79,6 +82,20 @@ def get_all_server_policies(
         url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
     )
     return policy_list
+
+
+def validate_policies_exit(policies: List[Policy], evaluate_fides_key: str) -> None:
+    """
+    Validates that policies to be evaluated exist. If no policies were found
+    raises an error and logs an error.
+    """
+    if not policies:
+        echo_red(
+            "Policy {} could not be found".format(evaluate_fides_key)
+            if evaluate_fides_key
+            else "No Policies found to evaluate"
+        )
+        raise EvaluationError
 
 
 def compare_rule_to_declaration(
@@ -187,14 +204,7 @@ def evaluate(
         url=url,
         headers=headers,
     )
-
-    if not taxonomy.policy:
-        echo_red(
-            "Policy {} could not be found".format(fides_key)
-            if fides_key
-            else "No Policies found to evaluate"
-        )
-        raise EvaluationError
+    validate_policies_exit(policies=taxonomy.policy, evaluate_fides_key=fides_key)
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
