@@ -84,7 +84,7 @@ def get_all_server_policies(
     return policy_list
 
 
-def validate_policies_exit(policies: List[Policy], evaluate_fides_key: str) -> None:
+def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> None:
     """
     Validates that policies to be evaluated exist. If no policies were found
     raises an error and logs an error.
@@ -204,7 +204,7 @@ def evaluate(
         url=url,
         headers=headers,
     )
-    validate_policies_exit(policies=taxonomy.policy, evaluate_fides_key=fides_key)
+    validate_policies_exist(policies=taxonomy.policy, evaluate_fides_key=fides_key)
 
     echo_green(
         "Evaluating the following policies:\n{}".format(
