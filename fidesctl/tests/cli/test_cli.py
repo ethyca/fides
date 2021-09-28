@@ -85,13 +85,23 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
+        ["-f", test_config_path, "evaluate", "tests/data/passing_taxonomy.yml"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
         [
             "-f",
             test_config_path,
             "evaluate",
             "tests/data/passing_taxonomy.yml",
             "-k",
-            "passing_privacy_policy",
+            "primary_privacy_policy",
         ],
     )
     print(result.output)

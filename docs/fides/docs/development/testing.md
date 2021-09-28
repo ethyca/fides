@@ -2,7 +2,7 @@
 
 ---
 
-Fides loves tests! There are a few important reasons to write tests:
+Fidesctl loves tests! There are a few important reasons to write tests:
 
 - **Make sure your code works**
 
@@ -14,7 +14,7 @@ Fides loves tests! There are a few important reasons to write tests:
 
   It may seem silly, but another important reason to write tests is to ensure that your code behaves as expected _even when it's broken_.
 
-  This is especially important for a project like Fides, which is focused on helping engineers when something unexpected happens to their code. For example, you could write tests about what you expect to happen if your function is called with incorrect (or no) arguments, or to ensure that any errors are properly trapped and handled.
+  This is especially important for a project like Fidesctl, which is focused on helping engineers when something unexpected happens to their code. For example, you could write tests about what you expect to happen if your function is called with incorrect (or no) arguments, or to ensure that any errors are properly trapped and handled.
 
 - **Tests are documentation**
 
@@ -24,7 +24,7 @@ Fides loves tests! There are a few important reasons to write tests:
 
 - **Help future developers**
 
-  As Fides grows, your code will be reused in more and more places, by developers who may not be familiar with the details of your implementation. Therefore, your tests are an opportunity to ensure that your code is used correctly in the future.
+  As Fidesctl grows, your code will be reused in more and more places, by developers who may not be familiar with the details of your implementation. Therefore, your tests are an opportunity to ensure that your code is used correctly in the future.
 
   For example, if your code needs to be used in a certain way, or expects a certain configuration, or is always expected to return a certain output, or has any other details that might impact its ability to be used in the framework, write a test for it! At minimum, you'll help a future developer understand that you consciously chose to design your code a certain way.
 
@@ -32,24 +32,29 @@ Fides loves tests! There are a few important reasons to write tests:
 
 ## Writing tests
 
-Fides's tests are stored in the `tests` directory.
+Fidesctl's tests are stored in the `tests` directory.
 
 Tests should have descriptive names that make it clear what you're testing. If necessary, add a docstring or comment to explain why you're testing this specific thing.
 
 ```python
+# Good test name
 def test_dry_evaluate_system_fail(server_url, resources_dict):
     ...
 
-# bad test name
+# Bad test name
 def test_dry_evaluate():
     ...
 ```
 
-Fides has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
+Fidesctl has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
+
+### Integration tests vs. Mocked tests
+
+Generally, tests that include mocking are discouraged. Mocking can create a false sense of security and obfuscate possible errors in the code that only present themselves when integration tested.
 
 ## Running tests
 
-Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the root Fides directory:
+Fidesctl uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/fidesctl/` directory:
 
 ```bash
 cd fidesctl
@@ -65,14 +70,10 @@ To run a subset of tests, provide a filename or directory; to match a specific t
 pytest tests/integration/ -k api
 ```
 
-#### Debugging
-
-For debugging, we recommend installing the [`pdbpp`](https://github.com/pdbpp/pdbpp) package and running `pytest` with the `--pdb` flag (which will open the debugger on any error) or setting `breakpoint()` appropriately.
-
-#### Stepwise execution
-
 The `--sw` flag will exit `pytest` the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.
+
+For more information on available Pytest invocation options, see the documentation [here](https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations).
 
 ## CI Workflows
 
-CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors.
+CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors and is generally an inefficient usage of your time!
