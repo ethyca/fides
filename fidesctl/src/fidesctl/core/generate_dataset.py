@@ -4,7 +4,7 @@ from typing import Dict, List
 import sqlalchemy
 from sqlalchemy.engine import Engine
 
-from fideslang import manifests, models
+from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from .utils import get_db_engine, echo_green
 
