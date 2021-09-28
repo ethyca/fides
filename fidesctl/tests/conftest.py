@@ -109,7 +109,7 @@ def resources_dict():
             description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
             data_uses=models.PrivacyRule(
-                inclusion="NONE", values=["provide_product_or_service"]
+                inclusion="NONE", values=["provide.system"]
             ),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",

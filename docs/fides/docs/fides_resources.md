@@ -79,21 +79,23 @@ A Data Use describes what the data is being used for.
 
     ```yaml
     data_use:
-    - fides_key: provide_product_or_service.support
-      name: Support the Product or Service
-      parent_key: provide_product_or_service
+    - fides_key: provide.system.operations.support
+      name: Operations Support
+      parent_key: provide.system.operations
     ```
 
 === Example Hierarchy
 
     ```yaml
-    - provide_product_or_service
-      - provide_product_or_service.support
-      - provide_product_or_service.support_optimization
-      - provide_product_or_service.offer_upgrades
+    - provide
+      - provide.system
+        - provide.system.operations
+          - provide.system.operations.support
+        - provide.system.upgrades
     - third_party_sharing
       - third_party_sharing.payment_processing
       - third_party_sharing.personalized_advertising
+      - third_party_sharing.fraud_detection
       - third_party_sharing.legal_obligation
     ```
 
@@ -206,7 +208,7 @@ A system represents the privacy usage of a single software project, service, cod
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
-            data_use: improve_product_or_service
+            data_use: improve.system
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -335,7 +337,7 @@ Policies group together sets of privacy rules into a single resource. These are 
             data_uses:
               inclusion: ANY
               values:
-                - marketing_advertising_or_promotion
+                - advertising
             data_subjects:
               inclusion: ANY
               values:
@@ -390,7 +392,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
       data_uses:
         inclusion: ANY
         values:
-          - marketing_advertising_or_promotion
+          - advertising
       data_subjects:
         inclusion: ANY
         values:
@@ -403,7 +405,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
       data_categories:
         - user.provided.identifiable.contact
         - user.derived.identifiable.device.cookie_id
-      data_use: marketing_advertising_or_promotion
+      data_use: advertising
       data_subjects:
         - customer
       data_qualifier: identified_data
@@ -437,7 +439,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
       data_uses:
         inclusion: ANY
         values:
-          - marketing_advertising_or_promotion
+          - advertising
       data_subjects:
         inclusion: ANY
         values:
@@ -449,7 +451,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     - name: Collect data for marketing
       data_categories:
         - user.derived.identifiable.device.cookie_id
-      data_use: marketing_advertising_or_promotion
+      data_use: advertising
       data_subjects:
         - customer
       data_qualifier: identified_data

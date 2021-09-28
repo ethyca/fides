@@ -38,16 +38,23 @@ data_subject:
     name: Custom
 
 data_use:
-  - fides_key: provide_product_or_service
-    name: Provide the Product or Service
+  - fides_key: provide
+    name: Provide the capability
+  
+  - fides_key: provide.system
+    name: System
+    parent_key: provide
 
-  - fides_key: provide_product_or_service.support
-    name: Support the Product or Service
-    parent_key: provide_product_or_service
+  - fides_key: provide.system.operations
+    name: System Operations
+    parent_key: provide.system
 
-  - fides_key: provide_product_or_service.support_optimization
-    name: Support Optimization
-    parent_key: provide_product_or_service
+  - fides_key: provide.system.upgrades
+    name: Offer Upgrades
+    parent_key: provide.system
+
+  - fides_key: third_party_sharing
+    name: Third Party Sharing
 
 data_qualifier:
   - fides_key: identified
@@ -90,7 +97,7 @@ system:
       - name: Analyze Anonymous Content
         data_categories:
           - user.provided.identifiable
-        data_use: provide_product_or_service
+        data_use: provide.system
         data_qualifier: pseudonymized_data
         data_subjects:
           - customer
@@ -127,8 +134,8 @@ policy:
         data_uses:
           inclusion: ANY
           values:
-            - marketing_advertising_or_promotion
-            - provide_product_or_service.offer_upgrades
+            - advertising
+            - provide.system.upgrades
         data_subjects:
           inclusion: ANY
           values:
