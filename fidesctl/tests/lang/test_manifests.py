@@ -36,13 +36,14 @@ def test_load_yaml_into_dict(sample_manifest):
 @pytest.mark.unit
 def test_write_manifest(tmp_path):
     test_resource = {"foo": "bar", "bar": "baz"}
+    expected_result = {"test": [{"foo": "bar", "bar": "baz"}]}
     test_path = str(tmp_path) + "/test.yml"
-    manifests.write_manifest(test_path, test_resource)
+    manifests.write_manifest(test_path, test_resource, "test")
 
     with open(test_path, "r") as manifest:
         actual_result = yaml.safe_load(manifest)
 
-    assert actual_result == test_resource
+    assert actual_result == expected_result
 
 
 @pytest.mark.unit

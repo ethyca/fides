@@ -4,47 +4,48 @@ from unittest import mock
 
 
 from fidesctl.core import generate_dataset
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
 # Unit
 @pytest.mark.unit
-def test_generate_table_manifests():
+def test_generate_dataset_collections():
     test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
     expected_result = [
-        {
-            "name": "foo",
-            "description": "Fides Generated Description for Table: foo",
-            "dataset_fields": [
-                {
-                    "name": "1",
-                    "description": "Fides Generated Description for Column: 1",
-                    "data_categories": [],
-                },
-                {
-                    "name": "2",
-                    "description": "Fides Generated Description for Column: 2",
-                    "data_categories": [],
-                },
+        DatasetCollection(
+            name="foo",
+            description="Fides Generated Description for Table: foo",
+            fields=[
+                DatasetField(
+                    name=1,
+                    description="Fides Generated Description for Column: 1",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name=2,
+                    description="Fides Generated Description for Column: 2",
+                    data_categories=[],
+                ),
             ],
-        },
-        {
-            "name": "bar",
-            "description": "Fides Generated Description for Table: bar",
-            "dataset_fields": [
-                {
-                    "name": "4",
-                    "description": "Fides Generated Description for Column: 4",
-                    "data_categories": [],
-                },
-                {
-                    "name": "5",
-                    "description": "Fides Generated Description for Column: 5",
-                    "data_categories": [],
-                },
+        ),
+        DatasetCollection(
+            name="bar",
+            description="Fides Generated Description for Table: bar",
+            fields=[
+                DatasetField(
+                    name=4,
+                    description="Fides Generated Description for Column: 4",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name=5,
+                    description="Fides Generated Description for Column: 5",
+                    data_categories=[],
+                ),
             ],
-        },
+        ),
     ]
-    actual_result = generate_dataset.generate_table_manifests(test_resource)
+    actual_result = generate_dataset.create_dataset_collections(test_resource)
     assert actual_result == expected_result
 
 
@@ -53,19 +54,26 @@ def test_generate_table_manifests():
 def test_generate_dataset_info():
     test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     test_engine = sqlalchemy.create_engine(test_url)
-    expected_result = {
-        "dataset": [
-            {
-                "organization_fides_key": 1,
-                "fides_key": "fidesdb",
-                "name": "fidesdb",
-                "description": f"Fides Generated Description for Dataset: fidesdb",
-                "dataset_type": "postgresql",
-                "dataset_location": "fidesdb:5432",
-            }
-        ]
-    }
-    actual_result = generate_dataset.generate_dataset_info(test_engine)
+    expected_collection = [
+        DatasetCollection(
+            name="bar",
+            description="Fides Generated Description for Table: bar",
+            fields=[
+                DatasetField(
+                    name=4,
+                    description="Fides Generated Description for Column: 4",
+                    data_categories=[],
+                ),
+            ],
+        )
+    ]
+    expected_result = Dataset(
+        fides_key="fidesdb",
+        name="fidesdb",
+        description="Fides Generated Description for Dataset: fidesdb",
+        collections=expected_collection,
+    )
+    actual_result = generate_dataset.create_dataset(test_engine, expected_collection)
     assert actual_result == expected_result
 
 
@@ -85,5 +93,5 @@ def test_get_db_tables():
     test_tables = ["foo", "bar"]
 
     expected_result = {"test_db.bar": ["3", "4"], "test_db.foo": ["1", "2"]}
-    actual_result = generate_dataset.get_db_tables(engine)
+    actual_result = generate_dataset.get_db_collections_and_fields(engine)
     assert actual_result == expected_result
