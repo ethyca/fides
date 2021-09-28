@@ -69,13 +69,32 @@ class DataUse(FidesModel):
 
 # Dataset
 class DatasetField(BaseModel):
-    "The DatasetField resource model. This resource is nested within a Dataset."
+    """
+    The DatasetField resource model.
+
+    This resource is nested within a DatasetCollection.
+    """
 
     name: str
     description: str
-    path: str
     data_categories: Optional[List[FidesKey]]
     data_qualifier: Optional[FidesKey]
+
+
+class DatasetCollection(BaseModel):
+    """
+    The DatasetCollection resource model.
+
+    This resource is nested witin a Dataset.
+    """
+
+    name: str
+    description: Optional[str]
+    fields: List[DatasetField]
+
+    _sort_fields: classmethod = validator("fields", allow_reuse=True)(
+        sort_list_objects_by_name
+    )
 
 
 class Dataset(FidesModel):
@@ -86,9 +105,9 @@ class Dataset(FidesModel):
     data_qualifier: Optional[FidesKey]
     location: str
     dataset_type: str
-    fields: List[DatasetField]
+    collections: List[DatasetCollection]
 
-    _sort_fields: classmethod = validator("fields", allow_reuse=True)(
+    _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
 
