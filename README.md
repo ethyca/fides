@@ -82,7 +82,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
         privacy_declarations:
           - name: Collect data for marketing
             data_categories:
-              # - user.provided.identifiable.contact # uncomment to add this category to the system
+              #- user.provided.identifiable.contact # uncomment to add this category to the system
               - user.derived.identifiable.device.cookie_id
             data_use: marketing_advertising_or_promotion
             data_subjects:
@@ -174,7 +174,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
          privacy_declarations:
            - name: Collect data for marketing
              data_categories:
-    -          # - user.provided.identifiable.contact # uncomment to add this category to the system
+    -          #- user.provided.identifiable.contact # uncomment to add this category to the system
     +          - user.provided.identifiable.contact # uncomment to add this category to the system
                - user.derived.identifiable.device.cookie_id
              data_use: marketing_advertising_or_promotion
