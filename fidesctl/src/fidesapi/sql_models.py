@@ -77,10 +77,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(ARRAY(String))
-    location = Column(String)
-    dataset_type = Column(String)
-
-    fields = Column(JSON)
+    collections = Column(JSON)
 
 
 # Evaluation

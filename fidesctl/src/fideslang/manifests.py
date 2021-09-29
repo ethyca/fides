@@ -6,12 +6,13 @@ from typing import Dict, List, Set
 import yaml
 
 
-def write_manifest(file_name: str, manifest: Dict) -> None:
+def write_manifest(file_name: str, manifest: Dict, resource_type: str) -> None:
     """
-    Write a Python dict out to a yaml file.
+    Write a dict representation of a resource out to a file.
     """
+    resource = {resource_type: [manifest]}
     with open(file_name, "w") as manifest_file:
-        yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
+        yaml.dump(resource, manifest_file, sort_keys=False, indent=2)
 
 
 def load_yaml_into_dict(file_path: str) -> Dict:

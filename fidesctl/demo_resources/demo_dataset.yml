@@ -1,38 +1,32 @@
 dataset:
-  - organization_fides_key: 1
-    fides_key: demo_users_dataset
+  - fides_key: demo_users_dataset
     name: Demo Users Dataset
     description: Data collected about users for our analytics system.
-    dataset_type: MySQL
-    location: US East
-    fields:
-      - name: first_name
-        description: User's first name
-        path: demo_users_dataset.first_name
-        data_categories:
-          - user.provided.identifiable.name
-      - name: email
-        description: User's Email
-        path: demo_users_dataset.email
-        data_categories:
-          - user.provided.identifiable.contact.email
-      - name: state
-        description: User's State
-        path: demo_users_dataset.state
-        data_categories:
-          - user.provided.identifiable.contact.state
-      - name: food_preference
-        description: User's favorite food
-        path: demo_users_dataset.food_preference
-        data_categories:
-          - user.provided.nonidentifiable
-      - name: created_at
-        description: User's creation timestamp
-        path: demo_users_dataset.created_at
-        data_categories:
-          - system.operations
-      - name: uuid
-        description: User's unique ID
-        path: demo_users_dataset.uuid
-        data_categories:
-          - user.derived.identifiable.unique_id
+    collections:
+      - name: users
+        description: User information
+        fields:
+          - name: first_name
+            description: User's first name
+            data_categories:
+              - user.provided.identifiable.name
+          - name: email
+            description: User's Email
+            data_categories:
+              - user.provided.identifiable.contact.email
+          - name: state
+            description: User's State
+            data_categories:
+              - user.provided.identifiable.contact.state
+          - name: food_preference
+            description: User's favorite food
+            data_categories:
+              - user.provided.nonidentifiable
+          - name: created_at
+            description: User's creation timestamp
+            data_categories:
+              - system.operations
+          - name: uuid
+            description: User's unique ID
+            data_categories:
+              - user.derived.identifiable.unique_id
