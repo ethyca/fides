@@ -47,6 +47,8 @@ class DataCategory(FidesModel):
 
 class DataQualifier(FidesModel):
     """The DataQualifier resource model."""
+    
+    privacy_exposure: int
 
 
 class DataSubject(FidesModel):
