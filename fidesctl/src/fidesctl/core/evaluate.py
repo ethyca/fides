@@ -10,7 +10,6 @@ from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green, echo_red
 from fideslang.models import (
     Evaluation,
-    EvaluationError,
     StatusEnum,
     InclusionEnum,
     Policy,
@@ -217,8 +216,8 @@ def evaluate(
     echo_green("Checking for missing resources...")
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
     if missing_resource_keys:
-        echo_green(
-            "Fetching the following missing resources from the server:\n{}".format(
+        echo_red(
+            "Fetching the following missing resources from the server:\n- {}".format(
                 "\n".join(missing_resource_keys)
             )
         )
@@ -233,13 +232,14 @@ def evaluate(
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
-    if evaluation.status == "FAIL":
-        pretty_echo(evaluation.dict(), color="red")
-        raise EvaluationError
 
-    ## This is waiting for the server to have an /evaluations endpoint
+    # TODO: add the evaluations endpoint to the API
     if not dry:
         echo_green("Sending the evaluation results to the server...")
-    echo_green("Evaluation passed!")
+
+    if evaluation.status == "FAIL":
+        pretty_echo(evaluation.dict(), color="red")
+    else:
+        echo_green("Evaluation passed!")
 
     return evaluation

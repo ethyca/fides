@@ -46,7 +46,6 @@ data_use:
     name: Support Optimization
     parent_key: provide_product_or_service
 
-
 data_qualifier:
   - fides_key: identified_data
     name: Identified Data
@@ -55,35 +54,31 @@ data_qualifier:
     name: Pseudonymized Data
 
 dataset:
-  - organization_fides_key: 1
-    fides_key: test_db_dataset
+  - fides_key: test_db_dataset
     name: Sample DB Dataset
     description: This is a Sample Database Dataset
-    dataset_type: MySQL
-    location: US East
-    fields:
-      - name: First_Name
-        description: A First Name Field
-        path: test_db_dataset.first_name
-        data_categories:
-          - user.provided.identifiable.name
-        data_qualifier: identified_data
-      - name: Email
-        description: User's Email
-        path: test_db_dataset.email
-        data_categories:
-          - user.provided.identifiable
-        data_qualifier: identified_data
-      - name: political_opinion
-        description: User's political opinion
-        path: test_db_dataset.political_opinion
-        data_categories:
-          - user.provided.identifiable.political_opinion
-        data_qualifier: pseudonymized_data
+    collections:
+      - name: users
+        description: User's information
+        fields:
+          - name: First_Name
+            description: A First Name Field
+            data_categories:
+              - user.provided.identifiable.name
+            data_qualifier: identified_data
+          - name: Email
+            description: User's Email
+            data_categories:
+              - user.provided.identifiable
+            data_qualifier: identified_data
+          - name: political_opinion
+            description: User's political opinion
+            data_categories:
+              - user.provided.identifiable.political_opinion
+            data_qualifier: pseudonymized_data
 
 system:
-  - organization_fides_key: 1
-    fides_key: data_analytics_system
+  - fides_key: data_analytics_system
     name: Data Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
@@ -97,8 +92,7 @@ system:
           - customer
     system_dependencies: [customer_data_sharing_system]
 
-  - organization_fides_key: 1
-    fides_key: customer_data_sharing_system
+  - fides_key: customer_data_sharing_system
     name: Customer Data Sharing System
     description: Share data about our users with third-parties.
     system_type: Service
@@ -115,13 +109,11 @@ system:
     system_dependencies: []
 
 policy:
-  - organization_fides_key: 1
-    fides_key: primary_privacy_policy
+  - fides_key: primary_privacy_policy
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:
-      - organization_fides_key: 1
-        fides_key: reject_targeted_marketing
+      - fides_key: reject_targeted_marketing
         name: Reject Targeted Biometric Marketing
         description: Disallow targeted marketing towards customers based on biometric data.
         data_categories:
@@ -140,8 +132,7 @@ policy:
         data_qualifier: identified_data
         action: REJECT
 
-      - organization_fides_key: 1
-        fides_key: reject_sharing_political_opinions
+      - fides_key: reject_sharing_political_opinions
         name: Disallow Sharing Political Opinions
         description: Disallow sharing political opinions with third-parties.
         data_categories:
