@@ -14,15 +14,32 @@ from fideslang.validation import (
     matching_parent_key,
 )
 
+# Reusable components
+matching_parent_key_validator = validator("parent_key", allow_reuse=True, always=True)(
+    matching_parent_key
+)
+no_self_reference_validator = validator("parent_key", allow_reuse=True)(
+    no_self_reference
+)
+
 
 # Fides Base Model
 class FidesModel(BaseModel):
     """The base model for all Fides Resources."""
 
-    fides_key: FidesKey
-    organization_fides_key: int = 1
-    name: Optional[str]
-    description: Optional[str]
+    fides_key: FidesKey = Field(
+        description="A unique key used to identify this resource."
+    )
+    organization_fides_key: FidesKey = Field(
+        default="default_organization",
+        description="Defines the Organization that this resource belongs to.",
+    )
+    name: Optional[str] = Field(
+        description="Human-Readable string name for this resource."
+    )
+    description: Optional[str] = Field(
+        description="In-depth description of what this resource is."
+    )
 
     class Config:
         "Config for the FidesModel"
@@ -36,13 +53,8 @@ class DataCategory(FidesModel):
 
     parent_key: Optional[FidesKey]
 
-    _matching_parent_key: classmethod = validator(
-        "parent_key", allow_reuse=True, always=True
-    )(matching_parent_key)
-
-    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
-        no_self_reference
-    )
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 class DataQualifier(FidesModel):
@@ -60,13 +72,8 @@ class DataUse(FidesModel):
 
     parent_key: Optional[FidesKey]
 
-    _matching_parent_key: classmethod = validator(
-        "parent_key", allow_reuse=True, always=True
-    )(matching_parent_key)
-
-    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
-        no_self_reference
-    )
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 # Dataset
