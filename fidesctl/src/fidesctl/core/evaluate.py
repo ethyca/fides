@@ -216,7 +216,7 @@ def evaluate(
     echo_green("Checking for missing resources...")
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
     if missing_resource_keys:
-        echo_red(
+        echo_green(
             "Fetching the following missing resources from the server:\n- {}".format(
                 "\n".join(missing_resource_keys)
             )
