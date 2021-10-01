@@ -90,7 +90,7 @@ class DatasetField(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifier: FidesKey = Field("identified")
 
 
 class DatasetCollection(BaseModel):
@@ -103,7 +103,7 @@ class DatasetCollection(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifier: FidesKey = Field("identified")
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
@@ -116,7 +116,7 @@ class Dataset(FidesModel):
 
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifier: FidesKey = Field("identified")
     collections: List[DatasetCollection]
 
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
@@ -203,7 +203,7 @@ class PolicyRule(FidesModel):
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
-    data_qualifier: FidesKey
+    data_qualifier: FidesKey = Field("identified")
     action: ActionEnum
 
 
@@ -243,7 +243,7 @@ class PrivacyDeclaration(BaseModel):
     name: str
     data_categories: List[FidesKey]
     data_use: FidesKey
-    data_qualifier: FidesKey
+    data_qualifier: FidesKey = Field("identified")
     data_subjects: List[FidesKey]
     dataset_references: Optional[List[str]]
 

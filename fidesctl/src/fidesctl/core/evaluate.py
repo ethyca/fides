@@ -240,7 +240,6 @@ def evaluate(
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
         raise SystemExit(1)
-    else:
-        echo_green("Evaluation passed!")
+    echo_green("Evaluation passed!")
 
     return evaluation

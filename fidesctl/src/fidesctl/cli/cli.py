@@ -21,6 +21,7 @@ from fidesctl.core import (
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
+from fidesctl.core.utils import echo_green, echo_red
 
 
 @click.command()
@@ -196,9 +197,9 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     Ping the Server.
     """
     config = ctx.obj["CONFIG"]
-    click.secho(f"Pinging {config.cli.server_url}...", fg="green")
+    echo_green(f"Pinging {config.cli.server_url}...")
     _api.ping(config.cli.server_url)
-    click.secho("Ping Successful!", fg="green")
+    echo_green("Ping Successful!")
 
 
 @click.command()
@@ -206,19 +207,21 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
 @yes_flag
 def reset_db(ctx: click.Context, yes: bool) -> None:
     """
-    Drop all tables and metadata from the database.
+    Drops all tables and metadata from the database and
+    re-initializes the database.
     """
     config = ctx.obj["CONFIG"]
+    database_url = config.api.database_url
     if yes:
         are_you_sure = "y"
     else:
-        are_you_sure = input(
-            "This will drop all data from the Fides database! Are you sure [y/n]?"
-        )
+        echo_red("This will drop all data from the Fides database!")
+        are_you_sure = input("Are you sure [y/n]?")
 
     if are_you_sure.lower() == "y":
-        database.reset_db(config.api.database_url)
-        print("Database reset!")
+        database.reset_db(database_url)
+        database.init_db(database_url)
+        echo_green("Database reset!")
     else:
         print("Aborting!")
 
