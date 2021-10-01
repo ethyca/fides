@@ -8,6 +8,11 @@ from fidesctl.core import api as _api
 from fideslang import model_list, FidesModel
 
 RESOURCE_CREATION_COUNT = 5
+# These resources have tricky validation so the fides_key replacement doesn't work
+EXCLUDED_RESOURCE_TYPES = "data_category", "data_use", "data_qualifier"
+PARAM_MODEL_LIST = [
+    model for model in model_list if model not in EXCLUDED_RESOURCE_TYPES
+]
 
 # Fixtures
 @pytest.fixture
@@ -45,7 +50,7 @@ def created_resources(test_config, resources_dict, request):
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    "created_resources", model_list, indirect=["created_resources"]
+    "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
 )
 def test_get_server_resource_found_resource(test_config, created_resources):
     """
@@ -63,7 +68,7 @@ def test_get_server_resource_found_resource(test_config, created_resources):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("resource_type", model_list)
+@pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
 def test_get_server_resource_missing_resource(test_config, resource_type):
     """
     Tests that a missing resource returns None
@@ -80,7 +85,7 @@ def test_get_server_resource_missing_resource(test_config, resource_type):
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    "created_resources", model_list, indirect=["created_resources"]
+    "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
 )
 def test_get_server_resources_found_resources(test_config, created_resources):
     """
@@ -98,7 +103,7 @@ def test_get_server_resources_found_resources(test_config, created_resources):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("resource_type", model_list)
+@pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
 def test_get_server_resources_missing_resources(test_config, resource_type):
     """
     Tests that a missing resource returns an empty list

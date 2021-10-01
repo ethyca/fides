@@ -25,7 +25,7 @@ def test_parse_manifest():
 
 @pytest.mark.unit
 def test_parse_manifest_no_fides_key_validation_error():
-    with pytest.raises(validation.FidesValidationError):
+    with pytest.raises(SystemExit):
         test_dict = {
             "organization_fides_key": 1,
             "name": "Test resource 1",

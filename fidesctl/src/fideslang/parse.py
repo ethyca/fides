@@ -27,7 +27,7 @@ def parse_dict(
                 resource_type, resource_source, resource
             )
         )
-        raise err
+        raise SystemExit(err)
     return parsed_manifest
 
 
