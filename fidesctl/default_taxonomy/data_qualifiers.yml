@@ -1,19 +1,19 @@
 data_qualifier:
-  - fides_key: identified
-    name: Identified Data
-
-  - fides_key: identified.pseudonymized
-    name: Pseudonymized Data
-    parent_key: identified
-
-  - fides_key: identified.pseudonymized.unlinked_pseudonymized
-    name: Unlinked Pseudonymized Data
-    parent_key: identified.pseudonymized
-
-  - fides_key: identified.pseudonymized.unlinked_pseudonymized.anonymized
-    name: Anonymized Data
-    parent_key: identified.pseudonymized.unlinked_pseudonymized
-
-  - fides_key: identified.pseudonymized.unlinked_pseudonymized.anonymized.aggregated
+  - fides_key: Aggregated
     name: Aggregated Data
-    parent_key: identified.pseudonymized.unlinked_pseudonymized.anonymized
+
+  - fides_key: aggregated.anonymized
+    name: Anonymized Data
+    parent_key: aggregated
+
+  - fides_key: aggregated.anonymized.unlinked_pseudonymized
+    name: Unlinked Pseudonymized Data
+    parent_key: aggregated.anonymized
+
+  - fides_key: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+    name: Pseudonymized Data
+    parent_key: aggregated.anonymized.unlinked_pseudonymized
+
+  - fides_key: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    name: Identified Data
+    parent_key: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
