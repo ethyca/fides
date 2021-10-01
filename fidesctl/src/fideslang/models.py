@@ -91,7 +91,7 @@ class DatasetField(BaseModel):
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
     data_qualifier: FidesKey = Field(
-        "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
 
 
@@ -106,7 +106,9 @@ class DatasetCollection(BaseModel):
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
     data_qualifiers: List[FidesKey] = Field(
-        ["aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"]
+        default=[
+            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        ],
     )
     fields: List[DatasetField]
 
@@ -121,7 +123,9 @@ class Dataset(FidesModel):
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
     data_qualifiers: List[FidesKey] = Field(
-        ["aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"]
+        default=[
+            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        ],
     )
     collections: List[DatasetCollection]
 
@@ -210,7 +214,7 @@ class PolicyRule(FidesModel):
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
     data_qualifier: FidesKey = Field(
-        "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
     )
     action: ActionEnum
 
@@ -252,7 +256,7 @@ class PrivacyDeclaration(BaseModel):
     data_categories: List[FidesKey]
     data_use: FidesKey
     data_qualifier: FidesKey = Field(
-        "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     data_subjects: List[FidesKey]
     dataset_references: Optional[List[str]]
