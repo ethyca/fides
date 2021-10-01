@@ -3,7 +3,7 @@ import pytest
 
 from fidesctl.core import evaluate
 
-from fideslang.models import EvaluationError, Policy
+from fideslang.models import Policy
 
 
 @pytest.mark.integration
@@ -90,7 +90,7 @@ def test_get_evaluation_policies_with_no_key(test_config):
 
 @pytest.mark.unit
 def test_validate_policies_exist_throws_with_empty():
-    with pytest.raises(EvaluationError):
+    with pytest.raises(SystemExit):
         evaluate.validate_policies_exist(policies=[], evaluate_fides_key="fides_key")
 
 

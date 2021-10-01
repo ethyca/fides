@@ -17,7 +17,7 @@ def parse_dict(
     resource_source = "server" if from_server else "manifest file"
     if resource_type not in list(model_map.keys()):
         echo_red(f"This resource type does not exist: {resource_type}")
-        raise SystemExit
+        raise SystemExit(1)
 
     try:
         parsed_manifest = model_map[resource_type].parse_obj(resource)

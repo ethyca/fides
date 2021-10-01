@@ -60,12 +60,10 @@ class DataCategory(FidesModel):
 class DataQualifier(FidesModel):
     """The DataQualifier resource model."""
 
-    exposure_level: int = Field(
-        0,
-        description="""An integer representation of the level of privacy
-        exposure this DataQualifier contains, 0 being equal to PII.
-        """,
-    )
+    parent_key: Optional[FidesKey]
+
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 class DataSubject(FidesModel):

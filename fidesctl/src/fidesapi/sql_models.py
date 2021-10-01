@@ -30,6 +30,7 @@ class FidesBase(SqlModelBase):
 SqlAlchemyBase = sqlalchemy.ext.declarative.declarative_base(cls=SqlModelBase)
 
 
+# Privacy Types
 class DataCategory(SqlAlchemyBase, FidesBase):
     """
     The SQL model for the DataCategory resource.
@@ -46,6 +47,8 @@ class DataQualifier(SqlAlchemyBase, FidesBase):
     """
 
     __tablename__ = "data_qualifiers"
+
+    parent_key = Column(Text)
 
 
 class DataSubject(SqlAlchemyBase, FidesBase):

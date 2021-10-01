@@ -95,7 +95,7 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
             if evaluate_fides_key
             else "No Policies found to evaluate"
         )
-        raise EvaluationError
+        raise SystemExit(1)
 
 
 def compare_rule_to_declaration(
@@ -239,6 +239,7 @@ def evaluate(
 
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
+        raise SystemExit(1)
     else:
         echo_green("Evaluation passed!")
 

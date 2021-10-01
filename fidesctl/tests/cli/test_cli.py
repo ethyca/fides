@@ -28,7 +28,9 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.integration
 def test_apply(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "apply", "default_taxonomy/"])
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "apply", "default_taxonomy/"]
+    )
     print(result.output)
     assert result.exit_code == 0
 
@@ -63,7 +65,8 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_get(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "get", "data_category", "user.provided.identifiable"]
+        cli,
+        ["-f", test_config_path, "get", "data_category", "user.provided.identifiable"],
     )
     print(result.output)
     assert result.exit_code == 0

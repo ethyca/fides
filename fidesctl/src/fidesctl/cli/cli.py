@@ -8,6 +8,7 @@ from fidesctl.cli.options import (
     fides_key_argument,
     manifests_dir_argument,
     resource_type_argument,
+    yes_flag,
 )
 from fidesctl.cli.utils import (
     handle_cli_response,
@@ -202,14 +203,19 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
 
 @click.command()
 @click.pass_context
-def reset_db(ctx: click.Context) -> None:
+@yes_flag
+def reset_db(ctx: click.Context, yes: bool) -> None:
     """
     Drop all tables and metadata from the database.
     """
     config = ctx.obj["CONFIG"]
-    are_you_sure = input(
-        "This will drop all data from the Fides database! Are you sure [y/n]?"
-    )
+    if yes:
+        are_you_sure = "y"
+    else:
+        are_you_sure = input(
+            "This will drop all data from the Fides database! Are you sure [y/n]?"
+        )
+
     if are_you_sure.lower() == "y":
         database.reset_db(config.api.database_url)
         print("Database reset!")
