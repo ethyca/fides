@@ -1,6 +1,5 @@
 system:
-  - organization_fides_key: 1
-    fides_key: demo_analytics_system
+  - fides_key: demo_analytics_system
     name: Demo Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
@@ -16,8 +15,7 @@ system:
         dataset_references:
           - demo_users_dataset
 
-  - organization_fides_key: 1
-    fides_key: demo_marketing_system
+  - fides_key: demo_marketing_system
     name: Demo Marketing System
     description: Collect data about our users for marketing.
     system_type: Service

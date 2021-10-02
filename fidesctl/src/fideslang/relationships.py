@@ -83,5 +83,5 @@ def hydrate_missing_resources(
         )
     if resources_found < len(missing_resource_keys):
         echo_red("Refereneced FidesKeys do not exist!")
-        raise SystemExit()
+        raise SystemExit(1)
     return dehydrated_taxonomy
