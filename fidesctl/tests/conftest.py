@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 import pytest
 import yaml
+import os
 
 from fideslang import models
 from fidesctl.core.config import get_config
@@ -197,6 +198,21 @@ def test_manifests():
 
 @pytest.fixture()
 def populated_manifest_dir(test_manifests, tmp_path):
+    manifest_dir = f"{tmp_path}/populated_manifest"
+    os.mkdir(manifest_dir)
     for manifest in test_manifests.keys():
-        with open(f"{tmp_path}/{manifest}.yml", "w") as manifest_file:
+        with open(f"{manifest_dir}/{manifest}.yml", "w") as manifest_file:
             yaml.dump(test_manifests[manifest], manifest_file)
+    return manifest_dir
+
+
+@pytest.fixture()
+def populated_nested_manifest_dir(test_manifests, tmp_path):
+    manifest_dir = f"{tmp_path}/populated_nested_manifest"
+    os.mkdir(manifest_dir)
+    for manifest in test_manifests.keys():
+        nested_manifest_dir = f"{manifest_dir}/{manifest}"
+        os.mkdir(nested_manifest_dir)
+        with open(f"{nested_manifest_dir}/{manifest}.yml", "w") as manifest_file:
+            yaml.dump(test_manifests[manifest], manifest_file)
+    return manifest_dir

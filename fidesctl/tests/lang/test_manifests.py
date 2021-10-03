@@ -10,6 +10,20 @@ def sample_manifest():
     yield manifests.load_yaml_into_dict("tests/data/sample_manifest.yml")
 
 
+@pytest.fixture()
+def ingestion_manifest_directory(
+    populated_manifest_dir, populated_nested_manifest_dir, request
+):
+    """
+    Allows for parameterization of manifests to ingest by returning 
+    the corresponding fixture 
+    """
+    return {
+        "populated_manifest_dir": populated_manifest_dir,
+        "populated_nested_manifest_dir": populated_nested_manifest_dir,
+    }[request.param]
+
+
 # Unit
 @pytest.mark.unit
 def test_load_yaml_into_dict(sample_manifest):
@@ -93,8 +107,13 @@ def test_union_manifests(test_manifests):
 
 
 @pytest.mark.unit
-def test_ingest_manifests(populated_manifest_dir, tmp_path):
-    actual_result = manifests.ingest_manifests(str(tmp_path))
+@pytest.mark.parametrize(
+    "ingestion_manifest_directory",
+    ["populated_manifest_dir", "populated_nested_manifest_dir"],
+    indirect=["ingestion_manifest_directory"],
+)
+def test_ingest_manifests(ingestion_manifest_directory):
+    actual_result = manifests.ingest_manifests(str(ingestion_manifest_directory))
 
     # Battery of assertions for consistency
     assert sorted(actual_result) == ["dataset", "system"]
