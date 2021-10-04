@@ -14,15 +14,32 @@ from fideslang.validation import (
     matching_parent_key,
 )
 
+# Reusable components
+matching_parent_key_validator = validator("parent_key", allow_reuse=True, always=True)(
+    matching_parent_key
+)
+no_self_reference_validator = validator("parent_key", allow_reuse=True)(
+    no_self_reference
+)
+
 
 # Fides Base Model
 class FidesModel(BaseModel):
     """The base model for all Fides Resources."""
 
-    fides_key: FidesKey
-    organization_fides_key: int = 1
-    name: Optional[str]
-    description: Optional[str]
+    fides_key: FidesKey = Field(
+        description="A unique key used to identify this resource."
+    )
+    organization_fides_key: FidesKey = Field(
+        default="default_organization",
+        description="Defines the Organization that this resource belongs to.",
+    )
+    name: Optional[str] = Field(
+        description="Human-Readable string name for this resource."
+    )
+    description: Optional[str] = Field(
+        description="In-depth description of what this resource is."
+    )
 
     class Config:
         "Config for the FidesModel"
@@ -36,17 +53,17 @@ class DataCategory(FidesModel):
 
     parent_key: Optional[FidesKey]
 
-    _matching_parent_key: classmethod = validator(
-        "parent_key", allow_reuse=True, always=True
-    )(matching_parent_key)
-
-    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
-        no_self_reference
-    )
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 class DataQualifier(FidesModel):
     """The DataQualifier resource model."""
+
+    parent_key: Optional[FidesKey]
+
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 class DataSubject(FidesModel):
@@ -58,13 +75,8 @@ class DataUse(FidesModel):
 
     parent_key: Optional[FidesKey]
 
-    _matching_parent_key: classmethod = validator(
-        "parent_key", allow_reuse=True, always=True
-    )(matching_parent_key)
-
-    _no_self_reference: classmethod = validator("parent_key", allow_reuse=True)(
-        no_self_reference
-    )
+    _matching_parent_key: classmethod = matching_parent_key_validator
+    _no_self_reference: classmethod = no_self_reference_validator
 
 
 # Dataset
@@ -78,7 +90,9 @@ class DatasetField(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+    )
 
 
 class DatasetCollection(BaseModel):
@@ -91,7 +105,11 @@ class DatasetCollection(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifiers: List[FidesKey] = Field(
+        default=[
+            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        ],
+    )
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
@@ -104,7 +122,11 @@ class Dataset(FidesModel):
 
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
-    data_qualifier: Optional[FidesKey]
+    data_qualifiers: List[FidesKey] = Field(
+        default=[
+            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        ],
+    )
     collections: List[DatasetCollection]
 
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
@@ -113,13 +135,6 @@ class Dataset(FidesModel):
 
 
 # Evaluation
-class EvaluationError(Exception):
-    """Custom exception for when an Evaluation fails."""
-
-    def __init__(self) -> None:
-        super().__init__("Evaluation failed!")
-
-
 class StatusEnum(str, Enum):
     "The model for possible evaluation results."
 
@@ -198,7 +213,9 @@ class PolicyRule(FidesModel):
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
-    data_qualifier: FidesKey
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+    )
     action: ActionEnum
 
 
@@ -238,7 +255,9 @@ class PrivacyDeclaration(BaseModel):
     name: str
     data_categories: List[FidesKey]
     data_use: FidesKey
-    data_qualifier: FidesKey
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+    )
     data_subjects: List[FidesKey]
     dataset_references: Optional[List[str]]
 

@@ -11,10 +11,6 @@ from pydantic import ConstrainedStr
 class FidesValidationError(Exception):
     """Custom exception for when the pydantic ValidationError can't be used."""
 
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(message)
-
 
 class FidesKey(ConstrainedStr):
     """

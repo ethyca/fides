@@ -1,3 +1,6 @@
+organization:
+  - fides_key: default_organization
+
 data_category:
   - fides_key: user
     name: User Data
@@ -47,11 +50,12 @@ data_use:
     parent_key: provide_product_or_service
 
 data_qualifier:
-  - fides_key: identified_data
+  - fides_key: identified
     name: Identified Data
 
-  - fides_key: pseudonymized_data
+  - fides_key: identified.pseudonymized
     name: Pseudonymized Data
+    parent_key: identified
 
 dataset:
   - fides_key: test_db_dataset
@@ -78,8 +82,7 @@ dataset:
             data_qualifier: pseudonymized_data
 
 system:
-  - organization_fides_key: 1
-    fides_key: data_analytics_system
+  - fides_key: data_analytics_system
     name: Data Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
@@ -93,8 +96,7 @@ system:
           - customer
     system_dependencies: [customer_data_sharing_system]
 
-  - organization_fides_key: 1
-    fides_key: customer_data_sharing_system
+  - fides_key: customer_data_sharing_system
     name: Customer Data Sharing System
     description: Share data about our users with third-parties.
     system_type: Service
@@ -111,13 +113,11 @@ system:
     system_dependencies: []
 
 policy:
-  - organization_fides_key: 1
-    fides_key: primary_privacy_policy
+  - fides_key: primary_privacy_policy
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:
-      - organization_fides_key: 1
-        fides_key: reject_targeted_marketing
+      - fides_key: reject_targeted_marketing
         name: Reject Targeted Biometric Marketing
         description: Disallow targeted marketing towards customers based on biometric data.
         data_categories:
@@ -136,8 +136,7 @@ policy:
         data_qualifier: anonymized_data
         action: REJECT
 
-      - organization_fides_key: 1
-        fides_key: reject_sharing_political_opinions
+      - fides_key: reject_sharing_political_opinions
         name: Disallow Sharing Political Opinions
         description: Disallow sharing political opinions with third-parties.
         data_categories:

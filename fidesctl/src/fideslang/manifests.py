@@ -51,8 +51,10 @@ def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
 
 def ingest_manifests(manifests_dir: str) -> Dict[str, List[Dict]]:
     """
-    Ingest eiher a single file or all of the manifests available in a
+    Ingest either a single file or all of the manifests available in a
     directory and concatenate them into a single object.
+
+    Directories will be searched recursively.
     """
     yml_endings = ["yml", "yaml"]
     if manifests_dir.split(".")[-1] in yml_endings:

@@ -43,3 +43,14 @@ def dry_flag(command: Callable) -> Callable:
         help="Runs the command without any side-effects.",
     )(command)
     return command
+
+
+def yes_flag(command: Callable) -> Callable:
+    "Add a flag that assumes yes."
+    command = click.option(
+        "--yes",
+        "-y",
+        is_flag=True,
+        help="Automatic yes to prompts.",
+    )(command)
+    return command

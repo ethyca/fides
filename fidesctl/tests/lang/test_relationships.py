@@ -11,7 +11,7 @@ def test_find_referenced_fides_keys_1():
         description="test description",
         parent_key="key_1",
     )
-    expected_referenced_key = {"key_1", "key_1.test_dc"}
+    expected_referenced_key = {"key_1", "key_1.test_dc", "default_organization"}
     referenced_keys = relationships.find_referenced_fides_keys(test_data_category)
     assert referenced_keys == set(expected_referenced_key)
 
@@ -26,7 +26,7 @@ def test_find_referenced_fides_keys_2():
         system_type="test",
         privacy_declarations=None,
     )
-    expected_referenced_key = {"key_1", "key_2", "test_dc"}
+    expected_referenced_key = {"key_1", "key_2", "test_dc", "default_organization"}
     referenced_keys = relationships.find_referenced_fides_keys(test_system)
     assert referenced_keys == set(expected_referenced_key)
 
@@ -59,7 +59,7 @@ def test_get_referenced_missing_keys():
             )
         ],
     )
-    expected_referenced_key = {"key_1", "key_3", "key_4"}
+    expected_referenced_key = {"key_1", "key_3", "key_4", "default_organization"}
     referenced_keys = relationships.get_referenced_missing_keys(taxonomy)
     assert sorted(referenced_keys) == sorted(set(expected_referenced_key))
 
@@ -90,7 +90,10 @@ def test_hydrate_missing_resources(test_config):
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         dehydrated_taxonomy=dehydrated_taxonomy,
-        missing_resource_keys={"user.provided.identifiable.credentials", "user.provided"},
+        missing_resource_keys={
+            "user.provided.identifiable.credentials",
+            "user.provided",
+        },
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
 

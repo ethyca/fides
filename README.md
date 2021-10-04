@@ -41,10 +41,40 @@ Using these primitives, as well as some additional abstractions for syntactic su
 If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
 
 1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
+
     ```bash
     root@fa175a43c077:/fides/fidesctl# fidesctl ping
     Pinging http://fidesctl:8080...
     Ping Successful!
+    ```
+
+1. Now we can seed the database with the default taxonomy:
+
+    ```bash
+    root@0f13dd1c5834:/fides/fidesctl# fidesctl apply default_taxonomy/
+    Loading resource manifests from: default_taxonomy/
+    Taxonomy successfully created.      
+    ----------
+    Processing data_subject resources...
+    CREATED 15 data_subject resources.    
+    UPDATED 0 data_subject resources.     
+    SKIPPED 0 data_subject resources.     
+    ----------
+    Processing data_qualifier resources...
+    CREATED 5 data_qualifier resources.
+    UPDATED 0 data_qualifier resources.
+    SKIPPED 0 data_qualifier resources.
+    ----------
+    Processing data_use resources...   
+    CREATED 18 data_use resources.       
+    UPDATED 0 data_use resources.        
+    SKIPPED 0 data_use resources.        
+    ----------
+    Processing data_category resources...
+    CREATED 77 data_category resources.
+    UPDATED 0 data_category resources. 
+    SKIPPED 0 data_category resources. 
+    ----------
     ```
 
 1. Run `ls demo_resources/` to inspect the contents of the demo directory, which includes some pre-made examples of the core Fides resource files (systems, datasets, policies, etc.)
@@ -55,10 +85,10 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```
 
     In particular, let's look at the `demo_resources/demo_system.yml` file. It describes two basic systems: an analytics system and a marketing system, and demonstrates the basic syntax for making privacy declarations using `data_categories`, `data_uses`, `data_subjects`, and `data_qualifiers`.
+
     ```yaml
     system:
-      - organization_fides_key: 1
-        fides_key: demo_analytics_system
+      - fides_key: demo_analytics_system
         name: Demo Analytics System
         description: A system used for analyzing customer behaviour.
         system_type: Service
@@ -74,8 +104,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             dataset_references:
               - demo_users_dataset
 
-      - organization_fides_key: 1
-        fides_key: demo_marketing_system
+      - fides_key: demo_marketing_system
         name: Demo Marketing System
         description: Collect data about our users for marketing.
         system_type: Service
@@ -91,7 +120,8 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```
 
 1. Run `fidesctl evaluate demo_resources`. This will parse all the resource files, sync them to the `fidesctl` server, and then evaluate the defined policy rules to ensure all the systems are compliant:
-    ```
+
+    ```bash
     root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
     Loading resource manifests from: demo_resources
     Taxonomy successfully created.
@@ -133,13 +163,11 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 
     ```yaml
     policy:
-      - organization_fides_key: 1
-        fides_key: demo_privacy_policy
+      - fides_key: demo_privacy_policy
         name: Demo Privacy Policy
         description: The main privacy policy for the organization.
         rules:
-          - organization_fides_key: 1
-            fides_key: reject_direct_marketing
+          - fides_key: reject_direct_marketing
             name: Reject Direct Marketing
             description: Disallow collecting any user contact info to use for marketing.
             data_categories:
@@ -159,8 +187,9 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     ```
 
 1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
-  - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
-  - Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
+
+- Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
+- Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
 
     ```bash
     root@fa175a43c077:/fides/fidesctl# vim demo_resources/demo_system.yml
@@ -220,7 +249,6 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     }
     ```
 
-
 At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
 
 ## :book: Learn More
@@ -236,7 +264,6 @@ Full Fides documentation is available [here](https://ethyca.github.io/fides/).
 ### Contributing
 
 Read about the Fides [community](https://ethyca.github.io/fides/community/github/) or dive in to the [development guides](https://ethyca.github.io/fides/development/overview/) for information about contributions, documentation, code style, testing and more.
-
 
 ## License
 
