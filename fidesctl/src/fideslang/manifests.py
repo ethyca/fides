@@ -1,5 +1,5 @@
 """This module handles anything related to working with raw manifest files."""
-import os
+import glob
 from functools import reduce
 from typing import Dict, List, Set
 
@@ -51,19 +51,22 @@ def union_manifests(manifests: List[Dict]) -> Dict[str, List[Dict]]:
 
 def ingest_manifests(manifests_dir: str) -> Dict[str, List[Dict]]:
     """
-    Ingest eiher a single file or all of the manifests available in a
+    Ingest either a single file or all of the manifests available in a
     directory and concatenate them into a single object.
+
+    Directories will be searched recursively.
     """
     yml_endings = ["yml", "yaml"]
     if manifests_dir.split(".")[-1] in yml_endings:
         manifests = load_yaml_into_dict(manifests_dir)
 
     else:
-        manifest_list = [
-            manifests_dir + "/" + file
-            for file in os.listdir(manifests_dir)
-            if "." in file and file.split(".")[1] in yml_endings
-        ]
+        manifest_list = []
+        for yml_ending in yml_endings:
+            manifest_list += glob.glob(
+                f"{manifests_dir}/**/*.{yml_ending}", recursive=True
+            )
+
         manifests = union_manifests(
             [load_yaml_into_dict(file) for file in manifest_list]
         )
