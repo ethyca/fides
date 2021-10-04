@@ -5,7 +5,7 @@ Company: Ethyca Data Inc.
 Created: 9/30/21
 """
 
-from fideslang import manifests
+from fideslang.manifests import ingest_manifests
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -15,7 +15,7 @@ FIDES_PARENT_NAME = 'parent_key'
 
 def get_taxonomy_categories(taxonomy_path: str,
                             category_key: str = 'data_category') -> list[dict]:
-    manifests = manifests.ingest_manifests(taxonomy_path)
+    manifests = ingest_manifests(taxonomy_path)
     return manifests[category_key]
 
 
@@ -97,3 +97,55 @@ def category_sankey_plot(taxonomy_path: str,
     if json_out:
         return fig.to_json()
     return fig.to_html()
+
+
+def convert_categories_to_nested_dict(categories: list[dict]) -> dict:
+    """
+    Convert a catalog yaml file into a hierarchical nested dictionary.
+    Leaf nodes will have an empty dictionary as the value.
+
+    e.g.:
+
+    {Parent1:
+        {
+            Child1: {},
+            Child2: {},
+            Parent2: {
+                Child3: {}
+                }
+        }
+    }
+
+    Args:
+        categories : list of dictionaries containing each entry from a catalog yaml file
+
+    Returns:
+
+    """
+
+    def nested_dict(data: dict, keys: list) -> None:
+        """
+        Create a nested dictionary given a list of strings as a key path
+        Args:
+            data: Dictionary to contain the nested dictionary as it's built
+            keys: List of keys that equates to the 'path' down the nested dictionary
+
+        Returns:
+            None
+        """
+        for key in keys:
+            if key in data:
+                if key == keys[-1]:
+                    data[key] = {}
+                data = data[key]
+            else:
+                data[key] = {}
+
+    nested_output = {}
+    for c in categories:
+        if FIDES_PARENT_NAME in c:
+            nested_output[c[FIDES_PARENT_NAME]] = {}
+        else:
+            category_path = c[FIDES_PARENT_NAME].split('.')
+            nested_dict(nested_output, category_path)
+    return nested_output
