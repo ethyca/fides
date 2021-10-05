@@ -50,3 +50,5 @@ jobs:
         if: success() && env.NPM_PACKAGE_VERSION != env.PUBLISHED_PACKAGE_VERSION
         working-directory: ${{env.working-directory}}
         run: npm run package && npm run deploy
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
