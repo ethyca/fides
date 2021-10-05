@@ -7,9 +7,8 @@ from deepdiff import DeepDiff
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resources
-from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green
-from fideslang import FidesModel
+from fideslang import FidesModel, Taxonomy
 
 
 def sort_create_update_unchanged(
@@ -104,7 +103,7 @@ def echo_results(action: str, resource_type: str, resource_list: List) -> None:
 
 def apply(
     url: str,
-    manifests_dir: str,
+    taxonomy: Taxonomy,
     headers: Dict[str, str],
     dry: bool = False,
     diff: bool = False,
@@ -113,8 +112,6 @@ def apply(
     Apply the current manifest file state to the server.
     Excludes systems and registries.
     """
-    taxonomy = parse(manifests_dir)
-
     for resource_type in taxonomy.__fields_set__:
         # Doing some echos here to make a pretty output
         print("-" * 10)

@@ -7,8 +7,11 @@ from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
 
-from fidesctl.core.utils import get_db_engine
 from fidesapi.sql_models import SqlAlchemyBase
+from fidesctl.core.apply import apply
+from fidesctl.core.config import FidesctlConfig
+from fidesctl.core.utils import get_db_engine
+from fideslang import default_taxonomy
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -31,12 +34,23 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-def init_db(database_url: str) -> None:
+def init_db(database_url: str, fidesctl_config: FidesctlConfig) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
+    load_default_taxonomy(fidesctl_config)
+
+
+def load_default_taxonomy(fidesctl_config: FidesctlConfig) -> None:
+    "Loads the default taxonomy into the database."
+    config = fidesctl_config
+    apply(
+        url=config.cli.server_url,
+        taxonomy=default_taxonomy,
+        headers=config.user.request_headers,
+    )
 
 
 def reset_db(database_url: str) -> None:
