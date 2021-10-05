@@ -3,7 +3,7 @@
 	"displayName": "Fidesctl Config Parser",
 	"description": "Valides fidesctl config files",
 	"publisher": "earmenda-fidesctl-publisher",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/ethyca/fides.git"
