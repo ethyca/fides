@@ -1,0 +1,22 @@
+name: Testing workflows for vscode plugin
+
+on:
+  push:
+    branches:
+      - earmenda-vscode-fidesctl-plugin
+    paths:
+      - "extensions/vscode/fidesctl-config-parser/**"
+
+jobs:
+  run_extension_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm install --prefix extensions/vscode/fidesctl-config-parser
+      - name: Run headless test
+        run: xvfb-run -a npm test --prefix extensions/vscode/fidesctl-config-parser
