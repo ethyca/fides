@@ -1,5 +1,7 @@
 out
 node_modules
 .vscode-test
+dist
 
+#Override removing this from the repo
 !.vscode

@@ -10,6 +10,8 @@ on:
 jobs:
   run_extension_tests:
     runs-on: ubuntu-latest
+    env: 
+      working-directory: ./extensions/vscode/fidesctl-config-parser
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node.js
@@ -17,6 +19,31 @@ jobs:
         with:
           node-version: 12
       - name: Install dependencies
-        run: npm install --prefix extensions/vscode/fidesctl-config-parser
+        working-directory: ${{env.working-directory}}
+        run: npm install
       - name: Run headless test
-        run: xvfb-run -a npm test --prefix extensions/vscode/fidesctl-config-parser
+        working-directory: ${{env.working-directory}}
+        run: xvfb-run -a npm test
+  package_and_deploy:
+    runs-on: ubuntu-latest
+    env: 
+      working-directory: ./extensions/vscode/fidesctl-config-parser
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        working-directory: ${{env.working-directory}}
+        run: npm install
+      - name: Set deployment environment variables
+        working-directory: ${{env.working-directory}}
+        run: |
+        echo "NPM_PACKAGE_VERSION=$(npm -s run env echo '$npm_package_version')" >> $GITHUB_ENV
+        echo "PUBLISHED_PACKAGE_VERSION=$(vsce show earmenda-fidesctl-publisher.fidesctl-config-parser | grep "Version:" | awk -F ":" '{print $2}' | xargs)" >> $GITHUB_ENV
+        echo "NPM_PACKAGE_VERSION: $NPM_PACKAGE_VERSION, PUBLISHED_PACKAGE_VERSION:$PUBLISHED_PACKAGE_VERSION"
+      - name: Package and deploy plugin
+        if: success() && env.NPM_PACKAGE_VERSION != env.PUBLISHED_PACKAGE_VERSION
+        working-directory: ${{env.working-directory}}
+        run: npm run package && npm run deploy

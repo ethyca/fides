@@ -2,7 +2,12 @@
 	"name": "fidesctl-config-parser",
 	"displayName": "Fidesctl Config Parser",
 	"description": "Valides fidesctl config files",
-	"version": "0.0.1",
+	"publisher": "earmenda-fidesctl-publisher",
+	"version": "0.0.4",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/ethyca/fides.git"
+	},
 	"engines": {
 		"vscode": "^1.60.0"
 	},
@@ -25,6 +30,8 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
+		"package": "mkdirp dist && vsce package -o dist/fidesctl-config-parser.vsix",
+		"deploy": "vsce publish -i dist/fidesctl-config-parser.vsix",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js"
