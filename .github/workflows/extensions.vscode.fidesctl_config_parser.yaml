@@ -26,6 +26,7 @@ jobs:
         run: xvfb-run -a npm test
   package_and_deploy:
     runs-on: ubuntu-latest
+    needs: [run_extension_tests]
     env: 
       working-directory: ./extensions/vscode/fidesctl-config-parser
     steps:
