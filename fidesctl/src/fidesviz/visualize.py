@@ -8,7 +8,6 @@ Created: 9/30/21
 from fideslang.manifests import ingest_manifests
 import plotly.express as px
 import plotly.graph_objects as go
-from typing import Generator
 
 FIDES_KEY_NAME = 'fides_key'
 FIDES_PARENT_NAME = 'parent_key'
@@ -16,15 +15,6 @@ FIDES_PARENT_NAME = 'parent_key'
 
 def get_taxonomy_categories(taxonomy_path: str,
                             category_key: str = 'data_category') -> list[dict]:
-    """
-    Generate a list of dictionaries from a data_categories.yaml manifest file
-    Args:
-        taxonomy_path: file path to the taxonomy directory containing the data_categories.yml file
-        category_key: Root key used in the data_catagory.yml file
-
-    Returns:
-
-    """
     manifests = ingest_manifests(taxonomy_path)
     return manifests[category_key]
 
@@ -159,36 +149,3 @@ def convert_categories_to_nested_dict(categories: list[dict]) -> dict:
             category_path = c[FIDES_PARENT_NAME].split('.')
             nested_dict(nested_output, category_path)
     return nested_output
-
-
-def nested_categories_to_html_list(nested_categories: dict,
-                                   indent: int = 0) -> str:
-    """
-    Create an HTML string unordered list from the keys of a nested dictionary
-    Args:
-        nested_categories: nested dictionary of keys to convert to an unordered html list
-        indent: spacing multiplier
-
-    Returns:
-
-    """
-    def nest_to_html(nested_dict, indent) -> Generator:
-        """
-        Create the html
-        Args:
-            nested_dict: nested dictionary for keys to convert to html list object
-            indent: spacing multiplier
-
-        Returns:
-            HTML string containing a nested, unordered list of the nested dictionary keys
-        """
-        spacing = '   ' * indent
-        for k, v in nested_dict.items():
-            yield '{}<li>{}</li>'.format(spacing, k)
-            if isinstance(v, dict):
-                yield '{}<ul>\n{}\n{}</ul>'.format(
-                    spacing,
-                    "\n".join(nest_to_html(v, indent + 1)),
-                    spacing
-                )
-    return '\n'.join(nest_to_html(nested_categories, indent))
