@@ -40,9 +40,9 @@ jobs:
       - name: Set deployment environment variables
         working-directory: ${{env.working-directory}}
         run: |
-        echo "NPM_PACKAGE_VERSION=$(npm -s run env echo '$npm_package_version')" >> $GITHUB_ENV
-        echo "PUBLISHED_PACKAGE_VERSION=$(vsce show earmenda-fidesctl-publisher.fidesctl-config-parser | grep "Version:" | awk -F ":" '{print $2}' | xargs)" >> $GITHUB_ENV
-        echo "NPM_PACKAGE_VERSION: $NPM_PACKAGE_VERSION, PUBLISHED_PACKAGE_VERSION:$PUBLISHED_PACKAGE_VERSION"
+          echo "NPM_PACKAGE_VERSION=$(npm -s run env echo '$npm_package_version')" >> $GITHUB_ENV
+          echo "PUBLISHED_PACKAGE_VERSION=$(vsce show earmenda-fidesctl-publisher.fidesctl-config-parser | grep "Version:" | awk -F ":" '{print $2}' | xargs)" >> $GITHUB_ENV
+          echo "NPM_PACKAGE_VERSION: $NPM_PACKAGE_VERSION, PUBLISHED_PACKAGE_VERSION:$PUBLISHED_PACKAGE_VERSION"
       - name: Package and deploy plugin
         if: success() && env.NPM_PACKAGE_VERSION != env.PUBLISHED_PACKAGE_VERSION
         working-directory: ${{env.working-directory}}
