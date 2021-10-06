@@ -2,8 +2,8 @@
 	"name": "fidesctl-config-parser",
 	"displayName": "Fidesctl Config Parser",
 	"description": "Valides fidesctl config files",
-	"publisher": "earmenda-fidesctl-publisher",
-	"version": "0.0.6",
+	"publisher": "fidesctl-plugin-publisher",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/ethyca/fides.git"
@@ -15,14 +15,53 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:fidesctl-config-parser.helloWorld"
+		"onCommand:fidesctl-config-parser.fidesctlParse",
+		"onCommand:fidesctl-config-parser.fidesctlConfigure",
+		"onCommand:fidesctl-config-parser.fidesctlEnableParseOnSave",
+		"onCommand:fidesctl-config-parser.fidesctlDisableParseOnSave"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": [
+			{
+				"title": "Fidesctl Config Parser Configuration",
+				"order": 1,
+				"properties": {
+					"conf.fidesctl.confFilePath": {
+						"type": "string",
+						"description": "Path of fidesctl.toml file which will be used to invoke the cli",
+						"scope": "window"
+					},
+					"conf.fidesctl.manifestFilePath": {
+						"type": "string",
+						"description": "Path of fidesctl manifest files which the plugin will parse",
+						"scope": "window"
+					},
+					"conf.fidesctl.parseOnSave": {
+						"type": "boolean",
+						"default": false,
+						"description": "Determines whether to parsing of manifest will be done on save",
+						"scope": "window"
+					}
+				}
+			}
+		],
 		"commands": [
 			{
-				"command": "fidesctl-config-parser.helloWorld",
-				"title": "Hello World"
+				"command": "fidesctl-config-parser.fidesctlParse",
+				"title": "Fidesctl Parse"
+			},
+			{
+				"command": "fidesctl-config-parser.fidesctlConfigure",
+				"title": "Fidesctl Configure Plugin"
+			},
+			{
+				"command": "fidesctl-config-parser.fidesctlEnableParseOnSave",
+				"title": "Fidesctl Enable Parse on Save"
+			},
+			{
+				"command": "fidesctl-config-parser.fidesctlDisableParseOnSave",
+				"title": "Fidesctl Disable Parse on Save"
 			}
 		]
 	},
@@ -35,7 +74,7 @@
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js",
-		"deployed-version": "vsce show earmenda-fidesctl-publisher.fidesctl-config-parser | grep \"Version:\" | awk -F \":\" '{print $2}' | xargs"
+		"deployed-version": "vsce show fidesctl-plugin-publisher.fidesctl-config-parser | grep \"Version:\" | awk -F \":\" '{print $2}' | xargs"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.60.0",
