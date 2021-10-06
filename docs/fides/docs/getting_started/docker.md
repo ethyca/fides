@@ -33,24 +33,20 @@ The following commands should all be run from the top-level `fides` directory (w
     Teardown complete
     ```
 
-2. `make cli` -> This will spin up the entire project and open a shell within the `fidesctl` container, with the `fidesapi` being accessible. This command will "hang" for a bit, as `fidesctl` will wait for the API to be healthy before launching the shell. Once you see the `fidesctl#` prompt, you know you're ready to go:
+1. `make cli` -> This will spin up the entire project and open a shell within the `fidesctl` container, with the `fidesapi` being accessible. This command will "hang" for a bit, as `fidesctl` will wait for the API to be healthy before launching the shell. Once you see the `fidesctl#` prompt, you know you're ready to go:
 
     ```bash
     ~/git/fides% make cli
     Build the images required in the docker-compose file...
     ...
-    Building fidesapi
-    ...
     Building fidesctl
     ...
     Building docs
     ...
-    Check for new migrations to run...
-    ...
     root@1a742083cedf:/fides/fidesctl#
     ```
 
-3. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
     root@796cfde906f1:/fides/fidesctl# fidesctl ping

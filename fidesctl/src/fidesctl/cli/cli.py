@@ -199,9 +199,9 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     Ping the Server.
     """
     config = ctx.obj["CONFIG"]
-    echo_green(f"Pinging {config.cli.server_url}...")
-    _api.ping(config.cli.server_url)
-    echo_green("Ping Successful!")
+    healthcheck_url = config.cli.server_url + "/health"
+    echo_green(f"Pinging {healthcheck_url}...")
+    handle_cli_response(_api.ping(healthcheck_url))
 
 
 @click.command()

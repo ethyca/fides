@@ -9,7 +9,7 @@ from fideslang import (
     Organization,
 )
 
-default_taxonomy = Taxonomy(
+DEFAULT_TAXONOMY = Taxonomy(
     organization=[Organization(fides_key="default_organization")],
     data_category=[
         DataCategory(

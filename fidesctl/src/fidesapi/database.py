@@ -11,7 +11,7 @@ from fidesapi.sql_models import SqlAlchemyBase
 from fidesctl.core.apply import apply
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import get_db_engine
-from fideslang import default_taxonomy
+from fideslang import DEFAULT_TAXONOMY
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -48,7 +48,7 @@ def load_default_taxonomy(fidesctl_config: FidesctlConfig) -> None:
     config = fidesctl_config
     apply(
         url=config.cli.server_url,
-        taxonomy=default_taxonomy,
+        taxonomy=DEFAULT_TAXONOMY,
         headers=config.user.request_headers,
     )
 

@@ -23,7 +23,7 @@ from .models import (
     System,
     Taxonomy,
 )
-from .default_taxonomy import default_taxonomy
+from .default_taxonomy import DEFAULT_TAXONOMY
 
 model_map: Dict[str, Type[FidesModel]] = {
     "data_category": DataCategory,
