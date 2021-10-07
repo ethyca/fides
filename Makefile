@@ -37,9 +37,16 @@ help:
 
 .PHONY: init-db
 init-db: compose-build
-	@echo "Check for new migrations to run..."
-	@docker-compose down
-	@docker-compose run $(IMAGE_NAME) fidesctl init-db
+	@echo "Checking for new migrations to run..."
+	@docker-compose up -d $(IMAGE_NAME)
+	@docker-compose run --rm $(IMAGE_NAME) fidesctl init-db
+	@make teardown
+
+.PHONY: reset-db
+reset-db: compose-build
+	@echo "Reset the database..."
+	@docker-compose up -d $(IMAGE_NAME)
+	@docker-compose run --rm $(IMAGE_NAME)  fidesctl reset-db -y
 	@make teardown
 
 .PHONY: api
@@ -52,7 +59,7 @@ api: compose-build
 cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker-compose up -d $(IMAGE_NAME)
-	@docker-compose run $(IMAGE_NAME) /bin/bash
+	@docker-compose run --rm $(IMAGE_NAME) /bin/bash
 	@make teardown
 
 ####################
@@ -76,28 +83,28 @@ check-all: check-install black pylint mypy xenon pytest
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run --rm $(IMAGE_NAME) \
 	fidesctl
 
 black: compose-build
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run --rm $(IMAGE_NAME) \
 	black --check src/
 
 mypy: compose-build
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run --rm $(IMAGE_NAME) \
 	mypy
 
 pylint: compose-build
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run --rm $(IMAGE_NAME) \
 	pylint src/
 
 pytest: compose-build init-db
-	@docker-compose up -d
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose up -d $(IMAGE_NAME)
+	@docker-compose run --rm $(IMAGE_NAME) \
 	pytest
 
 xenon: compose-build
-	@docker-compose run $(IMAGE_NAME) \
+	@docker-compose run --rm $(IMAGE_NAME) \
 	xenon src \
 	--max-absolute B \
 	--max-modules A \

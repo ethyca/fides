@@ -1,6 +1,6 @@
 import pytest
 
-from fidesctl.core.config import get_config, FidesConfig
+from fidesctl.core.config import get_config, FidesctlConfig
 
 
 # Unit

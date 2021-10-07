@@ -41,7 +41,7 @@ def test_generate_resource_urls_with_id(test_config):
 # Integration Tests
 @pytest.mark.integration
 def test_api_ping(test_config):
-    assert _api.ping(test_config.cli.server_url).status_code == 200
+    assert _api.ping(test_config.cli.server_url + "/health").status_code == 200
 
 
 @pytest.mark.integration

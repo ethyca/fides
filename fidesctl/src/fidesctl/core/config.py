@@ -72,7 +72,7 @@ class APISettings(FidesSettings):
         env_prefix = "FIDESCTL__API__"
 
 
-class FidesConfig(BaseModel):
+class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
     api: APISettings
@@ -80,7 +80,7 @@ class FidesConfig(BaseModel):
     user: UserSettings
 
 
-def get_config(config_path: str = "") -> FidesConfig:
+def get_config(config_path: str = "") -> FidesctlConfig:
     """
     Attempt to read config file from:
     a) passed in configuration, if it exists
@@ -102,7 +102,7 @@ def get_config(config_path: str = "") -> FidesConfig:
         if file_location != "" and os.path.isfile(file_location):
             try:
                 settings = toml.load(file_location)
-                fides_config = FidesConfig(
+                fides_config = FidesctlConfig(
                     api=APISettings.parse_obj(settings.get("api", {})),
                     cli=CLISettings.parse_obj(settings.get("cli", {})),
                     user=UserSettings.parse_obj(settings.get("user", {})),

@@ -48,35 +48,6 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     Ping Successful!
     ```
 
-1. Now we can seed the database with the default taxonomy:
-
-    ```bash
-    root@0f13dd1c5834:/fides/fidesctl# fidesctl apply default_taxonomy/
-    Loading resource manifests from: default_taxonomy/
-    Taxonomy successfully created.      
-    ----------
-    Processing data_subject resources...
-    CREATED 15 data_subject resources.    
-    UPDATED 0 data_subject resources.     
-    SKIPPED 0 data_subject resources.     
-    ----------
-    Processing data_qualifier resources...
-    CREATED 5 data_qualifier resources.
-    UPDATED 0 data_qualifier resources.
-    SKIPPED 0 data_qualifier resources.
-    ----------
-    Processing data_use resources...   
-    CREATED 18 data_use resources.       
-    UPDATED 0 data_use resources.        
-    SKIPPED 0 data_use resources.        
-    ----------
-    Processing data_category resources...
-    CREATED 77 data_category resources.
-    UPDATED 0 data_category resources. 
-    SKIPPED 0 data_category resources. 
-    ----------
-    ```
-
 1. Run `ls demo_resources/` to inspect the contents of the demo directory, which includes some pre-made examples of the core Fides resource files (systems, datasets, policies, etc.)
 
     ```bash
