@@ -31,6 +31,7 @@ The following commands should all be run from the top-level `fides` directory (w
     root@1a742083cedf:/fides/fidesctl#
     ```
 
+<<<<<<< HEAD
 2. `fidesctl init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
 
     ```bash
@@ -41,6 +42,22 @@ The following commands should all be run from the top-level `fides` directory (w
 
 
 3. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+=======
+1. `make cli` -> This will spin up the entire project and open a shell within the `fidesctl` container, with the `fidesapi` being accessible. This command will "hang" for a bit, as `fidesctl` will wait for the API to be healthy before launching the shell. Once you see the `fidesctl#` prompt, you know you're ready to go:
+
+    ```bash
+    ~/git/fides% make cli
+    Build the images required in the docker-compose file...
+    ...
+    Building fidesctl
+    ...
+    Building docs
+    ...
+    root@1a742083cedf:/fides/fidesctl#
+    ```
+
+1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+>>>>>>> d8d3bb0 (Add Default resources to Fideslang (#137))
 
     ```bash
     root@796cfde906f1:/fides/fidesctl# fidesctl ping
