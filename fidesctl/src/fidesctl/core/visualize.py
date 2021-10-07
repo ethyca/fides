@@ -153,42 +153,48 @@ def convert_categories_to_nested_dict(categories: list[dict]) -> dict:
 
     nested_output = {}
     for c in categories:
-        if FIDES_PARENT_NAME in c:
-            nested_output[c[FIDES_PARENT_NAME]] = {}
+        if FIDES_PARENT_NAME not in c:
+            nested_output[c[FIDES_KEY_NAME]] = {}
         else:
-            category_path = c[FIDES_PARENT_NAME].split('.')
+            category_path = c[FIDES_KEY_NAME].split('.')
             nested_dict(nested_output, category_path)
     return nested_output
 
 
-def nested_categories_to_html_list(nested_categories: dict,
-                                   indent: int = 0) -> str:
+def nested_categories_to_html_list(taxonomy_path: str,
+                                   category_key: str = 'data_category',
+                                   indent: int = 1) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
     Args:
-        nested_categories: nested dictionary of keys to convert to an unordered html list
+        taxonomy_path: path to the taxonomy directory
+        category_key: root key for the categories in the taxonomy data_categories.yml file
         indent: spacing multiplier
 
     Returns:
 
     """
-    def nest_to_html(nested_dict, indent) -> Generator:
+
+    categories = get_taxonomy_categories(taxonomy_path, category_key)
+    nested_categories = convert_categories_to_nested_dict(categories)
+
+    def nest_to_html(nested_dict, indent_factor) -> Generator:
         """
         Create the html
         Args:
             nested_dict: nested dictionary for keys to convert to html list object
-            indent: spacing multiplier
+            indent_factor: spacing multiplier
 
         Returns:
             HTML string containing a nested, unordered list of the nested dictionary keys
         """
-        spacing = '   ' * indent
+        spacing = '   ' * indent_factor
         for k, v in nested_dict.items():
             yield '{}<li>{}</li>'.format(spacing, k)
             if isinstance(v, dict):
                 yield '{}<ul>\n{}\n{}</ul>'.format(
                     spacing,
-                    "\n".join(nest_to_html(v, indent + 1)),
+                    "\n".join(nest_to_html(v, indent_factor + 1)),
                     spacing
                 )
     return '\n'.join(nest_to_html(nested_categories, indent))
