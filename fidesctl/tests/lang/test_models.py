@@ -94,6 +94,7 @@ def test_create_valid_data_use():
         organization_fides_key=1,
         fides_key="provide.system",
         name="Provide the Product or Service",
+        parent_key="provide",
         description="Test Data Use",
     )
     assert True
@@ -187,9 +188,7 @@ def test_invalid_action_enum_policy_rule():
             name="Test Policy",
             description="Test Policy",
             data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(
-                inclusion="NONE", values=["provide.system"]
-            ),
+            data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJT",
