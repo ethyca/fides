@@ -4,6 +4,7 @@
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
+[![Fides Discord Server][discord-image]][discord-url]
 
 ## :zap: Overview
 
@@ -261,6 +262,13 @@ We are committed to fostering a safe and collaborative environment, such that al
 
 Full Fides documentation is available [here](https://ethyca.github.io/fides/).
 
+### Support
+
+Join the conversation on:
+
+- [Discord](https://discord.gg/NfWXEmCsd4)
+- [Twitter](https://twitter.com/ethyca)
+
 ### Contributing
 
 Read about the Fides [community](https://ethyca.github.io/fides/community/github/) or dive in to the [development guides](https://ethyca.github.io/fides/development/overview/) for information about contributions, documentation, code style, testing and more.
@@ -277,3 +285,5 @@ Fides is licensed under the [Apache Software License Version 2.0](https://www.ap
 [black-url]: https://github.com/psf/black/
 [mypy-image]: http://www.mypy-lang.org/static/mypy_badge.svg
 [mypy-url]: http://mypy-lang.org/
+[discord-image]: https://img.shields.io/discord/730474183833813142.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
+[discord-url]: https://discord.gg/NfWXEmCsd4
