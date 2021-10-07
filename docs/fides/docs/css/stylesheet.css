@@ -1,0 +1,86 @@
+header#md-header #header-top #header-logo{
+  color: #0861ce;
+}
+
+.field-description, .markdown-body{
+	font-family: 'Source Sans Pro', sans-serif !important;
+  font-size: 15px;
+  font-weight: 400;
+  color: #425466;
+}
+
+body{
+  font-family: 'Source Sans Pro', sans-serif !important;
+
+}
+section#md-content header h1{
+  font-weight: 600;
+  color: #111439;
+}
+section#md-content header h2{
+   font-weight: 600;
+  color: #111439;
+}
+
+.heading.heading .heading-text{
+  font-weight: 600;
+  color: #111439;
+}
+
+.markdown-body table td, .markdown-body table th{
+  text-align: left;
+}
+
+.markdown-body>.img{
+  margin-bottom: 30px !important;
+  -webkit-box-shadow: 0px 1px 8px -5px rgba(0,0,0,0.48);
+-moz-box-shadow: 0px 1px 8px -5px rgba(0,0,0,0.48);
+box-shadow: 0px 1px 8px -5px rgba(0,0,0,0.48);
+}
+
+footer{
+    background-color: #303036;
+    padding: 30px 50px;
+    color: white;
+}
+
+footer .wrapper{
+  padding: 20px 0px;
+    border-top: 2px solid #3F3F44;
+    border-bottom: 2px solid #3F3F44;
+  position: relative;
+}
+footer .wrapper div{
+  display: inline-block;
+}
+
+footer .wrapper .logo{
+  width: 50%;
+}
+
+footer .wrapper .links{
+    position: absolute;
+    top: 30px;
+    right: 0;
+}
+footer .wrapper .links a{
+  color: #8B8B8B !important;
+  text-align: right;
+  padding-right: 15px;
+}
+
+@media only screen and (max-width: 550px) {
+  footer .wrapper div{
+    display: block;
+  }
+
+  footer .wrapper .logo{
+    width: 100%;
+  }
+
+  footer .wrapper .links{
+      position: relative;
+    	top: 10px;
+      text-align: center;
+  }
+}

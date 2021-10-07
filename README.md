@@ -7,13 +7,13 @@
 
 ## :zap: Overview
 
-Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
+Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools. 
 
 - **A Privacy Grammar for engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g., personally identifiable information) directly in your code.
 
 - **Privacy Policies that aren't just for lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
 
-- **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+- **CI/CD/CP.** Integrate Fides with your existing CI tool (Travis, Jenkins, Gitlab) to continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
@@ -38,7 +38,7 @@ Using these primitives, as well as some additional abstractions for syntactic su
 
 ## :rocket: Quick Start
 
-If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
+If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/taxonomy.md). But for a quick demo you can tinker with, follow these 5 easy steps:
 
 1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
 
@@ -169,7 +169,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
         rules:
           - fides_key: reject_direct_marketing
             name: Reject Direct Marketing
-            description: Disallow collecting any user contact info to use for marketing.
+            description: Do not allow collection of any user contact info to use for marketing.
             data_categories:
               inclusion: ANY
               values:
