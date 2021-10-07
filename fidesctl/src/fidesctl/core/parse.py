@@ -1,5 +1,4 @@
 """This module is responsible for parsing and verifying file, either with or without a server being available."""
-
 from fidesctl.core.utils import echo_green
 from fideslang import Taxonomy
 from fideslang.manifests import ingest_manifests

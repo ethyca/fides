@@ -38,9 +38,10 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     Send the manifest files to the server.
     """
     config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
     _apply.apply(
         url=config.cli.server_url,
-        manifests_dir=manifests_dir,
+        taxonomy=taxonomy,
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
@@ -96,9 +97,10 @@ def evaluate(
     """
 
     config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
     _apply.apply(
         url=config.cli.server_url,
-        manifests_dir=manifests_dir,
+        taxonomy=taxonomy,
         headers=config.user.request_headers,
         dry=dry,
     )
@@ -159,7 +161,7 @@ def init_db(ctx: click.Context) -> None:
     Initialize or upgrade the database by running all of the existing migrations.
     """
     config = ctx.obj["CONFIG"]
-    database.init_db(config.api.database_url)
+    database.init_db(config.api.database_url, fidesctl_config=config)
 
 
 @click.command()
@@ -197,9 +199,9 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     Ping the Server.
     """
     config = ctx.obj["CONFIG"]
-    echo_green(f"Pinging {config.cli.server_url}...")
-    _api.ping(config.cli.server_url)
-    echo_green("Ping Successful!")
+    healthcheck_url = config.cli.server_url + "/health"
+    echo_green(f"Pinging {healthcheck_url}...")
+    handle_cli_response(_api.ping(healthcheck_url))
 
 
 @click.command()
@@ -220,7 +222,7 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 
     if are_you_sure.lower() == "y":
         database.reset_db(database_url)
-        database.init_db(database_url)
+        database.init_db(database_url, config)
         echo_green("Database reset!")
     else:
         print("Aborting!")

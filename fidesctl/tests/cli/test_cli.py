@@ -20,8 +20,22 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "parse", "default_taxonomy/"]
+        cli, ["-f", test_config_path, "parse", "demo_resources/"]
     )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_reset_db(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "reset-db", "-y"])
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_init_db(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "init-db"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -29,7 +43,7 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "default_taxonomy/"]
+        cli, ["-f", test_config_path, "apply", "demo_resources/"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -38,7 +52,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--dry"]
+        cli, ["-f", test_config_path, "apply", "demo_resources/", "--dry"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -47,7 +61,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--diff"]
+        cli, ["-f", test_config_path, "apply", "demo_resources/", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -56,7 +70,7 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "default_taxonomy/", "--dry", "--diff"]
+        cli, ["-f", test_config_path, "apply", "demo_resources/", "--dry", "--diff"]
     )
     print(result.output)
     assert result.exit_code == 0
