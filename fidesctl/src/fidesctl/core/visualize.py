@@ -8,14 +8,16 @@ Created: 9/30/21
 from fideslang.manifests import ingest_manifests
 import plotly.express as px
 import plotly.graph_objects as go
-from typing import Generator
+from typing import Generator, List
+# from fideslang import DEFAULT_TAXONOMY gives an object with the fides taxonomy
+# .dict to get it as a dictionary - DEFAULT_TAXONOMY.data_category.dict()
 
 FIDES_KEY_NAME = 'fides_key'
 FIDES_PARENT_NAME = 'parent_key'
 
 
 def get_taxonomy_categories(taxonomy_path: str,
-                            category_key: str = 'data_category') -> list[dict]:
+                            category_key: str = 'data_category') -> List[dict]:
     """
     Generate a list of dictionaries from a data_categories.yaml manifest file
     Args:
@@ -109,7 +111,7 @@ def category_sankey_plot(taxonomy_path: str,
     return fig.to_html()
 
 
-def convert_categories_to_nested_dict(categories: list[dict]) -> dict:
+def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
     """
     Convert a catalog yaml file into a hierarchical nested dictionary.
     Leaf nodes will have an empty dictionary as the value.
@@ -133,7 +135,7 @@ def convert_categories_to_nested_dict(categories: list[dict]) -> dict:
 
     """
 
-    def nested_dict(data: dict, keys: list) -> None:
+    def nested_dict(data: dict, keys: List) -> None:
         """
         Create a nested dictionary given a list of strings as a key path
         Args:

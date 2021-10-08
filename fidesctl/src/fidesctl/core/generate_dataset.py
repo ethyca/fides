@@ -73,7 +73,10 @@ def generate_dataset(connection_string: str, file_name: str) -> None:
     """
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
-    collections = create_dataset_collections(db_collections)
+    collections = create_dataset_collections(db_collections)  # maybe here since we're already looping through fields
     dataset = create_dataset(db_engine, collections)
-    manifests.write_manifest(file_name, dataset.dict(), "dataset")
+    manifests.write_manifest(file_name, dataset.dict(), "dataset")  # or loop here and append data_categories
     echo_green(f"Generated dataset manifest written to {file_name}")
+
+    # write a manifest at each point so that we can maintain state throughout the process.
+    #
