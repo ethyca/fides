@@ -7,19 +7,31 @@ import os
 
 from fideslang import models
 from fidesctl.core.config import get_config
+from fidesapi import database
+
+TEST_CONFIG_PATH = "tests/test_config.toml"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_config_path():
-    yield "tests/test_config.toml"
+    yield TEST_CONFIG_PATH
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_config(test_config_path):
     yield get_config(test_config_path)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session", autouse=True)
+def setup_db(test_config):
+    "Sets up the database for testing."
+    database_url = test_config.api.database_url
+    database.reset_db(database_url)
+    database.init_db(database_url, test_config)
+    yield
+
+
+@pytest.fixture(scope="session")
 def resources_dict():
     """
     Yields an resource containing sample representations of different
@@ -108,9 +120,7 @@ def resources_dict():
             name="Test Policy",
             description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=models.PrivacyRule(
-                inclusion="NONE", values=["provide.system"]
-            ),
+            data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="unlinked_pseudonymized_data",
             action="REJECT",
