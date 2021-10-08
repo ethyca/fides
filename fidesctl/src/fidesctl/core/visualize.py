@@ -1,60 +1,35 @@
 """
-Author: Brenton Mallen
-Email: brenton@ethyca.com
-Company: Ethyca Data Inc.
-Created: 9/30/21
+Creates data visualizations for the data category hierarchy
 """
 
-from fideslang.manifests import ingest_manifests
 import plotly.express as px
 import plotly.graph_objects as go
 from typing import Generator, List
-# from fideslang import DEFAULT_TAXONOMY gives an object with the fides taxonomy
-# .dict to get it as a dictionary - DEFAULT_TAXONOMY.data_category.dict()
 
 FIDES_KEY_NAME = 'fides_key'
 FIDES_PARENT_NAME = 'parent_key'
 
 
-def get_taxonomy_categories(taxonomy_path: str,
-                            category_key: str = 'data_category') -> List[dict]:
-    """
-    Generate a list of dictionaries from a data_categories.yaml manifest file
-    Args:
-        taxonomy_path: file path to the taxonomy directory containing the data_categories.yml file
-        category_key: Root key used in the data_catagory.yml file
-
-    Returns:
-
-    """
-    manifests = ingest_manifests(taxonomy_path)
-    return manifests[category_key]
-
-
-def category_sunburst_plot(taxonomy_path: str,
-                           category_key: str = 'data_category',
+def category_sunburst_plot(categories: List[dict],
                            json_out: bool = False) -> str:
     """
     Create a sunburst plot from data categories yaml file
     Reference: https://plotly.com/python/sunburst-charts/
     Args:
-        taxonomy_path: full path fo the taxonomy directory
-        category_key:
+        categories: list of the dictionaries for each taxonomy member
         json_out:
 
     Returns:
         Json representation of the figure if `json_out` is True, html otherwise
     """
 
-    categories = get_taxonomy_categories(taxonomy_path, category_key)
-
     # add color map
     for c in categories:
         c['color'] = c[FIDES_KEY_NAME].split('.')[0]
 
     fig = px.sunburst(categories,
-                      names='fides_key',
-                      parents='parent_key',
+                      names=FIDES_KEY_NAME,
+                      parents=FIDES_PARENT_NAME,
                       color='color'
                       )
     fig.update_layout(title_text="Fides Data Category Hierarchy", font_size=10)
@@ -64,30 +39,28 @@ def category_sunburst_plot(taxonomy_path: str,
     return fig.to_html()
 
 
-def category_sankey_plot(taxonomy_path: str,
-                         category_key: str = 'data_category',
+def category_sankey_plot(categories: List[dict],
                          json_out: bool = False) -> str:
     """
-    Create a sunburst plot from data categories yaml file
-    Reference: https://plotly.com/python/sunburst-charts/
+    Create a sankey plot from data categories yaml file
+    Reference: https://plotly.com/python/sankey-diagram/
     Args:
-        taxonomy_path: full path fo the taxonomy directory
-        category_key:
+        categories: list of the dictionaries for each taxonomy member
         json_out:
 
     Returns:
         Json representation of the figure if `json_out` is True, html otherwise
     """
 
-    categories = get_taxonomy_categories(taxonomy_path, category_key)
     fides_key_dict = {v[FIDES_KEY_NAME]: i for i, v in enumerate(categories)}
     source = []
     target = []
 
     for c in categories:
-        if 'parent_key' in c.keys():
-            source.append(fides_key_dict[c[FIDES_PARENT_NAME]])
-            target.append(fides_key_dict[c[FIDES_KEY_NAME]])
+        if FIDES_PARENT_NAME in c.keys():
+            if c[FIDES_PARENT_NAME]:
+                source.append(fides_key_dict[c[FIDES_PARENT_NAME]])
+                target.append(fides_key_dict[c[FIDES_KEY_NAME]])
 
     fig = go.Figure(data=[go.Sankey(
         valueformat=".1f",
@@ -105,6 +78,8 @@ def category_sankey_plot(taxonomy_path: str,
             target=target,
             value=target
         ))])
+
+    fig.update_layout(title_text="Fides Data Category Hierarchy", font_size=10)
 
     if json_out:
         return fig.to_json()
@@ -148,6 +123,7 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
         for key in keys:
             if key in data:
                 if key == keys[-1]:
+                    # we've reached the end of the path (no more children)
                     data[key] = {}
                 data = data[key]
             else:
@@ -163,21 +139,17 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
     return nested_output
 
 
-def nested_categories_to_html_list(taxonomy_path: str,
-                                   category_key: str = 'data_category',
+def nested_categories_to_html_list(categories: List[dict],
                                    indent: int = 1) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
     Args:
-        taxonomy_path: path to the taxonomy directory
-        category_key: root key for the categories in the taxonomy data_categories.yml file
+        categories: list of the dictionaries for each taxonomy member
         indent: spacing multiplier
 
     Returns:
 
     """
-
-    categories = get_taxonomy_categories(taxonomy_path, category_key)
     nested_categories = convert_categories_to_nested_dict(categories)
 
     def nest_to_html(nested_dict, indent_factor) -> Generator:
@@ -199,4 +171,6 @@ def nested_categories_to_html_list(taxonomy_path: str,
                     "\n".join(nest_to_html(v, indent_factor + 1)),
                     spacing
                 )
-    return '\n'.join(nest_to_html(nested_categories, indent))
+    header = '<h2>Fides Data Category Hierarchy</h2>'
+    categories_tree = '\n'.join(nest_to_html(nested_categories, indent))
+    return f'{header}\n{categories_tree}'
