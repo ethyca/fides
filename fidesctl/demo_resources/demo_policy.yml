@@ -13,7 +13,7 @@ policy:
         data_uses:
           inclusion: ANY
           values:
-            - marketing_advertising_or_promotion
+            - advertising
         data_subjects:
           inclusion: ANY
           values:

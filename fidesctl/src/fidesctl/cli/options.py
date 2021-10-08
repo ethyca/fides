@@ -54,3 +54,14 @@ def yes_flag(command: Callable) -> Callable:
         help="Automatic yes to prompts.",
     )(command)
     return command
+
+
+def verbose_flag(command: Callable) -> Callable:
+    "Add a flag that makes commands verbose."
+    command = click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        help="Verbose output.",
+    )(command)
+    return command
