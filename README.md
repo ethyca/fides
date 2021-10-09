@@ -1,19 +1,21 @@
-# Fides
+# Fides (<a href="https://www.howtopronounce.com/latin/fides" target= "_blank">*fee-des*, "trust")
 
 [![Latest Version][pypi-image]][pypi-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
 
+
+
 ## :zap: Overview
 
-Ethyca's Fides (*fee-dez*, Latin: Fidēs) is a modern framework that lets legal and data teams work together to define and enforce data privacy requirements during software integration and deployment.
+Ethyca's Fides is a modern framework that lets legal and data teams work together to define ]data privacy requirements that are _proveably_ enforced during software integration and deployment. By translating privacies policies into code, you can ensure that you'll never "leak" sensitive data in your applications while using your normal CI/CD tools.
+    
 
-- **Privacy policies that aren't just for lawyers.** While your legal and executive teams define your privacy policies, it's your engineering team that must implement these policies in your software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. code to define when, where, and how your customers' personally identifiable information is displayed in your applications.
 
-- **Privacy policies that aren't just for lawyers.** Fides lets you enforce your privacy policies when you integrate or deploy your software.
+- **Privacy policies that aren't just for lawyers** While your legal and executive teams define your privacy policies, it's your engineering team that must implement these policies as software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. 
 
-- **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+- **CI/CD/CP** With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during integration, deployment and warn users of unsafe changes _before_ they make it into production.
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
