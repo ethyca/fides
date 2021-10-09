@@ -7,11 +7,11 @@
 
 ## :zap: Overview
 
-Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
+Ethyca's Fides (*fee-dez*, Latin: Fidēs) is a modern framework that lets legal and data teams work together to define and enforce data privacy requirements during software integration and deployment.
 
-- **A Privacy Grammar for engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g., personally identifiable information) directly in your code.
+- **Privacy policies that aren't just for lawyers.** While your legal and executive teams define your privacy policies, it's your engineering team that must implement these policies in your software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. code to define when, where, and how your customers' personally identifiable information is displayed in your applications.
 
-- **Privacy Policies that aren't just for lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
+- **Privacy policies that aren't just for lawyers.** Fides lets you enforce your privacy policies when you integrate or deploy your software.
 
 - **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
@@ -19,16 +19,14 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 ## :bulb: Concepts
 
-Fides has two fundamental parts at its core. The first part is the 4 privacy data types that Fides defines:
+Fides rests on two fundamental concepts: Privacy parameters and privacy resources. There are four privacy parameters:
 
-The 4 data privacy types are as follows:
+- Data Category - What kind of data is it?
+- Data Use - How is it being used? In widely broadcast marketing collateral? On a login screen? In a preferences panel that
+- Data Subject - What type of person does the data belong to? A customer? An anonymous
+- Data Qualifier - How sensitive is the data that's being protected?
 
-- Data Category - _What_ kind of data is it?
-- Data Use - _Why_ is it being used?
-- Data Subject - _Whose_ data is it?
-- Data Qualifier - _How_ is the data being protected?
-
-With these privacy data types defined, subsequent resources can now be defined within their scopes. Those subsequent resources comprise the second part of Fides, they are as follows:
+With these privacy parameters defined, privacy resources can be defined within their scopes. Those subsequent resources comprise the second part of Fides, they are as follows:
 
 - Dataset - Tables and fields described as a combination of Data Categories and Data Qualifiers
 - System - Defined as a list of declarations comprising all 4 privacy data types
