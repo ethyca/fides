@@ -9,35 +9,47 @@
 
 ## :zap: Overview
 
-Ethyca's Fides is a modern framework that lets legal and data teams work together to define ]data privacy requirements that are _proveably_ enforced during software integration and deployment. By translating privacies policies into code, you can ensure that you'll never "leak" sensitive data in your applications while using your normal CI/CD tools.
+Ethyca's Fides is a modern framework that lets legal and data teams work together to define data privacy requirements that are _provably_ enforced during software integration and deployment. By translating privacies policies into code, you can ensure that you'll never leak sensitive data in your applications.
     
 
 
 - **Privacy policies that aren't just for lawyers** While your legal and executive teams define your privacy policies, it's your engineering team that must implement these policies as software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. 
 
-- **CI/CD/CP** With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during integration, deployment and warn users of unsafe changes _before_ they make it into production.
+- **CI/CD** With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during the build process; if you find a potential compromise, you can shut down the process  _before_ the changes make it into production.
 
-- **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
+- **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? The privacy policies that you create with Fides  can be applied across the entire data ecosystem.
 
 ## :bulb: Concepts
 
-Fides rests on two fundamental concepts: Privacy parameters and privacy resources. There are four privacy parameters:
+Your privacy policies answer the question "Can I present _this_ data to _that_ audience?" Of course, that all depends on the characteristics of the data and the audience. Fides formalizes these characteristics as four "privacy parameters":
 
-- Data Category - What kind of data is it?
-- Data Use - How is it being used? In widely broadcast marketing collateral? On a login screen? In a preferences panel that
-- Data Subject - What type of person does the data belong to? A customer? An anonymous
-- Data Qualifier - How sensitive is the data that's being protected?
+- Data Category - What kind of data is it? A, B, C?
+- Data Subject - What type of person does the data belong to? A customer? An unidentified group of users? C?
+- Data Qualifier (or sensitivity|identifiability) - Is this heavily-protected PII, or anonymous 'statistical' data?
+- Audience [nee Data use] - Who's going to see the data? [[marketing collateral, login screen, preferences panel}}
 
-With these privacy parameters defined, privacy resources can be defined within their scopes. Those subsequent resources comprise the second part of Fides, they are as follows:
+    
 
-- Dataset - Tables and fields described as a combination of Data Categories and Data Qualifiers
-- System - Defined as a list of declarations comprising all 4 privacy data types
-- Policy - Defined as a list of rules comprising all 4 privacy data types, specifiying which combinations are either permitted or forbidden
 
-Using these primitives, as well as some additional abstractions for syntactic sugar, Fides facilitates comprehensive privacy annotations for entire datascapes.
+With these privacy characteristics defined, Fides lets you build a pyramid of privacy resources:
 
-## :rocket: Quick Start
+[[illo]]
+    
+The foundation of the pyramid comprises your datasets, lists of data categories and data qualifiers. (Examples)
 
+Just above the datasets are your systems ...
+
+Your datasets and systems are, in a sense, non-
+    judgmental -- they simply list the possibilities of how data can be presented. But at the top of the pyramid are your policies. This is where your company's "privacy justice" is applied. A policy says "_this_ system is okay, but _that_ one? No way".
+    
+While every layer of the pyramid is implemented in code, the _intent_ of the policy layer is owned by your legal team (or execs, or whoever owns privacy). Given a tech-savvy lawyer, ((something something about lawyers trying code, if it's not too stupid)).
+   
+
+## :rocket: Getting Started
+
+
+[[Quick Start Guide in gh-pages]]
+    
 If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
 
 1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
