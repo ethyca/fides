@@ -1,4 +1,4 @@
-# Fides (<a href="https://www.howtopronounce.com/latin/fides" target= "_blank">*fee-des*, "trust")
+# Fides (<a href="https://www.howtopronounce.com/latin/fides" target= "_blank">*fee'-des*</a>, "trust")
 
 [![Latest Version][pypi-image]][pypi-url]
 [![License][license-image]][license-url]
@@ -9,11 +9,9 @@
 
 ## :zap: Overview
 
-Ethyca's Fides is a modern framework that lets legal and data teams work together to define data privacy requirements that are _provably_ enforced during software integration and deployment. By translating privacies policies into code, you can ensure that you'll never leak sensitive data in your applications.
+Fides is an open-source framework that lets legal and data teams work together to define data privacy requirements that are _provably_ enforced during software integration and deployment. By translating privacies policies into code, you can ensure that you'll never expose a user's sensitive data in your applications.
     
-
-
-- **Privacy policies that aren't just for lawyers** While your legal and executive teams define your privacy policies, it's your engineering team that must implement these policies as software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. 
+- **Privacy policies aren't just for lawyers**. While a company's executives and legal team define the intent of your privacy policies, it's your engineering team that must implement these policies as software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. 
 
 - **CI/CD** With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during the build process; if you find a potential compromise, you can shut down the process  _before_ the changes make it into production.
 
@@ -21,12 +19,12 @@ Ethyca's Fides is a modern framework that lets legal and data teams work togethe
 
 ## :bulb: Concepts
 
-Your privacy policies answer the question "Can I present _this_ data to _that_ audience?" Of course, that all depends on the characteristics of the data and the audience. Fides formalizes these characteristics as four "privacy parameters":
+Your privacy policies answer the question "Can I present _this_ data to _that_ audience?" The answer, of course, depends on the characteristics of the data and the audience. Fides formalizes these characteristics as four "privacy parameters":
 
 - Data Category - What kind of data is it? A, B, C?
 - Data Subject - What type of person does the data belong to? A customer? An unidentified group of users? C?
 - Data Qualifier (or sensitivity|identifiability) - Is this heavily-protected PII, or anonymous 'statistical' data?
-- Audience [nee Data use] - Who's going to see the data? [[marketing collateral, login screen, preferences panel}}
+- Data Use (or, better, Audience) - Who's going to see the data? {{marketing collateral, login screen, preferences panel}}
 
     
 
