@@ -13,11 +13,13 @@ Fides is an open-source framework that lets legal and data teams work together t
     
 - **Privacy policies aren't just for lawyers**. While a company's executives and legal team define the intent of your privacy policies, it's your engineering team that must implement these policies as software. Fides defines a "privacy grammar" that lets engineers translate legal privacy policies into the language they understand: code. 
 
-- **CI/CD** With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during the build process; if you find a potential compromise, you can shut down the process  _before_ the changes make it into production.
+- **CI/CD**. With Fides, you can update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies are evaluated during the build process; if you find a potential compromise, you can shut down the process  _before_ the changes make it into production.
+
+- **Build it your way.** [[CLI, API, mention white glove?]]
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? The privacy policies that you create with Fides  can be applied across the entire data ecosystem.
 
-## :bulb: Concepts
+## 💡 Concepts
 
 Your privacy policies answer the question "Can I present _this_ data to _that_ audience?" The answer, of course, depends on the characteristics of the data and the audience. Fides formalizes these characteristics as four "privacy parameters":
 
@@ -43,7 +45,12 @@ Your datasets and systems are, in a sense, non-
 While every layer of the pyramid is implemented in code, the _intent_ of the policy layer is owned by your legal team (or execs, or whoever owns privacy). Given a tech-savvy lawyer, ((something something about lawyers trying code, if it's not too stupid)).
    
 
-## :rocket: Getting Started
+## ⏩ From conception to deployment
+
+[[walk through the process of creating and applying a policy during deployment
+
+
+## 🚀 Getting Started
 
 
 [[Quick Start Guide in gh-pages]]
