@@ -21,10 +21,10 @@ Fides is an open-source framework that lets legal and data teams work together t
 
 Your privacy policies answer the question "Can I present _this_ data to _that_ audience?" The answer, of course, depends on the characteristics of the data and the audience. Fides formalizes these characteristics as four "privacy parameters":
 
-- Data Category - What kind of data is it? A, B, C?
-- Data Subject - What type of person does the data belong to? A customer? An unidentified group of users? C?
-- Data Qualifier (or sensitivity|identifiability) - Is this heavily-protected PII, or anonymous 'statistical' data?
-- Data Use (or, better, Audience) - Who's going to see the data? {{marketing collateral, login screen, preferences panel}}
+- Data Category [Attribute?] - The real-world attribute that the data describes: Date-of birth, home address, credit score, and so on.
+- Data Subject [Owner?] - The type of entity that owns the data: An individual person, a company, a customer.
+- Data Qualifier [Protection|Sensitivity|Identifiability|Identity] - A description of the data's sensitivity, from PII to "unprotected anonymous statistics".
+- Data Use [Audience]  - Who's going to see the data? {{marketing collateral, login screen, preferences panel}}
 
     
 
