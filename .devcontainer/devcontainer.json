@@ -11,7 +11,8 @@
 		"davidanson.vscode-markdownlint",
 		"bungcip.better-toml",
 		"github.vscode-pull-request-github",
-		"ms-python.vscode-pylance"
+		"ms-python.vscode-pylance",
+		"fidesctl-plugin-publisher.fidesctl-config-parser"
 	],
 	"settings": {
 		"editor.formatOnSave": true,
