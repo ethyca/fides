@@ -1,10 +1,12 @@
 site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
-  - Home: index.md
-  - License: license.md
-  - Fides Resources: fides_resources.md
+  - What is Fides?: index.md
+  - Use Cases:
+      - Evaluating Privacy in CI: use_cases/use_case1.md
+      - Automating Data Rights: use_cases/use_case2.md
   - Getting Started:
+<<<<<<< HEAD
       - getting_started/docker.md
       - getting_started/local.md
   - Tutorial:
@@ -18,6 +20,22 @@ nav:
   - Deployment: deployment.md
   - CLI: cli.md
   - API Reference: api/index.md
+=======
+      - Overview: getting_started/overview.md
+      - Fidesctl in Docker: getting_started/docker.md
+      - Fidesctl Manually (without Docker): getting_started/manual.md
+  - Tutorial: tutorial.md
+  - Production Deployment: production_deployment.md
+  - Fides Language:
+      - Overview: language/overview.md
+      - Syntax: language/syntax.md
+      - Concepts: language/concepts.md
+      - Resources: language/fides_resources.md
+      - Taxonomy: language/taxonomy.md
+      - Taxonomy Explorer: language/taxonomy.md#explorer
+  - CLI: cli.md
+  - APIs: api.md
+>>>>>>> 1419696 (Restructured navigation and modified names to better match reference docs)
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -26,19 +44,35 @@ nav:
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
   - Community:
-      - GitHub: community/github.md
+      - Github, Slack & Discord: community/overview.md
+      - Community Hints & Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
+  - About Ethyca: ethyca.md
+  - License: license.md
+
 theme:
   palette:
+<<<<<<< HEAD
       primary: blue
+=======
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+>>>>>>> 1419696 (Restructured navigation and modified names to better match reference docs)
   name: material
   favicon: img/favicon.png
-  logo: img/logo.png
+  logo: img/fides-logo.svg
   features:
-    - naviation.top
+    - navigation.top
     - navigation.instant
 
 markdown_extensions:
+  - attr_list
   - pymdownx.superfences
   - pymdownx.snippets
   - pymdownx.inlinehilite
@@ -50,6 +84,7 @@ markdown_extensions:
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
 extra_css:
+  - css/fides.css
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/stylesheet.css
 

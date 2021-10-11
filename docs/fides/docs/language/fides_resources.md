@@ -4,7 +4,7 @@ This page describes the various resources that make up the Fides platform.
 
 ## Resource Relationship Diagram
 
-![alt text](img/Resource_Relations.svg "Fides Manifest Workflow")
+![alt text](../img/Resource_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 

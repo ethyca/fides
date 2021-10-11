@@ -1,0 +1,47 @@
+.md-header__button.md-logo img {
+    width: 100px;
+    height: auto;
+}
+.md-header__topic {
+    display: none;
+}
+
+.md-sidebar.md-sidebar--secondary {
+    display: none;
+}
+
+.md-button.md-button--secondary.md-button-github {
+    padding-left: 60px;
+    background: url('../img/sprites.png') no-repeat 5px 4px;
+    background-size: 35px;
+    transition: all 0.5s ease;
+}
+.md-button.md-button--secondary.md-button-github:hover {
+    padding-left: 60px;
+    background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -45px;
+    background-size: 35px 
+}
+.md-button.md-button--secondary.md-button-slack {
+    padding-left: 60px;
+    background: url('../img/sprites.png') no-repeat 5px -93px;
+    background-size: 35px;
+    transition: all 0.5s ease;
+}
+.md-button.md-button--secondary.md-button-slack:hover {
+    padding-left: 60px;
+    background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -141px;
+    background-size: 35px
+  
+}
+.md-button.md-button--secondary.md-button-discord {
+    padding-left: 60px;
+    background: url('../img/sprites.png') no-repeat 5px -185px;
+    background-size: 35px;
+    transition: all 0.5s ease;
+}
+.md-button.md-button--secondary.md-button-discord:hover {
+    padding-left: 60px;
+    background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -225px;
+    background-size: 35px
+  
+}

@@ -1,4 +1,4 @@
-# Deployment
+# Production Deployment
 
 For production deployments of Fidesctl, we suggest deploying everything individually as opposed to using the included docker-compose file. While docker-compose is great for development and experimentation, it isn't suited to production use. The following guide will walk you through setting up each component of Fidesctl as a production-grade deployment.
 
