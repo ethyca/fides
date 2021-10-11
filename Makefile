@@ -98,7 +98,7 @@ pylint: compose-build
 	@docker-compose run --rm $(IMAGE_NAME) \
 	pylint src/
 
-pytest: compose-build init-db
+pytest: compose-build
 	@docker-compose up -d $(IMAGE_NAME)
 	@docker-compose run --rm $(IMAGE_NAME) \
 	pytest
