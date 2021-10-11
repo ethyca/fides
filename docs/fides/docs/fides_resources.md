@@ -1,6 +1,6 @@
 # Fides Resource Types
 
-This page describes the various resources that make up the Fides platform.
+This page describes the various resources that make up the Fides platform. 
 
 ## Resource Relationship Diagram
 
@@ -10,14 +10,14 @@ This page describes the various resources that make up the Fides platform.
 
 An organization is a logical grouping of resources, and all resources must belong to an organization. Fides includes a default organization with an id of 1.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    organization:
-      fides_key: test_organization
-      name: Test Organization
-      description: A test organization used to check the validity of changes.
-    ```
+```yaml
+organization:
+  fides_key: test_organization
+  name: Test Organization
+  description: A test organization used to check the validity of changes.
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -33,35 +33,35 @@ Fides uses four classifiers for describing how systems use privacy data, and for
 
 ### Data Category
 
-A Data Category describes the kind of data that is being used.
+A Data Category describes the real-world attribute that the data describes: date of birth, tax ID, home address, and so on.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    data_category:
-    - fides_key: user.provided.identifiable.date_of_birth
-      name: Date of Birth
-      parent_key: user.provided.identifiable
-      description: User's date of birth.
-    ```
+```yaml
+data_category:
+- fides_key: user.provided.identifiable.date_of_birth
+  name: Date of Birth
+  parent_key: user.provided.identifiable
+  description: User's date of birth.
+```
 
-=== Example Hierarchy
+**Example Hierarchy**
 
-    ```yaml
-    - user
-      - user.provided
-        - user.provided.identifiable
-          - user.provided.identifiable.date_of_birth
-          - user.provided.identifiable.job_title
-        user.provided.nonidentifiable
-      - user.derived
-        - user.derived.identifiable
-        - user.derived.nonidentifiable
-    - account
-        - account.contact
-        - account.payment
-    - system
-    ```
+```yaml
+- user
+  - user.provided
+    - user.provided.identifiable
+      - user.provided.identifiable.date_of_birth
+      - user.provided.identifiable.job_title
+    user.provided.nonidentifiable
+  - user.derived
+    - user.derived.identifiable
+    - user.derived.nonidentifiable
+- account
+    - account.contact
+    - account.payment
+- system
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -75,29 +75,29 @@ A Data Category describes the kind of data that is being used.
 
 A Data Use describes what the data is being used for.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    data_use:
-    - fides_key: provide.system.operations.support
-      name: Operations Support
-      parent_key: provide.system.operations
-    ```
+```yaml
+data_use:
+- fides_key: provide.system.operations.support
+  name: Operations Support
+  parent_key: provide.system.operations
+```
 
-=== Example Hierarchy
+**Example Hierarchy**
 
-    ```yaml
-    - provide
-      - provide.system
-        - provide.system.operations
-          - provide.system.operations.support
-        - provide.system.upgrades
-    - third_party_sharing
-      - third_party_sharing.payment_processing
-      - third_party_sharing.personalized_advertising
-      - third_party_sharing.fraud_detection
-      - third_party_sharing.legal_obligation
-    ```
+```yaml
+- provide
+  - provide.system
+    - provide.system.operations
+      - provide.system.operations.support
+    - provide.system.upgrades
+- third_party_sharing
+  - third_party_sharing.payment_processing
+  - third_party_sharing.personalized_advertising
+  - third_party_sharing.fraud_detection
+  - third_party_sharing.legal_obligation
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -111,22 +111,22 @@ A Data Use describes what the data is being used for.
 
 A Data Subject describes who the data belongs to.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    data_subject:
-    - fides_key: anonymous_user
-      name: Anonymous User
-      description: A user without any identifiable information tied to them.
-    ```
+```yaml
+data_subject:
+- fides_key: anonymous_user
+  name: Anonymous User
+  description: A user without any identifiable information tied to them.
+```
 
-=== Example Hierarchy
+**Example Hierarchy**
 
-    ```yaml
-    - customer
-    - supplier
-    - employee
-    ```
+```yaml
+- customer
+- supplier
+- employee
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -139,24 +139,24 @@ A Data Subject describes who the data belongs to.
 
 A Data Qualifier describes how private the data being used is. The hierarchy for Data Qualifiers is in order of increasing exposure.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    data_qualifier:
-    - fides_key: aggregated_data
-      name: Aggregated Data
-      description: Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable.
-    ```
+```yaml
+data_qualifier:
+- fides_key: aggregated_data
+  name: Aggregated Data
+  description: Aggregated data is statistical data that does not contain individual-level entries and is combined from information about enough different persons that individual-level attribtures are not identifiable.
+```
 
-=== Example Hierarchy
+**Example Hierarchy**
 
-    ```yaml
-    - aggregated data
-        - anonymized data
-            - unlinked pseudonymized data
-                - pseudonymized data
-                    - identified data
-    ```
+```yaml
+- aggregated data
+    - anonymized data
+        - unlinked pseudonymized data
+            - pseudonymized data
+                - identified data
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -171,15 +171,15 @@ A Data Qualifier describes how private the data being used is. The hierarchy for
 
 A registry can optionally be used to group systems.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    registry:
-    - organization_fides_key: 1
-      fides_key: user_systems_registry
-      name: User Systems Registry
-      description: A registry for all of the user-related systems.
-    ```
+```yaml
+registry:
+- organization_fides_key: 1
+  fides_key: user_systems_registry
+  name: User Systems Registry
+  description: A registry for all of the user-related systems.
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -194,28 +194,28 @@ A registry can optionally be used to group systems.
 
 A system represents the privacy usage of a single software project, service, codebase, or application.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    system:
-      - organization_fides_key: 1
-        fides_key: demo_analytics_system
-        name: Demo Analytics System
-        description: A system used for analyzing customer behaviour.
-        system_type: Service
-        privacy_declarations:
-          - name: Analyze customer behaviour for improvements.
-            data_categories:
-              - user.provided.identifiable.contact
-              - user.derived.identifiable.device.cookie_id
-            data_use: improve.system
-            data_subjects:
-              - customer
-            data_qualifier: identified_data
-            dataset_references:
-              - demo_users_dataset
-        system_dependencies: []
-    ```
+```yaml
+system:
+  - organization_fides_key: 1
+    fides_key: demo_analytics_system
+    name: Demo Analytics System
+    description: A system used for analyzing customer behaviour.
+    system_type: Service
+    privacy_declarations:
+      - name: Analyze customer behaviour for improvements.
+        data_categories:
+          - user.provided.identifiable.contact
+          - user.derived.identifiable.device.cookie_id
+        data_use: improve.system
+        data_subjects:
+          - customer
+        data_qualifier: identified_data
+        dataset_references:
+          - demo_users_dataset
+    system_dependencies: []
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -247,48 +247,48 @@ A Privacy Declaration can be read as "This system uses data in categories `data_
 
 A Dataset represents any kind of place where data is stored and includes a sub-resource that describes the fields within that dataset.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    dataset:
-      - organization_fides_key: 1
-        fides_key: demo_users_dataset
-        name: Demo Users Dataset
-        description: Data collected about users for our analytics system.
-        dataset_type: MySQL
-        location: US East
-        fields:
-          - name: first_name
-            description: User's first name
-            path: demo_users_dataset.first_name
-            data_categories:
-              - user.provided.identifiable.name
-          - name: email
-            description: User's Email
-            path: demo_users_dataset.email
-            data_categories:
-              - user.provided.identifiable.contact.email
-          - name: state
-            description: User's State
-            path: demo_users_dataset.state
-            data_categories:
-              - user.provided.identifiable.contact.state
-          - name: food_preference
-            description: User's favorite food
-            path: demo_users_dataset.food_preference
-            data_categories:
-              - user.provided.nonidentifiable
-          - name: created_at
-            description: User's creation timestamp
-            path: demo_users_dataset.created_at
-            data_categories:
-              - system.operations
-          - name: uuid
-            description: User's unique ID
-            path: demo_users_dataset.uuid
-            data_categories:
-              - user.derived.identifiable.unique_id
-    ```
+```yaml
+dataset:
+  - organization_fides_key: 1
+    fides_key: demo_users_dataset
+    name: Demo Users Dataset
+    description: Data collected about users for our analytics system.
+    dataset_type: MySQL
+    location: US East
+    fields:
+      - name: first_name
+        description: User's first name
+        path: demo_users_dataset.first_name
+        data_categories:
+          - user.provided.identifiable.name
+      - name: email
+        description: User's Email
+        path: demo_users_dataset.email
+        data_categories:
+          - user.provided.identifiable.contact.email
+      - name: state
+        description: User's State
+        path: demo_users_dataset.state
+        data_categories:
+          - user.provided.identifiable.contact.state
+      - name: food_preference
+        description: User's favorite food
+        path: demo_users_dataset.food_preference
+        data_categories:
+          - user.provided.nonidentifiable
+      - name: created_at
+        description: User's creation timestamp
+        path: demo_users_dataset.created_at
+        data_categories:
+          - system.operations
+      - name: uuid
+        description: User's unique ID
+        path: demo_users_dataset.uuid
+        data_categories:
+          - user.derived.identifiable.unique_id
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -317,34 +317,34 @@ A Dataset Field describes a single column or array of data within a dataset. Dat
 
 Policies group together sets of privacy rules into a single resource. These are the resources that systems and registries will be evaluated against.
 
-=== Example Manifest
+**Example Manifest**
 
-    ```yaml
-    policy:
+```yaml
+policy:
+  - organization_fides_key: 1
+    fides_key: demo_privacy_policy
+    name: Demo Privacy Policy
+    description: The main privacy policy for the organization.
+    rules:
       - organization_fides_key: 1
-        fides_key: demo_privacy_policy
-        name: Demo Privacy Policy
-        description: The main privacy policy for the organization.
-        rules:
-          - organization_fides_key: 1
-            fides_key: reject_direct_marketing
-            name: Reject Direct Marketing
-            description: Disallow collecting any user contact info to use for marketing.
-            data_categories:
-              inclusion: ANY
-              values:
-                - user.provided.identifiable.contact
-            data_uses:
-              inclusion: ANY
-              values:
-                - advertising
-            data_subjects:
-              inclusion: ANY
-              values:
-                - customer
-            data_qualifier: identified_data
-            action: REJECT
-    ```
+        fides_key: reject_direct_marketing
+        name: Reject Direct Marketing
+        description: Disallow collecting any user contact info to use for marketing.
+        data_categories:
+          inclusion: ANY
+          values:
+            - user.provided.identifiable.contact
+        data_uses:
+          inclusion: ANY
+          values:
+            - advertising
+        data_subjects:
+          inclusion: ANY
+          values:
+            - customer
+        data_qualifier: identified_data
+        action: REJECT
+```
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -378,99 +378,100 @@ A Data Rule states what inclusion operator to use as well as a list of values to
 
 Fides uses a matching algorithm to determine whether or not each Privacy Declaration is acceptable or not. The following are some examples of how it works.
 
-=== Matching Rule
+**Matching Rule**
 
-    ```yaml
-    # Example Privacy Rule:
-    - fides_key: reject_direct_marketing
-      name: Reject Direct Marketing
-      description: Disallow collecting any user contact info to use for marketing.
-      data_categories:
-        inclusion: ANY
-        values:
-          - user.provided.identifiable.contact
-      data_uses:
-        inclusion: ANY
-        values:
-          - advertising
-      data_subjects:
-        inclusion: ANY
-        values:
-          - customer
-      data_qualifier: identified_data
-      action: REJECT
+```yaml
+# Example Privacy Rule:
+- fides_key: reject_direct_marketing
+  name: Reject Direct Marketing
+  description: Disallow collecting any user contact info to use for marketing.
+  data_categories:
+    inclusion: ANY
+    values:
+      - user.provided.identifiable.contact
+  data_uses:
+    inclusion: ANY
+    values:
+      - advertising
+  data_subjects:
+    inclusion: ANY
+    values:
+      - customer
+  data_qualifier: identified_data
+  action: REJECT
 
-    # Example Privacy Declaration:
-    - name: Collect data for marketing
-      data_categories:
-        - user.provided.identifiable.contact
-        - user.derived.identifiable.device.cookie_id
-      data_use: advertising
-      data_subjects:
-        - customer
-      data_qualifier: identified_data
+# Example Privacy Declaration:
+- name: Collect data for marketing
+  data_categories:
+    - user.provided.identifiable.contact
+    - user.derived.identifiable.device.cookie_id
+  data_use: advertising
+  data_subjects:
+    - customer
+  data_qualifier: identified_data
 
-    # Example Evaluation Logic:
+# Example Evaluation Logic:
 
-    - Do ANY of the data_categories match?
-        - Yes
-    - Do ANY of the data_uses match?
-        - Yes
-    - Do ANY of the data_subjects match?
-        - Yes
-    - Is the dataQualifier at the same level of exposure or higher?
-        - Yes
-    - Was the answer yes to all of the above questions?
-        - Yes
-    There is a match, and the Privacy Declaration evaluates to REJECT!
-    ```
+- Do ANY of the data_categories match?
+    - Yes
+- Do ANY of the data_uses match?
+    - Yes
+- Do ANY of the data_subjects match?
+    - Yes
+- Is the dataQualifier at the same level of exposure or higher?
+    - Yes
+- Was the answer yes to all of the above questions?
+    - Yes
+There is a match, and the Privacy Declaration evaluates to REJECT!
+```
 
-=== Non-Matching Rule
+**Non-Matching Rule**
 
-    ```yaml
-    # Example Privacy Rule:
-    - fides_key: reject_direct_marketing
-      name: Reject Direct Marketing
-      description: Disallow collecting any user contact info to use for marketing.
-      data_categories:
-        inclusion: ANY
-        values:
-          - user.provided.identifiable.contact
-      data_uses:
-        inclusion: ANY
-        values:
-          - advertising
-      data_subjects:
-        inclusion: ANY
-        values:
-          - customer
-      data_qualifier: identified_data
-      action: REJECT
+```yaml
+# Example Privacy Rule:
+- fides_key: reject_direct_marketing
+  name: Reject Direct Marketing
+  description: Disallow collecting any user contact info to use for marketing.
+  data_categories:
+    inclusion: ANY
+    values:
+      - user.provided.identifiable.contact
+  data_uses:
+    inclusion: ANY
+    values:
+      - advertising
+  data_subjects:
+    inclusion: ANY
+    values:
+      - customer
+  data_qualifier: identified_data
+  action: REJECT
 
-    # Example Privacy Declaration:
-    - name: Collect data for marketing
-      data_categories:
-        - user.derived.identifiable.device.cookie_id
-      data_use: advertising
-      data_subjects:
-        - customer
-      data_qualifier: identified_data
+# Example Privacy Declaration:
+- name: Collect data for marketing
+  data_categories:
+    - user.derived.identifiable.device.cookie_id
+  data_use: advertising
+  data_subjects:
+    - customer
+  data_qualifier: identified_data
 
-    # Example Evaluation Logic:
+# Example Evaluation Logic:
 
-    - Do ANY of the data_categories match?
-        - No
-    - Do ANY of the data_uses match?
-        - Yes
-    - Do ANY of the data_subjects match?
-        - Yes
-    - Is the data_qualifier at the same level of exposure or higher?
-        - Yes
-    - Was the answer yes to all of the above questions?
-        - No
-    There is no match!
-    ```
+- Do ANY of the data_categories match?
+    - No
+- Do ANY of the data_uses match?
+    - Yes
+- Do ANY of the data_subjects match?
+    - Yes
+- Is the data_qualifier at the same level of exposure or higher?
+    - Yes
+- Was the answer yes to all of the above questions?
+    - No
+There is no match!
+```
 
 When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.
 
 ---
+
