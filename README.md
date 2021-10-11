@@ -159,66 +159,60 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 
 1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
 
-- Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
-- Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
+   - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
+     ```diff
+          privacy_declarations:
+            - name: Collect data for marketing
+              data_categories:
+     -          #- user.provided.identifiable.contact # uncomment to add this category to the system
+     +          - user.provided.identifiable.contact # uncomment to add this category to the system
+                - user.derived.identifiable.device.cookie_id
+              data_use: marketing_advertising_or_promotion
+              data_subjects:
+     ```
+     
+   - Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
 
-    ```bash
-    root@fa175a43c077:/fides/fidesctl# vim demo_resources/demo_system.yml
-
-    root@fa175a43c077:/fides/fidesctl# git diff demo_resources/demo_system.yml
-    diff --git a/fidesctl/demo_resources/demo_system.yml b/fidesctl/demo_resources/demo_system.yml
-    index a707df4..e84a637 100644
-    --- a/fidesctl/demo_resources/demo_system.yml
-    +++ b/fidesctl/demo_resources/demo_system.yml
-    @@ -24,7 +24,7 @@ system:
-         privacy_declarations:
-           - name: Collect data for marketing
-             data_categories:
-    -          #- user.provided.identifiable.contact # uncomment to add this category to the system
-    +          - user.provided.identifiable.contact # uncomment to add this category to the system
-               - user.derived.identifiable.device.cookie_id
-             data_use: advertising
-             data_subjects:
-
-    root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-    Loading resource manifests from: demo_resources
-    Taxonomy successfully created.
-    ----------
-    Processing registry resources...
-    CREATED 0 registry resources.
-    UPDATED 0 registry resources.
-    SKIPPED 1 registry resources.
-    ----------
-    Processing system resources...
-    CREATED 0 system resources.
-    UPDATED 1 system resources.
-    SKIPPED 1 system resources.
-    ----------
-    Processing policy resources...
-    CREATED 0 policy resources.
-    UPDATED 0 policy resources.
-    SKIPPED 1 policy resources.
-    ----------
-    Processing dataset resources...
-    CREATED 0 dataset resources.
-    UPDATED 0 dataset resources.
-    SKIPPED 1 dataset resources.
-    ----------
-    Loading resource manifests from: demo_resources
-    Taxonomy successfully created.
-    Evaluating the following policies:
-    demo_privacy_policy
-    ----------
-    Checking for missing resources...
-    Executing evaluations...
-    {
-      "status": "FAIL",
-      "details": [
-        "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
-      ],
-      "message": null
-    }
-    ```
+     ```bash
+     root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
+     Loading resource manifests from: demo_resources
+     Taxonomy successfully created.
+     ----------
+     Processing registry resources...
+     CREATED 0 registry resources.
+     UPDATED 0 registry resources.
+     SKIPPED 1 registry resources.
+     ----------
+     Processing system resources...
+     CREATED 0 system resources.
+     UPDATED 1 system resources.
+     SKIPPED 1 system resources.
+     ----------
+     Processing policy resources...
+     CREATED 0 policy resources.
+     UPDATED 0 policy resources.
+     SKIPPED 1 policy resources.
+     ----------
+     Processing dataset resources...
+     CREATED 0 dataset resources.
+     UPDATED 0 dataset resources.
+     SKIPPED 1 dataset resources.
+     ----------
+     Loading resource manifests from: demo_resources
+     Taxonomy successfully created.
+     Evaluating the following policies:
+     demo_privacy_policy
+     ----------
+     Checking for missing resources...
+     Executing evaluations...
+     {
+       "status": "FAIL",
+       "details": [
+         "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
+       ],
+       "message": null
+     }
+     ```
 
 At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
 
