@@ -1,6 +1,6 @@
 # Introduction to Fides
 
-Fides [pronounced */fee-dhez/*] is an open-source privacy as code (PaC) tool by [Ethyca](https://ethyca.com) that allows you to easily describe, version and enforce privacy behaviors and policies across your application code and data infrastructure consistently.
+Fides [pronounced */fee-dhez/*, from Latin: Fidēs] is an open-source privacy as code (PaC) tool by [Ethyca](https://ethyca.com) that allows you to easily declare your systems' privacy characteristics, track privacy related changes to systems & data in version control, and enforce policies in both your source code and your runtime infrastructure.
 
 This includes support for major privacy regulations (e.g. [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/)) and standards like [ISO 19944](https://www.iso.org/standard/79573.html) by default. Fides can manage both enforcement of privacy in your CI pipeline and orchestration of data privacy requests in your runtime environment.
 
@@ -21,11 +21,11 @@ If you'd like a brief Roman mythology lesson, check out [Fides on Wikipedia](htt
 
 ### Privacy as Code
 
-You describe your datasets and code using Fides' high-level description language in human-readable, declarative manifest files. This allows you to create a consistent, versioned definition of privacy behaviors in your code to automate reporting, evaluate risk and execute policies against.
+You describe your datasets and code using Fides' high-level description language in human-readable, declarative manifest files. This allows you to create a consistent, versioned definition of privacy characteristics in your code to automate reporting, evaluate risk and execute policies against.
 
 ### Automated Privacy Checks
 
-Fides integrates with git to allow you to automate privacy checks in your CI pipeline and evaluate changes against your privacy policies on each commit. This allows you to review changes and assure they meet your privacy policies before deployment.
+Fides integrates with git using the `fidesctl` tool to allow you to automate privacy checks in your CI pipeline and evalute changes against your privacy policies on each commit. This allows you to review changes and assure they meet your privacy policies before deployment.
 
 ### Support all Privacy Standards
 
@@ -48,11 +48,12 @@ Fides' data orchestration capabilities mean you can use declarations to generate
 
 ### The Makers of Fides
 
-The mission of Ethyca is to make internet scale software systems respectful and ethical for developers and users alike. With Fides, we're building the easiest way for data and engineering teams to make respectful, privacy compliant software effortlessly. 
+The mission of Ethyca is to make internet scale technology respectful and ethical. We're a venture backed privacy technology team headquartered in New York, but working as a distributed team across the US to solve what we believe is the most important problem in technology today, and that is - 
+ We believe the solution to this is low friction dev tools that integrate with your existing CI pipelines to make privacy a feature of your tech stack as effortlessly as any other feature of your system. Fides is a universally understandable, open source definition language on top of which we'll build privacy tools for the next decade.
 
 ### What We Believe
 
-Data privacy is a human right that should be a default feature of any software. Today building great privacy as a feature in software is friction filled and complicated. We're building open source privacy tools for the developer community because we believe the only way to achieve a respectful internet is to make privacy an easy-to-implement layer of any tech stack.
+Data privacy is a human right that should be a native feature of any respectful technology. Today building great privacy as a feature in software is friction filled and complicated. We're building open source privacy tools for the developer community because we believe the only way to achieve a respectful internet is to make privacy an easy-to-implement layer of any tech stack.
 
 ### The Future
 
