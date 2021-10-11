@@ -41,9 +41,7 @@ def test_category_sunburst_plot(sample_categories_list):
     with open("tests/data/sample_sunburst.json", "r") as f:
         expected_sample_sunburst = json.load(f)
     print("file read, using function")
-    sample_sunburst = visualize.category_sunburst_plot(
-        sample_categories_list, json_out=True
-    )
+    sample_sunburst = visualize.sunburst_plot(sample_categories_list, json_out=True)
     assert json.loads(sample_sunburst) == expected_sample_sunburst
 
 
@@ -51,9 +49,7 @@ def test_category_sunburst_plot(sample_categories_list):
 def test_category_sankey_plot(sample_categories_list):
     with open("tests/data/sample_sankey.json", "r") as f:
         expected_sample_sankey = json.load(f)
-    sample_sankey = visualize.category_sankey_plot(
-        sample_categories_list, json_out=True
-    )
+    sample_sankey = visualize.sankey_plot(sample_categories_list, json_out=True)
     assert json.loads(sample_sankey) == expected_sample_sankey
 
 
