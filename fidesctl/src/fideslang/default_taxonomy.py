@@ -808,7 +808,7 @@ DEFAULT_TAXONOMY = Taxonomy(
     ],
     data_qualifier=[
         DataQualifier(
-            fides_key="Aggregated",
+            fides_key="aggregated",
             organization_fides_key="default_organization",
             name="Aggregated Data",
             description="Statistical data that does not contain individually identifying information but includes information about groups of individuals that renders individual identification impossible.",
