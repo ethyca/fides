@@ -11,7 +11,9 @@ FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"
 
 
-def sunburst_plot(categories: List[dict], resource: str, json_out: bool = False) -> str:
+def sunburst_plot(
+    categories: List[dict], resource_type: str, json_out: bool = False
+) -> str:
     """
     Create a sunburst plot from data categories yaml file
     Reference: https://plotly.com/python/sunburst-charts/
@@ -32,7 +34,8 @@ def sunburst_plot(categories: List[dict], resource: str, json_out: bool = False)
         categories, names=FIDES_KEY_NAME, parents=FIDES_PARENT_NAME, color="color"
     )
     fig.update_layout(
-        title_text=f'Fides {resource.replace("_", " ").title()} Hierarchy', font_size=10
+        title_text=f'Fides {resource_type.replace("_", " ").title()} Hierarchy',
+        font_size=10,
     )
 
     if json_out:
@@ -40,13 +43,15 @@ def sunburst_plot(categories: List[dict], resource: str, json_out: bool = False)
     return fig.to_html()
 
 
-def sankey_plot(categories: List[dict], resource: str, json_out: bool = False) -> str:
+def sankey_plot(
+    categories: List[dict], resource_type: str, json_out: bool = False
+) -> str:
     """
     Create a sankey plot from data categories yaml file
     Reference: https://plotly.com/python/sankey-diagram/
     Args:
         categories: list of the dictionaries for each taxonomy member
-        resource: the name of the resource type
+        resource_type: the name of the resource type
         json_out: Flag to return a json representation of the visualization
 
     Returns:
@@ -82,7 +87,8 @@ def sankey_plot(categories: List[dict], resource: str, json_out: bool = False) -
     )
 
     fig.update_layout(
-        title_text=f'Fides {resource.replace("_", " ").title()} Hierarchy', font_size=10
+        title_text=f'Fides {resource_type.replace("_", " ").title()} Hierarchy',
+        font_size=10,
     )
 
     if json_out:
@@ -144,13 +150,13 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
 
 
 def nested_categories_to_html_list(
-    categories: List[dict], resource: str, indent: int = 1
+    categories: List[dict], resource_type: str, indent: int = 1
 ) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
     Args:
         categories: list of the dictionaries for each taxonomy member
-        resource: the name of the resource type
+        resource_type: the name of the resource type
         indent: spacing multiplier
 
     Returns:
@@ -177,6 +183,6 @@ def nested_categories_to_html_list(
                     member="\n".join(nest_to_html(value, indent_factor + 1)),
                 )
 
-    header = f'<h2>Fides {resource.replace("_", " ").title()} Hierarchy</h2>'
+    header = f'<h2>Fides {resource_type.replace("_", " ").title()} Hierarchy</h2>'
     categories_tree = "\n".join(nest_to_html(nested_categories, indent))
     return f"{header}\n{categories_tree}"

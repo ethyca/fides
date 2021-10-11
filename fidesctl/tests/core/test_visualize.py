@@ -41,7 +41,9 @@ def test_category_sunburst_plot(sample_categories_list):
     with open("tests/data/sample_sunburst.json", "r") as f:
         expected_sample_sunburst = json.load(f)
     print("file read, using function")
-    sample_sunburst = visualize.sunburst_plot(sample_categories_list, json_out=True)
+    sample_sunburst = visualize.sunburst_plot(
+        sample_categories_list, resource_type="data_category", json_out=True
+    )
     assert json.loads(sample_sunburst) == expected_sample_sunburst
 
 
@@ -49,7 +51,9 @@ def test_category_sunburst_plot(sample_categories_list):
 def test_category_sankey_plot(sample_categories_list):
     with open("tests/data/sample_sankey.json", "r") as f:
         expected_sample_sankey = json.load(f)
-    sample_sankey = visualize.sankey_plot(sample_categories_list, json_out=True)
+    sample_sankey = visualize.sankey_plot(
+        sample_categories_list, resource_type="data_category", json_out=True
+    )
     assert json.loads(sample_sankey) == expected_sample_sankey
 
 
@@ -66,6 +70,8 @@ def test_convert_categories_to_nested_dict(sample_categories_list):
 def test_nested_categories_to_html_list(sample_categories_list):
     expected_html_list = "<h2>Fides Data Category Hierarchy</h2>\n   <li>account</li>\n   <ul>\n      <li>contact</li>\n      <ul>\n         <li>city</li>\n         <ul>\n\n         </ul>\n      </ul>\n   </ul>"
     assert (
-        visualize.nested_categories_to_html_list(sample_categories_list)
+        visualize.nested_categories_to_html_list(
+            sample_categories_list, resource_type="data_category"
+        )
         == expected_html_list
     )
