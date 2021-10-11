@@ -160,6 +160,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
 
    - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
+
      ```diff
           privacy_declarations:
             - name: Collect data for marketing
@@ -170,7 +171,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
               data_use: marketing_advertising_or_promotion
               data_subjects:
      ```
-     
+
    - Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
 
      ```bash
