@@ -24,8 +24,8 @@ def category_sunburst_plot(categories: List[dict], json_out: bool = False) -> st
     """
 
     # add color map
-    for c in categories:
-        c["color"] = c[FIDES_KEY_NAME].split(".")[0]
+    for cat in categories:
+        cat["color"] = cat[FIDES_KEY_NAME].split(".")[0]
 
     fig = px.sunburst(
         categories, names=FIDES_KEY_NAME, parents=FIDES_PARENT_NAME, color="color"
@@ -53,11 +53,11 @@ def category_sankey_plot(categories: List[dict], json_out: bool = False) -> str:
     source = []
     target = []
 
-    for c in categories:
-        if FIDES_PARENT_NAME in c.keys():
-            if c[FIDES_PARENT_NAME]:
-                source.append(fides_key_dict[c[FIDES_PARENT_NAME]])
-                target.append(fides_key_dict[c[FIDES_KEY_NAME]])
+    for cat in categories:
+        if FIDES_PARENT_NAME in cat.keys():
+            if cat[FIDES_PARENT_NAME]:
+                source.append(fides_key_dict[cat[FIDES_PARENT_NAME]])
+                target.append(fides_key_dict[cat[FIDES_KEY_NAME]])
 
     fig = go.Figure(
         data=[
@@ -128,11 +128,11 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
                 data[key] = {}
 
     nested_output: Dict[Dict, Dict] = {}
-    for c in categories:
-        if FIDES_PARENT_NAME not in c:
-            nested_output[c[FIDES_KEY_NAME]] = {}
+    for cat in categories:
+        if FIDES_PARENT_NAME not in cat:
+            nested_output[cat[FIDES_KEY_NAME]] = {}
         else:
-            category_path = c[FIDES_KEY_NAME].split(".")
+            category_path = cat[FIDES_KEY_NAME].split(".")
             nested_dict(nested_output, category_path)
     return nested_output
 
@@ -160,12 +160,12 @@ def nested_categories_to_html_list(categories: List[dict], indent: int = 1) -> s
             HTML string containing a nested, unordered list of the nested dictionary keys
         """
         spacing = "   " * indent_factor
-        for k, v in nested_dict.items():
-            yield "{}<li>{}</li>".format(spacing, k)
-            if isinstance(v, dict):
+        for key, value in nested_dict.items():
+            yield "{}<li>{}</li>".format(spacing, key)
+            if isinstance(value, dict):
                 yield "{spacing}<ul>\n{member}\n{spacing}</ul>".format(
                     spacing=spacing,
-                    member="\n".join(nest_to_html(v, indent_factor + 1)),
+                    member="\n".join(nest_to_html(value, indent_factor + 1)),
                 )
 
     header = "<h2>Fides Data Category Hierarchy</h2>"
