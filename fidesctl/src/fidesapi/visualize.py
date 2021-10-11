@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from fidesctl.core import visualize
 from fideslang import DEFAULT_TAXONOMY, model_map
 
+# pylint: disable=redefined-outer-name,cell-var-from-loop
 
 VISUALIZABLE_RESOURCE_TYPES = ["data_category", "data_qualifier", "data_use"]
 
@@ -30,9 +31,9 @@ def get_resource_type(router: APIRouter) -> str:
 routers = []
 for resource_type in VISUALIZABLE_RESOURCE_TYPES:
     # Programmatically define routers for each resource type
-    resource_model_name = model_map[resource_type].__name__
+    RESOURCE_MODEL_NAME = model_map[resource_type].__name__
     router = APIRouter(
-        tags=["Visualize", resource_model_name],
+        tags=["Visualize", RESOURCE_MODEL_NAME],
         prefix=f"/{resource_type}",
     )
 
