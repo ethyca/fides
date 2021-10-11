@@ -20,6 +20,7 @@ class FigureTypeEnum(str, Enum):
     Figure Type Enum to capture the discrete possible values
     for a valid figure type to be visualized
     """
+
     SANKEY = "sankey"
     SUNBURST = "sunburst"
     TEXT = "text"
@@ -66,11 +67,11 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
             )
         taxonomy = DEFAULT_TAXONOMY.dict()[resource_type]
         if figure_type == "sunburst":
-            figure = visualize.sunburst_plot(taxonomy)
+            figure = visualize.sunburst_plot(taxonomy, resource_type)
         elif figure_type == "sankey":
-            figure = visualize.sankey_plot(taxonomy)
+            figure = visualize.sankey_plot(taxonomy, resource_type)
         else:
-            figure = visualize.nested_categories_to_html_list(taxonomy)
+            figure = visualize.nested_categories_to_html_list(taxonomy, resource_type)
         return HTMLResponse(figure)
 
     routers += [router]
