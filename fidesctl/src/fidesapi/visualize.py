@@ -16,15 +16,24 @@ VISUALIZABLE_RESOURCE_TYPES = ["data_category", "data_qualifier", "data_use"]
 
 
 class FigureTypeEnum(str, Enum):
-    "The model for possible evaluation results."
-
+    """
+    Figure Type Enum to capture the discrete possible values
+    for a valid figure type to be visualized
+    """
     SANKEY = "sankey"
     SUNBURST = "sunburst"
     TEXT = "text"
 
 
 def get_resource_type(router: APIRouter) -> str:
-    "Extracts the name of the resource type from the prefix."
+    """
+    Get the resource type from the prefix of an API router
+    Args:
+        router: Api router from which to extract the resource type
+
+    Returns:
+        The router's resource type
+    """
     return router.prefix[1:]
 
 
@@ -42,7 +51,13 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
         figure_type: FigureTypeEnum, resource_type: str = get_resource_type(router)
     ) -> Union[HTMLResponse, HTTPException]:
         """
-        Visualize the hierarchy of a supported resource type.
+            Visualize the hierarchy of a supported resource type.
+        Args:
+            figure_type: type of figure, by name, to generate
+            resource_type: hierarchy source. one of ["data_category", "data_qualifier", "data_use"]
+
+        Returns:
+            Html for the requested figure. Response with status code 400 when invalid figure type is provided
         """
         if figure_type not in ["sankey", "sunburst", "text"]:
             return HTTPException(
