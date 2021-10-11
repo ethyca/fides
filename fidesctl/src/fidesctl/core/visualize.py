@@ -2,16 +2,16 @@
 Creates data visualizations for the data category hierarchy
 """
 
+from typing import Generator, List, Dict
+
 import plotly.express as px
 import plotly.graph_objects as go
-from typing import Generator, List
 
-FIDES_KEY_NAME = 'fides_key'
-FIDES_PARENT_NAME = 'parent_key'
+FIDES_KEY_NAME = "fides_key"
+FIDES_PARENT_NAME = "parent_key"
 
 
-def category_sunburst_plot(categories: List[dict],
-                           json_out: bool = False) -> str:
+def category_sunburst_plot(categories: List[dict], json_out: bool = False) -> str:
     """
     Create a sunburst plot from data categories yaml file
     Reference: https://plotly.com/python/sunburst-charts/
@@ -25,13 +25,11 @@ def category_sunburst_plot(categories: List[dict],
 
     # add color map
     for c in categories:
-        c['color'] = c[FIDES_KEY_NAME].split('.')[0]
+        c["color"] = c[FIDES_KEY_NAME].split(".")[0]
 
-    fig = px.sunburst(categories,
-                      names=FIDES_KEY_NAME,
-                      parents=FIDES_PARENT_NAME,
-                      color='color'
-                      )
+    fig = px.sunburst(
+        categories, names=FIDES_KEY_NAME, parents=FIDES_PARENT_NAME, color="color"
+    )
     fig.update_layout(title_text="Fides Data Category Hierarchy", font_size=10)
 
     if json_out:
@@ -39,8 +37,7 @@ def category_sunburst_plot(categories: List[dict],
     return fig.to_html()
 
 
-def category_sankey_plot(categories: List[dict],
-                         json_out: bool = False) -> str:
+def category_sankey_plot(categories: List[dict], json_out: bool = False) -> str:
     """
     Create a sankey plot from data categories yaml file
     Reference: https://plotly.com/python/sankey-diagram/
@@ -62,22 +59,23 @@ def category_sankey_plot(categories: List[dict],
                 source.append(fides_key_dict[c[FIDES_PARENT_NAME]])
                 target.append(fides_key_dict[c[FIDES_KEY_NAME]])
 
-    fig = go.Figure(data=[go.Sankey(
-        valueformat=".1f",
-        valuesuffix="%",
-        node=dict(
-            pad=15,
-            thickness=20,
-            line=dict(color="black", width=0.5),
-            label=list(fides_key_dict.keys()),
-            color="blue",  # Maybe make this 'ethyca blue'?
-            hovertemplate='%{label}',
-        ),
-        link=dict(
-            source=source,
-            target=target,
-            value=target
-        ))])
+    fig = go.Figure(
+        data=[
+            go.Sankey(
+                valueformat=".1f",
+                valuesuffix="%",
+                node=dict(
+                    pad=15,
+                    thickness=20,
+                    line=dict(color="black", width=0.5),
+                    label=list(fides_key_dict.keys()),
+                    color="blue",  # Maybe make this 'ethyca blue'?
+                    hovertemplate="%{label}",
+                ),
+                link=dict(source=source, target=target, value=target),
+            )
+        ]
+    )
 
     fig.update_layout(title_text="Fides Data Category Hierarchy", font_size=10)
 
@@ -129,18 +127,17 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
             else:
                 data[key] = {}
 
-    nested_output = {}
+    nested_output: Dict[Dict, Dict] = {}
     for c in categories:
         if FIDES_PARENT_NAME not in c:
             nested_output[c[FIDES_KEY_NAME]] = {}
         else:
-            category_path = c[FIDES_KEY_NAME].split('.')
+            category_path = c[FIDES_KEY_NAME].split(".")
             nested_dict(nested_output, category_path)
     return nested_output
 
 
-def nested_categories_to_html_list(categories: List[dict],
-                                   indent: int = 1) -> str:
+def nested_categories_to_html_list(categories: List[dict], indent: int = 1) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
     Args:
@@ -152,7 +149,7 @@ def nested_categories_to_html_list(categories: List[dict],
     """
     nested_categories = convert_categories_to_nested_dict(categories)
 
-    def nest_to_html(nested_dict, indent_factor) -> Generator:
+    def nest_to_html(nested_dict: dict, indent_factor: int) -> Generator:
         """
         Create the html
         Args:
@@ -162,15 +159,15 @@ def nested_categories_to_html_list(categories: List[dict],
         Returns:
             HTML string containing a nested, unordered list of the nested dictionary keys
         """
-        spacing = '   ' * indent_factor
+        spacing = "   " * indent_factor
         for k, v in nested_dict.items():
-            yield '{}<li>{}</li>'.format(spacing, k)
+            yield "{}<li>{}</li>".format(spacing, k)
             if isinstance(v, dict):
-                yield '{}<ul>\n{}\n{}</ul>'.format(
-                    spacing,
-                    "\n".join(nest_to_html(v, indent_factor + 1)),
-                    spacing
+                yield "{spacing}<ul>\n{member}\n{spacing}</ul>".format(
+                    spacing=spacing,
+                    member="\n".join(nest_to_html(v, indent_factor + 1)),
                 )
-    header = '<h2>Fides Data Category Hierarchy</h2>'
-    categories_tree = '\n'.join(nest_to_html(nested_categories, indent))
-    return f'{header}\n{categories_tree}'
+
+    header = "<h2>Fides Data Category Hierarchy</h2>"
+    categories_tree = "\n".join(nest_to_html(nested_categories, indent))
+    return f"{header}\n{categories_tree}"

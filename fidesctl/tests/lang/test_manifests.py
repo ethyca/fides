@@ -15,8 +15,8 @@ def ingestion_manifest_directory(
     populated_manifest_dir, populated_nested_manifest_dir, request
 ):
     """
-    Allows for parameterization of manifests to ingest by returning 
-    the corresponding fixture 
+    Allows for parameterization of manifests to ingest by returning
+    the corresponding fixture
     """
     return {
         "populated_manifest_dir": populated_manifest_dir,
