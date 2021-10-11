@@ -11,7 +11,7 @@ FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"
 
 
-def category_sunburst_plot(categories: List[dict], json_out: bool = False) -> str:
+def sunburst_plot(categories: List[dict], json_out: bool = False) -> str:
     """
     Create a sunburst plot from data categories yaml file
     Reference: https://plotly.com/python/sunburst-charts/
@@ -24,8 +24,8 @@ def category_sunburst_plot(categories: List[dict], json_out: bool = False) -> st
     """
 
     # add color map
-    for cat in categories:
-        cat["color"] = cat[FIDES_KEY_NAME].split(".")[0]
+    for category in categories:
+        category["color"] = category[FIDES_KEY_NAME].split(".")[0]
 
     fig = px.sunburst(
         categories, names=FIDES_KEY_NAME, parents=FIDES_PARENT_NAME, color="color"
@@ -37,7 +37,7 @@ def category_sunburst_plot(categories: List[dict], json_out: bool = False) -> st
     return fig.to_html()
 
 
-def category_sankey_plot(categories: List[dict], json_out: bool = False) -> str:
+def sankey_plot(categories: List[dict], json_out: bool = False) -> str:
     """
     Create a sankey plot from data categories yaml file
     Reference: https://plotly.com/python/sankey-diagram/
@@ -53,11 +53,11 @@ def category_sankey_plot(categories: List[dict], json_out: bool = False) -> str:
     source = []
     target = []
 
-    for cat in categories:
-        if FIDES_PARENT_NAME in cat.keys():
-            if cat[FIDES_PARENT_NAME]:
-                source.append(fides_key_dict[cat[FIDES_PARENT_NAME]])
-                target.append(fides_key_dict[cat[FIDES_KEY_NAME]])
+    for category in categories:
+        if FIDES_PARENT_NAME in category.keys():
+            if category[FIDES_PARENT_NAME]:
+                source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
+                target.append(fides_key_dict[category[FIDES_KEY_NAME]])
 
     fig = go.Figure(
         data=[
@@ -108,7 +108,7 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
 
     """
 
-    def nested_dict(data: dict, keys: List) -> None:
+    def create_hierarchical_dict(data: dict, keys: List) -> None:
         """
         Create a nested dictionary given a list of strings as a key path
         Args:
@@ -128,12 +128,12 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
                 data[key] = {}
 
     nested_output: Dict[Dict, Dict] = {}
-    for cat in categories:
-        if FIDES_PARENT_NAME not in cat:
-            nested_output[cat[FIDES_KEY_NAME]] = {}
+    for category in categories:
+        if FIDES_PARENT_NAME not in category:
+            nested_output[category[FIDES_KEY_NAME]] = {}
         else:
-            category_path = cat[FIDES_KEY_NAME].split(".")
-            nested_dict(nested_output, category_path)
+            node_path = category[FIDES_KEY_NAME].split(".")
+            create_hierarchical_dict(nested_output, node_path)
     return nested_output
 
 

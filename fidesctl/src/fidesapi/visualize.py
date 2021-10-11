@@ -50,9 +50,9 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
             )
         taxonomy = DEFAULT_TAXONOMY.dict()[resource_type]
         if figure_type == "sunburst":
-            figure = visualize.category_sunburst_plot(taxonomy)
+            figure = visualize.sunburst_plot(taxonomy)
         elif figure_type == "sankey":
-            figure = visualize.category_sankey_plot(taxonomy)
+            figure = visualize.sankey_plot(taxonomy)
         else:
             figure = visualize.nested_categories_to_html_list(taxonomy)
         return HTMLResponse(figure)
