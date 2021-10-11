@@ -1,5 +1,5 @@
 """
-Creates data visualizations for the data category hierarchy
+Creates data visualizations for hierarchical Fides resource types.
 """
 
 from typing import Generator, List, Dict

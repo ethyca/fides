@@ -1,5 +1,5 @@
 """
-api endpoint for category visualisation
+API endpoints for displaying hierarchical data representations.
 """
 from enum import Enum
 from typing import Union
