@@ -1,4 +1,6 @@
 """Contains all of the CLI commands for Fides."""
+import pprint
+
 import click
 
 from fidesapi.main import start_webserver
@@ -9,6 +11,7 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     resource_type_argument,
     yes_flag,
+    verbose_flag,
 )
 from fidesctl.cli.utils import (
     handle_cli_response,
@@ -184,12 +187,15 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
 @click.command()
 @click.pass_context
 @manifests_dir_argument
-def parse(ctx: click.Context, manifests_dir: str) -> None:
+@verbose_flag
+def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
     Parse the file(s) at the provided path into a Taxonomy and surface any validation errors.
     """
 
-    _parse.parse(manifests_dir)
+    taxonomy = _parse.parse(manifests_dir)
+    if verbose:
+        pprint.pprint(taxonomy)
 
 
 @click.command()

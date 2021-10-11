@@ -14,10 +14,10 @@ The recommended way to get Fidesctl running is to launch it using the supplied `
 
 The following commands should all be run from the top-level `fides` directory (where the Makefile is):
 
-1. `make init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
+1. `make cli` -> This will spin up the entire project and open a shell within the `fidesctl` container, with the `fidesapi` being accessible. This command will "hang" for a bit, as `fidesctl` will wait for the API to be healthy before launching the shell. Once you see the `fidesctl#` prompt, you know you're ready to go:
 
     ```bash
-    ~/git/fides% make init-db
+    ~/git/fides% make cli
     Build the images required in the docker-compose file...
     ...
     Building fidesapi
@@ -26,36 +26,30 @@ The following commands should all be run from the top-level `fides` directory (w
     ...
     Building docs
     ...
-    Reset the db and run the migrations...
-    ...
-    Tearing down the dev environment...
-    ...
-    Teardown complete
-    ```
-
-1. `make cli` -> This will spin up the entire project and open a shell within the `fidesctl` container, with the `fidesapi` being accessible. This command will "hang" for a bit, as `fidesctl` will wait for the API to be healthy before launching the shell. Once you see the `fidesctl#` prompt, you know you're ready to go:
-
-    ```bash
-    ~/git/fides% make cli
-    Build the images required in the docker-compose file...
-    ...
-    Building fidesctl
-    ...
-    Building docs
+    Check for new migrations to run...
     ...
     root@1a742083cedf:/fides/fidesctl#
     ```
 
-1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+2. `fidesctl init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
+
+    ```bash
+    ~/git/fides% fidesctl init-db
+    INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+    INFO  [alembic.runtime.migration] Will assume transactional DDL.
+    ```
+
+
+3. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
     root@796cfde906f1:/fides/fidesctl# fidesctl ping
     Pinging http://fidesapi:8080...
-    Ping Successful!
+    Fidesctl is healthy!
     ```
 
 ## Next Steps
 
 Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!
 
-See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.
+See the [Tutorial](../tutorial/tutorial.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.

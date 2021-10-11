@@ -68,7 +68,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
-            data_use: improve_product_or_service
+            data_use: improve.system
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -84,7 +84,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_categories:
               #- user.provided.identifiable.contact # uncomment to add this category to the system
               - user.derived.identifiable.device.cookie_id
-            data_use: marketing_advertising_or_promotion
+            data_use: advertising
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -148,7 +148,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_uses:
               inclusion: ANY
               values:
-                - marketing_advertising_or_promotion
+                - advertising
             data_subjects:
               inclusion: ANY
               values:
