@@ -17,6 +17,7 @@ nav:
       - Integrate your CI: tutorial/ci.md
   - Deployment: deployment.md
   - CLI: cli.md
+  - API Reference: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -51,3 +52,6 @@ extra_javascript:
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/stylesheet.css
+
+plugins:
+  - render_swagger
