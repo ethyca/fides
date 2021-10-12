@@ -38,7 +38,7 @@ Using these primitives, as well as some additional abstractions for syntactic su
 
 ## :rocket: Quick Start
 
-If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
+If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/overview/). But for a quick demo you can tinker with, follow these 5 easy steps:
 
 1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
 
@@ -187,7 +187,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
      }
      ```
 
-At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
+At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/overview/) to keep learning.
 
 ## :book: Learn More
 
