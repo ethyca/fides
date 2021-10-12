@@ -1,7 +1,7 @@
-# Getting Acquainted with the Fides Taxonomy 
+# Understanding the Fides Taxonomy
 _In this section, we'll review what the Fides taxonomy is, how it was created, when and how it should be used._
 
-(todo link to taxonomy reference)
+(TODO: link to taxonomy reference)
 
 The Fides taxonomy for data categories is a standard adapted from [ISO 19944](https://www.iso.org/standard/79573.html). This taxonomy provides descriptions of the types of sensitive, personally identifiable, or non-identifiable data that an organization could hold for any data subject. The hierarchical nature of the Fides taxonomy has a few notable benefits:
 
@@ -24,6 +24,8 @@ The Fides project comes with 4 taxonomies of privacy attributes by default:
 
 Fidesctl comes loaded with these taxonomies by default and they can be found here `fidesctl/src/fideslang/default_taxonomy.py`. To extend this taxonomy for your business uses, you might want to add additional data categories to cover all the types of PII your business collects, or additional legal uses for the data. At Best Pizza Co, since we're expanding to new countries, we need to support Province, for example, as part of the user's provided address for delivery. We could accomplish this by adding the additional data category directly to `default_taxonomy.py`: 
 
+(TODO: update this example to apply a Data Category resource file instead of editing source)
+
    ```diff
    +   DataCategory(
    +       fides_key="user.provided.identifiable.contact.province",
@@ -42,3 +44,6 @@ Fidesctl comes loaded with these taxonomies by default and they can be found her
    ```
 
 This will add the `user.provided.identifiable.contact.province` as a data category type as a subcategory of `user.provided.identifiable.contact` for your organization. You can add and remove any privacy attributes as you see fit for your organization.  For a more in-depth definition of these privacy attributes, please refer to [the Fides Resources documentation](../fides_resources.md). 
+
+## Next: Datasets
+Now let's start writing some Fides declarations using the taxonomy, building up from the data layer with [Datasets](dataset.md).

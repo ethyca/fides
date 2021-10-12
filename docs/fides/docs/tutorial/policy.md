@@ -1,6 +1,5 @@
-# Writing a privacy policy (as code)
-
-In this section, we'll review what the Policy resource is, how to create it and what it's used for. 
+# Write Privacy Policy (as code)
+_In this section, we'll review what the Policy resource is, how to create it and what it's used for._
 
 More than likely, there is someone in your organization that is responsible for creating privacy policies for protecting the company from a legal standpoint. *The purpose of this privacy policy is to state what types of data are allowed for certain purposes of use.* 
 
@@ -78,5 +77,5 @@ This policy will evaluate the data subjects, data category, and data qualifier v
 ## Maintaining a Policy 
 As global privacy laws change and your business scales, your company's policy will evolve with them. We recommend that updating this resource file become a regular part of the development planning process when building a new feature. 
 
-
-In the next section, we'll put all the pieces together to see the policy execute against all your resources. 
+## Next: Evaluation
+In the next section, we'll put all the pieces together to see the policy execute against all your resources by running [Evaluations](evaluate.md).

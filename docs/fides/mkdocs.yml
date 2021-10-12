@@ -9,10 +9,10 @@ nav:
       - getting_started/local.md
   - Tutorial:
       - Tutorial Overview: tutorial/overview.md
-      - Understanding the Taxonomy: tutorial/taxonomy.md
+      - Understanding the Fides Taxonomy: tutorial/taxonomy.md
       - Annotate your Datasets: tutorial/dataset.md
-      - Create a System: tutorial/system.md
-      - Create a Policy: tutorial/policy.md
+      - Declare your Systems: tutorial/system.md
+      - Write Privacy Policy (as code): tutorial/policy.md
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
   - Deployment: deployment.md
@@ -49,4 +49,5 @@ markdown_extensions:
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
 extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/stylesheet.css

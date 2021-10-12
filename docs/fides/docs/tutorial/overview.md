@@ -2,7 +2,7 @@
 
 In this tutorial, we'll imagine that your business sells pizza online. "Best Pizza Co" has an ecommerce web application that you sell pizza through and an analytics tool that you use to maintain a constant inventory of pizzas to send and understand their buyers market. Your data ecosystem might look like this: 
 
-![alt text](img/BestPizzaCo_DataEcosystem.png "Best Pizza Co's Data Ecosystem")
+![Best Pizza Co's Data Ecosystem](../img/BestPizzaCo_DataEcosystem.png)
 
 When looking to expand to other international markets, you've decided to be intentional in how you scale your technology.  Using Fides, we will show you how to:
 
@@ -11,6 +11,7 @@ When looking to expand to other international markets, you've decided to be inte
 3. Build a set of rules dictating what Best Pizza Co deems to be allowed use of PII data in your Policy
 
 When you're done creating these Datasets, Systems, and Policy, your Fides data model might look something like this:
-![alt text](img/BestPizzaCo_FidesModel.png "Best Pizza Co's modeled in Fides")
+![Best Pizza Co's modeled in Fides](../img/BestPizzaCo_FidesModel.png)
 
-Using these basic principles, you'll begin building a practice of data privacy awareness amongst the software teams at your company. Let's get started with the fundamentals, building from the data layer with [Datasets](dataset.md).
+## Next: Taxonomy
+Using these basic principles, you'll begin building a practice of data privacy awareness amongst the software teams at your company. Let's get started with the fundamentals by understanding the Fides language [Taxonomy](taxonomy.md).

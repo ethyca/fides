@@ -159,7 +159,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 
 1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
 
-   - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
+   - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `user.provided.identifiable.contact` to the list of `data_categories` for the `demo_marketing_system`
 
      ```diff
           privacy_declarations:
@@ -176,35 +176,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 
      ```bash
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-     Loading resource manifests from: demo_resources
-     Taxonomy successfully created.
-     ----------
-     Processing registry resources...
-     CREATED 0 registry resources.
-     UPDATED 0 registry resources.
-     SKIPPED 1 registry resources.
-     ----------
-     Processing system resources...
-     CREATED 0 system resources.
-     UPDATED 1 system resources.
-     SKIPPED 1 system resources.
-     ----------
-     Processing policy resources...
-     CREATED 0 policy resources.
-     UPDATED 0 policy resources.
-     SKIPPED 1 policy resources.
-     ----------
-     Processing dataset resources...
-     CREATED 0 dataset resources.
-     UPDATED 0 dataset resources.
-     SKIPPED 1 dataset resources.
-     ----------
-     Loading resource manifests from: demo_resources
-     Taxonomy successfully created.
-     Evaluating the following policies:
-     demo_privacy_policy
-     ----------
-     Checking for missing resources...
+     ...
      Executing evaluations...
      {
        "status": "FAIL",

@@ -1,4 +1,4 @@
-# Getting integrated with your CI tools
+# Integrate your CI
 _In this section, we'll reference a few examples and best practices for setting up your CI._
 
 Fides is meant to be a part of your CI pipeline jobs in order to enforce your organization's privacy policy on data before software is released to the world. We recommend setting up 2 different events to trigger during a CI pipeline run. 
@@ -23,3 +23,5 @@ Fides is meant to be a part of your CI pipeline jobs in order to enforce your or
 ## Additional Resources
 
 We have compiled a few reference implementations for some popular CI tools, which you can find here.
+
+(TODO: provide examples)
