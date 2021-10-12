@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fidesapi import crud, db_session, visualize
 from fidesctl.core.config import get_config
 
-app = FastAPI()
+app = FastAPI(title="Fidesctl API")
 
 
 def configure_routes() -> None:
