@@ -6,7 +6,6 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Fides Discord Server][discord-image]][discord-url]
 
-
 ## :zap: Overview
 
 Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.

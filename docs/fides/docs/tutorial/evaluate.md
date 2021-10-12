@@ -58,3 +58,6 @@ Sending the evaluation results to the server...
 Evaluation passed!
 ```
 
+Congratulations, you've now created your annotated datasets, system-level business cases, and your policy for enforcement — You've laid the groundwork for a comprehensive data privacy software program at your organization! This is a great starting point for training your peers and colleagues on so they can evaluate their new code locally prior to committing any code to the repo. 
+
+The final step will be to [integrate this with your CI](taxonomy.md) so that you can fully realize Fides' potential.  Allowing Fides evaluate calls to be triggered from your pipeline will be critical for automatically assessing compliance at build time going forward. 
