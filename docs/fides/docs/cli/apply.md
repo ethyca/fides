@@ -4,23 +4,63 @@
   font-size: 18px;
   font-style: bold;
   }
-.indent {
+.content {
   margin-left:  24px;
+  margin-bottom:  40px;
+}
+
+.options {
+  border:  none;
+
+}
+
+.mono {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+td {
+  padding-bottom: 14px;
 }
 </style>
 # apply
 
 <span class="label">NAME</span>
 
-<div class="indent">
-apply &mdash; create or update a resource from a manifest file
+<div class="content">
+<span class="mono">apply</span> &mdash; create or update your resources
 </div>
 
 <span class="label">SYNOPSIS</span>
 
-<div class="indent">
-<pre><code>fidesctl apply &lt;manifest_dir&gt; [--dry] [--diff]</code></pre>
+<div class="content">
+<pre><code>fidesctl apply <i>manifest_dir</i> [--dry] [--diff]</code></pre>
 </div>
+
+<span class="label">DESCRIPTION</span>
+
+<div class="content">
+The <span class="mono">apply</span> command reads the resource manifest files in <i>manifest_dir</i> and applies the resources to the server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+<p>
+As the command updates the server, it announces how many resources it has created, updated, and deleted.
+</div>
+
+<span class="label">OPTIONS</span>
+<div class="content">
+<table class="options">
+  <col style="width:20%">
+  <col style="width:80%">
+  <tr>
+    <td class="mono">--dry</td>
+    <td>"Dry run" mode; the command prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes.</td>
+  </tr>
+  <tr>
+    <td class="mono">--diff</td>
+    <td>In addition to printing the number of changed resources, the command prints a diff between the server's old and new states. The diff is in <a href="https://pypi.org/project/deepdiff/" target="_blank">Python DeepDiff</a> format.</td>
+  </tr>
+</table>
+</div>
+
 
  
 

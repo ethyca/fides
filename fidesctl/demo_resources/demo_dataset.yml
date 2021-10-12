@@ -30,3 +30,8 @@ dataset:
             description: User's unique ID
             data_categories:
               - user.derived.identifiable.unique_id
+          - name: dob
+            description: User's date of birth
+            data_categories:
+              - user.derived.identifiable.dob
+
