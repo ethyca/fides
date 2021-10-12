@@ -13,7 +13,7 @@ from fidesapi.main import app
 
 
 if __name__ == "__main__":
-    outfile_path = "../docs/fides/docs/api/openapi.json"
+    outfile_path = "openapi.json"
 
     if len(sys.argv) > 1:
         outfile_path = sys.argv[1]
