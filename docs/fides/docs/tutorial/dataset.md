@@ -51,7 +51,7 @@ In traditional SQL, Fides defines the following:
 For NoSQL datasets, Fides defines the following:
 * "dataset"
 * "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
-* "fields" as a reference to an individual data element grouping (ie: in MongoDB, this is called a "document")
+* "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")
 
 Further, fideslang has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:
 
