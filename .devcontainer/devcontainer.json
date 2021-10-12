@@ -12,7 +12,7 @@
 		"bungcip.better-toml",
 		"github.vscode-pull-request-github",
 		"ms-python.vscode-pylance",
-		"fidesctl-plugin-publisher.fidesctl-config-parser"
+		"ethyca.fidesctl"
 	],
 	"settings": {
 		"editor.formatOnSave": true,
@@ -20,5 +20,8 @@
 		"editor.insertSpaces": true,
 		"python.formatting.provider": "black",
 		"python.linting.mypyEnabled": true,
+		"conf.fidesctl.confFilePath": "/fides/fidesctl/fidesctl.toml",
+		"conf.fidesctl.manifestFilePath": "/fides/fidesctl/fides_resources/",
+		"conf.fidesctl.parseOnSave": true
 	}
 }
