@@ -1,0 +1,30 @@
+system:
+  - fides_key: fidesctl_system
+    name: Fidesctl System
+    description: Software that functionally applies Fides.
+    system_type: Service
+    privacy_declarations:
+      - name: Analyze customer behaviour for improvements.
+        data_categories:
+          - user.provided.identifiable.contact
+          - user.derived.identifiable.device.cookie_id
+        data_use: improve.system
+        data_subjects:
+          - customer
+        data_qualifier: identified_data
+        dataset_references:
+          - demo_users_dataset
+
+  - fides_key: demo_marketing_system
+    name: Demo Marketing System
+    description: Collect data about our users for marketing.
+    system_type: Service
+    privacy_declarations:
+      - name: Collect data for marketing
+        data_categories:
+          #- user.provided.identifiable.contact # uncomment to add this category to the system
+          - user.derived.identifiable.device.cookie_id
+        data_use: advertising
+        data_subjects:
+          - customer
+        data_qualifier: identified_data
