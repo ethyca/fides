@@ -26,12 +26,10 @@ The following commands should all be run from the top-level `fides` directory (w
     ...
     Building docs
     ...
-    Check for new migrations to run...
-    ...
     root@1a742083cedf:/fides/fidesctl#
     ```
 
-2. `fidesctl init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
+1. `fidesctl init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
 
     ```bash
     ~/git/fides% fidesctl init-db
@@ -39,13 +37,12 @@ The following commands should all be run from the top-level `fides` directory (w
     INFO  [alembic.runtime.migration] Will assume transactional DDL.
     ```
 
-
-3. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
     root@796cfde906f1:/fides/fidesctl# fidesctl ping
     Pinging http://fidesapi:8080...
-    Ping Successful!
+    Fidesctl is healthy!
     ```
 
 ## Next Steps
