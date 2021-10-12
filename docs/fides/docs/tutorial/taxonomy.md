@@ -41,4 +41,4 @@ Fidesctl comes loaded with these taxonomies by default and they can be found her
         ),
    ```
 
-This will add the `user.provided.identifiable.contact.province` as a data category type for your organization. You can add and remove any privacy attributes as you see fit for your organization.  For a more in-depth definition of these privacy attributes, please refer to [the Fides Resources documentation](../fides_resources.md). 
+This will add the `user.provided.identifiable.contact.province` as a data category type as a subcategory of `user.provided.identifiable.contact` for your organization. You can add and remove any privacy attributes as you see fit for your organization.  For a more in-depth definition of these privacy attributes, please refer to [the Fides Resources documentation](../fides_resources.md). 
