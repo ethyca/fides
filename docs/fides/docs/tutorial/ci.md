@@ -6,8 +6,8 @@ Fides is meant to be a part of your CI pipeline jobs in order to enforce your or
 ## Pull Request
 
     1. Set up a new CI workflow that gets triggered whenever a system or registry file gets changed within a pull request.
-    1. Configure the new workflow to run `fidesctl dry-evaluate fides_manifests/ <fides_key>` when it gets triggered.
-    1. The command will trigger a non-zero exit if the evaluation fails.
+    2. Configure the new workflow to run `fidesctl evaluate --dry fides_manifests/` when it gets triggered.
+    3. The command will trigger a non-zero exit if the evaluation fails.
 
     Use the result of this job to determine whether or not a system change is safe to merge or not. If the command fails, check the error messages to see why the evaluation failed.
 

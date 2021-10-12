@@ -8,6 +8,7 @@ nav:
       - getting_started/docker.md
       - getting_started/local.md
   - Tutorial:
+      - Tutorial Overview: tutorial/overview.md
       - Understanding the Taxonomy: tutorial/taxonomy.md
       - Annotate your Datasets: tutorial/dataset.md
       - Create a System: tutorial/system.md

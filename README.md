@@ -4,16 +4,18 @@
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
+[![Fides Discord Server][discord-image]][discord-url]
+
 
 ## :zap: Overview
 
-Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools. 
+Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to implement data privacy requirements using all your existing CI/CD tools.
 
 - **A Privacy Grammar for engineers.** Fides is a way for you to declare when, where and how you plan to use risky types of data (e.g., personally identifiable information) directly in your code.
 
 - **Privacy Policies that aren't just for lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
 
-- **CI/CD/CP.** Integrate Fides with your existing CI tool (Travis, Jenkins, Gitlab) to continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+- **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
@@ -38,7 +40,7 @@ Using these primitives, as well as some additional abstractions for syntactic su
 
 ## :rocket: Quick Start
 
-If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/taxonomy.md). But for a quick demo you can tinker with, follow these 5 easy steps:
+If you're looking for a more detailed introduction to Fides, we recommend following [our tutorial here](https://ethyca.github.io/fides/tutorial/). But for a quick demo you can tinker with, follow these 5 easy steps:
 
 1. First, follow the [Getting Started with Fidesctl in Docker](https://ethyca.github.io/fides/getting_started/docker/) guide until you're able to run `fidesctl ping` successfully
 
@@ -46,35 +48,6 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
     root@fa175a43c077:/fides/fidesctl# fidesctl ping
     Pinging http://fidesctl:8080...
     Ping Successful!
-    ```
-
-1. Now we can seed the database with the default taxonomy:
-
-    ```bash
-    root@0f13dd1c5834:/fides/fidesctl# fidesctl apply default_taxonomy/
-    Loading resource manifests from: default_taxonomy/
-    Taxonomy successfully created.      
-    ----------
-    Processing data_subject resources...
-    CREATED 15 data_subject resources.    
-    UPDATED 0 data_subject resources.     
-    SKIPPED 0 data_subject resources.     
-    ----------
-    Processing data_qualifier resources...
-    CREATED 5 data_qualifier resources.
-    UPDATED 0 data_qualifier resources.
-    SKIPPED 0 data_qualifier resources.
-    ----------
-    Processing data_use resources...   
-    CREATED 18 data_use resources.       
-    UPDATED 0 data_use resources.        
-    SKIPPED 0 data_use resources.        
-    ----------
-    Processing data_category resources...
-    CREATED 77 data_category resources.
-    UPDATED 0 data_category resources. 
-    SKIPPED 0 data_category resources. 
-    ----------
     ```
 
 1. Run `ls demo_resources/` to inspect the contents of the demo directory, which includes some pre-made examples of the core Fides resource files (systems, datasets, policies, etc.)
@@ -97,7 +70,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_categories:
               - user.provided.identifiable.contact
               - user.derived.identifiable.device.cookie_id
-            data_use: improve_product_or_service
+            data_use: improve.system
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -113,7 +86,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_categories:
               #- user.provided.identifiable.contact # uncomment to add this category to the system
               - user.derived.identifiable.device.cookie_id
-            data_use: marketing_advertising_or_promotion
+            data_use: advertising
             data_subjects:
               - customer
             data_qualifier: identified_data
@@ -169,7 +142,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
         rules:
           - fides_key: reject_direct_marketing
             name: Reject Direct Marketing
-            description: Do not allow collection of any user contact info to use for marketing.
+            description: Disallow collecting any user contact info to use for marketing.
             data_categories:
               inclusion: ANY
               values:
@@ -177,7 +150,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_uses:
               inclusion: ANY
               values:
-                - marketing_advertising_or_promotion
+                - advertising
             data_subjects:
               inclusion: ANY
               values:
@@ -188,66 +161,61 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
 
 1. Lastly, let's modify our annotations in a way that would fail this automated privacy policy:
 
-- Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
-- Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
+   - Edit `demo_resources/demo_system.yml` and uncomment the line that adds `provided_contact_information` to the list of `data_categories` for the `demo_marketing_system`
 
-    ```bash
-    root@fa175a43c077:/fides/fidesctl# vim demo_resources/demo_system.yml
+     ```diff
+          privacy_declarations:
+            - name: Collect data for marketing
+              data_categories:
+     -          #- user.provided.identifiable.contact # uncomment to add this category to the system
+     +          - user.provided.identifiable.contact # uncomment to add this category to the system
+                - user.derived.identifiable.device.cookie_id
+              data_use: marketing_advertising_or_promotion
+              data_subjects:
+     ```
 
-    root@fa175a43c077:/fides/fidesctl# git diff demo_resources/demo_system.yml
-    diff --git a/fidesctl/demo_resources/demo_system.yml b/fidesctl/demo_resources/demo_system.yml
-    index a707df4..e84a637 100644
-    --- a/fidesctl/demo_resources/demo_system.yml
-    +++ b/fidesctl/demo_resources/demo_system.yml
-    @@ -24,7 +24,7 @@ system:
-         privacy_declarations:
-           - name: Collect data for marketing
-             data_categories:
-    -          #- user.provided.identifiable.contact # uncomment to add this category to the system
-    +          - user.provided.identifiable.contact # uncomment to add this category to the system
-               - user.derived.identifiable.device.cookie_id
-             data_use: marketing_advertising_or_promotion
-             data_subjects:
+   - Re-run `fidesctl evaluate demo_resources` which will raise an evaluation failure!
 
-    root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-    Loading resource manifests from: demo_resources
-    Taxonomy successfully created.
-    ----------
-    Processing registry resources...
-    CREATED 0 registry resources.
-    UPDATED 0 registry resources.
-    SKIPPED 1 registry resources.
-    ----------
-    Processing system resources...
-    CREATED 0 system resources.
-    UPDATED 1 system resources.
-    SKIPPED 1 system resources.
-    ----------
-    Processing policy resources...
-    CREATED 0 policy resources.
-    UPDATED 0 policy resources.
-    SKIPPED 1 policy resources.
-    ----------
-    Processing dataset resources...
-    CREATED 0 dataset resources.
-    UPDATED 0 dataset resources.
-    SKIPPED 1 dataset resources.
-    ----------
-    Loading resource manifests from: demo_resources
-    Taxonomy successfully created.
-    Evaluating the following policies:
-    demo_privacy_policy
-    ----------
-    Checking for missing resources...
-    Executing evaluations...
-    {
-      "status": "FAIL",
-      "details": [
-        "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
-      ],
-      "message": null
-    }
-    ```
+     ```bash
+     root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
+     Loading resource manifests from: demo_resources
+     Taxonomy successfully created.
+     ----------
+     Processing registry resources...
+     CREATED 0 registry resources.
+     UPDATED 0 registry resources.
+     SKIPPED 1 registry resources.
+     ----------
+     Processing system resources...
+     CREATED 0 system resources.
+     UPDATED 1 system resources.
+     SKIPPED 1 system resources.
+     ----------
+     Processing policy resources...
+     CREATED 0 policy resources.
+     UPDATED 0 policy resources.
+     SKIPPED 1 policy resources.
+     ----------
+     Processing dataset resources...
+     CREATED 0 dataset resources.
+     UPDATED 0 dataset resources.
+     SKIPPED 1 dataset resources.
+     ----------
+     Loading resource manifests from: demo_resources
+     Taxonomy successfully created.
+     Evaluating the following policies:
+     demo_privacy_policy
+     ----------
+     Checking for missing resources...
+     Executing evaluations...
+     {
+       "status": "FAIL",
+       "details": [
+         "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
+       ],
+       "message": null
+     }
+     ```
 
 At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
 
@@ -260,6 +228,15 @@ We are committed to fostering a safe and collaborative environment, such that al
 ### Documentation
 
 Full Fides documentation is available [here](https://ethyca.github.io/fides/).
+
+### Support
+
+Join the conversation on:
+
+- [Discord](https://discord.gg/NfWXEmCsd4)
+- [Slack](https://join.slack.com/t/fidescommunity/shared_invite/zt-vlgpv1r9-gcYrLpQyNoRf9dJu~kqE8w)
+- [Twitter](https://twitter.com/ethyca)
+- Discussions (TODO need to enable)
 
 ### Contributing
 
@@ -277,3 +254,5 @@ Fides is licensed under the [Apache Software License Version 2.0](https://www.ap
 [black-url]: https://github.com/psf/black/
 [mypy-image]: http://www.mypy-lang.org/static/mypy_badge.svg
 [mypy-url]: http://mypy-lang.org/
+[discord-image]: https://img.shields.io/discord/730474183833813142.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
+[discord-url]: https://discord.gg/NfWXEmCsd4

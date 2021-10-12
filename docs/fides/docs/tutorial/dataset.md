@@ -1,12 +1,17 @@
 # Getting started with datasets
 _In this section, we'll review what a dataset resource is, why it's needed, and how it's created and managed._
 
-Fundamentally, your data ecosystem is built upon a set of databases. These databases, each known as a `dataset` in Fides, create the foundation for the Fidesctl data plane. A dataset is a static collection of data where data can be written to and retrieved from. 
+Fundamentally, your data ecosystem is built on data that is stored _somewhere_. In Fides, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where. For example, you might declare one dataset for your Postgres application database, a second dataset for your Mongo orders collection, and a third dataset for some CSV files in your storage buckets. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer for other tooling to consume.
+
+For Best Pizza Co, you can see that their 3 Datasets, `postgres appdb`, `firestore auth`, and `redshift analyticsdb` are aligned with data storage services in their data ecosystem:
+![alt text](img/BestPizzaCo_DataEcosystem.png "Best Pizza Co's Data Ecosystem")
+
+At Best Pizza Co, we'll have to create a `dataset` record for each of the 3 datasets above, starting with the first database, the Postgres Application DB. 
 
 ## Generating a Dataset Resource
 First, let's retrieve the database schema of the dataset we want to annotate. Using the `generate-dataset` command, Fides will connect directly to your database only to read its schema:
 ```bash
-root@0419219d14e1:/fides/fidesctl# fidesctl generate-dataset postgresql://ethycaslice:ethyca-slice@ethyca-slice-pg-delivery-service.cwiy9dtqovxb.us-east-1.rds.amazonaws.com:5432/postgres dataset1.yml
+root@0419219d14e1:/fides/fidesctl# fidesctl generate-dataset postgresql://USERNAME:PASSWORD@best-pizza-co.cwiy9dtqovxa.us-east-1.rds.amazonaws.com:5432/postgres dataset1.yml
 Generated dataset manifest written to dataset1.yml
 ```
 Fides has stored the structure of that database as a yaml file in the location you stored in output_filename. This file will serve as the first building block in creating Privacy as Code at the lowest level. 
@@ -15,8 +20,8 @@ Fides has stored the structure of that database as a yaml file in the location y
 dataset:
 - fides_key: appdb
     organization_fides_key: default_organization
-    name: App Database
-    description: 'Fides Generated Description for Dataset: App Database'
+    name: Postgres App Database
+    description: 'Fides Generated Description for Dataset: Postgres App Database'
     meta: null
     data_categories: null
     data_qualifiers:
@@ -65,13 +70,8 @@ As you can see, `fidesctl generate-dataset` has already pre-filled the required 
 dataset:
 - fides_key: appdb
   organization_fides_key: default_organization
-  name: App Database
+  name: Postgres App Database
   description: 'This is our primary web application database'
-  meta: null
-  data_categories:
-    - user.provided
-  data_qualifiers:
-    - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   collections:
     - name: users
       description: 'Table that contains all user account data as entered by the user'
@@ -91,7 +91,7 @@ dataset:
 ---
 **PRO TIP**
 
-Annotating your first dataset is easy to do with Fides' VSCode plugin. Check out the installation instructions here.
+As you're progressing with the tutorial, we recommend installing our [Fides' VS Code plugin](https://marketplace.visualstudio.com/items?itemName=fidesctl-plugin-publisher.fidesctl-config-parser), which will validate the syntax in real-time as you're writing your resource files!
 
 ---
 
