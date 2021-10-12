@@ -136,10 +136,8 @@ compose-build:
 
 .PHONY: docs-build
 docs-build:
-	@rm -f fidesctl/openapi.json
 	@docker-compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py openapi.json
-	@mv fidesctl/openapi.json docs/fides/docs/api/openapi.json
+	python generate_openapi.py
 
 .PHONY: docs-serve
 docs-serve: docs-build
