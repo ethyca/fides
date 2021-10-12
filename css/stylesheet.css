@@ -1,0 +1,24 @@
+body {
+    font-family: 'Source Sans Pro', sans-serif !important;
+}
+
+.md-header {
+    background-color: #0861ce;
+}
+
+.md-header .md-logo img {
+    height: 1.2rem;
+    width: auto;
+}
+
+.md-content h1,
+.md-content h2 {
+    font-weight: 600;
+    color: #111439;
+}
+
+.md-footer {
+    background-color: #303036;
+    padding: 30px 50px;
+    color: white;
+}
