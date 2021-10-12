@@ -7,6 +7,16 @@ More than likely, there is someone in your organization that is responsible for 
 ## Understanding the policy
 This policy is comprised of rules that your system's privacy declarations are evaluated against. You might be able to help your legal counsel make this, or you can handle the creation of this if you understand the legal requirements well enough. 
 
+Fides' privacy declarations provide rich metadata about your systems, the data categories they process, the data uses for that data, etc. Policies allow you to declare constraints on these declarations to decide what combinations to allow or reject at your company, providing a layer of automation to control data privacy at the source.
+
+For example, you might want policies like:
+- "we only allow systems that use anonymized data for product analytics purposes"
+- "we do not allow systems to combine user-derived demographic and location data for marketing use"
+- "we never collect biometric data"
+
+These are examples of "policies" that might be formal rules you follow today, or maybe they are already part of your code review or privacy review practices. Fides allows us to turn these into automated policy rules that are evaluated against your privacy declarations.
+
+
 | Name | Type | Description |
 | --- | --- | --- |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' ||
