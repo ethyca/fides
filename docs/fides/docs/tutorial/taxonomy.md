@@ -24,14 +24,14 @@ The Fides project comes with 4 taxonomies of privacy attributes by default:
 
 Fidesctl comes loaded with these taxonomies by default and they can be found here `fidesctl/src/fideslang/default_taxonomy.py`. To extend this taxonomy for your business uses, you might want to add additional data categories to cover all the types of PII your business collects, or additional legal uses for the data. At Best Pizza Co, since we're expanding to new countries, we need to support Province, for example, as part of the user's provided address for delivery. We could accomplish this by adding the additional data category directly to `default_taxonomy.py`: 
 
-     ```diff
-     +   DataCategory(
-     +       fides_key="user.provided.identifiable.contact.province",
-     +       organization_fides_key="default_organization",
-     +       name="User Provided Province",
-     +       description="User's province.",
-     +       parent_key="user.provided.identifiable.contact",
-     +   ),
+   ```diff
+   +   DataCategory(
+   +       fides_key="user.provided.identifiable.contact.province",
+   +       organization_fides_key="default_organization",
+   +       name="User Provided Province",
+   +       description="User's province.",
+   +       parent_key="user.provided.identifiable.contact",
+   +   ),
         DataCategory(
             fides_key="user.provided.identifiable.contact.state",
             organization_fides_key="default_organization",
@@ -39,6 +39,6 @@ Fidesctl comes loaded with these taxonomies by default and they can be found her
             description="User's state level address data.",
             parent_key="user.provided.identifiable.contact",
         ),
-     ```
+   ```
 
 This will add the `user.provided.identifiable.contact.province` as a data category type for your organization. You can add and remove any privacy attributes as you see fit for your organization.  For a more in-depth definition of these privacy attributes, please refer to [the Fides Resources documentation](../fides_resources.md). 
