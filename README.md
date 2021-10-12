@@ -4,7 +4,6 @@
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
-[![Fides Discord Server][discord-image]][discord-url]
 
 ## :zap: Overview
 
@@ -14,7 +13,7 @@ Fides (*fee-dez*, Latin: Fidēs) is the modern framework for data teams to imple
 
 - **Privacy Policies that aren't just for lawyers.** Fides allows you to make a privacy policy that's *actually* enforced at time of integration and deployment.
 
-- **CI/CD/CP.** Integrate Fides with your existing CI tool (Travis, Jenkins, Gitlab) to continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
+- **CI/CD/CP.** Update your policies and data systems as frequently as you (or your legal team!) needs. The updated policies will continuously evaluate compliance and warn users of unsafe changes _before_ they make it into production.
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Fides defines the data privacy taxonomy that allows for both lawyers and engineers to work together with a common language, so that the policies and rules can be applied across the entire data ecosystem.
 
@@ -228,15 +227,6 @@ We are committed to fostering a safe and collaborative environment, such that al
 
 Full Fides documentation is available [here](https://ethyca.github.io/fides/).
 
-### Support
-
-Join the conversation on:
-
-- [Discord](https://discord.gg/NfWXEmCsd4)
-- [Slack](https://join.slack.com/t/fidescommunity/shared_invite/zt-vlgpv1r9-gcYrLpQyNoRf9dJu~kqE8w)
-- [Twitter](https://twitter.com/ethyca)
-- Discussions (TODO need to enable)
-
 ### Contributing
 
 Read about the Fides [community](https://ethyca.github.io/fides/community/github/) or dive in to the [development guides](https://ethyca.github.io/fides/development/overview/) for information about contributions, documentation, code style, testing and more.
@@ -253,5 +243,3 @@ Fides is licensed under the [Apache Software License Version 2.0](https://www.ap
 [black-url]: https://github.com/psf/black/
 [mypy-image]: http://www.mypy-lang.org/static/mypy_badge.svg
 [mypy-url]: http://mypy-lang.org/
-[discord-image]: https://img.shields.io/discord/730474183833813142.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
-[discord-url]: https://discord.gg/NfWXEmCsd4
