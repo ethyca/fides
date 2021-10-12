@@ -8,4 +8,4 @@ The guide for getting Fidesctl up and running locally is the same as is describe
 
 ## Next Steps
 
-See the [Tutorial](../tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
+See the [Tutorial](../tutorial/tutorial.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
