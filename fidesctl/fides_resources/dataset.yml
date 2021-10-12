@@ -3,291 +3,205 @@ dataset:
     organization_fides_key: default_organization
     name: fidesctl
     description: "Fides Generated Description for Dataset: fidesctl"
-    meta: null
-    data_categories: null
-    data_qualifiers:
-      - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    meta: {}
+    data_categories:
+      - system.operations
     collections:
       - name: public.alembic_version
         description: "Fides Generated Description for Table: public.alembic_version"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: version_num
             description: "Fides Generated Description for Column: version_num"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.data_categories
         description: "Fides Generated Description for Table: public.data_categories"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.data_qualifiers
         description: "Fides Generated Description for Table: public.data_qualifiers"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.data_subjects
         description: "Fides Generated Description for Table: public.data_subjects"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.data_uses
         description: "Fides Generated Description for Table: public.data_uses"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.datasets
         description: "Fides Generated Description for Table: public.datasets"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: collections
             description: "Fides Generated Description for Column: collections"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: data_categories
             description: "Fides Generated Description for Column: data_categories"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: data_qualifiers
             description: "Fides Generated Description for Column: data_qualifiers"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: meta
             description: "Fides Generated Description for Column: meta"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.evaluations
         description: "Fides Generated Description for Table: public.evaluations"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: details
             description: "Fides Generated Description for Column: details"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: message
             description: "Fides Generated Description for Column: message"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: status
             description: "Fides Generated Description for Column: status"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.organizations
         description: "Fides Generated Description for Table: public.organizations"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organiztion_parent_key
             description: "Fides Generated Description for Column: organiztion_parent_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.policies
         description: "Fides Generated Description for Table: public.policies"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: rules
             description: "Fides Generated Description for Column: rules"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.registries
         description: "Fides Generated Description for Table: public.registries"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
       - name: public.systems
         description: "Fides Generated Description for Table: public.systems"
         data_categories: null
@@ -296,41 +210,30 @@ dataset:
         fields:
           - name: description
             description: "Fides Generated Description for Column: description"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: fides_key
             description: "Fides Generated Description for Column: fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: id
             description: "Fides Generated Description for Column: id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: meta
             description: "Fides Generated Description for Column: meta"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: name
             description: "Fides Generated Description for Column: name"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: privacy_declarations
             description: "Fides Generated Description for Column: privacy_declarations"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: registry_id
             description: "Fides Generated Description for Column: registry_id"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: system_dependencies
             description: "Fides Generated Description for Column: system_dependencies"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
           - name: system_type
             description: "Fides Generated Description for Column: system_type"
-            data_categories: []
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
