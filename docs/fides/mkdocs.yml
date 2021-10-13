@@ -6,25 +6,17 @@ nav:
       - Evaluating Privacy in CI: use_cases/use_case1.md
       - Automating Data Rights: use_cases/use_case2.md
   - Getting Started:
-<<<<<<< HEAD
-      - getting_started/docker.md
-      - getting_started/local.md
+      - Overview: getting_started/overview.md
+      - Fidesctl in Docker: getting_started/docker.md
+      - Fidesctl Manually (without Docker): getting_started/manual.md
   - Tutorial:
-      - Tutorial Overview: tutorial/overview.md
+      - Overview: tutorial/overview.md
       - Understanding the Fides Taxonomy: tutorial/taxonomy.md
       - Annotate your Datasets: tutorial/dataset.md
       - Declare your Systems: tutorial/system.md
       - Write Privacy Policy (as code): tutorial/policy.md
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
-  - Deployment: deployment.md
-  - CLI: cli.md
-  - API Reference: api/index.md
-=======
-      - Overview: getting_started/overview.md
-      - Fidesctl in Docker: getting_started/docker.md
-      - Fidesctl Manually (without Docker): getting_started/manual.md
-  - Tutorial: tutorial.md
   - Production Deployment: production_deployment.md
   - Fides Language:
       - Overview: language/overview.md
@@ -41,7 +33,6 @@ nav:
         
   - CLI: cli.md
   - APIs: api.md
->>>>>>> 1419696 (Restructured navigation and modified names to better match reference docs)
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -59,9 +50,13 @@ nav:
 theme:
   palette:
 <<<<<<< HEAD
+<<<<<<< HEAD
       primary: blue
 =======
     - scheme: default
+=======
+    - scheme: blue
+>>>>>>> 8c1ca60 (Consolidating master and branch changes)
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
@@ -98,6 +93,7 @@ extra_javascript:
 extra_css:
   - css/fides.css
 <<<<<<< HEAD
+<<<<<<< HEAD
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/stylesheet.css
 
@@ -106,3 +102,9 @@ plugins:
 =======
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
 >>>>>>> 66a151e (Structural changes to documentation)
+=======
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+
+plugins:
+  - render_swagger
+>>>>>>> 8c1ca60 (Consolidating master and branch changes)
