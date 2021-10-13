@@ -27,9 +27,9 @@ def configure_db(database_url: str) -> None:
     db_session.global_init(database_url)
 
 
-@app.get("/health", tags=["Healthcheck"])
-async def healthcheck() -> Dict:
-    "Define a simple healthcheck endpoint that will confirm if the API is running."
+@app.get("/health", tags=["Health"])
+async def health() -> Dict:
+    "Confirm that the API is running and healthy."
     return {"data": {"message": "Fides service is healthy!"}}
 
 

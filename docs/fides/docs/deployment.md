@@ -1,13 +1,13 @@
 # Deployment Guide
 
-Most of the examples in this documentation focuses on a simple setup where everything runs *locally* on your development machine. But to actually leverage the benefits of Fidesctl with a team, you'll need to deploy this to a hosted environment where your developer team can collaborate.
+Most of the examples in this documentation focus on a simple setup where everything runs *locally* on your development machine. But to actually leverage the benefits of Fidesctl with a team, you'll need to deploy this to a hosted environment where your developer team can collaborate.
 
 A fully deployed Fidesctl environment can be broken down into four parts:
 
-1. **Hosted Database**: Database server used by the web server to persist all it's state
-1. **Hosted Web Server**: Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI
-1. **Developer Machines**: Developers running `fidesctl` locally to aid in editing resource files
-1. **CI Build Server**: Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration
+1. **Hosted Database**: Database server used by the web server to persist state.
+1. **Hosted Web Server**: Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
+1. **Developer Machines**: Developers running `fidesctl` locally when updating resource files.
+1. **CI Build Server**: Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
 
 ![Deployment Diagram](img/Deployment_Diagram.svg)
 
@@ -24,12 +24,14 @@ Fidesctl's database requirements are quite modest; any hosted Postgres DB will d
 NOTE: there *is no reason to expose this database to the public Internet* as long as it is will be accessible by your Fidesctl webserver!
 
 Setting up a production-grade Postgres database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, all you'll need is the **connection string** that includes the host, user, password, database, etc. Specifically, you'll need a SQLAlchemy-compatible connection string using psycopg2 ([docs here](https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#dialect-postgresql-psycopg2-connect)), like:
-```
+
+```txt
 postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
 ```
 
 For example:
-```
+
+```txt
 postgresql+psycopg2://fidesuser:fidespassword@my-database-server.example.com:5432/fidesctl
 ```
 
@@ -37,21 +39,23 @@ Keep these database connection credentials around as we'll need them in the next
 
 ## Step 2: Setting up the Fidesctl Web Server
 
-It's not immediately obvious, but the `fidesctl` tool can be used for both CLI commands *and* to run the web server. Internally, the web server is a [FastAPI](https://fastapi.tiangolo.com/) application with a [Uvicorn](https://www.uvicorn.org/) server to handle requests. To start a server instance, simply run `fidesctl webserver` and it will start serving up on port 8080.
+The `fidesctl` tool can be used for both CLI commands *and* to run the web server. Internally, the web server is a [FastAPI](https://fastapi.tiangolo.com/) application with a [Uvicorn](https://www.uvicorn.org/) server to handle requests. To start a server instance, run `fidesctl webserver` and it will start serving up on port 8080.
 
-The web server requires a single configuration variable, `database_url` to function. To provide this you'll need to create a minimal config file like the following, replacing the connection string with the one you created in step 1:
-```
+The web server requires a single configuration variable, `database_url` to function. To provide this you'll need to create a minimal config toml file like the following, replacing the connection string with the one you created in step 1:
+
+```toml
 [api]
 database_url = "postgresql+psycopg2://user:password@host:port/dbname"
 ```
 
-Save this file as `fidesctl.toml` on the host you're using for the web server. Now, you'll just need to get `fidesctl` installed in one of two ways: *docker pull* or *pip install*. 
+Save this file as `fidesctl.toml` on the host you're using for the web server. Now, you'll need to get `fidesctl` installed in one of two ways: *docker pull* or *pip install*.
 
 ### Option 1: Installing fidesctl from Docker Hub
 
 If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a `fidesctl webserver` should contain no surprises.
 
 You can `docker pull ethyca/fidesctl` to get the latest image from Ethyca's Docker Hub here: [ethyca/fidesctl](https://hub.docker.com/r/ethyca/fidesctl).
+
 ```bash
 ~% docker pull ethyca/fidesctl
 ```
@@ -62,6 +66,7 @@ Once pulled, you can run `docker run ethyca/fidesctl fidesctl webserver` to star
 * `--env FIDESCTL__API__DATABASE_URL=<database_url>`: overrides the default database URL to the one you created in step 1
 
 Putting this together:
+
 ```bash
 ~% docker run \
   -p 8080:8080 \
@@ -79,12 +84,15 @@ Now, for most Docker hosts, you won't be calling `docker run` directly, and inst
 Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.
 
 ### Option 2: Installing fidesctl from PyPI
+
 Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/project/fidesctl/). Typically you'll setup a virtual environment and then run `pip install`:
+
 ```bash
 (venv) ~% pip install fidesctl
 ```
 
 Once installed, you can run `fidesctl -f fidesctl.toml webserver` to start the server using the `fidesctl.toml` file we created earlier:
+
 ```bash
 (venv) ~% fidesctl -f fidesctl.toml webserver
 INFO:     Started server process [19878]
@@ -99,10 +107,10 @@ Ensure that you set up your web server to run this command on startup and map po
 
 Once the server is running, confirm you know the server URL and you can visit it in your browser, e.g. "http://hostname:port", as we'll need this in the next step. A few things to test:
 
-* If you navigate to <server_url>/docs you should see the hosted Swagger documentation for the API
-* If you navigate to <server_url>/health you should see `{{"data":{"message":"Fides service is healthy!"}}}`
+* If you navigate to `<server_url>/docs` you should see the hosted Swagger documentation for the API
+* If you navigate to `<server_url>/health` you should see `{{"data":{"message":"Fides service is healthy!"}}}`
 
-NOTE: Other endpoints (e.g. <server_url>/system) *should* throw errors, as we've yet to initialize our database. We'll do that in step 4!
+NOTE: Other endpoints (e.g. `<server_url>/system`) *should* throw errors, as we've yet to initialize our database. We'll do that in step 4!
 
 ## Step 3: Installing Fidesctl CLI on your Developer Machines
 
@@ -111,6 +119,7 @@ Next, we'll get Fidesctl installed as a dependency and configure it to connect t
 ### Option 1: Python Projects (via pip install)
 
 For this example, we'll assume you've already got a git repo for your project (e.g. `/git/my-test-fides-project`) that has a `dev-requirements.txt` file to manage development dependencies. Add `fidesctl` to your requirements file (selecting a release version as desired) and run `pip install`:
+
 ```bash
 (venv) ~/git/my-test-fides-project% cat dev-requirements.txt
 fidesctl
@@ -121,12 +130,14 @@ Successfully installed fidesctl-<VERSION>
 ```
 
 Now create a minimal `fidesctl.toml` file with the following contents, replacing the server URL value with the details from step 2:
-```
+
+```toml
 [cli]
 server_url = "http://host:port"
 ```
 
-Test out this new config file with a `fidesctl ping` command to ensure you can reach the server. For example, if you've installed locally:
+Test out this new config file with a `fidesctl ping` command to ensure you can reach the server. Fidesctl will automatically look in the current directory for a file named `fidesctl.toml`, or you can specify it with the `-f` flag. For example, if you've installed locally:
+
 ```bash
 (venv) ~/git/my-test-fides-project% fidesctl -f fidesctl.toml ping
 Pinging http://host:port...
@@ -136,6 +147,7 @@ Ping Successful!
 If this doesn't work, go back to step 2 and troubleshoot your server setup and ensure it's accessible from developer machines.
 
 Lastly, ensure you check-in the changes to `dev-requirements.txt` and the new `fidesctl.toml` file to your git repo:
+
 ```bash
 (venv) ~/git/my-test-fides-project% git add dev-requirements.txt
 (venv) ~/git/my-test-fides-project% git add fidesctl.toml
@@ -148,10 +160,12 @@ You can now use any `fidesctl` commands as part of your developer environment!
 ### Option 2: Non-Python Projects
 
 For non-Python projects, you've got two options:
+
 1. Install `fidesctl` globally using `pip install` without using a project-specific Python virtual env
 2. Use `docker run ethyca/fidesctl` commands instead
 
 Note that, just like when using `docker run` for the web server, you can specify the `FIDESCTL__CLI__SERVER_URL` environment variable to the container instead of a config file if you prefer:
+
 ```bash
 ~% docker run --env FIDESCTL__CLI__SERVER_URL=http://host:port ethyca/fidesctl fidesctl ping
 ```
@@ -161,35 +175,36 @@ Both of these options are a bit messier than with Python projects, but hopefully
 ## Step 4: Initialize the Web Server Database
 
 Next, we'll initialize the database to use for the web server. Now that you've got the `fidesctl` CLI connected from your developer machine, this is as simple as running one command:
+
 ```bash
-(venv) ~/git/my-test-fides-project% fidesctl -f fidesctl.toml init-db
+(venv) ~/git/my-test-fides-project% fidesctl init-db
 INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
 INFO  [alembic.runtime.migration] Will assume transactional DDL.
 ----------
 Processing organization resources...
-CREATED 0 organization resources.
+CREATED 1 organization resources.
 UPDATED 0 organization resources.
-SKIPPED 1 organization resources.
+SKIPPED 0 organization resources.
 ----------
 Processing data_category resources...
-CREATED 0 data_category resources.
+CREATED 77 data_category resources.
 UPDATED 0 data_category resources.
-SKIPPED 77 data_category resources.
+SKIPPED 0 data_category resources.
 ----------
 Processing data_use resources...
-CREATED 0 data_use resources.
+CREATED 23 data_use resources.
 UPDATED 0 data_use resources.
-SKIPPED 23 data_use resources.
+SKIPPED 0 data_use resources.
 ----------
 Processing data_subject resources...
-CREATED 0 data_subject resources.
+CREATED 15 data_subject resources.
 UPDATED 0 data_subject resources.
-SKIPPED 15 data_subject resources.
+SKIPPED 0 data_subject resources.
 ----------
 Processing data_qualifier resources...
-CREATED 0 data_qualifier resources.
+CREATED 5 data_qualifier resources.
 UPDATED 0 data_qualifier resources.
-SKIPPED 5 data_qualifier resources.
+SKIPPED 0 data_qualifier resources.
 ----------
 ```
 
