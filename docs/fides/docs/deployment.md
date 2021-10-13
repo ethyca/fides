@@ -158,7 +158,7 @@ Note that, just like when using `docker run` for the web server, you can specify
 
 Both of these options are a bit messier than with Python projects, but hopefully you can see how you'd update your development environment setup instructions to include one of these two options. The global `pip install` option works largely the same as in a Python project, except you'll also likely need to instruct developers to install Python 3+ and run the `pip install fidesctl` command manually. The `docker run` option works too, it's just less intuitive, so you may want to consider wrapping your typical commands (`ping`, `evaluate --dry`, etc.) with some scripts for convenience (e.g. `make` targets, `npm scripts`). This is largely a matter of preference, so we'll leave this up to you to figure out how to best integrate this into your development workflow.
 
-### Step 4: Initialize the Web Server Database
+## Step 4: Initialize the Web Server Database
 
 Next, we'll initialize the database to use for the web server. Now that you've got the `fidesctl` CLI connected from your developer machine, this is as simple as running one command:
 ```bash
@@ -195,9 +195,11 @@ SKIPPED 5 data_qualifier resources.
 
 If you get a database connection error here, it means you've misconfigured the database URL in step 2, so go back and troubleshoot from there.
 
-### Step 5: Installing Fidesctl CLI on CI Build Server
+Once the database is initialized, you're ready to use the `fidesctl` CLI in your project. The final step is to setup your CI build server to automatically run the core `fidesctl` commands as part of your CI workflow.
 
-Nowadays, most CI providers tend to have simple solutions to run Docker images, so you can follow the setup instructions from step 2 to `docker pull ethyca/fidesctl` in your CI scripts (also see step 2 for how to set `FIDESCTL__CLI__SERVER_URL` accordingly to point to your hosted web server).
+## Step 5: Installing Fidesctl CLI on CI Build Server
+
+Nowadays, most CI providers tend to have simple solutions to run Docker images, so you can follow the setup instructions from step 2 to `docker pull ethyca/fidesctl` in your CI scripts (also see step 2 for how to set `FIDESCTL__CLI__SERVER_URL` accordingly to point to your hosted web server). You'll want to use commands like `fidesctl ping` in some test CI actions at first, to make sure that your web server is connected, and then you can move on to automating your CI workflow.
 
 See the [Integrate your CI](tutorial/ci.md) tutorial for more detail on what kinds of CI actions make sense, but generally you'll want to configure two:
 
