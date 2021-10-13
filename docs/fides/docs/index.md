@@ -5,7 +5,7 @@ Fides [pronounced */fee-dhez/*, from Latin: Fidēs] is an open-source privacy as
 This includes support for major privacy regulations (e.g. [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/)) and standards like [ISO 19944](https://www.iso.org/standard/79573.html) by default. Fides can manage both enforcement of privacy in your CI pipeline and orchestration of data privacy requests in your runtime environment.
 
 
-> *Insert video like Hashicorp - "Below, Ethyca founder and CEO, Cillian Kieran describes how Fides can help solve common privacy challenges.*
+> *Insert video - "Below, Ethyca founder and CEO, Cillian Kieran describes how Fides can help solve common privacy challenges.*
 
 ### Why is it called Fides?
 
@@ -25,7 +25,7 @@ You describe your datasets and code using Fides' high-level description language
 
 ### Automated Privacy Checks
 
-Fides integrates with git using the `fidestctl` tool to allow you to automate privacy checks in your CI pipeline and evalute changes against your privacy policies on each commit. This allows you to review changes and assure they meet your privacy policies before deployment.
+Fides integrates with git using the `fidesctl` tool to allow you to automate privacy checks in your CI pipeline and evalute changes against your privacy policies on each commit. This allows you to review changes and assure they meet your privacy policies before deployment.
 
 ### Support all Privacy Standards
 
@@ -33,18 +33,16 @@ Fides ships with a comprehensive taxonomy that allows you to efficiently describ
 
 ### Extensible Taxonomy
 
-Fides taxonomy can be easily extended, allowing teams to add support for system specific concepts or data types while inheriting concepts to ensure compliance with global privacy regulations.
+Fides' taxonomy can be easily extended, allowing teams to add support for system specific concepts or data types while inheriting concepts to ensure compliance with global privacy regulations.
 
 ### Automate Privacy Reporting
 
-Fides declarations can be configurd to automatically generate privacy review reports suitable privacy and legal team review. This allows developers to focus on implementation while providing privacy teams with greater insight into the software's privac behavior. 
+Fides' declarations can be configurd to automatically generate privacy review reports suitable privacy and legal team review. This allows developers to focus on implementation while providing privacy teams with greater insight into the software's privac behavior. 
 
 ### Data Privacy Rights Automation
 
-Fides data orchestration capabilities mean you can use declarations to generate complex data rights automated processes that execute automatically against user's privacy rights requests. This allows you to easily configure automated, API driven privacy requests for access, erasure and de-identification of data.
+Fides' data orchestration capabilities mean you can use declarations to generate complex data rights automated processes that execute automatically against user's privacy rights requests. This allows you to easily configure automated, API driven privacy requests for access, erasure and de-identification of data.
 
 ## Next Steps
 
-## Next: Tutorial
-
-For an in-depth tutorial, visit the [Tutorial](tutorial.md) page.
+To start learning how Fides works, visit the [Tutorial](tutorial/overview.md) page to walkthrough using the taxonomy, annotating datasets and systems, writing and evaluating policies, and more. Welcome!

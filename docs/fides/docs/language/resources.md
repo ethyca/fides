@@ -1,5 +1,6 @@
-# Fides Resources
+# Fides Resource Types
 
+<<<<<<< HEAD
 <<<<<<< HEAD:docs/fides/docs/language/fides_resources.md
 This page describes the various resources that make up the Fides platform. 
 =======
@@ -9,20 +10,27 @@ Resources are the most important element in the Fides language. Each resource de
 - [System Resources](#system) encompasses objects that describe your application and data storage infrastructure.
 - [Data & Policy Classifiers](#data-policy-classifiers) comprises four classifiers to describe how systems use data and author enforceable policies.
 >>>>>>> 66a151e (Structural changes to documentation):docs/fides/docs/language/resources.md
+=======
+This page describes the various resources that make up the Fides platform. 
+>>>>>>> 40fa90b (Update images for constency between branches)
 
 ## Resource Relationship Diagram
 
-![alt text](../img/Resource_Relations.svg "Fides Manifest Workflow")
+![alt text](img/Resource_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 
 An organization is a logical grouping of resources, and all resources must belong to an organization. Fides includes a default organization with an id of 1.
 
+<<<<<<< HEAD
 <<<<<<< HEAD:docs/fides/docs/language/fides_resources.md
 **Example Manifest**
 =======
 ### Example Manifest
 >>>>>>> 66a151e (Structural changes to documentation):docs/fides/docs/language/resources.md
+=======
+**Example Manifest**
+>>>>>>> 40fa90b (Update images for constency between branches)
 
 ```yaml
 organization:
@@ -39,7 +47,7 @@ organization:
 
 ---
 
-## Data & Policy Classifiers
+## Privacy Classifiers
 
 Fides uses four classifiers for describing how systems use privacy data, and for describing what privacy data can be used in what ways. All of these types support organization into hierarchical trees.
 
