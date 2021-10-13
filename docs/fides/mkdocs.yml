@@ -83,9 +83,8 @@ extra_javascript:
   - js/vis.js
 
 extra_css:
-  - css/fides.css
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+  - css/fides.css
 
 plugins:
   - render_swagger
-  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
