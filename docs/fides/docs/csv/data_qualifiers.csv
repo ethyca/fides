@@ -1,0 +1,7 @@
+fides_key,name,parent_key,description
+data_qualifier,Data Qualifier,,
+identified_data,Identified Data,data_qualifier,Data that directly identifies an individual.
+pseudonymized_data,Pseudonymized Data,data_qualifier,"Data for which all identifiers have been substituted with unrelated values, rendering the individual unidentifiable and cannot be reasonably reversed other than by the party that performed the pseudonymization."
+unlinked_pseudonymized_data,Unlinked Pseudonymized Data,data_qualifier,"Data for which all identifiers have been substituted with unrelated values and linkages broken such that it may not be reversed, even by the party that performed the pseudonymization."
+anonymized_data,Anonymized Data,data_qualifier,Data where all attributes have been sufficiently altered that the individaul cannot be reidentified by this data or in combination with other datasets.
+aggregated_data,Aggregated Data,data_qualifier,Statistical data that does not contain individually identifying information but includes information about groups of individuals that renders individual identification impossible.

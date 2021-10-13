@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="460px" height="201px" viewBox="0 0 460 201" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group</title>
+    <g id="007---Taxonomy-Conventions" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="v2" transform="translate(-109.000000, -76.000000)">
+            <g id="Group" transform="translate(109.462913, 76.000000)">
+                <text id="Entity-owner,-such-a-Copy-6" font-family="SourceSansPro-Regular, Source Sans Pro" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                    <tspan x="58" y="194">Entity owner, such as user, system or account</tspan>
+                </text>
+                <text id="Field-label" font-family="SourceSansPro-Regular, Source Sans Pro" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                    <tspan x="405.307773" y="61">Field label</tspan>
+                </text>
+                <text id="Sub-group-of-data" font-family="SourceSansPro-Regular, Source Sans Pro" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                    <tspan x="344.623194" y="94.5">Sub-group of data</tspan>
+                </text>
+                <text id="Derived-by-system-or" font-family="SourceSansPro-Regular, Source Sans Pro" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                    <tspan x="138" y="160.5">Derived by system or provided by user</tspan>
+                </text>
+                <text id="Identifiable-or-non-" font-family="SourceSansPro-Regular, Source Sans Pro" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                    <tspan x="257.479313" y="127.5">Identifiable or non-identifiable data</tspan>
+                </text>
+                <text id="user.provided.identi-copy-5" font-family="CourierNewPSMT, Courier New" font-size="16" font-weight="normal" letter-spacing="0.200472889" fill="#000000">
+                    <tspan x="6.48294361" y="13">user.provided.identifiable.contact.email</tspan>
+                </text>
+                <g id="Group-10-Copy-6" transform="translate(0.000000, 178.000000)">
+                    <rect id="Rectangle" stroke="#000000" x="0.5" y="0.5" width="50.875895" height="22"></rect>
+                    <text id="user" font-family="CourierNewPSMT, Courier New" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                        <tspan x="11.3589994" y="10.9676437">user</tspan>
+                    </text>
+                </g>
+                <g id="Group-10-Copy-8" transform="translate(347.496967, 45.000000)">
+                    <rect id="Rectangle" stroke="#000000" x="0.5" y="0.5" width="50.875895" height="22"></rect>
+                    <text id="email" font-family="CourierNewPSMT, Courier New" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                        <tspan x="7.68323615" y="10.9676437">email</tspan>
+                    </text>
+                </g>
+                <g id="Group-10-Copy-9" transform="translate(274.519787, 78.500000)">
+                    <rect id="Rectangle" stroke="#000000" x="0.5" y="0.5" width="62.9504156" height="22"></rect>
+                    <text id="contact" font-family="CourierNewPSMT, Courier New" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                        <tspan x="6.39785634" y="10.9676437">contact</tspan>
+                    </text>
+                </g>
+                <g id="Group-10-Copy-7" transform="translate(58.000000, 144.500000)">
+                    <rect id="Rectangle" stroke="#000000" x="0.5" y="0.5" width="73.3221957" height="22"></rect>
+                    <text id="provided" font-family="CourierNewPSMT, Courier New" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                        <tspan x="7.93279598" y="10.9676437">provided</tspan>
+                    </text>
+                </g>
+                <g id="Group-10-Copy-10" transform="translate(147.416168, 111.500000)">
+                    <rect id="Rectangle" stroke="#000000" x="0.5" y="0.5" width="102.75179" height="22"></rect>
+                    <text id="identifiable" font-family="CourierNewPSMT, Courier New" font-size="12" font-weight="normal" letter-spacing="0.150354667" fill="#000000">
+                        <tspan x="8.01494576" y="10.9676437">identifiable</tspan>
+                    </text>
+                </g>
+                <line x1="25.537832" y1="26.5" x2="25.537832" y2="178" id="Line-Copy-10" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="94.5006501" y1="26.5" x2="94.5006501" y2="144.5" id="Line-Copy-27" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="201.061511" y1="26.5" x2="201.061511" y2="111.5" id="Line-Copy-28" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="305.568464" y1="26.5" x2="305.568464" y2="78.5" id="Line-Copy-29" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="373.909376" y1="26.5" x2="373.909376" y2="45" id="Line-Copy-30" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="5.51368302" y1="18.5" x2="5.51368302" y2="26.5" id="Line-Copy-11" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="53.7346608" y1="18.5" x2="53.7346608" y2="26.5" id="Line-Copy-13" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="143.2374" y1="18.5" x2="143.2374" y2="26.5" id="Line-Copy-18" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="270.664097" y1="18.5" x2="270.664097" y2="26.5" id="Line-Copy-21" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="349.071491" y1="18.5" x2="349.071491" y2="26.5" id="Line-Copy-24" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="46.5481717" y1="18.5" x2="46.5481717" y2="26.5" id="Line-Copy-12" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="135.266639" y1="18.5" x2="135.266639" y2="26.5" id="Line-Copy-14" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="262.065437" y1="18.5" x2="262.065437" y2="26.5" id="Line-Copy-19" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="340.472831" y1="18.5" x2="340.472831" y2="26.5" id="Line-Copy-22" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="398.747261" y1="18.5" x2="398.747261" y2="26.5" id="Line-Copy-25" stroke="#000000" stroke-linecap="square"></line>
+                <line x1="25.9700009" y1="6.0436821" x2="25.9700009" y2="47.0781708" id="Line-Copy-16" stroke="#000000" stroke-linecap="square" transform="translate(25.970001, 26.500000) rotate(-90.000000) translate(-25.970001, -26.500000) "></line>
+                <line x1="94.6909787" y1="-14.4563179" x2="94.6909787" y2="67.0756607" id="Line-Copy-17" stroke="#000000" stroke-linecap="square" transform="translate(94.690979, 26.500000) rotate(-90.000000) translate(-94.690979, -26.500000) "></line>
+                <line x1="202.693718" y1="-32.9563179" x2="202.693718" y2="85.8717194" id="Line-Copy-20" stroke="#000000" stroke-linecap="square" transform="translate(202.693718, 26.500000) rotate(-90.000000) translate(-202.693718, -26.500000) "></line>
+                <line x1="305.620414" y1="-8.4563179" x2="305.620414" y2="61.352417" id="Line-Copy-23" stroke="#000000" stroke-linecap="square" transform="translate(305.620414, 26.500000) rotate(-90.000000) translate(-305.620414, -26.500000) "></line>
+                <line x1="374.027809" y1="1.5436821" x2="374.027809" y2="51.2194519" id="Line-Copy-26" stroke="#000000" stroke-linecap="square" transform="translate(374.027809, 26.500000) rotate(-90.000000) translate(-374.027809, -26.500000) "></line>
+            </g>
+        </g>
+    </g>
+</svg>

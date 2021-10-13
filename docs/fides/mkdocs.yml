@@ -30,9 +30,15 @@ nav:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
       - Concepts: language/concepts.md
-      - Resources: language/fides_resources.md
-      - Taxonomy: language/taxonomy.md
-      - Taxonomy Explorer: language/taxonomy.md#explorer
+      - Resources: language/resources.md
+      - Taxonomy:
+        - Overview: language/taxonomy/overview.md
+        - Taxonomy Explorer: language/taxonomy/explorer.md
+        - Data Categories: language/taxonomy/data_categories.md
+        - Data Use Categories: language/taxonomy/data_use_categories.md
+        - Data Subject Categories: language/taxonomy/data_subject_categories.md
+        - Data Identification Qualifiers: language/taxonomy/data_identification_qualifiers.md
+        
   - CLI: cli.md
   - APIs: api.md
 >>>>>>> 1419696 (Restructured navigation and modified names to better match reference docs)
@@ -67,6 +73,8 @@ theme:
   name: material
   favicon: img/favicon.png
   logo: img/fides-logo.svg
+  font:
+    text: Source Sans Pro
   features:
     - navigation.top
     - navigation.instant
@@ -77,16 +85,24 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.inlinehilite
   - pymdownx.tabbed
+  - admonition
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+  - https://d3js.org/d3.v7.min.js
+  - js/vis.js
+
 extra_css:
   - css/fides.css
+<<<<<<< HEAD
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/stylesheet.css
 
 plugins:
   - render_swagger
+=======
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+>>>>>>> 66a151e (Structural changes to documentation)
