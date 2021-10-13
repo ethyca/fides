@@ -15,7 +15,7 @@ nav:
       - Write Privacy Policy (as code): tutorial/policy.md
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
-  - Deployment: deployment.md
+  - Deployment Guide: deployment.md
   - CLI: cli.md
   - API Reference: api/index.md
   - Development:
