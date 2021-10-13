@@ -40,7 +40,7 @@ td {
 <span class="label">DESCRIPTION</span>
 
 <div class="content">
-The <span class="mono">apply</span> command reads the resource manifest files in <i>manifest_dir</i> and applies the resources to the server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+The <code>apply</code> command reads the resource manifest files in <i>manifest_dir</i> and applies the resources to the server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
 <p>
 As the command updates the server, it announces how many resources it has created, updated, and deleted.
 </div>

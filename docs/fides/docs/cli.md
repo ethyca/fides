@@ -2,15 +2,39 @@
 
 ---
 
-`fidesctl` can be driven through a set of command line interface commands.
+`fidesctl` is an interactive shell that drives the fides functionality. If you're running fides in a  Docker container, you launch the `fidesctl` shell by `cd`ing to your `fides` root directory and running `make cli`.
+
+```bash
+$ cd <your-fides-root>
+$ make cli
+```
+
+Upon success,  `make cli` shows you a success message and then presents you with the `fidesctl` prompt.
+
+```bash
+ ⠿ Container fides-fidesctl-db-1  Running   0.0s //success message
+root@f76b4a7af333:/fides/fidesctl# //prompt
+```
+
+You can then use the `fidesctl` command line interface commands. The commands are provided as arguments to the `fidesctl` program. For example, to run the `init-db` command, you do this:
+
+```bash
+root@f76b4a7af333:/fides/fidesctl# fidesctl init-db
+```
+
+All `fidesctl` commands return 0 upon success.
 
 ## Commands
 
-This is a non-exhaustive list of available Fidesctl CLI commands:
+The `fidesctl` commands are listed below. Follow the link to the manual page for more information about a particular command.
 
-* [`apply`](apply) creates or updates your server's resources.
-* `fidesctl evaluate [-k,--fides-key] [-m, --message] [--dry]` - Runs an evaluation of all policies, but a single policy can be specified using the `--fides-key` parameter.
-* `fidesctl init-db` - Sets up the database by running all missing migrations.
+* [`ping`](ping) determines if the fides API host is ready to receive messages.
+
+* [`init-db`](init-db) initializes and launches your fides policy database. 
+
+* [`apply`](apply) creates or updates the resources in your fides policy database. You run this command after you make a change to your resource manifest files.
+
+* [`evaluate`](evaluate) [-k,--fides-key] [-m, --message] [--dry] runs your privacy policies and announces the results.
 * `fidesctl get <resource_type> <fides_key>` - Looks up a specific resource on the server by its type and `fides_key`.
 * `fidesctl ls <resource_type>` - Shows a list of all resources of a certain type that exist on the server.
 * `fidesctl ping` - Pings the API's healthcheck endpoint to make sure that it is reachable and ready for requests.
