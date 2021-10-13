@@ -15,16 +15,19 @@ def get_db_collections_and_fields(engine: Engine) -> Dict[str, List[str]]:
     a database and their fields.
     """
     inspector = sqlalchemy.inspect(engine)
-    db_tables = {
-        f"{schema}.{table}": [
-            column["name"] for column in inspector.get_columns(table, schema=schema)
-        ]
-        for schema in inspector.get_schema_names()
-        for table in inspector.get_table_names(schema=schema)
-        if schema != "information_schema"
-        and schema not in ["mysql", "performance_schema"]
-        if engine.dialect.name == "mysql"
-    }
+    db_tables = {}
+    schema_exclusion_list = ["information_schema"]
+
+    if engine.dialect.name == "mysql":
+        schema_exclusion_list.extend(["mysql", "performance_schema"])
+
+    for schema in inspector.get_schema_names():
+        if schema not in schema_exclusion_list:
+            for table in inspector.get_table_names(schema=schema):
+                db_tables[f"{schema}.{table}"] = [
+                    column["name"]
+                    for column in inspector.get_columns(table, schema=schema)
+                ]
     return db_tables
 
 
