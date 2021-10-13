@@ -16,16 +16,17 @@ def get_db_collections_and_fields(engine: Engine) -> Dict[str, List[str]]:
     """
     inspector = sqlalchemy.inspect(engine)
     db_tables = {
-        f"{schema}.{table}": [column["name"] for column in inspector.get_columns(table)]
+        f"{schema}.{table}": [column["name"] for column in inspector.get_columns(table, schema=schema)]
         for schema in inspector.get_schema_names()
         for table in inspector.get_table_names(schema=schema)
-        if schema != "information_schema"
+        if schema != "information_schema" and
+           schema not in ['mysql', 'performance_schema'] if engine.dialect.name == 'mysql'
     }
     return db_tables
 
 
 def create_dataset_collections(
-    db_tables: Dict[str, List[str]]
+        db_tables: Dict[str, List[str]]
 ) -> List[DatasetCollection]:
     """
     Return an object of tables and columns formatted for a Fides manifest
