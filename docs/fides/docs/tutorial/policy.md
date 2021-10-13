@@ -9,6 +9,7 @@ This policy is comprised of rules that your system's privacy declarations are ev
 Fides' privacy declarations provide rich metadata about your systems, the data categories they process, the data uses for that data, etc. Policies allow you to declare constraints on these declarations to decide what combinations to allow or reject at your company, providing a layer of automation to control data privacy at the source.
 
 For example, you might want policies like:
+
 * "we only allow systems that use anonymized data for product analytics purposes"
 * "we do not allow systems to combine user-derived demographic and location data for marketing use"
 * "we never collect biometric data"
