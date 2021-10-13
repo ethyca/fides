@@ -4,7 +4,7 @@
 
 The Fides project welcomes issues, contributions and discussion from all users, regardless of background or experience level. In order to create a positive and welcoming environment, all interactions are governed by the Fides [Code of Conduct](code_of_conduct.md).
 
-## GitHub Guidelines
+## Guidelines
 
 Whether it's giving us feedback, raising a question, or showing your Fides-related work, we are looking forward to hearing from you. The Fides community is vibrant because of the quality of its members and the discussions they bring. To keep the workspace inviting and helpful for everyone, there are a few guidelines that we ask all members to follow.
 
