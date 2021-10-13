@@ -32,7 +32,7 @@ nav:
         - Data Identification Qualifiers: language/taxonomy/data_identification_qualifiers.md
         
   - CLI: cli.md
-  - APIs: api.md
+  - APIs: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -49,14 +49,7 @@ nav:
 
 theme:
   palette:
-<<<<<<< HEAD
-<<<<<<< HEAD
-      primary: blue
-=======
     - scheme: default
-=======
-    - scheme: blue
->>>>>>> 8c1ca60 (Consolidating master and branch changes)
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
@@ -64,7 +57,6 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
->>>>>>> 1419696 (Restructured navigation and modified names to better match reference docs)
   name: material
   favicon: img/favicon.png
   logo: img/fides-logo.svg
@@ -92,19 +84,8 @@ extra_javascript:
 
 extra_css:
   - css/fides.css
-<<<<<<< HEAD
-<<<<<<< HEAD
-  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
-  - css/stylesheet.css
-
-plugins:
-  - render_swagger
-=======
-  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
->>>>>>> 66a151e (Structural changes to documentation)
-=======
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
 
 plugins:
   - render_swagger
->>>>>>> 8c1ca60 (Consolidating master and branch changes)
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
