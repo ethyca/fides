@@ -35,22 +35,15 @@ For example:
 postgresql+psycopg2://fidesuser:fidespassword@my-database-server.example.com:5432/fidesctl
 ```
 
-Keep these database connection credentials around as we'll need them in the next step.
+The web server requires these connection credentials to be provided in the `database_url` configuration variable, so make sure you have that ready to go for the next step!
 
 ## Step 2: Setting up the Fidesctl Web Server
 
 The `fidesctl` tool can be used for both CLI commands *and* to run the web server. Internally, the web server is a [FastAPI](https://fastapi.tiangolo.com/) application with a [Uvicorn](https://www.uvicorn.org/) server to handle requests. To start a server instance, run `fidesctl webserver` and it will start serving up on port 8080.
 
-The web server requires a single configuration variable, `database_url` to function. To provide this you'll need to create a minimal config toml file like the following, replacing the connection string with the one you created in step 1:
+Depending on your preferences, you can install `fidesctl` in one of two ways: *Docker* or *Python*.
 
-```toml
-[api]
-database_url = "postgresql+psycopg2://user:password@host:port/dbname"
-```
-
-Save this file as `fidesctl.toml` on the host you're using for the web server. Now, you'll need to get `fidesctl` installed in one of two ways: *docker pull* or *pip install*.
-
-### Option 1: Installing fidesctl from Docker Hub
+### Option 1: Installing fidesctl via Docker
 
 If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a `fidesctl webserver` should contain no surprises.
 
@@ -83,7 +76,13 @@ Now, for most Docker hosts, you won't be calling `docker run` directly, and inst
 
 Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.
 
-### Option 2: Installing fidesctl from PyPI
+### Option 2: Installing fidesctl via Python
+
+The webhost requirements for the fidesctl web server are pretty minimal:
+
+* A general purpose web server (e.g. for AWS EC2, a `t2.small` should be plenty)
+* No persistent storage requirements (this is handled by the hosted database)
+* Python 3.8 or newer (including `pip`)
 
 Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/project/fidesctl/). Typically you'll setup a virtual environment and then run `pip install`:
 
@@ -91,7 +90,13 @@ Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/p
 (venv) ~% pip install fidesctl
 ```
 
-Once installed, you can run `fidesctl -f fidesctl.toml webserver` to start the server using the `fidesctl.toml` file we created earlier:
+Once installed, you'll need a minimial config TOML file to specify the database URL to connect to. Create a file called `fidesctl.toml` in the working directory you'll run `fidesctl` from using the following template, replacing the connection string with the one you created in step 1:
+```toml
+[api]
+database_url = "postgresql+psycopg2://user:password@host:port/dbname"
+```
+
+Once installed, you can run `fidesctl -f fidesctl.toml webserver` to start the server:
 
 ```bash
 (venv) ~% fidesctl -f fidesctl.toml webserver
@@ -101,11 +106,11 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 ```
 
-Ensure that you set up your web server to run this command on startup and map port 8080 as necessary.
+Ensure that you set up your web server to run this command on startup and map port 8080 as necessary in your firewall rules, etc. and you should be good to go!
 
 ### Testing the Web Server
 
-Once the server is running, confirm you know the it's URL, as you'll need this configuration variable (`server_url`) in the next step.
+Once the server is running via either Docker or Python, confirm you know it's URL, as you'll need this configuration variable (`server_url`) in the next step.
 
 To test that it's running, visit `http://{server_url}/health` in your browser and you should see `{{"data":{"message":"Fides service is healthy!"}}}`
 
@@ -114,6 +119,8 @@ To test that it's running, visit `http://{server_url}/health` in your browser an
 Next, we'll get Fidesctl installed as a dependency and configure it to connect to the server from Step 2. As before, you can do this either via PyPI or Docker Hub, though in this case it'll depend heavily on the language used for your project itself: Python projects will naturally find it easy to `pip install` another dependency, whereas Javascript/Ruby/Java/Go projects will likely find Docker more convenient (NOTE: we'd love to distribute builds for other package managers to simplify this - PRs welcome!).
 
 ### Option 1: Python Projects (via pip install)
+
+Just like with the web server setup, your Python version needs to be Python 3.8 or newer to use `fidesctl`. If your project is behind, you may need to use the Docker option instead!
 
 For this example, we'll assume you've already got a git repo for your project (e.g. `/git/my-test-fides-project`) that has a `dev-requirements.txt` file to manage development dependencies. Add `fidesctl` to your requirements file (selecting a release version as desired) and run `pip install`:
 
