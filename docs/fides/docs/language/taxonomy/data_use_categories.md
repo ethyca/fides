@@ -1,13 +1,13 @@
 # Data Use Categories Reference
 
-Data Use Categories are labels that describe how, or for what purpose(s) a component of your system is using data. Similar to data categories, you can assign one or multiple Data Use Categories to a system. 
+Data Use Categories are labels that describe how, or for what purpose(s) a component of your system is using data.
 
 !!! Note "Extensibility and Interopability"
     Data Use Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
     
-    You can extend the taxonomy to support your system needs. If you do this, we recommend extending from the existing class structures to ensure interopability inside and outside your organization.
+    You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
-    If you have suggestions for core classes that should ship with the taxonomy, please submit your requests here (**needs link to feature requests**).
+    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
 ## Top Level Data Use Categories
