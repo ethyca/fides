@@ -5,9 +5,9 @@ Data Subject Categories are the group of labels commonly assigned to describe th
 !!! Note "Extensibility and Interopability"
     Data Subject Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
     
-    You can extend the taxonomy to support your system needs. If you do this, we recommend extending from the existing class structures to ensure interopability inside and outside your organization.
+    You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
-    If you have suggestions for core classes that should ship with the taxonomy, please submit your requests here (**needs link to feature requests**).
+    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
 ## Data Subject Classes

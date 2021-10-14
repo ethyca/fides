@@ -7,7 +7,7 @@ Data Categories are labels to describe the type of data processed by your softwa
     
     You can extend the taxonomy to support your system needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
-    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests here (**needs link to feature requests**).
+    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
 ## Top Level Data Categories
