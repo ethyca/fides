@@ -22,7 +22,7 @@
       Keep in mind that <code>evaluate</code> calls <code>apply</code> for you; you don't have to call it yourself before you call this command.
     </p>
   </div>
-  <div class="label">OPTIONS</div>
+  <span class="label">OPTIONS</span>
   <div class="content">
     <div class="mono">
       -k/--fides-key <i>key</i>

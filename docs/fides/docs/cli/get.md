@@ -1,28 +1,23 @@
-<div class="cli">
-  <h1>evaluate</h1>
-  <span class="label">NAME</span>
+<h1>get</h1>
 
-  <div class="content">
-    <span class="mono">evaluate</span> &mdash; run your privacy policies against your data
-  </div>
+<span class="label">NAME</span>
 
-  <span class="label">SYNOPSIS</span>
+<div class="content">
+<span class="mono">get</span> &mdash; print information about a single resource
+</div>
 
-  <div class="content">
-    <pre><code>fidesctl evaluate <i>manifest_dir</i> [-k/--fides-key <i>key</i>] [-m/--message <i>message</i>] [--dry]</code></pre>
-  </div>
+<span class="label">SYNOPSIS</span>
 
-  <span class="label">DESCRIPTION</span>
+<div class="content">
+<pre><code>fidesctl get <i>resource_type</i> <i>fides_key</i>
+</div>
 
-  <div class="content">
-    The <code>evaluate</code> command applies the resources defined in <i>manifest_dir</i> to your server (by calling <a href="apply"><code>apply</code></a>), and then assesses your data's compliance to your policies. A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
-    <p>If you want to evaluate a single policy, use the <code>--fides-key</code> option, passing the fides key of the policy you wish to evaluate.
-    </p>
-    <p>
-      Keep in mind that <code>evaluate</code> calls <code>apply</code> for you; you don't have to call it yourself before you call this command.
-    </p>
-  </div>
-  <div class="label">OPTIONS</div>
+<span class="label">DESCRIPTION</span>
+
+<div class="content">
+The <code>get</code> command prints a JSON object that describes the resource object identified by the arguments.
+</div>
+  <span class="label">OPTIONS</span>
   <div class="content">
     <div class="mono">
       -k/--fides-key <i>key</i>
@@ -57,4 +52,5 @@
     </div>
   </div>
 </div>
+
 

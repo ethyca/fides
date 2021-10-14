@@ -22,3 +22,51 @@ body {
     padding: 30px 50px;
     color: white;
 }
+
+.cli  .label {
+  color: slategray;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom:  17px;
+}
+.cli  .content {
+  margin-left:  24px;
+  margin-bottom:  17px;
+}
+.cli .options {
+  border:  none;
+
+}
+
+.mono {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.mono {
+  font-family: monospace;
+  font-weight: bold;
+  font-style: italic;
+}
+    
+.tag {
+  padding: 0 4px 0 4px;
+  background: #fedd29;
+  color: #002da9;
+  border: solid 1px #ce122a;
+  box-shadow: inset 0 0 0 1px #ce122a; 
+}
+
+.comment {
+  color:  crimson;
+  font-style:  italic;
+}
+.comment::before {
+  content:  "<<< ";
+}
+
+.comment::after {
+  content:  " >>>";
+}
+
+

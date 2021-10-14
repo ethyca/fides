@@ -17,7 +17,7 @@ nav:
       - Integrate your CI: tutorial/ci.md
   - Deployment: deployment.md
   - CLI: 
-    - CLI Overview: cli/cli.md
+    - fidesctl CLI Overview: cli/cli.md
     - apply: cli/apply.md 
     - evaluate: cli/evaluate.md 
     - get: cli/get.md 
