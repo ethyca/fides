@@ -51,4 +51,12 @@
       "Dry run" mode. As it applies the resource manifest files, <code>apply</code> prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes to your server.
     </div>
   </div>
+    <div class="content">
+    <div class="mono">
+      -h/--help
+    </div>
+    <div class="content">
+      Prints a synopsis of this command.
+    </div>
+  </div>
 </div>

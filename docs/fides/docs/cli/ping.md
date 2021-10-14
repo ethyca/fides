@@ -31,6 +31,16 @@
     Any other response means the host isn't running or can't be reached. 
 
   </div>
+
+  <div class="label">OPTIONS</div>
+  <div class="content">
+    <div class="mono">
+      -h/--help
+    </div>
+    <div class="content">
+      Prints a synopsis of this command.
+    </div>
+  </div>
 </div>
 
 

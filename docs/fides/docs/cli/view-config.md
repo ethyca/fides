@@ -1,26 +1,28 @@
 <div class="cli">
-  <h1>init-db</h1>
+  <h1>view-config</h1>
 
   <div class="label">NAME</div>
 
   <div class="content">
-    <span class="mono">init-db</span> &mdash; initialize and launch your Fides policy database
+    <span class="mono">view-config</span> &mdash; print your <code>fidesctl</code> configuration 
   </div>
 
   <div class="label">SYNOPSIS</div>
 
   <div class="content">
-    <pre><code>fidesctl init-db</code></pre>
+    <pre><code>fidesctl view-config </code></pre>
   </div>
 
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>init-db</code> command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling <a href="apply"><code>apply</code></a>.
+    The <code>view-config</code> command prints your <code>fidesctl</code> configuration. You can modify the configuration by passing a configuration file to `fidesctl`:
+    <pre><code>$ fidesctl --config-path <i>config_file</i></code></pre>
   </div>
 
   
   <div class="label">OPTIONS</div>
+
   <div class="content">
     <div class="mono">
       -h/--help

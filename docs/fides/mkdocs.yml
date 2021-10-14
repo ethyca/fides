@@ -18,6 +18,7 @@ nav:
   - Deployment: deployment.md
   - CLI: 
     - fidesctl CLI Overview: cli/cli.md
+    - fidesctl Configuration File: cli/configuration-file
     - apply: cli/apply.md 
     - evaluate: cli/evaluate.md 
     - get: cli/get.md 
