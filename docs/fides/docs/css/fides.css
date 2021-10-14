@@ -23,11 +23,6 @@ body {
   color: white;
 }
 
-.md-header__button.md-logo img {
-  width: 100px;
-  height: auto;
-}
-
 .md-header__topic {
   display: none;
 }
