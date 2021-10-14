@@ -10,7 +10,7 @@ The Fides language is an intentionally simple language designed to be relatively
 
 The Fides language is intentionally simple. To assure this, Fides declarations use predefined primitives (e.g. data categories) that are used when describing your datasets, systems, policies, etc. These predefined primitives exist as part of the Fides taxonomy which is maintained in your `fidesctl` server so they can be consistently used across your organization's development team. 
 
-You can learn more about the taxonomy structure and how to extend it in the [taxonomy guide](taxonomy.md).
+You can learn more about the taxonomy structure and how to extend it in the [taxonomy guide](./taxonomy/overview.md).
 
 ### Dot Notation and Snake_Case
 

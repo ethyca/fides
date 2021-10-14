@@ -21,7 +21,6 @@ nav:
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
-      - Concepts: language/concepts.md
       - Resources: language/resources.md
       - Taxonomy:
         - Overview: language/taxonomy/overview.md
