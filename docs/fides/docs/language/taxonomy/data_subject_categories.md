@@ -10,9 +10,9 @@ Data Subject Categories are the group of labels commonly assigned to describe th
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
-## Data Subject Classes
+## Data Subject Categories
 
-At present, Data Subjects are a flat structure with no subclassifications, although this is likely to change over time.
+At present, Data Subjects are a flat structure with no subcategories, although this is likely to change over time.
 
 | Label                                          | Parent Key                 | Description                                                                                               |
 | ---                                            | ---                        | ---                                                                                                       |
