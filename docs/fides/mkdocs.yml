@@ -16,7 +16,17 @@ nav:
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
   - Deployment: deployment.md
-  - CLI: cli.md
+  - CLI: 
+    - CLI Overview: cli/cli.md
+    - apply: cli/apply.md 
+    - evaluate: cli/evaluate.md 
+    - get: cli/get.md 
+    - init-db: cli/init-db.md
+    - ls: cli/ls.md 
+    - ping: cli/ping.md 
+    - reset-db: cli/reset-db.md 
+    - version: cli/version.md 
+    - view-config: cli/view-config.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md

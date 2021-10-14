@@ -40,7 +40,7 @@ td {
 <span class="label">DESCRIPTION</span>
 
 <div class="content">
-The <code>apply</code> command reads the resource manifest files in <i>manifest_dir</i> and applies the resources to the server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+The <code>apply</code> command reads the resource manifest files in <i>manifest_dir</i> and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
 <p>
 As the command updates the server, it announces how many resources it has created, updated, and deleted.
 </div>
@@ -51,8 +51,8 @@ As the command updates the server, it announces how many resources it has create
   <col style="width:20%">
   <col style="width:80%">
   <tr>
-    <td class="mono">--dry</td>
-    <td>"Dry run" mode; the command prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes.</td>
+    <td>"Dry run" mode. As it applies the resource manifest files, <code>apply</code> prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes to your server.</td>
+
   </tr>
   <tr>
     <td class="mono">--diff</td>

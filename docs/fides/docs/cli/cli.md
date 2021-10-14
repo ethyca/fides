@@ -9,7 +9,7 @@ $ cd <your-fides-root>
 $ make cli
 ```
 
-Upon success,  `make cli` shows you a success message and then presents you with the `fidesctl` prompt.
+When it's finished,  `make cli` shows you a success message, `cd`s into the `fidesctl` directory, and presents you with the Docker prompt. Notice that the prompt includes your current working directory within the Docker container.
 
 ```bash
  ⠿ Container fides-fidesctl-db-1  Running   0.0s //success message
@@ -30,14 +30,16 @@ The `fidesctl` commands are listed below. Follow the link to the manual page for
 
 * [`ping`](ping) determines if the fides API host is ready to receive messages.
 
-* [`init-db`](init-db) initializes and launches your fides policy database. 
+* [`init-db`](init-db) launches your fides  database and initializes it with default resources definitions.
 
-* [`apply`](apply) creates or updates the resources in your fides policy database. You run this command after you make a change to your resource manifest files.
+* [`apply`](apply) applies a set of manifest files to your fides database.
+
+* [`reset-db`](reset-db) removes the previously-applied manifest data from your fides database. To re-constitute the data, you have to re-run `apply`.
+
 
 * [`evaluate`](evaluate) [-k,--fides-key] [-m, --message] [--dry] runs your privacy policies and announces the results.
 * `fidesctl get <resource_type> <fides_key>` - Looks up a specific resource on the server by its type and `fides_key`.
 * `fidesctl ls <resource_type>` - Shows a list of all resources of a certain type that exist on the server.
-* `fidesctl ping` - Pings the API's healthcheck endpoint to make sure that it is reachable and ready for requests.
 * `fidesctl reset-db` - Tears down the database, erasing all data.
 * `fidesctl version` - Shows the version of Fides that is installed.
 * `fidesctl view-config`- Show a JSON representation of the config that Fidesctl is using.
