@@ -4,7 +4,7 @@ Most of the examples in this documentation focus on a simple setup where everyth
 
 A fully deployed Fidesctl environment can be broken down into four parts:
 
-1. **Hosted Database**: Database server used by the web server to persist state.
+1. **Hosted Database**: Postgres database server used by the web server to persist state.
 1. **Hosted Web Server**: Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
 1. **Developer Machines**: Developers running `fidesctl` locally when updating resource files.
 1. **CI Build Server**: Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
@@ -70,7 +70,7 @@ Putting this together:
 ```bash
 ~% docker run \
   -p 8080:8080 \
-  --env FIDESCTL__API__DATABASE_URL=postgresql+psycopg2://user:password@host:port/dbname \
+  --env FIDESCTL__API__DATABASE_URL="postgresql+psycopg2://user:password@host:port/dbname" \
   ethyca/fidesctl \
   fidesctl webserver
 INFO:     Started server process [1]
@@ -105,12 +105,9 @@ Ensure that you set up your web server to run this command on startup and map po
 
 ### Testing the Web Server
 
-Once the server is running, confirm you know the server URL and you can visit it in your browser, e.g. "http://hostname:port", as we'll need this in the next step. A few things to test:
+Once the server is running, confirm you know the it's URL, as you'll need this configuration variable (`server_url`) in the next step.
 
-* If you navigate to `<server_url>/docs` you should see the hosted Swagger documentation for the API
-* If you navigate to `<server_url>/health` you should see `{{"data":{"message":"Fides service is healthy!"}}}`
-
-NOTE: Other endpoints (e.g. `<server_url>/system`) *should* throw errors, as we've yet to initialize our database. We'll do that in step 4!
+To test that it's running, visit `http://{server_url}/health` in your browser and you should see `{{"data":{"message":"Fides service is healthy!"}}}`
 
 ## Step 3: Installing Fidesctl CLI on your Developer Machines
 
