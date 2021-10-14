@@ -16,9 +16,9 @@
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>apply</code> command reads the resource manifest files in <code><i>manifest_dir</i></code> and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+    The <code>apply</code> command reads the resource manifest files that are stored in <code><i>manifest_dir</i></code> and its subdirectories, and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
     <p>
-      As the command updates the server, it announces how many resources it has created, updated, and deleted.
+      As it processes the manifests, the command announces how many resources it has created, updated, and deleted.
     </p>
   </div>
 
@@ -29,7 +29,7 @@
       manifest_dir 
     </div>
     <div class="content">
-      The directory that contains the resource manifest files that you want to apply to the server. The directory must <em>only</em> contain valid YAML files that describe Fides resources.
+      The root of a directory tree that contains the resource manifest files that you want to apply to the server. The directories in the tree may <em>only</em> contain valid YAML files that describe Fides resources. If you include any other file, the command will throw an error. <span class="comment">The command crashes if you include non-manifest files. This seems a bit harsh -- is it a bug?</span>
     </div>
   </div>
   <div class="label">OPTIONS</div>

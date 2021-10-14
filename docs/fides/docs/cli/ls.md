@@ -16,7 +16,7 @@
 
   <div class="content">
     The <code>evaluate</code> command applies the resources defined in <i>manifest_dir</i> to your server (by calling <a href="apply"><code>apply</code></a>), and then assesses your data's compliance to your policies. A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
-    <p>If you want to evaluate a single policy, use the <code>--fides-key</code> option, passing the fides key of the policy you wish to evaluate.
+    <p>If you want to evaluate a single policy, use the <code>&#8209;&#8209;fides&#8209;key</code> option, passing the fides key of the policy you wish to evaluate.
     </p>
     <p>
       Keep in mind that <code>evaluate</code> calls <code>apply</code> for you; you don't have to call it yourself before you call this command.
@@ -28,7 +28,7 @@
       -k/--fides-key <i>key</i>
     </div>
     <div class="content">
-      The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. You can find the key by looking in the policy manifest file, or by calling <code>fidesctl get policy</code>. The <code>fides-key</code> property specifies a policy's fides key value.
+      The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. You can find the key by looking for the <code>fides&#8209;key</code> property in the policy manifest files, or in the JSON objects that are returned by <code>fidesctl&nbsp;ls&nbsp;policy</code>. 
     </div>
   </div>
 
@@ -53,7 +53,7 @@
       -h/--help
     </div>
     <div class="content">
-      Prints a synopsis of this command with a list of options.
+      Prints a synopsis of this command.
     </div>
   </div>
 </div>

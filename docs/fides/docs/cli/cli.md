@@ -50,7 +50,7 @@ All `fidesctl` commands return 0 upon success.
       -h/--help
     </div>
     <div class="content">
-      Prints a synopsis of the <code>fidesctl</code> command.
+      Prints a synopsis of the <code>fidesctl</code> command. All of the `fidesctl` commands, listed below, also support the <code>-h</code>/<code>--help</code> options.
     </div>
   </div>
 
@@ -61,14 +61,14 @@ All `fidesctl` commands return 0 upon success.
     The <code>fidesctl</code> commands are listed below. Follow the link to the manual page for more information about a particular command.
 
     <ul>
-    <li><a href="apply"><code>apply</code></a> creates and updates resource objects by reading a set of resource manifest files.</li>
-    <li><a href="evaluate"><code>evaluate</code></a> runs your policies against your data and announces the results.</li>
-    <li><a href="get"><code>get</code></a> prints information about a single resource identified by type and key.</li>
-    <li><a href="init-db"><code>init-db</code></a> launches your resource database and initializes it with default resources definitions.</li>
-    <li><a href="ls"><code>ls</code></a> lists the resources of a specified type.</li>
-    <li><a href="ping"><code>ping</code></a> determines if the fides API host is ready to receive messages.* <a href="ping"><code>ping</code></a> determines if the fides API host is ready to receive messages.</li>
-    <li><a href="reset-db"><code>reset-db</code></a> removes the previously-applied manifest data from your resource database.</li>
-    <li><a href="view-config"><code>view-config</code></a> prints the <code>fidesctl</code> configuration settings as a JSON object.</li>
+    <li><a href="../apply"><code>apply</code></a> creates and updates resource objects by reading a set of resource manifest files.</li>
+    <li><a href="../evaluate"><code>evaluate</code></a> runs your policies against your data and announces the results.</li>
+    <li><a href="../get"><code>get</code></a> prints information about a single resource identified by type and key.</li>
+    <li><a href="../init-db"><code>init-db</code></a> launches your resource database and initializes it with default resources definitions.</li>
+    <li><a href="../ls"><code>ls</code></a> lists the resources of a specified type.</li>
+    <li><a href="../ping"><code>ping</code></a> determines if the fides API host is ready to receive messages.* <a href="ping"><code>ping</code></a> determines if the fides API host is ready to receive messages.</li>
+    <li><a href="../reset-db"><code>reset-db</code></a> removes the previously-applied manifest data from your resource database.</li>
+    <li><a href="../view-config"><code>view-config</code></a> prints the <code>fidesctl</code> configuration settings as a JSON object.</li>
   </ul>
 <p>
 </div>

@@ -1,29 +1,50 @@
 <h1>get</h1>
 
-<span class="label">NAME</span>
+<div class="label">NAME</div>
 
 <div class="content">
-<span class="mono">get</span> &mdash; print information about a single resource
+  <span class="mono">get</span> &mdash; print information about a single resource
 </div>
 
-<span class="label">SYNOPSIS</span>
+<div class="label">SYNOPSIS</div>
 
 <div class="content">
-<pre><code>fidesctl get <i>resource_type</i> <i>fides_key</i>
-</div>
+  <pre><code>fidesctl get <i>resource_type</i> <i>fides_key</i>
+  </div>
 
-<span class="label">DESCRIPTION</span>
+  <div class="label">DESCRIPTION</div>
 
-<div class="content">
-The <code>get</code> command prints a JSON object that describes the resource object identified by the arguments.
-</div>
-  <span class="label">OPTIONS</span>
   <div class="content">
-    <div class="mono">
-      -k/--fides-key <i>key</i>
+    The <code>get</code> command prints a JSON object that describes the resource object identified by the arguments.
+  </div>
+  <div class="label">ARGUMENTS</div>
+  <div class="content">
+    <div class="monoi">
+      resource_type
     </div>
     <div class="content">
-      The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. You can find the key by looking in the policy manifest file, or by calling <code>fidesctl get policy</code>. The <code>fides-key</code> property specifies a policy's fides key value.
+      The type of resource that you want to retrieve, one of the following:
+      <ul>
+        <li><code>data_category</code></li>
+        <li><code>data_qualifier</code></li>
+        <li><code>data_subject</code></li>
+        <li><code>data_use</code></li>
+        <li><code>dataset</code></li>
+        <li><code>organization</code></li>
+        <li><code>policy</code></li>
+        <li><code>registry</code></li>
+        <li><code>system</code></li>
+      </ul>
+    </div>
+  </div>
+  <div class="content">
+    <div class="monoi">
+      fides_key
+    </div>
+    <div class="content">
+    <div class="content">
+      The fides key of the resource that you want to retrieve. The key is a string token that uniquely identifies the policy. You can find the key by looking in the policy manifest file, or by calling <code>fidesctl get policy</code>. The <code>fides-key</code> property specifies a policy's fides key value.
+    </div>
     </div>
   </div>
 
