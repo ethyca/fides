@@ -82,7 +82,7 @@ def test_get_db_tables():
     # Test Setup
     inspector = mock.Mock()
     inspector.get_table_names = lambda schema: test_tables
-    inspector.get_columns = lambda x: {
+    inspector.get_columns = lambda x, schema: {
         "foo": [{"name": "1"}, {"name": "2"}],
         "bar": [{"name": "3"}, {"name": "4"}],
     }.get(x)
@@ -94,4 +94,6 @@ def test_get_db_tables():
 
     expected_result = {"test_db.bar": ["3", "4"], "test_db.foo": ["1", "2"]}
     actual_result = generate_dataset.get_db_collections_and_fields(engine)
+    print(actual_result)
+    print(expected_result)
     assert actual_result == expected_result
