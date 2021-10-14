@@ -11,7 +11,6 @@ The taxonomy explorer is a useful way to visualize and review the taxonomy for t
     
 
 <div id="vis" class="vis vis-container">
-  <h1>An Ontology for Personal Data Classification</h1>
   <div class="controls-container">
   
     <div id="data-control" class="control-group">
