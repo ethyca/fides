@@ -1,6 +1,6 @@
 # Data Use Categories Reference
 
-Data Use Categories are labels that describe how, or for what purpose(s) a component of your system is using data. Similar to data categories, you can assign one or multiple Data Use Categories to a system. 
+Data Use Categories are labels that describe how, or for what purpose(s) a component of your system is using data.
 
 !!! Note "Extensibility and Interopability"
     Data Use Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
