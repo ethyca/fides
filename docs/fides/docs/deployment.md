@@ -94,6 +94,7 @@ Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/p
 ```
 
 Once installed, you'll need a minimial config TOML file to specify the database URL to connect to. Create a file called `fidesctl.toml` in the working directory you'll run `fidesctl` from using the following template, replacing the connection string with the one you created in step 1:
+
 ```toml
 [api]
 database_url = "postgresql+psycopg2://user:password@host:port/dbname"
@@ -117,7 +118,7 @@ Once the server is running via either Docker or Python, confirm you know it's UR
 
 To test that it's running, visit `http://{server_url}/health` in your browser and you should see `{{"data":{"message":"Fides service is healthy!"}}}`
 
-## Step 3: Instal fidesctl CLI on your Developer Machines
+## Step 3: Install fidesctl CLI on your Developer Machines
 
 Next, we'll get `fidesctl` installed as a dependency and configure it to connect to the server from Step 2. As before, you can do this either via PyPI or Docker Hub, though in this case it'll depend heavily on the language used for your project itself: Python projects will naturally find it easy to `pip install` another dependency, whereas Javascript/Ruby/Java/Go projects will likely find Docker more convenient (NOTE: we'd love to distribute builds for other package managers to simplify this - PRs welcome!).
 
