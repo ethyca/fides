@@ -5,9 +5,9 @@ Most of the examples in this documentation focus on a simple setup where everyth
 A fully deployed `fidesctl` environment can be broken down into four parts:
 
 1. [**Hosted Database**](#step-1-setup-hosted-database): PostgreSQL database server used by the web server to persist state.
-1. [**Hosted Web Server**](#step-2-setting-up-the-fidesctl-web-server): Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
-1. [**Developer Machines**](#step-3-installing-fidesctl-cli-on-your-developer-machines): Developers running `fidesctl` locally when updating resource files.
-1. [**CI Build Server**](#step-5-installing-fidesctl-cli-on-ci-build-server): Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
+1. [**Hosted Web Server**](#step-2-setup-the-fidesctl-web-server): Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
+1. [**Developer Machines**](#step-3-install-fidesctl-cli-on-your-developer-machines): Developers running `fidesctl` locally when updating resource files.
+1. [**CI Build Server**](#step-5-install-fidesctl-cli-on-ci-build-server): Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
 
 ![Deployment Diagram](img/Deployment_Diagram.svg)
 
@@ -37,13 +37,20 @@ postgresql+psycopg2://fidesuser:fidespassword@my-database-server.example.com:543
 
 The web server requires these connection credentials to be provided in the `database_url` configuration variable, so make sure you have that ready to go for the next step!
 
-## Step 2: Setting up the fidesctl Web Server
+## Step 2: Setup the fidesctl Web Server
 
 The `fidesctl` tool can be used for both CLI commands *and* to run the web server. Internally, the web server is a [FastAPI](https://fastapi.tiangolo.com/) application with a [Uvicorn](https://www.uvicorn.org/) server to handle requests. To start a server instance, run `fidesctl webserver` and it will start serving up on port 8080.
 
+The webhost requirements for the `fidesctl` web server are pretty minimal:
+
+* A general purpose web server (e.g. for AWS EC2, a `t2.small` should be plenty)
+* No persistent storage requirements (this is handled by the hosted database)
+* Docker version 20.10.8 or newer (if installing via Docker)
+* OR Python 3.8 or newer (if installing via Python)
+
 Depending on your preferences, you can install `fidesctl` in one of two ways: *Docker* or *Python*.
 
-### Option 1: Installing fidesctl via Docker
+### Option 1: Install fidesctl via Docker
 
 If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a `fidesctl webserver` should contain no surprises.
 
@@ -78,13 +85,7 @@ Now, for most Docker hosts, you won't be calling `docker run` directly, and inst
 
 Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.
 
-### Option 2: Installing fidesctl via Python
-
-The webhost requirements for the `fidesctl` web server are pretty minimal:
-
-* A general purpose web server (e.g. for AWS EC2, a `t2.small` should be plenty)
-* No persistent storage requirements (this is handled by the hosted database)
-* Python 3.8 or newer (including `pip`)
+### Option 2: Install fidesctl via Python
 
 Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/project/fidesctl/). Typically you'll setup a virtual environment and then run `pip install`:
 
@@ -110,13 +111,13 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 
 Ensure that you set up your web server to run this command on startup and map port 8080 as necessary in your firewall rules, etc. and you should be good to go!
 
-### Testing the Web Server
+### Test the Web Server
 
 Once the server is running via either Docker or Python, confirm you know it's URL, as you'll need this configuration variable (`server_url`) in the next step.
 
 To test that it's running, visit `http://{server_url}/health` in your browser and you should see `{{"data":{"message":"Fides service is healthy!"}}}`
 
-## Step 3: Installing fidesctl CLI on your Developer Machines
+## Step 3: Instal fidesctl CLI on your Developer Machines
 
 Next, we'll get `fidesctl` installed as a dependency and configure it to connect to the server from Step 2. As before, you can do this either via PyPI or Docker Hub, though in this case it'll depend heavily on the language used for your project itself: Python projects will naturally find it easy to `pip install` another dependency, whereas Javascript/Ruby/Java/Go projects will likely find Docker more convenient (NOTE: we'd love to distribute builds for other package managers to simplify this - PRs welcome!).
 
@@ -218,7 +219,7 @@ If you get a database connection error here, it means you've misconfigured the d
 
 Once the database is initialized, you're ready to use the `fidesctl` CLI in your project. The final step is to setup your CI build server to automatically run the core `fidesctl` commands as part of your CI workflow.
 
-## Step 5: Installing fidesctl CLI on CI Build Server
+## Step 5: Install fidesctl CLI on CI Build Server
 
 Nowadays, most CI providers tend to have simple solutions to run Docker images, so you can follow the setup instructions from step 2 to `docker pull ethyca/fidesctl` in your CI scripts (also see step 2 for how to set `FIDESCTL__CLI__SERVER_URL` accordingly to point to your hosted web server). You'll want to use commands like `fidesctl ping` in some test CI actions at first, to make sure that your web server is connected, and then you can move on to automating your CI workflow.
 

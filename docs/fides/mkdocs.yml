@@ -35,7 +35,7 @@ theme:
   favicon: img/favicon.png
   logo: img/logo.png
   features:
-    - naviation.top
+    - navigation.top
     - navigation.instant
 
 markdown_extensions:
