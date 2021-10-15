@@ -709,15 +709,7 @@ var VisTree = class VisTree {
   }
 
   getLabelText(d) {
-    let label = this.accessor.name(d.data);
-    if (label.length > this.maxLetterCount) {
-      if (!d.children) {
-        label = "..." + label.slice(label.length - this.maxLetterCount + 2);
-      } else {
-        label = label.slice(0, this.maxLetterCount - 1) + "...";
-      }
-    }
-    return label;
+    return this.accessor.name(d.data);
   }
 
   destroy() {
