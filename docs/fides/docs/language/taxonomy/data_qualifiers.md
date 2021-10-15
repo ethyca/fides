@@ -1,18 +1,18 @@
-# Data Identification Qualifiers Reference
+# Data Qualifiers Reference
 
-Data Identification Qualifiers describe the degree of identification of the given data. Think of this as a spectrum: on one end is completely anonymous data, i.e. it is impossible to identify an individual from it, and on the other end is data that specifically identifies an individual. 
+Data Qualifiers describe the degree of identification of the given data. Think of this as a spectrum: on one end is completely anonymous data, i.e. it is impossible to identify an individual from it, and on the other end is data that specifically identifies an individual. 
 
 !!! Note "Extensibility and Interopability"
-    Data Identification Qualifiers in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
+    Data Qualifiers in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
     
     You can extend the taxonomy to support your system needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
-## Data Identification Qualifiers
+## Data Qualifiers
 
-Data Identification Qualifiers are arranged as a series of nested subcategories, going from least identifiable (aggregated) to most identifiable (identified).
+Data Qualifiers are arranged as a series of nested subcategories, going from least identifiable (aggregated) to most identifiable (identified).
 
 | Label                    | Parent Key                                                              | Description                                                                                                                                                                                                        |
 | ---                      | ---                                                                     | ---                                                                                                                                                                                                                |

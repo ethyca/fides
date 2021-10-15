@@ -1,16 +1,16 @@
-# Data Subject Categories Reference
+# Data Subjects Reference
 
-Data Subject Categories are the group of labels commonly assigned to describe the type of system users to whom data may belong or is being processed. Examples might be customers, patients or simply abstract users.
+Data Subjects are the group of labels commonly assigned to describe the type of system users to whom data may belong or is being processed. Examples might be customers, patients or simply abstract users.
 
 !!! Note "Extensibility and Interopability"
-    Data Subject Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
+    Data Subjects in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
     
     You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
 
-## Data Subject Categories
+## Data Subjects
 
 At present, Data Subjects are a flat structure with no subcategories, although this is likely to change over time.
 

@@ -26,9 +26,9 @@ nav:
         - Overview: language/taxonomy/overview.md
         - Taxonomy Explorer: language/taxonomy/explorer.md
         - Data Categories: language/taxonomy/data_categories.md
-        - Data Use Categories: language/taxonomy/data_use_categories.md
-        - Data Subject Categories: language/taxonomy/data_subject_categories.md
-        - Data Identification Qualifiers: language/taxonomy/data_identification_qualifiers.md
+        - Data Uses: language/taxonomy/data_uses.md
+        - Data Subjects: language/taxonomy/data_subjects.md
+        - Data Qualifiers: language/taxonomy/data_qualifiers.md
         
   - CLI: cli.md
   - APIs: api/index.md
