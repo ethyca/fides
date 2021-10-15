@@ -4,7 +4,7 @@ Most of the examples in this documentation focus on a simple setup where everyth
 
 A fully deployed `fidesctl` environment can be broken down into four parts:
 
-1. [**Hosted Database**](#step-1-setup-hosted-database): Postgres database server used by the web server to persist state.
+1. [**Hosted Database**](#step-1-setup-hosted-database): PostgreSQL database server used by the web server to persist state.
 1. [**Hosted Web Server**](#step-2-setting-up-the-fidesctl-web-server): Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
 1. [**Developer Machines**](#step-3-installing-fidesctl-cli-on-your-developer-machines): Developers running `fidesctl` locally when updating resource files.
 1. [**CI Build Server**](#step-5-installing-fidesctl-cli-on-ci-build-server): Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
@@ -15,15 +15,15 @@ We'll explain how to setup each of these parts individually, starting with the d
 
 ## Step 1: Setup Hosted Database
 
-`fidesctl`'s database requirements are quite modest; any hosted Postgres DB will do, as long as it's accessible by the webserver. Good options include:
+`fidesctl`'s database requirements are quite modest; any hosted PostgreSQL DB will do, as long as it's accessible by the webserver. Good options include:
 
-* Managed Postgres database services (e.g. AWS RDS, GCP Cloud SQL, Azure Database)
-* Self-hosted Postgres Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)
-* Self-hosted Postgres server (e.g. on an EC2 server)
+* Managed PostgreSQL database services (e.g. AWS RDS, GCP Cloud SQL, Azure Database)
+* Self-hosted PostgreSQL Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)
+* Self-hosted PostgreSQL server (e.g. on an EC2 server)
 
 NOTE: there *is no reason to expose this database to the public Internet* as long as it is will be accessible by your `fidesctl` webserver!
 
-Setting up a production-grade Postgres database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, all you'll need is the **connection string** that includes the host, user, password, database, etc. Specifically, you'll need a SQLAlchemy-compatible connection string using psycopg2 ([docs here](https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#dialect-postgresql-psycopg2-connect)), like:
+Setting up a production-grade PostgreSQL database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, all you'll need is the **connection string** that includes the host, user, password, database, etc. Specifically, you'll need a SQLAlchemy-compatible connection string using psycopg2 ([docs here](https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#dialect-postgresql-psycopg2-connect)), like:
 
 ```txt
 postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
