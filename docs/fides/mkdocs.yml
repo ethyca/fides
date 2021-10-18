@@ -17,7 +17,7 @@ nav:
       - Write Privacy Policy (as code): tutorial/policy.md
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
-  - Production Deployment: production_deployment.md
+  - Deployment Guide: deployment.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
@@ -29,7 +29,6 @@ nav:
         - Data Uses: language/taxonomy/data_uses.md
         - Data Subjects: language/taxonomy/data_subjects.md
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
-        
   - CLI: cli.md
   - APIs: api/index.md
   - Development:
