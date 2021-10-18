@@ -180,6 +180,30 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     return evaluation
 
 
+def populate_references_keys(
+    taxonomy: Taxonomy, url: AnyHttpUrl, headers: Dict[str, str]
+) -> Taxonomy:
+    """
+    TODO
+    """
+    missing_resource_keys = get_referenced_missing_keys(taxonomy)
+    if missing_resource_keys:
+        echo_green(
+            "Fetching the following missing resources from the server:\n- {}".format(
+                "\n".join(missing_resource_keys)
+            )
+        )
+        taxonomy = hydrate_missing_resources(
+            url=url,
+            headers=headers,
+            missing_resource_keys=missing_resource_keys,
+            dehydrated_taxonomy=taxonomy,
+        )
+        return populate_references_keys(taxonomy=taxonomy, url=url, headers=headers)
+    echo_green("Finished hydrating resources in taxonomy")
+    return taxonomy
+
+
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
@@ -214,20 +238,7 @@ def evaluate(
     print("-" * 10)
 
     echo_green("Checking for missing resources...")
-    missing_resource_keys = get_referenced_missing_keys(taxonomy)
-    if missing_resource_keys:
-        echo_green(
-            "Fetching the following missing resources from the server:\n- {}".format(
-                "\n".join(missing_resource_keys)
-            )
-        )
-        echo_green("Hydrating the taxonomy...")
-        taxonomy = hydrate_missing_resources(
-            url=url,
-            headers=headers,
-            missing_resource_keys=missing_resource_keys,
-            dehydrated_taxonomy=taxonomy,
-        )
+    populate_references_keys(taxonomy=taxonomy, url=url, headers=headers)
 
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)
