@@ -6,11 +6,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/ci_reference/</loc>
-         <lastmod>2021-10-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/cli/</loc>
          <lastmod>2021-10-18</lastmod>
          <changefreq>daily</changefreq>
