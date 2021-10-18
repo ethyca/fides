@@ -1,61 +1,232 @@
-# Production Deployment
+# Deployment Guide
 
-For production deployments of Fidesctl, we suggest deploying everything individually as opposed to using the included docker-compose file. While docker-compose is great for development and experimentation, it isn't suited to production use. The following guide will walk you through setting up each component of Fidesctl as a production-grade deployment.
+Most of the examples in this documentation focus on a simple setup where everything runs *locally* on your development machine. But to actually leverage the benefits of `fidesctl` with a team, you'll need to deploy this to a hosted environment where your developer team can collaborate.
 
-## Requirements
+A fully deployed `fidesctl` environment can be broken down into four parts:
 
-1. Install Postgres 12
-1. Install Python 3.8 or newer (including pip)
-1. Install Fidesctl via pip -> `pip install fidesctl`
+1. [**Hosted Database**](#step-1-setup-hosted-database): PostgreSQL database server used by the web server to persist state.
+1. [**Hosted Web Server**](#step-2-setup-the-fidesctl-web-server): Shared instance of `fidesctl webserver` that acts as a "source-of-truth" for shared resources, is accessible to all developers and CI.
+1. [**Developer Machines**](#step-3-install-fidesctl-cli-on-your-developer-machines): Developers running `fidesctl` locally when updating resource files.
+1. [**CI Build Server**](#step-5-install-fidesctl-cli-on-ci-build-server): Run automated `fidesctl evaluate` commands both pre- and post-merge, to enforce policy as part of continuous integration.
 
-## Setup
+![Deployment Diagram](img/Deployment_Diagram.svg)
 
-### Step 1: Database
+We'll explain how to setup each of these parts individually, starting with the database.
 
-Spin up a Postgresql DB and configure a user, password and database for Fidesctl to use. For example:
+## Step 1: Setup Hosted Database
 
-```env
-POSTGRES_USER="fidesctl_db"
-POSTGRES_PASSWORD="f1d3sctl_dB"
-POSTGRES_DATABASE="fidesctl_db"
+`fidesctl`'s database requirements are quite modest; any hosted PostgreSQL DB will do, as long as it's accessible by the webserver. Good options include:
+
+* Managed PostgreSQL database services (e.g. AWS RDS, GCP Cloud SQL, Azure Database)
+* Self-hosted PostgreSQL Docker container with a persistent volume mount (e.g. on a Kubernetes cluster)
+* Self-hosted PostgreSQL server (e.g. on an EC2 server)
+
+NOTE: there *is no reason to expose this database to the public Internet* as long as it is will be accessible by your `fidesctl` webserver!
+
+Setting up a production-grade PostgreSQL database is likely something your team is already familiar with, so we won't revisit that here. Once it's up and running, all you'll need is the **connection string** that includes the host, user, password, database, etc. Specifically, you'll need a SQLAlchemy-compatible connection string using psycopg2 ([docs here](https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#dialect-postgresql-psycopg2-connect)), like:
+
+```txt
+postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
 ```
 
-### Step 2: Create a Config
+For example:
 
-The next step is to create a `fidesctl.toml` config file. This is used to pass important variables to the Fidesctl applications for connections to the database, api, etc. Make sure that the username, password and database in the `database_url` connection string match what you used to configure your database.
+```txt
+postgresql+psycopg2://fidesuser:fidespassword@my-database-server.example.com:5432/fidesctl
+```
 
-Fidesctl will automatically look for the `fidesctl.toml` file in the current directory, in the user directory, or at the path specified by an optional `FIDESCTL_CONFIG_PATH` environment variable.
+The web server requires these connection credentials to be provided in the `database_url` configuration variable, so make sure you have that ready to go for the next step!
 
-Additionally, any variable can be overriden by using a properly formatted environment variable. For instance to overwrite the `database_url` configuration value, you would set the `FIDESCTL__API__DATABASE_URL` environment variable.
+## Step 2: Setup the fidesctl Web Server
 
-The following is an example `fidesctl.toml`:
+The `fidesctl` tool can be used for both CLI commands *and* to run the web server. Internally, the web server is a [FastAPI](https://fastapi.tiangolo.com/) application with a [Uvicorn](https://www.uvicorn.org/) server to handle requests. To start a server instance, run `fidesctl webserver` and it will start serving up on port 8080.
+
+The webhost requirements for the `fidesctl` web server are pretty minimal:
+
+* A general purpose web server (e.g. for AWS EC2, a `t2.small` should be plenty)
+* No persistent storage requirements (this is handled by the hosted database)
+* Docker version 20.10.8 or newer (if installing via Docker)
+* OR Python 3.8 or newer (if installing via Python)
+
+Depending on your preferences, you can install `fidesctl` in one of two ways: *Docker* or *Python*.
+
+### Option 1: Install fidesctl via Docker
+
+If you typically run your applications via Docker, you'll probably be familiar with pulling images and configuring them with environment variables. Setting up a `fidesctl webserver` should contain no surprises.
+
+First, ensure that Docker is running on your host, with a minimum version of `20.10.8`.
+
+You can `docker pull ethyca/fidesctl` to get the latest image from Ethyca's Docker Hub here: [ethyca/fidesctl](https://hub.docker.com/r/ethyca/fidesctl).
+
+```bash
+~% docker pull ethyca/fidesctl
+```
+
+Once pulled, you can run `docker run ethyca/fidesctl fidesctl webserver` to start the server, and provide a few arguments:
+
+* `-p 8080:8080`: binds port 8080 (the webserver) to port 8080 on the host, so you can connect from the outside
+* `--env FIDESCTL__API__DATABASE_URL=<database_url>`: overrides the default database URL to the one you created in step 1
+
+Putting this together:
+
+```bash
+~% docker run \
+  -p 8080:8080 \
+  --env FIDESCTL__API__DATABASE_URL="postgresql+psycopg2://user:password@host:port/dbname" \
+  ethyca/fidesctl \
+  fidesctl webserver
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+```
+
+Now, for most Docker hosts, you won't be calling `docker run` directly, and instead will be providing configuration variables to Kubernetes/Swarm/ECS/etc. As you can see in the `docker run` example above, this config is quite minimal and should just involve specifying (1) the image, (2) the port mapping, (3) the `FIDESCTL__API__DATABASE_URL` environment variable.
+
+Note that there's no need for a persistent volume mount for the web server, it's fully ephemeral and relies on the database for all it's permanent state.
+
+### Option 2: Install fidesctl via Python
+
+Releases of `fidesctl` are published to PyPI here: [fidesctl](https://pypi.org/project/fidesctl/). Typically you'll setup a virtual environment and then run `pip install`:
+
+```bash
+(venv) ~% pip install fidesctl
+```
+
+Once installed, you'll need a minimial config TOML file to specify the database URL to connect to. Create a file called `fidesctl.toml` in the working directory you'll run `fidesctl` from using the following template, replacing the connection string with the one you created in step 1:
+
+```toml
+[api]
+database_url = "postgresql+psycopg2://user:password@host:port/dbname"
+```
+
+Once installed, you can run `fidesctl -f fidesctl.toml webserver` to start the server:
+
+```bash
+(venv) ~% fidesctl -f fidesctl.toml webserver
+INFO:     Started server process [19878]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+```
+
+Ensure that you set up your web server to run this command on startup and map port 8080 as necessary in your firewall rules, etc. and you should be good to go!
+
+### Test the Web Server
+
+Once the server is running via either Docker or Python, confirm you know it's URL, as you'll need this configuration variable (`server_url`) in the next step.
+
+To test that it's running, visit `http://{server_url}/health` in your browser and you should see `{{"data":{"message":"Fides service is healthy!"}}}`
+
+## Step 3: Install fidesctl CLI on your Developer Machines
+
+Next, we'll get `fidesctl` installed as a dependency and configure it to connect to the server from Step 2. As before, you can do this either via PyPI or Docker Hub, though in this case it'll depend heavily on the language used for your project itself: Python projects will naturally find it easy to `pip install` another dependency, whereas Javascript/Ruby/Java/Go projects will likely find Docker more convenient (NOTE: we'd love to distribute builds for other package managers to simplify this - PRs welcome!).
+
+### Option 1: Python Projects (via pip install)
+
+Just like with the web server setup, your Python version needs to be Python 3.8 or newer to use `fidesctl`. If your project is behind, you may need to use the Docker option instead!
+
+For this example, we'll assume you've already got a git repo for your project (e.g. `/git/my-test-fides-project`) that has a `dev-requirements.txt` file to manage development dependencies. Add `fidesctl` to your requirements file (selecting a release version as desired) and run `pip install`:
+
+```bash
+(venv) ~/git/my-test-fides-project% cat dev-requirements.txt
+fidesctl
+(venv) ~/git/my-test-fides-project% pip install -r dev-requirements.txt
+...
+Installing collected packages: fidesctl
+Successfully installed fidesctl-<VERSION>
+```
+
+Now create a minimal `fidesctl.toml` file with the following contents, replacing the server URL value with the details from step 2:
 
 ```toml
 [cli]
-server_url = "http://localhost:8080"
-
-[api]
-database_url = "postgresql+psycopg2://fidesctl_db:fidesdb@localhost:5432/fidesctl_db"
+server_url = "http://host:port"
 ```
 
-### Step 3: Fidesctl API
-
-Next we need to prepare the database to be used by the API. Run the initial database setup via the fidesctl CLI:
+Test out this new config file with a `fidesctl ping` command to ensure you can reach the server. `fidesctl` will automatically look in the current directory for a file named `fidesctl.toml`, or you can specify it with the `-f` flag. For example, if you've installed locally:
 
 ```bash
-fidesctl init-db
+(venv) ~/git/my-test-fides-project% fidesctl -f fidesctl.toml ping
+Pinging http://host:port...
+Ping Successful!
 ```
 
-Now open a new terminal to run the API, as it will run there indefinitely:
+If this doesn't work, go back to step 2 and troubleshoot your server setup and ensure it's accessible from developer machines.
 
-`fidesctl webserver`
+Lastly, ensure you check-in the changes to `dev-requirements.txt` and the new `fidesctl.toml` file to your git repo:
 
-The webserver should now be available at `localhost:8080`, and docs are available at `localhost:8080/docs`, however the API docs can be safely ignored, as the Fidesctl CLI will abstract the API layer.
+```bash
+(venv) ~/git/my-test-fides-project% git add dev-requirements.txt
+(venv) ~/git/my-test-fides-project% git add fidesctl.toml
+(venv) ~/git/my-test-fides-project% git commit -m "Add fidesctl to repo"
+[master (root-commit) e811212] Add fidesctl to repo
+```
 
-### Step 4: Fidesctl CLI
+You can now use any `fidesctl` commands as part of your developer environment!
 
-The last step is to check that everything is working! Open a new terminal window and run the following:
+### Option 2: Non-Python Projects
 
-`fidesctl ping`
+For non-Python projects, you've got two options:
 
-If everything is configured correctly, it will let you know that the command was successful! You've now successfully completed a complete Fidesctl deployment.
+1. Install `fidesctl` globally using `pip install` without using a project-specific Python virtual env
+2. Use `docker run ethyca/fidesctl` commands instead
+
+Note that, just like when using `docker run` for the web server, you can specify the `FIDESCTL__CLI__SERVER_URL` environment variable to the container instead of a config file if you prefer:
+
+```bash
+~% docker run --env FIDESCTL__CLI__SERVER_URL=http://host:port ethyca/fidesctl fidesctl ping
+```
+
+Both of these options are a bit messier than with Python projects, but hopefully you can see how you'd update your development environment setup instructions to include one of these two options. The global `pip install` option works largely the same as in a Python project, except you'll also likely need to instruct developers to install Python 3+ and run the `pip install fidesctl` command manually. The `docker run` option works too, it's just less intuitive, so you may want to consider wrapping your typical commands (`ping`, `evaluate --dry`, etc.) with some scripts for convenience (e.g. `make` targets, `npm scripts`). This is largely a matter of preference, so we'll leave this up to you to figure out how to best integrate this into your development workflow.
+
+## Step 4: Initialize the Web Server Database
+
+Next, we'll initialize the database to use for the web server. Now that you've got the `fidesctl` CLI connected from your developer machine, this is as simple as running one command:
+
+```bash
+(venv) ~/git/my-test-fides-project% fidesctl init-db
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+----------
+Processing organization resources...
+CREATED 1 organization resources.
+UPDATED 0 organization resources.
+SKIPPED 0 organization resources.
+----------
+Processing data_category resources...
+CREATED 77 data_category resources.
+UPDATED 0 data_category resources.
+SKIPPED 0 data_category resources.
+----------
+Processing data_use resources...
+CREATED 23 data_use resources.
+UPDATED 0 data_use resources.
+SKIPPED 0 data_use resources.
+----------
+Processing data_subject resources...
+CREATED 15 data_subject resources.
+UPDATED 0 data_subject resources.
+SKIPPED 0 data_subject resources.
+----------
+Processing data_qualifier resources...
+CREATED 5 data_qualifier resources.
+UPDATED 0 data_qualifier resources.
+SKIPPED 0 data_qualifier resources.
+----------
+```
+
+If you get a database connection error here, it means you've misconfigured the database URL in step 2, so go back and troubleshoot from there.
+
+Once the database is initialized, you're ready to use the `fidesctl` CLI in your project. The final step is to setup your CI build server to automatically run the core `fidesctl` commands as part of your CI workflow.
+
+## Step 5: Install fidesctl CLI on CI Build Server
+
+Nowadays, most CI providers tend to have simple solutions to run Docker images, so you can follow the setup instructions from step 2 to `docker pull ethyca/fidesctl` in your CI scripts (also see step 2 for how to set `FIDESCTL__CLI__SERVER_URL` accordingly to point to your hosted web server). You'll want to use commands like `fidesctl ping` in some test CI actions at first, to make sure that your web server is connected, and then you can move on to automating your CI workflow.
+
+See the [Integrate your CI](tutorial/ci.md) tutorial for more detail on what kinds of CI actions make sense, but generally you'll want to configure two:
+
+1. Run `fidesctl evaluate --dry <path/to/resources>` as a "check" on every commit for development branches (or at least for every pull request)
+2. Run `fidesctl evaluate <path/to/resources>` on every commit to your main branch
+
+If you've configured everything correctly up until now, both your developer machines and your CI build server should be able to access the same shared `fidesctl webserver` instance from step 2, meaning you've got a hosted, persistent, shared environment for privacy metadata at your organization. Congrats!
