@@ -25,10 +25,6 @@
         
         <link rel="stylesheet" href="assets/stylesheets/palette.3f5d1f46.min.css">
         
-          
-          
-          <meta name="theme-color" content="#2094f3">
-        
       
     
     
@@ -36,15 +32,15 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font-family:"Source Sans Pro";--md-code-font-family:""}</style>
       
     
     
     
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
     
-      <link rel="stylesheet" href="css/stylesheet.css">
+      <link rel="stylesheet" href="css/fides.css">
     
     
       
@@ -57,13 +53,17 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
   
     
     <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -84,7 +84,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="." title="Fides" class="md-header__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="img/fides-logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -100,12 +100,34 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              What is Fides?
             
           </span>
         </div>
       </div>
     </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2m10-3a5 5 0 0 1 5 5 5 5 0 0 1-5 5H7a5 5 0 0 1-5-5 5 5 0 0 1 5-5h10M7 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3h10a3 3 0 0 0 3-3 3 3 0 0 0-3-3H7z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
     
     
     
@@ -133,7 +155,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="img/fides-logo.svg" alt="logo">
 
     </a>
     Fides
@@ -159,12 +181,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Home
+          What is Fides?
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
-        Home
+        What is Fides?
       </a>
       
         
@@ -244,49 +266,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about-ethyca" class="md-nav__link">
-    About Ethyca
-  </a>
-  
-    <nav class="md-nav" aria-label="About Ethyca">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-makers-of-fides" class="md-nav__link">
-    The Makers of Fides
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-we-believe" class="md-nav__link">
-    What We Believe
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-future" class="md-nav__link">
-    The Future
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#your-participation" class="md-nav__link">
-    Your Participation
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-tutorial" class="md-nav__link">
-    Next: Tutorial
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
   </a>
   
 </li>
@@ -306,50 +287,20 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="license/" class="md-nav__link">
-        License
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="fides_resources/" class="md-nav__link">
-        Fides Resources
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
-      <label class="md-nav__link" for="__nav_4">
-        Getting Started
+      <label class="md-nav__link" for="__nav_2">
+        Use Cases
         <span class="md-nav__icon md-icon"></span>
       </label>
-      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+      <nav class="md-nav" aria-label="Use Cases" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
-          Getting Started
+          Use Cases
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -358,8 +309,8 @@
   
   
     <li class="md-nav__item">
-      <a href="getting_started/docker/" class="md-nav__link">
-        Getting Started with Fidesctl in Docker
+      <a href="use_cases/use_case1.md" class="md-nav__link">
+        Evaluating Privacy in CI
       </a>
     </li>
   
@@ -370,8 +321,8 @@
   
   
     <li class="md-nav__item">
-      <a href="getting_started/local/" class="md-nav__link">
-        Getting Started with Fidesctl Locally (without Docker)
+      <a href="use_cases/use_case2.md" class="md-nav__link">
+        Automating Data Rights
       </a>
     </li>
   
@@ -394,14 +345,80 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
-      <label class="md-nav__link" for="__nav_5">
+      <label class="md-nav__link" for="__nav_3">
+        Getting Started
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting_started/overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting_started/docker/" class="md-nav__link">
+        Fidesctl in Docker
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting_started/manual/" class="md-nav__link">
+        Fidesctl Manually (without Docker)
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
         Tutorial
         <span class="md-nav__icon md-icon"></span>
       </label>
       <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Tutorial
         </label>
@@ -413,7 +430,7 @@
   
     <li class="md-nav__item">
       <a href="tutorial/overview/" class="md-nav__link">
-        Tutorial Overview
+        Overview
       </a>
     </li>
   
@@ -506,8 +523,173 @@
   
     <li class="md-nav__item">
       <a href="deployment/" class="md-nav__link">
-        Deployment
+        Deployment Guide
       </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Fides Language
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Fides Language" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Fides Language
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/syntax/" class="md-nav__link">
+        Syntax
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/resources/" class="md-nav__link">
+        Resources
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_4" type="checkbox" id="__nav_6_4" >
+      
+      <label class="md-nav__link" for="__nav_6_4">
+        Taxonomy
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Taxonomy" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_4">
+          <span class="md-nav__icon md-icon"></span>
+          Taxonomy
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/explorer/" class="md-nav__link">
+        Taxonomy Explorer
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/data_categories/" class="md-nav__link">
+        Data Categories
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/data_uses/" class="md-nav__link">
+        Data Uses
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/data_subjects/" class="md-nav__link">
+        Data Subjects
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="language/taxonomy/data_qualifiers/" class="md-nav__link">
+        Data Qualifiers
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -536,7 +718,7 @@
   
     <li class="md-nav__item">
       <a href="api/" class="md-nav__link">
-        API Reference
+        APIs
       </a>
     </li>
   
@@ -673,8 +855,20 @@
   
   
     <li class="md-nav__item">
-      <a href="community/github/" class="md-nav__link">
-        GitHub
+      <a href="community/overview/" class="md-nav__link">
+        Github, Slack & Discord
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="community/hints_tips/" class="md-nav__link">
+        Community Hints & Tips
       </a>
     </li>
   
@@ -694,6 +888,36 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ethyca/" class="md-nav__link">
+        About Ethyca
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="license/" class="md-nav__link">
+        License
+      </a>
     </li>
   
 
@@ -786,49 +1010,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about-ethyca" class="md-nav__link">
-    About Ethyca
-  </a>
-  
-    <nav class="md-nav" aria-label="About Ethyca">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-makers-of-fides" class="md-nav__link">
-    The Makers of Fides
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-we-believe" class="md-nav__link">
-    What We Believe
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-future" class="md-nav__link">
-    The Future
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#your-participation" class="md-nav__link">
-    Your Participation
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-tutorial" class="md-nav__link">
-    Next: Tutorial
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
   </a>
   
 </li>
@@ -850,7 +1033,7 @@
 <p>Fides [pronounced <em>/fee-dhez/</em>, from Latin: Fidēs] is an open-source privacy as code (PaC) tool by <a href="https://ethyca.com">Ethyca</a> that allows you to easily declare your systems' privacy characteristics, track privacy related changes to systems &amp; data in version control, and enforce policies in both your source code and your runtime infrastructure.</p>
 <p>This includes support for major privacy regulations (e.g. <a href="https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/">GDPR</a>, <a href="https://ethyca.com/cpra-hub/">CCPA</a> and <a href="https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/">LGPD</a>) and standards like <a href="https://www.iso.org/standard/79573.html">ISO 19944</a> by default. Fides can manage both enforcement of privacy in your CI pipeline and orchestration of data privacy requests in your runtime environment.</p>
 <blockquote>
-<p><em>TODO: Insert video - "Below, Ethyca founder and CEO, Cillian Kieran describes how Fides can help solve common privacy challenges.</em></p>
+<p><em>Insert video - "Below, Ethyca founder and CEO, Cillian Kieran describes how Fides can help solve common privacy challenges.</em></p>
 </blockquote>
 <h3 id="why-is-it-called-fides">Why is it called Fides?</h3>
 <p>Fides was the goddess of trust and good faith in Roman paganism. Fides represented everything that was required for <em>"honor and credibility"</em> in every aspect of Roman life. In addition to this, Fides means <em>"reliability": reliability between two parties, which is always reciprocal</em>.</p>
@@ -870,19 +1053,7 @@
 <p>Fides' declarations can be configurd to automatically generate privacy review reports suitable privacy and legal team review. This allows developers to focus on implementation while providing privacy teams with greater insight into the software's privac behavior. </p>
 <h3 id="data-privacy-rights-automation">Data Privacy Rights Automation</h3>
 <p>Fides' data orchestration capabilities mean you can use declarations to generate complex data rights automated processes that execute automatically against user's privacy rights requests. This allows you to easily configure automated, API driven privacy requests for access, erasure and de-identification of data.</p>
-<h2 id="about-ethyca">About Ethyca</h2>
-<hr />
-<h3 id="the-makers-of-fides">The Makers of Fides</h3>
-<p>The mission of Ethyca is to make internet scale technology respectful and ethical. We're a venture backed privacy technology team headquartered in New York, but working as a distributed team across the US to solve what we believe is the most important problem in technology today, and that is - 
- We believe the solution to this is low friction dev tools that integrate with your existing CI pipelines to make privacy a feature of your tech stack as effortlessly as any other feature of your system. Fides is a universally understandable, open source definition language on top of which we'll build privacy tools for the next decade.</p>
-<h3 id="what-we-believe">What We Believe</h3>
-<p>Data privacy is a human right that should be a native feature of any respectful technology. Today building great privacy as a feature in software is friction filled and complicated. We're building open source privacy tools for the developer community because we believe the only way to achieve a respectful internet is to make privacy an easy-to-implement layer of any tech stack.</p>
-<h3 id="the-future">The Future</h3>
-<p>We've been working on this problem for three years already and have a clear view of our next five year. We're excited about the roadmap of features we'll add to Fides in order to make it comprehensive tool for addressing the major challenges of privacy in both the code management and runtime environments. This means building solutions for automated privacy analysis, as well as context rich data classification, automated data orchestration for privacy righs and semantic access control models. 
-If you're interested in solving some of the toughest and most important problems facing internet scale data-driven software, <a href="https://ethyca.com/jobs-culture/">join us now</a>.</p>
-<h3 id="your-participation">Your Participation</h3>
-<p>Fides' success is predicated on your participation -- Privacy as Code can only become a reality if we ensure it's easy to understand, implement and an interopable standard for wide adoption. Your feedback, contributions and improvements are encouraged as we work towards building a community with the sole objective of building more repsectful software for everyone on the internet.</p>
-<h2 id="next-tutorial">Next: Tutorial</h2>
+<h2 id="next-steps">Next Steps</h2>
 <p>To start learning how Fides works, visit the <a href="tutorial/overview/">Tutorial</a> page to walkthrough using the taxonomy, annotating datasets and systems, writing and evaluating policies, and more. Welcome!</p>
                 
               
@@ -895,6 +1066,11 @@ If you're interested in solving some of the toughest and most important problems
           </div>
         </div>
         
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
       </main>
       
         
@@ -904,13 +1080,13 @@ If you're interested in solving some of the toughest and most important problems
       
       
         
-        <a href="license/" class="md-footer__link md-footer__link--next" aria-label="Next: License" rel="next">
+        <a href="getting_started/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              License
+              Overview
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -939,7 +1115,7 @@ If you're interested in solving some of the toughest and most important problems
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["naviation.top", "navigation.instant"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.409db549.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.top", "navigation.instant"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.409db549.min.js", "version": null}</script>
     
     
       <script src="assets/javascripts/bundle.56a63758.min.js"></script>
