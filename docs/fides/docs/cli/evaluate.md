@@ -1,18 +1,17 @@
 <div class="cli">
   <h1>evaluate</h1>
-  <span class="label">NAME</span>
 
+  <div class="label">NAME</div>
   <div class="content">
     <span class="mono">evaluate</span> &mdash; run your privacy policies against your data
   </div>
 
   <span class="label">SYNOPSIS</span>
-
   <div class="content">
     <pre><code>fidesctl evaluate <i>manifest_dir</i> [-k/--fides-key <i>key</i>] [-m/--message <i>message</i>] [--dry]</code></pre>
   </div>
 
-  <span class="label">DESCRIPTION</span>
+  <div class="label">DESCRIPTION</div>
 
   <div class="content">
     The <code>evaluate</code> command applies the resources defined in <i>manifest_dir</i> to your server (by calling <a href="apply"><code>apply</code></a>), and then assesses your data's compliance to your policies. A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
@@ -29,7 +28,7 @@
       manifest_dir 
     </div>
     <div class="content">
-      The root of a directory tree that contains the resource manifest files that you want to apply to the server. The directories in the tree may <em>only</em> contain valid YAML files that describe Fides resources. If you include any other file, the command will throw an error. <span class="comment">The command crashes if you include non-manifest files. This seems a bit harsh -- is it a bug?</span>
+      The root of a directory tree that contains the resource manifest files that you want to apply to the server. The directories in the tree may <em>only</em> contain valid YAML files that describe Fides resources. If you include any other file, the command will fail and the valid resources will be ignored.
     </div>
   </div>
   <div class="label">OPTIONS</div>
@@ -38,16 +37,15 @@
       -k/--fides-key <i>key</i>
     </div>
     <div class="content">
-      The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. You can find the key by looking in the policy manifest file, or by calling <code>fidesctl get policy</code>. The <code>fides-key</code> property specifies a policy's fides key value.
+      The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. A policy's fides key is given as the <code>fides&#8209;key</code> property in the manifest file that defines the policy resource. To print the policy resources to the terminal, call  <code>fidesctl&nbsp;ls&nbsp;policy</code>. 
     </div>
   </div>
-
   <div class="content">
     <div class="mono">
       -m/--message <i>message</i>
     </div>
     <div class="content">
-      <span class="tag">Unimplemented</span> A message that describes the purpose of this evaluation. <span class="comment">The message is attached to the evaluate object, but I don't see any mechanism for retrieving it</span>
+      A message that you can supply to describe the purpose of this evaluation. 
     </div>
   </div>
   <div class="content">
@@ -55,7 +53,7 @@
       --dry 
     </div>
     <div class="content">
-      "Dry run" mode. This option is applied when <code>evaluate</code> calls the <a href="apply"><code>apply</code></a> command, which see.
+      "Dry run" mode. As it applies the resource manifest files, the command prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes to your server.
     </div>
   </div>
   <div class="content">

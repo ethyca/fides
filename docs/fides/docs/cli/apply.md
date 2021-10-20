@@ -29,7 +29,7 @@
       manifest_dir 
     </div>
     <div class="content">
-      The root of a directory tree that contains the resource manifest files that you want to apply to the server. The directories in the tree may <em>only</em> contain valid YAML files that describe Fides resources. If you include any other file, the command will throw an error. <span class="comment">The command crashes if you include non-manifest files. This seems a bit harsh -- is it a bug?</span>
+      The root of a directory tree that contains the resource manifest files that you want to apply to the server. The directories in the tree may <em>only</em> contain valid YAML files that describe Fides resources. If you include any other file, the command will fail and the valid resource manifests will be ignored. 
     </div>
   </div>
   <div class="label">OPTIONS</div>

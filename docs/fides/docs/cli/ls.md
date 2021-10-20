@@ -1,21 +1,22 @@
-<h1>ls</h1>
+<div class="cli">
+  <h1>ls</h1>
 
-<div class="label">NAME</div>
+  <div class="label">NAME</div>
 
-<div class="content">
-  <span class="mono">ls</span> &mdash; print information about all the resources of a specific type
-</div>
+  <div class="content">
+    <span class="mono">ls</span> &mdash; print information about all the resources of a specific type
+  </div>
 
-<div class="label">SYNOPSIS</div>
+  <div class="label">SYNOPSIS</div>
 
-<div class="content">
-  <pre><code>fidesctl ls <i>resource_type</i>
+  <div class="content">
+    <pre><code>fidesctl ls <i>resource_type</i></code></pre>
   </div>
 
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>ls</code> command prints a series of JSON objects that describe the <i>resource_type</i> resource objects that are defined by your system.  <span class="comment">Why not bundle this into get and make fides_key an optional argument?</span>
+    The <code>ls</code> command prints a series of JSON objects that describe the <i>resource_type</i> resource objects that are defined by your system. 
   </div>
   <div class="label">ARGUMENTS</div>
   <div class="content">

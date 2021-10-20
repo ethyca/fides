@@ -1,10 +1,10 @@
 <div class="cli">
-  <h1>view-config</h1>
+  <h1>webserver</h1>
 
   <div class="label">NAME</div>
 
   <div class="content">
-    <span class="mono">view-config</span> &mdash; print your <code>fidesctl</code> configuration 
+    <span class="mono">webserver</span> &mdash; start the fidesctl API server
   </div>
 
   <div class="label">SYNOPSIS</div>
@@ -16,8 +16,7 @@
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>view-config</code> command prints your <code>fidesctl</code> configuration. You can modify the configuration by passing a configuration file to <code>fidesctl</code>:
-    <pre><code>$ fidesctl --config-path <i>config_file</i></code></pre>
+    The <code>webserver</code> command starts the `fidesctl` API server.
   </div>
 
   

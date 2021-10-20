@@ -10,13 +10,13 @@
   <div class="label">SYNOPSIS</div>
 
   <div class="content">
-    <pre><code>fidesctl reset-db [--yes]</code></pre>
+    <pre><code>fidesctl reset-db [-y/--yes]</code></pre>
   </div>
 
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>reset-db</code> command removes the resources that you added through previous <a href="apply"><code>apply</code></a> calls. Your taxonomy objects are not removed.
+    The <code>reset-db</code> command removes the resources that you added through previous <a href="apply"><code>apply</code></a> calls. The database is then re-initialized through <code>init&#8209;db</code>.
   </div>
 
   
@@ -26,7 +26,7 @@
       -y/--yes
     </div>
     <div class="content">
-      Before it removes a table of resources, <code>reset-db</code> prompts you to confirm the removal. The <code>&#8209;y</code>/<code>&#8209;&#8209;yes</code> option suppresses the prompt; tables are removed without your confirmation.
+      Before it removes the resources, <code>reset-db</code> prompts you to confirm the removal. The <code>&#8209;y</code>/<code>&#8209;&#8209;yes</code> option suppresses the prompt; resources are removed without your confirmation.
     </div>
   </div> 
   <div class="content">
