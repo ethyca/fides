@@ -97,7 +97,7 @@ def test_validate_policies_exist_throws_with_empty():
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_types=["key_2", "key_1"], rule_inclusion="ANY"
+        rule_types=["key_1"], declaration_type_hierarchies=[["key_2"], ["key_1"]], rule_inclusion="ANY"
     )
     assert result
 
@@ -105,7 +105,7 @@ def test_compare_rule_to_declaration_any_true():
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_types=["key_2", "key_3"], rule_inclusion="ANY"
+        rule_types=["key_1"], declaration_type_hierarchies=[["key_2"], ["key_3"]], rule_inclusion="ANY"
     )
     assert not result
 
@@ -114,7 +114,7 @@ def test_compare_rule_to_declaration_any_false():
 def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
-        declaration_types=["key_3", "key_1"],
+        declaration_type_hierarchies=[["key_3"], ["key_1"]],
         rule_inclusion="ALL",
     )
     assert result
@@ -124,7 +124,7 @@ def test_compare_rule_to_declaration_all_true():
 def test_compare_rule_to_declaration_all_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
-        declaration_types=["key_2", "key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
         rule_inclusion="ALL",
     )
     assert not result
@@ -134,7 +134,7 @@ def test_compare_rule_to_declaration_all_false():
 def test_compare_rule_to_declaration_none_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
-        declaration_types=["key_2", "key_3"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"]],
         rule_inclusion="NONE",
     )
     assert result
@@ -144,7 +144,7 @@ def test_compare_rule_to_declaration_none_true():
 def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
-        declaration_types=["key_2", "key_3", "key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
         rule_inclusion="NONE",
     )
     assert not result

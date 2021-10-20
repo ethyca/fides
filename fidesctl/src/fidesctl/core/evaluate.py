@@ -20,6 +20,7 @@ from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
 )
+from fideslang.utils import get_resource_by_fides_key
 
 
 def get_evaluation_policies(
@@ -98,14 +99,41 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
         raise SystemExit(1)
 
 
+def get_fides_key_parent_hierarchy(
+    taxonomy: Taxonomy, fides_key: str
+) -> List[FidesKey]:
+    """
+    Traverses a hierarchy of parents for a given fides key and returns
+    the hierarchy starting with the given fides key.
+    """
+    current_key = fides_key
+    fides_key_parent_hierarchy = []
+    while True:
+        fides_key_parent_hierarchy.append(current_key)
+        found_resource_map = get_resource_by_fides_key(
+            taxonomy=taxonomy, fides_key=current_key
+        )
+        if found_resource_map:
+            found_resource = list(found_resource_map.values())[-1]
+            if found_resource and "parent_key" in found_resource.__fields_set__:
+                current_key = getattr(found_resource, "parent_key")
+                if not current_key:
+                    break
+            else:
+                break
+        else:
+            break
+    return fides_key_parent_hierarchy
+
+
 def compare_rule_to_declaration(
     rule_types: List[FidesKey],
-    declaration_types: List[FidesKey],
+    declaration_type_hierarchies: List[List[FidesKey]],
     rule_inclusion: InclusionEnum,
 ) -> bool:
     """
     Compare the list of fides_keys within the rule against the list
-    of fides_keys from the declaration and use the rule's inclusion
+    of fides_keys hierarchies from the declaration and use the rule's inclusion
     field to determine whether the rule is triggered or not.
     """
     inclusion_map: Dict[InclusionEnum, Callable] = {
@@ -115,7 +143,8 @@ def compare_rule_to_declaration(
     }
 
     matching_data_categories = [
-        bool(data_category in rule_types) for data_category in declaration_types
+        bool(len(set(data_category_hierarchy).intersection(set(rule_types))) > 0)
+        for data_category_hierarchy in declaration_type_hierarchies
     ]
     result = inclusion_map[rule_inclusion](matching_data_categories)
     return result
@@ -133,27 +162,44 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
 
+                    category_hierarchies = [
+                        get_fides_key_parent_hierarchy(
+                            taxonomy=taxonomy, fides_key=declaration_category
+                        )
+                        for declaration_category in declaration.data_categories
+                    ]
                     data_category_result = compare_rule_to_declaration(
                         rule_types=rule.data_categories.values,
-                        declaration_types=declaration.data_categories,
+                        declaration_type_hierarchies=category_hierarchies,
                         rule_inclusion=rule.data_categories.inclusion,
                     )
 
-                    # A declaration only has one data use, so it gets put in a list
+                    # A declaration only has one data use, so its hierarchy gets put in a list
+                    data_use_hierarchies = [
+                        get_fides_key_parent_hierarchy(
+                            taxonomy=taxonomy, fides_key=declaration.data_use
+                        )
+                    ]
                     data_use_result = compare_rule_to_declaration(
                         rule_types=rule.data_uses.values,
-                        declaration_types=[declaration.data_use],
+                        declaration_type_hierarchies=data_use_hierarchies,
                         rule_inclusion=rule.data_uses.inclusion,
                     )
 
+                    # A data subject does not have a hierarchical structure
                     data_subject_result = compare_rule_to_declaration(
                         rule_types=rule.data_subjects.values,
-                        declaration_types=declaration.data_subjects,
+                        declaration_type_hierarchies=[
+                            [data_subject] for data_subject in declaration.data_subjects
+                        ],
                         rule_inclusion=rule.data_subjects.inclusion,
                     )
 
                     data_qualifier_result = (
-                        declaration.data_qualifier == rule.data_qualifier
+                        rule.data_qualifier
+                        in get_fides_key_parent_hierarchy(
+                            taxonomy=taxonomy, fides_key=declaration.data_qualifier
+                        )
                     )
 
                     if all(
@@ -184,7 +230,8 @@ def populate_references_keys(
     taxonomy: Taxonomy, url: AnyHttpUrl, headers: Dict[str, str]
 ) -> Taxonomy:
     """
-    TODO
+    Takes in a taxonomy with potentially missing references to fides keys.
+    Populates any missing fides_keys recursively and returns the populated taxonomy.
     """
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
     if missing_resource_keys:
@@ -200,7 +247,6 @@ def populate_references_keys(
             dehydrated_taxonomy=taxonomy,
         )
         return populate_references_keys(taxonomy=taxonomy, url=url, headers=headers)
-    echo_green("Finished hydrating resources in taxonomy")
     return taxonomy
 
 
