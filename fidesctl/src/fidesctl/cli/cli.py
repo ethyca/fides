@@ -33,12 +33,16 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.option(
     "--diff",
     is_flag=True,
-    help="Outputs a detailed diff of the local resource files compared to the server resources.",
+    help="In addition to printing the number of changed resources, the command prints a diff between the server's old and new states. The diff is in Python DeepDiff format."
 )
 @manifests_dir_argument
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
-    Send the manifest files to the server.
+    Reads the resource manifest files that are stored in MANIFESTS_DIR (and its subdirectories) and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+
+    The files in the MANIFESTS_DIR tree must be in YAML format and may only describe Fides resources. If you include any other file, the command will fail and the valid resource manifests will be ignored. 
+    
+    As it processes the manifests, the command announces how many resources it has created, updated, and deleted.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -57,8 +61,12 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @fides_key_argument
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Delete an resource by its id.
-    """
+    Deletes the resource object identified by the arguments. 
+
+    * The first argument is the type of resource that you want to delete; it must be one of the values listed in Usage.
+
+    * The second argument (FIDES_KEY) is the fides key of the resource that you want to delete. The key is given as the fides-key property in the manifest file that defines the resource. To print resource objects (including an object's fides-key property) to the terminal, call 'fidesctl ls resource-type'.
+    """ 
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.delete(
@@ -77,10 +85,10 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     "-k",
     "--fides-key",
     default="",
-    help="The fides_key for the specific Policy to be evaluated.",
+    help="The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. A policy's fides key is given as the fides-key property in the manifest file that defines the policy resource. To print the policy resources to the terminal, call 'fidesctl ls policy'."
 )
 @click.option(
-    "-m", "--message", help="Description of the changes this evaluation encapsulates."
+    "-m", "--message", help="A message that you can supply to describe the purpose of this evaluation."
 )
 @dry_flag
 def evaluate(
@@ -91,12 +99,9 @@ def evaluate(
     dry: bool,
 ) -> None:
     """
-    Evaluate a registry or system, either approving or denying
-    based on organizational policies.
-
-    Evaluate will always run the "apply" command before the
-    evaluation, either dry or not depending on the flag
-    passed to "evaluate".
+     Applies the resources defined in MANIFESTS_DIR to your server and then assesses your data's compliance to your policies (or to a single policy if you use the --fides-key option). A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
+    
+    'evaluate' applies your resources by calling 'apply'. Thus, you don't have to call 'apply' yourself before you call 'evaluate'.
     """
 
     config = ctx.obj["CONFIG"]
@@ -144,7 +149,11 @@ def generate_dataset(
 @fides_key_argument
 def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Get an resource by its id.
+    Prints a JSON object that describes the resource object identified by the arguments. 
+
+    * The first argument is the type of resource that you want to retrieve; it must be one of the values listed in Usage.
+
+    * The second argument (FIDES_KEY) is the fides key of the resource that you want to retrieve. The key is given as the fides-key property in the manifest file that defines the resource. To print resource objects (including an object's fides-key property) to the terminal, call 'fidesctl ls resource-type'.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -161,7 +170,8 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 def init_db(ctx: click.Context) -> None:
     """
-    Initialize or upgrade the database by running all of the existing migrations.
+    Initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling 'apply'.
+
     """
     config = ctx.obj["CONFIG"]
     database.init_db(config.api.database_url, fidesctl_config=config)
@@ -172,7 +182,7 @@ def init_db(ctx: click.Context) -> None:
 @resource_type_argument
 def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
     """
-    List all resources of a certain type.
+    Prints a series of JSON objects that describe the resource objects of the type specified by the argument. The argument must be one of the values listed in Usage.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -190,7 +200,11 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
 @verbose_flag
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
-    Parse the file(s) at the provided path into a Taxonomy and surface any validation errors.
+    Validates the taxonomy that's described by the resource manifest files that are stored in MANIFESTS_DIR and its subdirectories. If the taxonomy is successfully validated, the command prints a success message ("Taxonomy successfully created.") and returns 0. If its invalid, the command prints one or more error messages and returns non-0. 
+
+    The taxonomy itself isn't printed by default. To print it, include the --verbose option.
+
+    The resources that make up the taxonomy aren't applied to your server. 
     """
 
     taxonomy = _parse.parse(manifests_dir)
@@ -202,7 +216,7 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @click.pass_context
 def ping(ctx: click.Context, config_path: str = "") -> None:
     """
-    Ping the Server.
+    Sends a message to the fides API healthcheck endpoint and prints the response.
     """
     config = ctx.obj["CONFIG"]
     healthcheck_url = config.cli.server_url + "/health"
@@ -215,8 +229,9 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
 @yes_flag
 def reset_db(ctx: click.Context, yes: bool) -> None:
     """
-    Drops all tables and metadata from the database and
-    re-initializes the database.
+    Removes the resources that you added through previous 'apply' calls, and then re-initializes the database by calling 'init-db'.
+
+    Before it removes the resources, the command prompts you to confirm the removal. To suppress the prompt, include the '--yes' option.
     """
     config = ctx.obj["CONFIG"]
     database_url = config.api.database_url
@@ -238,7 +253,9 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 @click.pass_context
 def view_config(ctx: click.Context) -> None:
     """
-    Print out the config values.
+    Prints the current fidesctl configuration. You can modify the configuration by passing a configuration file to the 'fidesctl' command:
+
+    $ fidesctl --config-path config_files
     """
     config = ctx.obj["CONFIG"]
     pretty_echo(config.dict(), color="green")
@@ -248,6 +265,6 @@ def view_config(ctx: click.Context) -> None:
 @click.pass_context
 def webserver(ctx: click.Context) -> None:
     """
-    Starts the API webserver.
+    Starts the fidesctl API server.
     """
     start_webserver()
