@@ -58,11 +58,21 @@ def test_category_sankey_plot(sample_categories_list):
 
 
 @pytest.mark.unit
+def test_hierarchy_figures(sample_categories_list):
+    with open("tests/data/sample_hierarchy_figures.json", "r") as f:
+        expected_sample_hierarchy_figures = json.load(f)
+    hierarchy_figures = visualize.hierarchy_figures(
+        sample_categories_list, resource_type="data_category", json_out=True
+    )
+    assert json.loads(hierarchy_figures) == expected_sample_hierarchy_figures
+
+
+@pytest.mark.unit
 def test_convert_categories_to_nested_dict(sample_categories_list):
     expected_conversion = {"account": {"contact": {"city": {}}}}
     assert (
-        visualize.convert_categories_to_nested_dict(sample_categories_list)
-        == expected_conversion
+            visualize.convert_categories_to_nested_dict(sample_categories_list)
+            == expected_conversion
     )
 
 
@@ -70,8 +80,8 @@ def test_convert_categories_to_nested_dict(sample_categories_list):
 def test_nested_categories_to_html_list(sample_categories_list):
     expected_html_list = "<h2>Fides Data Category Hierarchy</h2>\n   <li>account</li>\n   <ul>\n      <li>contact</li>\n      <ul>\n         <li>city</li>\n         <ul>\n\n         </ul>\n      </ul>\n   </ul>"
     assert (
-        visualize.nested_categories_to_html_list(
-            sample_categories_list, resource_type="data_category"
-        )
-        == expected_html_list
+            visualize.nested_categories_to_html_list(
+                sample_categories_list, resource_type="data_category"
+            )
+            == expected_html_list
     )

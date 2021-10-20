@@ -4,8 +4,9 @@ API endpoints for displaying hierarchical data representations.
 from enum import Enum
 from typing import Union
 
+import click
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 
 from fidesctl.core import visualize
 from fideslang import DEFAULT_TAXONOMY, model_map
@@ -21,8 +22,7 @@ class FigureTypeEnum(str, Enum):
     for a valid figure type to be visualized
     """
 
-    SANKEY = "sankey"
-    SUNBURST = "sunburst"
+    GRAPHS = "graphs"
     TEXT = "text"
 
 
@@ -48,9 +48,9 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
     )
 
     @router.get("/visualize/{figure_type}")
-    async def get_visualization(
+    async def get_chart(
         figure_type: FigureTypeEnum, resource_type: str = get_resource_type(router)
-    ) -> Union[HTMLResponse, HTTPException]:
+    ):
         """
             Visualize the hierarchy of a supported resource type.
         Args:
@@ -60,18 +60,12 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
         Returns:
             Html for the requested figure. Response with status code 400 when invalid figure type is provided
         """
-        if figure_type not in ["sankey", "sunburst", "text"]:
-            return HTTPException(
-                status_code=400,
-                detail=f"{figure_type} is not a valid figure type. Valid options: [sankey, sunburst, text]",
-            )
         taxonomy = DEFAULT_TAXONOMY.dict()[resource_type]
-        if figure_type == "sunburst":
-            figure = visualize.sunburst_plot(taxonomy, resource_type)
-        elif figure_type == "sankey":
-            figure = visualize.sankey_plot(taxonomy, resource_type)
-        else:
+        if figure_type == 'text':
             figure = visualize.nested_categories_to_html_list(taxonomy, resource_type)
+        else:
+            figure = visualize.hierarchy_figures(taxonomy, resource_type)
         return HTMLResponse(figure)
+
 
     routers += [router]
