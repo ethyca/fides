@@ -2,13 +2,15 @@
 API endpoints for displaying hierarchical data representations.
 """
 from enum import Enum
+from typing import Union
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
+from sqlalchemy import exc
 
-from fidesctl.core import visualize
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map
+from fidesctl.core import visualize
 from fideslang import DEFAULT_TAXONOMY, model_map
 
 # pylint: disable=redefined-outer-name,cell-var-from-loop
@@ -47,12 +49,12 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
         prefix=f"/{resource_type}",
     )
 
-
     @router.get("/visualize/{figure_type}")
     async def get_chart(
-            figure_type: FigureTypeEnum, resource_type: str = get_resource_type(router),
-            default_taxonomy: bool = False
-    ):
+        figure_type: FigureTypeEnum,
+        resource_type: str = get_resource_type(router),
+        default_taxonomy: bool = False,
+    ) -> Union[HTMLResponse, HTTPException]:
         """
             Visualize the hierarchy of a supported resource type.
         Args:
@@ -75,16 +77,19 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
                     # convert list of DataCategories to list of dicts
                     # hacky but there's currently no obvious way to do this conversion from the sql models
                     taxonomy = [i.__dict__ for i in resp]
-                    _ = [i.pop('_sa_instance_state', None) for i in taxonomy]
+                    _ = [i.pop("_sa_instance_state", None) for i in taxonomy]
                 finally:
                     session.close()
-            except Exception as e:
-                return HTTPException(status_code=500, detail=str(e))
-        if figure_type == 'text':
-            figure = visualize.nested_categories_to_html_list(taxonomy, resource_type, is_default=default_taxonomy)
+            except exc.SQLAlchemyError as exception:
+                return HTTPException(status_code=500, detail=str(exception))
+        if figure_type == "text":
+            figure = visualize.nested_categories_to_html_list(
+                taxonomy, resource_type, is_default=default_taxonomy
+            )
         else:
-            figure = visualize.hierarchy_figures(taxonomy, resource_type, is_default=default_taxonomy)
+            figure = visualize.hierarchy_figures(
+                taxonomy, resource_type, is_default=default_taxonomy
+            )
         return HTMLResponse(figure)
-
 
     routers += [router]

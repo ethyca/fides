@@ -14,11 +14,13 @@ FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"
 
 
-def hierarchy_figures(categories: List[dict],
-                      resource_type: str,
-                      json_out: bool = False,
-                      condensed_html: bool = False,
-                      is_default: bool = False) -> str:
+def hierarchy_figures(
+    categories: List[dict],
+    resource_type: str,
+    json_out: bool = False,
+    condensed_html: bool = False,
+    is_default: bool = False,
+) -> str:
     """
     Generate html to display a hierarchy with several representation options
     Args:
@@ -34,8 +36,10 @@ def hierarchy_figures(categories: List[dict],
         category["color"] = category[FIDES_KEY_NAME].split(".")[0]
 
     # build suburst
-    sunburst = go.Sunburst(labels=[i[FIDES_KEY_NAME] for i in categories],
-                           parents=[i[FIDES_PARENT_NAME] for i in categories])
+    sunburst = go.Sunburst(
+        labels=[i[FIDES_KEY_NAME] for i in categories],
+        parents=[i[FIDES_PARENT_NAME] for i in categories],
+    )
 
     # build sankey mapping
     fides_key_dict = {v[FIDES_KEY_NAME]: i for i, v in enumerate(categories)}
@@ -60,42 +64,57 @@ def hierarchy_figures(categories: List[dict],
             hovertemplate="%{label}",
         ),
         link=dict(source=source, target=target, value=target),
-        visible=False
+        visible=False,
     )
 
     # build icicle
-    icicle = go.Icicle(labels=[i[FIDES_KEY_NAME] for i in categories],
-                       parents=[i[FIDES_PARENT_NAME] for i in categories],
-                       visible=False)
+    icicle = go.Icicle(
+        labels=[i[FIDES_KEY_NAME] for i in categories],
+        parents=[i[FIDES_PARENT_NAME] for i in categories],
+        visible=False,
+    )
 
-    data = [sunburst, sankey, icicle]
-    updatemenus = list([
-        dict(active=0,
-             buttons=list([
-                 dict(label='Sunburst',
-                      method='update',
-                      args=[{'visible': [True, False, False]}]),
-                 dict(label='Sankey',
-                      method='update',
-                      args=[{'visible': [False, True, False]}]),
-                 dict(label='Icicle',
-                      method='update',
-                      args=[{'visible': [False, False, True]}])
-             ])
-             )
-    ])
-    layout = dict(title=f'{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy', showlegend=False,
-                  updatemenus=updatemenus)
-    fig = dict(data=data, layout=layout)
+    updatemenus = list(
+        [
+            dict(
+                active=0,
+                buttons=list(
+                    [
+                        dict(
+                            label="Sunburst",
+                            method="update",
+                            args=[{"visible": [True, False, False]}],
+                        ),
+                        dict(
+                            label="Sankey",
+                            method="update",
+                            args=[{"visible": [False, True, False]}],
+                        ),
+                        dict(
+                            label="Icicle",
+                            method="update",
+                            args=[{"visible": [False, False, True]}],
+                        ),
+                    ]
+                ),
+            )
+        ]
+    )
+    layout = dict(
+        title=f'{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy',
+        showlegend=False,
+        updatemenus=updatemenus,
+    )
+    fig = dict(data=[sunburst, sankey, icicle], layout=layout)
     if json_out:
         return plotly.io.to_json(fig)
-    return plotly.io.to_html(fig,
-                             include_plotlyjs='cdn' if condensed_html else True,
-                             full_html=True)
+    return plotly.io.to_html(
+        fig, include_plotlyjs="cdn" if condensed_html else True, full_html=True
+    )
 
 
 def sunburst_plot(
-        categories: List[dict], resource_type: str, json_out: bool = False
+    categories: List[dict], resource_type: str, json_out: bool = False
 ) -> str:
     """
     Create a sunburst plot from data categories yaml file
@@ -127,7 +146,7 @@ def sunburst_plot(
 
 
 def sankey_plot(
-        categories: List[dict], resource_type: str, json_out: bool = False
+    categories: List[dict], resource_type: str, json_out: bool = False
 ) -> str:
     """
     Create a sankey plot from data categories yaml file
@@ -233,8 +252,10 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
 
 
 def nested_categories_to_html_list(
-        categories: List[dict], resource_type: str, indent: int = 1,
-        is_default: bool = False
+    categories: List[dict],
+    resource_type: str,
+    indent: int = 1,
+    is_default: bool = False,
 ) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
@@ -285,8 +306,6 @@ def get_visualize_url(resource_type: str, visualize_type: str) -> str:
     """
     settings = config.get_config()
     visualize_url = "{}/{}/visualize/{}".format(
-        settings.cli.server_url,
-        resource_type,
-        visualize_type
+        settings.cli.server_url, resource_type, visualize_type
     )
     return visualize_url

@@ -18,10 +18,13 @@ class AnnotationAbortError(Exception):
     """
     Custom exception to handle mid annotation abort
     """
-    pass
+
+    ...
 
 
-def get_data_categories_annotation(dataset_member: Union[Dataset, DatasetCollection, DatasetField]) -> List[str]:
+def get_data_categories_annotation(
+    dataset_member: Union[Dataset, DatasetCollection, DatasetField]
+) -> List[str]:
     """
     Request the user's input to supply a list of data categories
 
@@ -33,24 +36,28 @@ def get_data_categories_annotation(dataset_member: Union[Dataset, DatasetCollect
     Returns:
         List of the user's input
     """
-    msg = f'''Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]'''
+    msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
     user_categories = []
     user_response = click.prompt(msg, default=None)
-    if user_response.lower() == 'q':
-        if click.confirm('Are you sure you want to quit annotating the dataset? (progress will be saved)'):
+    if user_response.lower() == "q":
+        if click.confirm(
+            "Are you sure you want to quit annotating the dataset? (progress will be saved)"
+        ):
             raise AnnotationAbortError
     if user_response:
-        user_categories = [i.strip() for i in user_response.split(',')]
+        user_categories = [i.strip() for i in user_response.split(",")]
         # future: loop through inputs and validate
     return user_categories
 
 
-def annotate_dataset(dataset_file: str,
-                     dataset_key: str = 'dataset',
-                     resource_type: str = 'data_category',
-                     auto_open: bool = True,
-                     annotate_all: bool = False,
-                     file_split: bool = True):
+def annotate_dataset(
+    dataset_file: str,
+    dataset_key: str = "dataset",
+    resource_type: str = "data_category",
+    auto_open: bool = True,
+    annotate_all: bool = False,
+    file_split: bool = True,
+) -> None:
     """
     Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
     for members of the dataset that do not have any specified
@@ -68,49 +75,56 @@ def annotate_dataset(dataset_file: str,
     output_filename = dataset_file
 
     # Make the user aware of the data_categories visualizer
-    visualize_graphs_url = visualize.get_visualize_url(resource_type, 'graphs')
-    visualize_text_url = visualize.get_visualize_url(resource_type, 'text')
+    visualize_graphs_url = visualize.get_visualize_url(resource_type, "graphs")
+    visualize_text_url = visualize.get_visualize_url(resource_type, "text")
 
-    click.secho(f"""For reference, open the data category visualizer at either:
+    click.secho(
+        f"""For reference, open the data category visualizer at either:
         {visualize_graphs_url}
         {visualize_text_url}
-    """, fg='green')
+    """,
+        fg="green",
+    )
     if auto_open:
         webbrowser.open(visualize_graphs_url, new=2)
 
     # load in the dataset
     datasets = core_parse.ingest_manifests(dataset_file)[dataset_key]
 
-    # loop through each of the items in the dataset
-    if len(datasets) > 1:
-        if file_split:
-            print(f'{len(datasets)} datasets present, individual files will be written!')
-        print(f'{len(datasets)} datasets present, output files will be overwritten!')
-
     for dataset in datasets:  # iterate through each database/schema found
         current_dataset = Dataset(**dataset)
-        click.secho(f'\n####\nAnnotating Dataset: [{current_dataset.name}]')
+        click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
         if file_split:
-            output_filename = str(pathlib.Path(output_filename).parents[0].joinpath(f'{current_dataset.name}.yml'))
+            output_filename = str(
+                pathlib.Path(output_filename)
+                .parents[0]
+                .joinpath(f"{current_dataset.name}.yml")
+            )
 
         if annotate_all and not current_dataset.data_categories:
-            click.secho(f'Database [{current_dataset.name}] has no data categories')
-            current_dataset.data_categories = get_data_categories_annotation(current_dataset)
+            click.secho(f"Database [{current_dataset.name}] has no data categories")
+            current_dataset.data_categories = get_data_categories_annotation(
+                current_dataset
+            )
 
         for table in current_dataset.collections:
-            click.secho(f'####\nAnnotating Table: [{table.name}]\n')
+            click.secho(f"####\nAnnotating Table: [{table.name}]\n")
             if annotate_all and not table.data_categories:
-                click.secho(f'Table [{table.name}] has no data categories')
+                click.secho(f"Table [{table.name}] has no data categories")
                 table.data_categories = get_data_categories_annotation(table)
 
             for field in table.fields:
                 if not field.data_categories:
-                    click.secho(f'Field [{table.name}.{field.name}] has no data categories')
+                    click.secho(
+                        f"Field [{table.name}.{field.name}] has no data categories"
+                    )
                     try:
                         user_categories = get_data_categories_annotation(field)
-                        click.secho(f'''Setting data categories for {table.name}.{field.name} to:
-                        {user_categories}\n''')
+                        click.secho(
+                            f"""Setting data categories for {table.name}.{field.name} to:
+                        {user_categories}\n"""
+                        )
                         field.data_categories = user_categories
                     except AnnotationAbortError:
                         break
@@ -120,6 +134,4 @@ def annotate_dataset(dataset_file: str,
         else:
             continue
         # write each file
-        manifests.write_manifest(output_filename,
-                                 current_dataset.dict(),
-                                 'dataset')
+        manifests.write_manifest(output_filename, current_dataset.dict(), "dataset")

@@ -79,7 +79,9 @@ def create_dataset(engine: Engine, collections: List[DatasetCollection]) -> Data
     return dataset
 
 
-def generate_dataset(connection_string: str, file_name: str, annotate: bool = False) -> None:
+def generate_dataset(
+    connection_string: str, file_name: str, annotate: bool = False
+) -> None:
     """
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest.
@@ -91,5 +93,5 @@ def generate_dataset(connection_string: str, file_name: str, annotate: bool = Fa
     manifests.write_manifest(file_name, dataset.dict(), "dataset")
     echo_green(f"Generated dataset manifest written to {file_name}")
     if annotate:
-        echo_green(f"Begin dataset annotation.")
+        echo_green(f"Begin dataset annotation for {file_name}.")
         annotate_dataset.annotate_dataset(file_name)
