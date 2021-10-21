@@ -47,10 +47,9 @@ def hierarchy_figures(
     target = []
 
     for category in categories:
-        if FIDES_PARENT_NAME in category.keys():
-            if category[FIDES_PARENT_NAME]:
-                source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
-                target.append(fides_key_dict[category[FIDES_KEY_NAME]])
+        if FIDES_PARENT_NAME in category and category[FIDES_PARENT_NAME]:
+            source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
+            target.append(fides_key_dict[category[FIDES_KEY_NAME]])
 
     sankey = go.Sankey(
         valueformat=".1f",

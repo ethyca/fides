@@ -3,7 +3,6 @@ This script is a utility for interactively annotating data categories in the dat
 """
 
 import pathlib
-import webbrowser
 from typing import Union, List
 
 import click
@@ -23,7 +22,7 @@ class AnnotationAbortError(Exception):
 
 
 def get_data_categories_annotation(
-    dataset_member: Union[Dataset, DatasetCollection, DatasetField]
+        dataset_member: Union[Dataset, DatasetCollection, DatasetField]
 ) -> List[str]:
     """
     Request the user's input to supply a list of data categories
@@ -39,24 +38,25 @@ def get_data_categories_annotation(
     msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
     user_categories = []
     user_response = click.prompt(msg, default=None)
+    if not user_response:
+        return user_categories
     if user_response.lower() == "q":
         if click.confirm(
-            "Are you sure you want to quit annotating the dataset? (progress will be saved)"
+                "Are you sure you want to quit annotating the dataset? (progress will be saved)"
         ):
             raise AnnotationAbortError
-    if user_response:
-        user_categories = [i.strip() for i in user_response.split(",")]
-        # future: loop through inputs and validate
+        user_response = get_data_categories_annotation(dataset_member)
+    # future: loop through inputs and validate
+    user_categories = [i.strip() for i in user_response.split(',')]
     return user_categories
 
 
 def annotate_dataset(
-    dataset_file: str,
-    dataset_key: str = "dataset",
-    resource_type: str = "data_category",
-    auto_open: bool = True,
-    annotate_all: bool = False,
-    file_split: bool = True,
+        dataset_file: str,
+        dataset_key: str = "dataset",
+        resource_type: str = "data_category",
+        annotate_all: bool = False,
+        file_split: bool = True,
 ) -> None:
     """
     Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
@@ -65,7 +65,6 @@ def annotate_dataset(
         dataset_file: the file name for the dataset to annotate
         dataset_key: the primary dataset key
         resource_type: the type of data resource to point to for assistance (via visualization web page)
-        auto_open: flag to attempt to automatically open the resource visualization web page
         annotate_all: flag to annotate all members of a dataset (default False: only annotate fields)
         file_split: flag to split multiple datasets into individual, self-named dataset yaml files
 
@@ -85,8 +84,6 @@ def annotate_dataset(
     """,
         fg="green",
     )
-    if auto_open:
-        webbrowser.open(visualize_graphs_url, new=2)
 
     # load in the dataset
     datasets = core_parse.ingest_manifests(dataset_file)[dataset_key]
@@ -95,11 +92,12 @@ def annotate_dataset(
         current_dataset = Dataset(**dataset)
         click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
-        if file_split:
+        if len(datasets) > 1 and file_split:
+            # if more than one dataset is in the list, each dataset will be split into separate files
             output_filename = str(
                 pathlib.Path(output_filename)
-                .parents[0]
-                .joinpath(f"{current_dataset.name}.yml")
+                    .parents[0]
+                    .joinpath(f"{current_dataset.name}.yml")
             )
 
         if annotate_all and not current_dataset.data_categories:
@@ -117,7 +115,7 @@ def annotate_dataset(
             for field in table.fields:
                 if not field.data_categories:
                     click.secho(
-                        f"Field [{table.name}.{field.name}] has no data categories"
+                        f"Field [{table.name}.{field.name}] has no data categories\n"
                     )
                     try:
                         user_categories = get_data_categories_annotation(field)
