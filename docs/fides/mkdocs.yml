@@ -1,21 +1,34 @@
 site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
-  - Home: index.md
-  - License: license.md
-  - Fides Resources: fides_resources.md
+  - What is Fides?: index.md
+  - Use Cases:
+      - Evaluating Privacy in CI: use_cases/use_case1.md
+      - Automating Data Rights: use_cases/use_case2.md
   - Getting Started:
-      - getting_started/docker.md
-      - getting_started/local.md
+      - Overview: getting_started/overview.md
+      - Fidesctl in Docker: getting_started/docker.md
+      - Fidesctl Manually (without Docker): getting_started/manual.md
   - Tutorial:
-      - Tutorial Overview: tutorial/overview.md
+      - Overview: tutorial/overview.md
       - Understanding the Fides Taxonomy: tutorial/taxonomy.md
       - Annotate your Datasets: tutorial/dataset.md
       - Declare your Systems: tutorial/system.md
       - Write Privacy Policy (as code): tutorial/policy.md
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
-  - Deployment: deployment.md
+  - Deployment Guide: deployment.md
+  - Fides Language:
+      - Overview: language/overview.md
+      - Syntax: language/syntax.md
+      - Resources: language/resources.md
+      - Taxonomy:
+        - Overview: language/taxonomy/overview.md
+        - Taxonomy Explorer: language/taxonomy/explorer.md
+        - Data Categories: language/taxonomy/data_categories.md
+        - Data Uses: language/taxonomy/data_uses.md
+        - Data Subjects: language/taxonomy/data_subjects.md
+        - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI: 
     - fidesctl CLI Overview: cli/cli.md
     - fidesctl Configuration File: cli/configuration-file
@@ -30,7 +43,7 @@ nav:
     - reset-db: cli/reset-db.md 
     - view-config: cli/view-config.md
     - webserver: cli/webserver.md
-
+  - APIs: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -39,29 +52,48 @@ nav:
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
   - Community:
-      - GitHub: community/github.md
+      - Github, Slack & Discord: community/overview.md
+      - Community Hints & Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
+  - About Ethyca: ethyca.md
+  - License: license.md
+
 theme:
   palette:
-      primary: blue
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
   name: material
   favicon: img/favicon.png
-  logo: img/logo.png
+  logo: img/fides-logo.svg
+  font:
+    text: Source Sans Pro
   features:
-    - naviation.top
+    - navigation.top
     - navigation.instant
 
 markdown_extensions:
+  - attr_list
   - pymdownx.superfences
   - pymdownx.snippets
   - pymdownx.inlinehilite
   - pymdownx.tabbed
+  - admonition
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
-  - css/stylesheet.css
+  - css/fides.css
+
+plugins:
+  - render_swagger
