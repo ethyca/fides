@@ -3,8 +3,8 @@ import pprint
 
 import click
 
-from fidesapi.main import start_webserver
 from fidesapi import database
+from fidesapi.main import start_webserver
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -22,6 +22,7 @@ from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
+    annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
 from fidesctl.core.utils import echo_green, echo_red
@@ -84,11 +85,11 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 )
 @dry_flag
 def evaluate(
-    ctx: click.Context,
-    manifests_dir: str,
-    fides_key: str,
-    message: str,
-    dry: bool,
+        ctx: click.Context,
+        manifests_dir: str,
+        fides_key: str,
+        message: str,
+        dry: bool,
 ) -> None:
     """
     Evaluate a registry or system, either approving or denying
@@ -122,8 +123,10 @@ def evaluate(
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
+@click.option("a", "--annotate", is_flag=True)
 def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str
+        ctx: click.Context, connection_string: str, output_filename: str,
+        annotate: bool
 ) -> None:
     """
     Generates a comprehensive dataset manifest from a database.
@@ -133,9 +136,31 @@ def generate_dataset(
         connection_string (str): A SQLAlchemy-compatible connection string
 
         output_filename (str): A path to where the manifest will be written
+
+        annotate (bool): flag to activate guided dataset annotation mode
     """
 
-    _generate_dataset.generate_dataset(connection_string, output_filename)
+    _generate_dataset.generate_dataset(connection_string, output_filename, annotate=annotate)
+
+
+@click.command()
+@click.pass_context
+@click.argument("input_filename", type=str)
+@click.option("-a", "--all", is_flag=True, help="Annotate all dataset members, not just fields")
+def annotate_dataset(
+        ctx: click.Context, input_filename: str, all: bool
+) -> None:
+    """
+    Read and annotate a dataset.yml file to add data_categories in a guided UI
+    Args:
+        ctx: Click context
+        input_filename: the dataset.yml file to be read and edited
+        all: flag to annotate all dataset members, not just fields (e.g. datasets, collections)
+
+    Returns:
+        Edits the input file in place
+    """
+    _annotate_dataset.annotate_dataset(input_filename, annotate_all=all)
 
 
 @click.command()
