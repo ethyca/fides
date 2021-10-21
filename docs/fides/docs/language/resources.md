@@ -1,10 +1,14 @@
 # Fides Resource Types
 
-This page describes the various resources that make up the Fides platform. 
+Resources are the most important element in the Fides language. Each resource describes one or more objects and it's role in the Fides tool workflow. These can be grouped as:
+
+- [Organization Resources](#organization) are a logical grouping of all resources, and all resources must belong to an organization.
+- [System Resources](#system) encompasses objects that describe your application and data storage infrastructure.
+- [Data & Policy Classifiers](#data-policy-classifiers) comprises four classifiers to describe how systems use data and author enforceable policies.
 
 ## Resource Relationship Diagram
 
-![alt text](img/Resource_Relations.svg "Fides Manifest Workflow")
+![alt text](../img/Resource_Relations.svg "Fides Manifest Workflow")
 
 ## Organization
 

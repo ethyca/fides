@@ -11,15 +11,27 @@ from .utils import get_db_engine, echo_green
 
 def get_db_collections_and_fields(engine: Engine) -> Dict[str, List[str]]:
     """
-    Return an object containing all of the tables within
-    a database and their fields.
+    Get the name of every field in each table within a database
+    Args:
+        engine: A sqlalchemy DB connection engine
+
+    Returns:
+        db_tables: An object that contains a mapping of each field in each table of a database
+            (i.e. {database/schema.table_name:[fields, ...]} )
     """
     inspector = sqlalchemy.inspect(engine)
+    schema_exclusion_list = ["information_schema"]
+
+    if engine.dialect.name == "mysql":
+        schema_exclusion_list.extend(["mysql", "performance_schema"])
+
     db_tables = {
-        f"{schema}.{table}": [column["name"] for column in inspector.get_columns(table)]
+        f"{schema}.{table}": [
+            column["name"] for column in inspector.get_columns(table, schema=schema)
+        ]
         for schema in inspector.get_schema_names()
         for table in inspector.get_table_names(schema=schema)
-        if schema != "information_schema"
+        if schema not in schema_exclusion_list
     }
     return db_tables
 

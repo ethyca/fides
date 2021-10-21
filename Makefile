@@ -134,7 +134,12 @@ compose-build:
 	@docker-compose down
 	@docker-compose build
 
+.PHONY: docs-build
+docs-build: compose-build
+	@docker-compose run --rm $(IMAGE_NAME) \
+	python generate_openapi.py ../docs/fides/docs/api/openapi.json
+
 .PHONY: docs-serve
-docs-serve:
+docs-serve: docs-build
 	@docker-compose build docs
 	@docker-compose up docs
