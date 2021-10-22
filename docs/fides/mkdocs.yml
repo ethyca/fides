@@ -29,7 +29,20 @@ nav:
         - Data Uses: language/taxonomy/data_uses.md
         - Data Subjects: language/taxonomy/data_subjects.md
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
-  - CLI: cli.md
+  - CLI:
+    - fidesctl CLI Overview: cli/cli.md
+    - fidesctl Configuration File: cli/configuration-file
+    - apply: cli/apply.md
+    - delete: cli/delete.md
+    - evaluate: cli/evaluate.md
+    - get: cli/get.md
+    - init-db: cli/init-db.md
+    - ls: cli/ls.md
+    - parse: cli/parse.md
+    - ping: cli/ping.md
+    - reset-db: cli/reset-db.md
+    - view-config: cli/view-config.md
+    - webserver: cli/webserver.md
   - APIs: api/index.md
   - Development:
       - Overview: development/overview.md

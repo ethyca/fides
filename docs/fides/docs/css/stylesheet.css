@@ -274,9 +274,3 @@ body {
 }
 
 /* -- END: Taxonomy Visualization Explorer CSS -- */
-
-/* -- Custom dark theme (partially overrides mkdocs' "slate" theme) -- */
-[data-md-color-scheme="slate"] .md-content h1,
-[data-md-color-scheme="slate"] .md-content h2 {
-  color: white;
-}
