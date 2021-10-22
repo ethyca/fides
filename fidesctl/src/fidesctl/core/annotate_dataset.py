@@ -22,7 +22,7 @@ class AnnotationAbortError(Exception):
 
 
 def get_data_categories_annotation(
-        dataset_member: Union[Dataset, DatasetCollection, DatasetField]
+    dataset_member: Union[Dataset, DatasetCollection, DatasetField]
 ) -> List[str]:
     """
     Request the user's input to supply a list of data categories
@@ -36,27 +36,27 @@ def get_data_categories_annotation(
         List of the user's input
     """
     msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
-    user_categories = []
+    user_categories: List[str] = []
     user_response = click.prompt(msg, default=None)
     if not user_response:
         return user_categories
     if user_response.lower() == "q":
         if click.confirm(
-                "Are you sure you want to quit annotating the dataset? (progress will be saved)"
+            "Are you sure you want to quit annotating the dataset? (progress will be saved)"
         ):
             raise AnnotationAbortError
         user_response = get_data_categories_annotation(dataset_member)
     # future: loop through inputs and validate
-    user_categories = [i.strip() for i in user_response.split(',')]
+    user_categories = [i.strip() for i in user_response.split(",")]
     return user_categories
 
 
 def annotate_dataset(
-        dataset_file: str,
-        dataset_key: str = "dataset",
-        resource_type: str = "data_category",
-        annotate_all: bool = False,
-        file_split: bool = True,
+    dataset_file: str,
+    dataset_key: str = "dataset",
+    resource_type: str = "data_category",
+    annotate_all: bool = False,
+    file_split: bool = True,
 ) -> None:
     """
     Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
@@ -74,13 +74,10 @@ def annotate_dataset(
     output_filename = dataset_file
 
     # Make the user aware of the data_categories visualizer
-    visualize_graphs_url = visualize.get_visualize_url(resource_type, "graphs")
-    visualize_text_url = visualize.get_visualize_url(resource_type, "text")
-
     click.secho(
-        f"""For reference, open the data category visualizer at either:
-        {visualize_graphs_url}
-        {visualize_text_url}
+        f"""For reference, open the data category visualizer at either (localhost if running container):
+        {visualize.get_visualize_url(resource_type, "graphs")}
+        {visualize.get_visualize_url(resource_type, "text")}
     """,
         fg="green",
     )
@@ -96,8 +93,8 @@ def annotate_dataset(
             # if more than one dataset is in the list, each dataset will be split into separate files
             output_filename = str(
                 pathlib.Path(output_filename)
-                    .parents[0]
-                    .joinpath(f"{current_dataset.name}.yml")
+                .parents[0]
+                .joinpath(f"{current_dataset.name}.yml")
             )
 
         if annotate_all and not current_dataset.data_categories:

@@ -40,78 +40,77 @@ def hierarchy_figures(
 
     # build assets/relationships for figures
     for i, category in enumerate(categories):
-        # get suburst labels and parents
-        labels.append(i[FIDES_KEY_NAME])
-        parents.append(i[FIDES_PARENT_NAME])
+        # get sunburst labels and parents
+        labels.append(category[FIDES_KEY_NAME])
+        parents.append(category[FIDES_PARENT_NAME])
         # build sankey mapping
         fides_key_dict[category[FIDES_KEY_NAME]] = i
         # assign colors for grouping in sunburst chart
         category["color"] = category[FIDES_KEY_NAME].split(".")[0]
-        # get source and targe paths for sankey and icicle graphs
+        # get source and target paths for sankey and icicle graphs
         if FIDES_PARENT_NAME in category and category[FIDES_PARENT_NAME]:
             source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
             target.append(fides_key_dict[category[FIDES_KEY_NAME]])
 
-    # build suburst
-    sunburst = go.Sunburst(
-        labels=labels,
-        parents=parents,
-    )
-
-    sankey = go.Sankey(
-        valueformat=".1f",
-        valuesuffix="%",
-        node=dict(
-            pad=15,
-            thickness=20,
-            line=dict(color="black", width=0.5),
-            label=list(fides_key_dict.keys()),
-            color="blue",  # Maybe make this 'ethyca blue'?
-            hovertemplate="%{label}",
+    fig_data = [
+        go.Sunburst(
+            labels=labels,
+            parents=parents,
         ),
-        link=dict(source=source, target=target, value=target),
-        visible=False,
-    )
+        go.Sankey(
+            valueformat=".1f",
+            valuesuffix="%",
+            node=dict(
+                pad=15,
+                thickness=20,
+                line=dict(color="black", width=0.5),
+                label=list(fides_key_dict.keys()),
+                color="blue",  # Maybe make this 'ethyca blue'?
+                hovertemplate="%{label}",
+            ),
+            link=dict(source=source, target=target, value=target),
+            visible=False,
+        ),
+        go.Icicle(
+            labels=labels,
+            parents=parents,
+            visible=False,
+        ),
+    ]
 
-    # build icicle
-    icicle = go.Icicle(
-        labels=labels,
-        parents=parents,
-        visible=False,
-    )
-
-    updatemenus = list(
-        [
-            dict(
-                active=0,
-                buttons=list(
-                    [
-                        dict(
-                            label="Sunburst",
-                            method="update",
-                            args=[{"visible": [True, False, False]}],
+    fig = dict(
+        data=fig_data,
+        layout=dict(
+            title=f'{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy',
+            showlegend=False,
+            updatemenus=list(
+                [
+                    dict(
+                        active=0,
+                        buttons=list(
+                            [
+                                dict(
+                                    label="Sunburst",
+                                    method="update",
+                                    args=[{"visible": [True, False, False]}],
+                                ),
+                                dict(
+                                    label="Sankey",
+                                    method="update",
+                                    args=[{"visible": [False, True, False]}],
+                                ),
+                                dict(
+                                    label="Icicle",
+                                    method="update",
+                                    args=[{"visible": [False, False, True]}],
+                                ),
+                            ]
                         ),
-                        dict(
-                            label="Sankey",
-                            method="update",
-                            args=[{"visible": [False, True, False]}],
-                        ),
-                        dict(
-                            label="Icicle",
-                            method="update",
-                            args=[{"visible": [False, False, True]}],
-                        ),
-                    ]
-                ),
-            )
-        ]
+                    )
+                ]
+            ),
+        ),
     )
-    layout = dict(
-        title=f'{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy',
-        showlegend=False,
-        updatemenus=updatemenus,
-    )
-    fig = dict(data=[sunburst, sankey, icicle], layout=layout)
     if json_out:
         return plotly.io.to_json(fig)
     return plotly.io.to_html(
