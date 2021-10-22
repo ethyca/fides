@@ -33,7 +33,7 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.option(
     "--diff",
     is_flag=True,
-    help="Print the diff between the server's old and new states in Python DeepDiff format"
+    help="Print the diff between the server's old and new states in Python DeepDiff format",
 )
 @manifests_dir_argument
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
@@ -60,13 +60,13 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete a specified resource
-    
+
     \b. Args:
 
         [resource type list] (string): the type of resource from the enumeration that you want to delete
 
         FIDES_KEY (string): the Fides key of the resource that you want to delete.
-    """ 
+    """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.delete(
@@ -85,10 +85,12 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     "-k",
     "--fides-key",
     default="",
-    help="The Fides key of the single policy that you wish to evaluate. This key is a string token that uniquely identifies the policy."
+    help="The Fides key of the single policy that you wish to evaluate. This key is a string token that uniquely identifies the policy.",
 )
 @click.option(
-    "-m", "--message", help="A message that you can supply to describe the purpose of this evaluation."
+    "-m",
+    "--message",
+    help="A message that you can supply to describe the purpose of this evaluation.",
 )
 @dry_flag
 def evaluate(
@@ -99,9 +101,9 @@ def evaluate(
     dry: bool,
 ) -> None:
     """
-     Assess your data's compliance to policies
-     \b. This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy. 
-    
+    Assess your data's compliance to policies
+    \b. This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
+
     """
 
     config = ctx.obj["CONFIG"]
@@ -210,9 +212,9 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
     Validate the taxonomy described by the manifest files
-    \b. Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify presence of taxonomy valuse. If the taxonomy is successfully validated, the command prints a success message and returns 0. If invalid, the command prints one or more error messages and returns non-0. 
+    \b. Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify presence of taxonomy valuse. If the taxonomy is successfully validated, the command prints a success message and returns 0. If invalid, the command prints one or more error messages and returns non-0.
 
-    Note: No resources are applied to your server in this command. Enabling -v will print the taxonomy. 
+    Note: No resources are applied to your server in this command. Enabling -v will print the taxonomy.
     """
 
     taxonomy = _parse.parse(manifests_dir)
