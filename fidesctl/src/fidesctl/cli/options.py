@@ -40,7 +40,7 @@ def dry_flag(command: Callable) -> Callable:
     command = click.option(
         "--dry",
         is_flag=True,
-        help="Dry run mode. As it applies the resource manifest files, the command prints out the number of resources it would create, update, and delete, but it doesn't actually apply the changes to your server.",
+        help="Dry run mode: this only prints the resources the command would normally create, update, and delete, without sending the changes to the server",
     )(command)
     return command
 
