@@ -62,6 +62,6 @@ def verbose_flag(command: Callable) -> Callable:
         "--verbose",
         "-v",
         is_flag=True,
-        help="Turns on verbose output.",
+        help="Enable verbose output.",
     )(command)
     return command
