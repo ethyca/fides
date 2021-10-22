@@ -32,24 +32,31 @@ def hierarchy_figures(
     Returns:
         Json representation of the figure if `json_out` is True, html otherwise
     """
-    for category in categories:
-        category["color"] = category[FIDES_KEY_NAME].split(".")[0]
-
-    # build suburst
-    sunburst = go.Sunburst(
-        labels=[i[FIDES_KEY_NAME] for i in categories],
-        parents=[i[FIDES_PARENT_NAME] for i in categories],
-    )
-
-    # build sankey mapping
-    fides_key_dict = {v[FIDES_KEY_NAME]: i for i, v in enumerate(categories)}
     source = []
     target = []
+    labels = []
+    parents = []
+    fides_key_dict = {}
 
-    for category in categories:
+    # build assets/relationships for figures
+    for i, category in enumerate(categories):
+        # get suburst labels and parents
+        labels.append(i[FIDES_KEY_NAME])
+        parents.append(i[FIDES_PARENT_NAME])
+        # build sankey mapping
+        fides_key_dict[category[FIDES_KEY_NAME]] = i
+        # assign colors for grouping in sunburst chart
+        category["color"] = category[FIDES_KEY_NAME].split(".")[0]
+        # get source and targe paths for sankey and icicle graphs
         if FIDES_PARENT_NAME in category and category[FIDES_PARENT_NAME]:
             source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
             target.append(fides_key_dict[category[FIDES_KEY_NAME]])
+
+    # build suburst
+    sunburst = go.Sunburst(
+        labels=labels,
+        parents=parents,
+    )
 
     sankey = go.Sankey(
         valueformat=".1f",
@@ -68,8 +75,8 @@ def hierarchy_figures(
 
     # build icicle
     icicle = go.Icicle(
-        labels=[i[FIDES_KEY_NAME] for i in categories],
-        parents=[i[FIDES_PARENT_NAME] for i in categories],
+        labels=labels,
+        parents=parents,
         visible=False,
     )
 
