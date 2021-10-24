@@ -3,11 +3,11 @@
 
 .renderedMarkdown p {
   margin:  0px !important;
-  font-size:  17.6px !important;
+  font-size:  16px !important;
   font-family: 'Source Sans Pro', sans-serif !important;
 
 }
-.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls, .tab {
+.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls, .tab, select{
   display:  none !important;
   padding:  0px !important;
   margin:  0px !important;
@@ -50,4 +50,16 @@ tbody .response-col_status {
 
 .microlight {
   padding: 1px !important;
+}
+
+.info {
+  margin: 12px 12px 12px 0px !important;
+}
+
+.opblock-tag {
+  padding: 12px 0px 12px 0px !important;
+}
+
+span:after {
+  background:  none !important;
 }
