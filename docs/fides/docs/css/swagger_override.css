@@ -7,7 +7,7 @@
   font-family: 'Source Sans Pro', sans-serif !important;
 
 }
-.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls {
+.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls, .tab {
   display:  none !important;
   padding:  0px !important;
   margin:  0px !important;
@@ -30,6 +30,24 @@ tbody .response-col_status {
   font-size: 16px !important;
 }
 
-.model-example {
+.model-example{
   margin:  0px !important;
+}
+
+.tab {
+  margin:  4px !important;
+}
+
+.tabitem {
+  margin:  4px !important;
+  font-size:  14px !important;
+}
+
+/* Get rid of the harsh lime green */
+[style="color: rgb(162, 252, 162);"] {
+  color: inherit !important;
+}
+
+.microlight {
+  padding: 1px !important;
 }
