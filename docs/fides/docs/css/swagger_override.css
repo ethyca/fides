@@ -1,0 +1,35 @@
+
+/* -- Swagger UI redesign -- */
+
+.renderedMarkdown p {
+  margin:  0px !important;
+  font-size:  17.6px !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
+
+}
+.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls {
+  display:  none !important;
+  padding:  0px !important;
+  margin:  0px !important;
+}
+
+tbody .response-col_status {
+  font-size: 16px !important;
+  font-weight:  bold !important;
+}
+
+.col_header {
+  font-size: 16px !important;
+  font-weight:  bold !important;
+}
+
+.response-col_description p {
+  margin: 0px !important;
+}
+.opblock-summary-description {
+  font-size: 16px !important;
+}
+
+.model-example {
+  margin:  0px !important;
+}
