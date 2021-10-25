@@ -1,4 +1,4 @@
-# Fides API
+# Fides Control API
 
 The `fidesctl` API is exceedingly formulaic, so much so that it's easier to grasp the API by understanding the formula, rather than reading through a list of endpoints. The fundamental idea is that there's a set of five endpoints for each Fides resource. These endpoints let you...
 
