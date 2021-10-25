@@ -9,7 +9,9 @@ from fidesctl.core.api_helpers import get_server_resources, get_server_resource
 from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green, echo_red
 from fideslang.models import (
+    ActionEnum,
     Evaluation,
+    PolicyRule,
     StatusEnum,
     InclusionEnum,
     Policy,
@@ -99,6 +101,21 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
         raise SystemExit(1)
 
 
+def validate_supported_policy_rule(policy_rule: PolicyRule, policy: Policy) -> None:
+    """
+    Validates that only supported actions are used in taxonomy. Currently
+    evaluations only support REJECT policy actions.
+    see: https://github.com/ethyca/fides/issues/150
+    """
+    if policy_rule.action != ActionEnum.REJECT:
+        echo_red(
+            "Policy {} uses unsupported policy action {}. Only REJECT is currently supported".format(
+                policy.name, policy_rule.action
+            )
+        )
+        raise SystemExit(1)
+
+
 def get_fides_key_parent_hierarchy(
     taxonomy: Taxonomy, fides_key: str
 ) -> List[FidesKey]:
@@ -159,6 +176,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     evaluation_detail_list = []
     for policy in taxonomy.policy:
         for rule in policy.rules:
+            validate_supported_policy_rule(rule, policy)
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
 
@@ -240,6 +258,7 @@ def populate_references_keys(
     # Not all fides keys can be pulled from the server, we will
     # check if the last recursive run added any additional keys to the set
     if missing_resource_keys and set(missing_resource_keys) != set(last_keys):
+        # TODO: Need to figure out how to log this even though being invoked recursively
         echo_green(
             "Fetching the following missing resources from the server:\n- {}".format(
                 "\n".join(missing_resource_keys)
