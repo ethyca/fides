@@ -101,19 +101,21 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
         raise SystemExit(1)
 
 
-def validate_supported_policy_rule(policy_rule: PolicyRule, policy: Policy) -> None:
+def validate_supported_policy_rules(policies: List[Policy]) -> None:
     """
     Validates that only supported actions are used in taxonomy. Currently
     evaluations only support REJECT policy actions.
     see: https://github.com/ethyca/fides/issues/150
     """
-    if policy_rule.action != ActionEnum.REJECT:
-        echo_red(
-            "Policy {} uses unsupported policy action {}. Only REJECT is currently supported".format(
-                policy.name, policy_rule.action
-            )
-        )
-        raise SystemExit(1)
+    for policy in policies:
+        for rule in policy.rules:
+            if rule.action != ActionEnum.REJECT:
+                echo_red(
+                    "Policy {} uses unsupported policy action {}. Only REJECT is currently supported".format(
+                        policy.name, rule.action
+                    )
+                )
+                raise SystemExit(1)
 
 
 def get_fides_key_parent_hierarchy(
@@ -176,7 +178,6 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     evaluation_detail_list = []
     for policy in taxonomy.policy:
         for rule in policy.rules:
-            validate_supported_policy_rule(rule, policy)
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
 
@@ -301,6 +302,7 @@ def evaluate(
         headers=headers,
     )
     validate_policies_exist(policies=taxonomy.policy, evaluate_fides_key=fides_key)
+    validate_supported_policy_rules(policies=taxonomy.policy)
 
     echo_green(
         "Evaluating the following policies:\n{}".format(

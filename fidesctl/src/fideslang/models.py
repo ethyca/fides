@@ -105,10 +105,8 @@ class DatasetCollection(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     fields: List[DatasetField]
 
@@ -122,10 +120,8 @@ class Dataset(FidesModel):
 
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     collections: List[DatasetCollection]
 
