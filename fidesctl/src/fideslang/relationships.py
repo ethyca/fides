@@ -10,19 +10,69 @@ from typing import List, Set, Dict
 from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
-from fidesctl.core.utils import echo_red
-from fideslang.models import FidesModel, FidesKey, Taxonomy
+from fideslang.models import (
+    FidesKey,
+    Taxonomy,
+    PolicyRule,
+    PrivacyRule,
+    DatasetCollection,
+    DatasetField,
+    PrivacyDeclaration,
+    BaseModel,
+)
 from fideslang.utils import get_resource_by_fides_key
 
 
-def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
+def has_nested_fides_keys(parameter: object) -> bool:
+    """
+    Returns whether the given parameter annotation contains
+    a type with nested fides keys
+    """
+    has_nested_keys = parameter.annotation in [
+        PolicyRule,
+        PrivacyRule,
+        DatasetCollection,
+        DatasetField,
+        PrivacyDeclaration,
+    ]
+    return has_nested_keys
+
+
+def has_nested_fides_keys_list(parameter: object) -> bool:
+    """
+    Returns whether the given parameter annotation contains
+    a type with nested fides keys
+    """
+    has_nested_keys_list = parameter.annotation in [
+        List[PolicyRule],
+        List[PrivacyRule],
+        List[PrivacyRule],
+        List[DatasetCollection],
+        List[DatasetField],
+        List[PrivacyDeclaration],
+    ]
+    return has_nested_keys_list
+
+
+def find_nested_keys_in_list(parameter_value: List[BaseModel]) -> bool:
+    """
+    Iterates a nested object list and returns any keys nested fides keys
+    """
+    nested_keys = [
+        nested_key
+        for param_element in parameter_value
+        for nested_key in find_referenced_fides_keys(param_element)
+    ]
+    return nested_keys
+
+
+def find_referenced_fides_keys(resource: object) -> Set[FidesKey]:
     """
     Use type-signature introspection to figure out which fields
     include the FidesKey type and return all of those values.
 
     Note that this finds _all_ fides_keys, including the resource's own fides_key
     """
-
     referenced_fides_keys: Set[FidesKey] = set()
     signature = inspect.signature(type(resource), follow_wrapped=True)
     parameter_values = signature.parameters.values()
@@ -32,7 +82,11 @@ def find_referenced_fides_keys(resource: FidesModel) -> Set[FidesKey]:
             referenced_fides_keys.add(parameter_value)
         elif parameter.annotation == List[FidesKey] and parameter_value:
             referenced_fides_keys.update(resource.__getattribute__(parameter.name))
-
+        elif parameter_value and has_nested_fides_keys(parameter):
+            referenced_fides_keys.update(find_referenced_fides_keys(parameter_value))
+        elif parameter_value and has_nested_fides_keys_list(parameter):
+            nested_keys = find_nested_keys_in_list(parameter_value)
+            referenced_fides_keys.update(nested_keys)
     return referenced_fides_keys
 
 
@@ -68,7 +122,6 @@ def hydrate_missing_resources(
     hydrate a copy of the dehydrated taxonomy with them.
     """
 
-    resources_found = 0
     for resource_name in dehydrated_taxonomy.__fields__:
         server_resources = get_server_resources(
             url=url,
@@ -76,12 +129,8 @@ def hydrate_missing_resources(
             headers=headers,
             existing_keys=missing_resource_keys,
         )
-        resources_found += len(server_resources)
         dehydrated_taxonomy.__setattr__(
             resource_name,
             getattr(dehydrated_taxonomy, resource_name) + server_resources,
         )
-    if resources_found < len(missing_resource_keys):
-        echo_red("Refereneced FidesKeys do not exist!")
-        raise SystemExit(1)
     return dehydrated_taxonomy

@@ -227,14 +227,19 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
 
 
 def populate_references_keys(
-    taxonomy: Taxonomy, url: AnyHttpUrl, headers: Dict[str, str]
+    taxonomy: Taxonomy,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+    last_keys: List[FidesKey],
 ) -> Taxonomy:
     """
     Takes in a taxonomy with potentially missing references to fides keys.
     Populates any missing fides_keys recursively and returns the populated taxonomy.
     """
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
-    if missing_resource_keys:
+    # Not all fides keys can be pulled from the server, we will
+    # check if the last recursive run added any additional keys to the set
+    if missing_resource_keys and set(missing_resource_keys) != set(last_keys):
         echo_green(
             "Fetching the following missing resources from the server:\n- {}".format(
                 "\n".join(missing_resource_keys)
@@ -246,7 +251,9 @@ def populate_references_keys(
             missing_resource_keys=missing_resource_keys,
             dehydrated_taxonomy=taxonomy,
         )
-        return populate_references_keys(taxonomy=taxonomy, url=url, headers=headers)
+        return populate_references_keys(
+            taxonomy=taxonomy, url=url, headers=headers, last_keys=missing_resource_keys
+        )
     return taxonomy
 
 
@@ -284,7 +291,7 @@ def evaluate(
     print("-" * 10)
 
     echo_green("Checking for missing resources...")
-    populate_references_keys(taxonomy=taxonomy, url=url, headers=headers)
+    populate_references_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)
