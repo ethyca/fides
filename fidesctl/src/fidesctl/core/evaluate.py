@@ -11,7 +11,6 @@ from fidesctl.core.utils import echo_green, echo_red
 from fideslang.models import (
     ActionEnum,
     Evaluation,
-    PolicyRule,
     StatusEnum,
     InclusionEnum,
     Policy,
