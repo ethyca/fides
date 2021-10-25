@@ -23,12 +23,12 @@ from fideslang.models import (
 from fideslang.utils import get_resource_by_fides_key
 
 
-def has_nested_fides_keys(parameter: object) -> bool:
+def has_nested_fides_keys(parameter_annotation: str) -> bool:
     """
     Returns whether the given parameter annotation contains
     a type with nested fides keys
     """
-    has_nested_keys = parameter.annotation in [
+    has_nested_keys = parameter_annotation in [
         PolicyRule,
         PrivacyRule,
         DatasetCollection,
@@ -38,12 +38,12 @@ def has_nested_fides_keys(parameter: object) -> bool:
     return has_nested_keys
 
 
-def has_nested_fides_keys_list(parameter: object) -> bool:
+def has_nested_fides_keys_list(parameter_annotation: str) -> bool:
     """
     Returns whether the given parameter annotation contains
     a type with nested fides keys
     """
-    has_nested_keys_list = parameter.annotation in [
+    has_nested_keys_list = parameter_annotation in [
         List[PolicyRule],
         List[PrivacyRule],
         List[PrivacyRule],
@@ -54,7 +54,7 @@ def has_nested_fides_keys_list(parameter: object) -> bool:
     return has_nested_keys_list
 
 
-def find_nested_keys_in_list(parameter_value: List[BaseModel]) -> bool:
+def find_nested_keys_in_list(parameter_value: List[BaseModel]) -> List[str]:
     """
     Iterates a nested object list and returns any keys nested fides keys
     """
@@ -82,9 +82,9 @@ def find_referenced_fides_keys(resource: object) -> Set[FidesKey]:
             referenced_fides_keys.add(parameter_value)
         elif parameter.annotation == List[FidesKey] and parameter_value:
             referenced_fides_keys.update(resource.__getattribute__(parameter.name))
-        elif parameter_value and has_nested_fides_keys(parameter):
+        elif parameter_value and has_nested_fides_keys(parameter.annotation):
             referenced_fides_keys.update(find_referenced_fides_keys(parameter_value))
-        elif parameter_value and has_nested_fides_keys_list(parameter):
+        elif parameter_value and has_nested_fides_keys_list(parameter.annotation):
             nested_keys = find_nested_keys_in_list(parameter_value)
             referenced_fides_keys.update(nested_keys)
     return referenced_fides_keys
