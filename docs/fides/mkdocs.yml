@@ -30,7 +30,7 @@ nav:
         - Data Subjects: language/taxonomy/data_subjects.md
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI: cli.md
-  - APIs: api/index.md
+  - API: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -81,6 +81,7 @@ extra_javascript:
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/fides.css
+  - css/swagger_override.css
 
 plugins:
   - render_swagger

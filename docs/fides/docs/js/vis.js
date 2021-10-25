@@ -1,3 +1,5 @@
+
+
 var VisColorLegend = class VisColorLegend {
   constructor({ el }) {
     this.el = el;

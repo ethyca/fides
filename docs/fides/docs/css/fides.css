@@ -2,6 +2,9 @@ body {
   font-family: 'Source Sans Pro', sans-serif !important;
 }
 
+td {
+  font-size: 16px;
+}
 .md-header {
   background-color: #0861ce;
 }
@@ -40,7 +43,7 @@ body {
 .md-button.md-button--secondary.md-button-github:hover {
   padding-left: 60px;
   background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -45px;
-  background-size: 35px 
+  background-size: 35px
 }
 .md-button.md-button--secondary.md-button-slack {
   padding-left: 60px;
@@ -52,7 +55,7 @@ body {
   padding-left: 60px;
   background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -141px;
   background-size: 35px
-  
+
 }
 .md-button.md-button--secondary.md-button-discord {
   padding-left: 60px;
@@ -64,7 +67,7 @@ body {
   padding-left: 60px;
   background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -225px;
   background-size: 35px
-  
+
 }
 
 .md-typeset__table{
@@ -88,7 +91,7 @@ body {
   color: #313f4e;
   margin: 0 auto;
   }
-  
+
 .vis h1 {
   font-weight: 700;
   font-size: 26px;
