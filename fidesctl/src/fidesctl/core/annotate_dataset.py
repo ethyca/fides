@@ -36,19 +36,18 @@ def get_data_categories_annotation(
         List of the user's input
     """
     msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
-    user_categories: List[str] = []
-    user_response = click.prompt(msg, default=None)
-    if not user_response:
-        return user_categories
-    if user_response.lower() == "q":
-        if click.confirm(
-            "Are you sure you want to quit annotating the dataset? (progress will be saved)"
-        ):
-            raise AnnotationAbortError
-        user_response = get_data_categories_annotation(dataset_member)
-    # future: loop through inputs and validate
-    user_categories = [i.strip() for i in user_response.split(",")]
-    return user_categories
+    # user_categories: List[str] = []
+    user_response = click.prompt(msg, default=[])
+    if user_response:
+        if user_response.lower() == "q":
+            if click.confirm(
+                "Are you sure you want to quit annotating the dataset? (progress will be saved)"
+            ):
+                raise AnnotationAbortError
+            user_response = get_data_categories_annotation(dataset_member)
+        # future: loop through inputs and validate
+        return [i.strip() for i in user_response.split(",")]
+    return []
 
 
 def annotate_dataset(
