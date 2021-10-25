@@ -42,6 +42,8 @@
     
       <link rel="stylesheet" href="../css/fides.css">
     
+      <link rel="stylesheet" href="../css/swagger_override.css">
+    
     
       
 
@@ -71,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#fides-control-api" class="md-skip">
           Skip to content
         </a>
       
@@ -622,7 +624,7 @@
   
     <li class="md-nav__item">
       <a href="../cli/cli/" class="md-nav__link">
-        fidesctl CLI Overview
+        CLI Overview
       </a>
     </li>
   
@@ -634,7 +636,7 @@
   
     <li class="md-nav__item">
       <a href="../cli/configuration-file" class="md-nav__link">
-        fidesctl Configuration File
+        Configuration File
       </a>
     </li>
   
@@ -819,8 +821,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swagger-api-docs" class="md-nav__link">
-    Swagger API Docs
+  <a href="#other-endpoints" class="md-nav__link">
+    Other endpoints
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    API Reference
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#curl-calls" class="md-nav__link">
+    cURL Calls
   </a>
   
 </li>
@@ -1057,8 +1073,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swagger-api-docs" class="md-nav__link">
-    Swagger API Docs
+  <a href="#other-endpoints" class="md-nav__link">
+    Other endpoints
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    API Reference
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#curl-calls" class="md-nav__link">
+    cURL Calls
   </a>
   
 </li>
@@ -1076,10 +1106,65 @@
               
                 
                 
-                <h1 id="api-reference">API Reference</h1>
-<p>You can view the live, interactive <a href="https://swagger.io/docs/">Swagger</a> API docs for Fidesctl by visiting <code>/docs</code> on a running instance. This is a great way to experiment with the APIs using Swagger's built-in "Try it out" functionality.</p>
-<p>Below, we've embedded the latest release's API documentation as a living reference. These work largely the same, but since this documentation site isn't connected to a live instance, the "Try it out" and "Authorize" buttons won't work, sorry!</p>
-<h2 id="swagger-api-docs">Swagger API Docs</h2>
+                <h1 id="fides-control-api">Fides Control API</h1>
+<p>The <code>fidesctl</code> API is exceedingly formulaic, so much so that it's easier to grasp the API by understanding the formula, rather than reading through a list of endpoints. The fundamental idea is that there's a set of five endpoints for each Fides resource. These endpoints let you...</p>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>Example</th>
+<th>Success code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create an instance of a particular resource type.</td>
+<td><code>POST /policy</code></td>
+<td><code>201</code></td>
+</tr>
+<tr>
+<td>Retrieve all instances of a resource type.</td>
+<td><code>GET /policy</code></td>
+<td><code>200</code></td>
+</tr>
+<tr>
+<td>Retrieve the resource identified by the <code>fides_key</code> path parameter.</td>
+<td><code>GET /policy/{fides_key}</code></td>
+<td><code>200</code></td>
+</tr>
+<tr>
+<td>Completely overwrite the <code>fides_key</code> resource.</td>
+<td><code>POST /policy/{fides_key}</code></td>
+<td><code>200</code></td>
+</tr>
+<tr>
+<td>Delete the <code>fides_key</code> resource.</td>
+<td><code>DELETE /policy/{fides_key}</code></td>
+<td><code>204</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<p>The URLs of the endpoints emulate the names of the resources: <code>/organization</code>, <code>/policy</code>, <code>/registry</code>, <code>/system</code>, <code>/dataset</code>, <code>/data_category</code>, <code>/data_use</code>, <code>/data_subject</code>, <code>/data_qualifier</code>.</p>
+</li>
+<li>
+<p>Except for the <code>DELETE</code>, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the <a href="../language/resources.html">Fides Language: Resources chapter</a> -- it's the same structure that's used in the resource manifest files. </p>
+</li>
+</ul>
+<p>That's about all there is to it. There are an additional four endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the <code>fidesctl</code> API. </p>
+<p>After a brief review of the four addition endpoints, we'll provide a complete API reference followed by a set of cURL calls that you can use to exercise the API on your system.</p>
+<h2 id="other-endpoints">Other endpoints</h2>
+<p>The four additional endpoints are:</p>
+<ul>
+<li>
+<p><code>GET /health</code> pings the API server to see if it's up and running. The call returns <code>200</code> if it's up and ready to receive messages, and <code>404</code> if not.</p>
+</li>
+<li>
+<p>Three of the taxonomic resources, <code>/data_category</code>, <code>/data_use</code>, and <code>/data_qualifier</code> (but  <em>not</em> <code>/data_subject</code>) define a <code>GET /resource_type/visualize/{figure_type}</code> endpoint that returns a graph of the resource's taxonomy.  For details, see the <strong>API Reference</strong>, below.</p>
+</li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
 <hr />
 <p><link type="text/css" rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css"></p>
 <div id="swagger-ui">
@@ -1091,6 +1176,8 @@
     dom_id: '#swagger-ui',
     })
 </script>
+
+<h2 id="curl-calls">cURL Calls</h2>
                 
               
               
