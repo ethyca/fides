@@ -30,8 +30,8 @@ nav:
         - Data Subjects: language/taxonomy/data_subjects.md
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
-    - fidesctl CLI Overview: cli/cli.md
-    - fidesctl Configuration File: cli/configuration-file
+    - CLI Overview: cli/cli.md
+    - Configuration File: cli/configuration-file
     - apply: cli/apply.md
     - delete: cli/delete.md
     - evaluate: cli/evaluate.md
@@ -94,6 +94,7 @@ extra_javascript:
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/fides.css
+  - css/swagger_override.css
 
 plugins:
   - render_swagger
