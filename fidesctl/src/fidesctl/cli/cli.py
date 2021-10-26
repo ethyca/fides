@@ -136,7 +136,7 @@ def generate_dataset(
 ) -> None:
     """
     Connect a database to create a dataset
-    \b. Automatically create a dataset .yml file by directly connecting your database.
+    \b. Automatically create a dataset .yml file by directly connecting the database.
 
     Args:
 
@@ -147,9 +147,12 @@ def generate_dataset(
         annotate (bool): flag to activate guided dataset annotation mode
     """
 
-    _generate_dataset.generate_dataset(
-        connection_string, output_filename, annotate=annotate
+    generated_file_name = _generate_dataset.generate_dataset(
+        connection_string, output_filename
     )
+    if annotate:
+        echo_green(f"Begin dataset annotation for {generated_file_name}.")
+        _annotate_dataset.annotate_dataset(generated_file_name)
 
 
 @click.command()
