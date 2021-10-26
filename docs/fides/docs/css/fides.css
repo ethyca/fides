@@ -7,8 +7,10 @@
   --md-code-bg-color: #0861ce27;
   --md-code-fg-color: #0657b9;
   --md-accent-fg-color: #1FDF8F;
+  --md-code-hl-number-color: rgb(240, 96, 144);
+  --md-code-hl-name-color: rgb(163, 171, 216);
   --md-nav-border: #ccc;
-  --md-default-fg-color--lightest: rgb(137, 140, 147);
+  --md-default-fg-color--lightest: rgb(164, 205, 254);
   --md-code-hl-comment-color: rgb(193, 201, 210);
   --md-code-hl-string-color:rgb(133, 217, 150);
   --md-code-hl-keyword-color: rgb(245, 251, 255);
@@ -27,14 +29,15 @@
   --md-default-bg-color: #2A2F45;
   --md-primary-fg-color: #1A1D2E;
   --md-accent-fg-color: #1FDF8F;
-  --md-typeset-a-color: rgb(3, 97, 206);
+  --md-typeset-a-color: rgb(82, 108, 254);
   --md-vis-bg-color: rgba(0, 0, 0, 0.12);
+  --md-code-hl-number-color: rgb(240, 96, 144);
   --md-nav-border: #61647b;
-  --md-default-fg-color--lightest: rgb(191, 191, 191);
   --md-code-bg-color: #1a1d2ea7;
   --md-code-fg-color: #a3abd8;
   --md-bg-footer-color: #1A1D2E;
   --md-bg-table-header: rgba(233, 235, 252, 0.06);
+  --md-code-hl-keyword-color: rgb(245, 251, 255);
   --svg-highlight-col: #1FDF8F;
 } 
 
@@ -44,8 +47,11 @@ body {
 }
 
 .md-header .md-logo img {
-  width: 60px;
+  width: 100px;
   height: auto;
+}
+.md-header__topic {
+  display: none;
 }
 
 .md-header__title {
@@ -61,9 +67,8 @@ body {
 }
 .md-sidebar__inner {
   padding-top: 3.2em;
-  padding-bottom: 3.2em;
 }
-.md-sidebar__scrollwrap {
+.md-sidebar--primary .md-sidebar__scrollwrap {
   border-right: solid 1px var(--md-nav-border) !important;
 }
 
@@ -73,8 +78,14 @@ body {
 }
 
 .md-footer {
+  background-color: #303036;
   padding: 30px 50px;
   color: white;
+}
+
+
+.md-sidebar.md-sidebar--secondary {
+  border-right: none;
 }
 
 
@@ -84,6 +95,9 @@ body {
 
 .md-typeset table:not([class]){
   display: table;
+}
+.md-typeset hr {
+  border-bottom: .05rem solid var(--md-typeset-table-color);
 }
 .md-typeset code {
   font-size: 0.65rem;
@@ -103,10 +117,6 @@ p code, li code {
 
 .md-footer {
   background-color: var(--md-bg-footer-color);
-}
-
-.md-footer-meta {
-  display:  none
 }
 
 .md-typeset__table thead {
@@ -129,10 +139,24 @@ p code, li code {
 
 
 .highlighttable .linenos, .highlighttable .code, .highlighttable .code, .md-typeset .highlighttable code {
-  background-color: rgb(26, 29, 46);
+  background-color: rgb(79, 86, 107);
   padding-top: 10px;
   padding-bottom: 10px;
+  color: var(--md-code-hl-comment-color);
 }
+
+.highlight .il, .highlight .m, .highlight .mb, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .mo {
+  color: var(--md-code-hl-number-color);
+}
+
+.highlight .kc, .highlight .n {
+  color: var(--md-code-hl-name-color);
+}
+
+.highlight .o, .highlight .ow {
+color: var(--md-code-hl-comment-color);
+}
+
 .highlighttable .linenos {
   border-radius: 5px 0 0 5px;
 }
@@ -152,8 +176,6 @@ p code, li code {
 }
 
 
-
-
 /* -- START: Taxonomy Visualization Explorer CSS -- */
 
 /* Typography */
@@ -163,10 +185,13 @@ p code, li code {
   font-size: 12px;
   line-height: 1.5;
   letter-spacing: 0.15px;
-  color: #313f4e;
+  color: var(--md-typeset-color);
   margin: 0 auto;
+  padding: 20px;
+  background-color: var(--md-vis-bg-color);
+  border-radius: 5px;
   }
-
+  
 .vis h1 {
   font-weight: 700;
   font-size: 26px;
@@ -287,6 +312,7 @@ p code, li code {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
+  color: rgb(79, 86, 107) !important;
 }
 
 .vis-tooltip.is-visible {
@@ -342,8 +368,8 @@ p code, li code {
 
 .vis .radial-tree-svg .label-text .label-text__bg,
 .vis .tree-svg .label-text .label-text__bg {
-  stroke: #ffffff;
-  stroke-width: 3px;
+  
+  stroke: var(--md-default-bg-color);
 }
 
 .vis .radial-tree-svg .label-text.is-highlighted,

@@ -76,6 +76,7 @@ theme:
   features:
     - navigation.top
     - navigation.instant
+  custom_dir: overrides
 
 markdown_extensions:
   - attr_list
