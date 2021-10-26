@@ -32,4 +32,4 @@ The four additional endpoints are:
 ---
 !!swagger openapi.json!!
 
-## cURL Calls
+

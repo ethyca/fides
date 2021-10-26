@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "Fidesctl API",
+    "title": "fidesctl",
     "version": "0.1.0"
   },
   "paths": {
     "/health": {
       "get": {
         "tags": [
-          "Healthcheck"
+          "Health"
         ],
-        "summary": "Healthcheck",
-        "description": "Define a simple healthcheck endpoint that will confirm if the API is running.",
-        "operationId": "healthcheck_health_get",
+        "summary": "Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "health_health_get",
         "responses": {
           "200": {
             "description": "Successful Response",
