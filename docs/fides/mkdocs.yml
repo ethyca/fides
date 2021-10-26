@@ -21,7 +21,9 @@ nav:
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
-      - Resources: language/resources.md
+      - Resources: 
+        - Overview: language/resources.md
+        - Organization: language/resources/organization.md
       - Taxonomy:
         - Overview: language/taxonomy/overview.md
         - Taxonomy Explorer: language/taxonomy/explorer.md
@@ -95,6 +97,7 @@ extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/fides.css
   - css/swagger_override.css
+  - css/resources.css
 
 plugins:
   - render_swagger

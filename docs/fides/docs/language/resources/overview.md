@@ -1,33 +1,103 @@
 # Fides Resource Types
 
-Resources are the most important element in the Fides language. Each resource describes one or more objects and it's role in the Fides tool workflow. These can be grouped as:
+You define your privacy policies by creating sets of resources. There are nine resource types divided into two groups:
 
-- [Organization Resources](#organization) are a logical grouping of all resources, and all resources must belong to an organization.
-- [System Resources](#system) encompasses objects that describe your application and data storage infrastructure.
-- [Data & Policy Classifiers](#data-policy-classifiers) comprises four classifiers to describe how systems use data and author enforceable policies.
+<table>
+  <thead>
+    <tr>
+      <th>Group</th>
+      <th>Resource types</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Structure</td>
+      <td>Organization<br>Policy<br>System<br>Registry<br>Dataset</td>
+      <td>Provides a structure for your policies and the data to which they're applied.</td>
+    </tr>
+    <tr>
+      <td>Data</td>
+      <td>Data category<br>Data use<br>Data subject<br>Data qualifier</td>
+      <td>The elements that you use to create a privacy policy. These resources describe the conditions in which a specific type of user is allowed to view a particular type of data.</td>
+    </tr>
+  </tbody>
+</table>
 
-## Resource Relationship Diagram
+The rest of this document...etc
 
-![alt text](../img/Resource_Relations.svg "Fides Manifest Workflow")
+## How to ingest your resources
 
-## Organization
+- CLI
+- API
 
-An organization is a logical grouping of resources, and all resources must belong to an organization. Fides includes a default organization with an id of 1.
+## Resource Specifications
 
-**Example Manifest**
+### Organization
+
+An organization represents all or part of an enterprise or company. It establishes the root of your resource hierarchy. This means that while you can have more than organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" organization can't refer to the Policy objects that are defined by your "European Stores" organization.
+
+### Specification
+
+<table class="hierarchy">
+  <tr class="element">
+    <td class="property">fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A string token of your own invention that uniquely identifies this organization. It's your responsibility to ensure that the value is unique across all of your organization objects.
+      The value may only contain alphanumeric characters and '_'.
+    </td>
+
+  </tr>
+    <tr class="element">
+    <td class="property">name<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A UI-friendly name of the organization.
+    </td>
+  </tr>
+
+  <tr class="element">
+    <td class="property">description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A description of the organization.
+    </td>
+  </tr>
+  <tr class="element">
+    <td class="property"><span class="nest"/>description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr class="element">
+    <td class="description"><span class="bump"/>
+      A description of the organization.
+    </td>
+  </tr>
+</table>
+
+
+### Manifest File
+
+**Demo manifest:** None. Fides automatically defines a default organization with a `fides_key` value of `organization_1`.
 
 ```yaml
 organization:
-  fides_key: test_organization
-  name: Test Organization
-  description: A test organization used to check the validity of changes.
+  fides_key: organization_1
+  name: Acme Incorporated
+  description: An organization that represents all of Acme Inc.
 ```
 
-| Name | Type | Description |
-| --- | --- | --- |
-| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
-| name | String |  A name for this organization |
-| description | String | A description of what this organiztion encapsulates |
+**API Payload**
+```json
+{
+  "fides_key": "organization_1",
+  "name": "Acme Incorporated",
+  "description": "An organization that represents all of Acme Inc."
+}
+
+```
 
 ---
 
@@ -221,6 +291,70 @@ system:
     system_dependencies: []
 ```
 
+<table class="hierarchy">
+  <tr class="element">
+    <td class="property">fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A string token that uniquely identifies thus system. The value may only contain alphanumeric characters and '_'.
+    </td>
+  </tr>
+    <tr class="element">
+    <td class="property">organization_fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      The `fides_key` value of the organization to which this system belongs.
+    </td>
+  </tr>
+    <tr class="element">
+    <td class="property">name<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      UI-friendly name of the system.
+    </td>
+  </tr>
+
+  <tr class="element">
+    <td class="property">description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A description of the system.
+    </td>
+  </tr>
+
+  </tr>
+    <tr class="element">
+    <td class="property">system_type<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A string token of your own invention that classifies the system.
+    </td>
+  </tr>
+
+</tr>
+    <tr class="element">
+    <td class="property">meta<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr>
+    <td class="description">
+      A string token of your own invention that classifies the system.
+    </td>
+  </tr>
+  <tr class="element">
+    <td class="property"><span class="nest"/>description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
+  </tr>
+  <tr class="element">
+    <td class="description"><span class="bump"/>
+      A description of the organization.
+    </td>
+  </tr>
+</table>
+
 | Name | Type | Description |
 | --- | --- | --- |
 | organization_fides_key | Int | Id of the organization this system belongs to |
@@ -317,9 +451,9 @@ A Dataset Field describes a single column or array of data within a dataset. Dat
 
 ---
 
-## Policies
+## Policy
 
-Policies group together sets of privacy rules into a single resource. These are the resources that systems and registries will be evaluated against.
+A policy combines a set of privacy rules. Your system and registry resources are evaluated against your policies to ensure compliance.
 
 **Example Manifest**
 
@@ -478,4 +612,9 @@ There is no match!
 When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.
 
 ---
+
+
+## Resource Relationship Diagram
+
+![alt text](../img/Resource_Relations.svg "Fides Manifest Workflow")
 
