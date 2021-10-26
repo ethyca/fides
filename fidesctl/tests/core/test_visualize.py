@@ -62,7 +62,7 @@ def test_hierarchy_figures(sample_categories_list):
     with open("tests/data/sample_hierarchy_figures.json", "r") as f:
         expected_sample_hierarchy_figures = json.load(f)
     hierarchy_figures = visualize.hierarchy_figures(
-        sample_categories_list, resource_type="data_category", json_out=True, is_default=True
+        sample_categories_list, resource_type="data_category", json_out=True
     )
     assert json.loads(hierarchy_figures) == expected_sample_hierarchy_figures
 

@@ -18,8 +18,7 @@ def hierarchy_figures(
     categories: List[dict],
     resource_type: str,
     json_out: bool = False,
-    condensed_html: bool = False,
-    is_default: bool = False,
+    condensed_html: bool = False
 ) -> str:
     """
     Generate html to display a hierarchy with several representation options
@@ -28,7 +27,6 @@ def hierarchy_figures(
         resource_type: the name of the resource type
         json_out: Flag to return a json representation of the visualization
         condensed_html: Flag to condense the result html but not including js and instead pointing to cdn
-        is_default: flag to indicate that the taxonomy is only contains the default one (default: False)
     Returns:
         Json representation of the figure if `json_out` is True, html otherwise
     """
@@ -81,7 +79,7 @@ def hierarchy_figures(
     fig = dict(
         data=fig_data,
         layout=dict(
-            title=f'{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy',
+            title=f'Fides {resource_type.replace("_", " ").title()} Hierarchy',
             showlegend=False,
             updatemenus=list(
                 [
@@ -259,8 +257,7 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
 def nested_categories_to_html_list(
     categories: List[dict],
     resource_type: str,
-    indent: int = 1,
-    is_default: bool = False,
+    indent: int = 1
 ) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary
@@ -268,7 +265,6 @@ def nested_categories_to_html_list(
         categories: list of the dictionaries for each taxonomy member
         resource_type: the name of the resource type
         indent: spacing multiplier
-        is_default: flag to indicate that the taxonomy is only contains the default one (default: False)
 
     Returns:
 
@@ -294,7 +290,7 @@ def nested_categories_to_html_list(
                     member="\n".join(nest_to_html(value, indent_factor + 1)),
                 )
 
-    header = f'<h2>{"Default " if is_default else ""}Fides {resource_type.replace("_", " ").title()} Hierarchy</h2>'
+    header = f'<h2>Fides {resource_type.replace("_", " ").title()} Hierarchy</h2>'
     categories_tree = "\n".join(nest_to_html(nested_categories, indent))
     return f"{header}\n{categories_tree}"
 
