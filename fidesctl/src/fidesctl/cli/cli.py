@@ -130,7 +130,6 @@ def evaluate(
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
-@click.option("a", "--annotate", is_flag=True)
 def generate_dataset(
     ctx: click.Context, connection_string: str, output_filename: str, annotate: bool
 ) -> None:
@@ -143,16 +142,9 @@ def generate_dataset(
         connection_string (string): A SQLAlchemy-compatible connection string
 
         output_filename (str): A path to where the manifest will be written
-
-        annotate (bool): flag to activate guided dataset annotation mode
     """
 
-    generated_file_name = _generate_dataset.generate_dataset(
-        connection_string, output_filename
-    )
-    if annotate:
-        echo_green(f"Begin dataset annotation for {generated_file_name}.")
-        _annotate_dataset.annotate_dataset(generated_file_name)
+    _generate_dataset.generate_dataset(connection_string, output_filename)
 
 
 @click.command()
