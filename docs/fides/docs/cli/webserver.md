@@ -10,13 +10,13 @@
   <div class="label">SYNOPSIS</div>
 
   <div class="content">
-    <pre><code>fidesctl view-config </code></pre>
+    <pre><code>fidesctl webserver</code></pre>
   </div>
 
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>webserver</code> command starts the `fidesctl` API server.
+    Starts the <code>fidesctl</code> API server.
   </div>
 
   

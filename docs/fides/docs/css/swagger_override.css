@@ -7,11 +7,7 @@
   font-family: 'Source Sans Pro', sans-serif !important;
 
 }
-.models, .try-out__btn, [data-tag="Visualize"], 
-#operations-Visualize-get_visualization_data_category_visualize__figure_type__get, 
-#operations-Visualize-get_visualization_data_use_visualize__figure_type__get,
-#operations-Visualize-get_visualization_data_qualifier_visualize__figure_type__get,
-[href="openapi.json"], .response-col_links, .response-controls, .tab, select{
+.models, [data-tag="Visualize"], [href="openapi.json"], .response-col_links, .response-controls, .tab, select{
   display:  none !important;
   padding:  0px !important;
   margin:  0px !important;
