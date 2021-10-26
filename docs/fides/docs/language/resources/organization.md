@@ -32,14 +32,7 @@ An organization represents all or part of an enterprise or company. It establish
       A description of the organization.
     </td>
   </tr>
-  <tr class="element">
-    <td class="property"><span class="nest"/>description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr class="element">
-    <td class="description"><span class="bump"/>
-      A description of the organization.
-    </td>
-  </tr>
+
 </table>
 
 
