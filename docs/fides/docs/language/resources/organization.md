@@ -1,56 +1,43 @@
 # Organization
 
-An organization represents all or part of an enterprise or company. It establishes the root of your resource hierarchy. This means that while you can have more than organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" organization can't refer to the Policy objects that are defined by your "European Stores" organization.
+**Demo manifest file:** *None*. 
 
-## Specification
+An organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" organization can't refer to the Policy objects that are defined by your "European Stores" organization.
 
-<table class="hierarchy">
-  <tr class="element">
-    <td class="property">fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A string token of your own invention that uniquely identifies this organization. It's your responsibility to ensure that the value is unique across all of your organization objects.
-      The value may only contain alphanumeric characters and '_'.
-    </td>
+Unless you're creating multiple organizations (which should be rare), you can ignore the organization resource. While all of your other resources must refer to an organization (through their `organization_fides_key` properties), Fides creates a default organization that it uses for all resources that don't otherwise specify an organization. 
 
-  </tr>
-    <tr class="element">
-    <td class="property">name<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A UI-friendly name of the organization.
-    </td>
-  </tr>
+The fides key for the default organization is `default_organization` 
 
-  <tr class="element">
-    <td class="property">description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A description of the organization.
-    </td>
-  </tr>
+## Object Structure
 
-</table>
+**fides_key**<span class="required"/>&nbsp;&nbsp;_string_
+
+A string token of your own invention that uniquely identifies this organization. It's your responsibility to ensure that the value is unique across all of your organization objects. The value may only contain `\w` characters (alphanumeric and underbar).
+
+**name**<span class="required"/>&nbsp;&nbsp;_string_
+
+The UI-friendly name of the organization.
+
+**description**<span class="required"/>&nbsp;&nbsp;_string_
+
+A human-readable description of the organization.
+
 
 
 ## Examples
 
-**Demo manifest:** *None.* Fides automatically defines a default organization with a `fides_key` value of `organization_1`.
-
+**YAML** 
 ```yaml
 organization:
-  fides_key: organization_1
+  fides_key: default_organization
   name: Acme Incorporated
   description: An organization that represents all of Acme Inc.
 ```
 
-**API Payload**
+**JSON**
 ```json
 {
-  "fides_key": "organization_1",
+  "fides_key": "default_organization",
   "name": "Acme Incorporated",
   "description": "An organization that represents all of Acme Inc."
 }

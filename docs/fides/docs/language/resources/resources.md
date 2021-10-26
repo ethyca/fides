@@ -1,6 +1,6 @@
 # Organization
 
-An organization represents all or part of an enterprise or company. It establishes the root of your resource hierarchy. This means that while you can have more than organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" organization can't refer to the Policy objects that are defined by your "European Stores" organization.
+An organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" organization can't refer to the Policy objects that are defined by your "European Stores" organization.
 
 ## Specification
 
@@ -45,11 +45,11 @@ An organization represents all or part of an enterprise or company. It establish
 
 ## Examples
 
-**Demo manifest:** None. Fides automatically defines a default organization with a `fides_key` value of `organization_1`.
+**Demo manifest:** None. Fides automatically defines a default organization with a `fides_key` value of `default_organization`.
 
 ```yaml
 organization:
-  fides_key: organization_1
+  fides_key: default_organization
   name: Acme Incorporated
   description: An organization that represents all of Acme Inc.
 ```
@@ -57,7 +57,7 @@ organization:
 **API Payload**
 ```json
 {
-  "fides_key": "organization_1",
+  "fides_key": "default_organization",
   "name": "Acme Incorporated",
   "description": "An organization that represents all of Acme Inc."
 }
