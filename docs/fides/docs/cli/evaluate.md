@@ -6,7 +6,7 @@
     <span class="mono">evaluate</span> &mdash; run your privacy policies against your data
   </div>
 
-  <span class="label">SYNOPSIS</span>
+  <div class="label">SYNOPSIS</div>
   <div class="content">
     <pre><code>fidesctl evaluate <i>manifest_dir</i> [-k/--fides-key <i>key</i>] [-m/--message <i>message</i>] [--dry]</code></pre>
   </div>
