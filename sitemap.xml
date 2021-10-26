@@ -21,11 +21,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/tutorial/</loc>
-         <lastmod>2021-10-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/api/</loc>
          <lastmod>2021-10-26</lastmod>
          <changefreq>daily</changefreq>
@@ -37,11 +32,6 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/cli/cli/</loc>
-         <lastmod>2021-10-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/cli/configuration-file/</loc>
          <lastmod>2021-10-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
