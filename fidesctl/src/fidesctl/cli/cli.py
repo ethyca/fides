@@ -156,20 +156,24 @@ def generate_dataset(
     is_flag=True,
     help="Annotate all dataset members, not just fields",
 )
+@click.option(
+    "-v",
+    "--validate",
+    is_flag=True,
+    default=True,
+    help="Disable annotation input validation"
+)
 def annotate_dataset(
-    ctx: click.Context, input_filename: str, all_members: bool
+    ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
     """
     Read and annotate a dataset.yml file to add data_categories in a guided UI
-    Args:
-        ctx: Click context
-        input_filename: the dataset.yml file to be read and edited
-        all_members: flag to annotate all dataset members, not just fields (e.g. datasets, collections)
 
-    Returns:
-        Edits the input file in place
+    Args:
+        input_filename: the dataset.yml file to be read and edited
+
     """
-    _annotate_dataset.annotate_dataset(input_filename, annotate_all=all_members)
+    _annotate_dataset.annotate_dataset(input_filename, annotate_all=all_members, validate=validate)
 
 
 @click.command()
