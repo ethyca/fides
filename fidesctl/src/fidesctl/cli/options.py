@@ -40,7 +40,7 @@ def dry_flag(command: Callable) -> Callable:
     command = click.option(
         "--dry",
         is_flag=True,
-        help="Runs the command without any side-effects.",
+        help="Dry run mode: this only prints the resources the command would normally create, update, and delete, without sending the changes to the server",
     )(command)
     return command
 
@@ -51,17 +51,17 @@ def yes_flag(command: Callable) -> Callable:
         "--yes",
         "-y",
         is_flag=True,
-        help="Automatic yes to prompts.",
+        help="Automatically responds 'yes' to any prompts.",
     )(command)
     return command
 
 
 def verbose_flag(command: Callable) -> Callable:
-    "Add a flag that makes commands verbose."
+    "Turns on verbose output."
     command = click.option(
         "--verbose",
         "-v",
         is_flag=True,
-        help="Verbose output.",
+        help="Enable verbose output.",
     )(command)
     return command
