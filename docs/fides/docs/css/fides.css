@@ -43,7 +43,7 @@
 
 
 body {
-  font-family: 'Source Sans Pro', sans-serif !important;
+  font-family: 'Source Sans Pro', sans-serif;
 }
 
 .md-header .md-logo img {
@@ -69,7 +69,7 @@ body {
   padding-top: 3.2em;
 }
 .md-sidebar--primary .md-sidebar__scrollwrap {
-  border-right: solid 1px var(--md-nav-border) !important;
+  border-right: solid 1px var(--md-nav-border);
 }
 
 .md-content h1,
@@ -107,7 +107,7 @@ body {
 }
 
 .md-typeset .custom-license  code {
-  color: #fff !important;
+  color: #fff;
 }
 
 p code, li code {
@@ -312,7 +312,7 @@ color: var(--md-code-hl-comment-color);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
-  color: rgb(79, 86, 107) !important;
+  color: rgb(79, 86, 107);
 }
 
 .vis-tooltip.is-visible {
