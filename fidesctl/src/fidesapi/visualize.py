@@ -6,7 +6,6 @@ from typing import Union
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
-from sqlalchemy import exc
 
 from fidesapi.crud import list_resource
 from fidesapi.sql_models import sql_model_map

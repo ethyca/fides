@@ -7,12 +7,11 @@ generated programmatically for each resource.
 from typing import List, Dict
 
 from fastapi import APIRouter, status
-from sqlalchemy import sql, update as _update
+from sqlalchemy import update as _update
 
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fideslang import model_map
-from sqlalchemy.orm import query
 
 
 def get_resource_type(router: APIRouter) -> str:
@@ -73,8 +72,8 @@ def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: s
     result_sql_resource = get_resource(sql_model, fides_key)
     if not result_sql_resource:
         return {"error": {"message": f"{fides_key} is not an existing fides_key!"}}
-    else:
-        return result_sql_resource
+
+    return result_sql_resource
 
 
 def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:

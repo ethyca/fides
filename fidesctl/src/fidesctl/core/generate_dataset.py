@@ -6,7 +6,6 @@ from sqlalchemy.engine import Engine
 
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fidesctl.core import annotate_dataset
 from .utils import get_db_engine, echo_green
 
 
