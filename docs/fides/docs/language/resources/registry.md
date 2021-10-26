@@ -1,87 +1,49 @@
-# Organization
+# Registry
 
-A registry is a container that you can use to create groups of system resources. 
+**Demo manifest file:** `/fides/fidesctl/demo_resources/demo_registry.yml`. 
 
 
-## Specification
+A registry is a collection of system resources. You add a system to a registry by setting the system's `registry_id` field. A system can only be long to one registry. Although a system knows which registry it belongs to, the registry doesn't know which systems it contains.
 
-<table class="hierarchy">
-  <tr class="element">
-    <td class="property">fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A string token of your own invention that uniquely identifies this registry. It's your responsibility to ensure that the value is unique across all of your registry objects.
-      The value may only contain alphanumeric characters and '_'.
-    </td>
-  </tr>
-  <tr class="element">
-    <td class="property">name<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A UI-friendly name of the registry.
-    </td>
-  </tr>
+All registries are siblings: You can't create a hierarchy of registries.
 
-  <tr class="element">
-    <td class="property">description<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      A description of the registry.
-    </td>
-  </tr>
-    <tr class="element">
-    <td class="property">organization_fides_key<span class="required"/>&nbsp;&nbsp;<span class="data-type">string</td>
-  </tr>
-  <tr>
-    <td class="description">
-      The fides key of the organization to which this registry belongs.
-    </td>
-  </tr>
+Collecting your systems into registries is optional.
 
-</table>
 
-## Registry
+## Object Structure
 
-A registry can optionally be used to group systems.
+**fides_key**<span class="required"/>_string_
 
-**Example Manifest**
+A string token of your own invention that uniquely identifies this registry. It's your responsibility to ensure that the value is unique across all of your registry objects. The value may only contain `\w` characters (alphanumeric and underbar).
 
-```yaml
-registry:
-- organization_fides_key: 1
-  fides_key: user_systems_registry
-  name: User Systems Registry
-  description: A registry for all of the user-related systems.
-```
+**name**<span class="required"/>_string_
 
-| Name | Type | Description |
-| --- | --- | --- |
-| organization_fides_key | Int | Id of the organization this registry belongs to |
-| fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
-| name | String |  A name for this registry |
-| description | String | A description of what this registry means or encapsulates |
+The UI-friendly name of the registry.
 
----
+**description**<span class="required"/>_string_
+
+A human-readable description of the registry.
+
+**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+
+The fides key of the organization to which this registry belongs.
+
 
 ## Examples
 
-**Demo manifest:** demo_registry.yml.
-
+**YAML**
 ```yaml
-organization:
-  fides_key: default_organization
-  name: Acme Incorporated
-  description: An organization that represents all of Acme Inc.
+registry:
+  - fides_key: user_systems_registry
+    name: User Systems Registry
+    description: A registry for all of the user-related systems.
 ```
 
-**API Payload**
+**JSON**
 ```json
 {
-  "fides_key": "default_organization",
-  "name": "Acme Incorporated",
-  "description": "An organization that represents all of Acme Inc."
+  "fides_key": "user_systems_registry",
+  "name": "User Systems Registry",
+  "description": "A registry for all of the user-related systems."
 }
 ```

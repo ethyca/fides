@@ -1,6 +1,6 @@
 .required:before {
   color: red;
-  content: '*';
+  content: '*\00a0 \00a0 \00a0 \00a0 \00a0 ';
 }
 
 .property {
@@ -32,4 +32,8 @@
   border: 1px lightgrey solid;
   padding:  8px;
   background-color: cornsilk;
+}
+
+.spacer:before {
+  content: "\00a0 \00a0 \00a0 \00a0 \00a0 ";
 }
