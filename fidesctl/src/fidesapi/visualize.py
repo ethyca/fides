@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy import exc
 
-from fidesapi import db_session
+from fidesapi.crud import list_resource
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core import visualize
 from fideslang import DEFAULT_TAXONOMY, model_map
@@ -65,30 +65,18 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
             Html for the requested figure. Response with status code 400 when invalid figure type is provided
         """
         if default_taxonomy:
-            taxonomy = DEFAULT_TAXONOMY.dict()[resource_type]
+            resource_list = DEFAULT_TAXONOMY.dict()[resource_type]
         else:
-            try:
-                # this section is a reimplementation of the api ls command, which should be refactored
-                # to a separate function in the future
-                session = db_session.create_session()
-                sql_model = sql_model_map[resource_type]
-                try:
-                    resp = session.query(sql_model).all()
-                    # convert list of DataCategories to list of dicts
-                    # hacky but there's currently no obvious way to do this conversion from the sql models
-                    taxonomy = [i.__dict__ for i in resp]
-                    _ = [i.pop("_sa_instance_state", None) for i in taxonomy]
-                finally:
-                    session.close()
-            except exc.SQLAlchemyError as exception:
-                return HTTPException(status_code=500, detail=str(exception))
+            sql_model = sql_model_map[resource_type]
+            resource_object_list = list_resource(sql_model)
+            resource_list = [resource.__dict__ for resource in resource_object_list]
         if figure_type == "text":
             figure = visualize.nested_categories_to_html_list(
-                taxonomy, resource_type, is_default=default_taxonomy
+                resource_list, resource_type, is_default=default_taxonomy
             )
         else:
             figure = visualize.hierarchy_figures(
-                taxonomy, resource_type, is_default=default_taxonomy
+                resource_list, resource_type, is_default=default_taxonomy
             )
         return HTMLResponse(figure)
 
