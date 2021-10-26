@@ -1,4 +1,4 @@
-<div class="cli">
+<div id="cli-docs" class="cli">
 
   <h1>get</h1>
 

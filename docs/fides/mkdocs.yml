@@ -31,7 +31,6 @@ nav:
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
     - CLI Overview: cli/cli.md
-    - Configuration File: cli/configuration-file
     - apply: cli/apply.md
     - delete: cli/delete.md
     - evaluate: cli/evaluate.md
@@ -43,7 +42,7 @@ nav:
     - reset-db: cli/reset-db.md
     - view-config: cli/view-config.md
     - webserver: cli/webserver.md
-  - APIs: api/index.md
+  - API: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -76,6 +75,7 @@ theme:
   features:
     - navigation.top
     - navigation.instant
+  custom_dir: overrides
 
 markdown_extensions:
   - attr_list
@@ -96,6 +96,7 @@ extra_css:
   - css/fides.css
   - css/api.css
   - css/cli.css
+  - css/taxonomy.css
 
 plugins:
   - render_swagger

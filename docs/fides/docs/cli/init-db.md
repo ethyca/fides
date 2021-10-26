@@ -1,4 +1,4 @@
-<div class="cli">
+<div id="cli-docs" class="cli">
   <h1>init-db</h1>
 
   <div class="label">NAME</div>
