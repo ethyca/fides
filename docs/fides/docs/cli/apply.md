@@ -39,7 +39,7 @@
       --diff 
     </div>
     <div class="content">
-      In addition to printing the number of changed resources, the command prints a diff between the server's old and new states. The diff is in <a href="https://pypi.org/project/deepdiff/" target="_blank">Python DeepDiff</a> format. <span class="comment">I'm guessing, here.</span>
+      In addition to printing the number of changed resources, the command prints a diff between the server's old and new states. The diff is in <a href="https://pypi.org/project/deepdiff/" target="_blank">Python DeepDiff</a> format. 
     </div>
   </div>
 
