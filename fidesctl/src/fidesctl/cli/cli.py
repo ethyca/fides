@@ -39,8 +39,9 @@ from fidesctl.core.utils import echo_green, echo_red
 @manifests_dir_argument
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
-    Update server with your local resources
-    \b. Reads the resource manifest files that are stored in MANIFESTS_DIR (and its subdirectories) and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+    Update server with your local resources. 
+    
+    Reads the resource manifest files that are stored in MANIFESTS_DIR (and its subdirectories) and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
 
     """
     config = ctx.obj["CONFIG"]
@@ -60,9 +61,9 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @fides_key_argument
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Delete a specified resource
-
-    \b. Args:
+    Delete a specified resource. 
+    
+    Args:
 
         [resource type list] (string): the type of resource from the enumeration that you want to delete
 
@@ -102,8 +103,9 @@ def evaluate(
     dry: bool,
 ) -> None:
     """
-    Assess your data's compliance to policies
-    \b. This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
+    Assess your data's compliance to policies. 
+    
+    This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
 
     """
 
@@ -135,8 +137,9 @@ def generate_dataset(
     ctx: click.Context, connection_string: str, output_filename: str, annotate: bool
 ) -> None:
     """
-    Connect a database to create a dataset
-    \b. Automatically create a dataset .yml file by directly connecting the database.
+    Connect a database to create a dataset. 
+    
+    Automatically create a dataset .yml file by directly connecting the database.
 
     Args:
 
@@ -168,14 +171,13 @@ def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool
 ) -> None:
     """
-    Read and annotate a dataset.yml file to add data_categories in a guided UI
-    Args:
-        ctx: Click context
-        input_filename: the dataset.yml file to be read and edited
-        all_members: flag to annotate all dataset members, not just fields (e.g. datasets, collections)
+    Guided dataset annotation. 
+    
+    Read and annotate a dataset.yml file to add data_categories in a guided UI. This command edits the input file in place.
 
-    Returns:
-        Edits the input file in place
+    Args:
+
+        input_filename: the dataset.yml file to be read and edited
     """
     _annotate_dataset.annotate_dataset(input_filename, annotate_all=all_members)
 
@@ -186,9 +188,9 @@ def annotate_dataset(
 @fides_key_argument
 def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Print the resource as a JSON object
+    Print the resource as a JSON object.
 
-    \b\b. Args:
+    Args:
 
         [resource type list] (string): the type of resource from the enumeration that you want to retrieve
 
@@ -209,8 +211,9 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 def init_db(ctx: click.Context) -> None:
     """
-    Initialize and launch your Fides policy database
-    \b. After you've initialized your database, you should add your policy resources by calling 'apply'.
+    Initialize and launch your Fides policy database.
+    
+    After you've initialized your database, you should add your policy resources by calling 'apply'.
 
     """
     config = ctx.obj["CONFIG"]
@@ -222,8 +225,9 @@ def init_db(ctx: click.Context) -> None:
 @resource_type_argument
 def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
     """
-    List resource objects
-    \b. This command will print the JSON object for the specified resource.
+    List resource objects. 
+    
+    This command will print the JSON object for the specified resource.
 
     Args:
 
@@ -245,8 +249,9 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
 @verbose_flag
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
-    Validate the taxonomy described by the manifest files
-    \b. Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify presence of taxonomy valuse. If the taxonomy is successfully validated, the command prints a success message and returns 0. If invalid, the command prints one or more error messages and returns non-0.
+    Validate the taxonomy described by the manifest files. 
+    
+    Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify presence of taxonomy valuse. If the taxonomy is successfully validated, the command prints a success message and returns 0. If invalid, the command prints one or more error messages and returns non-0.
 
     Note: No resources are applied to your server in this command. Enabling -v will print the taxonomy.
     """
@@ -260,8 +265,9 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @click.pass_context
 def ping(ctx: click.Context, config_path: str = "") -> None:
     """
-    Confirm fidesctl is running
-    \b. Sends a message to the Fides API health-check endpoint and prints the response.
+    Confirm fidesctl is running. 
+    
+    Sends a message to the Fides API health-check endpoint and prints the response.
     """
     config = ctx.obj["CONFIG"]
     healthcheck_url = config.cli.server_url + "/health"
@@ -274,8 +280,9 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
 @yes_flag
 def reset_db(ctx: click.Context, yes: bool) -> None:
     """
-    Full database cleanse
-    \b. Removes the resources that you added through previous 'apply' calls, and then re-initializes the database by running `init-db`.
+    Full database cleanse. 
+    
+    Removes the resources that you added through previous 'apply' calls, and then re-initializes the database by running `init-db`.
 
     """
     config = ctx.obj["CONFIG"]
