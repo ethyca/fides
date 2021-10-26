@@ -10,15 +10,13 @@ import click
 from fidesctl.core import parse as core_parse
 from fidesctl.core import visualize
 from fideslang import manifests
-from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 
 
 class AnnotationAbortError(Exception):
     """
     Custom exception to handle mid annotation abort
     """
-
-    ...
 
 
 def get_data_categories_annotation(
@@ -36,7 +34,6 @@ def get_data_categories_annotation(
         List of the user's input
     """
     msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
-    # user_categories: List[str] = []
     user_response = click.prompt(msg, default=[])
     if user_response:
         if user_response.lower() == "q":
@@ -45,8 +42,7 @@ def get_data_categories_annotation(
             ):
                 raise AnnotationAbortError
             user_response = get_data_categories_annotation(dataset_member)
-        # future: loop through inputs and validate
-        return [i.strip() for i in user_response.split(",")]
+        return [FidesKey.validate(i.strip()) for i in user_response.split(",")]
     return []
 
 
@@ -127,5 +123,5 @@ def annotate_dataset(
             break
         else:
             continue
-        # write each file
+
         manifests.write_manifest(output_filename, current_dataset.dict(), "dataset")
