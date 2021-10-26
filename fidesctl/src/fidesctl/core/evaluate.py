@@ -253,10 +253,10 @@ def populate_references_keys(
     """
     Takes in a taxonomy with potentially missing references to fides keys.
     Populates any missing fides_keys recursively and returns the populated taxonomy.
+
+    Recursively calls itself after every hydration to make sure there are no new missing keys.
     """
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
-    # Not all fides keys can be pulled from the server, we will
-    # check if the last recursive run added any additional keys to the set
     if missing_resource_keys and set(missing_resource_keys) != set(last_keys):
         # TODO: Need to figure out how to log this even though being invoked recursively
         echo_green(
