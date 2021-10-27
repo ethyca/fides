@@ -96,7 +96,6 @@ def annotate_dataset(
     dataset_file: str,
     resource_type: str = "data_category",
     annotate_all: bool = False,
-    file_split: bool = True,
     validate: bool = True,
 ) -> None:
     """
@@ -106,13 +105,12 @@ def annotate_dataset(
         dataset_file: the file name for the dataset to annotate
         resource_type: the type of data resource to point to for assistance (via visualization web page)
         annotate_all: flag to annotate all members of a dataset (default False: only annotate fields)
-        file_split: flag to split multiple datasets into individual, self-named dataset yaml files
         validate: flag to check user inputs for formatting and data category presence
 
     Returns:
         Write the amended dataset file in place
     """
-    output_filename = dataset_file
+    output_dataset = {}
 
     # Make the user aware of the data_categories visualizer
     click.secho(
@@ -135,14 +133,6 @@ def annotate_dataset(
     for dataset in datasets:  # iterate through each database/schema found
         current_dataset = Dataset(**dataset)
         click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
-
-        if len(datasets) > 1 and file_split:
-            # if more than one dataset is in the list, each dataset will be split into separate files
-            output_filename = str(
-                pathlib.Path(output_filename)
-                .parents[0]
-                .joinpath(f"{current_dataset.name}.yml")
-            )
 
         if annotate_all and not current_dataset.data_categories:
             click.secho(f"Database [{current_dataset.name}] has no data categories")
@@ -179,5 +169,5 @@ def annotate_dataset(
             break
         else:
             continue
-
-        manifests.write_manifest(output_filename, current_dataset.dict(), DATASET_KEY)
+        output_dataset[f"{current_dataset.name}"] = current_dataset.dict()
+    manifests.write_manifest(dataset_file, output_dataset, DATASET_KEY)
