@@ -54,9 +54,10 @@ jobs:
 
       fidesctl:
         image: ethyca/fidesctl:latest
-        options: --entrypoint /bin/bash "fidesctl webserver"
         env:
           FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
+        ports:
+          - 8080:8080
 
     steps:
       - uses: actions/checkout@v2
