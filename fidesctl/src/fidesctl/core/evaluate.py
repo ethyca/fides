@@ -1,5 +1,5 @@
 """Module for evaluating policies."""
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, Optional, Callable, cast
 
 from pydantic import AnyHttpUrl
 
@@ -11,9 +11,13 @@ from fidesctl.core.utils import echo_green, echo_red
 from fideslang.models import (
     ActionEnum,
     Evaluation,
+    Dataset,
     StatusEnum,
     InclusionEnum,
     Policy,
+    PolicyRule,
+    PrivacyDeclaration,
+    System,
     Taxonomy,
 )
 from fideslang.validation import FidesKey
@@ -151,7 +155,7 @@ def compare_rule_to_declaration(
 ) -> bool:
     """
     Compare the list of fides_keys within the rule against the list
-    of fides_keys hierarchies from the declaration and use the rule's inclusion
+    of fides_keys hierarchies from the declaration and uses the rule's inclusion
     field to determine whether the rule is triggered or not.
     """
     inclusion_map: Dict[InclusionEnum, Callable] = {
@@ -168,75 +172,228 @@ def compare_rule_to_declaration(
     return result
 
 
+def evaluate_policy_rule(
+    taxonomy: Taxonomy,
+    policy_rule: PolicyRule,
+    data_subjects: List[str],
+    data_categories: List[str],
+    data_qualifier: str,
+    data_use: str,
+) -> bool:
+    """
+    Given data subjects, data categories, data qualifier and data use,
+    builds hierarchies of applicable types and evaluates the result of a
+    policy rule
+    """
+    category_hierarchies = [
+        get_fides_key_parent_hierarchy(
+            taxonomy=taxonomy, fides_key=declaration_category
+        )
+        for declaration_category in data_categories
+    ]
+    data_category_result = compare_rule_to_declaration(
+        rule_types=policy_rule.data_categories.values,
+        declaration_type_hierarchies=category_hierarchies,
+        rule_inclusion=policy_rule.data_categories.inclusion,
+    )
+
+    # A declaration only has one data use, so its hierarchy gets put in a list
+    data_use_hierarchies = [
+        get_fides_key_parent_hierarchy(taxonomy=taxonomy, fides_key=data_use)
+    ]
+    data_use_result = compare_rule_to_declaration(
+        rule_types=policy_rule.data_uses.values,
+        declaration_type_hierarchies=data_use_hierarchies,
+        rule_inclusion=policy_rule.data_uses.inclusion,
+    )
+
+    # A data subject does not have a hierarchical structure
+    data_subject_result = compare_rule_to_declaration(
+        rule_types=policy_rule.data_subjects.values,
+        declaration_type_hierarchies=[[data_subject] for data_subject in data_subjects],
+        rule_inclusion=policy_rule.data_subjects.inclusion,
+    )
+
+    data_qualifier_result = (
+        policy_rule.data_qualifier
+        in get_fides_key_parent_hierarchy(taxonomy=taxonomy, fides_key=data_qualifier)
+    )
+
+    evaluation_result = all(
+        [
+            data_category_result,
+            data_subject_result,
+            data_use_result,
+            data_qualifier_result,
+        ]
+    )
+    return evaluation_result
+
+
+def get_dataset_by_fides_key(taxonomy: Taxonomy, fides_key: str) -> Optional[Dataset]:
+    """
+    Returns a dataset within the taxonomy for a given fides key
+    """
+    dataset = next(
+        iter(
+            [dataset for dataset in taxonomy.dataset if dataset.fides_key == fides_key]
+        ),
+        None,
+    )
+    return cast(Dataset, dataset)
+
+
+def evaluate_dataset_reference(
+    taxonomy: Taxonomy,
+    policy: Policy,
+    system: System,
+    policy_rule: PolicyRule,
+    privacy_declaration: PrivacyDeclaration,
+    dataset: Dataset,
+) -> List[str]:
+    """
+    Evaluates the contraints of a given rule and dataset that was referenced
+    from a given privacy declaration
+    """
+    evaluation_detail_list = []
+    if dataset.data_categories:
+        dataset_result = evaluate_policy_rule(
+            taxonomy=taxonomy,
+            policy_rule=policy_rule,
+            data_subjects=privacy_declaration.data_subjects,
+            data_categories=dataset.data_categories,
+            data_qualifier=dataset.data_qualifier,
+            data_use=privacy_declaration.data_use,
+        )
+
+        if dataset_result:
+            evaluation_detail_list += [
+                "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset {}".format(
+                    privacy_declaration.name,
+                    system.fides_key,
+                    policy_rule.name,
+                    policy.fides_key,
+                    dataset.fides_key,
+                )
+            ]
+    for collection in dataset.collections:
+        if collection.data_categories:
+            dataset_collection_result = evaluate_policy_rule(
+                taxonomy=taxonomy,
+                policy_rule=policy_rule,
+                data_subjects=privacy_declaration.data_subjects,
+                data_categories=collection.data_categories,
+                data_qualifier=collection.data_qualifier,
+                data_use=privacy_declaration.data_use,
+            )
+
+            if dataset_collection_result:
+                evaluation_detail_list += [
+                    "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset Collection {}".format(
+                        privacy_declaration.name,
+                        system.fides_key,
+                        policy_rule.name,
+                        policy.fides_key,
+                        collection.name,
+                    )
+                ]
+
+        for field in collection.fields:
+            if field.data_categories:
+                field_result = evaluate_policy_rule(
+                    taxonomy=taxonomy,
+                    policy_rule=policy_rule,
+                    data_subjects=privacy_declaration.data_subjects,
+                    data_categories=field.data_categories,
+                    data_qualifier=field.data_qualifier,
+                    data_use=privacy_declaration.data_use,
+                )
+
+                if field_result:
+                    evaluation_detail_list += [
+                        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset Field {}".format(
+                            privacy_declaration.name,
+                            system.fides_key,
+                            policy_rule.name,
+                            policy.fides_key,
+                            field.name,
+                        )
+                    ]
+    return evaluation_detail_list
+
+
+def evaluate_privacy_declaration(
+    taxonomy: Taxonomy,
+    policy: Policy,
+    system: System,
+    policy_rule: PolicyRule,
+    privacy_declaration: PrivacyDeclaration,
+) -> List[str]:
+    """
+    Evaluates the contraints of a given rule and privacy declaration. This
+    includes additional data set references
+    """
+    evaluation_detail_list = []
+    declaration_result = evaluate_policy_rule(
+        taxonomy=taxonomy,
+        policy_rule=policy_rule,
+        data_subjects=privacy_declaration.data_subjects,
+        data_categories=privacy_declaration.data_categories,
+        data_qualifier=privacy_declaration.data_qualifier,
+        data_use=privacy_declaration.data_use,
+    )
+
+    if declaration_result:
+        evaluation_detail_list += [
+            "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
+                privacy_declaration.name,
+                system.fides_key,
+                policy_rule.name,
+                policy.fides_key,
+            )
+        ]
+
+    for dataset_reference in privacy_declaration.dataset_references or []:
+        dataset = get_dataset_by_fides_key(
+            taxonomy=taxonomy, fides_key=dataset_reference
+        )
+        if dataset:
+            evaluation_detail_list += evaluate_dataset_reference(
+                taxonomy=taxonomy,
+                policy=policy,
+                system=system,
+                policy_rule=policy_rule,
+                privacy_declaration=privacy_declaration,
+                dataset=dataset,
+            )
+        else:
+            echo_red(
+                "Dataset {} referenced in Declaration {} could not be found in taxonomy".format(
+                    dataset_reference, privacy_declaration.name
+                )
+            )
+            raise SystemExit(1)
+    return evaluation_detail_list
+
+
 def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     """
     Check the stated constraints of each Privacy Policy's rules against
-    what is declared each system's privacy declarations.
+    each system's privacy declarations.
     """
-
     evaluation_detail_list = []
     for policy in taxonomy.policy:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
 
-                    category_hierarchies = [
-                        get_fides_key_parent_hierarchy(
-                            taxonomy=taxonomy, fides_key=declaration_category
-                        )
-                        for declaration_category in declaration.data_categories
-                    ]
-                    data_category_result = compare_rule_to_declaration(
-                        rule_types=rule.data_categories.values,
-                        declaration_type_hierarchies=category_hierarchies,
-                        rule_inclusion=rule.data_categories.inclusion,
+                    evaluation_detail_list += evaluate_privacy_declaration(
+                        taxonomy=taxonomy,
+                        policy=policy,
+                        system=system,
+                        policy_rule=rule,
+                        privacy_declaration=declaration,
                     )
-
-                    # A declaration only has one data use, so its hierarchy gets put in a list
-                    data_use_hierarchies = [
-                        get_fides_key_parent_hierarchy(
-                            taxonomy=taxonomy, fides_key=declaration.data_use
-                        )
-                    ]
-                    data_use_result = compare_rule_to_declaration(
-                        rule_types=rule.data_uses.values,
-                        declaration_type_hierarchies=data_use_hierarchies,
-                        rule_inclusion=rule.data_uses.inclusion,
-                    )
-
-                    # A data subject does not have a hierarchical structure
-                    data_subject_result = compare_rule_to_declaration(
-                        rule_types=rule.data_subjects.values,
-                        declaration_type_hierarchies=[
-                            [data_subject] for data_subject in declaration.data_subjects
-                        ],
-                        rule_inclusion=rule.data_subjects.inclusion,
-                    )
-
-                    data_qualifier_result = (
-                        rule.data_qualifier
-                        in get_fides_key_parent_hierarchy(
-                            taxonomy=taxonomy, fides_key=declaration.data_qualifier
-                        )
-                    )
-
-                    if all(
-                        [
-                            data_category_result,
-                            data_subject_result,
-                            data_use_result,
-                            data_qualifier_result,
-                        ]
-                    ):
-                        evaluation_detail_list += [
-                            "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
-                                declaration.name,
-                                system.fides_key,
-                                rule.name,
-                                policy.fides_key,
-                            )
-                        ]
-
     status_enum = (
         StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
     )
@@ -258,12 +415,6 @@ def populate_references_keys(
     """
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
     if missing_resource_keys and set(missing_resource_keys) != set(last_keys):
-        # TODO: Need to figure out how to log this even though being invoked recursively
-        echo_green(
-            "Fetching the following missing resources from the server:\n- {}".format(
-                "\n".join(missing_resource_keys)
-            )
-        )
         taxonomy = hydrate_missing_resources(
             url=url,
             headers=headers,

@@ -255,7 +255,7 @@ class PrivacyDeclaration(BaseModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     data_subjects: List[FidesKey]
-    dataset_references: Optional[List[str]]
+    dataset_references: Optional[List[FidesKey]]
 
 
 class System(FidesModel):

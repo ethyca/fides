@@ -112,7 +112,7 @@ system:
         data_subjects:
           - customer
         dataset_references:
-          - test_db_dataset.Email
+          - test_db_dataset
     system_dependencies: []
 
 policy:
