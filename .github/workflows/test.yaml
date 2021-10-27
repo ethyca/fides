@@ -10,7 +10,7 @@ on:
       - .github/workflows/test.yaml
 
 jobs:
-  test:
+  Test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -35,3 +35,16 @@ jobs:
 
       - name: Test
         run: make pytest
+
+  Fidesctl:
+    runs-on: ubuntu-latest
+    container:
+      image: ethyca/fidesctl:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Dry Evaluation
+        run: fidesctl evaluate --dry /fides/fidesctl/fides_resources/
+        env:
+          FIDESCTL_CONFIG_PATH: /fides/fidesctl/fidesctl.toml

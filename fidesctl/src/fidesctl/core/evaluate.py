@@ -218,7 +218,7 @@ def evaluate(
     if missing_resource_keys:
         echo_green(
             "Fetching the following missing resources from the server:\n- {}".format(
-                "\n".join(missing_resource_keys)
+                "\n- ".join(missing_resource_keys)
             )
         )
         echo_green("Hydrating the taxonomy...")
