@@ -1,6 +1,7 @@
 {
   "data": [
     {
+      "hoverinfo": "skip",
       "labels": [
         "account",
         "account.contact",
@@ -14,6 +15,7 @@
       "type": "sunburst"
     },
     {
+      "hoverinfo": "skip",
       "link": {
         "source": [
           0,
@@ -30,7 +32,6 @@
       },
       "node": {
         "color": "blue",
-        "hovertemplate": "%{label}",
         "label": [
           "account",
           "account.contact",
@@ -49,6 +50,7 @@
       "visible": false
     },
     {
+      "hoverinfo": "skip",
       "labels": [
         "account",
         "account.contact",
