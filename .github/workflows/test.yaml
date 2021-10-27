@@ -1,4 +1,4 @@
-name: Test Fidesctl
+name: Tests
 
 # Only test on Pull Requests that target main
 on:
@@ -45,6 +45,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Dry Evaluation
-        run: fidesctl evaluate --dry /fides/fidesctl/fides_resources/
+        run: fidesctl evaluate --dry fidesctl/fides_resources/
         env:
-          FIDESCTL_CONFIG_PATH: /fides/fidesctl/fidesctl.toml
+          FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
