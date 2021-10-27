@@ -24,4 +24,4 @@ COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
 RUN pip install -e .
 
-CMD ["/bin/bash"]
+CMD ["fidesctl", "webserver"]
