@@ -1,4 +1,4 @@
-# parse &mdash; validate a taxonomy
+# parse &mdash; validate your taxonomy
 
 
 ### SYNOPSIS

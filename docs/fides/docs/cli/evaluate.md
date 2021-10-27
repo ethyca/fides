@@ -24,7 +24,7 @@ The root of a directory tree that contains the resource manifest files that you 
 
 **-k/--fides-key _key_**
 
-The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. A policy's fides key is given as the `fides-key` property in the manifest file that defines the policy resource. To print the policy resources (and their `fides_key` values) to the terminal, call  `fidesctl&nbsp;ls&nbsp;policy`. 
+The fides key of the single policy that you wish to evaluate. The key is a string token that uniquely identifies the policy. A policy's fides key is given as the `fides-key` property in the manifest file that defines the policy resource. To print the policy resources (and their `fides_key` values) to the terminal, call  `fidesctl ls policy`. 
 
 **-m/--message _message_**
 

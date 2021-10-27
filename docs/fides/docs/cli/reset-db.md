@@ -1,4 +1,4 @@
-# reset-db &mdash; initialize and launch your Fides policy database
+# reset-db &mdash; re-initialize your policy database
 
 ### SYNOPSIS
 
@@ -12,7 +12,7 @@ The `reset-db` command removes the resources that you added through previous `ap
 
 **-y/--yes**
 
-Before it removes the resources, `reset-db` prompts you to confirm the removal. The `-y`/`--yes` option suppresses the prompt and the esources are removed without your confirmation.
+Before it removes the resources, `reset-db` prompts you to confirm the removal. This option suppresses the prompt; the resources are removed without your confirmation.
 
 **-h/--help**
 

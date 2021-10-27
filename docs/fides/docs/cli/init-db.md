@@ -8,7 +8,7 @@
 
 ### DESCRIPTION
 
-The `init-db` command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling `apply`
+The `init-db` command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling `apply`.
 
 ### OPTIONS
 

@@ -31,7 +31,7 @@ The type of resource that you want to retrieve, one of the following:
 
 ***fides_key***
 
-The fides key that uniquely identifies the resource that you want to retrieve. The key is given as the `fides_key` property in the manifest file that defines the resource. To print the resource objects (and their `fides_key`s) to the terminal, call `fidesctl&nbsp;ls&nbsp;_resource_type_`.
+The fides key that uniquely identifies the resource that you want to retrieve. The key is given as the `fides_key` property in the manifest file that defines the resource. To print the resource objects (and their `fides_key`s) to the terminal, call <code>fidesctl ls <i>resource_type</i></code>.
 
 ### OPTIONS
 

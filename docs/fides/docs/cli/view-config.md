@@ -16,7 +16,7 @@ $ fidesctl --config-path ../config_file.yml
 ### OPTIONS
 
 
-**-h/--help
+**-h/--help**
 
 
 Prints a synopsis of this command.

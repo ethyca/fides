@@ -15,14 +15,14 @@ The `delete` command deletes the resource object identified by the arguments.
 
 The type of resource that you want to delete, one of the following:
 
-* data_qualifier
-* data_subject
-* data_use
-* dataset
-* organization
-* policy
-* registry
-* system
+* `data_qualifier`
+* `data_subject`
+* `data_use`
+* `dataset`
+* `organization`
+* `policy`
+* `registry`
+* `system`
 
 ***fides_key***
 

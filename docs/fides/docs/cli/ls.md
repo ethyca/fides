@@ -1,4 +1,4 @@
-# ls &mdash; print information about all the resources of a specific type
+# ls &mdash; list resources of a given type
 
 
 ### SYNOPSIS
@@ -7,7 +7,7 @@
 
 ### DESCRIPTION
 
-The `ls` command prints a series of JSON objects that describe the _resource_type_ resource objects that are defined by your system. 
+The `ls` command prints a series of JSON objects that describe the <code><i>resource_type</i></code> resource objects that are defined by your system. 
 
 ### ARGUMENTS
 
