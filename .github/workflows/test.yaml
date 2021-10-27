@@ -54,7 +54,7 @@ jobs:
 
       fidesctl:
         image: ethyca/fidesctl:latest
-        options: --entrypoint "/bin/bash fidesctl webserver"
+        options: --entrypoint /bin/bash "fidesctl webserver"
         env:
           FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
 
