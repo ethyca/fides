@@ -41,24 +41,6 @@ jobs:
     container:
       image: ethyca/fidesctl:latest
 
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-          POSTGRES_DATABASE: fidesctl
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          - 5432:5432
-
-      fidesctl:
-        image: ethyca/fidesctl:latest
-        env:
-          FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
-        ports:
-          - 8080:8080
-
     steps:
       - uses: actions/checkout@v2
 
