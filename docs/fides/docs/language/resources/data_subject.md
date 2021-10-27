@@ -13,7 +13,7 @@ Currently, Data Subjects aren't hierarchical: A Data Subject can't contain other
 
 **fides_key**<span class="required"/>_string_
 
-A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value may only contain alphanumeric characters, underbars, and periods (`[A-Za-z0-9_.]`)
+A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
 
 **name**<span class="spacer"/>_string_
 
@@ -44,6 +44,6 @@ data_subject:
 {
   "fides_key": "supplier_vendor",
   "name": "Supplier/Vendor",
-  "description": "An individual or organization that provides services or goods to the organization
+  "description": "An individual or organization that provides services or goods to the organization"
 }
 ```
