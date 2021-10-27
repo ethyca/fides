@@ -3,30 +3,30 @@
 **Demo manifest file:** `/fides/fidesctl/demo_resources/demo_registry.yml`. 
 
 
-A registry is a collection of system resources. You add a system to a registry by setting the system's `registry_id` field. A system can only be long to one registry. Although a system knows which registry it belongs to, the registry doesn't know which systems it contains.
+A Registry is a collection of system resources. You add a system to a Registry by setting the system's `registry_id` field. A system may belong to only one Registry. Although a system knows which Registry it belongs to, the Registry doesn't know which systems it contains.
 
 All registries are siblings: You can't create a hierarchy of registries.
 
-Collecting your systems into registries is optional.
+Collecting your systems into registries is optional. It provides no functional benefit.
 
 
 ## Object Structure
 
 **fides_key**<span class="required"/>_string_
 
-A string token of your own invention that uniquely identifies this registry. It's your responsibility to ensure that the value is unique across all of your registry objects. The value may only contain `\w` characters (alphanumeric and underbar).
+A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
 
-**name**<span class="required"/>_string_
+**name**<span class="spacer"/>_string_
 
-The UI-friendly name of the registry.
+A UI-friendly label for the Registry.
 
-**description**<span class="required"/>_string_
+**description**<span class="spacer"/>_string_
 
-A human-readable description of the registry.
+A human-readable description of the Registry.
 
 **organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
 
-The fides key of the organization to which this registry belongs.
+The fides key of the Organization to which this Registry belongs.
 
 
 ## Examples
@@ -36,7 +36,7 @@ The fides key of the organization to which this registry belongs.
 registry:
   - fides_key: user_systems_registry
     name: User Systems Registry
-    description: A registry for all of the user-related systems.
+    description: A Registry for all of the user-related systems.
 ```
 
 **JSON**
@@ -44,6 +44,6 @@ registry:
 {
   "fides_key": "user_systems_registry",
   "name": "User Systems Registry",
-  "description": "A registry for all of the user-related systems."
+  "description": "A Registry for all of the user-related systems."
 }
 ```
