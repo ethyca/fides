@@ -45,24 +45,24 @@ var VisTooltip = class VisTooltip {
   show({ accessor, d }) {
     const content = `
     <div class="card">
-      <div class="card-title">${accessor.name(d.data)}</div>
+      <div class="card-title">${accessor.name(d.data)}
       <div>
-        <div class="card-subtitle">Hierarchy:</div>
+        <div class="card-subtitle">Hierarchy:
         <div style="text-transform: capitalize">${accessor
           .id(d.data)
           .split(".")
           .map((d) => d.replace(/_/g, " "))
-          .join(" > ")}</div>
-      </div>
+          .join(" > ")}
+      
       ${
         accessor.description(d.data)
           ? `<div>
-              <div class="card-subtitle">Description:</div>
-              <div>${accessor.description(d.data)}</div>
-            </div>`
+              <div class="card-subtitle">Description:
+              <div>${accessor.description(d.data)}
+            `
           : ""
       }
-    </div>
+    
     `;
     this.tooltip.html(content).classed("is-visible", true);
     const box = this.tooltip.node().getBoundingClientRect();

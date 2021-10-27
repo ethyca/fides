@@ -1,40 +1,22 @@
-<div class="cli">
-  <h1>reset-db</h1>
+# reset-db &mdash; initialize and launch your Fides policy database
 
-  <div class="label">NAME</div>
+### SYNOPSIS
 
-  <div class="content">
-    <span class="mono">reset-db</span> &mdash; initialize and launch your Fides policy database
-  </div>
+**fidesctl reset-db [-y/--yes]**
 
-  <div class="label">SYNOPSIS</div>
+### DESCRIPTION
 
-  <div class="content">
-    <pre><code>fidesctl reset-db [-y/--yes]</code></pre>
-  </div>
+The `reset-db` command removes the resources that you added through previous `apply` calls and then re-initializes the database (through `init-db`).
 
-  <div class="label">DESCRIPTION</div>
+### OPTIONS
 
-  <div class="content">
-    The <code>reset-db</code> command removes the resources that you added through previous <a href="apply"><code>apply</code></a> calls. The database is then re-initialized through <code>init&#8209;db</code>.
-  </div>
+**-y/--yes**
 
-  
-  <div class="label">OPTIONS</div>
-    <div class="content">
-    <div class="mono">
-      -y/--yes
-    </div>
-    <div class="content">
-      Before it removes the resources, <code>reset-db</code> prompts you to confirm the removal. The <code>&#8209;y</code>/<code>&#8209;&#8209;yes</code> option suppresses the prompt; resources are removed without your confirmation.
-    </div>
-  </div> 
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of this command.
-    </div>
-  </div> 
-</div>
+Before it removes the resources, `reset-db` prompts you to confirm the removal. The `-y`/`--yes` option suppresses the prompt and the esources are removed without your confirmation.
+
+**-h/--help**
+
+Prints a synopsis of this command.
+
+
+

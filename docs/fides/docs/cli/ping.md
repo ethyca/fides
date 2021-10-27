@@ -1,47 +1,37 @@
-<div class="cli">
-  <h1>ping</h1>
+# ping &mdash; determine if the API server is up
 
-  <div class="label">NAME</div>
 
-  <div class="content">
-    <span class="mono">ping</span> &mdash; query the health of the fides API host
-  </div>
+### SYNOPSIS
 
-  <div class="label">SYNOPSIS</div>
 
-  <div class="content">
-    <pre><code>fidesctl ping </code></pre>
-  </div>
+**fidesctl ping**
 
-  <div class="label">DESCRIPTION</div>
 
-  <div class="content">
-    The <code>ping</code> command sends a message to the fides API healthcheck endpoint and prints the response. If the API host is up and running, you'll see this:
+### DESCRIPTION
 
-    ```
-    $ fidesctl ping
-    Pinging http://fidesctl:8080/health...
-    {
-      "data": {
-        "message": "Fides service is healthy!"
-      }
-    }
-    ```
+The `ping` command sends a message to the fides API health endpoint and prints the response. If the API host is up and running, you'll see this:
 
-    Any other response means the host isn't running or can't be reached. 
+```
+$ fidesctl ping
+Pinging http://fidesctl:8080/health...
+{
+   "data": {
+      "message": "Fides service is healthy!"
+   }
+}
+```
 
-  </div>
+Any other response means the host isn't running or can't be reached. 
 
-  <div class="label">OPTIONS</div>
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of this command.
-    </div>
-  </div>
-</div>
+
+### OPTIONS
+
+**-h/--help**
+
+Prints a synopsis of this command.
+
+
+
 
 
 

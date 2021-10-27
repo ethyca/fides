@@ -1,32 +1,17 @@
-<div class="cli">
-  <h1>init-db</h1>
+# init-db &mdash; initialize and launch your Fides database
 
-  <div class="label">NAME</div>
 
-  <div class="content">
-    <span class="mono">init-db</span> &mdash; initialize and launch your Fides policy database
-  </div>
+### SYNOPSIS
 
-  <div class="label">SYNOPSIS</div>
+**fidesctl init-db**
 
-  <div class="content">
-    <pre><code>fidesctl init-db</code></pre>
-  </div>
 
-  <div class="label">DESCRIPTION</div>
+### DESCRIPTION
 
-  <div class="content">
-    The <code>init-db</code> command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling <a href="apply"><code>apply</code></a>.
-  </div>
+The `init-db` command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling `apply`
 
-  
-  <div class="label">OPTIONS</div>
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of this command.
-    </div>
-  </div> 
-</div>
+### OPTIONS
+
+**-h/--help**
+
+Prints a synopsis of this command.

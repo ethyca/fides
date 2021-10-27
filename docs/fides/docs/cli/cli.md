@@ -1,6 +1,5 @@
-# fidesctl CLI Overview
+# Fidesctl CLI Overview
 
----
 
 `fidesctl` provides an interactive shell that drives the Fides functionality. If you run Fides in a  Docker container, you launch the `fidesctl` shell by `cd`ing to your `fides` root directory and running `make cli`.
 
@@ -22,58 +21,37 @@ You can then use the `fidesctl` command line interface commands. The commands ar
 root@f76b4a7af333:/fides/fidesctl# fidesctl init-db
 ```
 
-`fidesctl` itself takes a set of options. The most important option is `--config-path` which lets you supply a file that configures the `fidesctl` environment.
 All `fidesctl` commands return 0 upon success.
 
+In addition to the individual commands, `fidesctl` takes a set of options. The most important option is `--config-path` which lets you supply a file that configures the `fidesctl` environment.
 
-<div class="cli">
-  <div class="label">OPTIONS</div>
+### OPTIONS
 
-  <div class="content">
-    <div class="mono">
-      -f/--config-path <i>config_file</i> 
-    </div>
-    <div class="content">
-      Identifies a file that you can use to configure the <code>fidesctl</code> environment. For more information about the file, see <a href="configuration-file">fidesctl Configuration File</a>. To see the current configuration file, do <code>fidesctl&nbsp;view&#8209;config</code>.
-    </div>
-  </div>
-  <div class="content">
-    <div class="mono">
-      -v/--version 
-    </div>
-    <div class="content">
-      Prints the <code>fidesctl</code> version number.
-    </div>
-  </div>
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of the <code>fidesctl</code> command. All of the `fidesctl` commands, listed below, also support the <code>-h</code>/<code>--help</code> options.
-    </div>
-  </div>
+**-f/--config-path _config_file_** 
 
-  <div class="label">COMMANDS</div>
+Identifies a file that you can use to configure the `fidesctl` environment. For more information about the file, see **Fidesctl Configuration File**. To see the current configuration file, do `fidesctl view-config`.
 
-  <div class="content">
+**-v/--version** 
 
-  The <code>fidesctl</code> commands are listed below. Follow the links for more information.
+Prints the `fidesctl` version number.
 
-  <ul>
-    <li><a href="../apply"><code>apply</code></a> creates and updates resource objects by reading a set of resource manifest files.</li>
-    <li><a href="../delete"><code>delete</code></a> deletes a resource.</li>
-    <li><a href="../evaluate"><code>evaluate</code></a> runs your policies against your data and announces the results.</li>
-    <li><a href="../get"><code>get</code></a> prints information about a resource.</li>
-    <li><a href="../init-db"><code>init-db</code></a> initializes and launches your resource database.</li>
-    <li><a href="../ls"><code>ls</code></a> lists the resources of a specific type.</li>
-    <li><a href="../parse"><code>parse</code></a> validates the taxonomy built from a set of resource manifest files.</li>
-    <li><a href="../ping"><code>ping</code></a> determines if the fides API host is ready to receive messages.</li>
-    <li><a href="../reset-db"><code>reset-db</code></a> removes the previously-applied manifest data from your resource database.</li>
-    <li><a href="../view-config"><code>view-config</code></a> prints the <code>fidesctl</code> configuration settings as a JSON object.</li>
-    <li><a href="../webserver"><code>webserver</code></a> starts the <code>fidesctl</code> API server.</li>
+**-h/--help**
 
-  </ul>
-  <p>
-  </div>
-</div>
+Prints a synopsis of the `fidesctl` command. 
+ 
+
+### COMMANDS
+
+
+* `apply` creates and updates resource objects by reading a set of resource manifest files.
+* `delete` deletes a resource.
+* `evaluate` runs your policies against your data and announces the results.
+* `get` prints information about a resource.
+* `init-db` initializes and launches your resource database.
+* `ls` lists the resources of a specific type.
+* `parse` validates the taxonomy built from a set of resource manifest files.
+* `ping` determines if the fides API host is ready to receive messages.
+* `reset-db` removes the previously-applied manifest data from your resource database.
+* `view-config` prints the `fidesctl` configuration settings as a JSON object.
+* `webserver` starts the `fidesctl` API server.
+

@@ -7,7 +7,7 @@
 
 ###  DESCRIPTION
 
-The `apply` command reads the resource manifest files that are stored in <code><i>manifest_dir</i></code> and its subdirectories, and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
+The `apply` command reads the resource manifest files that are stored in `<i>manifest_dir</i>` and its subdirectories, and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
 
 As it processes the manifests, the command announces how many resources it has created, updated, and deleted.
 

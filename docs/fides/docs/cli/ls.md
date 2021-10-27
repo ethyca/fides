@@ -1,54 +1,37 @@
-<div class="cli">
-  <h1>ls</h1>
-
-  <div class="label">NAME</div>
-
-  <div class="content">
-    <span class="mono">ls</span> &mdash; print information about all the resources of a specific type
-  </div>
-
-  <div class="label">SYNOPSIS</div>
-
-  <div class="content">
-    <pre><code>fidesctl ls <i>resource_type</i></code></pre>
-  </div>
-
-  <div class="label">DESCRIPTION</div>
-
-  <div class="content">
-    The <code>ls</code> command prints a series of JSON objects that describe the <i>resource_type</i> resource objects that are defined by your system. 
-  </div>
-  <div class="label">ARGUMENTS</div>
-  <div class="content">
-    <div class="monoi">
-      resource_type
-    </div>
-    <div class="content">
-      The type of resources that you want to retrieve, one of the following:
-      <ul>
-        <li><code>data_category</code></li>
-        <li><code>data_qualifier</code></li>
-        <li><code>data_subject</code></li>
-        <li><code>data_use</code></li>
-        <li><code>dataset</code></li>
-        <li><code>organization</code></li>
-        <li><code>policy</code></li>
-        <li><code>registry</code></li>
-        <li><code>system</code></li>
-      </ul>
-    </div>
-  </div>
+# ls &mdash; print information about all the resources of a specific type
 
 
-  <div class="label">OPTIONS</div>
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of this command.
-    </div>
-  </div>
-</div>
+### SYNOPSIS
+
+**fidesctl ls _resource_type_**
+
+### DESCRIPTION
+
+The `ls` command prints a series of JSON objects that describe the _resource_type_ resource objects that are defined by your system. 
+
+### ARGUMENTS
+
+***resource_type***
+
+The type of resources that you want to retrieve, one of the following:
+
+* `data_category`
+* `data_qualifier`
+* `data_subject`
+* `data_use`
+* `dataset`
+* `organization`
+* `policy`
+* `registry`
+* `system`
+
+### OPTIONS
+
+**-h/--help**
+
+Prints a synopsis of this command.
+
+
+
 
 
