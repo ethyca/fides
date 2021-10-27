@@ -17,8 +17,8 @@ from fidesapi.sql_models import sql_model_map
 
 
 DATASET_KEY = "dataset"
-DATA_CATEGORY_KEY = 'data_category'
-FIDES_KEY = 'fides_key'
+DATA_CATEGORY_KEY = "data_category"
+FIDES_KEY = "fides_key"
 
 
 class AnnotationAbortError(Exception):
@@ -27,7 +27,18 @@ class AnnotationAbortError(Exception):
     """
 
 
-def validate_data_categories(categories: List[str], valid_categories: List[str]):
+def validate_data_categories(
+    categories: List[str], valid_categories: List[str]
+) -> None:
+    """
+    Check to see if each category in a list is valid
+    Args:
+        categories: list of category strings to check
+        valid_categories: list of valid categories
+
+    Returns:
+
+    """
     for category in categories:
         # check for valid format of string
         _ = FidesKey.validate(category)
@@ -37,9 +48,9 @@ def validate_data_categories(categories: List[str], valid_categories: List[str])
 
 
 def get_data_categories_annotation(
-        dataset_member: Union[Dataset, DatasetCollection, DatasetField],
-        valid_categories: List[str],
-        validate: bool = True
+    dataset_member: Union[Dataset, DatasetCollection, DatasetField],
+    valid_categories: List[str],
+    validate: bool = True,
 ) -> List[str]:
     """
     Request the user's input to supply a list of data categories
@@ -62,13 +73,20 @@ def get_data_categories_annotation(
                 "Are you sure you want to quit annotating the dataset? (progress will be saved)"
             ):
                 raise AnnotationAbortError
-            user_response = get_data_categories_annotation(dataset_member, valid_categories)
+            user_response = get_data_categories_annotation(
+                dataset_member, valid_categories
+            )
         if validate:
             try:
                 validate_data_categories(user_response, valid_categories)
             except (FidesValidationError, ValueError):
-                click.secho(f"[{user_response}] contains invalid categories, please re-enter!", fg='red')
-                user_response = get_data_categories_annotation(dataset_member, valid_categories)
+                click.secho(
+                    f"[{user_response}] contains invalid categories, please re-enter!",
+                    fg="red",
+                )
+                user_response = get_data_categories_annotation(
+                    dataset_member, valid_categories
+                )
 
         return [i.strip() for i in user_response.split(",")]
     return []
@@ -79,7 +97,7 @@ def annotate_dataset(
     resource_type: str = "data_category",
     annotate_all: bool = False,
     file_split: bool = True,
-    validate: bool = True
+    validate: bool = True,
 ) -> None:
     """
     Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
@@ -110,7 +128,8 @@ def annotate_dataset(
 
     # load in valid data categories
     available_categories = [
-        resource.__dict__[FIDES_KEY] for resource in list_resource(sql_model_map[resource_type])
+        resource.__dict__[FIDES_KEY]
+        for resource in list_resource(sql_model_map[resource_type])
     ]
 
     for dataset in datasets:  # iterate through each database/schema found
@@ -128,9 +147,7 @@ def annotate_dataset(
         if annotate_all and not current_dataset.data_categories:
             click.secho(f"Database [{current_dataset.name}] has no data categories")
             current_dataset.data_categories = get_data_categories_annotation(
-                current_dataset,
-                available_categories,
-                validate=validate
+                current_dataset, available_categories, validate=validate
             )
 
         for table in current_dataset.collections:
@@ -138,9 +155,7 @@ def annotate_dataset(
             if annotate_all and not table.data_categories:
                 click.secho(f"Table [{table.name}] has no data categories")
                 table.data_categories = get_data_categories_annotation(
-                    table,
-                    available_categories,
-                    validate=validate
+                    table, available_categories, validate=validate
                 )
 
             for field in table.fields:
@@ -150,9 +165,7 @@ def annotate_dataset(
                     )
                     try:
                         user_categories = get_data_categories_annotation(
-                            field,
-                            available_categories,
-                            validate=validate
+                            field, available_categories, validate=validate
                         )
                         click.secho(
                             f"""Setting data categories for {table.name}.{field.name} to:

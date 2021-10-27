@@ -18,7 +18,7 @@ def hierarchy_figures(
     categories: List[dict],
     resource_type: str,
     json_out: bool = False,
-    condensed_html: bool = False
+    condensed_html: bool = False,
 ) -> str:
     """
     Generate html to display a hierarchy with several representation options
@@ -51,10 +51,7 @@ def hierarchy_figures(
             target.append(fides_key_dict[category[FIDES_KEY_NAME]])
 
     fig_data = [
-        go.Sunburst(
-            labels=labels,
-            parents=parents,
-        ),
+        go.Sunburst(labels=labels, parents=parents, hoverinfo="skip"),
         go.Sankey(
             valueformat=".1f",
             valuesuffix="%",
@@ -64,16 +61,13 @@ def hierarchy_figures(
                 line=dict(color="black", width=0.5),
                 label=list(fides_key_dict.keys()),
                 color="blue",  # Maybe make this 'ethyca blue'?
-                hovertemplate="%{label}",
+                # hovertemplate="%{label}",
             ),
             link=dict(source=source, target=target, value=target),
             visible=False,
+            hoverinfo="skip",
         ),
-        go.Icicle(
-            labels=labels,
-            parents=parents,
-            visible=False,
-        ),
+        go.Icicle(labels=labels, parents=parents, visible=False, hoverinfo="skip"),
     ]
 
     fig = dict(
@@ -255,9 +249,7 @@ def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
 
 
 def nested_categories_to_html_list(
-    categories: List[dict],
-    resource_type: str,
-    indent: int = 1
+    categories: List[dict], resource_type: str, indent: int = 1
 ) -> str:
     """
     Create an HTML string unordered list from the keys of a nested dictionary

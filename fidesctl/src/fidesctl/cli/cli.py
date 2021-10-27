@@ -164,7 +164,7 @@ def generate_dataset(
     "--validate",
     is_flag=True,
     default=True,
-    help="Disable annotation input validation"
+    help="Disable annotation input validation",
 )
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
@@ -178,7 +178,9 @@ def annotate_dataset(
 
         input_filename: the dataset.yml file to be read and edited
     """
-    _annotate_dataset.annotate_dataset(input_filename, annotate_all=all_members, validate=validate)
+    _annotate_dataset.annotate_dataset(
+        input_filename, annotate_all=all_members, validate=validate
+    )
 
 
 @click.command()
