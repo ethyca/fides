@@ -97,7 +97,7 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
     """
     if not policies:
         echo_red(
-            "Policy {} could not be found".format(evaluate_fides_key)
+            "Policy ({}) could not be found".format(evaluate_fides_key)
             if evaluate_fides_key
             else "No Policies found to evaluate"
         )
@@ -114,7 +114,7 @@ def validate_supported_policy_rules(policies: List[Policy]) -> None:
         for rule in policy.rules:
             if rule.action != ActionEnum.REJECT:
                 echo_red(
-                    "Policy {} uses unsupported policy action {}. Only REJECT is currently supported".format(
+                    "Policy ({}) uses unsupported policy action ({}). Only REJECT is currently supported".format(
                         policy.name, rule.action
                     )
                 )
@@ -137,6 +137,9 @@ def get_fides_key_parent_hierarchy(
         )
         if found_resource_map:
             found_resource = list(found_resource_map.values())[-1]
+            if not found_resource:
+                echo_red("Found missing key ({}) referenced in taxonomy".format(current_key))
+                raise SystemExit(1)
             if found_resource and "parent_key" in found_resource.__fields_set__:
                 current_key = getattr(found_resource, "parent_key")
                 if not current_key:
@@ -186,24 +189,24 @@ def validate_fides_keys_exist_for_evaluation(
     categories_keys = [category.fides_key for category in taxonomy.data_category]
     for missing_data_category in set(data_categories) - set(categories_keys):
         missing_key_errors.append(
-            "Missing data_category with key {}".format(missing_data_category)
+            "Missing DataCategory ({})".format(missing_data_category)
         )
 
     subject_keys = [subject.fides_key for subject in taxonomy.data_subject]
     for missing_data_subject in set(data_subjects) - set(subject_keys):
         missing_key_errors.append(
-            "Missing data_subject with key {}".format(missing_data_subject)
+            "Missing DataSubject (with key ({})".format(missing_data_subject)
         )
 
     qualifiers_keys = [qualifier.fides_key for qualifier in taxonomy.data_qualifier]
     if data_qualifier not in qualifiers_keys:
         missing_key_errors.append(
-            "Missing data_qualifier with key {}".format(data_qualifier)
+            "Missing DataQualifier ({})".format(data_qualifier)
         )
 
     data_use_keys = [data_use.fides_key for data_use in taxonomy.data_use]
     if data_use not in data_use_keys:
-        missing_key_errors.append("Missing data_use with key {}".format(data_use))
+        missing_key_errors.append("Missing DataUse ({})".format(data_use))
 
     if missing_key_errors:
         echo_red(
@@ -212,7 +215,7 @@ def validate_fides_keys_exist_for_evaluation(
             )
         )
         raise SystemExit(1)
-
+        
 def evaluate_policy_rule(
     taxonomy: Taxonomy,
     policy_rule: PolicyRule,
@@ -417,7 +420,7 @@ def evaluate_privacy_declaration(
             )
         else:
             echo_red(
-                "Dataset {} referenced in Declaration {} could not be found in taxonomy".format(
+                "Dataset ({}) referenced in Declaration ({}) could not be found in taxonomy".format(
                     dataset_reference, privacy_declaration.name
                 )
             )
