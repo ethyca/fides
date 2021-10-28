@@ -35,6 +35,7 @@ nav:
     - apply: cli/apply.md
     - delete: cli/delete.md
     - evaluate: cli/evaluate.md
+    - generate-dataset: cli/generate-dataset.md
     - get: cli/get.md
     - init-db: cli/init-db.md
     - ls: cli/ls.md
