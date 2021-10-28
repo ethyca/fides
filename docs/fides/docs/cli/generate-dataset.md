@@ -7,7 +7,7 @@
 
 ###  DESCRIPTION
 
-The `generate-dataset` command reads one more schemas from a database by executing the <code><i>connection_string</i></code> statement, transforms the schemas into Dataset resources, and writes the Datasets (as YAML) to <code><i>output_filename</i></code>. 
+The `generate-dataset` command reads one more schemas from a database by executing the <code><i>connection_string</i></code> statement, transforms the schemas into Dataset resources, and writes the Datasets (as YAML) to <code><i>output_filename</i></code>. The connection to your database isn't dynamic. If you update your database schemas, you have to re-generate (or modify) your Dataset objects.
 
 
 ###  ARGUMENTS
