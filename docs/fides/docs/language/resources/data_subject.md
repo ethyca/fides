@@ -2,7 +2,7 @@
 
 **Demo manifest file:** _None_ 
 
-A Data Subject is a label that can be applied to a segment of the individuals whose data you store. Data Subject labels are typically fairly broad -- "Citizen", "Visitor", "Passenger", and so on -- although you can be as specific as your system needs: "Fans in Section K", for example. The Data Subject resource isn't designed to identify specific individuals.
+A Data Subject is a label that describes a segment of  individuals whose data you store. Data Subject labels are typically fairly broad -- "Citizen", "Visitor", "Passenger", and so on -- although you can be as specific as your system needs: "Fans in Section K", for example. The Data Subject resource isn't designed to identify specific individuals.
 
 Data Subjects are added to Policy resources through the Policy's `data_subjects` property. They aren't used by any other resource types.
 
@@ -30,7 +30,7 @@ The fides key of the organization to which this Data Subject belongs.
 
 ## Examples
 
-**YAML**
+**Manifest File**
 ```yaml
 data_subject:
   - fides_key: supplier_vendor
@@ -38,7 +38,7 @@ data_subject:
     description: An individual or organization that provides services or goods to the organization.
 ```
 
-**JSON**
+**API Payload**
 
 ```json
 {

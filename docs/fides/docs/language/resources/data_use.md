@@ -2,9 +2,9 @@
 
 **Demo manifest file:** _None_ 
 
-A Data Use object is a label that denotes the way data is used in your system: "Advertising, Marketing or Promotion", "First Party Advertising", and "Sharing for Legal Obligation", as examples.
+A Data Use is a label that denotes the way data is used in your system: "Advertising, Marketing or Promotion", "First Party Advertising", and "Sharing for Legal Obligation", as examples.
 
-Data Use objects form a tree: A Data Use can contain any number of children, but a given Data Use may only have one parent. You assign a child Data Use to a parent by setting the child's `parent_key` property. The parent Data Use must already exist when it's assigned (as a parent), even if that means that it's declared earlier in the same manifest file. Because you can't refer to "unknown parents", it's impossible to create a child->parent->child->parent... loop.
+Data Use objects form a tree: A Data Use can contain any number of children, but a given Data Use may only have one parent. You assign a child Data Use to a parent by setting the child's `parent_key` property. The parent Data Use must already exist when it's assigned (as a parent); for example, if a parent and child are declared in the same manifest file, the parent must be declared first. Because you can't refer to "undeclared parents", it's impossible to create a child->parent->child->parent->... loop.
 
 A child Data Use knows its parent; the parent doesn't know its children. 
 
@@ -17,7 +17,7 @@ A string token that uniquely identifies this Data Use. As explained in the Overv
 
 `grandparent.parent.this_data_use`
 
-The final element may only contain alphanumeric characters and  underbars (`[A-Za-z0-9_]`)
+The final element (`this_data_use`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). The dot character is reserved as a separator.
 
 
 **name**<span class="spacer"/>_string_
@@ -39,7 +39,7 @@ The fides key of the organization to which this Data Use belongs.
 
 ## Examples
 
-**YAML**
+**Manifest File**
 ```yaml
 data_use:
   - fides_key: third_party_sharing.legal_obligation
@@ -49,7 +49,7 @@ data_use:
 ```
 
 
-**JSON**
+**API Payload**
 
 ```json
 {

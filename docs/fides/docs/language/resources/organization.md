@@ -26,7 +26,7 @@ A human-readable description of the Organization.
 
 ## Examples
 
-**YAML** 
+**Manifest File** 
 ```yaml
 organization:
   fides_key: default_organization
@@ -34,7 +34,7 @@ organization:
   description: An Organization that represents all of Acme Inc.
 ```
 
-**JSON**
+**API Payload**
 ```json
 {
   "fides_key": "default_organization",

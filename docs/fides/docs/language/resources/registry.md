@@ -3,18 +3,18 @@
 **Demo manifest file:** `/fides/fidesctl/demo_resources/demo_registry.yml`. 
 
 
-A Registry is a collection of system resources. You add a system to a Registry by setting the system's `registry_id` field. A system may belong to only one Registry. Although a system knows which Registry it belongs to, the Registry doesn't know which systems it contains.
+A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field. A System may belong to only one Registry. Although a System knows which Registry it belongs to, the Registry doesn't know which Systems it contains.
 
-All registries are siblings: You can't create a hierarchy of registries.
+All Registries are siblings: You can't create a hierarchy of Registries.
 
-Collecting your systems into registries is optional. It provides no functional benefit.
+Collecting your systems into Tegistries is optional. 
 
 
 ## Object Structure
 
 **fides_key**<span class="required"/>_string_
 
-A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
 
 **name**<span class="spacer"/>_string_
 
@@ -31,7 +31,7 @@ The fides key of the Organization to which this Registry belongs.
 
 ## Examples
 
-**YAML**
+**Manifest File**
 ```yaml
 registry:
   - fides_key: user_systems_registry
@@ -39,7 +39,7 @@ registry:
     description: A Registry for all of the user-related systems.
 ```
 
-**JSON**
+**API Payload**
 ```json
 {
   "fides_key": "user_systems_registry",
