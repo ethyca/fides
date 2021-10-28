@@ -133,7 +133,7 @@ def evaluate(
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str, annotate: bool
+    ctx: click.Context, connection_string: str, output_filename: str
 ) -> None:
     """
     Connect a database to create a dataset.
