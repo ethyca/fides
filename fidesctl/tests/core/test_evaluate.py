@@ -3,7 +3,36 @@ import pytest
 
 from fidesctl.core import evaluate
 
-from fideslang.models import Policy
+from fideslang.models import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+    Dataset,
+    DatasetCollection,
+    Policy,
+    Taxonomy,
+)
+
+
+# Helpers
+@pytest.fixture()
+def evaluation_key_validation_taxonomy():
+    yield Taxonomy(
+        data_subject=[
+            DataSubject(fides_key="data_subject_1"),
+            DataSubject(fides_key="data_subject_2"),
+        ],
+        data_category=[
+            DataCategory(fides_key="data_category_1"),
+            DataCategory(fides_key="data_category_2"),
+        ],
+        data_qualifier=[
+            DataQualifier(fides_key="data_qualifier_1"),
+            DataQualifier(fides_key="data_qualifier_2"),
+        ],
+        data_use=[DataUse(fides_key="data_use_1"), DataUse(fides_key="data_use_2")],
+    )
 
 
 @pytest.mark.integration
@@ -95,33 +124,53 @@ def test_validate_policies_exist_throws_with_empty():
 
 
 @pytest.mark.unit
+def test_validate_policies_exist_with_policies():
+    evaluate.validate_policies_exist(
+        policies=[Policy(fides_key="fides_key_1", rules=[])],
+        evaluate_fides_key="fides_key",
+    )
+
+
+@pytest.mark.unit
 def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_type_hierarchies=[["key_2"], ["key_1"]], rule_inclusion="ANY"
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
+        rule_inclusion="ANY",
     )
     assert result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1_parent"], declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]], rule_inclusion="ANY"
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
+        rule_inclusion="ANY",
     )
     assert result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_type_hierarchies=[["key_2"], ["key_3"]], rule_inclusion="ANY"
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"]],
+        rule_inclusion="ANY",
     )
     assert not result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]], rule_inclusion="ANY"
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
+        rule_inclusion="ANY",
     )
     assert not result
-    
+
+
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
@@ -131,14 +180,19 @@ def test_compare_rule_to_declaration_all_true():
     )
     assert result
 
+
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent", "key_3_parent"],
-        declaration_type_hierarchies=[["key_3", "key_3_parent"], ["key_1", "key_1_parent"]],
+        declaration_type_hierarchies=[
+            ["key_3", "key_3_parent"],
+            ["key_1", "key_1_parent"],
+        ],
         rule_inclusion="ALL",
     )
     assert result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_false():
@@ -149,6 +203,7 @@ def test_compare_rule_to_declaration_all_false():
     )
     assert not result
 
+
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
@@ -157,6 +212,7 @@ def test_compare_rule_to_declaration_all_false_hierarchical():
         rule_inclusion="ALL",
     )
     assert not result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_true():
@@ -167,6 +223,7 @@ def test_compare_rule_to_declaration_none_true():
     )
     assert result
 
+
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
@@ -175,6 +232,7 @@ def test_compare_rule_to_declaration_none_true_hierarchical():
         rule_inclusion="NONE",
     )
     assert result
+
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_false():
@@ -185,6 +243,7 @@ def test_compare_rule_to_declaration_none_false():
     )
     assert not result
 
+
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
@@ -193,3 +252,99 @@ def test_compare_rule_to_declaration_none_false_hierarchical():
         rule_inclusion="NONE",
     )
     assert not result
+
+
+@pytest.mark.unit
+def test_get_dataset_by_fides_key_exists():
+    dataset_1 = Dataset(
+        fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
+    )
+    dataset_2 = Dataset(
+        fides_key="dataset_2", collections=[DatasetCollection(name="", fields=[])]
+    )
+    result = evaluate.get_dataset_by_fides_key(
+        taxonomy=Taxonomy(dataset=[dataset_1, dataset_2]), fides_key="dataset_1"
+    )
+    assert result == dataset_1
+
+
+@pytest.mark.unit
+def test_get_dataset_by_fides_key_does_not_exist():
+    dataset1 = Dataset(
+        fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
+    )
+    dataset_2 = Dataset(
+        fides_key="dataset_2", collections=[DatasetCollection(name="", fields=[])]
+    )
+    result = evaluate.get_dataset_by_fides_key(
+        taxonomy=Taxonomy(dataset=[dataset1, dataset_2]), fides_key="dataset_3"
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_pass(
+    evaluation_key_validation_taxonomy,
+):
+    evaluate.validate_fides_keys_exist_for_evaluation(
+        taxonomy=evaluation_key_validation_taxonomy,
+        data_subjects=["data_subject_1"],
+        data_categories=["data_category_1"],
+        data_qualifier="data_qualifier_2",
+        data_use="data_use_1",
+    )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_subject(
+    evaluation_key_validation_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_taxonomy,
+            data_subjects=["data_subject_3"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
+    evaluation_key_validation_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_taxonomy,
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_3"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_qualifier(
+    evaluation_key_validation_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_taxonomy,
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_3",
+            data_use="data_use_1",
+        )
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_use(
+    evaluation_key_validation_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_taxonomy,
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_1",
+            data_use="data_use_3",
+        )
