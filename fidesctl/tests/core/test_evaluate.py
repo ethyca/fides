@@ -101,6 +101,12 @@ def test_compare_rule_to_declaration_any_true():
     )
     assert result
 
+@pytest.mark.unit
+def test_compare_rule_to_declaration_any_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"], declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]], rule_inclusion="ANY"
+    )
+    assert result
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_false():
@@ -109,7 +115,13 @@ def test_compare_rule_to_declaration_any_false():
     )
     assert not result
 
-
+@pytest.mark.unit
+def test_compare_rule_to_declaration_any_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"], declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]], rule_inclusion="ANY"
+    )
+    assert not result
+    
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
@@ -119,6 +131,14 @@ def test_compare_rule_to_declaration_all_true():
     )
     assert result
 
+@pytest.mark.unit
+def test_compare_rule_to_declaration_all_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent", "key_3_parent"],
+        declaration_type_hierarchies=[["key_3", "key_3_parent"], ["key_1", "key_1_parent"]],
+        rule_inclusion="ALL",
+    )
+    assert result
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_all_false():
@@ -129,6 +149,14 @@ def test_compare_rule_to_declaration_all_false():
     )
     assert not result
 
+@pytest.mark.unit
+def test_compare_rule_to_declaration_all_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1", "key_1_parent", "key_3"],
+        declaration_type_hierarchies=[["key_2"], ["key_1" "key_1_parent"]],
+        rule_inclusion="ALL",
+    )
+    assert not result
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_true():
@@ -139,12 +167,29 @@ def test_compare_rule_to_declaration_none_true():
     )
     assert result
 
+@pytest.mark.unit
+def test_compare_rule_to_declaration_none_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
+        rule_inclusion="NONE",
+    )
+    assert result
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
+        rule_inclusion="NONE",
+    )
+    assert not result
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_none_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1", "key_1_parent"]],
         rule_inclusion="NONE",
     )
     assert not result
