@@ -46,6 +46,7 @@ Prints a synopsis of the `fidesctl` command.
 * `apply` creates and updates resource objects by reading a set of resource manifest files.
 * `delete` deletes a resource.
 * `evaluate` runs your policies against your data and announces the results.
+* `generate-dataset` imports a database and converts it into Dataset objects.
 * `get` prints information about a resource.
 * `init-db` initializes and launches your resource database.
 * `ls` lists the resources of a specific type.
