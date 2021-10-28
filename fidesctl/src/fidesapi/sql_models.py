@@ -106,7 +106,7 @@ class Organization(SqlAlchemyBase, FidesBase):
     # It inherits this from FidesModel but Organization's don't have this field
     __tablename__ = "organizations"
 
-    organiztion_parent_key = Column(String, nullable=True)
+    organization_parent_key = Column(String, nullable=True)
 
 
 # Policy

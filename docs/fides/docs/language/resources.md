@@ -27,7 +27,7 @@ organization:
 | --- | --- | --- |
 | fides_key | FidesKey | A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_' |
 | name | String |  A name for this organization |
-| description | String | A description of what this organiztion encapsulates |
+| description | String | A description of what this organization encapsulates |
 
 ---
 
@@ -478,4 +478,3 @@ There is no match!
 When evaluating against a policy, Fides evaluates all privacy rules and takes the _most_ restrictive position.
 
 ---
-

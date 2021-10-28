@@ -1,7 +1,7 @@
 """initial migration
 
 Revision ID: 26934c96ec80
-Revises: 
+Revises:
 Create Date: 2021-09-22 04:12:38.479740
 
 """
@@ -121,7 +121,7 @@ def upgrade():
         sa.Column("organization_fides_key", sa.Text(), nullable=True),
         sa.Column("name", sa.Text(), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("organiztion_parent_key", sa.String(), nullable=True),
+        sa.Column("organization_parent_key", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id", "fides_key"),
     )
     op.create_index(
