@@ -1,17 +1,19 @@
 # Tutorial Overview
 
-In this tutorial, we'll imagine that your business sells pizza online. "Best Pizza Co" has an ecommerce web application that you sell pizza through and an analytics tool that you use to maintain a constant inventory of pizzas to send and understand their buyers market. Your data ecosystem might look like this: 
+In this tutorial, we'll imagine that your business sells pizza online. "Best Pizza Co" has an ecommerce web application through which it sells pizza, and an analytics tool used to maintain a constant inventory of available pizzas to better understand the market. Your data ecosystem might look like this:
 
 ![Best Pizza Co's Data Ecosystem](../img/BestPizzaCo_DataEcosystem.png)
 
-When looking to expand to other international markets, you've decided to be intentional in how you scale your technology.  Using Fides, we will show you how to:
+While looking to expand into international markets, you've decided to be intentional in the means of scaling your technology.  In this tutorial, you'll learn how to use Fides to:
 
-1. Declare what categories of PII you have in your 3 databases using Dataset annotations
-2. Create business-function related groupings for your applications using System privacy declarations
-3. Build a set of rules dictating what Best Pizza Co deems to be allowed use of PII data in your Policy
+1. Create Dataset Annotations, to declare the categories of PII stored in your three databases
+2. Use System Privacy Declarations, to create business-function-related groupings for your applications
+3. Build a set of rules dictating what Best Pizza Co. considers to be "allowed use of PII data", in accordance with your privacy policy
 
-When you're done creating these Datasets, Systems, and Policy, your Fides data model might look something like this:
+When you're done creating the Datasets, Systems, and Policy, your Fides data model might look like this:
+
 ![Best Pizza Co's modeled in Fides](../img/BestPizzaCo_FidesModel.png)
 
 ## Next: Taxonomy
-Using these basic principles, you'll begin building a practice of data privacy awareness amongst the software teams at your company. Let's get started with the fundamentals by understanding the Fides language [Taxonomy](taxonomy.md).
+
+Using these basic principles, you'll begin building a practice of data privacy awareness throughout the software teams at your company. Start with the fundamentals, by understanding the Fides language [Taxonomy](taxonomy.md).
