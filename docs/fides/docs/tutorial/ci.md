@@ -2,7 +2,7 @@
 
 _In this section, we'll reference a few examples and best practices for setting up your CI._
 
-(TODO: rewrite)
+<!-- (TODO: rewrite) -->
 
 Fides is meant to exist as a part of your CI pipeline, in order to enforce your organization's privacy policy before changes are released. We recommend setting up two events to trigger during each run of your CI pipeline.
 
@@ -40,4 +40,4 @@ This will apply all of your manifests to the API and evaluate the current state 
 
 We have compiled a few reference implementations for some popular CI tools, which you can find here.
 
-(TODO: provide examples)
+<!-- (TODO: provide examples) -->
