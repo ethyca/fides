@@ -28,14 +28,14 @@ dataset:
   description: 'Fides Generated Description for Dataset: Postgres App Database'
   collections:
   - name: users
-      description: 'Fides Generated Description for Table: users'
-      fields:
-      - name: first_name
-          description: 'Fides Generated Description for Column: first_name'
-          data_categories: []
-      - name: zip_code
-          description: 'Fides Generated Description for Column: zip_code'
-          data_categories: []
+    description: 'Fides Generated Description for Table: users'
+    fields:
+    - name: first_name
+      description: 'Fides Generated Description for Column: first_name'
+      data_categories: []
+    - name: zip_code
+      description: 'Fides Generated Description for Column: zip_code'
+      data_categories: []
 ```
 
 ## Understanding the Dataset Resource
@@ -65,21 +65,30 @@ Additionally, fideslang has attributes that describe what kind of data is contai
 
 The `fidesctl generate-dataset` command has already pre-filled the required attributes for this exported YAML file. We can update the YAML file with some information that might be appropriate for your organization, such as:
 
-  description: 'This is our primary web application database'
-  collections:
-    - name: users
-      description: 'Table that contains all user account data as entered by the user'
-      fields:
-        - name: first_name
-          description: 'Fides Generated Description for Column: first_name'
-          data_categories:
-            - user.provided.identifiable.name
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: zip_code
-          description: 'Fides Generated Description for Column: zip_code'
-          data_categories:
-            - user.provided.identifiable.contact.postal_code
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized
+```diff
+ dataset:
+ - fides_key: appdb
+   organization_fides_key: default_organization
+   name: Postgres App Database
++  description: 'This is our primary web application database'
+-  description: 'Fides Generated Description for Dataset: Postgres App Database'
+   collections:
+     - name: users
++      description: 'Table that contains all user account data as entered by the user'
+-      description: 'Fides Generated Description for Table: users'
+       fields:
+       - name: first_name
+         description: 'Fides Generated Description for Column: first_name'
++        data_categories:
++        - user.provided.identifiable.name
++        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+-        data_categories: []
+       - name: zip_code
+         description: 'Fides Generated Description for Column: zip_code'
++        data_categories:
++        - user.provided.identifiable.contact.postal_code
++        data_qualifier: aggregated.anonymized.unlinked_pseudonymized
+-        data_categories: []
 ```
 
 ---

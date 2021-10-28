@@ -29,34 +29,34 @@ Let's take a look at the following system annotations for a data analytics and m
 
 ```yaml
 system:
-  - fides_key: web_app
-    name: Pizza Ordering Web Application
-    description: A system used to order pizza from Best Pizza Co
-    system_type: Service
-    privacy_declarations:
-      - name: Provide services and order tracking for customers.
-        data_categories:
-          - user.provided.identifiable.contact
-        data_use: provide_product_or_service
-        data_subjects:
-          - customer
-        data_qualifier: identified_data
-        dataset_references:
-          - appdb
+- fides_key: web_app
+  name: Pizza Ordering Web Application
+  description: A system used to order pizza from Best Pizza Co
+  system_type: Service
+  privacy_declarations:
+  - name: Provide services and order tracking for customers.
+    data_categories:
+    - user.provided.identifiable.contact
+    data_use: provide_product_or_service
+    data_subjects:
+    - customer
+    data_qualifier: identified_data
+    dataset_references:
+    - appdb
 
-  - fides_key: analytics
-    name: Analytics system
-    description: Provide BI and insights on customer, order and inventory data
-    system_type: Service
-    privacy_declarations:
-      - name: Collect data for business intelligence
-        data_categories:
-          - user.provided.identifiable.contact
-          - user.derived.identifiable.device
-        data_use: improve_product_or_service
-        data_subjects:
-          - customer
-        data_qualifier: identified_data
+- fides_key: analytics
+  name: Analytics system
+  description: Provide BI and insights on customer, order and inventory data
+  system_type: Service
+  privacy_declarations:
+  - name: Collect data for business intelligence
+    data_categories:
+    - user.provided.identifiable.contact
+    - user.derived.identifiable.device
+    data_use: improve_product_or_service
+    data_subjects:
+    - customer
+    data_qualifier: identified_data
 ```
 
 The system is comprised of Privacy Declarations. These can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`".

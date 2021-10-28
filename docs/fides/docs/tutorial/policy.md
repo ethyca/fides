@@ -35,44 +35,44 @@ If you know that you cannot use identifiable contact information for direct mark
 
 ```yaml
 policy:
-  - fides_key: main_privacy_policy
-    name: Main Privacy Policy
-    description: The main privacy policy for the organization.
-    rules:
-      - fides_key: reject_direct_marketing
-        name: Reject Direct Marketing
-        description: Do not allow collection or storage of any identifiable contact info to use for marketing.
-        data_categories:
-          inclusion: ANY
-          values:
-            - user.provided.identifiable.contact
-        data_uses:
-          inclusion: ANY
-          values:
-            - marketing_advertising_or_promotion
-        data_subjects:
-          inclusion: ANY
-          values:
-            - customer
-        data_qualifier: identified_data
-        action: REJECT
-      - fides_key: allow_anon_analytics
-        name: Use only anonymized data for analytics
-        description: Allow only anonymized data to be used for analytics purposes.
-        data_categories:
-          inclusion: ANY
-          values:
-            - user.provided.nonidentifiable
-        data_uses:
-          inclusion: ANY
-          values:
-            - improve_product_or_service
-        data_subjects:
-          inclusion: ANY
-          values:
-            - customer
-        data_qualifier: aggregated.anonymized
-        action: ALLOW
+- fides_key: main_privacy_policy
+  name: Main Privacy Policy
+  description: The main privacy policy for the organization.
+  rules:
+  - fides_key: reject_direct_marketing
+    name: Reject Direct Marketing
+    description: Do not allow collection or storage of any identifiable contact info to use for marketing.
+    data_categories:
+      inclusion: ANY
+      values:
+        - user.provided.identifiable.contact
+    data_uses:
+      inclusion: ANY
+      values:
+        - marketing_advertising_or_promotion
+    data_subjects:
+      inclusion: ANY
+      values:
+        - customer
+    data_qualifier: identified_data
+    action: REJECT
+  - fides_key: allow_anon_analytics
+    name: Use only anonymized data for analytics
+    description: Allow only anonymized data to be used for analytics purposes.
+    data_categories:
+      inclusion: ANY
+      values:
+        - user.provided.nonidentifiable
+    data_uses:
+      inclusion: ANY
+      values:
+        - improve_product_or_service
+    data_subjects:
+      inclusion: ANY
+      values:
+        - customer
+    data_qualifier: aggregated.anonymized
+    action: ALLOW
 ```
 
 This policy will evaluate the data subjects, data category, and data qualifier values against data use cases, which generates a boolean output to either allow or reject the process from proceeding.
