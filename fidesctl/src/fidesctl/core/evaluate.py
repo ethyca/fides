@@ -321,7 +321,7 @@ def evaluate_dataset_reference(
 
         if dataset_result:
             evaluation_detail_list += [
-                "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset {}".format(
+                "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset ({})".format(
                     privacy_declaration.name,
                     system.fides_key,
                     policy_rule.name,
@@ -342,7 +342,7 @@ def evaluate_dataset_reference(
 
             if dataset_collection_result:
                 evaluation_detail_list += [
-                    "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset Collection {}".format(
+                    "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetCollection ({})".format(
                         privacy_declaration.name,
                         system.fides_key,
                         policy_rule.name,
@@ -364,7 +364,7 @@ def evaluate_dataset_reference(
 
                 if field_result:
                     evaluation_detail_list += [
-                        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset Field {}".format(
+                        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetField ({})".format(
                             privacy_declaration.name,
                             system.fides_key,
                             policy_rule.name,
