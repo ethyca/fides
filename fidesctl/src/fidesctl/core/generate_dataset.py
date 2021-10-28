@@ -9,55 +9,64 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from .utils import get_db_engine, echo_green
 
 
-def get_db_collections_and_fields(engine: Engine) -> Dict[str, List[str]]:
+def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
     """
-    Get the name of every field in each table within a database
+    Get the name of every field in each table within database(s)
     Args:
         engine: A sqlalchemy DB connection engine
 
     Returns:
         db_tables: An object that contains a mapping of each field in each table of a database
-            (i.e. {database/schema.table_name:[fields, ...]} )
+            (i.e. {schema: {schema.table_name: [fields, ...]}}
     """
     inspector = sqlalchemy.inspect(engine)
     schema_exclusion_list = ["information_schema"]
 
     if engine.dialect.name == "mysql":
-        schema_exclusion_list.extend(["mysql", "performance_schema"])
+        schema_exclusion_list.extend(["mysql", "performance_schema", "sys"])
 
-    db_tables = {
-        f"{schema}.{table}": [
-            column["name"] for column in inspector.get_columns(table, schema=schema)
-        ]
-        for schema in inspector.get_schema_names()
-        for table in inspector.get_table_names(schema=schema)
-        if schema not in schema_exclusion_list
-    }
+    db_tables: Dict[str, Dict[str, List]] = {}
+    for schema in inspector.get_schema_names():
+        if schema not in schema_exclusion_list:
+            db_tables[schema] = {}
+            for table in inspector.get_table_names(schema=schema):
+                db_tables[schema][f"{schema}.{table}"] = [
+                    column["name"]
+                    for column in inspector.get_columns(table, schema=schema)
+                ]
     return db_tables
 
 
 def create_dataset_collections(
-    db_tables: Dict[str, List[str]]
-) -> List[DatasetCollection]:
+    db_tables: Dict[str, Dict[str, List[str]]]
+) -> List[Dataset]:
     """
     Return an object of tables and columns formatted for a Fides manifest
     with dummy values where needed.
     """
 
     table_manifests = [
-        DatasetCollection(
-            name=table,
-            description=f"Fides Generated Description for Table: {table}",
-            fields=[
-                DatasetField(
-                    name=column,
-                    description=f"Fides Generated Description for Column: {column}",
-                    data_categories=[],
+        Dataset(
+            fides_key=schema_name,
+            name=schema_name,
+            description=f"Fides Generated Description for Schema: {schema_name}",
+            collections=[
+                DatasetCollection(
+                    name=table_name,
+                    description=f"Fides Generated Description for Table: {table_name}",
+                    fields=[
+                        DatasetField(
+                            name=column,
+                            description=f"Fides Generated Description for Column: {column}",
+                            data_categories=[],
+                        )
+                        for column in table
+                    ],
                 )
-                for column in db_tables[table]
+                for table_name, table in schema.items()
             ],
         )
-        for table in db_tables.keys()
+        for schema_name, schema in db_tables.items()
     ]
     return table_manifests
 
@@ -78,7 +87,7 @@ def create_dataset(engine: Engine, collections: List[DatasetCollection]) -> Data
     return dataset
 
 
-def generate_dataset(connection_string: str, file_name: str) -> None:
+def generate_dataset(connection_string: str, file_name: str) -> str:
     """
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest.
@@ -86,6 +95,6 @@ def generate_dataset(connection_string: str, file_name: str) -> None:
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
-    dataset = create_dataset(db_engine, collections)
-    manifests.write_manifest(file_name, dataset.dict(), "dataset")
+    manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
     echo_green(f"Generated dataset manifest written to {file_name}")
+    return file_name
