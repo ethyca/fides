@@ -137,11 +137,6 @@ def get_fides_key_parent_hierarchy(
         )
         if found_resource_map:
             found_resource = list(found_resource_map.values())[-1]
-            if not found_resource:
-                echo_red(
-                    "Found missing key ({}) referenced in taxonomy".format(current_key)
-                )
-                raise SystemExit(1)
             if found_resource and "parent_key" in found_resource.__fields_set__:
                 current_key = getattr(found_resource, "parent_key")
                 if not current_key:
@@ -149,7 +144,10 @@ def get_fides_key_parent_hierarchy(
             else:
                 break
         else:
-            break
+            echo_red(
+                "Found missing key ({}) referenced in taxonomy".format(current_key)
+            )
+            raise SystemExit(1)
     return fides_key_parent_hierarchy
 
 

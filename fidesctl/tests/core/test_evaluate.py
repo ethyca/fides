@@ -12,12 +12,15 @@ from fideslang.models import (
     DatasetCollection,
     Policy,
     Taxonomy,
+    PolicyRule,
+    InclusionEnum,
+    ActionEnum,
 )
 
 
 # Helpers
 @pytest.fixture()
-def evaluation_key_validation_taxonomy():
+def evaluation_key_validation_basic_taxonomy():
     yield Taxonomy(
         data_subject=[
             DataSubject(fides_key="data_subject_1"),
@@ -32,6 +35,46 @@ def evaluation_key_validation_taxonomy():
             DataQualifier(fides_key="data_qualifier_2"),
         ],
         data_use=[DataUse(fides_key="data_use_1"), DataUse(fides_key="data_use_2")],
+    )
+
+
+@pytest.fixture()
+def evaluation_hierarchical_key_basic_taxonomy():
+    yield Taxonomy(
+        data_category=[
+            DataCategory(
+                fides_key="data_category",
+            ),
+            DataCategory(
+                fides_key="data_category.parent",
+                parent_key="data_category",
+            ),
+            DataCategory(
+                fides_key="data_category.parent.child",
+                parent_key="data_category.parent",
+            ),
+        ]
+    )
+
+
+def create_policy_rule_with_action(
+    policy_rule_key: str, action: ActionEnum
+) -> PolicyRule:
+    return PolicyRule(
+        fides_key=policy_rule_key,
+        action=action,
+        data_categories={
+            "values": ["data_category_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_uses={
+            "values": ["data_use_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_subjects={
+            "values": ["data_subject_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
     )
 
 
@@ -284,10 +327,10 @@ def test_get_dataset_by_fides_key_does_not_exist():
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_pass(
-    evaluation_key_validation_taxonomy,
+    evaluation_key_validation_basic_taxonomy,
 ):
     evaluate.validate_fides_keys_exist_for_evaluation(
-        taxonomy=evaluation_key_validation_taxonomy,
+        taxonomy=evaluation_key_validation_basic_taxonomy,
         data_subjects=["data_subject_1"],
         data_categories=["data_category_1"],
         data_qualifier="data_qualifier_2",
@@ -297,11 +340,11 @@ def test_validate_fides_keys_exist_for_evaluation_pass(
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_subject(
-    evaluation_key_validation_taxonomy,
+    evaluation_key_validation_basic_taxonomy,
 ):
     with pytest.raises(SystemExit):
         evaluate.validate_fides_keys_exist_for_evaluation(
-            taxonomy=evaluation_key_validation_taxonomy,
+            taxonomy=evaluation_key_validation_basic_taxonomy,
             data_subjects=["data_subject_3"],
             data_categories=["data_category_1"],
             data_qualifier="data_qualifier_2",
@@ -311,11 +354,11 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_subject(
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
-    evaluation_key_validation_taxonomy,
+    evaluation_key_validation_basic_taxonomy,
 ):
     with pytest.raises(SystemExit):
         evaluate.validate_fides_keys_exist_for_evaluation(
-            taxonomy=evaluation_key_validation_taxonomy,
+            taxonomy=evaluation_key_validation_basic_taxonomy,
             data_subjects=["data_subject_1"],
             data_categories=["data_category_3"],
             data_qualifier="data_qualifier_2",
@@ -325,26 +368,129 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_qualifier(
-    evaluation_key_validation_taxonomy,
+    evaluation_key_validation_basic_taxonomy,
 ):
     with pytest.raises(SystemExit):
         evaluate.validate_fides_keys_exist_for_evaluation(
-            taxonomy=evaluation_key_validation_taxonomy,
+            taxonomy=evaluation_key_validation_basic_taxonomy,
             data_subjects=["data_subject_1"],
             data_categories=["data_category_1"],
             data_qualifier="data_qualifier_3",
             data_use="data_use_1",
         )
 
+
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_use(
-    evaluation_key_validation_taxonomy,
+    evaluation_key_validation_basic_taxonomy,
 ):
     with pytest.raises(SystemExit):
         evaluate.validate_fides_keys_exist_for_evaluation(
-            taxonomy=evaluation_key_validation_taxonomy,
+            taxonomy=evaluation_key_validation_basic_taxonomy,
             data_subjects=["data_subject_1"],
             data_categories=["data_category_1"],
             data_qualifier="data_qualifier_1",
             data_use="data_use_3",
+        )
+
+
+@pytest.mark.unit
+def test_validate_supported_policy_rules_throws_with_unsupported_action():
+    with pytest.raises(SystemExit):
+        evaluate.validate_supported_policy_rules(
+            policies=[
+                Policy(
+                    fides_key="policy_1",
+                    rules=[
+                        create_policy_rule_with_action(
+                            policy_rule_key="policy_rule_1", action=ActionEnum.ACCEPT
+                        ),
+                        create_policy_rule_with_action(
+                            policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
+                        ),
+                    ],
+                )
+            ],
+        )
+
+
+@pytest.mark.unit
+def test_validate_supported_policy_rules_passes():
+    evaluate.validate_supported_policy_rules(
+        policies=[
+            Policy(
+                fides_key="policy_1",
+                rules=[
+                    create_policy_rule_with_action(
+                        policy_rule_key="policy_rule_1", action=ActionEnum.REJECT
+                    ),
+                    create_policy_rule_with_action(
+                        policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
+                    ),
+                ],
+            )
+        ],
+    )
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_child(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+        fides_key="data_category.parent.child",
+    )
+    assert result == [
+        "data_category.parent.child",
+        "data_category.parent",
+        "data_category",
+    ]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_parent(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+        fides_key="data_category.parent",
+    )
+    assert result == ["data_category.parent", "data_category"]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_top_level(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy, fides_key="data_category"
+    )
+    assert result == ["data_category"]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_missing_key(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.get_fides_key_parent_hierarchy(
+            taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+            fides_key="data_category.invalid",
+        )
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_missing_parent():
+    with pytest.raises(SystemExit):
+        evaluate.get_fides_key_parent_hierarchy(
+            taxonomy=Taxonomy(
+                data_category=[
+                    DataCategory(
+                        fides_key="data_category.parent",
+                        parent_key="data_category",
+                    ),
+                ]
+            ),
+            fides_key="data_category.parent",
         )
