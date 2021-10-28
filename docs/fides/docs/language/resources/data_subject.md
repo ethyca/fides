@@ -1,12 +1,11 @@
 # Data Subject
 
-**Demo manifest file:** _None_ 
 
 A Data Subject is a label that describes a segment of  individuals whose data you store. Data Subject labels are typically fairly broad -- "Citizen", "Visitor", "Passenger", and so on -- although you can be as specific as your system needs: "Fans in Section K", for example. The Data Subject resource isn't designed to identify specific individuals.
 
 Data Subjects are added to Policy resources through the Policy's `data_subjects` property. They aren't used by any other resource types.
 
-Currently, Data Subjects aren't hierarchical: A Data Subject can't contain other Data Subjects. 
+Data Subjects aren't hierarchical: A Data Subject can't contain other Data Subjects. 
 
 
 ## Object Structure

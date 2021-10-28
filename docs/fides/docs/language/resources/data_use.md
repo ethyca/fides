@@ -1,6 +1,5 @@
 # Data Use
 
-**Demo manifest file:** _None_ 
 
 A Data Use is a label that denotes the way data is used in your system: "Advertising, Marketing or Promotion", "First Party Advertising", and "Sharing for Legal Obligation", as examples.
 
@@ -13,7 +12,7 @@ A child Data Use knows its parent; the parent doesn't know its children.
 
 **fides_key**<span class="required"/>_string_
 
-A string token that uniquely identifies this Data Use. As explained in the Overview, the value must be a dot-separated concatenation of the `fides_key` values of the resource's ancestors plus a final element for this resource:
+A string token that uniquely identifies this Data Use. The value is a dot-separated concatenation of the `fides_key` values of the resource's ancestors plus a final element for this resource:
 
 `grandparent.parent.this_data_use`
 

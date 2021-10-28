@@ -1,6 +1,5 @@
 # Organization
 
-**Demo manifest file:** *None*. 
 
 An Organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than Organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" Organization can't refer to the Policy objects that are defined by your "European Stores" Organization.
 

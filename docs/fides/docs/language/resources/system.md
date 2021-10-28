@@ -1,4 +1,4 @@
-# Registry
+# System
 
 **Demo manifest file:** `/fides/fidesctl/demo_resources/demo_system.yml`. 
 
@@ -6,11 +6,6 @@
 A System is a bundle of instances of your data resources (`data_category`, `data_use`, `data_subject`, and `data_qualifier`).
 
 
-s a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field. A System may belong to only one Registry. Although a System knows which Registry it belongs to, the Registry doesn't know which Systems it contains.
-
-All Registries are siblings: You can't create a hierarchy of Registries.
-
-Collecting your systems into Tegistries is optional. 
 
 
 ## Object Structure

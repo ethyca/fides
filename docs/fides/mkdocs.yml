@@ -22,7 +22,6 @@ nav:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
       - Resources: 
-        - Overview: language/resources.md
         - Organization: language/resources/organization.md
         - Policy: language/resources/policy.md
         - Registry: language/resources/registry.md 
