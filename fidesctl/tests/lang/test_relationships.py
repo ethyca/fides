@@ -1,6 +1,21 @@
 import pytest
 
-from fideslang import relationships, DataCategory, System, Taxonomy
+from fideslang import relationships
+
+from fideslang.models import (
+    DataCategory,
+    System,
+    Taxonomy,
+    Policy,
+    Dataset,
+    PolicyRule,
+    PrivacyRule,
+    DatasetCollection,
+    DatasetField,
+    PrivacyDeclaration,
+    InclusionEnum,
+    ActionEnum,
+)
 
 
 @pytest.mark.unit
@@ -60,6 +75,116 @@ def test_get_referenced_missing_keys():
         ],
     )
     expected_referenced_key = {"key_1", "key_3", "key_4", "default_organization"}
+    referenced_keys = relationships.get_referenced_missing_keys(taxonomy)
+    assert sorted(referenced_keys) == sorted(set(expected_referenced_key))
+
+
+@pytest.mark.unit
+def test_get_referenced_missing_privacy_declaration_keys():
+    taxonomy = Taxonomy(
+        system=[
+            System(
+                fides_key="system_1",
+                system_type="system_type_1",
+                privacy_declarations=[
+                    PrivacyDeclaration(
+                        name="privacy_declaration_1",
+                        data_categories=["privacy_declaration_data_category_1"],
+                        data_use="privacy_declaration_data_use_1",
+                        data_qualifier="privacy_declaration_data_qualifier_1",
+                        data_subjects=["privacy_declaration_data_subject_1"],
+                        dataset_references=["privacy_declaration_data_set_1"],
+                    )
+                ],
+            )
+        ]
+    )
+    expected_referenced_key = {
+        "default_organization",
+        "privacy_declaration_data_category_1",
+        "privacy_declaration_data_use_1",
+        "privacy_declaration_data_qualifier_1",
+        "privacy_declaration_data_subject_1",
+        "privacy_declaration_data_set_1",
+    }
+    referenced_keys = relationships.get_referenced_missing_keys(taxonomy)
+    assert sorted(referenced_keys) == sorted(set(expected_referenced_key))
+
+
+@pytest.mark.unit
+def test_get_referenced_missing_policy_keys():
+    taxonomy = Taxonomy(
+        policy=[
+            Policy(
+                fides_key="policy_1",
+                rules=[
+                    PolicyRule(
+                        fides_key="policy_rule_1",
+                        action=ActionEnum.REJECT,
+                        data_categories={
+                            "values": ["policy_rule_data_category_1"],
+                            "inclusion": InclusionEnum.ANY,
+                        },
+                        data_uses={
+                            "values": ["policy_rule_data_use_1"],
+                            "inclusion": InclusionEnum.ANY,
+                        },
+                        data_subjects={
+                            "values": ["policy_rule_data_subject_1"],
+                            "inclusion": InclusionEnum.ANY,
+                        },
+                        data_qualifier="policy_rule_data_qualifier_1",
+                    )
+                ],
+            )
+        ],
+    )
+    expected_referenced_key = {
+        "default_organization",
+        "policy_rule_1",
+        "policy_rule_data_category_1",
+        "policy_rule_data_use_1",
+        "policy_rule_data_subject_1",
+        "policy_rule_data_qualifier_1",
+    }
+    referenced_keys = relationships.get_referenced_missing_keys(taxonomy)
+    assert sorted(referenced_keys) == sorted(set(expected_referenced_key))
+
+
+@pytest.mark.unit
+def test_get_referenced_missing_dataset_keys():
+    taxonomy = Taxonomy(
+        dataset=[
+            Dataset(
+                fides_key="dataset_1",
+                data_qualifier="dataset_qualifier_1",
+                data_categories=["dataset_data_category_1"],
+                collections=[
+                    DatasetCollection(
+                        name="dataset_collection_1",
+                        data_qualifier="data_collection_data_qualifier_1",
+                        data_categories=["dataset_collection_data_category_1"],
+                        fields=[
+                            DatasetField(
+                                name="dataset_field_1",
+                                data_categories=["dataset_field_data_category_1"],
+                                data_qualifier="dataset_field_data_qualifier_1",
+                            )
+                        ],
+                    )
+                ],
+            )
+        ],
+    )
+    expected_referenced_key = {
+        "default_organization",
+        "dataset_qualifier_1",
+        "dataset_data_category_1",
+        "data_collection_data_qualifier_1",
+        "dataset_collection_data_category_1",
+        "dataset_field_data_category_1",
+        "dataset_field_data_qualifier_1",
+    }
     referenced_keys = relationships.get_referenced_missing_keys(taxonomy)
     assert sorted(referenced_keys) == sorted(set(expected_referenced_key))
 

@@ -46,7 +46,6 @@ def has_nested_fides_keys_list(parameter_annotation: str) -> bool:
     has_nested_keys_list = parameter_annotation in [
         List[PolicyRule],
         List[PrivacyRule],
-        List[PrivacyRule],
         List[DatasetCollection],
         List[DatasetField],
         List[PrivacyDeclaration],
