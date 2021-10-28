@@ -39,7 +39,7 @@ system:
         data_use: provide_product_or_service
         data_subjects:
           - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - appdb
 
@@ -55,7 +55,7 @@ system:
         data_use: improve_product_or_service
         data_subjects:
           - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
 As you can see, the system is comprised of Privacy Declarations. These can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`". 

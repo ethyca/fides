@@ -215,7 +215,7 @@ system:
         data_use: improve.system
         data_subjects:
           - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - demo_users_dataset
     system_dependencies: []
@@ -346,7 +346,7 @@ policy:
           inclusion: ANY
           values:
             - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         action: REJECT
 ```
 
@@ -401,7 +401,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
     inclusion: ANY
     values:
       - customer
-  data_qualifier: identified_data
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   action: REJECT
 
 # Example Privacy Declaration:
@@ -412,7 +412,7 @@ Fides uses a matching algorithm to determine whether or not each Privacy Declara
   data_use: advertising
   data_subjects:
     - customer
-  data_qualifier: identified_data
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
 # Example Evaluation Logic:
 
@@ -448,7 +448,7 @@ There is a match, and the Privacy Declaration evaluates to REJECT!
     inclusion: ANY
     values:
       - customer
-  data_qualifier: identified_data
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   action: REJECT
 
 # Example Privacy Declaration:
@@ -458,7 +458,7 @@ There is a match, and the Privacy Declaration evaluates to REJECT!
   data_use: advertising
   data_subjects:
     - customer
-  data_qualifier: identified_data
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
 # Example Evaluation Logic:
 

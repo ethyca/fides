@@ -76,17 +76,17 @@ dataset:
             description: A First Name Field
             data_categories:
               - user.provided.identifiable.name
-            data_qualifier: identified_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
           - name: Email
             description: User's Email
             data_categories:
               - user.provided.identifiable
-            data_qualifier: identified_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
           - name: political_opinion
             description: User's political opinion
             data_categories:
               - user.provided.identifiable.political_opinion
-            data_qualifier: pseudonymized_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 
 system:
   - fides_key: data_analytics_system
@@ -98,7 +98,7 @@ system:
         data_categories:
           - user.provided.identifiable
         data_use: provide.system
-        data_qualifier: pseudonymized_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
         data_subjects:
           - customer
     system_dependencies: [customer_data_sharing_system]
@@ -112,7 +112,7 @@ system:
         data_categories:
           - user.provided.identifiable.political_opinion
         data_use: third_party_sharing
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
         dataset_references:

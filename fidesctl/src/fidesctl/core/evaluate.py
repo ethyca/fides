@@ -138,7 +138,9 @@ def get_fides_key_parent_hierarchy(
         if found_resource_map:
             found_resource = list(found_resource_map.values())[-1]
             if not found_resource:
-                echo_red("Found missing key ({}) referenced in taxonomy".format(current_key))
+                echo_red(
+                    "Found missing key ({}) referenced in taxonomy".format(current_key)
+                )
                 raise SystemExit(1)
             if found_resource and "parent_key" in found_resource.__fields_set__:
                 current_key = getattr(found_resource, "parent_key")
@@ -181,7 +183,7 @@ def validate_fides_keys_exist_for_evaluation(
     data_categories: List[str],
     data_qualifier: str,
     data_use: str,
-):
+) -> None:
     """
     Validates that keys used in evaluations are valid in the taxonomy
     """
@@ -200,9 +202,7 @@ def validate_fides_keys_exist_for_evaluation(
 
     qualifiers_keys = [qualifier.fides_key for qualifier in taxonomy.data_qualifier]
     if data_qualifier not in qualifiers_keys:
-        missing_key_errors.append(
-            "Missing DataQualifier ({})".format(data_qualifier)
-        )
+        missing_key_errors.append("Missing DataQualifier ({})".format(data_qualifier))
 
     data_use_keys = [data_use.fides_key for data_use in taxonomy.data_use]
     if data_use not in data_use_keys:
@@ -215,7 +215,8 @@ def validate_fides_keys_exist_for_evaluation(
             )
         )
         raise SystemExit(1)
-        
+
+
 def evaluate_policy_rule(
     taxonomy: Taxonomy,
     policy_rule: PolicyRule,

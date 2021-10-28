@@ -41,7 +41,7 @@ policy:
           inclusion: ANY
           values:
             - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         action: REJECT
 ```
 
@@ -105,7 +105,7 @@ system:
         data_use: improve_product_or_service
         data_subjects:
           - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - demo_users_dataset
 
@@ -122,7 +122,7 @@ system:
         data_use: marketing_advertising_or_promotion
         data_subjects:
           - customer
-        data_qualifier: identified_data
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
 ## Applying Manifest Files

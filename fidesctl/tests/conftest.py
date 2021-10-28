@@ -70,7 +70,7 @@ def resources_dict():
                             description="A First Name Field",
                             path="another.path",
                             data_categories=["user.provided.identifiable.name"],
-                            data_qualifier="identified_data",
+                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                         models.DatasetField(
                             name="Email",
@@ -79,7 +79,7 @@ def resources_dict():
                             data_categories=[
                                 "user.provided.identifiable.contact.email"
                             ],
-                            data_qualifier="identified_data",
+                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                     ],
                 )
@@ -122,7 +122,7 @@ def resources_dict():
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
             data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
-            data_qualifier="unlinked_pseudonymized_data",
+            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
             action="REJECT",
         ),
         "registry": models.Registry(
