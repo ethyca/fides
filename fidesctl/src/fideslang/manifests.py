@@ -13,11 +13,12 @@ def write_manifest(
     Write a dict representation of a resource out to a file.
     """
     if isinstance(manifest, dict):
-        resource = {resource_type: [manifest]}
+        manifest = {resource_type: [manifest]}
     else:
-        resource = {resource_type: manifest}
+        manifest = {resource_type: manifest}
+
     with open(file_name, "w") as manifest_file:
-        yaml.dump(resource, manifest_file, sort_keys=False, indent=2)
+        yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
 
 
 def load_yaml_into_dict(file_path: str) -> Dict:

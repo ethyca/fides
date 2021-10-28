@@ -15,11 +15,6 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 
 
-DATASET_KEY = "dataset"
-DATA_CATEGORY_KEY = "data_category"
-FIDES_KEY = "fides_key"
-
-
 class AnnotationAbortError(Exception):
     """
     Custom exception to handle mid annotation abort
@@ -60,10 +55,10 @@ def get_data_categories_annotation(
     Returns:
         List of the user's input
     """
-    msg = f"""Enter comma separated data categories for [{dataset_member.name}] [Enter: skip, q: quit]"""
+    msg = f"""Enter comma separated data categories for [{dataset_member.name}] [s: skip, q: quit]"""
     user_response = [input.strip() for input in click.prompt(msg).split(",")]
 
-    if not user_response:
+    if user_response == ["s"]:
         return []
 
     if user_response == ["q"]:
@@ -78,7 +73,7 @@ def get_data_categories_annotation(
             validate_data_categories(user_response, valid_categories)
         except (FidesValidationError, ValueError):
             click.secho(
-                f"[{user_response}] contains invalid categories, please re-enter!",
+                f"[{user_response}] is not a valid data category, please re-confirm and try again!",
                 fg="red",
             )
             user_response = get_data_categories_annotation(
@@ -117,10 +112,10 @@ def annotate_dataset(
         fg="green",
     )
 
-    datasets = core_parse.ingest_manifests(dataset_file)[DATASET_KEY]
+    datasets = core_parse.ingest_manifests(dataset_file)["dataset"]
 
     existing_categories = [
-        resource.__dict__[FIDES_KEY]
+        resource.__dict__["fides_key"]
         for resource in list_resource(sql_model_map[resource_type])
     ]
 
@@ -129,22 +124,28 @@ def annotate_dataset(
         click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
         if annotate_all and not current_dataset.data_categories:
-            click.secho(f"Database [{current_dataset.name}] has no data categories")
-            current_dataset.data_categories = get_data_categories_annotation(
-                dataset_member=current_dataset,
-                valid_categories=existing_categories,
-                validate=validate,
-            )
+            try:
+                click.secho(f"Database [{current_dataset.name}] has no data categories")
+                current_dataset.data_categories = get_data_categories_annotation(
+                    dataset_member=current_dataset,
+                    valid_categories=existing_categories,
+                    validate=validate,
+                )
+            except AnnotationAbortError:
+                break
 
         for table in current_dataset.collections:
             click.secho(f"####\nAnnotating Table: [{table.name}]\n")
             if annotate_all and not table.data_categories:
-                click.secho(f"Table [{table.name}] has no data categories")
-                table.data_categories = get_data_categories_annotation(
-                    dataset_member=table,
-                    valid_categories=existing_categories,
-                    validate=validate,
-                )
+                try:
+                    click.secho(f"Table [{table.name}] has no data categories")
+                    table.data_categories = get_data_categories_annotation(
+                        dataset_member=table,
+                        valid_categories=existing_categories,
+                        validate=validate,
+                    )
+                except AnnotationAbortError:
+                    break
 
             for field in table.fields:
                 if not field.data_categories:
@@ -164,11 +165,6 @@ def annotate_dataset(
                         field.data_categories = user_categories
                     except AnnotationAbortError:
                         break
-            else:
-                continue
-            break
-        else:
-            continue
-        print(current_dataset)
+    else:
         output_dataset.append(current_dataset.dict())
-    manifests.write_manifest(dataset_file, output_dataset, DATASET_KEY)
+    manifests.write_manifest(dataset_file, output_dataset, "dataset")
