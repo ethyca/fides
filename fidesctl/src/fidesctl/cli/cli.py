@@ -160,11 +160,7 @@ def generate_dataset(
     help="Annotate all dataset members, not just fields",
 )
 @click.option(
-    "-v",
-    "--validate",
-    is_flag=True,
-    default=True,
-    help="Disable annotation input validation",
+    "-v", "--validate", is_flag=True, default=False, help="Validate annotation inputs"
 )
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool

@@ -4,13 +4,13 @@ dataset:
   name: Demo Users Dataset
   description: Data collected about users for our analytics system.
   meta: null
-  data_categories: null
+  data_categories: []
   data_qualifiers:
   - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   collections:
   - name: users
     description: User information
-    data_categories: null
+    data_categories: []
     data_qualifiers:
     - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
