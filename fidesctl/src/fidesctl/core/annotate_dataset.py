@@ -2,7 +2,6 @@
 This script is a utility for interactively annotating data categories in the dataset manifest
 """
 
-import pathlib
 from typing import Union, List
 
 import click
@@ -110,7 +109,7 @@ def annotate_dataset(
     Returns:
         Write the amended dataset file in place
     """
-    output_dataset = {}
+    output_dataset = []
 
     # Make the user aware of the data_categories visualizer
     click.secho(
@@ -169,5 +168,5 @@ def annotate_dataset(
             break
         else:
             continue
-        output_dataset[f"{current_dataset.name}"] = current_dataset.dict()
+        output_dataset.append(current_dataset.dict())
     manifests.write_manifest(dataset_file, output_dataset, DATASET_KEY)

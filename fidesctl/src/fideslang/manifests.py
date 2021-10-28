@@ -6,7 +6,9 @@ from typing import Dict, List, Set, Union
 import yaml
 
 
-def write_manifest(file_name: str, manifest: Union[List, Dict], resource_type: str) -> None:
+def write_manifest(
+    file_name: str, manifest: Union[List, Dict], resource_type: str
+) -> None:
     """
     Write a dict representation of a resource out to a file.
     """

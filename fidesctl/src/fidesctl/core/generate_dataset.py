@@ -25,19 +25,20 @@ def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[st
     if engine.dialect.name == "mysql":
         schema_exclusion_list.extend(["mysql", "performance_schema", "sys"])
 
-    db_tables = {}
+    db_tables: Dict[str, Dict[str, List]] = {}
     for schema in inspector.get_schema_names():
         if schema not in schema_exclusion_list:
             db_tables[schema] = {}
             for table in inspector.get_table_names(schema=schema):
                 db_tables[schema][f"{schema}.{table}"] = [
-                    column["name"] for column in inspector.get_columns(table, schema=schema)
+                    column["name"]
+                    for column in inspector.get_columns(table, schema=schema)
                 ]
     return db_tables
 
 
 def create_dataset_collections(
-        db_tables: Dict[str, Dict[str, List[str]]]
+    db_tables: Dict[str, Dict[str, List[str]]]
 ) -> List[Dataset]:
     """
     Return an object of tables and columns formatted for a Fides manifest
@@ -48,7 +49,7 @@ def create_dataset_collections(
         Dataset(
             fides_key=schema_name,
             name=schema_name,
-            description=f'Fides Generated Description for Schema: {schema_name}',
+            description=f"Fides Generated Description for Schema: {schema_name}",
             collections=[
                 DatasetCollection(
                     name=table_name,
@@ -63,7 +64,7 @@ def create_dataset_collections(
                     ],
                 )
                 for table_name, table in schema.items()
-            ]
+            ],
         )
         for schema_name, schema in db_tables.items()
     ]
@@ -94,7 +95,6 @@ def generate_dataset(connection_string: str, file_name: str) -> str:
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
-    # dataset = create_dataset(db_engine, collections)
     manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
     echo_green(f"Generated dataset manifest written to {file_name}")
     return file_name
