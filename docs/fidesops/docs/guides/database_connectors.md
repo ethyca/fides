@@ -21,6 +21,7 @@ Our list is growing but currently we support:
 
 - PostgreSQL
 - MongoDB
+- MySQL
 
 
 ## Configuring a connection 
@@ -61,6 +62,22 @@ Issue a PUT request to [/api/v1/connection](http://0.0.0.0:8080/docs#/Connection
     }
 ]
 ``` 
+
+#### Sample request for a MySQL database:
+
+`PUT api/v1/connection`
+
+```json 
+[
+    { 
+        "name": "My MySQL DB",
+        "key": "app-mysql-db",
+        "connection_type": "mysql",
+        "access": "write"
+    }
+]
+``` 
+
 #### Note:
   - `name` should be a human-readable name for your database.
   - Give your database connection a unique dasherized identity `key`. If no key is supplied, we'll dasherize the `name`.
@@ -105,6 +122,20 @@ If you just want to save the secrets for now, and bypass attempting to connect, 
 {
     "url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
 }
+```
+
+#### Sample request to add MySQL secrets:
+
+`PUT /api/v1/connection/app-mysql-db/secret`
+
+```json
+    {
+       "host": "mysql_example",
+       "port": 3306,
+       "dbname": "mysql_example",
+       "username": "mysql_user",
+       "password": "mysql_pw"
+    }
 ```
 
 ### Testing your connection 
