@@ -1,6 +1,7 @@
 """Module for evaluating policies."""
 from typing import Dict, List, Optional, Callable
 
+import uuid
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
@@ -21,7 +22,6 @@ from fideslang.relationships import (
     hydrate_missing_resources,
 )
 
-import uuid
 
 def get_evaluation_policies(
     local_policies: List[Policy],
@@ -177,8 +177,12 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     status_enum = (
         StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
     )
-    #TODO: Is this how we want to generate fides_key??
-    evaluation = Evaluation(fides_key =  str(uuid.uuid4()).replace("-", "_"), status=status_enum, details=evaluation_detail_list)
+    # TODO: Is this how we want to generate fides_key??
+    evaluation = Evaluation(
+        fides_key=str(uuid.uuid4()).replace("-", "_"),
+        status=status_enum,
+        details=evaluation_detail_list,
+    )
     return evaluation
 
 
@@ -233,18 +237,17 @@ def evaluate(
 
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)
-    #TODO: Should we add a message here??
+    # TODO: Should we add a message here??
     evaluation.message = "hello?"
     if not dry:
         echo_green("Sending the evaluation results to the server...")
-        print(evaluation.json(exclude_none=True))
         response = api.create(
             url=url,
             resource_type="evaluation",
             json_resource=evaluation.json(exclude_none=True),
             headers=headers,
         )
-        handle_cli_response(response)
+        handle_cli_response(response, verbose=False)
 
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
