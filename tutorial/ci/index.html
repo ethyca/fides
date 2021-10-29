@@ -447,8 +447,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pull-request" class="md-nav__link">
-    Pull Request
+  <a href="#pull-requests" class="md-nav__link">
+    Pull Requests
   </a>
   
 </li>
@@ -1081,8 +1081,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pull-request" class="md-nav__link">
-    Pull Request
+  <a href="#pull-requests" class="md-nav__link">
+    Pull Requests
   </a>
   
 </li>
@@ -1116,30 +1116,40 @@
                 
                 <h1 id="integrate-your-ci">Integrate your CI</h1>
 <p><em>In this section, we'll reference a few examples and best practices for setting up your CI.</em></p>
-<p>(TODO: rewrite)</p>
-<p>Fides is meant to be a part of your CI pipeline jobs in order to enforce your organization's privacy policy on data before software is released to the world. We recommend setting up 2 different events to trigger during a CI pipeline run. </p>
+<!-- (TODO: rewrite) -->
+
+<p>Fides is meant to exist as a part of your CI pipeline, in order to enforce your organization's privacy policy before changes are released. We recommend setting up two events to trigger during each run of your CI pipeline.</p>
 <h2 id="repository-structure">Repository Structure</h2>
-<p>Within your organization, you'll author manifest files and add these to the version control repositories alongside your source code, tests, etc. Each of these individual projects can then publish their manifests to the Fidesctl server via the API:
-<img alt="Fides Manifest Workflow" src="../../img/Manifest_Flow.svg" /></p>
-<h2 id="pull-request">Pull Request</h2>
-<p><img alt="Fides CI Workflow" src="../../img/CI_Workflow.svg" />
-1. Set up a new CI workflow that gets triggered whenever a system or registry file gets changed within a pull request.
-2. Configure the new workflow to run <code>fidesctl evaluate --dry fides_manifests/</code> when it gets triggered.
-3. The command will trigger a non-zero exit if the evaluation fails.</p>
-<p>Use the result of this job to determine whether or not a system change is safe to merge or not. If the command fails, check the error messages to see why the evaluation failed.</p>
+<p>Within your organization, you'll write manifest files and add these to version control with your source code, tests, etc. Each of these individual projects can then publish their manifests to the Fidesctl server via the API:</p>
+<p><img alt="Fides Manifest Workflow" src="../../img/Manifest_Flow.svg" /></p>
+<h2 id="pull-requests">Pull Requests</h2>
+<p><img alt="Fides CI Workflow" src="../../img/CI_Workflow.svg" /></p>
+<ol>
+<li>Set up a new CI workflow to trigger whenever a system or registry file is changed within a pull request.</li>
+<li>
+<p>Configure the new workflow to run the following command:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate --dry fides_manifests/
+</code></pre></div>
+</td></tr></table>
+</li>
+<li>
+<p>The command will exit with a non-zero status if the evaluation fails.</p>
+</li>
+</ol>
+<p>Use the result of this job to determine whether or not a system change is safe to merge. If the command fails, check the error messages to see why.</p>
 <h2 id="merge-event">Merge Event</h2>
 <ol>
-<li>Set up a new CI workflow that gets triggered whenever something in your manifests directory changes and the branch gets merged to the main branch.</li>
-<li>Configure the new workflow to run two few jobs:<ol>
+<li>Set up a new CI workflow to trigger whenever a file in your manifests directory changes, and the branch gets merged in to the <code>main</code> branch.</li>
+<li>Configure the new workflow to run two commands:<ol>
 <li><code>fidesctl apply fides_manifest/</code></li>
 <li><code>fidesctl evaluate system &lt;fides_key&gt;</code></li>
 </ol>
 </li>
 </ol>
-<p>This will apply all of your manifests to the API and then evaluate the current state of your system on the main branch.</p>
+<p>This will apply all of your manifests to the API and evaluate the current state of your system on the <code>main</code> branch.</p>
 <h2 id="additional-resources">Additional Resources</h2>
 <p>We have compiled a few reference implementations for some popular CI tools, which you can find here.</p>
-<p>(TODO: provide examples)</p>
+<!-- (TODO: provide examples) -->
                 
               
               

@@ -1130,18 +1130,18 @@
                 
                 <h1 id="annotate-your-datasets">Annotate your Datasets</h1>
 <p><em>In this section, we'll review what a dataset resource is, why it's needed, and how it's created and managed.</em></p>
-<p>Fundamentally, your data ecosystem is built on data that is stored <em>somewhere</em>. In Fides, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where. For example, you might declare one dataset for your Postgres application database, a second dataset for your Mongo orders collection, and a third dataset for some CSV files in your storage buckets. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer for other tooling to consume.</p>
-<p>For Best Pizza Co, you can see that their 3 Datasets, <code>postgres appdb</code>, <code>firestore auth</code>, and <code>redshift analyticsdb</code> are aligned with data storage services in their data ecosystem:
-<img alt="Best Pizza Co's Data Ecosystem" src="../../img/BestPizzaCo_DataEcosystem.png" /></p>
-<p>At Best Pizza Co, we'll want to create a <code>Dataset</code> resource for each of the 3 datasets above, starting with the first database, the Postgres Application DB. </p>
+<p>Fundamentally, your data ecosystem is built on data that is stored <em>somewhere</em>. In Fides, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, you might declare one dataset for your Postgres application database, a second dataset for your Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer that other tooling can consume.</p>
+<p>For Best Pizza Co, you can see the three Datasets, <code>postgres appdb</code>, <code>firestore auth</code>, and <code>redshift analyticsdb</code>, are aligned with data storage services in their data ecosystem:</p>
+<p><img alt="Best Pizza Co's Data Ecosystem" src="../../img/BestPizzaCo_DataEcosystem.png" /></p>
+<p>At Best Pizza Co, we'll want to create a <code>dataset</code> resource for each of the 3 datasets above, starting with the Postgres Application DB.</p>
 <h2 id="generating-a-dataset-resource">Generating a Dataset Resource</h2>
-<p>To create a dataset resource, you can either author a resource YAML manually or use the <code>generate-dataset</code> CLI command to connect to your database and automatically generate an (un-annotated)resource YAML based on your database schema:
+<p>To create a dataset resource, you can either author a resource YAML file manually or use the <code>generate-dataset</code> CLI command. The CLI will connect to your database and automatically generate a non-annotated resource YAML file based on your database schema:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@0419219d14e1:/fides/fidesctl# fidesctl generate-dataset postgresql://USERNAME:PASSWORD@best-pizza-co.us-east-1.rds.amazonaws.com:5432/postgres dataset1.yml
 Generated dataset manifest written to dataset1.yml
 </code></pre></div>
 </td></tr></table>
-Fidesctl has stored the structure of that database as a YAML file in the location provided ("dataset1.yml"). This file will serve as the first building block in creating Privacy as Code at the lowest level. </p>
+<p>Fidesctl has stored the structure of that database as a YAML file in the location provided (<code>dataset1.yml</code>). This file will serve as the first building block in creating Privacy as Code at the lowest level.</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1163,18 +1163,18 @@ Fidesctl has stored the structure of that database as a YAML file in the locatio
   <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Dataset:</span><span class="nv"> </span><span class="s">Postgres</span><span class="nv"> </span><span class="s">App</span><span class="nv"> </span><span class="s">Database&#39;</span>
   <span class="nt">collections</span><span class="p">:</span>
   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">users</span>
-      <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">users&#39;</span>
-      <span class="nt">fields</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first_name</span>
-          <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span>
-          <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
-      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">zip_code</span>
-          <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">zip_code&#39;</span>
-          <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">users&#39;</span>
+    <span class="nt">fields</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first_name</span>
+      <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span>
+      <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">zip_code</span>
+      <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">zip_code&#39;</span>
+      <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
 </code></pre></div>
 </td></tr></table>
 <h2 id="understanding-the-dataset-resource">Understanding the Dataset Resource</h2>
-<p>This YAML serves as the foundation of the Fides language; it answers the questions of "<em>What data and kinds of data do we have?</em>" and "<em>How is it organized?</em>". The language is built on the declaring what types of data are found in storage for your organization.</p>
+<p>This YAML serves as the foundation of the Fides language; it answers "<em>What data and kinds of data do we have?</em>" and "<em>How is our data organized?</em>". The language is built on declaring the types of data found in storage for your organization.</p>
 <p>In traditional SQL, Fides defines the following:
 * "datasets" as database schemas
 * "collections" as database tables
@@ -1183,7 +1183,7 @@ Fidesctl has stored the structure of that database as a YAML file in the locatio
 * "dataset"
 * "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
 * "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")</p>
-<p>Further, fideslang has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:</p>
+<p>Additionally, fideslang has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:</p>
 <table>
 <thead>
 <tr>
@@ -1206,17 +1206,17 @@ Fidesctl has stored the structure of that database as a YAML file in the locatio
 <tr>
 <td>data_categories</td>
 <td>List[FidesKey]</td>
-<td>The data categories, or types of sensitive data as defined in the taxonomy, that can be found in this field</td>
+<td>The types of sensitive data, as defined by the taxonomy, that can be found in this field</td>
 </tr>
 <tr>
 <td>data_qualifier</td>
 <td>FidesKey</td>
-<td>Data qualifier describes the level of deidentification for the dataset</td>
+<td>The level of deidentification for the dataset</td>
 </tr>
 </tbody>
 </table>
 <h2 id="create-dataset-annotations">Create Dataset Annotations</h2>
-<p>As you can see, <code>fidesctl generate-dataset</code> has already pre-filled the required attributes for this exported YAML file. We can update the YAML file with some information that might be appropriate for your organization, such as:</p>
+<p>The <code>fidesctl generate-dataset</code> command has already pre-filled the required attributes for this exported YAML file. We can update the YAML file with some information that might be appropriate for your organization, such as:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1235,35 +1235,43 @@ Fidesctl has stored the structure of that database as a YAML file in the locatio
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">appdb</span>
-  <span class="nt">organization_fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default_organization</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Postgres App Database</span>
-  <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">our</span><span class="nv"> </span><span class="s">primary</span><span class="nv"> </span><span class="s">web</span><span class="nv"> </span><span class="s">application</span><span class="nv"> </span><span class="s">database&#39;</span>
-  <span class="nt">collections</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">users</span>
-      <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Table</span><span class="nv"> </span><span class="s">that</span><span class="nv"> </span><span class="s">contains</span><span class="nv"> </span><span class="s">all</span><span class="nv"> </span><span class="s">user</span><span class="nv"> </span><span class="s">account</span><span class="nv"> </span><span class="s">data</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">entered</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">user&#39;</span>
-      <span class="nt">fields</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first_name</span>
-          <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span>
-          <span class="nt">data_categories</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.name</span>
-          <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">zip_code</span>
-          <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">zip_code&#39;</span>
-          <span class="nt">data_categories</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact.postal_code</span>
-          <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code> dataset:
+ - fides_key: appdb
+   organization_fides_key: default_organization
+   name: Postgres App Database
+<span class="gi">+  description: &#39;This is our primary web application database&#39;</span>
+<span class="gd">-  description: &#39;Fides Generated Description for Dataset: Postgres App Database&#39;</span>
+   collections:
+     - name: users
+<span class="gi">+      description: &#39;Table that contains all user account data as entered by the user&#39;</span>
+<span class="gd">-      description: &#39;Fides Generated Description for Table: users&#39;</span>
+       fields:
+       - name: first_name
+         description: &#39;Fides Generated Description for Column: first_name&#39;
+<span class="gi">+        data_categories:</span>
+<span class="gi">+        - user.provided.identifiable.name</span>
+<span class="gi">+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="gd">-        data_categories: []</span>
+       - name: zip_code
+         description: &#39;Fides Generated Description for Column: zip_code&#39;
+<span class="gi">+        data_categories:</span>
+<span class="gi">+        - user.provided.identifiable.contact.postal_code</span>
+<span class="gi">+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized</span>
+<span class="gd">-        data_categories: []</span>
 </code></pre></div>
 </td></tr></table>
 <hr />
 <p><strong>PRO TIP</strong></p>
-<p>As you're progressing with the tutorial, we recommend installing our <a href="https://marketplace.visualstudio.com/items?itemName=fidesctl-plugin-publisher.fidesctl-config-parser">Fides' VS Code plugin</a>, which will validate the syntax in real-time as you're writing your resource files!</p>
+<p>As you're progressing with the tutorial, we recommend installing our <a href="https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl">Fides' VS Code plugin</a>, which will validate the syntax in real-time as you're writing your resource files!</p>
 <hr />
 <h2 id="maintaining-a-dataset-resource">Maintaining a Dataset Resource</h2>
-<p>As your business grows, you will add more databases and other services where you will be storing potentially sensitive data. We recommend that updating this resource file become a part of the development process when building a new feature. </p>
+<p>As your business grows, you will add more databases and other services where you will be storing potentially sensitive data. We recommend that updating this resource file become a part of the development process when building a new feature.</p>
 <h2 id="next-systems">Next: Systems</h2>
-<p>Now that we've seen how to annotate dataset resources (e.g. databases, flat-files) we can move up to the next layer, <a href="../system/">Systems</a>.</p>
+<p>Now that we've seen how to annotate dataset resources (e.g. databases, flat-files) we can move up to the next layer: <a href="../system/">Systems</a>.</p>
                 
               
               

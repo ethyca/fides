@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#write-privacy-policy-as-code" class="md-skip">
+        <a href="#write-a-privacy-policy-as-code" class="md-skip">
           Skip to content
         </a>
       
@@ -1114,19 +1114,20 @@
               
                 
                 
-                <h1 id="write-privacy-policy-as-code">Write Privacy Policy (as code)</h1>
-<p><em>In this section, we'll review what the Policy resource is, how to create it and what it's used for.</em></p>
-<p>More than likely, there is someone in your organization that is responsible for creating privacy policies for protecting the company from a legal standpoint. <em>The purpose of this privacy policy is to state what types of data are allowed for certain purposes of use.</em> </p>
+                <h1 id="write-a-privacy-policy-as-code">Write a Privacy Policy (as code)</h1>
+<p><em>In this section, we'll review what the Policy resource is, how to create it, and why it's used.</em></p>
+<p>More than likely, there is someone in your organization that is responsible for creating privacy policies for protecting the company from a legal standpoint. <em>The purpose of this privacy policy is to state what types of data are allowed for certain purposes of use.</em></p>
 <h2 id="understanding-the-policy">Understanding the policy</h2>
-<p>This policy is comprised of rules that your system's privacy declarations are evaluated against. You might be able to help your legal counsel make this, or you can handle the creation of this if you understand the legal requirements well enough. </p>
-<p>Fides' privacy declarations provide rich metadata about your systems, the data categories they process, the data uses for that data, etc. Policies allow you to declare constraints on these declarations to decide what combinations to allow or reject at your company, providing a layer of automation to control data privacy at the source.</p>
+<p>This policy is comprised of rules against which your system's privacy declarations are evaluated. You might be able to help your legal counsel make this, or, if you understand the legal requirements well enough, you can handle the creation yourself.</p>
+<p>Fides' privacy declarations provide rich metadata about your systems, the data categories they process, the uses of that data, etc. Policies allow you to declare constraints on these declarations to decide what combinations to allow or reject at your company, providing a layer of automation to control data privacy at the source.</p>
 <p>For example, you might want policies like:</p>
 <ul>
 <li>"we only allow systems that use anonymized data for product analytics purposes"</li>
 <li>"we do not allow systems to combine user-derived demographic and location data for marketing use"</li>
 <li>"we never collect biometric data"</li>
 </ul>
-<p>These are examples of "policies" that might be formal rules you follow today, or maybe they are already part of your code review or privacy review practices. Fides allows us to turn these into automated policy rules that are evaluated against your privacy declarations.</p>
+<p>These examples may be formal rules you follow today, or they may already be a part of your code review or privacy review practices. Fides allows us to automate the evaluation of policy rules against your privacy declarations.</p>
+<p>Policies use the following attributes:</p>
 <table>
 <thead>
 <tr>
@@ -1139,27 +1140,27 @@
 <tr>
 <td>fides_key</td>
 <td>FidesKey</td>
-<td>A fides key is an identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and '_'</td>
+<td>An identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and <code>_</code>.</td>
 </tr>
 <tr>
 <td>data_categories</td>
 <td>List[DataRule]</td>
-<td>The data categories, or types of sensitive data as defined in the taxonomy</td>
+<td>The types of sensitive data as defined by the taxonomy</td>
 </tr>
 <tr>
 <td>data_uses</td>
 <td>List[DataRule]</td>
-<td>Data use describes the various categories of data processing and operations at your organization</td>
+<td>The various categories of data processing and operations within your organization</td>
 </tr>
 <tr>
 <td>data_subjects</td>
 <td>List[DataRule]</td>
-<td>The data subjects, or individual persons whose data your rule pertains to</td>
+<td>The individual persons to whom you data rule pertains</td>
 </tr>
 <tr>
 <td>data_qualifier</td>
 <td>String</td>
-<td>The data qualifier describes the acceptable or non-acceptable level of deidentification</td>
+<td>The acceptable or non-acceptable level of deidentification</td>
 </tr>
 <tr>
 <td>action</td>
@@ -1169,7 +1170,7 @@
 </tbody>
 </table>
 <h2 id="writing-your-first-policy">Writing your first policy</h2>
-<p>To put these rules to the test, for example, if you know that you cannot use identifiable contact information for directly marketing to your customers, but you can use anonymized data for analytics purposes, you might write something like this: </p>
+<p>If you know that you cannot use identifiable contact information for direct marketing to your customers, but you can use anonymized data for analytics purposes, then you might write a policy like the following:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1209,51 +1210,51 @@
 <span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">main_privacy_policy</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Main Privacy Policy</span>
-    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The main privacy policy for the organization.</span>
-    <span class="nt">rules</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">reject_direct_marketing</span>
-        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Reject Direct Marketing</span>
-        <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Do not allow collection or storage of any identifiable contact info to use for marketing.</span>
-        <span class="nt">data_categories</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span>
-        <span class="nt">data_uses</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">marketing_advertising_or_promotion</span>
-        <span class="nt">data_subjects</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
-        <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-        <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REJECT</span>
-      <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">allow_anon_analytics</span>
-        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Use only anonymized data for analytics</span>
-        <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow only anonymized data to be used for analytics purposes.</span>
-        <span class="nt">data_categories</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.nonidentifiable</span>
-        <span class="nt">data_uses</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">improve_product_or_service</span>
-        <span class="nt">data_subjects</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
-          <span class="nt">values</span><span class="p">:</span>
-            <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
-        <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized</span>
-        <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ALLOW</span>
+<span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">main_privacy_policy</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Main Privacy Policy</span>
+  <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The main privacy policy for the organization.</span>
+  <span class="nt">rules</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">reject_direct_marketing</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Reject Direct Marketing</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Do not allow collection or storage of any identifiable contact info to use for marketing.</span>
+    <span class="nt">data_categories</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span>
+    <span class="nt">data_uses</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">marketing_advertising_or_promotion</span>
+    <span class="nt">data_subjects</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
+    <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REJECT</span>
+  <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">allow_anon_analytics</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Use only anonymized data for analytics</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Allow only anonymized data to be used for analytics purposes.</span>
+    <span class="nt">data_categories</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.nonidentifiable</span>
+    <span class="nt">data_uses</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">improve_product_or_service</span>
+    <span class="nt">data_subjects</span><span class="p">:</span>
+      <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+      <span class="nt">values</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
+    <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ALLOW</span>
 </code></pre></div>
 </td></tr></table>
-<p>This policy will evaluate the data subjects, data category, and data qualifier values against data use cases, which generates a boolean output to either allow or reject the process from proceeding. </p>
+<p>This policy will evaluate the data subjects, data category, and data qualifier values against data use cases, which generates a boolean output to either allow or reject the process from proceeding.</p>
 <h2 id="maintaining-a-policy">Maintaining a Policy</h2>
-<p>As global privacy laws change and your business scales, your company's policy will evolve with them. We recommend that updating this resource file become a regular part of the development planning process when building a new feature. </p>
+<p>As global privacy laws change and your business scales, your company's policies will evolve with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.</p>
 <h2 id="next-evaluation">Next: Evaluation</h2>
-<p>In the next section, we'll put all the pieces together to see the policy execute against all your resources by running <a href="../evaluate/">Evaluations</a>.</p>
+<p>In the next section, we'll put all the pieces together to see the policy execute against all of your resources, by running <a href="../evaluate/">Evaluations</a>.</p>
                 
               
               

@@ -404,9 +404,46 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Evaluate your Resources
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Evaluate your Resources
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#run-an-evaluation" class="md-nav__link">
+    Run an Evaluation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-continuous-integration" class="md-nav__link">
+    Next: Continuous Integration
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1016,6 +1053,28 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#run-an-evaluation" class="md-nav__link">
+    Run an Evaluation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-continuous-integration" class="md-nav__link">
+    Next: Continuous Integration
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1027,20 +1086,19 @@
               
                 
                 
-                <h1 id="evaluate-your-policy">Evaluate your policy</h1>
+                <h1 id="evaluate-your-policy">Evaluate your Policy</h1>
 <p><em>In this section, we'll review how to evaluate your policy and address any errors.</em></p>
-<p>Now that we're done with all the setup, it's time to put your policy to the test! </p>
-<h1 id="run-an-evaluation">Run an Evaluation</h1>
-<p>Running an evaluation locally is as easy as running a single line command from the CLI. </p>
-<p>Since we're running Fides locally, you can use the following command to evaluate your system:</p>
+<p>Now that we're done with all the setup, it's time to put your policy to the test!</p>
+<h2 id="run-an-evaluation">Run an Evaluation</h2>
+<p>Since we're running Fides locally, we can use the following command to evaluate our system:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate &lt;path to resources&gt;
 </code></pre></div>
 </td></tr></table>
-<p>Or, alternatively, if you'd like to see the evaluation result from just a single resource type, you might try:</p>
+<p>Alternatively, if you'd like to see the evaluation result from just a single resource type, run:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate system &lt;path to resource&gt;
 </code></pre></div>
 </td></tr></table>
-<p>If that command returns a <em>PASS</em> evaluation, then you're now in a known-good state and ready to set up automated CI workflows to make sure your application stays compliant with each PR. However, if that command returns a <em>FAILED</em> evaluation, you should have received feedback as to why it failed. </p>
+<p>If that command returns a <em>PASS</em> evaluation, then you're now in a known-good state and ready to set up automated CI workflows to make sure your application remains compliant over time. If that command returns a <em>FAILED</em> evaluation, you should have received feedback as to why it failed.</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1078,39 +1136,39 @@ Loading resource manifests from: demo_resources
 Taxonomy successfully created.
 ----------
 Processing registry resources...
-CREATED <span class="m">1</span> registry resources.
-UPDATED <span class="m">0</span> registry resources.
-SKIPPED <span class="m">0</span> registry resources.
+CREATED 1 registry resources.
+UPDATED 0 registry resources.
+SKIPPED 0 registry resources.
 ----------
 Processing dataset resources...
-CREATED <span class="m">1</span> dataset resources.
-UPDATED <span class="m">0</span> dataset resources.
-SKIPPED <span class="m">0</span> dataset resources.
+CREATED 1 dataset resources.
+UPDATED 0 dataset resources.
+SKIPPED 0 dataset resources.
 ----------
 Processing policy resources...
-CREATED <span class="m">1</span> policy resources.
-UPDATED <span class="m">0</span> policy resources.
-SKIPPED <span class="m">0</span> policy resources.
+CREATED 1 policy resources.
+UPDATED 0 policy resources.
+SKIPPED 0 policy resources.
 ----------
 Processing system resources...
-CREATED <span class="m">2</span> system resources.
-UPDATED <span class="m">0</span> system resources.
-SKIPPED <span class="m">0</span> system resources.
+CREATED 2 system resources.
+UPDATED 0 system resources.
+SKIPPED 0 system resources.
 ----------
 Loading resource manifests from: demo_resources
 Taxonomy successfully created.
 Evaluating the following policies:
 demo_privacy_policy
 ----------
-Checking <span class="k">for</span> missing resources...
+Checking for missing resources...
 Executing evaluations...
 Sending the evaluation results to the server...
 Evaluation passed!
 </code></pre></div>
 </td></tr></table>
-<p>Congratulations, you've now created your annotated datasets, system-level business cases, and your policy for enforcement — you've laid the groundwork for a comprehensive data privacy software program at your organization! This is a great starting point for training your peers and colleagues on so they can evaluate their new code locally prior to committing any code to the repo. </p>
+<p>Congratulations, you've now created your annotated datasets, system-level business cases, and your policy for enforcement — you've laid the groundwork for a comprehensive data privacy software program at your organization! This is a great starting point for training your peers and colleagues so they can evaluate their new code locally prior to committing any code to the repository.</p>
 <h2 id="next-continuous-integration">Next: Continuous Integration</h2>
-<p>The final step will be to <a href="../ci/">integrate this with your CI</a> so that you can fully realize Fides' potential. Allowing Fides evaluate calls to be triggered from your pipeline will be critical for automatically assessing compliance at build time going forward. </p>
+<p>The final step is to <a href="../ci/">integrate with your CI environment</a> so you can fully realize Fides' potential. Allowing Fides <code>evaluate</code> calls to be triggered by your pipeline is critical for automatically assessing compliance at build time going forward.</p>
                 
               
               
