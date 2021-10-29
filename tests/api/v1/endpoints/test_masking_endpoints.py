@@ -6,6 +6,7 @@ from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFI
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RANDOM_STRING_REWRITE,
 )
@@ -162,3 +163,18 @@ class TestMaskValues:
             "Encryption key must be 16 bytes long"
             == json.loads(response.text)["detail"]
         )
+
+    def test_masking_value_null(self, api_client: TestClient):
+        value = "my_email"
+
+        masking_strategy = {
+            "strategy": NULL_REWRITE,
+            "configuration": {},
+        }
+        response = api_client.put(
+            f"{V1_URL_PREFIX}{MASKING}?value=my_email", json=masking_strategy
+        )
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"]
+        assert json_response["masked_value"] is None

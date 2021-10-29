@@ -2,24 +2,31 @@
 
 In this section we'll cover:
 
-- What is a data masking?
+- What is data masking?
 - Why might you want to mask personally identifiable information rather than delete?
+- How do you use fidesops as a masking service only?
 - What are the currently-supported masking strategies in fidesops?
 - How do you configure masking strategies for your fidesops policies?
-- How do you use fidesops as a masking service only?
 - How do you create your own masking strategies?
 
 
 ## Data masking basics 
 
 Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally 
-identifiable information.)  
+identifiable information.)
 
 For example, if a customer requests that your remove all information associated with their email,
 `test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and 
 their associated address with another random string `2ab6jghdg37uhkaz3hpyavpss1dvg2`.
 
-In FidesOps, your options to pseudonymize data are captured in masking strategies. 
+It's important to remember that masking != anonymization. Since records are not deleted, a masked dataset is (at best)
+pseudonymized in most cases, and (at worst) may still be identifiable if the masking is reversible or easy to predict,
+which is a common mistake!
+
+In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
+of masking strategies for different purposes when used directly as an API including HMAC, hashing, encryption, and 
+randomization. However, note that fidesops only supports the "null" strategy when processing privacy requests right now,
+but we'll be adding support for all masking strategies in an upcoming release!
 
 
 ### Why mask instead of delete?
@@ -28,18 +35,59 @@ Deleting customer data may involve entirely deleting a whole record (all attribu
 irreversible anonymization of the record by updating specific fields within a record with masked values.
 
 Using a masking strategy instead of straight deletion to obscure PII helps ensure referential integrity in your 
-database.  For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first 
+database. For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first 
 deleted a user with email `test@example.com` without addressing their orders, you could potentially 
-have a lot of lingering orphans in the `orders` table. Using masking as a "soft delete" might be a safer strategy 
+have lingering orphans in the `orders` table. Using masking as a "soft delete" might be a safer strategy 
 depending on how your tables are defined.
 
 In order to ensure referential integrity is retained, any values that represent foreign keys must be consistently 
 updated with the same masked values across all sources.
 
-Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.  
+Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.
 
 
-### Supported Strategies
+## Using fidesops as a masking service
+
+If you just want to use fidesops as a masking service, you can send a PUT request to the masking endpoint with the 
+value you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
+
+Example: `PUT /masking/mask?value=test@example.com`
+
+```json
+     {
+        "strategy": "random_string_rewrite",
+        "configuration": {
+            "length": 20,
+            "format_preservation": {
+                "suffix": "@masked.com"
+            }
+            
+        }
+    }
+```
+
+`Response 200 OK`
+
+```json
+    {
+        "plain": "test@example.com",
+        "masked_value": "idkeaotbrub346ycbmpo@masked.com"
+    }
+```
+
+The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
+
+See [Masking values API docs](http://0.0.0.0:8080/docs#/Masking/mask_value_api_v1_masking_mask_put) on how to use fidesops to as a masking service .
+
+
+## Supported Masking Strategies
+
+### Supported by fidesops policies
+
+  - `NullMaskingStrategy`: Masks the input value with a null value.
+  - ... More strategies coming soon
+
+### Supported by masking service only
 
   - `StringRewriteMaskingStrategy`: Masks the input value with a default string value
   - `HashMaskingStrategy`: Masks the input value by returning a hashed version of the input value
@@ -49,58 +97,34 @@ Other reasons to mask instead of delete include legal requirements that have you
 
 ## Configuration
 
-This is still in progress.  Big picture, you'll create a Policy, then you'll create a Rule for that policy.  On the
-Rule, you'll specify your masking strategy, and the config for that strategy.  
+Only null value masking is currently supported by fidesops policies, but support for other strategies is coming.
+Currently, erasure requests will replace customer data with null values.
 
-When a `delete` query is executed, it needs to respect the masking strategy on the rule.
+In the future, to configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
+that captures that strategy for the Policy.
 
-TODO update docs when this is complete.
-
-## Specifying Encryption Keys
-
-- How do I specify the encryption key to use for AES or HMAC?
-- Alternatively, can the key be an auto-generated, one-time use key that is discarded?
-
-TODO update docs once this is complete.
-
-## Using Fidesops as a masking service
-
-Send a PUT request to the masking endpoint with the value as the text you'd like pseudonymized to see an example 
-of how the masking strategy might obscure your data.
-
-See [Masking values API docs](http://0.0.0.0:8080/docs#/Masking/mask_value_api_v1_masking_mask_put) on how to use fidesops to as a masking service 
-
-You can also use this endpoint to test a specific masking strategy. 
-
-### Example request
-
-In this example, I want to mask email `test@example.com` with a random string of length 20, 
-and tack on a `@masked.com` to preserve the format.
-
-`PUT /api/v1/masking/mask?value=test@example.com`
-
+Issue a PUT request to `/policy/policy_key/rule`:
 
 ```json
- {
-    "strategy": "random_string_rewrite",
-    "configuration": {
-        "length": 20,
-        "format_preservation": {
-            "suffix": "@masked.com"
+    [{
+        "name": "Global erasure rule",
+        "action_type": "erasure",
+        "key": "string_rewrite_rule",
+        "masking_strategy": {
+            "strategy": "random_string_rewrite",
+            "configuration": {
+                "length": 20,
+                "format_preservation": {
+                    "suffix": "@masked.com"
+                }   
+            }
         }
-        
-    }
-}
-```
-### Sample response
-
-```json
-{
-    "plain": "test@example.com",
-    "masked_value": "v59ch40i1el3p25xrchz@masked.com"
-}
+    }]
 
 ```
+
+See the [Policy guide](policies.md) for more detailed instructions on creating Policies and Rules.
+
 
 ## Getting masking options
 
@@ -110,7 +134,7 @@ strategies available, along with their configuration options.
 
 ## Extensibility
 
-In Fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
+In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
 MaskingStrategy has three methods - `mask`, `get_configuration_model` and `get_description`. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
