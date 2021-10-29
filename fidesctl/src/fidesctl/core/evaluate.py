@@ -465,7 +465,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     return evaluation
 
 
-def populate_references_keys(
+def populate_referenced_keys(
     taxonomy: Taxonomy,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -485,7 +485,7 @@ def populate_references_keys(
             missing_resource_keys=missing_resource_keys,
             dehydrated_taxonomy=taxonomy,
         )
-        return populate_references_keys(
+        return populate_referenced_keys(
             taxonomy=taxonomy, url=url, headers=headers, last_keys=missing_resource_keys
         )
     return taxonomy
@@ -526,7 +526,7 @@ def evaluate(
     print("-" * 10)
 
     echo_green("Checking for missing resources...")
-    populate_references_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
+    populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)

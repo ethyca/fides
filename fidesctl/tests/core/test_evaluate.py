@@ -3,7 +3,7 @@ import pytest
 
 from typing import List
 
-from fidesctl.core import evaluate
+from fidesctl.core import evaluate, api as _api
 
 from fideslang.models import (
     DataCategory,
@@ -14,10 +14,12 @@ from fideslang.models import (
     DatasetCollection,
     Policy,
     PrivacyRule,
+    PrivacyDeclaration,
     Taxonomy,
     PolicyRule,
     InclusionEnum,
     ActionEnum,
+    System,
 )
 
 
@@ -112,6 +114,60 @@ def test_get_all_server_policies(test_config):
         url=test_config.cli.server_url, headers=test_config.user.request_headers
     )
     assert len(result) > 0
+
+
+@pytest.mark.integration
+def test_populate_referenced_keys_recursively(test_config):
+    """
+    Test that populate_referenced_keys works recursively. It should be able to
+    find the keys in the declaration and also populate any keys which those reference.
+    For instance, a category would reference a new resource in its parent_key but it would
+    not be known until that category was populated first.
+    """
+    result_taxonomy = evaluate.populate_referenced_keys(
+        taxonomy=Taxonomy(
+            system=[
+                System(
+                    fides_key="test_system",
+                    system_type="test",
+                    privacy_declarations=[
+                        PrivacyDeclaration(
+                            name="privacy_declaration_1",
+                            data_categories=["account.contact.email"],
+                            data_use="provide.system",
+                            data_qualifier="aggregated.anonymized",
+                            data_subjects=["customer"],
+                        )
+                    ],
+                )
+            ],
+        ),
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+        last_keys=[],
+    )
+
+    populated_categories = [
+        category.fides_key for category in result_taxonomy.data_category
+    ]
+    assert sorted(populated_categories) == sorted(
+        ["account.contact.email", "account.contact", "account"]
+    )
+
+    populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
+    assert sorted(populated_data_uses) == sorted(["provide.system", "provide"])
+
+    populated_qualifiers = [
+        data_qualifier.fides_key for data_qualifier in result_taxonomy.data_qualifier
+    ]
+    assert sorted(populated_qualifiers) == sorted(
+        ["aggregated.anonymized", "aggregated"]
+    )
+
+    populated_subjects = [
+        data_subject.fides_key for data_subject in result_taxonomy.data_subject
+    ]
+    assert sorted(populated_subjects) == sorted(["customer"])
 
 
 @pytest.mark.unit
@@ -391,6 +447,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_subject(
             data_use="data_use_1",
         )
 
+
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_subject(
     evaluation_key_validation_basic_taxonomy,
@@ -409,6 +466,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_subject(
             data_qualifier="data_qualifier_2",
             data_use="data_use_1",
         )
+
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
@@ -429,6 +487,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
             data_use="data_use_1",
         )
 
+
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_categrory(
     evaluation_key_validation_basic_taxonomy,
@@ -447,6 +506,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_categrory(
             data_qualifier="data_qualifier_2",
             data_use="data_use_1",
         )
+
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_qualifier(
@@ -467,6 +527,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_qualifier(
             data_use="data_use_1",
         )
 
+
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_qualifier(
     evaluation_key_validation_basic_taxonomy,
@@ -485,6 +546,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_qualifier(
             data_qualifier="data_qualifier_1",
             data_use="data_use_1",
         )
+
 
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_data_use(
@@ -505,6 +567,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_data_use(
             data_use="data_use_3",
         )
 
+
 @pytest.mark.unit
 def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_use(
     evaluation_key_validation_basic_taxonomy,
@@ -523,6 +586,7 @@ def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_use(
             data_qualifier="data_qualifier_1",
             data_use="data_use_1",
         )
+
 
 @pytest.mark.unit
 def test_validate_supported_policy_rules_throws_with_unsupported_action():
