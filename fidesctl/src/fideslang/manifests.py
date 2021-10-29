@@ -1,18 +1,24 @@
 """This module handles anything related to working with raw manifest files."""
 import glob
 from functools import reduce
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 
 import yaml
 
 
-def write_manifest(file_name: str, manifest: Dict, resource_type: str) -> None:
+def write_manifest(
+    file_name: str, manifest: Union[List, Dict], resource_type: str
+) -> None:
     """
     Write a dict representation of a resource out to a file.
     """
-    resource = {resource_type: [manifest]}
+    if isinstance(manifest, dict):
+        manifest = {resource_type: [manifest]}
+    else:
+        manifest = {resource_type: manifest}
+
     with open(file_name, "w") as manifest_file:
-        yaml.dump(resource, manifest_file, sort_keys=False, indent=2)
+        yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
 
 
 def load_yaml_into_dict(file_path: str) -> Dict:

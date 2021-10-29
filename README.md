@@ -71,7 +71,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_use: improve.system
             data_subjects:
               - customer
-            data_qualifier: identified_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
             dataset_references:
               - demo_users_dataset
 
@@ -87,7 +87,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
             data_use: advertising
             data_subjects:
               - customer
-            data_qualifier: identified_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     ```
 
 1. Run `fidesctl evaluate demo_resources`. This will parse all the resource files, sync them to the `fidesctl` server, and then evaluate the defined policy rules to ensure all the systems are compliant:
@@ -153,7 +153,7 @@ If you're looking for a more detailed introduction to Fides, we recommend follow
               inclusion: ANY
               values:
                 - customer
-            data_qualifier: identified_data
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
             action: REJECT
     ```
 

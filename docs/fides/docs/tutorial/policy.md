@@ -54,7 +54,7 @@ policy:
       inclusion: ANY
       values:
         - customer
-    data_qualifier: identified_data
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     action: REJECT
   - fides_key: allow_anon_analytics
     name: Use only anonymized data for analytics
