@@ -17,7 +17,6 @@ class FidesSettings(BaseSettings):
 
     class Config:
         extra = "forbid"
-        case_insensitive = True
 
         # Set environment variables to take precedence over init values
         @classmethod
@@ -27,7 +26,7 @@ class FidesSettings(BaseSettings):
             env_settings: SettingsSourceCallable,
             file_secret_settings: SettingsSourceCallable,
         ) -> Tuple[SettingsSourceCallable, ...]:
-            return env_settings, init_settings
+            return env_settings, init_settings, file_secret_settings
 
 
 class UserSettings(FidesSettings):
@@ -101,6 +100,5 @@ def get_config(config_path: str = "") -> FidesctlConfig:
                 return fidesctl_config
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
-
     fidesctl_config = FidesctlConfig()
     return fidesctl_config
