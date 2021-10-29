@@ -35,6 +35,6 @@ model_map: Dict[str, Type[FidesModel]] = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
-    "evaluation": Evaluation
+    "evaluation": Evaluation,
 }
 model_list = list(model_map.keys())

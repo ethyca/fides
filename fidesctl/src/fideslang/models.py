@@ -149,6 +149,7 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
+    fides_key: FidesKey
     status: StatusEnum
     details: List[str]
     message: str = ""
