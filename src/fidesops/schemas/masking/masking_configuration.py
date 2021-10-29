@@ -71,3 +71,7 @@ class HmacMaskingConfiguration(MaskingConfiguration):
     hmac_key: str
     salt: Optional[str] = ""
     format_preservation: Optional[FormatPreservationConfig] = None
+
+
+class NullMaskingConfiguration(MaskingConfiguration):
+    """Configuration for the NullMaskingStrategy - this is the simplest masking strategy, no details are supplied"""
