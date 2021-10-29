@@ -99,14 +99,22 @@ def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_evaluate_pass(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_with_declaration_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "tests/data/passing_taxonomy.yml"],
+        ["-f", test_config_path, "evaluate", "tests/data/passing_declaration_taxonomy.yml"],
     )
     print(result.output)
     assert result.exit_code == 0
 
+@pytest.mark.integration
+def test_evaluate_with_dataset_pass(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "tests/data/passing_dataset_taxonomy.yml"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
 
 @pytest.mark.integration
 def test_evaluate_demo_resources_pass(
@@ -128,7 +136,7 @@ def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunne
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/passing_taxonomy.yml",
+            "tests/data/passing_declaration_taxonomy.yml",
             "-k",
             "primary_privacy_policy",
         ],
@@ -138,10 +146,19 @@ def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunne
 
 
 @pytest.mark.integration
-def test_evaluate_failed(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_with_declaration_failed(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "tests/data/failing_taxonomy.yml"],
+        ["-f", test_config_path, "evaluate", "tests/data/failing_declaration_taxonomy.yml"],
+    )
+    print(result.output)
+    assert result.exit_code == 1
+
+@pytest.mark.integration
+def test_evaluate_with_declaration_failed(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "evaluate", "tests/data/failing_dataset_taxonomy.yml"],
     )
     print(result.output)
     assert result.exit_code == 1

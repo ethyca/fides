@@ -177,6 +177,7 @@ def compare_rule_to_declaration(
 
 def validate_fides_keys_exist_for_evaluation(
     taxonomy: Taxonomy,
+    policy_rule: PolicyRule,
     data_subjects: List[str],
     data_categories: List[str],
     data_qualifier: str,
@@ -186,25 +187,36 @@ def validate_fides_keys_exist_for_evaluation(
     Validates that keys used in evaluations are valid in the taxonomy
     """
     missing_key_errors = []
+
     categories_keys = [category.fides_key for category in taxonomy.data_category]
-    for missing_data_category in set(data_categories) - set(categories_keys):
+    for missing_data_category in set(
+        data_categories + policy_rule.data_categories.values
+    ) - set(categories_keys):
         missing_key_errors.append(
             "Missing DataCategory ({})".format(missing_data_category)
         )
 
     subject_keys = [subject.fides_key for subject in taxonomy.data_subject]
-    for missing_data_subject in set(data_subjects) - set(subject_keys):
+    for missing_data_subject in set(
+        data_subjects + policy_rule.data_subjects.values
+    ) - set(subject_keys):
         missing_key_errors.append(
-            "Missing DataSubject (with key ({})".format(missing_data_subject)
+            "Missing DataSubject ({})".format(missing_data_subject)
         )
 
     qualifiers_keys = [qualifier.fides_key for qualifier in taxonomy.data_qualifier]
-    if data_qualifier not in qualifiers_keys:
-        missing_key_errors.append("Missing DataQualifier ({})".format(data_qualifier))
+    for missing_data_qualifier in set(
+        [data_qualifier, policy_rule.data_qualifier]
+    ) - set(qualifiers_keys):
+        missing_key_errors.append(
+            "Missing DataQualifier ({})".format(missing_data_qualifier)
+        )
 
     data_use_keys = [data_use.fides_key for data_use in taxonomy.data_use]
-    if data_use not in data_use_keys:
-        missing_key_errors.append("Missing DataUse ({})".format(data_use))
+    for missing_data_use in set([data_use] + policy_rule.data_uses.values) - set(
+        data_use_keys
+    ):
+        missing_key_errors.append("Missing DataUse ({})".format(missing_data_use))
 
     if missing_key_errors:
         echo_red(
@@ -230,6 +242,7 @@ def evaluate_policy_rule(
     """
     validate_fides_keys_exist_for_evaluation(
         taxonomy=taxonomy,
+        policy_rule=policy_rule,
         data_subjects=data_subjects,
         data_categories=data_categories,
         data_qualifier=data_qualifier,
