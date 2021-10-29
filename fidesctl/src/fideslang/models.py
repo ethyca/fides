@@ -154,6 +154,11 @@ class Evaluation(BaseModel):
     details: List[str]
     message: str = ""
 
+    class Config:
+        "Config for the Evaluation"
+        extra = "ignore"
+        orm_mode = True
+
 
 # Organization
 class Organization(FidesModel):
