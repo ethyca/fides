@@ -145,9 +145,15 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
+    fides_key: FidesKey
     status: StatusEnum
     details: List[str]
     message: str = ""
+
+    class Config:
+        "Config for the Evaluation"
+        extra = "ignore"
+        orm_mode = True
 
 
 # Organization

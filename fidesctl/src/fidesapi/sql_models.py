@@ -154,4 +154,5 @@ sql_model_map: Dict = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
+    "evaluation": Evaluation,
 }

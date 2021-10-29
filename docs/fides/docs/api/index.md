@@ -10,7 +10,7 @@ The `fidesctl` API is exceedingly formulaic, so much so that it's easier to gras
 | Completely overwrite the `fides_key` resource.  |`POST /policy/{fides_key}`| `200` |
 | Delete the `fides_key` resource. | `DELETE /policy/{fides_key}`| `204`|
 
-* The URLs of the endpoints emulate the names of the resources: `/organization`, `/policy`, `/registry`, `/system`, `/dataset`, `/data_category`, `/data_use`, `/data_subject`, `/data_qualifier`.
+* The URLs of the endpoints emulate the names of the resources: `/organization`, `/policy`, `/registry`, `/system`, `/dataset`, `/data_category`, `/data_use`, `/data_subject`, `/data_qualifier`, `/evaluation`.
 
 * Except for the `DELETE`, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the [Fides Language: Resources chapter](../language/resources.html) -- it's the same structure that's used in the resource manifest files. 
 

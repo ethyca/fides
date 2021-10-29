@@ -1,6 +1,8 @@
 """Module for evaluating policies."""
 from typing import Dict, List, Optional, Callable, cast
 
+import uuid
+import time
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
@@ -461,7 +463,14 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     status_enum = (
         StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
     )
-    evaluation = Evaluation(status=status_enum, details=evaluation_detail_list)
+    new_uuid = str(uuid.uuid4()).replace("-", "_")
+    timestamp = str(time.time()).split(".")[0]
+    generated_key = f"{new_uuid}_{timestamp}"
+    evaluation = Evaluation(
+        fides_key=generated_key,
+        status=status_enum,
+        details=evaluation_detail_list,
+    )
     return evaluation
 
 
@@ -531,10 +540,15 @@ def evaluate(
     echo_green("Executing evaluations...")
     evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
-
-    # TODO: add the evaluations endpoint to the API
     if not dry:
         echo_green("Sending the evaluation results to the server...")
+        response = api.create(
+            url=url,
+            resource_type="evaluation",
+            json_resource=evaluation.json(exclude_none=True),
+            headers=headers,
+        )
+        handle_cli_response(response, verbose=False)
 
     if evaluation.status == "FAIL":
         pretty_echo(evaluation.dict(), color="red")
