@@ -1,0 +1,20 @@
+dataset:
+  - fides_key: mongo_test
+    name: Mongo Example Test Dataset
+    description: Example of a Mongo dataset that contains 'details' about customers defined in the 'postgres_example_test_dataset'
+    collections:
+      - name: customer_details
+        fields:
+          - name: _id
+            data_categories: [system.operations]
+          - name: customer_id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: gender
+            data_categories: [user.provided.identifiable.gender]
+          - name: birthday
+            data_categories: [user.provided.identifiable.date_of_birth]

@@ -1,0 +1,20 @@
+[postgres_example]
+SERVER="postgres_example"
+USER="postgres"
+PASSWORD="postgres"
+DB="postgres_example"
+PORT= 5432
+
+[mongodb_example]
+SERVER= "mongodb_example"
+USER="mongo_user"
+PASSWORD="mongo_pass"
+DB="mongo_test"
+PORT=27017
+
+[mysql_example]
+SERVER="mysql_example"
+USER="mysql_user"
+PASSWORD="mysql_pw"
+DB="mysql_example"
+PORT= 3306

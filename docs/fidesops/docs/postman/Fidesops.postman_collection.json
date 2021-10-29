@@ -1,0 +1,1519 @@
+{
+	"info": {
+		"_postman_id": "9b8debaf-14e2-4bd3-b11f-0b6b39baa84c",
+		"name": "Fidesops",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Minimum API calls to create an Access Privacy Request",
+			"item": [
+				{
+					"name": "Get Root Client Token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "client_id",
+									"value": "{{OAUTH_ROOT_CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{OAUTH_ROOT_CLIENT_SECRET}}",
+									"type": "text"
+								}
+							],
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/oauth/token",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Client",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{root_client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/oauth/client",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"client"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Client Scopes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{root_client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:create\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\"\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/oauth/client/{{client_id}}/scope",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"client",
+								"{{client_id}}",
+								"scope"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client Token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							],
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/oauth/token",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Storage Local Storage Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n      \"key\": \"{{storage_key}}\",\n      \"name\": \"My Local Storage Location\",\n      \"type\": \"local\",\n      \"details\": {\n        \"naming\": \"request_id\"\n      }\n    }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/storage/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Policies",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..uqJeGbx19RfR_K44pRaB3A.4c8dNV4oFwfn6lmyJ33s8ldlO0n2jn4XXKrfSoOjmBAlrvSzydoUdvEiLvA_JnQ6Aym89I8hC-ncx-QAtVeuLgUsxAYoUFPJhIAxEr2A3M3r.bfUXQcTP6vrShKLCnOHBWw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " [\n    {\n        \"name\": \"Primary Policy\",\n        \"key\": \"{{policy_key}}\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Access Rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..4Qwlk9cjkxFs7Fiql7FIKA.kl0Z7k6Ucuv17PP4nf4PatMXRNHkZNmgsjOSpl-_6w7A60c_IetPOXt-Q6anc219kx2pkhHScdbwK-cv7Nyg5oHTLsVnKssFtkuUFFdd0MhviFGQDoOkPspF524nk1UKC8ZF09nhdN2pJw-OlH9pVaUQWQRO4-CSwTKnLgJN9bqnp_b2US9qhSPGavCHYs63nkh0b_j3sImf_-zGQns4RP702zicDPXJfgRVOtjCUpnB6N_gtaqwoGSOvcQYPC7uwei0KPhYJcNui3YA3enIT4Oxo4wsIXj56XIn9t8HmVmsB3fxVcb-xG36jUMzmXlJmnkzoWyaGvJMwURAB9oJEzH_Z7Vk_vYEQtpOpm4rcc02g8f3N7WI-X8Cm0609vQ1nAGeGNpFym-P8_QgRfs0bSWCLP99ZmUscaGkFu0M-NHw7OGT0uuYgcnLlQrPfnPTG-ZQgP4HubNLV79G1A0UWXDPBGrybz658H6mhJzudFe02rI1M94-UD5J8ysdkvnkvpaDwTKEMToVBFwo2k5r8PWCd4u2fZxo01OIkqfOg-ZgpXXWCYJ6tSbS1rvskyIBsjW_aCiiqMGWH3A0zghTvvr52BukQOpI2A--OFP_7LvTt5DzmspvrgZWhYbRdXiZfN0uulAbPyWWzjZ0pltYPeIfLURjzKOBdt5a7NnN95B1p0Z_siirDukzOCrWcWEZZlzHqx30z6-fF0mjDfOq6iklDXc9raEjaknzO1CiZdFDmHr3ldoxBR3vqVnkH0rSHth2hg.RhVYCotD220myIOGLF2NyA",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"storage_destination_key\": \"{{storage_key}}\",\n    \"name\": \"My User Data Access\",\n    \"action_type\": \"access\",\n    \"key\": \"{{rule_key}}\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/rule/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"rule",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Rule Targets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..uqJeGbx19RfR_K44pRaB3A.4c8dNV4oFwfn6lmyJ33s8ldlO0n2jn4XXKrfSoOjmBAlrvSzydoUdvEiLvA_JnQ6Aym89I8hC-ncx-QAtVeuLgUsxAYoUFPJhIAxEr2A3M3r.bfUXQcTP6vrShKLCnOHBWw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"data_category\": \"user.provided.identifiable\",\n    \"key\": \"{{target_key}}\",\n    \"name\": \"Provided User Info\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/rule/{{rule_key}}/target",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"rule",
+								"{{rule_key}}",
+								"target"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Connection Configs: Postgres",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Application PostgreSQL DB\",\n    \"key\": \"{{postgres_key}}\",\n    \"connection_type\": \"postgres\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Connection Configs: Mongo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n    \"name\": \"My Mongo DB\",\n    \"key\": \"{{mongo_key}}\",\n    \"connection_type\": \"mongodb\",\n    \"access\": \"read\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secrets: Postgres",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"host.docker.internal\",\n    \"port\": 6432,\n    \"dbname\": \"postgres_example\",\n    \"username\": \"postgres\",\n    \"password\": \"postgres\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secret: Mongo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"mongodb_example\",\n    \"defaultauthdb\": \"mongo_test\",\n    \"username\": \"mongo_user\",\n    \"password\": \"mongo_pass\",\n    \"port\": \"27017\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{mongo_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{mongo_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Postgres Dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n  \"fides_key\": \"postgres_example\",\n  \"name\": \"Postgres Example Test Dataset\",\n  \"description\": \"Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.\",\n  \"collections\": [\n    {\n      \"name\": \"address\",\n      \"fields\": [\n        {\n          \"name\": \"city\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.city\"\n          ]\n        },\n        {\n          \"name\": \"house\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.street\"\n          ]\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"state\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.state\"\n          ]\n        },\n        {\n          \"name\": \"street\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.street\"\n          ]\n        },\n        {\n          \"name\": \"zip\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.postal_code\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"customer\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"created\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"employee\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"login\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"time\",\n          \"data_categories\": [\n            \"user.derived.nonidentifiable.sensor\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"orders\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"shipping_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        }\n      ]\n    },\n    {\n      \"name\": \"order_item\",\n      \"fields\": [\n        {\n          \"name\": \"order_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"orders.id\",\n                \"direction\": \"from\"\n              }\n            ],\n            \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"product_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"product.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"quantity\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"payment_card\",\n      \"fields\": [\n        {\n          \"name\": \"billing_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"ccn\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial.account_number\"\n          ]\n        },\n        {\n          \"name\": \"code\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial\"\n          ]\n        },\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial\"\n          ]\n        },\n        {\n          \"name\": \"preferred\",\n          \"data_categories\": [\n            \"user.provided.nonidentifiable\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"product\",\n      \"fields\": [\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"price\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"report\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"month\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"total_visits\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"year\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"service_request\",\n      \"fields\": [\n        {\n          \"name\": \"alt_email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"closed\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"employee_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"employee.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"opened\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"visit\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\",\n            \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"last_visit\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    }\n  ]\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Dataset Mongo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"fides_key\": \"mongo_test\",\n    \"name\": \"Mongo Example Test Dataset\",\n    \"description\": \"Example of a Mongo dataset\",\n    \"collections\": [\n      {\n        \"name\": \"customer_details\",\n        \"fields\": [\n          {\n            \"name\": \"_id\",\n            \"data_categories\": [\n              \"system.operations\"\n            ],\n             \"fidesops_meta\": {\n              \"primary_key\": true\n             }\n          },\n          {\n            \"name\": \"customer_id\",\n            \"data_categories\": [\n              \"user.derived.identifiable.unique_id\"\n            ],\n            \"fidesops_meta\": {\n              \"references\": [\n                {\n                  \"dataset\": \"postgres_example\",\n                  \"field\": \"customer.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          },\n          {\n            \"name\": \"gender\",\n            \"data_categories\": [\n              \"user.provided.identifiable.gender\"\n            ]\n          },\n          {\n            \"name\": \"birthday\",\n            \"data_categories\": [\n              \"user.provided.identifiable.date_of_birth\"\n            ]\n          }\n        ]\n      }\n    ]\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{mongo_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{mongo_key}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Privacy Requests",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..a3XF2oIZ6zDlSSg9Oj8cvw.30l5gg7yd0vyadLKDu_BV30i9lqJevKDigTtiCXHLaz11BWgTKE_juHqvGChllgyaVrXR-VxWxC2zEauatKrnJFChae4vOeXsmM6ojWu1ICKXiBGR8j51htqFA_w5IBEUvd27oMAC108-DRinsjAL52lFbW47z2oDff5lnvJay_cvBbRxIaCr38obiXuuzFbV4Gbgka9BVUp0gre78Io79k.qMdtGCySVHC2U1vpQp3GLg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identities\": [{\"email\": \"customer-1@example.com\"}],\n        \"policy_key\": \"{{policy_key}}\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Calls to create an Erasure Request (Assume Basic Configs already set up from Access Request section)",
+			"item": [
+				{
+					"name": "Create separate Policy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " [\n    {\n        \"name\": \"Separate Policy\",\n        \"key\": \"{{separate_policy_key}}\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create an Erasure Rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"name\": \"My User Data Erasure\",\n    \"action_type\": \"erasure\",\n    \"key\": \"{{erasure_rule_key}}\",\n    \"masking_strategy\": {\n        \"strategy\": \"random_string_rewrite\",\n        \"configuration\": {\n            \"length\": 20,\n            \"format_preservation\": {\n                \"suffix\": \"@masked.com\"\n            }   \n        }\n    }\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{separate_policy_key}}/rule/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{separate_policy_key}}",
+								"rule",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Erasure Rule Targets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"data_category\": \"user.provided.identifiable\",\n    \"key\": \"{{mask_target_key}}\",\n    \"name\": \"Derived User Info\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{separate_policy_key}}/rule/{{erasure_rule_key}}/target",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{separate_policy_key}}",
+								"rule",
+								"{{erasure_rule_key}}",
+								"target"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create RTF Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identities\": [{\"email\": \"customer-2@example.com\"}],\n        \"policy_key\": \"{{separate_policy_key}}\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Other Useful API calls",
+			"item": [
+				{
+					"name": "Preview a Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"postgres_example\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/preview/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"preview",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Allowed Scopes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/oauth/scope",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"scope"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client Scopes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{root_client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/oauth/client/{{client_id}}/scope",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"client",
+								"{{client_id}}",
+								"scope"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mask Value",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " {\n    \"strategy\": \"random_string_rewrite\",\n    \"configuration\": {\n        \"length\": 20,\n        \"format_preservation\": {\n            \"suffix\": \"@masked.com\"\n        }\n        \n    }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/masking/mask?value=test@example.com",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"masking",
+								"mask"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "test@example.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Available Masking Strategies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/masking/strategy",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"masking",
+								"strategy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check the Status of my Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{privacy_request_id}}"
+								},
+								{
+									"key": "verbose",
+									"value": "True"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Privacy Request Execution Logs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/log",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"log"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Policy Details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..uqJeGbx19RfR_K44pRaB3A.4c8dNV4oFwfn6lmyJ33s8ldlO0n2jn4XXKrfSoOjmBAlrvSzydoUdvEiLvA_JnQ6Aym89I8hC-ncx-QAtVeuLgUsxAYoUFPJhIAxEr2A3M3r.bfUXQcTP6vrShKLCnOHBWw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Policies",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..SSKjokoVH8kO1zcqYNL8Qw.jd3RcnzftWVOT5nK2LmeMryGNQGdiFiduJiL679XetrPf0U2ppH51w9MLI3MVUKtDFnoqYXzEARxBoXXESmH2WkHZhZ99m3-vARKDisbqKqC5LGmdWmkxPu8AGdF2Nm6P9jC4kvtpK0NE40qiyixzdOz9A2ZQ5ta-9COT1Fhe8QRHN-rHrYcaPy3Kw2B6aFsroblMuVzRtzoic8RMg513Pc.PtuBEFEfAiq-ALL4SfWD0A",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Connections",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Connection Detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "file",
+							"file": {}
+						},
+						"url": {
+							"raw": "{{host}}connection/{{postgres_key}}",
+							"host": [
+								"{{host}}connection"
+							],
+							"path": [
+								"{{postgres_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage Configs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/storage/config",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage Config Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/storage/config/{{storage_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"config",
+								"{{storage_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create S3 Storage Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"My SAR Upload Bucket\",\n    \"key\": \"{{S3_BUCKET_KEY}}\",\n    \"type\": \"s3\",\n    \"format\": \"csv\",\n    \"details\": {\n      \"bucket\": \"test_bucket\",\n      \"object_name\": \"test_name\"\n    }\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/storage/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add S3 Storage Secrets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				},
+				{
+					"name": "Test a Postgres Database Connection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}/test",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}",
+								"test"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Uploading to my Storage Destination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"storage_key\": \"{{storage_key}}\",\n    \"data\": {\n        \"email\": \"ashley@example.com\",\n        \"address\": \"123 main ST, Asheville NC\",\n        \"zip codes\": [12345, 54321]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/storage/{{privacy_request_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"{{privacy_request_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fides_key\": \"postgres_example\",\n  \"name\": \"Postgres Example Test Dataset\",\n  \"description\": \"Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.\",\n  \"collections\": [\n    {\n      \"name\": \"address\",\n      \"fields\": [\n        {\n          \"name\": \"city\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.city\"\n          ]\n        },\n        {\n          \"name\": \"house\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.street\"\n          ]\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"state\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.state\"\n          ]\n        },\n        {\n          \"name\": \"street\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.street\"\n          ]\n        },\n        {\n          \"name\": \"zip\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.postal_code\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"customer\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"created\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"employee\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"login\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"time\",\n          \"data_categories\": [\n            \"user.derived.nonidentifiable.sensor\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"orders\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"shipping_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        }\n      ]\n    },\n    {\n      \"name\": \"order_item\",\n      \"fields\": [\n        {\n          \"name\": \"order_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"orders.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"product_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"product.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"quantity\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"payment_card\",\n      \"fields\": [\n        {\n          \"name\": \"billing_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"ccn\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial.account_number\"\n          ]\n        },\n        {\n          \"name\": \"code\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial\"\n          ]\n        },\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.provided.identifiable.financial\"\n          ]\n        },\n        {\n          \"name\": \"preferred\",\n          \"data_categories\": [\n            \"user.provided.nonidentifiable\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"product\",\n      \"fields\": [\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"price\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"report\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"month\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"total_visits\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"year\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"service_request\",\n      \"fields\": [\n        {\n          \"name\": \"alt_email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"closed\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"employee_id\",\n          \"data_categories\": [\n            \"user.derived.identifiable.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"postgres_example\",\n                \"field\": \"employee.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"opened\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"visit\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.provided.identifiable.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"last_visit\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}/validate_dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}",
+								"validate_dataset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Connection Datasets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{postgres_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{postgres_key}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dataset Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{mongo_key}}/dataset/mongo_test",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{mongo_key}}",
+								"dataset",
+								"mongo_test"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://0.0.0.0:8080/api/v1"
+		},
+		{
+			"key": "OAUTH_ROOT_CLIENT_ID",
+			"value": ""
+		},
+		{
+			"key": "OAUTH_ROOT_CLIENT_SECRET",
+			"value": ""
+		},
+		{
+			"key": "root_client_token",
+			"value": ""
+		},
+		{
+			"key": "client_id",
+			"value": ""
+		},
+		{
+			"key": "client_secret",
+			"value": ""
+		},
+		{
+			"key": "client_token",
+			"value": ""
+		},
+		{
+			"key": "policy_key",
+			"value": "my-primary-policy"
+		},
+		{
+			"key": "rule_key",
+			"value": "my-access-rule"
+		},
+		{
+			"key": "target_key",
+			"value": "my-user-info"
+		},
+		{
+			"key": "postgres_key",
+			"value": "app-postgres-db"
+		},
+		{
+			"key": "mongo_key",
+			"value": "app-mongo-db"
+		},
+		{
+			"key": "privacy_request_id",
+			"value": ""
+		},
+		{
+			"key": "storage_key",
+			"value": "my-local-storage"
+		},
+		{
+			"key": "AWS_ACCESS_KEY_ID",
+			"value": ""
+		},
+		{
+			"key": "AWS_SECRET_ACCESS_KEY",
+			"value": ""
+		},
+		{
+			"key": "S3_BUCKET_KEY",
+			"value": "my-sar-upload-bucket"
+		},
+		{
+			"key": "separate_policy_key",
+			"value": "my-separate-policy"
+		},
+		{
+			"key": "erasure_rule_key",
+			"value": "my-erasure-rule"
+		},
+		{
+			"key": "mask_target_key",
+			"value": "my-mask-target"
+		}
+	]
+}

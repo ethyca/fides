@@ -1,0 +1,21 @@
+name: Publish updated docs to gh-pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+  
+jobs:
+  publish_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install -r docs/fidesops/requirements.txt
+      - name: Build docs
+        run: make docs-build
+      - name: Publish docs
+        run: mkdocs gh-deploy -v -f docs/fidesops/mkdocs.yml --force
+        

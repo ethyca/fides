@@ -1,0 +1,79 @@
+site_name: Fidesops
+site_url: https://ethyca.github.io/fidesops/
+nav:
+  - What is Fidesops?: index.md
+  - Use Cases: use_cases.md
+  - Tutorial:
+    - Zero to Privacy Request: tutorial/index.md
+    - Installing Fidesops: tutorial/installation.md
+    - Outlining our Python Script: tutorial/outline.md
+    - Creating an Oauth Client: tutorial/oauth_client.md
+    - Connecting to Postgres: tutorial/postgres_connection.md
+    - Annotating our Database: tutorial/annotate_datasets.md
+    - Configuring our Storage Destination: tutorial/storage_config.md
+    - Defining a Policy: tutorial/define_policy.md
+    - Executing a Privacy Request: tutorial/execute_privacy_request.md
+  - Glossary: glossary.md
+  - How-To Guides:
+      - Authenticate with OAuth: guides/oauth.md  
+      - Connect SQL and NoSQL Databases: guides/database_connectors.md
+      - Configure Datasets: guides/datasets.md
+      - Preview Query Execution: guides/query_execution.md  
+      - Create Request Policies: guides/policies.md  
+      - Configure Data Masking Strategies: guides/masking_strategies.md  
+      - Configure Storage Destinations: guides/storage.md  
+      - Execute Privacy Requests: guides/privacy_requests.md  
+      - Report on Privacy Requests: guides/reporting.md
+      - Configure OneTrust Integration: guides/onetrust.md  
+      - Configuration Reference: guides/configuration_reference.md
+  - Deployment Guide: deployment.md
+  - API: api/index.md
+  - Development:
+      - Overview: development/overview.md
+      - Code Style: development/code_style.md
+      - Documentation: development/documentation.md
+      - Testing: development/testing.md
+      - Pull Requests: development/pull_requests.md
+      - Releases: development/releases.md
+  - Community:
+      - GitHub: community/github.md
+      - Code of Conduct: community/code_of_conduct.md
+  - About Ethyca: ethyca.md
+  - License: license.md
+theme:
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  name: material
+  favicon: img/favicon.png
+  logo: img/fides-logo.svg
+  font:
+    text: Source Sans Pro
+  features:
+    - navigation.top
+    - navigation.instant
+  custom_dir: overrides
+markdown_extensions:
+  - attr_list
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
+  - admonition
+  - pymdownx.highlight:
+      linenums: true
+      linenums_style: table
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+  - css/fides.css
+  - css/api.css
+plugins:
+  - render_swagger

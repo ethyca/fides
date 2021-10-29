@@ -1,0 +1,26 @@
+[database]
+SERVER="db"
+USER="postgres"
+PASSWORD="216f4b49bea5da4f84f05288258471852c3e325cd336821097e1e65ff92b528a"
+DB="app"
+TEST_DB="test"
+
+[redis]
+HOST="redis"
+PASSWORD="testpassword"
+PORT=6379
+CHARSET="utf8"
+DEFAULT_TTL_SECONDS=3600
+DB_INDEX=0
+
+[security]
+APP_ENCRYPTION_KEY="OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+CORS_ORIGINS=["http://localhost", "http://localhost:8080"]
+ENCODING="UTF-8"
+OAUTH_ROOT_CLIENT_ID="fidesopsadmin"
+OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
+
+[execution]
+TASK_RETRY_COUNT = 2
+TASK_RETRY_DELAY = 5
+TASK_RETRY_BACKOFF = 2

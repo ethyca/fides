@@ -1,0 +1,43 @@
+masking:
+  - strategy: rewrite
+    categories: [ phone_number ]
+    configuration:
+      value: masked
+  - strategy: hash
+    categories: [ address ]
+    configuration:
+      algorithm: SHA-512
+  - strategy: peppered_hash
+    categories: [ country ]
+    configuration:
+      algorithm: SHA-512
+      pepper: configuration(pepper)
+  - strategy: hmac
+    categories: [ state ]
+    configuration:
+      algorithm: SHA-256
+      key: configuration(hmac_key)
+  - strategy: encrypt
+    categories: [ zip ]
+    configuration:
+      algorithm: AES
+      key: configuration(encrypt_key)
+  - strategy: format_preserving_email
+    categories: [ email ]
+    configuration:
+      masking_strategy_local_part:
+        strategy: rewrite
+        configuration:
+          value: random()
+      masking_strategy_domain:
+        strategy: hash
+        include_tld: true
+        configuration:
+          algorithm: SHA-256
+          pepper: configuration(prop.hash.pepper)
+      masking_strategy_tld:
+        strategy: passthrough
+  - strategy: random_string_rewrite
+      categories: [ phone_number ]
+      configuration:
+        length: 30

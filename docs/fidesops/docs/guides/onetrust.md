@@ -1,0 +1,56 @@
+# How-To: Configure OneTrust Integration
+
+In this section we'll cover:
+
+- An overview of the OneTrust Integration
+- How the OneTrust Integration works through Fidesops
+- How to configure OneTrust request intake and storage
+- How to test the OneTrust integration
+
+Api docs for OneTrust are part of the [storage](http://0.0.0.0:8080/docs#/Storage) module (you'll need to `make server` first).
+
+## Overview
+
+OneTrust is a DSAR automation provider that provides an interface to manage privacy requests.
+
+Fidesops handles the integration to OneTrust to fulfill Data Subject Requests and returns the data package back to OneTrust.
+
+## How it works
+
+Here's how our OneTrust integration works:
+
+1. You set up a new [storage destination](./storage.md) of type `onetrust`
+2. A new scheduled task kicks off that pings OneTrust for subtasks labeled for Fidesops
+3. Fidesops processes those DSARs normally
+4. Upon completion of DSAR processing, we do 2 things:
+      1. Ping OneTrust to set the subtask status appropriately 
+      2. If applicable, upload a data package back to OneTrust
+
+
+![OneTrust Request Flow](../img/onetrust_request_flow.png "OneTrust Request Flow")
+
+## Configuration
+
+### Fidesops
+  
+OneTrust request intake is configured as part of the `StorageConfig` in the storage module. 
+
+You'll need to add a `StorageConfig` that includes a `onetrust` destination type, then authenticate with OneTrust.
+
+As part of this configuration, you'll need to decide what day of the week and hour of the day you wish to retrieve requests from OneTrust.
+
+Read more about how to do this [here](./storage.md)
+
+### OneTrust
+
+When the Fidesops scheduled task runs, it looks for subtasks with a name of "fides task". 
+
+So, you'll need to be sure tasks you wish to pass through the Fides ecosystem are correctly labeled in the OneTrust interface.
+
+## Testing
+
+To test the OneTrust integration works correctly, you'll need to do the following:
+
+1. Ensure that you have subtasks with a name of "fides task" in OneTrust
+2. Set your OneTrust destination config in Fides such that day of week and hour of request intake is appropriate for testing
+3. Confirm that the subtask status has been updated at that time, and any DSAR data packages have been uploaded at the request level in OneTrust
