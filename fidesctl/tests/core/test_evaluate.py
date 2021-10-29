@@ -1,9 +1,111 @@
 from unittest.mock import patch, MagicMock
 import pytest
 
-from fidesctl.core import evaluate
+from typing import List
 
-from fideslang.models import Policy
+from fidesctl.core import evaluate, api as _api
+
+from fideslang.models import (
+    DataCategory,
+    DataQualifier,
+    DataSubject,
+    DataUse,
+    Dataset,
+    DatasetCollection,
+    Policy,
+    PrivacyRule,
+    PrivacyDeclaration,
+    Taxonomy,
+    PolicyRule,
+    InclusionEnum,
+    ActionEnum,
+    System,
+)
+
+
+# Helpers
+@pytest.fixture()
+def evaluation_key_validation_basic_taxonomy():
+    yield Taxonomy(
+        data_subject=[
+            DataSubject(fides_key="data_subject_1"),
+            DataSubject(fides_key="data_subject_2"),
+        ],
+        data_category=[
+            DataCategory(fides_key="data_category_1"),
+            DataCategory(fides_key="data_category_2"),
+        ],
+        data_qualifier=[
+            DataQualifier(fides_key="data_qualifier_1"),
+            DataQualifier(fides_key="data_qualifier_2"),
+        ],
+        data_use=[DataUse(fides_key="data_use_1"), DataUse(fides_key="data_use_2")],
+    )
+
+
+@pytest.fixture()
+def evaluation_hierarchical_key_basic_taxonomy():
+    yield Taxonomy(
+        data_category=[
+            DataCategory(
+                fides_key="data_category",
+            ),
+            DataCategory(
+                fides_key="data_category.parent",
+                parent_key="data_category",
+            ),
+            DataCategory(
+                fides_key="data_category.parent.child",
+                parent_key="data_category.parent",
+            ),
+        ]
+    )
+
+
+def create_policy_rule_with_action(
+    policy_rule_key: str, action: ActionEnum
+) -> PolicyRule:
+    return PolicyRule(
+        fides_key=policy_rule_key,
+        action=action,
+        data_categories={
+            "values": ["data_category_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_uses={
+            "values": ["data_use_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_subjects={
+            "values": ["data_subject_1"],
+            "inclusion": InclusionEnum.ANY,
+        },
+    )
+
+
+def create_policy_rule_with_keys(
+    data_categories: List[str],
+    data_uses: List[str],
+    data_subjects: List[str],
+    data_qualifier: str,
+) -> PolicyRule:
+    return PolicyRule(
+        fides_key="policy_rule_1",
+        data_categories={
+            "values": data_categories,
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_uses={
+            "values": data_uses,
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_subjects={
+            "values": data_subjects,
+            "inclusion": InclusionEnum.ANY,
+        },
+        data_qualifier=data_qualifier,
+        action=ActionEnum.REJECT,
+    )
 
 
 @pytest.mark.integration
@@ -12,6 +114,60 @@ def test_get_all_server_policies(test_config):
         url=test_config.cli.server_url, headers=test_config.user.request_headers
     )
     assert len(result) > 0
+
+
+@pytest.mark.integration
+def test_populate_referenced_keys_recursively(test_config):
+    """
+    Test that populate_referenced_keys works recursively. It should be able to
+    find the keys in the declaration and also populate any keys which those reference.
+    For instance, a category would reference a new resource in its parent_key but it would
+    not be known until that category was populated first.
+    """
+    result_taxonomy = evaluate.populate_referenced_keys(
+        taxonomy=Taxonomy(
+            system=[
+                System(
+                    fides_key="test_system",
+                    system_type="test",
+                    privacy_declarations=[
+                        PrivacyDeclaration(
+                            name="privacy_declaration_1",
+                            data_categories=["account.contact.email"],
+                            data_use="provide.system",
+                            data_qualifier="aggregated.anonymized",
+                            data_subjects=["customer"],
+                        )
+                    ],
+                )
+            ],
+        ),
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+        last_keys=[],
+    )
+
+    populated_categories = [
+        category.fides_key for category in result_taxonomy.data_category
+    ]
+    assert sorted(populated_categories) == sorted(
+        ["account.contact.email", "account.contact", "account"]
+    )
+
+    populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
+    assert sorted(populated_data_uses) == sorted(["provide.system", "provide"])
+
+    populated_qualifiers = [
+        data_qualifier.fides_key for data_qualifier in result_taxonomy.data_qualifier
+    ]
+    assert sorted(populated_qualifiers) == sorted(
+        ["aggregated.anonymized", "aggregated"]
+    )
+
+    populated_subjects = [
+        data_subject.fides_key for data_subject in result_taxonomy.data_subject
+    ]
+    assert sorted(populated_subjects) == sorted(["customer"])
 
 
 @pytest.mark.unit
@@ -95,9 +251,29 @@ def test_validate_policies_exist_throws_with_empty():
 
 
 @pytest.mark.unit
+def test_validate_policies_exist_with_policies():
+    evaluate.validate_policies_exist(
+        policies=[Policy(fides_key="fides_key_1", rules=[])],
+        evaluate_fides_key="fides_key",
+    )
+
+
+@pytest.mark.unit
 def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_types=["key_2", "key_1"], rule_inclusion="ANY"
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
+        rule_inclusion="ANY",
+    )
+    assert result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_any_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
+        rule_inclusion="ANY",
     )
     assert result
 
@@ -105,7 +281,19 @@ def test_compare_rule_to_declaration_any_true():
 @pytest.mark.unit
 def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"], declaration_types=["key_2", "key_3"], rule_inclusion="ANY"
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"]],
+        rule_inclusion="ANY",
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_any_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
+        rule_inclusion="ANY",
     )
     assert not result
 
@@ -114,7 +302,20 @@ def test_compare_rule_to_declaration_any_false():
 def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
-        declaration_types=["key_3", "key_1"],
+        declaration_type_hierarchies=[["key_3"], ["key_1"]],
+        rule_inclusion="ALL",
+    )
+    assert result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_all_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent", "key_3_parent"],
+        declaration_type_hierarchies=[
+            ["key_3", "key_3_parent"],
+            ["key_1", "key_1_parent"],
+        ],
         rule_inclusion="ALL",
     )
     assert result
@@ -124,7 +325,17 @@ def test_compare_rule_to_declaration_all_true():
 def test_compare_rule_to_declaration_all_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
-        declaration_types=["key_2", "key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
+        rule_inclusion="ALL",
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_all_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1", "key_1_parent", "key_3"],
+        declaration_type_hierarchies=[["key_2"], ["key_1" "key_1_parent"]],
         rule_inclusion="ALL",
     )
     assert not result
@@ -134,7 +345,17 @@ def test_compare_rule_to_declaration_all_false():
 def test_compare_rule_to_declaration_none_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
-        declaration_types=["key_2", "key_3"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"]],
+        rule_inclusion="NONE",
+    )
+    assert result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_none_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
         rule_inclusion="NONE",
     )
     assert result
@@ -144,7 +365,326 @@ def test_compare_rule_to_declaration_none_true():
 def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
-        declaration_types=["key_2", "key_3", "key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
         rule_inclusion="NONE",
     )
     assert not result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_none_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1", "key_1_parent"]],
+        rule_inclusion="NONE",
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_get_dataset_by_fides_key_exists():
+    dataset_1 = Dataset(
+        fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
+    )
+    dataset_2 = Dataset(
+        fides_key="dataset_2", collections=[DatasetCollection(name="", fields=[])]
+    )
+    result = evaluate.get_dataset_by_fides_key(
+        taxonomy=Taxonomy(dataset=[dataset_1, dataset_2]), fides_key="dataset_1"
+    )
+    assert result == dataset_1
+
+
+@pytest.mark.unit
+def test_get_dataset_by_fides_key_does_not_exist():
+    dataset1 = Dataset(
+        fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
+    )
+    dataset_2 = Dataset(
+        fides_key="dataset_2", collections=[DatasetCollection(name="", fields=[])]
+    )
+    result = evaluate.get_dataset_by_fides_key(
+        taxonomy=Taxonomy(dataset=[dataset1, dataset_2]), fides_key="dataset_3"
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_pass(
+    evaluation_key_validation_basic_taxonomy,
+):
+    evaluate.validate_fides_keys_exist_for_evaluation(
+        taxonomy=evaluation_key_validation_basic_taxonomy,
+        policy_rule=create_policy_rule_with_keys(
+            data_categories=["data_category_1"],
+            data_uses=["data_use_1"],
+            data_subjects=["data_subject_1"],
+            data_qualifier="data_qualifier_1",
+        ),
+        data_subjects=["data_subject_1"],
+        data_categories=["data_category_1"],
+        data_qualifier="data_qualifier_2",
+        data_use="data_use_1",
+    )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_subject(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_3"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_subject(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_3"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_categrory(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_3"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_categrory(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_3"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_2",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_qualifier(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_3",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_qualifier(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_3",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_1",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_data_use(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_1"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_1",
+            data_use="data_use_3",
+        )
+
+
+@pytest.mark.unit
+def test_validate_fides_keys_exist_for_evaluation_missing_rule_data_use(
+    evaluation_key_validation_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.validate_fides_keys_exist_for_evaluation(
+            taxonomy=evaluation_key_validation_basic_taxonomy,
+            policy_rule=create_policy_rule_with_keys(
+                data_categories=["data_category_1"],
+                data_uses=["data_use_3"],
+                data_subjects=["data_subject_1"],
+                data_qualifier="data_qualifier_1",
+            ),
+            data_subjects=["data_subject_1"],
+            data_categories=["data_category_1"],
+            data_qualifier="data_qualifier_1",
+            data_use="data_use_1",
+        )
+
+
+@pytest.mark.unit
+def test_validate_supported_policy_rules_throws_with_unsupported_action():
+    with pytest.raises(SystemExit):
+        evaluate.validate_supported_policy_rules(
+            policies=[
+                Policy(
+                    fides_key="policy_1",
+                    rules=[
+                        create_policy_rule_with_action(
+                            policy_rule_key="policy_rule_1", action=ActionEnum.ACCEPT
+                        ),
+                        create_policy_rule_with_action(
+                            policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
+                        ),
+                    ],
+                )
+            ],
+        )
+
+
+@pytest.mark.unit
+def test_validate_supported_policy_rules_passes():
+    evaluate.validate_supported_policy_rules(
+        policies=[
+            Policy(
+                fides_key="policy_1",
+                rules=[
+                    create_policy_rule_with_action(
+                        policy_rule_key="policy_rule_1", action=ActionEnum.REJECT
+                    ),
+                    create_policy_rule_with_action(
+                        policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
+                    ),
+                ],
+            )
+        ],
+    )
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_child(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+        fides_key="data_category.parent.child",
+    )
+    assert result == [
+        "data_category.parent.child",
+        "data_category.parent",
+        "data_category",
+    ]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_parent(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+        fides_key="data_category.parent",
+    )
+    assert result == ["data_category.parent", "data_category"]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_top_level(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    result = evaluate.get_fides_key_parent_hierarchy(
+        taxonomy=evaluation_hierarchical_key_basic_taxonomy, fides_key="data_category"
+    )
+    assert result == ["data_category"]
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_missing_key(
+    evaluation_hierarchical_key_basic_taxonomy,
+):
+    with pytest.raises(SystemExit):
+        evaluate.get_fides_key_parent_hierarchy(
+            taxonomy=evaluation_hierarchical_key_basic_taxonomy,
+            fides_key="data_category.invalid",
+        )
+
+
+@pytest.mark.unit
+def test_get_fides_key_parent_hierarchy_missing_parent():
+    with pytest.raises(SystemExit):
+        evaluate.get_fides_key_parent_hierarchy(
+            taxonomy=Taxonomy(
+                data_category=[
+                    DataCategory(
+                        fides_key="data_category.parent",
+                        parent_key="data_category",
+                    ),
+                ]
+            ),
+            fides_key="data_category.parent",
+        )

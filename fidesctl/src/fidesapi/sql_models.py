@@ -79,7 +79,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifiers = Column(ARRAY(String))
+    data_qualifier = Column(String)
     collections = Column(JSON)
 
 

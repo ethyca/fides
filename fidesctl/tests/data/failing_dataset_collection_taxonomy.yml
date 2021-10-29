@@ -1,0 +1,55 @@
+dataset:
+  - fides_key: test_db_dataset_failing_dataset
+    name: Sample DB Dataset
+    description: This is a Sample Database Dataset
+    collections:
+      - name: users
+        description: User's information
+            data_categories:
+              - user.provided.identifiable.political_opinion
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+        fields:
+          - name: First_Name
+            description: A First Name Field
+            data_categories:
+              - user.provided.identifiable.name
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
+system:
+  - fides_key: customer_data_sharing_system
+    name: Customer Data Sharing System
+    description: Share data about our users with third-parties for advertising
+    system_type: Service
+    privacy_declarations:
+      - name: Share Political Opinions
+        data_categories:
+          - user.provided.identifiable
+        data_use: advertising
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_subjects:
+          - customer
+        dataset_references:
+          - test_db_dataset_failing_dataset
+    system_dependencies: []
+
+policy:
+  - fides_key: primary_privacy_policy
+    name: Primary Privacy Policy
+    description: The main privacy policy for the organization.
+    rules:
+      - fides_key: reject_political_opinion
+        description: Disallow advertising of customer political opinion data
+        data_categories:
+          inclusion: ANY
+          values:
+            - user.provided.identifiable.political_opinion
+        data_uses:
+          inclusion: ANY
+          values:
+            - advertising
+        data_subjects:
+          inclusion: ANY
+          values:
+            - customer
+        data_qualifier: aggregated
+        action: REJECT
