@@ -45,14 +45,14 @@ def test_dry_evaluate():
     ...
 ```
 
-Fides has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
+Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
 
 ## Running tests
 
-Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the root Fides directory:
+Fidesops uses `pytest` for unit testing. To run tests, invoke `pytest` from the root Fidesops directory:
 
 ```bash
-cd fidesctl
+cd fidesops
 pytest
 ```
 
