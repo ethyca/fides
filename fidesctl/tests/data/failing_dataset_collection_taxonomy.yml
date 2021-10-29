@@ -2,12 +2,12 @@ dataset:
   - fides_key: test_db_dataset_failing_dataset
     name: Sample DB Dataset
     description: This is a Sample Database Dataset
-    data_categories:
-      - user.provided.identifiable.political_opinion
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
     collections:
       - name: users
         description: User's information
+            data_categories:
+              - user.provided.identifiable.political_opinion
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
         fields:
           - name: First_Name
             description: A First Name Field

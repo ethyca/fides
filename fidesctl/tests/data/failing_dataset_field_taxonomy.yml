@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: test_db_dataset
+  - fides_key: test_db_dataset_failing_dataset
     name: Sample DB Dataset
     description: This is a Sample Database Dataset
     collections:
@@ -11,32 +11,26 @@ dataset:
             data_categories:
               - user.provided.identifiable.name
             data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-          - name: Email
-            description: User's Email
-            data_categories:
-              - user.provided.identifiable
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
           - name: political_opinion
             description: User's political opinion
             data_categories:
               - user.provided.identifiable.political_opinion
             data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
-
 system:
   - fides_key: customer_data_sharing_system
     name: Customer Data Sharing System
-    description: Share data about our users with third-parties.
+    description: Share data about our users with third-parties for advertising
     system_type: Service
     privacy_declarations:
       - name: Share Political Opinions
         data_categories:
-          - user.provided.identifiable.political_opinion
-        data_use: third_party_sharing
+          - user.provided.identifiable
+        data_use: advertising
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
           - customer
         dataset_references:
-          - test_db_dataset
+          - test_db_dataset_failing_dataset
     system_dependencies: []
 
 policy:
@@ -44,21 +38,19 @@ policy:
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:
-      - fides_key: reject_targeted_marketing
-        name: Reject Targeted Biometric Marketing
-        description: Disallow targeted marketing towards customers based on biometric data.
+      - fides_key: reject_political_opinion
+        description: Disallow advertising of customer political opinion data
         data_categories:
           inclusion: ANY
           values:
-            - user.provided.identifiable.biometric
+            - user.provided.identifiable.political_opinion
         data_uses:
           inclusion: ANY
           values:
             - advertising
-            - provide.system.upgrades
         data_subjects:
           inclusion: ANY
           values:
             - customer
-        data_qualifier: aggregated.anonymized
+        data_qualifier: aggregated
         action: REJECT
