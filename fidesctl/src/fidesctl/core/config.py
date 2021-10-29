@@ -17,6 +17,7 @@ class FidesSettings(BaseSettings):
 
     class Config:
         extra = "forbid"
+        case_insensitive = True
 
         # Set environment variables to take precedence over init values
         @classmethod
