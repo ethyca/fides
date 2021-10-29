@@ -110,7 +110,7 @@ xenon: compose-build
 	--max-modules A \
 	--max-average A \
 	--ignore "data, tests, docs" \
-	--exclude "src/fidesctl/_version.py"
+	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
 
 ####################
 # Utils

@@ -1,276 +1,191 @@
-body {
-  font-family: 'Source Sans Pro', sans-serif !important;
+/* -- START: Default mode CSS -- */
+
+[data-md-color-scheme="default"] {
+    --md-typeset-color: rgb(79, 86, 107);
+    --md-default-fg-color--light: rgb(79, 86, 107);
+    --md-primary-fg-color: #0861CE;
+    --md-vis-bg-color: rgba(0, 0, 0, 0.02);
+    --md-code-bg-color: #0861ce27;
+    --md-code-fg-color: #0657b9;
+    --md-accent-fg-color: #1FDF8F;
+    --md-code-hl-number-color: rgb(240, 96, 144);
+    --md-code-hl-name-color: rgb(163, 171, 216);
+    --md-nav-border: #ccc;
+    --md-default-fg-color--lightest: rgb(164, 205, 254);
+    --md-code-hl-comment-color: rgb(193, 201, 210);
+    --md-code-hl-string-color: rgb(133, 217, 150);
+    --md-code-hl-keyword-color: rgb(245, 251, 255);
+    --md-code-hl-punctuation-color: rgb(245, 251, 255);
+    --md-bg-footer-color: #0861CE;
+    --md-bg-table-header: rgba(79, 86, 107, 0.05);
+    --svg-highlight-col: #0657b9;
 }
 
-.md-header {
-  background-color: #0861ce;
+
+/* -- START: Slate/Dark mode CSS -- */
+
+[data-md-color-scheme="slate"] {
+    --md-typeset-color: rgb(247, 250, 252);
+    --md-default-fg-color--light: rgb(247, 250, 252);
+    --md-default-bg-color: #2A2F45;
+    --md-primary-fg-color: #1A1D2E;
+    --md-accent-fg-color: #1FDF8F;
+    --md-typeset-a-color: rgb(82, 108, 254);
+    --md-vis-bg-color: rgba(0, 0, 0, 0.12);
+    --md-code-hl-number-color: rgb(240, 96, 144);
+    --md-nav-border: #61647b;
+    --md-code-bg-color: #1a1d2ea7;
+    --md-code-fg-color: #a3abd8;
+    --md-bg-footer-color: #1A1D2E;
+    --md-bg-table-header: rgba(233, 235, 252, 0.06);
+    --md-code-hl-keyword-color: rgb(245, 251, 255);
+    --svg-highlight-col: #1FDF8F;
+}
+
+body {
+    font-family: 'Source Sans Pro', sans-serif;
 }
 
 .md-header .md-logo img {
-  width: 100px;
-  height: auto;
+    width: 100px;
+    height: auto;
+}
+
+.md-header__topic {
+    display: none;
+}
+
+.md-header__title {
+    margin-left: 0;
+}
+
+.md-main__inner {
+    margin-top: 0;
+}
+
+.md-sidebar {
+    padding-top: 0;
+}
+
+.md-sidebar__inner {
+    padding-top: 3.2em;
+}
+
+.md-sidebar--primary .md-sidebar__scrollwrap {
+    border-right: solid 1px var(--md-nav-border);
 }
 
 .md-content h1,
 .md-content h2 {
-  font-weight: 600;
-  color: #111439;
+    font-weight: 600;
 }
 
 .md-footer {
-  background-color: #303036;
-  padding: 30px 50px;
-  color: white;
-}
-
-.md-header__topic {
-  display: none;
+    background-color: #303036;
+    padding: 30px 50px;
+    color: white;
 }
 
 .md-sidebar.md-sidebar--secondary {
-  visibility: hidden;
+    border-right: none;
 }
 
-.md-button.md-button--secondary.md-button-github {
-  padding-left: 60px;
-  background: url('../img/sprites.png') no-repeat 5px 4px;
-  background-size: 35px;
-  transition: all 0.5s ease;
-}
-.md-button.md-button--secondary.md-button-github:hover {
-  padding-left: 60px;
-  background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -45px;
-  background-size: 35px 
-}
-.md-button.md-button--secondary.md-button-slack {
-  padding-left: 60px;
-  background: url('../img/sprites.png') no-repeat 5px -93px;
-  background-size: 35px;
-  transition: all 0.5s ease;
-}
-.md-button.md-button--secondary.md-button-slack:hover {
-  padding-left: 60px;
-  background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -141px;
-  background-size: 35px
-  
-}
-.md-button.md-button--secondary.md-button-discord {
-  padding-left: 60px;
-  background: url('../img/sprites.png') no-repeat 5px -185px;
-  background-size: 35px;
-  transition: all 0.5s ease;
-}
-.md-button.md-button--secondary.md-button-discord:hover {
-  padding-left: 60px;
-  background: rgb(64, 81, 181) url('../img/sprites.png') no-repeat 5px -225px;
-  background-size: 35px
-  
+.md-typeset__table {
+    display: block;
 }
 
-.md-typeset__table{
-  display: block;
+.md-typeset table:not([class]) {
+    display: table;
 }
 
-.md-typeset table:not([class]){
-  display: table;
+.md-typeset hr {
+    border-bottom: .05rem solid var(--md-typeset-table-color);
+}
+
+.md-typeset code {
+    font-size: 0.65rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.md-typeset .custom-license code {
+    color: #fff;
+}
+
+p code,
+li code {
+    color: var(--md-code-fg-color);
+}
+
+.md-footer {
+    background-color: var(--md-bg-footer-color);
+}
+
+.md-typeset__table thead {
+    background-color: var(--md-bg-table-header);
+}
+
+.svg-illustration #path-lines rect,
+.svg-illustration #path-lines polyline {
+    stroke: var(--svg-highlight-col);
+    fill: none;
+}
+
+.svg-illustration #path-lines polygon {
+    fill: var(--svg-highlight-col);
+}
+
+.svg-illustration #text {
+    fill: var(--md-typeset-color);
 }
 
 
-/* -- START: Taxonomy Visualization Explorer CSS -- */
+/* -- Code Snippet Windows -- */
 
-/* Typography */
-.vis {
-  font-family: "Source Sans Pro", sans-serif;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 1.5;
-  letter-spacing: 0.15px;
-  color: #313f4e;
-  margin: 0 auto;
-  }
-  
-.vis h1 {
-  font-weight: 700;
-  font-size: 26px;
-  letter-spacing: -0.48px;
-  color: #111439;
-  margin: 0;
+.highlighttable .linenos,
+.highlighttable .code,
+.highlighttable .code,
+.md-typeset .highlighttable code {
+    background-color: rgb(79, 86, 107);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: var(--md-code-hl-comment-color);
 }
 
-.vis .legend {
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: -0.19px;
-  color: #0a2540;
+.highlight .il,
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .mo {
+    color: var(--md-code-hl-number-color);
 }
 
-.vis .card-title {
-  font-weight: 700;
+.highlight .kc,
+.highlight .n {
+    color: var(--md-code-hl-name-color);
 }
 
-.vis .card-subtitle {
-  font-weight: 600;
+.highlight .o,
+.highlight .ow {
+    color: var(--md-code-hl-comment-color);
 }
 
-/* General */
-.vis-container {
-  max-width: 1400px;
-  text-align: center;
+.highlighttable .linenos {
+    border-radius: 5px 0 0 5px;
 }
 
-.vis-container > * + * {
-  margin-top: 1.5rem;
+.highlighttable .code {
+    border-radius: 0 5px 5px 0;
 }
 
-.chart-container > svg {
-  display: block;
+.highlighttable .linenodiv pre {
+    color: rgb(105, 115, 134);
 }
 
-@media screen and (min-width: 1200px) {
-  .controls-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
+.highlighttable .linenodiv {
+    box-shadow: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
-
-.btn-group {
-  display: inline-flex;
-  vertical-align: middle;
-  margin: 0.25em;
-}
-
-.btn {
-  line-height: 1;
-  font-size: 14px;
-  background-color: #eef2f7;
-  border: none;
-  padding: 0.65em 0.75em;
-  margin: 0;
-}
-
-.btn--icon {
-  padding: 0;
-  width: 48px;
-  height: 2.3em;
-  display: inline-flexbox;
-  justify-content: center;
-  align-items: center;
-}
-
-.btn:first-child {
-  border-top-left-radius: 2px;
-  border-bottom-left-radius: 2px;
-}
-
-.btn:last-child {
-  border-top-right-radius: 2px;
-  border-bottom-right-radius: 2px;
-}
-
-.btn:hover {
-  background-color: #e9ebee;
-}
-
-.btn:active,
-.btn.is-selected {
-  background-color: #cbd7e7;
-}
-
-/* Legend */
-.vis-color-legend {
-  display: inline-flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.vis-color-legend .legend-item {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-}
-
-.vis-color-legend .legend-swatch {
-  width: 1em;
-  height: 1em;
-  margin-right: 0.5em;
-}
-
-/* Tooltip */
-.vis-tooltip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #ffffff;
-  padding: 1em;
-  border-radius: 4px;
-  box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.vis-tooltip.is-visible {
-  opacity: 1;
-}
-
-.vis-tooltip .card {
-  max-width: 240px;
-}
-
-.vis-tooltip .card > * + * {
-  margin-top: 1em;
-}
-
-/* Sunburst */
-.vis .sunburst-svg .partition-path,
-.vis .sunburst-svg .label-text {
-  transition: fill 0.15s;
-}
-
-.vis .sunburst-svg .partition-path.is-highlighted {
-  fill: #57f2ea;
-}
-
-.vis .sunburst-svg .label-text.is-highlighted {
-  fill: currentColor;
-}
-
-/* Radial Tree */
-/* Tree */
-.vis .radial-tree-svg .link,
-.vis .radial-tree-svg .node,
-.vis .tree-svg .link,
-.vis .tree-svg .node {
-  transition: fill 0.15s;
-}
-
-.vis .radial-tree-svg .link,
-.vis .tree-svg .link {
-  stroke-width: 1.5px;
-}
-
-.vis .radial-tree-svg .link.is-highlighted,
-.vis .tree-svg .link.is-highlighted {
-  stroke: #57f2ea;
-  stroke-width: 2.5px;
-}
-
-.vis .radial-tree-svg .node.is-highlighted,
-.vis .tree-svg .node.is-highlighted {
-  fill: #57f2ea;
-}
-
-.vis .radial-tree-svg .label-text .label-text__bg,
-.vis .tree-svg .label-text .label-text__bg {
-  stroke: #ffffff;
-  stroke-width: 3px;
-}
-
-.vis .radial-tree-svg .label-text.is-highlighted,
-.vis .tree-svg .label-text.is-highlighted {
-  font-weight: 700;
-}
-
-/* -- END: Taxonomy Visualization Explorer CSS -- */
