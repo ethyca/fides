@@ -2353,9 +2353,9 @@
           "Visualize",
           "DataCategory"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_category_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_category_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2404,9 +2404,9 @@
           "Visualize",
           "DataQualifier"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_qualifier_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_qualifier_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2455,9 +2455,9 @@
           "Visualize",
           "DataUse"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_use_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_use_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2807,8 +2807,7 @@
       "FigureTypeEnum": {
         "title": "FigureTypeEnum",
         "enum": [
-          "sankey",
-          "sunburst",
+          "graphs",
           "text"
         ],
         "type": "string",

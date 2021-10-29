@@ -31,9 +31,11 @@ nav:
         - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
     - CLI Overview: cli/cli.md
+    - annotate-dataset: cli/annotate-dataset.md
     - apply: cli/apply.md
     - delete: cli/delete.md
     - evaluate: cli/evaluate.md
+    - generate-dataset: cli/generate-dataset.md
     - get: cli/get.md
     - init-db: cli/init-db.md
     - ls: cli/ls.md
