@@ -366,9 +366,8 @@ class TestCreatePrivacyRequest:
                 # category ("user.provided.identifiable.contact")
                 assert row[1] is None
             else:
-                # There are only two rows, so the other row should be our other customer
-                # that has not been erased
-                assert row[1] == "customer-1@example.com"
+                # There are two rows other rows, and they should not have been erased
+                assert row[1] in ["customer-1@example.com", "jane@example.com"]
         assert customer_found
 
     @pytest.mark.integration_erasure

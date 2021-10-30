@@ -21,8 +21,12 @@ db.customer_details.insert([
         "customer_id": 2,
         "gender": "female",
         "birthday": new ISODate("1985-03-05")
+    },
+    {
+        "customer_id": 3,
+        "gender": "female",
+        "birthday": new ISODate("1990-02-28")
     }
-
 ]);
 
 
