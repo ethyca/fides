@@ -1218,7 +1218,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  {\n    \"name\": \"My SAR Upload Bucket\",\n    \"key\": \"{{S3_BUCKET_KEY}}\",\n    \"type\": \"s3\",\n    \"format\": \"csv\",\n    \"details\": {\n      \"bucket\": \"test_bucket\",\n      \"object_name\": \"test_name\"\n    }\n  }\n]",
+							"raw": "[\n  {\n    \"name\": \"My Access Request Upload Bucket\",\n    \"key\": \"{{S3_BUCKET_KEY}}\",\n    \"type\": \"s3\",\n    \"format\": \"csv\",\n    \"details\": {\n      \"bucket\": \"test_bucket\",\n      \"object_name\": \"test_name\"\n    }\n  }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1501,7 +1501,7 @@
 		},
 		{
 			"key": "S3_BUCKET_KEY",
-			"value": "my-sar-upload-bucket"
+			"value": "my-access-request-upload-bucket"
 		},
 		{
 			"key": "separate_policy_key",

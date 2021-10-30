@@ -70,7 +70,7 @@ def test_sql_erasure_ignores_collections_without_pk(
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    sar_data = graph_task.run_sar(
+    access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -83,7 +83,7 @@ def test_sql_erasure_ignores_collections_without_pk(
         graph,
         [integration_postgres_config],
         {"email": seed_email},
-        sar_data,
+        access_request_data,
     )
 
     logs = (
@@ -128,7 +128,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    sar_data = graph_task.run_sar(
+    access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -141,7 +141,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
         graph,
         [integration_postgres_config],
         {"email": seed_email},
-        sar_data,
+        access_request_data,
     )
 
     assert v == {
@@ -153,11 +153,11 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 
 
 @pytest.mark.integration
-def test_sql_sar_task(db, policy, integration_postgres_config) -> None:
+def test_sql_access_request_task(db, policy, integration_postgres_config) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_sql_sar_task_{random.randint(0, 1000)}")
+    privacy_request = PrivacyRequest(id=f"test_sql_access_request_task_{random.randint(0, 1000)}")
 
-    v = graph_task.run_sar(
+    v = graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
@@ -268,7 +268,7 @@ def test_filter_on_data_categories(
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
-    sar_results = graph_task.run_sar(
+    access_request_results = graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -278,7 +278,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        sar_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -292,7 +292,7 @@ def test_filter_on_data_categories(
     # Specify the target category:
     target_categories = {"user.provided.identifiable.contact"}
     filtered_results = filter_data_categories(
-        sar_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph
     )
 
     assert filtered_results == {
@@ -344,7 +344,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        sar_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [
@@ -465,7 +465,7 @@ class TestRetrievingData:
 class TestRetryIntegration:
     @pytest.mark.integration
     @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.retrieve_data")
-    def test_retry_sar(
+    def test_retry_access_request(
         self,
         mock_retrieve,
         db,
@@ -486,8 +486,8 @@ class TestRetryIntegration:
         # Mock errors with retrieving data
         mock_retrieve.side_effect = Exception("Insufficient data")
 
-        # Call run_sar with an email that isn't in the database
-        sar_results = graph_task.run_sar(
+        # Call run_access_request with an email that isn't in the database
+        access_request_results = graph_task.run_access_request(
             privacy_request,
             sample_postgres_configuration_policy,
             dataset_graph,
@@ -544,7 +544,7 @@ class TestRetryIntegration:
         assert 0 == complete.count()
 
         # No results were accessible because all retrieve_data calls failed.
-        assert sar_results == {}
+        assert access_request_results == {}
 
     @pytest.mark.integration
     @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.mask_data")
@@ -570,7 +570,7 @@ class TestRetryIntegration:
         mock_mask.side_effect = Exception("Insufficient data")
 
         # Call run_erasure with an email that isn't in the database
-        rtf_results = graph_task.run_erasure(
+        erasure_results = graph_task.run_erasure(
             privacy_request,
             sample_postgres_configuration_policy,
             dataset_graph,
@@ -621,7 +621,7 @@ class TestRetryIntegration:
         complete = execution_logs.filter_by(status="complete")
         assert 6 == complete.count()
 
-        assert rtf_results == {
+        assert erasure_results == {
             "postgres_example_test_dataset:visit": 0,
             "postgres_example_test_dataset:service_request": 0,
             "postgres_example_test_dataset:employee": 0,

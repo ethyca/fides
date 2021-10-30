@@ -257,22 +257,22 @@ def policy(
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
 ) -> Generator:
-    sar_policy = Policy.create(
+    access_request_policy = Policy.create(
         db=db,
         data={
-            "name": "example sar policy",
-            "key": "example-sar-policy",
+            "name": "example access request policy",
+            "key": "example-access-request-policy",
             "client_id": oauth_client.id,
         },
     )
 
-    sar_rule = Rule.create(
+    access_request_rule = Rule.create(
         db=db,
         data={
             "action_type": ActionType.access.value,
             "client_id": oauth_client.id,
-            "name": "SAR Rule",
-            "policy_id": sar_policy.id,
+            "name": "Access Request Rule",
+            "policy_id": access_request_policy.id,
             "storage_destination_id": storage_config.id,
         },
     )
@@ -282,20 +282,20 @@ def policy(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.provided.identifiable").value,
-            "rule_id": sar_rule.id,
+            "rule_id": access_request_rule.id,
         },
     )
-    yield sar_policy
+    yield access_request_policy
     try:
         rule_target.delete(db)
     except ObjectDeletedError:
         pass
     try:
-        sar_rule.delete(db)
+        access_request_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
-        sar_policy.delete(db)
+        access_request_policy.delete(db)
     except ObjectDeletedError:
         pass
 

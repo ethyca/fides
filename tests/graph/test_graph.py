@@ -67,7 +67,7 @@ def test_retry_decorator():
     config.execution.TASK_RETRY_DELAY = 0.1
     config.execution.TASK_RETRY_BACKOFF = 0.01
 
-    class TestRetrySar:
+    class TestRetryDecorator:
         def __init__(self):
             self.traversal_node = payment_card_node
             self.call_count = 0
@@ -89,7 +89,7 @@ def test_retry_decorator():
             self.call_count += 1
             input_data["nonexistant_value"]
 
-    test_obj = TestRetrySar()
+    test_obj = TestRetryDecorator()
     test_obj.test_function()
     assert test_obj.call_count == 6  # called once, with 5 retries
     assert test_obj.end_called_with[0] == ActionType.access

@@ -12,9 +12,9 @@ Take me directly to [api docs](http://0.0.0.0:8080/docs#/Storage) (you'll need t
 
 ## Overview
 
-SAR requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
+Access requests requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
 
-Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process SAR requests.
+Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process Access requests.
 
 Storage destinations are configured on Rules. 
 
@@ -26,9 +26,9 @@ Each unique destination is configured using a "StorageConfig", which you can cre
 
 To configure a StorageConfig, you'll first need to choose a storage destination type. Fidesops currently supports the following types:
 
-- **S3** - S3 upload is straightforward, in which files are uploaded in an S3 bucket of your choosing upon completion of SAR requests. Use S3 if you simply need a place to store those files.
+- **S3** - S3 upload is straightforward, in which files are uploaded in an S3 bucket of your choosing upon completion of Access requests. Use S3 if you simply need a place to store those files.
 - **OneTrust** - A OneTrust storage destination should be configured if you wish to use Fidesops to process requests from an existing OneTrust integration. Read more about how our OneTrust integration works [here](./onetrust.md)
-- **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of this project. This destination type should be used only for testing purposes, never to process real-world SAR requests.
+- **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of this project. This destination type should be used only for testing purposes, never to process real-world Access requests.
 
 ## Configuration
 
@@ -71,7 +71,7 @@ Additional params needed for S3:
 
 Additional params needed for OneTrust:
 
-- `service_name`: Name of your service / company. This informs OneTrust from where the data obtained from a given SAR request originated. 
+- `service_name`: Name of your service / company. This informs OneTrust from where the data obtained from a given Access request originated. 
 - `onetrust_polling_hr`: Hour, in UTC timezone, at which to poll OneTrust for new requests. Accepts an int from 0-23, where 0 is midnight. E.g. `7` is 7am UTC.
 - `onetrust_polling_day_of_week`: Day on which to poll OneTrust for new requests. Accepts an int from 0-6 where 0 is Sunday. E.g. `1` is Monday.
 

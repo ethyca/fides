@@ -66,7 +66,7 @@ def test_combined_erasure_task(
     field([mongo_dataset], ("mongo_test", "address", "zip")).data_categories = ["C"]
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    sar_data = graph_task.run_sar(
+    access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -74,8 +74,7 @@ def test_combined_erasure_task(
         {"email": seed_email},
     )
 
-    print("SAR DATA:")
-    for k, v in sar_data.items():
+    for k, v in access_request_data.items():
         print(k)
         for row in v:
             print(f"\t{row}")
@@ -85,7 +84,7 @@ def test_combined_erasure_task(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
-        sar_data,
+        access_request_data,
     )
     print("-----")
     for k, v in x.items():
@@ -117,7 +116,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     field([dataset], ("mongo_test", "address", "zip")).data_categories = ["C"]
     field([dataset], ("mongo_test", "customer", "name")).data_categories = ["A"]
 
-    sar_data = graph_task.run_sar(
+    access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -130,7 +129,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
-        sar_data,
+        access_request_data,
     )
 
     assert v == {
@@ -145,7 +144,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
 def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 
-    v = graph_task.run_sar(
+    v = graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
@@ -193,7 +192,7 @@ def test_filter_on_data_categories_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    sar_results = graph_task.run_sar(
+    access_request_results = graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -206,7 +205,7 @@ def test_filter_on_data_categories_mongo(
         "user.provided.identifiable.date_of_birth",
     }
     filtered_results = filter_data_categories(
-        sar_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph
     )
 
     # Mongo results obtained via customer_id field from postgres_example_test_dataset.customer.id

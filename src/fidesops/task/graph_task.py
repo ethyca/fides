@@ -59,7 +59,7 @@ def retry(
                         self.log_retry(action_type)
                     else:
                         self.log_start(action_type)
-                    # Run sar or rtf
+                    # Run access or erasure request
                     return func(*args, **kwargs)
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
@@ -210,18 +210,18 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
 
     @retry(action_type=ActionType.access, default_return=[])
-    def sar(self, *inputs: List[Row]) -> List[Row]:
-        """Run SAR request"""
+    def access_request(self, *inputs: List[Row]) -> List[Row]:
+        """Run access request"""
         output = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
         )
-        self.resources.cache_object(f"SAR__{self.key}", output)
+        self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
         return output
 
     @retry(action_type=ActionType.erasure, default_return=0)
-    def rtf(self, retrieved_data: List[Row]) -> int:
-        """Run RTF request"""
+    def erasure_request(self, retrieved_data: List[Row]) -> int:
+        """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
@@ -256,14 +256,14 @@ def collect_queries(
     return env
 
 
-def run_sar(
+def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
 ) -> Dict[str, List[Row]]:
-    """Run a sar (data-retrieval) request"""
+    """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
     resources = TaskResources(privacy_request, policy, connection_configs)
 
@@ -297,7 +297,7 @@ def run_sar(
     env: Dict[CollectionAddress, Any] = {}
     end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-    dsk = {k: (t.sar, *t.input_keys) for k, t in env.items()}
+    dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
     dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
     dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
     v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
@@ -311,9 +311,9 @@ def run_erasure(  # pylint: disable = too-many-arguments
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
-    sar_data: Dict[str, List[Row]],
+    access_request_data: Dict[str, List[Row]],
 ) -> Dict[str, int]:
-    """Run a sar (data-retrieval) request"""
+    """Run an erasure request"""
     traversal: Traversal = Traversal(graph, identity)
     resources = TaskResources(privacy_request, policy, connection_configs)
 
@@ -330,14 +330,14 @@ def run_erasure(  # pylint: disable = too-many-arguments
     def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
 
         """The dependent_values here is an int output from each task feeding in, where
-        each task reports the output of 'task.rtf(sar_data)', which is the number of
+        each task reports the output of 'task.rtf(access_request_data)', which is the number of
         records updated.
 
         The termination function just returns this tuple of ints."""
         return dependent_values
 
     dsk: Dict[CollectionAddress, Any] = {
-        k: (t.rtf, sar_data[str(k)]) for k, t in env.items()
+        k: (t.erasure_request, access_request_data[str(k)]) for k, t in env.items()
     }
     # terminator function waits for all keys
     dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
@@ -352,11 +352,11 @@ def run_erasure(  # pylint: disable = too-many-arguments
 
 
 def filter_data_categories(
-    sar_results: Dict[str, Optional[Any]],
+    access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
     graph: DatasetGraph,
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Filter SAR results to only return fields associated with the target data categories
+    """Filter access request results to only return fields associated with the target data categories
     and subcategories
 
     For example, if data category "user.provided.identifiable.contact" is specified on one of the rule targets,
@@ -366,10 +366,10 @@ def filter_data_categories(
     logger.info(
         "Filtering Access Request results to return fields associated with data categories"
     )
-    filtered_sar_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     data_category_fields: Dict[str, Dict[str, List]] = graph.data_category_field_mapping
 
-    for node_address, results in sar_results.items():
+    for node_address, results in access_request_results.items():
         if not results:
             continue
 
@@ -388,7 +388,7 @@ def filter_data_categories(
             continue
 
         for row in results:
-            filtered_sar_results[node_address].append(
+            filtered_access_results[node_address].append(
                 {
                     field: result
                     for field, result in row.items()
@@ -396,4 +396,4 @@ def filter_data_categories(
                 }
             )
 
-    return filtered_sar_results
+    return filtered_access_results

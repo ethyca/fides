@@ -64,7 +64,7 @@ class TestGetPolicies:
         assert len(policy_data["rules"]) == 1
 
         rule = policy_data["rules"][0]
-        assert rule["key"] == "sar-rule"
+        assert rule["key"] == "access-request-rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -116,7 +116,7 @@ class TestGetPolicyDetail:
         assert len(data["rules"]) == 1
 
         rule = data["rules"][0]
-        assert rule["key"] == "sar-rule"
+        assert rule["key"] == "access-request-rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -148,7 +148,7 @@ class TestGetPolicyDetail:
         assert len(policy_data["rules"]) == 1
 
         rule = policy_data["rules"][0]
-        assert rule["key"] == "sar-rule"
+        assert rule["key"] == "access-request-rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
 
@@ -496,8 +496,8 @@ class TestCreateRules:
         another_policy = Policy.create(
             db=db,
             data={
-                "name": "Second SAR policy",
-                "key": "second-sar-policy",
+                "name": "Second Access Request policy",
+                "key": "second-access-request-policy",
                 "client_id": oauth_client.id,
             },
         )

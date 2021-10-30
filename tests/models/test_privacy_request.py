@@ -4,7 +4,6 @@ from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
 
-import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.models.policy import Policy
@@ -14,7 +13,6 @@ from fidesops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.task.graph_task import run_sar
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
 
 
@@ -136,11 +134,11 @@ def test_delete_privacy_request_removes_cached_data(
     assert cache.get(key) is None
 
 
-@mock.patch("fidesops.task.graph_task.run_sar")
+@mock.patch("fidesops.task.graph_task.run_access_request")
 @mock.patch("fidesops.models.privacy_request.upload")
 def test_policy_upload_called(
     upload_mock: Mock,
-    run_sar_mock: Mock,
+    run_access_request_mock: Mock,
     db: Session,
     privacy_request: PrivacyRequest,
     privacy_request_runner: PrivacyRequestRunner,
@@ -148,7 +146,7 @@ def test_policy_upload_called(
     privacy_request_runner.run()
     assert privacy_request.finished_processing_at is not None
     assert upload_mock.called
-    assert run_sar_mock.called
+    assert run_access_request_mock.called
 
 
 def test_start_processing_sets_started_processing_at(
