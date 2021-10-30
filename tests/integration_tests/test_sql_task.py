@@ -595,8 +595,7 @@ class TestRetryIntegration:
             privacy_request_id=privacy_request.id
         )
 
-        assert 27 == execution_logs.count()
-
+        assert 31 == execution_logs.count()
         processing = execution_logs.filter_by(status="in_processing")
         assert 11 == processing.count()
         assert {
@@ -615,11 +614,11 @@ class TestRetryIntegration:
 
         errored = execution_logs.filter_by(status="error")
         retried = execution_logs.filter_by(status="retrying")
-        assert 5 == retried.count()
-        assert 5 == errored.count()
+        assert 9 == retried.count()
+        assert 9 == errored.count()
 
         complete = execution_logs.filter_by(status="complete")
-        assert 6 == complete.count()
+        assert 2 == complete.count()
 
         assert erasure_results == {
             "postgres_example_test_dataset:visit": 0,

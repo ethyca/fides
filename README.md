@@ -20,54 +20,92 @@ Fidesops (*fee-dez-äps*, combination of the Latin term "Fidēs" + "operations")
 
 - **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Connect as many databases and services as you'd like, and let fidesops do the heavy lifting (like auth management, failure retry, and error handling).
 
-## :rocket: Quick Start - DSAR
+## :rocket: Quick Start - Access and Erasure Requests
 
-If you're looking for a more detailed introduction to Fidesops, we recommend following [our tutorial here](https://github.com/ethyca/solon/blob/main/docs/fidesops/docs/index.md) (TODO UPDATE LINK WHEN TUTORIAL IS DONE). But to give Fidesops a test drive, follow these 5 easy steps:
+If you're looking for a more detailed introduction to Fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
 
-1. First, follow the [Getting Started with Fidesops in Docker](https://github.com/ethyca/solon/docs/solon/docs/getting_started/docker.md) guide until your shell is ready.
-
-2. Next, we'll create a policy configuration (TODO new name). You'll find an example below where we're instructing fidesops to access all user-provided email addresses, names, and phone numbers.
-
-3. Now let's configure a storage location for your completed DSAR to upload to. Using the ARN for a publicly accessible AWS S3 bucket, you can ...
+Run the quickstart in your terminal to give fidesops a test drive:
 
 ```bash
-  PUT {host}/api/v1/storage/config
-  {
-    "destinations": [
+cd fidesops
+make quickstart
+```
+This runs fidesops in docker along with the necessary data stores.  It also spins up a test postgres
+database and a test mongo database to mimic your application.  This quickstart will walk you through executing privacy
+requests against your system by making a series of API requests to fidesops.
+
+Follow these five easy steps:
+
+### Step One: Set up basic configuration (press `[enter]` to make each API request)
+
+- Authenticate by creating an Access Token
+- Connect to your application's postgres and mongo databases with ConnectionConfigs 
+- Describe the types of data you have and their relationships with Datasets 
+- Dictate where to upload your results with StorageConfigs (a local folder for now)
+
+### Step Two: Define an Access Policy
+
+Policies help describe what data you care about and how you want to manage it.  In this example, you'll create an `access` 
+Policy,`example-request-policy`, to get all data with the data category: `user.provided.identifiable`.
+  
+### Step Three: Run a Privacy Request to Access Data
+
+Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`.
+The following response should be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
+information for Jane across tables in both the postgres and mongo databases.
+
+```json
+{
+   "postgres_example_test_dataset:customer": [
       {
-        "name": "s3 storage",
-        "key": "{unique_key}",
-        "type": "s3",
-        "format": "json",
-        "details": {
-          "bucket": "{bucket_name}",
-          "naming": "request_id"
-        }
+         "email": "jane@example.com",
+         "name": "Jane Customer"
       }
-    ]
-  }
-
+   ],
+   "postgres_example_test_dataset:address": [
+      {
+         "city": "Example Mountain",
+         "house": 1111,
+         "state": "TX",
+         "street": "Example Place",
+         "zip": "54321"
+      }
+   ],
+   "postgres_example_test_dataset:payment_card": [
+      {
+         "ccn": 373719391,
+         "code": 222,
+         "name": "Example Card 3"
+      }
+   ],
+   "mongo_test:customer_details": [
+      {
+         "gender": "female",
+         "birthday": "1990-02-28T00:00:00"
+      }
+   ]
+}
 ```
 
-On success, the response will include a `storage_key`.
+### Step Four: Create an Erasure Policy
 
-Use that `storage_key` in the following endpoint to authenticate with S3:
+Now you'll create another Policy, `example-erasure-policy`, that describes how to `erase` data with the same category, by replacing values with null.
 
-```bash
-  PUT {host}/api/v1/storage/config/{storage_key}/secret
-  {
-    # s3
-    "aws_access_key_id": "{aws_access_key_id}",
-    "aws_secret_access_key": "{aws_secret_access_key}"
-  }
 
+### Step Five: Issue a Privacy Request to erase data and verify
+
+The last step is to issue a Privacy Request using `example-erasure-policy` to remove identifiable user-provided data 
+related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
+
+```json
+{}
 ```
+This returns an empty dictionary confirming Jane's fields with data category `user.provided.identifiable` have been removed.
 
-1. Almost there! We'll hook up our quick-start database which is prepopulated with sample data (TODO)
 
-2. Let's see it in action by creating your first Privacy Request. Navigate to `http://0.0.0.0:8080/docs#/Privacy%20Requests/create_privacy_request_api_v1_privacy_requests_post` and enter the following example...(TODO)
-
-You've learned how to connect a database and storage location, create a policy config (TODO new name), and call the API to create a DSAR. But there's a lot more to discover, so we'd recommend following [the tutorial](https://github.com/solon/tutorial/) to keep learning.
+You've learned how to use the fidesops API to connect a database and a final storage location, define policies that describe
+how to handle user data, and execute access and erasure requests.  But there's a lot more to discover,
+so we'd recommend following [the tutorial](https://ethyca.github.io/fidesops/tutorial/) to keep learning.
 
 ## :book: Learn More
 

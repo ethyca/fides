@@ -115,6 +115,6 @@ def test_convert_dataset_to_graph(example_datasets):
         == True
     )
     assert (
-        field([graph], ("postgres_example_test_dataset", "login", "id")).primary_key
+        field([graph], ("postgres_example_test_dataset", "visit", "email")).primary_key
         == False
     )

@@ -73,6 +73,8 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: time
             data_categories: [user.derived.nonidentifiable.sensor]
 
@@ -150,6 +152,8 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: name
             data_categories: [system.operations]
           - name: price
@@ -163,6 +167,8 @@ dataset:
               identity: email
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: month
             data_categories: [system.operations]
           - name: name
@@ -193,6 +199,8 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: opened
             data_categories: [system.operations]
 
