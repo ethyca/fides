@@ -2,7 +2,7 @@
 
 ---
 
-The recommended way to get Fidesctl running is to launch it using the supplied `make` commands. The `make` commands wrap `docker-compose` commands that will spin up each piece of the project.
+The recommended way to get Fidesctl running is to launch it using Docker and Docker-Compose. The `make` commands wrap `docker-compose` commands that will spin up each piece of the project.
 
 ## System Requirements
 
