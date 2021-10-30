@@ -69,7 +69,7 @@ def upload_data(
     storage_key: str = Body(...),
 ) -> DataUpload:
     """
-    Uploads data from a SAR to specified storage destination.
+    Uploads data from an access request to specified storage destination.
     Returns location of data.
     """
     logger.info(f"Finding privacy request with id '{request_id}'")

@@ -299,8 +299,8 @@ def test_validate_policy(
     erasure_policy = Policy.create(
         db=db,
         data={
-            "name": "example sar policy",
-            "key": "example-sar-policy",
+            "name": "example erasure policy",
+            "key": "example-erasure-policy",
             "client_id": oauth_client.id,
         },
     )

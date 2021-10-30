@@ -54,7 +54,7 @@ def upload_to_s3(
     file_key: str,
     resp_format: str,
 ) -> str:
-    """Uploads arbitrary data to s3 returned from a SAR request"""
+    """Uploads arbitrary data to s3 returned from an access request"""
     logger.info(f"Starting S3 Upload of {file_key}")
     try:
         my_session = get_s3_session(
@@ -85,7 +85,7 @@ def upload_to_onetrust(
     storage_secrets: Dict[StorageSecrets, Any],
     ref_id: str,
 ) -> str:
-    """Uploads arbitrary data to onetrust returned from a SAR request"""
+    """Uploads arbitrary data to onetrust returned from an access request"""
     logger.info(f"Starting OneTrust Upload for ref_id {ref_id}")
 
     onetrust_hostname = storage_secrets[StorageSecrets.ONETRUST_HOSTNAME.value]

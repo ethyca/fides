@@ -178,12 +178,12 @@ class PrivacyRequestRunner:
         Dispatch a privacy_request into the execution layer by:
             1. Generate a graph from all the currently configured datasets
             2. Take the provided identity data
-            3. Start the SAR execution
-            4. When finished, upload the results to the configured storage destination
+            3. Start the access request / erasure request execution
+            4. When finished, upload the results to the configured storage destination if applicable
         """
         from fidesops.task.graph_task import (
             filter_data_categories,
-            run_sar,
+            run_access_request,
             run_erasure,
         )
 
@@ -205,7 +205,7 @@ class PrivacyRequestRunner:
             )
 
         try:
-            access_result = run_sar(
+            access_result = run_access_request(
                 privacy_request=self.privacy_request,
                 policy=policy,
                 graph=dataset_graph,
@@ -214,7 +214,7 @@ class PrivacyRequestRunner:
             )
             if not access_result:
                 logging.info(
-                    f"No results returned for sar request {self.privacy_request.id}"
+                    f"No results returned for access request {self.privacy_request.id}"
                 )
 
             # Once the access request is complete, process the data uploads
@@ -233,7 +233,7 @@ class PrivacyRequestRunner:
                     access_result, target_categories, dataset_graph
                 )
                 logging.info(
-                    f"Starting sar upload for rule {rule.key} for privacy request {self.privacy_request.id}"
+                    f"Starting access request upload for rule {rule.key} for privacy request {self.privacy_request.id}"
                 )
                 try:
                     upload(
@@ -256,7 +256,7 @@ class PrivacyRequestRunner:
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
-                    sar_data=access_result,
+                    access_request_data=access_result,
                 )
 
         except BaseException as exc:

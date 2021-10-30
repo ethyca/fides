@@ -133,5 +133,5 @@ docker-stack.yml
 
 envfiles/
 
-# SAR package local upload destination, generated at runtime
+# Access request package local upload destination, generated at runtime
 fides_uploads

@@ -56,10 +56,10 @@ class TestCreatePrivacyRequest:
         resp = api_client.post(url, json={}, headers=auth_header)
         assert resp.status_code == 403
 
-    @mock.patch("fidesops.task.graph_task.run_sar")
+    @mock.patch("fidesops.task.graph_task.run_access_request")
     def test_create_privacy_request(
         self,
-        run_sar_mock,
+        run_access_request_mock,
         url,
         db,
         api_client: TestClient,
@@ -80,9 +80,9 @@ class TestCreatePrivacyRequest:
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
-        assert run_sar_mock.called
+        assert run_access_request_mock.called
 
-    @mock.patch("fidesops.task.graph_task.run_sar")
+    @mock.patch("fidesops.task.graph_task.run_access_request")
     def test_create_privacy_request_limit_exceeded(
         self,
         _,
@@ -137,10 +137,10 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         pr.delete(db=db)
 
-    @mock.patch("fidesops.task.graph_task.run_sar")
+    @mock.patch("fidesops.task.graph_task.run_access_request")
     def test_create_privacy_request_with_external_id(
         self,
-        run_sar_mock,
+        run_access_request_mock,
         url,
         db,
         api_client: TestClient,
@@ -167,12 +167,12 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
         assert pr.external_id == external_id
         pr.delete(db=db)
-        assert run_sar_mock.called
+        assert run_access_request_mock.called
 
-    @mock.patch("fidesops.task.graph_task.run_sar")
+    @mock.patch("fidesops.task.graph_task.run_access_request")
     def test_create_privacy_request_caches_identity(
         self,
-        run_sar_mock,
+        run_access_request_mock,
         url,
         db,
         api_client: TestClient,
@@ -200,7 +200,7 @@ class TestCreatePrivacyRequest:
         )
         assert cache.get(key) == list(identity.values())[0]
         pr.delete(db=db)
-        assert run_sar_mock.called
+        assert run_access_request_mock.called
 
     def test_create_privacy_request_no_identities(
         self,
@@ -254,7 +254,7 @@ class TestCreatePrivacyRequest:
             assert results[key] is not None
             assert results[key] != {}
 
-        result_key_prefix = f"EN_{pr.id}__SAR__postgres_example_test_dataset:"
+        result_key_prefix = f"EN_{pr.id}__access_request__postgres_example_test_dataset:"
         customer_key = result_key_prefix + "customer"
         assert results[customer_key][0]["email"] == customer_email
 
