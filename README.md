@@ -26,7 +26,13 @@ If you're looking for a more detailed introduction to Fidesops, we recommend fol
 
 Run the quickstart in your terminal to give fidesops a test drive:
 
+```
+Install Docker: https://docs.docker.com/desktop/#download-and-install
+Install Make: brew install make
+```
+
 ```bash
+git clone https://github.com/ethyca/fidesops.git
 cd fidesops
 make quickstart
 ```

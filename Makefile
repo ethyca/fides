@@ -35,7 +35,7 @@ init-db: compose-build
 reset-db:
 	@echo "Resetting and re-initializing the application db..."
 	@make teardown
-	@docker volume rm solon_app-db-data || echo "No app DB found, continuing!"
+	@docker volume rm fidesops_app-db-data || echo "No app DB found, continuing!"
 	@make init-db
 
 server: compose-build
@@ -52,7 +52,7 @@ integration-env: compose-build
 
 quickstart: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-quickstart.yml up -d
-	@docker exec -it fidesops_fidesops_1 python quickstart.py $(access_type)
+	@docker exec -it fidesops python quickstart.py
 
 ####################
 # Docker

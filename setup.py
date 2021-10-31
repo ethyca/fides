@@ -13,7 +13,7 @@ setup(
     description="Automation engine for privacy requests",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ethyca/solon",
+    url="https://github.com/ethyca/fidesops",
     entry_points={"console_scripts": ["fidesops=fidesops.cli:cli"]},
     python_requires=">=3.7, <4",
     package_dir={"": "src"},
