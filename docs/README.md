@@ -6,4 +6,4 @@ This is the docs site for Fidesops. To run the docs locally, use `make docs-serv
 
 1. `pip install -r requirements.txt`
 1. `cd fidesops/`
-1. `mkdocs serve`
+1. `make docs-serve`
