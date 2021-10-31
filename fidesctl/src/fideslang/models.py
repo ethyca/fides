@@ -164,8 +164,8 @@ class Organization(FidesModel):
     This resource is used as a way to organize all other resources.
     """
 
-    # It inherits this from FidesModel but Organization's don't have this field
-    organiztion_parent_key: None = None
+    # It inherits this from FidesModel but Organizations don't have this field
+    organization_parent_key: None = None
 
 
 # Policy
