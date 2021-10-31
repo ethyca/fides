@@ -3146,8 +3146,8 @@
             "type": "string",
             "description": "In-depth description of what this resource is."
           },
-          "organiztion_parent_key": {
-            "title": "Organiztion Parent Key",
+          "organization_parent_key": {
+            "title": "Organization Parent Key",
             "type": "null"
           }
         },
