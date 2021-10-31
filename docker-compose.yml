@@ -1,5 +1,6 @@
 services:
   fidesops:
+    container_name: fidesops
     build:
       context: .
       dockerfile: Dockerfile

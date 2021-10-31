@@ -602,7 +602,7 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print("Press [enter] to define the data categories and relationships in your Mongo collections......")
+    print("Press [enter] to define the data categories and relationships in your Mongo collections...")
     input()
 
     mongo_dataset = create_dataset(
