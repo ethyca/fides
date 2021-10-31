@@ -8,7 +8,7 @@ In this section we'll cover:
 - How to test your storage destinations
 - How to extend this module to create a new, custom storage destination type
 
-Take me directly to [api docs](http://0.0.0.0:8080/docs#/Storage) (you'll need to `make server` first)
+Take me directly to [API docs](/api#operations-Storage-upload_data_api_v1_storage__request_id__post/) (you'll need to `make server` first)
 
 ## Overview
 
@@ -20,19 +20,19 @@ Storage destinations are configured on Rules.
 
 ![Storage Destinations](../img/storage_destinations.png "Storage Destinations")
 
-Multiple destinations can be configured, each of which might be used by different rules. Read more about configuring rules [here]() # todo: add link
+Multiple destinations can be configured, each of which might be used by different rules. Read more about configuring rules [here](./policies.md)
 
 Each unique destination is configured using a "StorageConfig", which you can create and manage via the API.
 
 To configure a StorageConfig, you'll first need to choose a storage destination type. Fidesops currently supports the following types:
 
-- **S3** - S3 upload is straightforward, in which files are uploaded in an S3 bucket of your choosing upon completion of Access requests. Use S3 if you simply need a place to store those files.
+- **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of this project. This destination type should be used only for testing purposes, never to process real-world access requests.
+- **S3** - S3 upload is straightforward, in which files are uploaded in an S3 bucket of your choosing upon completion of access requests. Use S3 if you simply need a place to store those files.
 - **OneTrust** - A OneTrust storage destination should be configured if you wish to use Fidesops to process requests from an existing OneTrust integration. Read more about how our OneTrust integration works [here](./onetrust.md)
-- **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of this project. This destination type should be used only for testing purposes, never to process real-world Access requests.
 
 ## Configuration
 
-Let's get started. To create a new StorageConfig, use the following endpoint ([api docs here](http://0.0.0.0:8080/docs#/Storage/put_config_api_v1_storage_config_put)):
+Let's get started. To create a new StorageConfig, use the following endpoint ([API docs here](/api#operations-Storage-put_config_api_v1_storage_config_put/)):
 
 ```bash
   PUT {host}/api/v1/storage/config
@@ -71,7 +71,7 @@ Additional params needed for S3:
 
 Additional params needed for OneTrust:
 
-- `service_name`: Name of your service / company. This informs OneTrust from where the data obtained from a given Access request originated. 
+- `service_name`: Name of your service / company. This informs OneTrust from where the data obtained from a given access request originated.
 - `onetrust_polling_hr`: Hour, in UTC timezone, at which to poll OneTrust for new requests. Accepts an int from 0-23, where 0 is midnight. E.g. `7` is 7am UTC.
 - `onetrust_polling_day_of_week`: Day on which to poll OneTrust for new requests. Accepts an int from 0-6 where 0 is Sunday. E.g. `1` is Monday.
 
@@ -109,7 +109,7 @@ Next, you'll need to authenticate secrets with the specific storage destination.
 
 Authentication is not needed for the `local` destination type.
 
-Use the `storage_key` obtained from above in the following endpoint ([api docs here](http://0.0.0.0:8080/docs#/Storage/put_config_secrets_api_v1_storage_config__config_key__secret_put)): 
+Use the `storage_key` obtained from above in the following endpoint ([API docs here](/api#operations-Storage-put_config_secrets_api_v1_storage_config__config_key__secret_put)): 
 
 ```bash
   PUT {host}/api/v1/storage/config/{storage_key}/secret
@@ -144,7 +144,7 @@ To test that your storage destination works correctly, you may hit the upload en
 
 Keep in mind that OneTrust destinations will need to be tested end-to-end, using the OneTrust interface to approve a test privacy request. 
 
-To upload data to a storage destination of choice ([api docs here](http://0.0.0.0:8080/docs#/Storage/upload_data_api_v1_storage__request_id__post)):
+To upload data to a storage destination of choice ([api docs here](/api#operations-Storage-upload_data_api_v1_storage__request_id__post/)):
 
 ```bash
   PUT {host}/api/v1/storage/{request_id}
@@ -165,7 +165,7 @@ Params:
 
 ## Extensibility
 
-Should you wish to extend Fidesops to include additional storage destination types, here's what you'll need to do:
+Need a different storage destination? Fidesops can be extended to support additional storage destinations by:
  
 1. Add destination-specific enums in `src/fidesops/schemas/storage/storage.py`
 2. Implement an authenticator in `src/fidesops/service/storage/storage_authenticator_service.py`
