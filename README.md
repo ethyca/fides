@@ -1,4 +1,4 @@
-# Meet Fidesops
+# Meet Fidesops: a privacy rights automation engine
 
 _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 
@@ -6,25 +6,18 @@ _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
-[![Fides Discord Server][discord-image]][discord-url]
+[![Twitter][twitter-image]][twitter-url]
 
+![Fidesops banner](docs/fidesops/docs/img/fidesops.png "Fidesops banner")
 ## :zap: Overview
 
-Fidesops (*fee-dez-äps*, combination of the Latin term "Fidēs" + "operations") is an extensible, deployed engine that fulfills any Data Subject Access Request (DSAR) and Right to be Forgotten (RTBF) request by connecting directly to your databases.
+**Fidesops** (*fee-dez-äps*, combination of the Latin term "Fidēs" + "operations") is an open-source, extensible, deployed engine that fulfills any privacy request (e.g. access request, erasure request) by connecting directly to your disparate databases.
 
-- **Programmable Data Privacy.** Fidesops connects and orchestrates calls to all of your databases in order to access, update and delete sensitive data per your policy configuration (TODO this needs a new name) written in [Fideslang](https://github.com/ethyca/fides).
-
-- **DAGs for Datastores.** Fidesops works by integrating all your data store connections into a unified graph - also known as a DAG. We know that sensitive data is stored all around your dynamic ecosystem, so fidesops builds the DAG at runtime.
-
-- **B.Y.O. DSAR Automation Provider.** Fidesops handles the integration to privacy management tools like OneTrust and Transcend to fulfill Data Subject Requests and returns the package back to the DSAR Automation provider.
-
-- **Built to scale.** Lots of databases? Tons of microservices? Large distributed infrastructure? Connect as many databases and services as you'd like, and let fidesops do the heavy lifting (like auth management, failure retry, and error handling).
-
-## :rocket: Quick Start - Access and Erasure Requests
-
+![Fidesops overview](docs/fidesops/docs/img/fidesops-overview-diagram.png "Fidesops overview")
+## :rocket: Quick Start
 If you're looking for a more detailed introduction to Fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
 
-Run the quickstart in your terminal to give fidesops a test drive:
+Run the quickstart in your terminal to give Fidesops a test drive:
 
 ```
 Install Docker: https://docs.docker.com/desktop/#download-and-install
@@ -57,7 +50,7 @@ Policy,`example-request-policy`, to get all data with the data category: `user.p
 ### Step Three: Run a Privacy Request to Access Data
 
 Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`.
-The following response should be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
+The following response will be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
 information for Jane across tables in both the postgres and mongo databases.
 
 ```json
@@ -109,35 +102,40 @@ related to "jane@example.com". Then we'll re-run step #3 again to see what data 
 This returns an empty dictionary confirming Jane's fields with data category `user.provided.identifiable` have been removed.
 
 
-You've learned how to use the fidesops API to connect a database and a final storage location, define policies that describe
+You've learned how to use the Fidesops API to connect a database and a final storage location, define policies that describe
 how to handle user data, and execute access and erasure requests.  But there's a lot more to discover,
 so we'd recommend following [the tutorial](https://ethyca.github.io/fidesops/tutorial/) to keep learning.
 
-## :book: Learn More
-
-Fides provides a variety of docs to help guide you to a successful outcome.
-
-We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://github.com/ethyca/solon/blob/main/docs/solon/docs/community/code_of_conduct.md).
-
 ### Documentation
 
-Full Fidesops documentation is available [here](https://github.com/ethyca/solon/blob/main/docs/solon/docs/).
+For more information on getting started with Fidesops, how to configure and set up Fidesops, and more about the Fides ecosystem of open source projects: 
+
+- Documentation: https://ethyca.github.io/fidesops/
+- How-to guides: https://ethyca.github.io/fidesops/guides/oauth/
+- Deployment: https://ethyca.github.io/fidesops/deployment/
+- Roadmap: https://github.com/ethyca/fidesops/milestones
+- Website: www.ethyca.com/fides
+
 
 ### Support
 
 Join the conversation on:
 
-- [Discord](https://discord.gg/NfWXEmCsd4)
+- [Slack](https://join.slack.com/t/fidescommunity/shared_invite/zt-vlgpv1r9-gcYrLpQyNoRf9dJu~kqE8w)
 - [Twitter](https://twitter.com/ethyca)
-- Discussions (TODO need to enable)
+- [Discussions](https://github.com/ethyca/fidesops/discussions)
 
 ### Contributing
 
-Read about the Fides [community](https://github.com/ethyca/solon/blob/main/docs/solon/docs/community/github.md) or dive in to the [development guides](https://github.com/ethyca/solon/blob/main/docs/solon/docs/development/overview.md) for information about contributions, documentation, code style, testing and more.
+We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](CONTRIBUTING.md) to opening issues for bugs, new features, and security or experience enhancements.
+
+Read about the [Fides community](https://ethyca.github.io/fidesops/community/github/) or dive into the [development guides](https://ethyca.github.io/fidesops/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fidesops/community/code_of_conduct/).
 
 ## :balance_scale: License
 
-The Fides ecosystem of tools is licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+The Fides ecosystem of tools ([Fidesops](https://github.com/ethyca/fidesops) and [Fidesctl](https://github.com/ethyca/fides)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE). 
+
 
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/
@@ -147,5 +145,5 @@ The Fides ecosystem of tools is licensed under the [Apache Software License Vers
 [black-url]: https://github.com/psf/black/
 [mypy-image]: http://www.mypy-lang.org/static/mypy_badge.svg
 [mypy-url]: http://mypy-lang.org/
-[discord-image]: https://img.shields.io/discord/730474183833813142.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
-[discord-url]: https://discord.gg/NfWXEmCsd4
+[twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
+[twitter-url]: https://twitter.com/ethyca

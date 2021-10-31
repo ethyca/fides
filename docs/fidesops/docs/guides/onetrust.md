@@ -7,7 +7,7 @@ In this section we'll cover:
 - How to configure OneTrust request intake and storage
 - How to test the OneTrust integration
 
-Api docs for OneTrust are part of the [storage](http://0.0.0.0:8080/docs#/Storage) module (you'll need to `make server` first).
+API docs for OneTrust are part of the [storage](/api#operations-tag-Storage) module (you'll need to `make server` first).
 
 ## Overview
 
@@ -33,19 +33,17 @@ Here's how our OneTrust integration works:
 
 ### Fidesops
   
-OneTrust request intake is configured as part of the `StorageConfig` in the storage module. 
+OneTrust request intake is configured as part of the `StorageConfig` in the storage module. To configure Fidesops to connect to OneTrust:
 
-You'll need to add a `StorageConfig` that includes a `onetrust` destination type, then authenticate with OneTrust.
-
-As part of this configuration, you'll need to decide what day of the week and hour of the day you wish to retrieve requests from OneTrust.
+1. Add Destination: Add a `StorageConfig` that includes a `onetrust` destination type.
+2. Authenticate: Use appropriate credentials to authenticate with OneTrust.
+3. Determine polling interval: Decide what day of the week and hour of the day you wish to retrieve requests from OneTrust.
 
 Read more about how to do this [here](./storage.md)
 
 ### OneTrust
 
-When the Fidesops scheduled task runs, it looks for subtasks with a name of "fides task". 
-
-So, you'll need to be sure tasks you wish to pass through the Fides ecosystem are correctly labeled in the OneTrust interface.
+When the Fidesops scheduled task runs, it looks for subtasks with a exact string name of "fides task".  So, you'll need to be sure tasks you wish to pass through the Fides ecosystem are correctly labeled in the OneTrust interface.
 
 ## Testing
 
