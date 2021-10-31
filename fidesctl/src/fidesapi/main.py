@@ -30,7 +30,7 @@ def configure_db(database_url: str) -> None:
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {"data": {"message": "Fides service is healthy!"}}
+    return {"data": {"message": "Fidesctl API service is healthy!"}}
 
 
 def start_webserver() -> None:
