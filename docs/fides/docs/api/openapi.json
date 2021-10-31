@@ -2347,15 +2347,273 @@
         }
       }
     },
+    "/evaluation/": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_evaluation__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Evaluation  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Evaluation"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_evaluation__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Evaluation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/{fides_key}": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_evaluation__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_evaluation__fides_key__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Evaluation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_evaluation__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/data_category/visualize/{figure_type}": {
       "get": {
         "tags": [
           "Visualize",
           "DataCategory"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_category_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_category_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2404,9 +2662,9 @@
           "Visualize",
           "DataQualifier"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_qualifier_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_qualifier_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2455,9 +2713,9 @@
           "Visualize",
           "DataUse"
         ],
-        "summary": "Get Visualization",
-        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\n\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_visualization_data_use_visualize__figure_type__get",
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_use_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -2706,16 +2964,11 @@
               "type": "string"
             }
           },
-          "data_qualifiers": {
-            "title": "Data Qualifiers",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
-              "type": "string"
-            },
-            "default": [
-              "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-            ]
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "collections": {
             "title": "Collections",
@@ -2751,16 +3004,11 @@
               "type": "string"
             }
           },
-          "data_qualifiers": {
-            "title": "Data Qualifiers",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
-              "type": "string"
-            },
-            "default": [
-              "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-            ]
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "fields": {
             "title": "Fields",
@@ -2804,11 +3052,42 @@
         },
         "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
       },
+      "Evaluation": {
+        "title": "Evaluation",
+        "required": [
+          "fides_key",
+          "status",
+          "details"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.]+$",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusEnum"
+          },
+          "details": {
+            "title": "Details",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message": {
+            "title": "Message",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "description": "The Evaluation resource model.\n\nThis resource is created after an evaluation is executed."
+      },
       "FigureTypeEnum": {
         "title": "FigureTypeEnum",
         "enum": [
-          "sankey",
-          "sunburst",
+          "graphs",
           "text"
         ],
         "type": "string",
@@ -3015,6 +3294,7 @@
             "title": "Dataset References",
             "type": "array",
             "items": {
+              "pattern": "^[a-zA-Z0-9_.]+$",
               "type": "string"
             }
           }
@@ -3075,6 +3355,15 @@
           }
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
+      },
+      "StatusEnum": {
+        "title": "StatusEnum",
+        "enum": [
+          "FAIL",
+          "PASS"
+        ],
+        "type": "string",
+        "description": "The model for possible evaluation results."
       },
       "System": {
         "title": "System",

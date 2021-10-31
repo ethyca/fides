@@ -18,30 +18,31 @@ nav:
       - Evaluate your Resources: tutorial/evaluate.md
       - Integrate your CI: tutorial/ci.md
   - Deployment Guide: deployment.md
+  - CI Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
       - Resources: language/resources.md
       - Taxonomy:
-        - Overview: language/taxonomy/overview.md
-        - Taxonomy Explorer: language/taxonomy/explorer.md
-        - Data Categories: language/taxonomy/data_categories.md
-        - Data Uses: language/taxonomy/data_uses.md
-        - Data Subjects: language/taxonomy/data_subjects.md
-        - Data Qualifiers: language/taxonomy/data_qualifiers.md
+          - Overview: language/taxonomy/overview.md
+          - Taxonomy Explorer: language/taxonomy/explorer.md
+          - Data Categories: language/taxonomy/data_categories.md
+          - Data Uses: language/taxonomy/data_uses.md
+          - Data Subjects: language/taxonomy/data_subjects.md
+          - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
-    - CLI Overview: cli/cli.md
-    - apply: cli/apply.md
-    - delete: cli/delete.md
-    - evaluate: cli/evaluate.md
-    - get: cli/get.md
-    - init-db: cli/init-db.md
-    - ls: cli/ls.md
-    - parse: cli/parse.md
-    - ping: cli/ping.md
-    - reset-db: cli/reset-db.md
-    - view-config: cli/view-config.md
-    - webserver: cli/webserver.md
+      - CLI Overview: cli/cli.md
+      - apply: cli/apply.md
+      - delete: cli/delete.md
+      - evaluate: cli/evaluate.md
+      - get: cli/get.md
+      - init-db: cli/init-db.md
+      - ls: cli/ls.md
+      - parse: cli/parse.md
+      - ping: cli/ping.md
+      - reset-db: cli/reset-db.md
+      - view-config: cli/view-config.md
+      - webserver: cli/webserver.md
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
