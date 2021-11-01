@@ -13,7 +13,6 @@ nav:
     - Configuring our Storage Destination: tutorial/storage_config.md
     - Defining a Policy: tutorial/define_policy.md
     - Executing a Privacy Request: tutorial/execute_privacy_request.md
-  - Glossary: glossary.md
   - How-To Guides:
       - Authenticate with OAuth: guides/oauth.md  
       - Connect SQL and NoSQL Databases: guides/database_connectors.md
@@ -27,6 +26,7 @@ nav:
       - Configure OneTrust Integration: guides/onetrust.md  
       - Configuration Reference: guides/configuration_reference.md
   - Deployment Guide: deployment.md
+  - Glossary: glossary.md
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
