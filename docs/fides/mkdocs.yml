@@ -7,8 +7,8 @@ nav:
       - Automating Data Rights: use_cases/use_case2.md
   - Getting Started:
       - Overview: getting_started/overview.md
-      - Fidesctl in Docker: getting_started/docker.md
-      - Fidesctl Manually (without Docker): getting_started/manual.md
+      - Dockerized Setup: getting_started/docker.md
+      - No-Docker Setup: getting_started/manual.md
   - Tutorial:
       - Overview: tutorial/overview.md
       - Understanding the Fides Taxonomy: tutorial/taxonomy.md
