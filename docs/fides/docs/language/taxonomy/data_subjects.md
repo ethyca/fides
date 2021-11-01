@@ -1,7 +1,24 @@
 # Data Subjects Reference
 
-A Data Subject is a label for a group of individuals to whom data is presented or by whom data is owned. Data Subject labels are typically fairly broad -- "Citizen", "Visitor", "Passenger", and so on -- although you be as specific as your system needs: "Fans in Section K", for example.
+A Data Subject is a label that describes a segment of  individuals whose data you store. Data Subject labels are typically fairly broad -- "Citizen", "Visitor", "Passenger", and so on -- although you be as specific as your system needs: "Fans in Section K", for example.
 
+## Object Structure
+
+**fides_key**<span class="required"/>_string_
+
+A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+
+**name**<span class="spacer"/>_string_
+
+A UI-friendly label for the Data Subject. 
+
+**description**<span class="spacer"/>_string_
+
+A human-readable description of the Data Subject.
+
+**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+
+The fides key of the organization to which this Data Subject belongs.
 
 !!! Note "Extensibility and Interopability"
     Data Subjects in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
@@ -10,8 +27,7 @@ A Data Subject is a label for a group of individuals to whom data is presented o
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
-
-## Data Subjects
+## Default Data Subject Types
 
 Currently, your collection of Data Subjects is given as a flat list: A Data Subject can't contain other Data Subjects.
 

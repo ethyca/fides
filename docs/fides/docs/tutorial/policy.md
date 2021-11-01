@@ -24,7 +24,7 @@ These are examples of "policies" that might be formal rules you follow today, or
 | data_uses | List[DataRule] | Data use describes the various categories of data processing and operations at your organization |
 | data_subjects | List[DataRule] | The data subjects, or individual persons whose data your rule pertains to |
 | data_qualifier | String | The data qualifier describes the acceptable or non-acceptable level of deidentification |
-| action | Choice | A string, either `ACCEPT` or `REJECT` |
+| action | Choice | A string, either `ACCEPT`, `REJECT` or `REQUIRE` |
 
 ## Writing your first policy
 

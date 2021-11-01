@@ -3,33 +3,33 @@
 **Demo manifest file:** `/fides/fidesctl/demo_resources/demo_system.yml`. 
 
 
-A System is a bundle of instances of your data resources (`data_category`, `data_use`, `data_subject`, and `data_qualifier`).
+A System is a model for describing anything that processes data for your organization (applications, services, 3rd party APIs, etc.) and describes how these datasets are used for business functions of instances of your data resources. It contains all 4 privacy attributes (`data_category`, `data_use`, `data_subject`, and `data_qualifier`).
 
 
 
 
 ## Object Structure
 
-**fides_key**<span class="required"/>_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
 
-**name**<span class="spacer"/>_string_
+**name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A UI-friendly label for the Registry.
 
-**description**<span class="spacer"/>_string_
+**description**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A human-readable description of the Registry.
+A human-readable description of the System.
 
-**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+**organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
-The fides key of the Organization to which this Registry belongs.
+The fides key of the [Organization](/fides/language/resources/organization/) to which this System belongs.
 
 
 ## Examples
 
-**Manifest File**
+### **Manifest File**
 
 ```yaml
 system:
@@ -50,7 +50,7 @@ system:
           - demo_users_dataset
 ```
 
-**API**
+### **API**
 
 ```json
 POST /system

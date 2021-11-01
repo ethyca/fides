@@ -2,38 +2,3 @@
   color: red;
   content: '*\00a0 \00a0 \00a0 \00a0 \00a0 ';
 }
-
-.property {
-  font-family: monospace;
-  font-weight: bold;
-}
-
-.data-type {
-  font-style:  italic;
-  font-weight: initial;
-}
-
-.description {
-  /*padding-left: 16px;*/
-  padding-bottom: 16px;
-}
-
-
-
-.nest:before {
-  content:  '\27A4 \00a0 ';
-}
-
-.bump:before {
-  content: "\00a0 \00a0 \00a0 \00a0 \00a0 ";
-}
-
-.hierarchy {
-  border: 1px lightgrey solid;
-  padding:  8px;
-  background-color: cornsilk;
-}
-
-.spacer:before {
-  content: "\00a0 \00a0 \00a0 \00a0 \00a0 ";
-}

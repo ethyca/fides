@@ -1,86 +1,86 @@
 # Dataset
 
 
-A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations.
+A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. This is a database-agnostic way to annotate privacy declarations. 
 
 * The schema is represented as a set of "collections" (tables) that contain "fields" (columns).
 
 * At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers are cascading: Those that are assigned at the Dataset level apply to all collections and fields; those at the collection level apply to the collection's fields. 
 
-While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which only creates the schema components, you add your Data Categories and Data Qualifiers to the manifest. 
+While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest. 
 
 You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems. 
 
-Datasets can't contain other Datasets.
+Datasets cannot contain other Datasets.
 
 
 ## Object Structure
 
-**fides_key**<span class="required"/>_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Dataset. It's your responsibility to ensure that the value is unique across all of your Dataset objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
 
-**name**<span class="spacer"/>_string_
+**name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A UI-friendly label for the Registry.
+A UI-friendly label for the Dataset.
 
-**description**<span class="spacer"/>_string_
+**description**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A human-readable description of the Registry.
+A human-readable description of the Dataset.
 
-**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+**organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
-The fides key of the Organization to which this Registry belongs.
+The fides key of the [Organization](/fides/language/resources/organization/) to which this Dataset belongs.
 
-**meta**<span class="spacer"/>_object_
+**meta**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_object_
 
 An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it.
 
-**data_categories**<span class="spacer"/>[_string_]<br/>
-**data_qualifiers**<span class="spacer"/>[_string_]<br/>
+**data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
+**data_qualifiers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 
 Arrays of Data Category and Data Qualifier resources, identified by `fides_key`, that apply to all collections in the Dataset.
 
-**collections**<span class="spacer"/>[_object_]<br/>
+**collections**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
 An array of objects that describe the Dataset's collections. 
 
-**collections.name**<span class="spacer"/>string<br/>
+**collections.name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string<br/>
 
 A UI-friendly label for the collection.
 
-**collections.description**<span class="spacer"/>_string_
+**collections.description**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A human-readable description of the collection.
 
-**collections.data_categories**<span class="spacer"/>[_string_]<br/>
-**collections.data_qualifiers**<span class="spacer"/>[_string_]<br/>
+**collections.data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
+**collections.data_qualifiers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 
 Arrays of Data Category and Data Qualifier resources, identified by `fides_key`, that apply to all fields in the collection.
 
-**collections.fields**<span class="spacer"/>[_object_]<br/>
+**collections.fields**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
 An array of objects that describe the collection's fields. 
 
-**collections.fields.name**<span class="spacer"/>string<br/>
+**collections.fields.name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string<br/>
 
 A UI-friendly label for the field.
 
-**collections.fields.description**<span class="spacer"/>_string_
+**collections.fields.description**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A human-readable description of the field.
 
-**collections.fields.data_categories**<span class="spacer"/>[_string_]<br/>
+**collections.fields.data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 
 Arrays of Data Categories, identified by `fides_key`, that applies to this field.
 
-**collections.fields.data_qualifier**<span class="spacer"/>_string_<br/>
+**collections.fields.data_qualifier**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_<br/>
 
-A Data Qualifier that applies to this field. Since the field holds a single value of a presumably known quality, it doesn't make sense to specify more than one  Qualifier. Accordingly, the property name is singular (note well).
+A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.
 
 ## Examples
 
-**Manifest File**
+### **Manifest File**
 ```yaml
 dataset:
   - fides_key: demo_users_dataset
@@ -100,7 +100,7 @@ dataset:
               - user.provided.identifiable.contact.email
 ```
 
-**API Payload**
+### **API Payload**
 ```json
   {
     "fides_key": "demo_users_dataset",
