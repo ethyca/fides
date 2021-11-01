@@ -2,158 +2,147 @@
 
 In this section we'll cover:
 
-- What is a connection configuration in fidesops?
-- What are the supported databases in fidesops?
-- How do you set up a connection from fidesops to your databases?
-- How do you update the secrets to connect to your database?
+- What's a "connection"?
+- Which databases does Fidesops support?
+- How do you create a ConnectionConfig object?
+- How do you identify the database that a ConnectionConfig connects to?
+- How do you test and update a ConnectionConfig's Secrets?
+- How does a ConnectionConfig differ from a Dataset?
 
 
-Take me directly to [api docs](http://0.0.0.0:8080/docs#/Connections) 
-
+Take me directly to the [ConnectionConfig API documentation](/api#operations-tag-Connections).
 
 ## What is a connection?
-A connection helps you link your on-premise and remote databases to `fidesops` to eventually gather and update selected PII 
-categories.  We store the details to make that connection in a `ConnectionConfig` object.
+
+A _connection_ links your databases to Fidesops so you can gather and update selected PII 
+categories.
 
 ## Supported databases
 
-Our list is growing but currently we support:
+Fidesops supports connections to the following databases:
 
-- PostgreSQL
-- MongoDB
-- MySQL
+* PostgreSQL
+* MongoDB
+* MySQL
+
+Other platforms will be added in future releases.
+
+## Creating a ConnectionConfig object 
+
+The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/api#operations-Connections-get_connections_api_v1_connection_get) operation, passing a payload that contains the properties listed below. 
+
+* `name`  is a  a human-readable name for your database.
+
+* `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to kebab-case (slugified), is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
+
+* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, and `mysql`.
+
+* `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
+
+While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
-## Configuring a connection 
+#### Example 1: PostgreSQL ConnectionConfig
 
-You'll first issue a request to create a `ConnectionConfig` object, which stores basic connection information. In 
-a separate request, you'll supply and test the connection secrets (like your database's host, port, password, etc.)
+``` 
+PUT api/v1/connection
 
-### Creating a connection configuration 
-
-Issue a PUT request to [/api/v1/connection](http://0.0.0.0:8080/docs#/Connections/put_connections_api_v1_connection_put) to create or update your `ConnectionConfigs`.
-
-#### Sample request for a PostgreSQL database:
-
-`PUT api/v1/connection`
-
-```json 
 [
-    { 
-        "name": "Application PostgreSQL DB",
-        "key": "app-postgres-db",
-        "connection_type": "postgres",
-        "access": "read"
-    }
+  { 
+    "name": "Application PostgreSQL DB",
+    "key": "application-postgresql-db",
+    "connection_type": "postgres",
+    "access": "read"
+  }
 ]
 ```
 
-#### Sample request for a Mongo database:
+#### Example 2: MongoDB ConnectionConfig
 
-`PUT api/v1/connection`
 
-```json 
+
+```
+PUT api/v1/connection
+
 [
-    { 
-        "name": "My Mongo DB",
-        "key": "app-mongo-db",
-        "connection_type": "mongodb",
-        "access": "write"
-    }
+  { 
+    "name": "My Mongo DB",
+    "key": "my-mongo-db",
+    "connection_type": "mongodb",
+    "access": "write"
+  }
 ]
 ``` 
 
-#### Sample request for a MySQL database:
+#### Example 3: MySQL ConnectionConfig 
 
-`PUT api/v1/connection`
-
-```json 
+```
+PUT api/v1/connection 
 [
-    { 
-        "name": "My MySQL DB",
-        "key": "app-mysql-db",
-        "connection_type": "mysql",
-        "access": "write"
-    }
+  { 
+    "name": "My MySQL DB",
+    "key": "my-mysql-db",
+    "connection_type": "mysql",
+    "access": "write"
+  }
 ]
 ``` 
 
-#### Note:
-  - `name` should be a human-readable name for your database.
-  - Give your database connection a unique dasherized identity `key`. If no key is supplied, we'll dasherize the `name`.
-  - Specify your database type under `connection_type`.
-  - `access` is the broad permissions you're granting to this connection, one of "read" or "write". If "read", we promise
-to not modify your data. TODO this logic hasn't yet been added.
 
-### Manage Connection Secrets
+### Set the ConnectionConfig's Secrets
 
-Issue a separate PUT request to the connection secrets endpoint to add encrypted secrets to the connection configuration
-and then test that the secrets are correct.
+After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password. You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
 
-See [`PUT /api/v1/connection/<connection_key>/secret` documentation](http://0.0.0.0:8080/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
+If you set the `verify` query parameter to `true`, the operation  will  test the connection by issuing a trivial request to the database. The `test_status` response property announces the success of the connection attempt as `succeeded` or `failed`. If the attempt has failed, the `failure_reason` property gives further details about the failure.
+
+To skip the connection test, set `verify` to `false`.
+
+Note: Fidesops encrypts all ConnectionConfig Secrets values before they're stored.
 
 
-#### Note:
-This endpoint first encrypts your database secrets and saves them. Next, we build a URI from the supplied components. 
-We use that URI to connect to your database and make a trivial query.  You will get a response indicating 
-if the connection succeeded or failed.  You can optionally supply the entire `url` directly, and we'll use that to connect instead.
+#### Example 1: Set the secrets separately
 
-If you just want to save the secrets for now, and bypass attempting to connect, specify a `?verify=false` query param.
+This example sets the database secrets through separate properties and then tests the connection.
 
+```
+PUT /api/v1/connection/application-postgresql-db/secret?verify=true`
 
-#### Sample request to add PostgreSQL secrets:
-
-`PUT /api/v1/connection/app-postgres-db/secret`
-
-```json
-    {
-       "host": "host.docker.internal",
-       "port": 5432,
-       "dbname": "postgres_example",
-       "username": "postgres",
-       "password": "postgres"
-    }
+{
+   "host": "host.docker.internal",
+   "port": 5432,
+   "dbname": "postgres_example",
+   "username": "postgres",
+   "password": "postgres"
+}
 ```
 
-#### Sample request to specify the MongoDB URL directly and bypass verification:
+#### Example 2: Set the secrets as a URL
 
-`PUT api/v1/connection/app-mongo-db/secret?verify=False`
-```json 
+This example sets the database secrets as a single `url` property, and skips the connection test.
+
+
+```
+PUT api/v1/connection/my-mongo-db/secret?verify=false`
+ 
 {
     "url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"
 }
 ```
 
-#### Sample request to add MySQL secrets:
-
-`PUT /api/v1/connection/app-mysql-db/secret`
-
-```json
-    {
-       "host": "mysql_example",
-       "port": 3306,
-       "dbname": "mysql_example",
-       "username": "mysql_user",
-       "password": "mysql_pw"
-    }
-```
-
 ### Testing your connection 
 
-If at any time, you want to verify that your connection secrets are valid, simply issue a GET request 
-to the connection test endpoint.
-
-`GET /api/v1/connection/<connection_key>/test`
+You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
 
 
-#### Sample request to test your PostgreSQL database secrets 
+```
+GET /api/v1/connection/application-postgresql-db/test
+```
 
-`GET /api/v1/connection/app-postgres-db/test`
+Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test. If the test failed,
+you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/api#operations-ConnectionConfigs-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
 
-As long as we are able to test your connection, we'll return a 200 OK, but the
-result of that test will be visible under `test_status".  If the test failed,
-a high-level `failure_reason` will be displayed.  Make additional PUT requests
-to the connection secrets endpoints to edit your connection components and try again.
+
+#### Example 1: Connection Succeeded
 
 ```json
 {
@@ -162,7 +151,8 @@ to the connection secrets endpoints to edit your connection components and try a
     "failure_reason": null
 }
 ```
-OR
+
+#### Example 2: Connection Failed
 
 ```json
 {
@@ -170,21 +160,17 @@ OR
     "test_status": "failed",
     "failure_reason": "Operation Failure connecting to MongoDB."
 }
-
-
 ```
 
 
-## How do connections differ from datasets?
+## How do ConnectionConfigs differ from Datasets?
 
-A *Dataset* is the annotation of your database schema, while the *ConnectionConfig* holds the secrets to connect 
-to that database.  A Dataset has a foreign key to a ConnectionConfig. 
+A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.
 
-After we connect to your database, we use the annotations stored in your dataset to know which fields are of 
-which type and which data categories so we can generate queries against your database.
+After Fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.
 
-Here is an example of how a "person" table in your PostgreSQL database might map to a fides-annotated
-dataset:
+Here is an example of how a "person" table in your PostgreSQL database might map to a Fidesops
+Dataset:
 
 ```
 Person:
