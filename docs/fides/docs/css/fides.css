@@ -13,6 +13,8 @@
     --md-nav-border: #ccc;
     --md-default-fg-color--lightest: rgb(164, 205, 254);
     --md-code-hl-comment-color: rgb(193, 201, 210);
+    --md-code-hl-generic-color: rgb(193, 201, 210);
+    --md-code-hl-variable-color: rgb(193, 201, 210);
     --md-code-hl-string-color: rgb(133, 217, 150);
     --md-code-hl-keyword-color: rgb(245, 251, 255);
     --md-code-hl-punctuation-color: rgb(245, 251, 255);
