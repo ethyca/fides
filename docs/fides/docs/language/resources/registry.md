@@ -1,11 +1,17 @@
 # Registry
 
 
-A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field. A System may belong to only one Registry. Although a System knows which Registry it belongs to, the Registry doesn't know which Systems it contains.
+A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field. 
+  ```
+  organization
+    |-> ** registry ** (optional)
+        |-> system
+  ```
 
-All Registries are siblings: You can't create a hierarchy of Registries.
+* A System may belong to only one Registry.
 
-Collecting your systems into Tegistries is optional. 
+* All Registries are siblings: You cannot create a hierarchy of Registries.
+* Collecting your systems into Registries is optional. 
 
 
 ## Object Structure

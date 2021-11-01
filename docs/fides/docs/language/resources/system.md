@@ -1,11 +1,13 @@
 # System
 
-**Demo manifest file:** `/fides/fidesctl/demo_resources/demo_system.yml`. 
-
-
 A System is a model for describing anything that processes data for your organization (applications, services, 3rd party APIs, etc.) and describes how these datasets are used for business functions of instances of your data resources. It contains all 4 privacy attributes (`data_category`, `data_use`, `data_subject`, and `data_qualifier`).
 
-
+  ```
+  organization
+    |-> registry (optional)
+        |-> ** system **
+            |-> privacy declarations
+  ```
 
 
 ## Object Structure
@@ -16,11 +18,15 @@ A string token of your own invention that uniquely identifies this System. It's 
 
 **name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A UI-friendly label for the Registry.
+A UI-friendly label for the System.
 
 **description**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A human-readable description of the System.
+
+**privacy_declarations**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+The array of declarations describing the types of data in your system. This is a list of 
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
@@ -49,6 +55,10 @@ system:
         dataset_references:
           - demo_users_dataset
 ```
+
+**Demo manifest file:** `/fides/fidesctl/demo_resources/demo_system.yml`
+
+
 
 ### **API**
 

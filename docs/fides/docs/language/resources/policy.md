@@ -1,11 +1,11 @@
 # Policy
 
-**Demo manifest file:** `/fides/fidesctl/demo_resources/demo_policy.yml`. 
-
-
 A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (`data_category`, `data_use`, `data_subject`, and `data_qualifier`). The purpose of the policy is to state what types of data are allowed for certain usages. 
-
-
+  ```
+  organization
+    |-> ** policy **
+        |-> rules
+  ```
 
 ## Object Structure
 
@@ -86,6 +86,8 @@ policy:
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         action: REJECT
 ```
+
+**Demo manifest file:** `/fides/fidesctl/demo_resources/demo_policy.yml`
 
 ### **API Payload**
 

@@ -1,11 +1,20 @@
 # Dataset
 
-
 A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. This is a database-agnostic way to annotate privacy declarations. 
+
+  ```
+  organization
+    |-> registry (optional)
+        |-> system
+            |-> ** dataset **
+                |-> collections
+                    |-> fields
+  ```
+
 
 * The schema is represented as a set of "collections" (tables) that contain "fields" (columns).
 
-* At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers are cascading: Those that are assigned at the Dataset level apply to all collections and fields; those at the collection level apply to the collection's fields. 
+* At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category `user.derived`, and a field with category `user.provided.identifiable.name`, your dataset will contain both user-derived and user-provided name data. 
 
 While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest. 
 
@@ -89,6 +98,8 @@ dataset:
     collections:
       - name: users
         description: User information
+        data_categories:
+          - user.derived
         fields:
           - name: first_name
             description: User's first name
