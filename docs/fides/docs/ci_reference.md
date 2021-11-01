@@ -1,6 +1,13 @@
 # CI Reference
 
-Fidesctl is a CI/CD tool first and foremost. With that in mind, we've included example CI/CD files for GitHub Actions to give an idea of what it looks like to run Fidesctl as part of a common software development workflow.
+Fidesctl is a CI/CD tool first and foremost. With that in mind, we've included example CI/CD files for GitHub Actions to give an idea of what it looks like to run Fidesctl as part of a software development workflow.
+
+You should plan to implement two CI actions:
+
+1. Run `fidesctl evaluate --dry <resource_dir>` on pull requests, to check if new code will be accepted without applying those changes to the server.
+2. Run `fidesctl evaluate <resource_dir>` on commits to main, to synchronize the latest changes to the server.
+
+Let's see what those look like for GitHub Actions:
 
 ```yaml
 name: Fidesctl CI Check
