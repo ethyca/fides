@@ -2,20 +2,39 @@
 
 ---
 
-The recommended way to get Fidesctl running is via Docker-Compose. There is a `docker-compose.yml` file supplied with the repo to make running Fidesctl as easy as possible.
+The recommended way to get Fidesctl running is via Docker. The following guide will describe how to get things going, step-by-step.
 
 ## System Requirements
 
-1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation; use a recent enough version so that `docker-compose` is also available). Your Docker version should be >=20.10.8, and Docker-Compose >=1.29
-1. Clone the [Fidesctl repo](https://github.com/ethyca/fides) and `cd` into the top-level `fides` directory.
+Docker is the only requirement here. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation). The minimum verified Docker version is `20.10.8`
 
 ## Docker Setup
 
-The following commands should all be run from the top-level `fides` directory (where the `docker-compose.yml` is):
+1. Create a network for your containers to use:
 
-1. `docker-compose up -d` -> Spin up a Postgres database and the Fidesctl API
-1. `docker-compose run --rm  fidesctl /bin/bash` -> Open a shell within a container that has `fidesctl` pip installed and is able to communicate with the other containers. Now we can start running `fidesctl` commands directly.
-1. `fidesctl init-db` ->  This runs migrations and configures the database. The output should look something like this:
+    ```shell
+    docker network create fidesctl-net
+    ```
+
+1. Spin up a Postgres database:
+
+    ```shell
+    docker run --name postgres-docker --net fidesctl-net -d -e "POSTGRES_PASSWORD=postgres" -p 5432:5432 postgres:12
+    ```
+
+1. Start the Fidesctl webserver:
+
+    ```shell
+    docker run --name fidesctl-docker --net fidesctl-net -e "FIDESCTL__API__DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres-docker:5432/postgres" -p 8080:8080 -d ethyca/fidesctl fidesctl webserver
+    ```
+
+1. Attach a shell to the Fidesctl container:
+
+    ```shell
+    docker exec -it fidesctl-docker /bin/bash
+    ```
+
+1. Init the database:
 
     ```bash
     ~/git/fides% fidesctl init-db
