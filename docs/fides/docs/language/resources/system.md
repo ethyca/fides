@@ -26,7 +26,7 @@ A human-readable description of the System.
 
 **privacy_declarations**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-The array of declarations describing the types of data in your system. This is a list of 
+The array of declarations describing the types of data in your system. This is a list of the privcy attributes (`data_category`, `data_use`, `data_subject`, and `data_qualifier`) for each of your systems.
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
