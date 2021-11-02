@@ -88,7 +88,7 @@ To take a closer look at the privacy policy example, run `cat demo_resources/dem
 
 The `demo_policy.yml` has one rule: if any system uses contact information for marketing purposes, then a failure action will result.
 
-```
+```yaml
 policy:
   - fides_key: demo_privacy_policy
     name: Demo Privacy Policy
@@ -115,7 +115,7 @@ policy:
 
 ## Step 6: Test the privacy policy
 
-To ensure that your `demo_analytics_system` and `demo_marketing_system` files that describe your demo systems are complaint with your privacy policy, run `fidesctl evaluate demo_resources/`. 
+To ensure that your systems are compliant with your privacy policy, you can run the `fidesctl evaluate` command. To check that the systems described in your `demo_system.yml` file do not use contact information for marketing purposes, run `fidesctl evaluate demo_resources/`.
 
 ```
 root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
