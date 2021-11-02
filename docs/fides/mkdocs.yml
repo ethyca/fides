@@ -100,3 +100,4 @@ extra_css:
 
 plugins:
   - render_swagger
+  - search
