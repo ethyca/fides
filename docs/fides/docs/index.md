@@ -4,8 +4,7 @@ Fides [pronounced */fee-dhez/*, from Latin: Fidēs] is an open-source privacy as
 
 This includes support for major privacy regulations (e.g. [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/)) and standards like [ISO 19944](https://www.iso.org/standard/79573.html) by default. Fides can manage both enforcement of privacy in your CI pipeline and orchestration of data privacy requests in your runtime environment.
 
-
-> *Insert video - "Below, Ethyca founder and CEO, Cillian Kieran describes how Fides can help solve common privacy challenges.*
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WdJCTz0wi_Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Why is it called Fides?
 
