@@ -16,8 +16,9 @@ commands to give you different functionality.
 1. Install Docker: https://docs.docker.com/desktop/#download-and-install
 2. Install `make` locally (see Make on Homebrew (Mac), Make for Windows, or your preferred installation) 
    1. `brew install make`
-3. Clone fidesops `git clone https://github.com/ethyca/fidesops.git`
-4. `cd fidesops`
+3. [Create a fork of fidesops](https://docs.github.com/en/get-started/quickstart/fork-a-repo) 
+4. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
+5. `cd fidesops`
 
 ### Available make commands
 - `make server` - this spins up the Fastapi server and supporting resources (a Postgres database and a Redis cache), which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
@@ -34,7 +35,7 @@ commands to give you different functionality.
 - `make check-migrations` - verifies there are no un-run migrations 
 - `make docs-serve` - spins up just the docs
 
-see [Makefile](../../../../Makefile) for more options. 
+See [Makefile](../../../../Makefile) for more options. 
 
 
 #### Issues 
@@ -44,7 +45,7 @@ and then run `pip install -e .`. Verify Fidesops is installed with `pip list`.
 
 ### Write your code
 
-We have no doubt you can write amazing code! However, we want to help you ensure your code plays nicely with the rest of the Fides ecosystem. Many projects describe code style and documentation as a suggestion; in Fides it's a CI-checked requirement.
+We have no doubt you can write amazing code! However, we want to help you ensure your code plays nicely with the rest of the Fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesops it's a CI-checked requirement.
 
 * To learn how to style your code, see the [style guide](code_style.md).
 * To learn how to document your code, see the [docs guide](documentation.md).
@@ -56,10 +57,24 @@ We have no doubt you can write amazing code! However, we want to help you ensure
 In order to submit code to Fidesops, please:
 
 * [Fork the Fidesops repository](https://help.github.com/en/articles/fork-a-repo)
+* Add the original as a remote (I'm naming it `upstream`), to keep your fork in sync
+  ```bash
+  git remote add upstream https://github.com/ethyca/fidesops.git
+  ```
 * [Create a new branch](https://help.github.com/en/desktop/contributing-to-projects/creating-a-branch-for-your-work) on your fork
+  ```bash
+    git checkout main 
+    git fetch upstream 
+    git merge upstream/main 
+    git push origin main 
+    git checkout -b my-new-branch
+    git push origin my-new-branch 
+    ```
 * [Open a Pull Request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) once your work is ready for review
-* Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fides.
+  * Submit the pull request from *your* repo
+  * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fidesops.
+  
 
 ### Congratulations
 
-You're a Fides contributor - welcome to the team! 🎉
+You're a Fidesops contributor - welcome to the team! 🎉
