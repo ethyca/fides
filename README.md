@@ -1,4 +1,4 @@
-# Meet Fidesops: a privacy rights automation engine
+# Meet Fidesops: Privacy as Code for DSAR Orchestration
 
 _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 
