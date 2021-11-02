@@ -16,7 +16,7 @@
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>init-db</code> command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling <a href="apply"><code>apply</code></a>.
+    The <code>init-db</code> command initializes and launches your Fides policy database. After you've initialized your database, you should add your policy resources by calling <a href="/cli/apply/"><code>apply</code></a>.
   </div>
 
   

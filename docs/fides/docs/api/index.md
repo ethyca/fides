@@ -12,7 +12,7 @@ The `fidesctl` API is exceedingly formulaic, so much so that it's easier to gras
 
 * The URLs of the endpoints emulate the names of the resources: `/organization`, `/policy`, `/registry`, `/system`, `/dataset`, `/data_category`, `/data_use`, `/data_subject`, `/data_qualifier`.
 
-* Except for the `DELETE`, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the [Fides Language: Resources chapter](../language/resources.html) -- it's the same structure that's used in the resource manifest files. 
+* Except for the `DELETE`, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the [Fides Language: Resources chapter](/language/resources/organization/) -- it's the same structure that's used in the resource manifest files. 
 
 That's about all there is to it. There are an additional four endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the `fidesctl` API. 
 
