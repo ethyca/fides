@@ -57,6 +57,10 @@ body {
     display: none;
 }
 
+.md-header__topic {
+  display: none;
+}
+
 .md-header__title {
     margin-left: 0;
 }
