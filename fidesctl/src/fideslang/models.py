@@ -105,10 +105,8 @@ class DatasetCollection(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     fields: List[DatasetField]
 
@@ -122,10 +120,8 @@ class Dataset(FidesModel):
 
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     collections: List[DatasetCollection]
 
@@ -149,9 +145,15 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
+    fides_key: FidesKey
     status: StatusEnum
     details: List[str]
     message: str = ""
+
+    class Config:
+        "Config for the Evaluation"
+        extra = "ignore"
+        orm_mode = True
 
 
 # Organization
@@ -162,8 +164,8 @@ class Organization(FidesModel):
     This resource is used as a way to organize all other resources.
     """
 
-    # It inherits this from FidesModel but Organization's don't have this field
-    organiztion_parent_key: None = None
+    # It inherits this from FidesModel but Organizations don't have this field
+    organization_parent_key: None = None
 
 
 # Policy
@@ -259,7 +261,7 @@ class PrivacyDeclaration(BaseModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     data_subjects: List[FidesKey]
-    dataset_references: Optional[List[str]]
+    dataset_references: Optional[List[FidesKey]]
 
 
 class System(FidesModel):

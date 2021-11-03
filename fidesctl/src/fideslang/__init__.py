@@ -2,7 +2,7 @@
 Exports various fideslang objects for easier use elsewhere.
 """
 
-from typing import Dict, Type
+from typing import Dict, Type, Union
 
 # Export the Models
 from .models import (
@@ -25,7 +25,8 @@ from .models import (
 )
 from .default_taxonomy import DEFAULT_TAXONOMY
 
-model_map: Dict[str, Type[FidesModel]] = {
+ModelTypeUnion = Union[Type[FidesModel], Type[Evaluation]]
+model_map: Dict[str, ModelTypeUnion] = {
     "data_category": DataCategory,
     "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
@@ -35,5 +36,6 @@ model_map: Dict[str, Type[FidesModel]] = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
+    "evaluation": Evaluation,
 }
 model_list = list(model_map.keys())

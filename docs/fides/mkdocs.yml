@@ -18,34 +18,33 @@ nav:
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
-      - Resources: 
-        - Organization: language/resources/organization.md
-        - Policy: language/resources/policy.md
-        - Registry: language/resources/registry.md 
-        - System: language/resources/system.md 
-        - Dataset: language/resources/dataset.md 
+      - Resources:
+          - Organization: language/resources/organization.md
+          - Policy: language/resources/policy.md
+          - Registry: language/resources/registry.md
+          - System: language/resources/system.md
+          - Dataset: language/resources/dataset.md
       - Taxonomy:
-        - Overview: language/taxonomy/overview.md
-        - Taxonomy Explorer: language/taxonomy/explorer.md
-        - Data Categories: language/taxonomy/data_categories.md
-        - Data Uses: language/taxonomy/data_uses.md
-        - Data Subjects: language/taxonomy/data_subjects.md
-        - Data Qualifiers: language/taxonomy/data_qualifiers.md
+          - Overview: language/taxonomy/overview.md
+          - Taxonomy Explorer: language/taxonomy/explorer.md
+          - Data Categories: language/taxonomy/data_categories.md
+          - Data Uses: language/taxonomy/data_uses.md
+          - Data Subjects: language/taxonomy/data_subjects.md
+          - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
-    - CLI Overview: cli/cli.md
-    - Configuration File: cli/configuration-file
-    - apply: cli/apply.md
-    - delete: cli/delete.md
-    - evaluate: cli/evaluate.md
-    - get: cli/get.md
-    - init-db: cli/init-db.md
-    - ls: cli/ls.md
-    - parse: cli/parse.md
-    - ping: cli/ping.md
-    - reset-db: cli/reset-db.md
-    - view-config: cli/view-config.md
-    - webserver: cli/webserver.md
-  - APIs: api/index.md
+      - CLI Overview: cli/cli.md
+      - apply: cli/apply.md
+      - delete: cli/delete.md
+      - evaluate: cli/evaluate.md
+      - get: cli/get.md
+      - init-db: cli/init-db.md
+      - ls: cli/ls.md
+      - parse: cli/parse.md
+      - ping: cli/ping.md
+      - reset-db: cli/reset-db.md
+      - view-config: cli/view-config.md
+      - webserver: cli/webserver.md
+  - API: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -71,13 +70,14 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
   name: material
-  favicon: img/favicon.png
+  favicon: img/favicon.ico
   logo: img/fides-logo.svg
   font:
     text: Source Sans Pro
   features:
     - navigation.top
     - navigation.instant
+  custom_dir: overrides
 
 markdown_extensions:
   - attr_list
@@ -96,8 +96,9 @@ extra_javascript:
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
   - css/fides.css
-  - css/swagger_override.css
-  - css/resources.css
+  - css/api.css
+  - css/cli.css
+  - css/taxonomy.css
 
 plugins:
   - render_swagger

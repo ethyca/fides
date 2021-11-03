@@ -37,7 +37,7 @@ Fides' taxonomy can be easily extended, allowing teams to add support for system
 
 ### Automate Privacy Reporting
 
-Fides' declarations can be configurd to automatically generate privacy review reports suitable privacy and legal team review. This allows developers to focus on implementation while providing privacy teams with greater insight into the software's privac behavior. 
+Fides' declarations can be configurd to automatically generate privacy review reports suitable for privacy and legal team review. This allows developers to focus on implementation while providing privacy teams with greater insight into the software's behavior.
 
 ### Data Privacy Rights Automation
 

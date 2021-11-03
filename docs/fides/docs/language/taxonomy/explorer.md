@@ -2,14 +2,6 @@
 
 The taxonomy explorer is a useful way to visualize and review the taxonomy for those looking to explore in greater depth.
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    
-
 <div id="vis" class="vis vis-container">
   <div class="controls-container">
   

@@ -7,6 +7,7 @@ from fidesctl.cli.cli import (
     delete,
     evaluate,
     generate_dataset,
+    annotate_dataset,
     get,
     init_db,
     ls,
@@ -44,6 +45,7 @@ cli.add_command(apply)
 cli.add_command(delete)
 cli.add_command(evaluate)
 cli.add_command(generate_dataset)
+cli.add_command(annotate_dataset)
 cli.add_command(get)
 cli.add_command(init_db)
 cli.add_command(ls)

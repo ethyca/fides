@@ -79,7 +79,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
-    data_qualifiers = Column(ARRAY(String))
+    data_qualifier = Column(String)
     collections = Column(JSON)
 
 
@@ -106,7 +106,7 @@ class Organization(SqlAlchemyBase, FidesBase):
     # It inherits this from FidesModel but Organization's don't have this field
     __tablename__ = "organizations"
 
-    organiztion_parent_key = Column(String, nullable=True)
+    organization_parent_key = Column(String, nullable=True)
 
 
 # Policy
@@ -154,4 +154,5 @@ sql_model_map: Dict = {
     "policy": Policy,
     "registry": Registry,
     "system": System,
+    "evaluation": Evaluation,
 }

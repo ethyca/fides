@@ -1,4 +1,4 @@
-# Meet Fidesctl: Privacy as Code for your CI and Runtime Environments
+# Meet Fidesctl: Privacy Policies as Code
 
 [![Latest Version][pypi-image]][pypi-url]
 [![License][license-image]][license-url]
@@ -10,7 +10,7 @@
 
 ## :zap: Overview
 
-Fides (*fee-dhez*) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/evaluate/) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/tutorial/ci/).
+Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/evaluate/) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/tutorial/ci/).
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
@@ -220,8 +220,6 @@ Read about the [Fides community](https://ethyca.github.io/fides/community/hints_
 
 The Fides ecosystem of tools ([Fidesops](https://github.com/ethyca/fidesops) and [Fidesctl](https://github.com/ethyca/fides)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE). 
-
-Fides is created and sponsored by [Ethyca](https://ethyca.com): a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/

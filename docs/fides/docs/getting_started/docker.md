@@ -49,4 +49,4 @@ The following commands should all be run from the top-level `fides` directory (w
 
 Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!
 
-See the [Tutorial](../tutorial/tutorial.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.
+See the [Tutorial](../tutorial/overview.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.

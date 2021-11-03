@@ -1,34 +1,45 @@
 dataset:
-  - fides_key: demo_users_dataset
-    name: Demo Users Dataset
-    description: Data collected about users for our analytics system.
-    collections:
-      - name: users
-        description: User information
-        fields:
-          - name: first_name
-            description: User's first name
-            data_categories:
-              - user.provided.identifiable.name
-          - name: email
-            description: User's Email
-            data_categories:
-              - user.provided.identifiable.contact.email
-          - name: state
-            description: User's State
-            data_categories:
-              - user.provided.identifiable.contact.state
-          - name: food_preference
-            description: User's favorite food
-            data_categories:
-              - user.provided.nonidentifiable
-          - name: created_at
-            description: User's creation timestamp
-            data_categories:
-              - system.operations
-          - name: uuid
-            description: User's unique ID
-            data_categories:
-              - user.derived.identifiable.unique_id
-
-
+- fides_key: demo_users_dataset
+  organization_fides_key: default_organization
+  name: Demo Users Dataset
+  description: Data collected about users for our analytics system.
+  meta: null
+  data_categories: []
+  data_qualifiers:
+  - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  collections:
+  - name: users
+    description: User information
+    data_categories: []
+    data_qualifiers:
+    - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: User's creation timestamp
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: email
+      description: User's Email
+      data_categories:
+      - user.provided.identifiable.contact.email
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: first_name
+      description: User's first name
+      data_categories:
+      - user.provided.identifiable.name
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: food_preference
+      description: User's favorite food
+      data_categories: []
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: state
+      description: User's State
+      data_categories:
+      - user.provided.identifiable.contact.state
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: uuid
+      description: User's unique ID
+      data_categories:
+      - user.derived.identifiable.unique_id
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

@@ -10,7 +10,7 @@ The `fidesctl` API is almost completely programmatic, so it's easier to grasp th
 | Completely overwrite the `fides_key` resource.  |`POST /policy/{fides_key}`| `200` |
 | Delete the `fides_key` resource. | `DELETE /policy/{fides_key}`| `204`|
 
-* The URLs of the endpoints emulate the names of the resources: `/organization`, `/policy`, `/registry`, `/system`, `/dataset`, `/data_category`, `/data_use`, `/data_subject`, `/data_qualifier`.
+* The URLs of the endpoints emulate the names of the resources: `/organization`, `/policy`, `/registry`, `/system`, `/dataset`, `/data_category`, `/data_use`, `/data_subject`, `/data_qualifier`, `/evaluation`.
 
 * Except for the `DELETE`, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the [Fides Language: Resources chapter](/language/resources/organization/) -- it's the same structure that's used in the resource manifest files.
 
@@ -31,4 +31,12 @@ The four additional endpoints are:
 ---
 !!swagger openapi.json!!
 
-## cURL Calls
+<script>
+    /* If there is an anchor tag, reload it after the page loads to scroll to
+     * that section, since the Swagger UI takes some time to render. */
+    if (location.hash) {
+        setTimeout(function() {
+            location.href = location.href
+        }, 200);
+    }
+</script>
