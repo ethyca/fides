@@ -2,9 +2,6 @@ site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
   - What is Fides?: index.md
-  - Use Cases:
-      - Evaluating Privacy in CI: use_cases/use_case1.md
-      - Automating Data Rights: use_cases/use_case2.md
   - Getting Started:
       - Overview: getting_started/overview.md
       - Fidesctl in Docker: getting_started/docker.md
@@ -21,27 +18,32 @@ nav:
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
-      - Resources: language/resources.md
+      - Resources:
+          - Organization: language/resources/organization.md
+          - Policy: language/resources/policy.md
+          - Registry: language/resources/registry.md
+          - System: language/resources/system.md
+          - Dataset: language/resources/dataset.md
       - Taxonomy:
-        - Overview: language/taxonomy/overview.md
-        - Taxonomy Explorer: language/taxonomy/explorer.md
-        - Data Categories: language/taxonomy/data_categories.md
-        - Data Uses: language/taxonomy/data_uses.md
-        - Data Subjects: language/taxonomy/data_subjects.md
-        - Data Qualifiers: language/taxonomy/data_qualifiers.md
+          - Overview: language/taxonomy/overview.md
+          - Taxonomy Explorer: language/taxonomy/explorer.md
+          - Data Categories: language/taxonomy/data_categories.md
+          - Data Uses: language/taxonomy/data_uses.md
+          - Data Subjects: language/taxonomy/data_subjects.md
+          - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
-    - CLI Overview: cli/cli.md
-    - apply: cli/apply.md
-    - delete: cli/delete.md
-    - evaluate: cli/evaluate.md
-    - get: cli/get.md
-    - init-db: cli/init-db.md
-    - ls: cli/ls.md
-    - parse: cli/parse.md
-    - ping: cli/ping.md
-    - reset-db: cli/reset-db.md
-    - view-config: cli/view-config.md
-    - webserver: cli/webserver.md
+      - CLI Overview: cli/cli.md
+      - apply: cli/apply.md
+      - delete: cli/delete.md
+      - evaluate: cli/evaluate.md
+      - get: cli/get.md
+      - init-db: cli/init-db.md
+      - ls: cli/ls.md
+      - parse: cli/parse.md
+      - ping: cli/ping.md
+      - reset-db: cli/reset-db.md
+      - view-config: cli/view-config.md
+      - webserver: cli/webserver.md
   - API: api/index.md
   - Development:
       - Overview: development/overview.md

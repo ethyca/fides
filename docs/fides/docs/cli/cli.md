@@ -33,7 +33,7 @@ All `fidesctl` commands return 0 upon success.
       -f/--config-path <i>config_file</i> 
     </div>
     <div class="content">
-      Identifies a file that you can use to configure the <code>fidesctl</code> environment. For more information about the file, see <a href="configuration-file">fidesctl Configuration File</a>. To see the current configuration file, do <code>fidesctl&nbsp;view&#8209;config</code>.
+      Identifies a file that you can use to configure the <code>fidesctl</code> environment. For more information about the file, see <a href="/api/configuration-file">fidesctl Configuration File</a>. To see the current configuration file, do <code>fidesctl&nbsp;view&#8209;config</code>.
     </div>
   </div>
   <div class="content">

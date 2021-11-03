@@ -43,6 +43,7 @@ dataset:
 This YAML serves as the foundation of the Fides language; it answers "_What data and kinds of data do we have?_" and "_How is our data organized?_". The language is built on declaring the types of data found in storage for your organization.
 
 In traditional SQL, Fides defines the following:
+
 * "datasets" as database schemas
 * "collections" as database tables
 * "fields" as database columns
