@@ -9,7 +9,7 @@ For more detailed information, [see the Datasets Guide](../guides/datasets.md).
 Next, fidesops needs to know how to traverse through our Flask App's database tables. 
 We should upload a YAML file that describes our Flask App's database in a language that Fides understands.
 
-See `fides_resources/flaskr_postgres_dataset.yml` where we've already annotated the tables and fields in our Postgres
+See `fidesdemo/fides_resources/flaskr_postgres_dataset.yml` where we've already annotated the tables and fields in our Postgres
 database with the relevant Data Categories.  We just need a few more annotations:
 
 Add a `fidesops_meta` attribute to `flaskr_postgres_dataset.collections.seller_id`.  Fidesops will be able to take the users `id `

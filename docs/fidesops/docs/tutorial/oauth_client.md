@@ -8,7 +8,7 @@ For more detailed information, [see the Oauth Guide](../guides/oauth.md).
 
 Our first step is to create an Oauth Client that we can use to authenticate all of our requests.
 
-Add a method to our Python script that will call create a token given a `client_id` and a `client_secret`:
+Add a method to our Python script that will call the fidesops API to create a token given a `client_id` and a `client_secret`:
 
 
 ### Define helper methods
@@ -74,18 +74,10 @@ def create_oauth_client(access_token):
         "dataset:delete",
     ]
     response = requests.post(
-        f"{FIDESOPS_URL}/api/v1/oauth/client", headers=oauth_headers(access_token)
+        f"{FIDESOPS_URL}/api/v1/oauth/client", headers=oauth_headers(access_token), json=scopes_data
     )
     logger.info(f"Creating Oauth Client. Status {response.status_code}")
-
-    oauth_client = response.json()
-    response = requests.put(
-        f"{FIDESOPS_URL}/api/v1/oauth/client/{oauth_client['client_id']}/scope",
-        headers=oauth_headers(access_token),
-        json=scopes_data,
-    )
-    logger.info(f"Adding scopes to oauth client. Status {response.status_code}")
-    return oauth_client
+    return response.json()
 
 ```
 
