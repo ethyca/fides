@@ -8,7 +8,7 @@ For more detailed information, [see the Database Connectors Guide](../guides/dat
 
 Next, we need to create a ConnectionConfig so fidesops can connect to our Flask App's  database.
 
-Let's add a method that hits the PUT `connection` endpoint, and creates a ConnectionConfig for a `postgres` database.
+Let's add a method that hits the PUT `connection` endpoint, and creates a ConnectionConfig for a `postgres` database:
 
 ### Define helper methods
 
@@ -36,7 +36,7 @@ def create_postgres_connection(key, access_token):
 
 ```
 
-Secrets, like a username and password that are needed to access the Flask App's database, are added separately:
+Secrets, like a username and password that are needed to access the Flask App's databases, are added separately:
 
 ```python
 def configure_postgres_connection(

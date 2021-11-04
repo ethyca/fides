@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9b8debaf-14e2-4bd3-b11f-0b6b39baa84c",
+		"_postman_id": "07dc6f86-ad90-48d2-958a-9bef4156d293",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -66,7 +66,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:create\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -81,45 +81,6 @@
 							"path": [
 								"oauth",
 								"client"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Set Client Scopes",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{root_client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:create\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\"\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/oauth/client/{{client_id}}/scope",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"oauth",
-								"client",
-								"{{client_id}}",
-								"scope"
 							]
 						}
 					},
@@ -565,7 +526,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Privacy Requests",
+					"name": "Create Access Privacy Requests",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -606,7 +567,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These API calls step you through how to set up all the resources in Fidesops to execute access privacy requests in your system."
 		},
 		{
 			"name": "Calls to create an Erasure Request (Assume Basic Configs already set up from Access Request section)",
@@ -727,7 +689,7 @@
 					"response": []
 				},
 				{
-					"name": "Create RTF Privacy Request",
+					"name": "Create Erasure Privacy Request",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -762,7 +724,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These API calls step you through how to set up all the resources in Fidesops to execute erasure privacy requests in your system.\n\nIt assumes you've already run through the API requests in the \"Access\" section so database connections, storage, and annotated datasets are already configured."
 		},
 		{
 			"name": "Other Useful API calls",
@@ -848,6 +811,45 @@
 						},
 						"method": "GET",
 						"header": [],
+						"url": {
+							"raw": "{{host}}/oauth/client/{{client_id}}/scope",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"client",
+								"{{client_id}}",
+								"scope"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Client Scopes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{root_client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:create\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\"\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{host}}/oauth/client/{{client_id}}/scope",
 							"host": [
@@ -1244,7 +1246,9 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": ""
+						}
 					},
 					"response": []
 				},

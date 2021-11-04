@@ -7,6 +7,8 @@ library to call the `Fidesops` API to build our required configuration.
 As we go through each step in the tutorial, you'll add a couple of helper methods that are wrappers to API calls, and
 then add calls to these functions at the bottom to be executed when we run this script.
 
+Create the file `fidesdemo/flaskr/fidesops.py` and add the following imports, environment variables,
+and outline the methods we'll be creating together: 
 ```python
 import logging
 import requests
