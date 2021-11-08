@@ -15,6 +15,7 @@ from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import BaseConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
+from fidesops.service.masking.strategy.masking_strategy_nullify import NullMaskingStrategy
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
 from ..fixtures import faker
@@ -63,7 +64,10 @@ def erasure_policy(*erasure_categories: str) -> Policy:
     """Generate an erasure policy with the given categories"""
     policy = Policy()
     targets = [RuleTarget(data_category=c) for c in erasure_categories]
-    policy.rules = [Rule(action_type=ActionType.erasure, targets=targets)]
+    policy.rules = [Rule(action_type=ActionType.erasure, targets=targets, masking_strategy={
+                "strategy": "null_rewrite",
+                "configuration": {},
+            })]
     return policy
 
 

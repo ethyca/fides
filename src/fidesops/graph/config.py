@@ -77,6 +77,8 @@ Field identities:
 """
 from __future__ import annotations
 
+from collections import defaultdict
+
 from typing import List, Optional, Tuple, Set, Dict, Literal
 from pydantic import BaseModel
 
@@ -222,6 +224,26 @@ class Collection(BaseModel):
         """return identity pointers included in the table"""
         flds_w_ident = filter(lambda f: f.identity, self.fields)
         return {f.name: f.identity for f in flds_w_ident}
+
+    @property
+    def fields_by_category(self) -> Dict[str, List]:
+        """Returns mapping of data categories to fields, flips fields -> categories
+        to be categories -> fields.
+
+        Example:
+            {
+                "user.provided.identifiable.contact.city": ["city"],
+                "user.provided.identifiable.contact.street": ["house", "street"],
+                "system.operations": ["id"],
+                "user.provided.identifiable.contact.state": ["state"],
+                "user.provided.identifiable.contact.postal_code": ["zip"]
+            }
+        """
+        categories = defaultdict(list)
+        for field in self.fields:
+            for category in field.data_categories or []:
+                categories[category].append(field.name)
+        return categories
 
     class Config:
         """for pydantic incorporation of custom non-pydantic types"""
