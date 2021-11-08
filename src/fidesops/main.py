@@ -37,7 +37,9 @@ def start_webserver() -> None:
     initiate_scheduled_request_intake()
 
     logger.info("Starting web server...")
-    uvicorn.run(app, host="0.0.0.0", port=8080, log_config=None)
+    uvicorn.run(
+        "src.fidesops.main:app", host="0.0.0.0", port=8080, log_config=None, reload=True
+    )
 
 
 if __name__ == "__main__":
