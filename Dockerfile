@@ -18,8 +18,10 @@ RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
 
 # Copy in the application files and install it locally
-COPY . /fidesops
-WORKDIR /fidesops
+COPY . /fidesops_install
+WORKDIR /fidesops_install
 RUN pip install -e .
+
+WORKDIR /fidesops
 
 CMD [ "fidesops", "webserver" ]
