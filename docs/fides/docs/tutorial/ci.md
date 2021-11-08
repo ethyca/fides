@@ -38,6 +38,6 @@ This will apply all of your manifests to the API and evaluate the current state 
 
 ## Additional Resources
 
-We have compiled a few reference implementations for some popular CI tools, which you can find here.
+We have compiled a few reference implementations for some popular CI tools, which you can find here soon!
 
 <!-- (TODO: provide examples) -->
