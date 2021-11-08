@@ -99,10 +99,9 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest -m "not integration and not integration_erasure"
+		pytest $(pytestpath) -m "not integration and not integration_erasure"
 
-# Run the pytest integration tests. Note the inclusion of the unit tests "tests/" folder in the
-# pytest target; this is to reuse the test configuration, test fixtures, etc.
+# Run the pytest integration tests.
 pytest-integration-access: compose-build
 	@echo "Building additional Docker images for integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
@@ -113,7 +112,7 @@ pytest-integration-access: compose-build
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
-		pytest -m integration tests/
+		pytest $(pytestpath) -m integration
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml down --remove-orphans
 
 pytest-integration-erasure: compose-build
@@ -122,7 +121,7 @@ pytest-integration-erasure: compose-build
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
-		pytest -m integration_erasure tests/
+		pytest $(pytestpath) -m "integration_erasure"
 
 ####################
 # Utils
