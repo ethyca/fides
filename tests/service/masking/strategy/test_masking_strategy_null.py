@@ -1,6 +1,7 @@
 from fidesops.schemas.masking.masking_configuration import NullMaskingConfiguration
-from fidesops.service.masking.strategy.masking_strategy_nullify import NullMaskingStrategy
-
+from fidesops.service.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
 
 
 def test_mask_with_value():
