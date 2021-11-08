@@ -10,9 +10,15 @@ Open the `requirements.txt` file and add the `fidesctl` dependency by including 
 fidesctl>=1.0.0
 ```
 
+Then, install the dependencies by running:
+
+```sh
+pip install -r requirements.txt
+```
+
 ## Configure Fidesctl
 
-Create a `fidesctl.toml` file at the root level of the repository. It should contain the following configuration:
+Fidesctl needs some configuration to work for your environment; this is handled by looking for a TOML file in the current working directory. Create a `fidesctl.toml` file at the root level of the repository. It should contain the following configuration:
 
 ```toml
 [cli]
@@ -27,7 +33,7 @@ database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
 
 ## Run Fidesctl via Docker
 
-Since the app uses `docker-compose` to orchestrate resources, include `fidesctl` as a service by adding the following configuration after the database service:
+Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses `docker-compose` to orchestrate resources, so include `fidesctl` as a service by adding the following configuration after the database service:
 
 ```yml
 fidesctl:
@@ -43,7 +49,7 @@ fidesctl:
     - FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl
 ```
 
-> For an explanation of the above configuration options, see [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/).
+> See [the fidesctl deployment guide](../deployment#step-2-setup-the-fidesctl-web-server) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
 
 ## Add `Makefile` Commands
 
