@@ -137,6 +137,28 @@ def connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def read_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my-postgres-db-1-read-config",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.read,
+            "secrets": {
+                "host": "postgres_example",
+                "dbname": "postgres_example",
+                "username": "postgres",
+                "password": "postgres",
+            },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def connection_config_mysql(db: Session) -> Generator:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
@@ -671,6 +693,26 @@ def postgres_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": connection_config.id,
+            "fides_key": fides_key,
+            "dataset": postgres_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def postgres_example_test_dataset_config_read_access(
+    read_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[0]
+    fides_key = postgres_dataset["fides_key"]
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": read_connection_config.id,
             "fides_key": fides_key,
             "dataset": postgres_dataset,
         },

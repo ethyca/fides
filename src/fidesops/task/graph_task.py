@@ -18,7 +18,7 @@ from fidesops.graph.config import (
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
 from fidesops.service.connectors import BaseConnector
@@ -122,6 +122,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def generate_dry_run_query(self) -> str:
         """Type-specific query generated for this traversal_node."""
         return self.connector.dry_run_query(self.traversal_node)
+
+    def can_write_data(self) -> bool:
+        """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
+        connection_config: ConnectionConfig = self.connector.configuration
+        return connection_config.access == AccessLevel.write
 
     def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
         """Each dict in the input list represents the output of a dependent task.
@@ -230,6 +235,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 None,
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
+            )
+            return 0
+
+        if not self.can_write_data():
+            self.update_status(
+                f"No values were erased since this connection {self.connector.configuration.key} has not been "
+                f"given write access",
+                None,
+                ActionType.erasure,
+                ExecutionLogStatus.error,
             )
             return 0
 
