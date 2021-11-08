@@ -42,6 +42,8 @@ Systems use the following attributes:
 | data_qualifier | List[FidesKey] | The level of deidentification for the dataset |
 | dataset_refereneces | List[FidesKey] | The `fides_key`(s) of the dataset fields used in this Privacy Declaration |
 
+> For more detail on System resources, see the full [System resource documentation](../language/resources/system.md).
+
 ### Maintaining a System Resource
 
 As use cases evolve, your systems' data subjects, data categories, and data uses will change as well. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.

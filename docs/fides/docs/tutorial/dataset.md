@@ -102,6 +102,8 @@ Additionally, `fideslang` has attributes that describe what kind of data is cont
 | data_categories | List[FidesKey] | The types of sensitive data, as defined by the taxonomy, that can be found in this field |
 | data_qualifier | FidesKey | The level of deidentification for the dataset |
 
+> For more detail on Dataset resources, see the full [Dataset resource documentation](../language/resources/dataset.md).
+
 ---
 
 **PRO TIP**

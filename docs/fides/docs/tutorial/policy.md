@@ -81,6 +81,8 @@ Policies use the following attributes:
 | data_qualifier | String | The acceptable or non-acceptable level of deidentification |
 | action | Choice | A string, either `ACCEPT` or `REJECT` |
 
+> For more detail on Policy resources, see the full [Policy resource documentation](../language/resources/policy.md).
+
 ### Maintaining a Policy
 
 As global privacy laws change and businesses scale, a company's policies will evolve with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.
