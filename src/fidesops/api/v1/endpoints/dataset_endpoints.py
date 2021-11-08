@@ -8,6 +8,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
 from sqlalchemy.orm import Session
+from fidesops.common_exceptions import ValidationError
 
 from fidesops.common_exceptions import TraversalError
 from starlette.status import HTTP_404_NOT_FOUND
@@ -88,7 +89,7 @@ def validate_dataset(
         graph = DatasetGraph(convert_dataset_to_graph(dataset, connection_config.key))
         unique_identities = set(graph.identity_keys.values())
         Traversal(graph, {k: None for k in unique_identities})
-    except TraversalError as err:
+    except (TraversalError, ValidationError) as err:
         logger.warning(
             f"Traversal validation failed for dataset '{dataset.fides_key}': {err}"
         )

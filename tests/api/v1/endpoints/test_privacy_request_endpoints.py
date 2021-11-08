@@ -429,7 +429,7 @@ class TestCreatePrivacyRequest:
                 assert row[3] is None
                 assert row[4] is None
 
-        assert card_found == True
+        assert card_found is True
 
 
 class TestGetPrivacyRequests:

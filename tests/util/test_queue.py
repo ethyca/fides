@@ -7,7 +7,7 @@ def test_queue() -> None:
     assert queue.pop_first_match(lambda x: x.startswith("B")) == "B"
     assert queue.pop_first_match(lambda x: x.startswith("B")) == "B1"
     assert queue.pop_first_match(lambda x: x.startswith("B")) is None
-    assert queue.is_empty() == False
+    assert queue.is_empty() is False
     assert queue.data == ["C"]
     queue.push_if_new("C")
     assert queue.data == ["C"]
