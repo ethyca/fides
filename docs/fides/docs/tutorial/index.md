@@ -19,10 +19,19 @@ Before beginning, ensure you have the following software installed and configure
 - Docker (v12+)
 - Python (v3.7+)
 - Make
+- `pg_config` (for our Python project. Installed via Homebrew with `brew install libpq` or `brew install postgres`.)
 
 ### Installation
 
 1. Clone [the `ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) to your machine.
+1. Checkout the repository's [`tutorial-start` tag](https://github.com/ethyca/fidesdemo/releases/tag/tutorial-start):
+
+    ```
+    git checkout tutorial-start
+    ```
+
+    Each step in this tutorial will explain the changes made in each commit of the fidesdemo repository. You can follow along by checking out each one, or by building everything yourself and comparing your work to each commit's changeset.
+
 1. Navigate to the repository directory in your command line, and run:
 
     ```
@@ -35,12 +44,6 @@ Before beginning, ensure you have the following software installed and configure
 
     ```
     make test
-    ```
-
-1. Checkout the repository's [`tutorial-start` tag](https://github.com/ethyca/fidesdemo/releases/tag/tutorial-start):
-
-    ```
-    git checkout tutorial-start
     ```
 
 ## About the Example Application ("Flaskr")
