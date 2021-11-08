@@ -155,7 +155,9 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 @pytest.mark.integration
 def test_sql_access_request_task(db, policy, integration_postgres_config) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_sql_access_request_task_{random.randint(0, 1000)}")
+    privacy_request = PrivacyRequest(
+        id=f"test_sql_access_request_task_{random.randint(0, 1000)}"
+    )
 
     v = graph_task.run_access_request(
         privacy_request,

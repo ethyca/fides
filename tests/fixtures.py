@@ -11,6 +11,7 @@ import yaml
 import logging
 from faker import Faker
 
+from fidesops.core.config import load_file
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
@@ -673,7 +674,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mongo_example_test_dataset.yml",
     ]
     for filename in example_filenames:
-        with open(filename, "r") as file:
+        yaml_file = load_file(filename)
+        with open(yaml_file, "r") as file:
             example_datasets += yaml.safe_load(file).get("dataset", [])
     return example_datasets
 
