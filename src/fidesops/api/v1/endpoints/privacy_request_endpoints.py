@@ -22,7 +22,6 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW
 from fidesops.common_exceptions import TraversalError
-from fidesops.db.session import get_db_session
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
@@ -259,23 +258,11 @@ def execution_logs_by_dataset_name(
     """
 
     execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
-    SessionLocal = get_db_session()
-    db = SessionLocal()
-    # TODO future refactor for performance
-    logs = (
-        ExecutionLog.query(
-            db=db,
-        )
-        .filter(
-            ExecutionLog.privacy_request_id == self.id,
-        )
-        .order_by(
-            ExecutionLog.dataset_name,
-            ExecutionLog.updated_at.asc(),
-        )
-    )
-    for log in logs:
-        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT:
+
+    for log in self.execution_logs.order_by(
+        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
+    ):
+        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
             continue
         execution_logs[log.dataset_name].append(log)
     return execution_logs

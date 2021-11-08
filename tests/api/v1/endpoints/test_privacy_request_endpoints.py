@@ -13,6 +13,7 @@ from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
 
+from fidesops.api.v1.endpoints.privacy_request_endpoints import EMBEDDED_EXECUTION_LOG_LIMIT
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
@@ -28,8 +29,8 @@ from fidesops.db.session import (
     get_db_session,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.models.policy import DataCategory
+from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog, ExecutionLogStatus
+from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.util.cache import get_identity_cache_key
 
@@ -260,8 +261,13 @@ class TestCreatePrivacyRequest:
 
         visit_key = result_key_prefix + "visit"
         assert results[visit_key][0]["email"] == customer_email
+        log_id = pr.execution_logs[0].id
+        pr_id = pr.id
 
+        policy.delete(db=db)
         pr.delete(db=db)
+        db.expunge_all()
+        assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
 
     @pytest.mark.integration_erasure
     def test_create_and_process_erasure_request_specific_category(
@@ -674,7 +680,7 @@ class TestGetPrivacyRequests:
                                 "collection_name": "orders",
                                 "fields_affected": [
                                     {
-                                        "path": "orders.name",
+                                        "path": "my-mongo-db:orders:name",
                                         "field_name": "name",
                                         "data_categories": [
                                             "user.provided.identifiable.contact.name"
@@ -694,7 +700,7 @@ class TestGetPrivacyRequests:
                                 "collection_name": "user",
                                 "fields_affected": [
                                     {
-                                        "path": "user.email",
+                                        "path": "my-postgres-db:user:email",
                                         "field_name": "email",
                                         "data_categories": [
                                             "user.provided.identifiable.contact.email"
@@ -712,14 +718,14 @@ class TestGetPrivacyRequests:
                                 "collection_name": "address",
                                 "fields_affected": [
                                     {
-                                        "path": "address.street",
+                                        "path": "my-postgres-db:address:street",
                                         "field_name": "street",
                                         "data_categories": [
                                             "user.provided.identifiable.contact.street"
                                         ],
                                     },
                                     {
-                                        "path": "address.city",
+                                        "path": "my-postgres-db:address:city",
                                         "field_name": "city",
                                         "data_categories": [
                                             "user.provided.identifiable.contact.city"
@@ -742,6 +748,35 @@ class TestGetPrivacyRequests:
             "size": page_size,
         }
         assert resp == expected_resp
+
+    def test_verbose_privacy_request_embed_limit(
+            self,
+            db,
+            api_client: TestClient,
+            generate_auth_header,
+            privacy_request: PrivacyRequest,
+            url,
+    ):
+        for i in range(0, EMBEDDED_EXECUTION_LOG_LIMIT + 10):
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "dataset_name": "my-postgres-db",
+                    "collection_name": f"test_collection_{i}",
+                    "fields_affected": [],
+                    "action_type": ActionType.access,
+                    "status": ExecutionLogStatus.pending,
+                    "privacy_request_id": privacy_request.id,
+                },
+            )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?verbose=True", headers=auth_header)
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"][0]["results"]["my-postgres-db"]) == EMBEDDED_EXECUTION_LOG_LIMIT
+        db.query(ExecutionLog).filter(ExecutionLog.privacy_request_id==privacy_request.id).delete()
 
 
 class TestGetExecutionLogs:
@@ -795,7 +830,7 @@ class TestGetExecutionLogs:
                     "collection_name": "user",
                     "fields_affected": [
                         {
-                            "path": "user.email",
+                            "path": "my-postgres-db:user:email",
                             "field_name": "email",
                             "data_categories": [
                                 "user.provided.identifiable.contact.email"
@@ -812,7 +847,7 @@ class TestGetExecutionLogs:
                     "collection_name": "orders",
                     "fields_affected": [
                         {
-                            "path": "orders.name",
+                            "path": "my-mongo-db:orders:name",
                             "field_name": "name",
                             "data_categories": [
                                 "user.provided.identifiable.contact.name"
@@ -829,14 +864,14 @@ class TestGetExecutionLogs:
                     "collection_name": "address",
                     "fields_affected": [
                         {
-                            "path": "address.street",
+                            "path": "my-postgres-db:address:street",
                             "field_name": "street",
                             "data_categories": [
                                 "user.provided.identifiable.contact.street"
                             ],
                         },
                         {
-                            "path": "address.city",
+                            "path": "my-postgres-db:address:city",
                             "field_name": "city",
                             "data_categories": [
                                 "user.provided.identifiable.contact.city"
