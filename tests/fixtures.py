@@ -408,7 +408,7 @@ def postgres_execution_log(
             "collection_name": "user",
             "fields_affected": [
                 {
-                    "path": "user.email",
+                    "path": "my-postgres-db:user:email",
                     "field_name": "email",
                     "data_categories": ["user.provided.identifiable.contact.email"],
                 }
@@ -433,12 +433,12 @@ def second_postgres_execution_log(
             "collection_name": "address",
             "fields_affected": [
                 {
-                    "path": "address.street",
+                    "path": "my-postgres-db:address:street",
                     "field_name": "street",
                     "data_categories": ["user.provided.identifiable.contact.street"],
                 },
                 {
-                    "path": "address.city",
+                    "path": "my-postgres-db:address:city",
                     "field_name": "city",
                     "data_categories": ["user.provided.identifiable.contact.city"],
                 },
@@ -462,7 +462,7 @@ def mongo_execution_log(db: Session, privacy_request: PrivacyRequest) -> Executi
             "collection_name": "orders",
             "fields_affected": [
                 {
-                    "path": "orders.name",
+                    "path": "my-mongo-db:orders:name",
                     "field_name": "name",
                     "data_categories": ["user.provided.identifiable.contact.name"],
                 }

@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Set
 
 from enum import Enum as EnumType
-
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import (
     Column,
@@ -155,6 +154,16 @@ class PrivacyRequest(Base):
         from fidesops.service.request_intake.onetrust_service import transition_status
 
         transition_status(OneTrustSubtaskStatus.FAILED, self.onetrust_context)
+
+    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    execution_logs = relationship(
+        "ExecutionLog",
+        backref="privacy_request",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
+    )
 
 
 class PrivacyRequestRunner:
@@ -317,4 +326,3 @@ class ExecutionLog(Base):
         nullable=False,
         index=True,
     )
-    # privacy_request = relationship("PrivacyRequest", foreign_keys=[privacy_request_id], primaryjoin='ExecutionLog.privacy_request_id==PrivacyRequest.id', backref=backref("execution_logs", lazy="dynamic"))
