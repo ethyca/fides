@@ -2,7 +2,7 @@
 
 Fidesctl's privacy declarations provide rich metadata about systems, the data categories they process, and the uses of that data. Policies allow you to enforce constraints on these declarations and decide what combinations to allow or reject at your company, thus providing a layer of automation to control data privacy at the source.
 
-Define a single Policy by creating a `flaskr_policy.yml` file in the `fides_resources` directory. This file should contain the following configuration:
+Define a single Policy by creating a `flaskr_policy.yml` file in the `fides_resources` directory. For this project, the file should contain the following configuration:
 
 ```yml
 policy:
@@ -65,6 +65,10 @@ policy:
         data_qualifier: aggregated
         action: REJECT
 ```
+
+This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:
+1. Do not use identifiable data for anything other than the app's primary functions (after all, it's just a demo app!).
+1. Do not collect _any_ sensitive data at all. As a safe default, this is the type of policy you might add to all projects. Later, you can make exceptions (if you are working on a project that requires these categories).
 
 ### Understanding the Policy
 

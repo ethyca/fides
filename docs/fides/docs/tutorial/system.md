@@ -2,7 +2,11 @@
 
 Now that you've built out the underlying database that describes how and what type of data is stored, include the database in application-level "systems", another critical Fidesctl resource.
 
-This app contains a single Flaskr Web Application system resource. Create a `system` resource to annotate it by adding a `flaskr_system.yml` file to the `fides_resources` directory. This file should contain the following configuration:
+This app contains a single Flaskr Web Application system resource. Create a `system` resource to annotate it by adding a `flaskr_system.yml` file to the `fides_resources` directory.
+
+Writing a Fides privacy declaration requires answering the questions: _"What data is this system processing?"_, _"Why is the system processing this data?"_, _"Whose data is involved?"_, and _"How is the data protected?"_ Fides answers these questions with a `privacy_declaration` that describes the data categories, use, subjects, and qualifier. This application is quite simple, so it only has a single use: to provide the service to users. In order to do so, it requires some identifiable data (name, email, contact, etc.) and it derives some data as well (unique IDs).
+
+For this project, the file should contain the following configuration:
 
 ```yml
 system:
@@ -24,7 +28,7 @@ system:
           - flaskr_postgres_dataset
 ```
 
-The system is comprised of Privacy Declarations. These can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`".
+Privacy Declarations can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`".
 
 In a production app, create as many systems as are necessary to cover all relevant business applications.
 
