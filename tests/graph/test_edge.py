@@ -31,7 +31,7 @@ def test_split_by_address() -> None:
         FieldAddress("a", "b", "c"),
     )
 
-    assert b_edge.split_by_address(CollectionAddress("x", "y")) == None
+    assert b_edge.split_by_address(CollectionAddress("x", "y")) is None
 
 
 def test_spans() -> None:

@@ -48,7 +48,7 @@ def test_node_eq() -> None:
 def test_node_contains() -> None:
     node = graph.nodes[CollectionAddress("s1", "t1")]
     assert node.contains_field(lambda f: f.name == "f3")
-    assert node.contains_field(lambda f: f.name == "f4") == False
+    assert node.contains_field(lambda f: f.name == "f4") is False
     assert node.contains_field(lambda f: f.primary_key)
 
 

@@ -225,13 +225,36 @@ class TestValidateDataset:
         response_body = json.loads(response.text)
         assert response_body["dataset"]
         assert response_body["traversal_details"]
-        assert response_body["traversal_details"]["is_traversable"] == False
+        assert response_body["traversal_details"]["is_traversable"] is False
         assert (
             "Some nodes were not reachable" in response_body["traversal_details"]["msg"]
         )
         assert (
             "postgres_example_test_dataset:address"
             in response_body["traversal_details"]["msg"]
+        )
+
+    def test_validate_dataset_that_references_another_dataset(
+        self,
+        example_datasets: List,
+        validate_dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        dataset = example_datasets[1]
+
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=dataset
+        )
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert response_body["dataset"]
+        assert response_body["traversal_details"]
+        assert response_body["traversal_details"]["is_traversable"] is False
+        assert (
+            "Referred to object postgres_example_test_dataset:customer:id does not exist"
+            == response_body["traversal_details"]["msg"]
         )
 
     def test_put_validate_dataset(
@@ -250,7 +273,7 @@ class TestValidateDataset:
         assert response_body["dataset"]
         assert response_body["dataset"]["fides_key"] == "postgres_example_test_dataset"
         assert response_body["traversal_details"]
-        assert response_body["traversal_details"]["is_traversable"] == True
+        assert response_body["traversal_details"]["is_traversable"] is True
         assert response_body["traversal_details"]["msg"] is None
 
 
