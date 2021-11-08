@@ -39,6 +39,8 @@ from fidesops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -222,8 +224,8 @@ def erasure_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": "hash",
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": "null_rewrite",
+                "configuration": {},
             },
         },
     )
@@ -243,6 +245,49 @@ def erasure_policy(
         pass
     try:
         erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_policy: Policy) -> Generator:
+
+    second_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Second Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {"strategy": NULL_REWRITE, "configuration": {}},
+        },
+    )
+
+    # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
+    second_erasure_rule.masking_strategy = {
+        "strategy": STRING_REWRITE,
+        "configuration": {"rewrite_value": "*****"}
+    }
+
+    second_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.contact.email").value,
+            "rule_id": second_erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        second_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        second_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:

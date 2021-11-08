@@ -38,6 +38,7 @@ from fidesops.models.storage import StorageConfig
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 
 
 class ActionType(EnumType):
@@ -98,6 +99,16 @@ def _validate_rule(
     if action_type == ActionType.erasure.value and masking_strategy is None:
         raise common_exceptions.RuleValidationError(
             "Erasure Rules must have masking strategies."
+        )
+
+    # Temporary, remove when we have the pieces in place to support more than null masking.
+    if (
+        action_type == ActionType.erasure.value
+        and masking_strategy
+        and masking_strategy.get("strategy") != NULL_REWRITE
+    ):
+        raise common_exceptions.RuleValidationError(
+            "Only the Null Masking Strategy (null_rewrite) is supported at this time."
         )
 
     if action_type == ActionType.access.value and storage_destination_id is None:

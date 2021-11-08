@@ -16,6 +16,7 @@ from fidesops.models.policy import (
     _is_ancestor_of_contained_categories,
 )
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.text import slugify
 
 
@@ -211,11 +212,8 @@ def test_create_erasure_rule(
             "name": "Valid Erasure Rule",
             "policy_id": policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {
-                    "algorithm": "SHA-512",
-                    "format_preservation": {"suffix": "@masked.com"},
-                },
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )
@@ -313,8 +311,8 @@ def test_validate_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )
@@ -336,8 +334,8 @@ def test_validate_policy(
             "name": "Another Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HASH,
-                "configuration": {"algorithm": "SHA-512"},
+                "strategy": NULL_REWRITE,
+                "configuration": {},
             },
         },
     )
@@ -351,6 +349,21 @@ def test_validate_policy(
                 ).value,
                 "name": "all user provided contact emails",
                 "rule_id": another_erasure_rule.id,
+            },
+        )
+
+    with pytest.raises(RuleValidationError):
+        Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure.value,
+                "client_id": oauth_client.id,
+                "name": "Erasure Rule with unsupported masking strategy",
+                "policy_id": erasure_policy.id,
+                "masking_strategy": {
+                    "strategy": HASH,
+                    "configuration": {"algorithm": "SHA-512"},
+                },
             },
         )
 

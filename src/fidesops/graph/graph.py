@@ -250,9 +250,7 @@ class DatasetGraph:
         """
         mapping: Dict[str, Dict[str, List]] = defaultdict(lambda: defaultdict(list))
         for node_address, node in self.nodes.items():
-            for field in node.collection.fields:
-                for category in field.data_categories:
-                    mapping[str(node_address)][category].append(field.name)
+            mapping[str(node_address)] = node.collection.fields_by_category
         return mapping
 
     def __repr__(self) -> str:

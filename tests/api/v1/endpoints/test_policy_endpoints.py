@@ -23,6 +23,7 @@ from fidesops.models.policy import (
     generate_fides_data_categories,
 )
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 
 
 class TestGetPolicies:
@@ -451,18 +452,14 @@ class TestCreateRules:
         generate_auth_header,
         policy,
     ):
-        FORMAT_PRESERVATION_SUFFIX = "@masked.com"
-        HASH_ALGORITHM = "SHA-512"
+
         data = [
             {
                 "name": "test erasure rule",
                 "action_type": ActionType.erasure.value,
                 "masking_strategy": {
-                    "strategy": HASH,
-                    "configuration": {
-                        "algorithm": HASH_ALGORITHM,
-                        "format_preservation": {"suffix": FORMAT_PRESERVATION_SUFFIX},
-                    },
+                    "strategy": NULL_REWRITE,
+                    "configuration": {},
                 },
             }
         ]
@@ -479,7 +476,7 @@ class TestCreateRules:
         rule_data = response_data[0]
         assert "masking_strategy" in rule_data
         masking_strategy_data = rule_data["masking_strategy"]
-        assert masking_strategy_data["strategy"] == HASH
+        assert masking_strategy_data["strategy"] == NULL_REWRITE
         assert "configuration" not in masking_strategy_data
 
     def test_update_rule_policy_id_fails(
@@ -822,8 +819,8 @@ class TestRuleTargets:
                 "name": "Erasure Rule",
                 "policy_id": policy.id,
                 "masking_strategy": {
-                    "strategy": HASH,
-                    "configuration": {"algorithm": "SHA-512"},
+                    "strategy": NULL_REWRITE,
+                    "configuration": {},
                 },
             },
         )

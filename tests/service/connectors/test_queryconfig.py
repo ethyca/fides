@@ -1,11 +1,19 @@
+import pytest
 from typing import Dict, Any, Set
 
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.service.connectors import PostgreSQLConnector
-from fidesops.service.connectors.query_config import QueryConfig, SQLQueryConfig
+from fidesops.models.datasetconfig import convert_dataset_to_graph
+from fidesops.models.policy import DataCategory
+from fidesops.schemas.dataset import FidesopsDataset
+from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fidesops.service.connectors.query_config import (
+    QueryConfig,
+    SQLQueryConfig,
+    MongoQueryConfig,
+)
+from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from ...task.traversal_data import integration_db_graph
 
 
@@ -22,82 +30,319 @@ traversal_nodes: Dict[CollectionAddress, TraversalNode] = traversal.traversal_no
 payment_card_node = traversal_nodes[
     CollectionAddress("postgres_example", "payment_card")
 ]
+user_node = traversal_nodes[CollectionAddress("postgres_example", "payment_card")]
 
 
-def test_extract_query_components():
-    def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
-        return set(qconfig.filter_values(values).keys())
+class TestSQLQueryConfig:
+    def test_extract_query_components(self):
+        def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
+            return set(qconfig.filter_values(values).keys())
 
-    config = SQLQueryConfig(payment_card_node)
-    assert config.fields == ["id", "name", "ccn", "customer_id", "billing_address_id"]
-    assert config.query_keys == {"id", "customer_id"}
+        config = SQLQueryConfig(payment_card_node)
+        assert config.fields == [
+            "id",
+            "name",
+            "ccn",
+            "customer_id",
+            "billing_address_id",
+        ]
+        assert config.query_keys == {"id", "customer_id"}
 
-    # values exist for all query keys
-    assert found_query_keys(
-        config, {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-    ) == {"id", "customer_id"}
-    # with no values OR an empty set, these are omitted
-    assert found_query_keys(
-        config, {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-    ) == {"id"}
-    assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
-    assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
-    assert found_query_keys(config, {}) == set()
+        # values exist for all query keys
+        assert found_query_keys(
+            config, {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+        ) == {"id", "customer_id"}
+        # with no values OR an empty set, these are omitted
+        assert found_query_keys(
+            config, {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+        ) == {"id"}
+        assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
+        assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
+        assert found_query_keys(config, {}) == set()
 
+    def test_filter_values(self):
+        config = SQLQueryConfig(payment_card_node)
+        assert config.filter_values(
+            {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+        ) == {"id": ["A"], "customer_id": ["V"]}
 
-def test_filter_values():
-    config = SQLQueryConfig(payment_card_node)
-    assert config.filter_values(
-        {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-    ) == {"id": ["A"], "customer_id": ["V"]}
+        assert config.filter_values(
+            {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+        ) == {"id": ["A"]}
 
-    assert config.filter_values(
-        {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-    ) == {"id": ["A"]}
+        assert config.filter_values({"id": ["A"], "ignore_me": ["X"]}) == {"id": ["A"]}
 
-    assert config.filter_values({"id": ["A"], "ignore_me": ["X"]}) == {"id": ["A"]}
+        assert config.filter_values({"id": [], "customer_id": ["V"]}) == {
+            "customer_id": ["V"]
+        }
 
-    assert config.filter_values({"id": [], "customer_id": ["V"]}) == {
-        "customer_id": ["V"]
-    }
-
-
-def test_generated_sql_query():
-    """Test that the generated query depends on the input set"""
-    postgresql_connector = PostgreSQLConnector(ConnectionConfig())
-
-    assert (
-        str(
-            SQLQueryConfig(payment_card_node).generate_query(
-                {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+    def test_generated_sql_query(self):
+        """Test that the generated query depends on the input set"""
+        assert (
+            str(
+                SQLQueryConfig(payment_card_node).generate_query(
+                    {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+                )
             )
+            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
         )
-        == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
-    )
 
-    assert (
-        str(
-            SQLQueryConfig(payment_card_node).generate_query(
-                {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+        assert (
+            str(
+                SQLQueryConfig(payment_card_node).generate_query(
+                    {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+                )
             )
+            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
         )
-        == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
-    )
 
-    assert (
-        str(
-            SQLQueryConfig(payment_card_node).generate_query(
-                {"id": ["A"], "ignore_me": ["X"]}
+        assert (
+            str(
+                SQLQueryConfig(payment_card_node).generate_query(
+                    {"id": ["A"], "ignore_me": ["X"]}
+                )
             )
+            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
         )
-        == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
-    )
 
-    assert (
-        str(
-            SQLQueryConfig(payment_card_node).generate_query(
-                {"id": [], "customer_id": ["V"]}
+        assert (
+            str(
+                SQLQueryConfig(payment_card_node).generate_query(
+                    {"id": [], "customer_id": ["V"]}
+                )
             )
+            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE customer_id = :customer_id"
         )
-        == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE customer_id = :customer_id"
-    )
+
+    def test_update_rule_target_fields(
+        self, erasure_policy, example_datasets, integration_postgres_config
+    ):
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ]
+
+        rule = erasure_policy.rules[0]
+        config = SQLQueryConfig(customer_node)
+        assert config.build_rule_target_fields(erasure_policy) == {rule: ["name"]}
+
+        # Make target more broad
+        target = rule.targets[0]
+        target.data_category = DataCategory("user.provided.identifiable").value
+        assert config.build_rule_target_fields(erasure_policy) == {
+            rule: ["email", "name"]
+        }
+
+        # Check different collection
+        address_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "address")
+        ]
+        config = SQLQueryConfig(address_node)
+        assert config.build_rule_target_fields(erasure_policy) == {
+            rule: ["city", "house", "street", "state", "zip"]
+        }
+
+    def test_generate_update_stmt_one_field(
+        self, erasure_policy, example_datasets, integration_postgres_config
+    ):
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ]
+
+        config = SQLQueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+
+        text_clause = config.generate_update_stmt(row, erasure_policy)
+        assert (
+            text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
+        )
+        assert text_clause._bindparams["name"].key == "name"
+        assert text_clause._bindparams["name"].value is None  # Null masking strategy
+
+    def test_generate_update_stmt_multiple_fields_same_rule(
+        self, erasure_policy, example_datasets, integration_postgres_config
+    ):
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ]
+
+        config = SQLQueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+
+        # Make target more broad
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = DataCategory("user.provided.identifiable").value
+
+        # Update rule masking strategy
+        rule.masking_strategy = {
+            "strategy": "hash",
+            "configuration": {"algorithm": "SHA-512"},
+        }
+
+        text_clause = config.generate_update_stmt(row, erasure_policy)
+        assert (
+            text_clause.text
+            == "UPDATE customer SET email = :email,name = :name WHERE  id = :id"
+        )
+        assert text_clause._bindparams["name"].key == "name"
+        assert text_clause._bindparams["name"].value == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("John Customer")
+        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("customer-1@example.com")
+
+    def test_generate_update_stmts_from_multiple_rules(
+        self, erasure_policy_two_rules, example_datasets, integration_postgres_config
+    ):
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ]
+
+        config = SQLQueryConfig(customer_node)
+
+        text_clause = config.generate_update_stmt(row, erasure_policy_two_rules)
+
+        assert (
+            text_clause.text
+            == "UPDATE customer SET name = :name,email = :email WHERE  id = :id"
+        )
+        # Two different masking strategies used for name and email
+        assert text_clause._bindparams["name"].value is None  # Null masking strategy
+        assert (
+            text_clause._bindparams["email"].value == "*****"
+        )  # String rewrite masking strategy
+
+
+class TestMongoQueryConfig:
+    def test_generate_update_stmt_multiple_fields(
+        self,
+        erasure_policy,
+        example_datasets,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_details = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
+
+        config = MongoQueryConfig(customer_details)
+        row = {
+            "birthday": "1988-01-10",
+            "gender": "male",
+            "customer_id": 1,
+            "_id": 1,
+        }
+
+        # Make target more broad
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = DataCategory("user.provided.identifiable").value
+
+        mongo_statement = config.generate_update_stmt(row, erasure_policy)
+        assert mongo_statement[0] == {"_id": 1}
+        assert mongo_statement[1] == {"$set": {"birthday": None, "gender": None}}
+
+    def test_generate_update_stmt_multiple_rules(
+        self,
+        erasure_policy_two_rules,
+        example_datasets,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_details = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
+
+        config = MongoQueryConfig(customer_details)
+        row = {
+            "birthday": "1988-01-10",
+            "gender": "male",
+            "customer_id": 1,
+            "_id": 1,
+        }
+
+        rule = erasure_policy_two_rules.rules[0]
+        rule.masking_strategy = {
+            "strategy": "hash",
+            "configuration": {"algorithm": "SHA-512"},
+        }
+        target = rule.targets[0]
+        target.data_category = DataCategory(
+            "user.provided.identifiable.date_of_birth"
+        ).value
+
+        rule_two = erasure_policy_two_rules.rules[1]
+        rule_two.masking_strategy = {
+            "strategy": "random_string_rewrite",
+            "configuration": {"length": 30},
+        }
+        target = rule_two.targets[0]
+        target.data_category = DataCategory("user.provided.identifiable.gender").value
+
+        mongo_statement = config.generate_update_stmt(row, erasure_policy_two_rules)
+        assert mongo_statement[0] == {"_id": 1}
+        assert len(mongo_statement[1]["$set"]["gender"]) == 30
+        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
+            HashMaskingConfiguration(algorithm="SHA-512")
+        ).mask("1988-01-10")

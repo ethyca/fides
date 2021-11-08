@@ -8,7 +8,8 @@ from sqlalchemy.sql.elements import TextClause
 
 from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress
 from fidesops.graph.traversal import TraversalNode, Row
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.util.collection_util import append
 
 logging.basicConfig(level=logging.INFO)
@@ -36,29 +37,29 @@ class QueryConfig(Generic[T], ABC):
         """Fields of interest from this traversal traversal_node."""
         return [f.name for f in self.node.node.collection.fields]
 
-    def update_fields(self, policy: Policy) -> List[str]:
-        """List of update-able field names"""
+    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[str]]:
+        """
+        Return dictionary of rules mapped to update-able field names on a given collection
+        Example:
+        {<fidesops.models.policy.Rule object at 0xffff9160e190>: ['name', 'code', 'ccn']}
+        """
+        rule_updates: Dict[Rule, List[str]] = {}
+        for rule in policy.rules:
+            if rule.action_type != ActionType.erasure:
+                continue
+            rule_categories = rule.get_target_data_categories()
+            if not rule_categories:
+                continue
 
-        def exists_child(
-            field_categories: List[str], policy_categories: List[str]
-        ) -> bool:
-            """A not very efficient check for any policy category that matches one of the field categories or a prefix of it."""
-            if field_categories is None or len(field_categories) == 0:
-                return False
-            for policy_category in policy_categories:
-                for field_category in field_categories:
-                    if field_category.startswith(policy_category):
-                        return True
+            targeted_fields = []
+            collection_categories = self.node.node.collection.fields_by_category
+            for rule_cat in rule_categories:
+                for collection_cat, fields in collection_categories.items():
+                    if collection_cat.startswith(rule_cat):
+                        targeted_fields.extend(fields)
+            rule_updates[rule] = targeted_fields
 
-            return False
-
-        policy_categories = policy.get_erasure_target_categories()
-
-        return [
-            f.name
-            for f in self.node.node.collection.fields
-            if exists_child(f.data_categories, policy_categories)
-        ]
+        return rule_updates
 
     @property
     def primary_keys(self) -> List[str]:
@@ -116,6 +117,28 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
+    def update_value_map(self, row: Row, policy: Policy) -> Dict[str, Any]:
+        """Map the relevant fields to be updated on the row with their masked values from Policy Rules
+
+        Example return:  {'name': None, 'ccn': None, 'code': None}
+
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields
+        for a given customer_id will be replaced with null values.
+
+        """
+        rule_to_collection_fields = self.build_rule_target_fields(policy)
+
+        value_map: Dict[str, Any] = {}
+        for rule, field_names in rule_to_collection_fields.items():
+            strategy_config = rule.masking_strategy
+            strategy = get_strategy(
+                strategy_config["strategy"], strategy_config["configuration"]
+            )
+
+            for field_name in field_names:
+                value_map[field_name] = strategy.mask(row[field_name])
+        return value_map
+
     @abstractmethod
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -172,16 +195,14 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def generate_update_stmt(
-        self, row: Row, policy: Optional[Policy] = None
-    ) -> Optional[TextClause]:
-        """Generate a SQL update statement in the form of a TextClause"""
-        update_fields = self.update_fields(policy)
-        update_value_map = {k: None for k in update_fields}
-        update_clauses = [f"{k} = :{k}" for k in update_fields]
+    def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
+        update_value_map = self.update_value_map(row, policy)
+        update_clauses = [f"{k} = :{k}" for k in update_value_map]
         pk_clauses = [f"{k} = :{k}" for k in self.primary_keys]
+
         for pk in self.primary_keys:
             update_value_map[pk] = row[pk]
+
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
@@ -276,8 +297,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         self, row: Row, policy: Optional[Policy] = None
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
-        update_fields = self.update_fields(policy)
-        update_clauses = {k: None for k in update_fields}
+        update_clauses = self.update_value_map(row, policy)
         pk_clauses = {k: row[k] for k in self.primary_keys}
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
