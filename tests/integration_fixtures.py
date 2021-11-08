@@ -114,7 +114,7 @@ def integration_postgres_config() -> ConnectionConfig:
         name="postgres_test",
         key="postgres_example",
         connection_type=ConnectionType.postgres,
-        access=AccessLevel.read,
+        access=AccessLevel.write,
         secrets={
             "host": postgres_conf["SERVER"],
             "port": postgres_conf["PORT"],
@@ -167,7 +167,7 @@ def integration_mongodb_config(set_os_env: None) -> ConnectionConfig:
     return ConnectionConfig(
         key="mongo_example",
         connection_type=ConnectionType.mongodb,
-        access=AccessLevel.read,
+        access=AccessLevel.write,
         secrets={
             "host": mongo_conf["SERVER"],
             "defaultauthdb": mongo_conf["DB"],
