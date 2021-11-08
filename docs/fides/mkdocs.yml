@@ -9,7 +9,9 @@ nav:
   - Tutorial:
       - Overview: tutorial/index.md
       - Add Fidesctl to the App: tutorial/add.md
-      - Annotate the Fidesctl Resources: tutorial/annotate.md
+      - Annotate the Dataset: tutorial/dataset.md
+      - Annotate the System: tutorial/system.md
+      - Write a Policy: tutorial/policy.md
       - Add Google Analytics: tutorial/google.md
       - Manage Google Analytics with Fidesctl: tutorial/pass.md
   - Deployment Guide: deployment.md

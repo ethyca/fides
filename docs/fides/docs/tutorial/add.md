@@ -79,4 +79,4 @@ After making the above changes, your app should resemble the state of the [`ethy
 
 ## Next: Annotate the Resources
 
-Now that the Fidesctl tools are available to use within the app's virtual environment, the next step is to configure Fidesctl to work with the specifics of this app. This can be done by creating manifest files to [annotate the resources](annotate.md).
+Now that the Fidesctl tools are available to use within the app's virtual environment, the next step is to configure Fidesctl to work with the specifics of this app. This can be done by creating manifest files to [annotate the resources](dataset.md).
