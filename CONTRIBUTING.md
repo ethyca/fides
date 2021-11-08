@@ -99,11 +99,14 @@ When you run `make server` or `make server-shell`, the database will be spun up 
 Tests are run using `pytest`. Some commands you may need are listed below. The full documentation can be found at: https://docs.pytest.org/en/6.2.x/. There is some additional Pytest config in the `pyproject.toml` file at the root of the repo. Running `make pytest` will automatically migrate the database for you to the latest version by running `alembic upgrade head` before the `pytest` command itself.
 
 - Run all tests: `make pytest`
-- Run all tests in a directory: `make path=path/to/dir/ pytest`
-- Run all tests in a file: `make path=path/to/file.py pytest`
-- Run all tests within a class within a file: `make path=path/to/file.py::ClassName pytest`
-- Run a specific test within a class within a file: `make path=path/to/file.py::ClassName::method_name pytest`
-- Run a specific test within a file: `make path=path/to/file.py::method_name pytest`
+- Run all tests in a directory: `make pytestpath=path/to/dir/ pytest`
+- Run all tests in a file: `make pytestpath=path/to/file.py pytest`
+- Run all tests within a class within a file: `make pytestpath=path/to/file.py::ClassName pytest`
+- Run a specific test within a class within a file: `make pytestpath=path/to/file.py::ClassName::method_name pytest`
+- Run a specific test within a file: `make pytestpath=path/to/file.py::method_name pytest`
+- Run integration tests (access): `make pytest-integration-access`
+- Run integration tests (erasure): `make pytest-integration-erasure`
+
 
 ### How to write tests
 
