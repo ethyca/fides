@@ -1,12 +1,12 @@
 # Add Fidesctl to the App
 
-In this step you will incorporate the [fidesctl](https://github.com/ethyca/fides) open-source developer tools, which will enable you to declare your `system`, `dataset`s, and `policy`s as manifest YAML files later in this tutorial.
+In this step you will incorporate [fidesctl](https://github.com/ethyca/fides), which will enable you to declare your `system`, `dataset`, and `policy` resources as manifest YAML files.
 
 ## Add the `fidesctl` Dependency
 
 Open the `requirements.txt` file and add the `fidesctl` dependency by including the following line:
 
-```
+```txt
 fidesctl>=1.0.0
 ```
 
@@ -37,7 +37,7 @@ Now that the dependency is included in the project and the configuration is in p
 
 ```yml
 fidesctl:
-  image: ethyca/fidesctl:0.9.9
+  image: ethyca/fidesctl:latest
   depends_on:
     - db
   command: fidesctl webserver

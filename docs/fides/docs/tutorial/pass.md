@@ -4,7 +4,7 @@ By default, Google Analytics disables "IP Anonymization" (see [the documentation
 
 ---
 
-**POP QUIZ!**
+## POP QUIZ
 
 There are two options to remedy this situation, and to get the `make fidesctl-evaluate` command to pass. Which option is best?
 

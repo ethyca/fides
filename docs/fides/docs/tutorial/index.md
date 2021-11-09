@@ -1,32 +1,33 @@
 # Tutorial Overview
 
-In this tutorial you will learn how to use the fidesctl open-source developer tools to solve a real-world data privacy problem. The steps closely follow the commits found in [the `ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo).
+In this tutorial you will learn how to use Fidesctl to solve a real-world data privacy problem. These steps closely follow the example found in the `ethyca/fidesdemo` repository [here](https://github.com/ethyca/fidesdemo).
 
-You will run a local instance of a basic web app to demonstrate the use of fidesctl as part of a "real" project that uses:
+You will run a local instance of a basic web app to demonstrate the use of Fidesctl as part of a "real" project that uses:
 
-* Flask to run a web server simulating the basic e-commerce application
+* Flask to run a web server simulating a basic e-commerce application
 * PostgreSQL as the application's database
 * SQLAlchemy to connect to the database
 * [`fidesctl`](https://github.com/ethyca/fides) to declare privacy manifests and evaluate policies
 
-The app itself is simply the [Flask tutorial app](https://flask.palletsprojects.com/en/2.0.x/tutorial/), but modified to simulate an e-commerce marketplace. This helps to highlight some basic examples of data categories that might be stored in a "real" user-facing application.
+The app itself is the [Flask tutorial app](https://flask.palletsprojects.com/en/2.0.x/tutorial/), but modified to simulate an e-commerce marketplace. This helps to highlight some basic examples of data categories that might be stored in a "real" user-facing application.
 
 ## Setup Instructions
 
 ### System Requirements
 
 Before beginning, ensure you have the following software installed and configured to your liking:
-- Docker (v12+)
-- Python (v3.7+)
-- Make
-- `pg_config` (for our Python project. Installed via Homebrew with `brew install libpq` or `brew install postgres`.)
+
+* Docker (v12+)
+* Python (v3.7+)
+* Make
+* `pg_config` (required for the Python project. Installed via Homebrew with `brew install libpq` or `brew install postgres`.)
 
 ### Installation
 
 1. Clone [the `ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) to your machine.
 1. Checkout the repository's [`tutorial-start` tag](https://github.com/ethyca/fidesdemo/releases/tag/tutorial-start):
 
-    ```
+    ```shell
     git checkout tutorial-start
     ```
 
@@ -34,7 +35,7 @@ Before beginning, ensure you have the following software installed and configure
 
 1. Navigate to the repository directory in your command line, and run:
 
-    ```
+    ```shell
     make install
     ```
 
@@ -42,7 +43,7 @@ Before beginning, ensure you have the following software installed and configure
 
     If you prefer, you may execute the project's test suite by running:
 
-    ```
+    ```shell
     make test
     ```
 
@@ -58,7 +59,7 @@ This example application is meant to simulate a basic e-commerce marketplace whe
 
 The schema itself is designed to highlight a few *very* simple examples of how identifiable data might get stored in a web application like this one. The sample data below shows what this looks like:
 
-```
+```shell
 flaskr=# SELECT * FROM users;
  id |     created_at      |       email       |              password              | first_name | last_name
 ----+---------------------+-------------------+------------------------------------+------------+-----------

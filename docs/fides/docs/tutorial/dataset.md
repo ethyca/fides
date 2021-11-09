@@ -79,19 +79,21 @@ As an alternative to manually authoring the resource file, you can also use the 
   fides_resources/flaskr_postgres_dataset.yml
 ```
 
-### Understanding the Dataset Resource
+## Understanding the Dataset Resource
 
 This YAML serves as the foundation of [`fideslang`](https://github.com/ethyca/fideslang), the Fides language; it answers "_What data and kinds of data do we have?_" and "_How is our data organized?_". The language is built on declaring the types of data found in storage for your organization.
 
 In traditional SQL, fidesctl defines the following:
-- "datasets" as database schemas
-- "collections" as database tables
-- "fields" as database columns
+
+* "datasets" as database schemas
+* "collections" as database tables
+* "fields" as database columns
 
 For NoSQL datasets, fidesctl defines the following:
-- "dataset"
-- "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
-- "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")
+
+* "dataset"
+* "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
+* "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")
 
 Additionally, `fideslang` has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:
 
@@ -106,9 +108,9 @@ Additionally, `fideslang` has attributes that describe what kind of data is cont
 
 ---
 
-**PRO TIP**
+### PRO TIP
 
-As you're progressing with the tutorial, we recommend installing our [FidesCTL VS Code extension](https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl), which will validate the syntax in real-time as you're writing your resource files!
+As you're progressing with the tutorial, we recommend installing our [FidesCtl VS Code extension](https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl), which will validate the syntax in real-time as you're writing your resource files!
 
 ---
 
