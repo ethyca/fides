@@ -22,7 +22,7 @@ services:
         target: /fides
         read_only: False
     env_file:
-      - env_files/fides.env
+      - env_files/fidesctl.env
 
   fidesctl-db:
     image: postgres:12
