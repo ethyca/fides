@@ -7,13 +7,13 @@ nav:
       - Fidesctl in Docker: getting_started/docker.md
       - Fidesctl Manually (without Docker): getting_started/manual.md
   - Tutorial:
-      - Overview: tutorial/overview.md
-      - Understanding the Fides Taxonomy: tutorial/taxonomy.md
-      - Annotate your Datasets: tutorial/dataset.md
-      - Declare your Systems: tutorial/system.md
-      - Write Privacy Policy (as code): tutorial/policy.md
-      - Evaluate your Resources: tutorial/evaluate.md
-      - Integrate your CI: tutorial/ci.md
+      - Overview: tutorial/index.md
+      - Add Fidesctl to the App: tutorial/add.md
+      - Annotate the Dataset: tutorial/dataset.md
+      - Annotate the System: tutorial/system.md
+      - Write a Policy: tutorial/policy.md
+      - Add Google Analytics: tutorial/google.md
+      - Manage Google Analytics with Fidesctl: tutorial/pass.md
   - Deployment Guide: deployment.md
   - Fides Language:
       - Overview: language/overview.md

@@ -1,22 +1,79 @@
-# Write a Privacy Policy (as code)
+# Write a Policy
 
-_In this section, we'll review what the Policy resource is, how to create it, and why it's used._
+Fidesctl's privacy declarations provide rich metadata about systems, the data categories they process, and the uses of that data. Policies allow you to enforce constraints on these declarations and decide what combinations to allow or reject at your company, thus providing a layer of automation to control data privacy at the source.
 
-More than likely, there is someone in your organization that is responsible for creating privacy policies for protecting the company from a legal standpoint. *The purpose of this privacy policy is to state what types of data are allowed for certain purposes of use.*
+Define a single Policy by creating a `flaskr_policy.yml` file in the `fides_resources` directory. For this project, the file should contain the following configuration:
 
-## Understanding the policy
+```yml
+policy:
+  - fides_key: flaskr_policy
+    name: Flaskr Privacy Policy
+    description: A privacy policy for the example Flask app
+    rules:
+      - fides_key: minimize_user_identifiable_data
+        name: Minimize User Identifiable Data
+        description: Reject collecting any user identifiable data for uses other than system operations
+        data_categories:
+          inclusion: ANY
+          values:
+            - user.provided.identifiable
+            - user.derived.identifiable
+        data_uses:
+          inclusion: ANY
+          values:
+            - improve
+            - personalize
+            - advertising
+            - third_party_sharing
+            - collect
+            - train_ai_system
+        data_subjects:
+          inclusion: ANY
+          values:
+            - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        action: REJECT
 
-This policy is comprised of rules against which your system's privacy declarations are evaluated. You might be able to help your legal counsel make this, or, if you understand the legal requirements well enough, you can handle the creation yourself.
+      - fides_key: reject_sensitive_data
+        name: Reject Sensitive Data
+        description: Reject collecting sensitive user data for any use
+        data_categories:
+          inclusion: ANY
+          values:
+            - user.provided.identifiable.biometric
+            - user.provided.identifiable.childrens
+            - user.provided.identifiable.genetic
+            - user.provided.identifiable.health_and_medical
+            - user.provided.identifiable.political_opinion
+            - user.provided.identifiable.race
+            - user.provided.identifiable.religious_belief
+            - user.provided.identifiable.sexual_orientation
+        data_uses:
+          inclusion: ANY
+          values:
+            - provide
+            - improve
+            - personalize
+            - advertising
+            - third_party_sharing
+            - collect
+            - train_ai_system
+        data_subjects:
+          inclusion: ANY
+          values:
+            - customer
+        data_qualifier: aggregated
+        action: REJECT
+```
 
-Fides' privacy declarations provide rich metadata about your systems, the data categories they process, the uses of that data, etc. Policies allow you to declare constraints on these declarations to decide what combinations to allow or reject at your company, providing a layer of automation to control data privacy at the source.
+This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:
 
-For example, you might want policies like:
+1. Do not use identifiable data for anything other than the app's primary functions (after all, it's just a demo app!).
+1. Do not collect _any_ sensitive data at all. As a safe default, this is the type of policy you might add to all projects. Later, you can make exceptions (if you are working on a project that requires these categories).
 
-* "we only allow systems that use anonymized data for product analytics purposes"
-* "we do not allow systems to combine user-derived demographic and location data for marketing use"
-* "we never collect biometric data"
+## Understanding the Policy
 
-These examples may be formal rules you follow today, or they may already be a part of your code review or privacy review practices. Fides allows us to automate the evaluation of policy rules against your privacy declarations.
+The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In fidesctl, a Policy is comprised of rules against which the system's privacy declarations are evaluated. Policies will evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
 
 Policies use the following attributes:
 
@@ -29,58 +86,16 @@ Policies use the following attributes:
 | data_qualifier | String | The acceptable or non-acceptable level of deidentification |
 | action | Choice | A string, either `ACCEPT` or `REJECT` |
 
-## Writing your first policy
+> For more detail on Policy resources, see the full [Policy resource documentation](../language/resources/policy.md).
 
-If you know that you cannot use identifiable contact information for direct marketing to your customers, but you can use anonymized data for analytics purposes, then you might write a policy like the following:
+### Maintaining a Policy
 
-```yaml
-policy:
-- fides_key: main_privacy_policy
-  name: Main Privacy Policy
-  description: The main privacy policy for the organization.
-  rules:
-  - fides_key: reject_direct_marketing
-    name: Reject Direct Marketing
-    description: Do not allow collection or storage of any identifiable contact info to use for marketing.
-    data_categories:
-      inclusion: ANY
-      values:
-        - user.provided.identifiable.contact
-    data_uses:
-      inclusion: ANY
-      values:
-        - marketing_advertising_or_promotion
-    data_subjects:
-      inclusion: ANY
-      values:
-        - customer
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    action: REJECT
-  - fides_key: allow_anon_analytics
-    name: Use only anonymized data for analytics
-    description: Allow only anonymized data to be used for analytics purposes.
-    data_categories:
-      inclusion: ANY
-      values:
-        - user.provided.nonidentifiable
-    data_uses:
-      inclusion: ANY
-      values:
-        - improve_product_or_service
-    data_subjects:
-      inclusion: ANY
-      values:
-        - customer
-    data_qualifier: aggregated.anonymized
-    action: ALLOW
-```
+As global privacy laws change and businesses scale, a company's policies will evolve with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.
 
-This policy will evaluate the data subjects, data category, and data qualifier values against data use cases, which generates a boolean output to either allow or reject the process from proceeding.
+## Check Your Progress
 
-## Maintaining a Policy
+After making the above changes and the changes in the previous two steps, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesctl-manifests`](https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-manifests) tag.
 
-As global privacy laws change and your business scales, your company's policies will evolve with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.
+## Next: Add Google Analytics
 
-## Next: Evaluation
-
-In the next section, we'll put all the pieces together to see the policy execute against all of your resources, by running [Evaluations](evaluate.md).
+Improve usage telemetry for this project by adding the nefarious tracker, [Google Analytics](google.md).

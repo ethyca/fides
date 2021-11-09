@@ -1,17 +1,40 @@
-# Declare your Systems
+# Annotate the System
 
-_In this section, we'll review what a system resource is, why it's needed, and how it's created and managed._
+Now that you've built out the underlying database that describes how and what type of data is stored, include the database in application-level "systems", another critical fidesctl resource.
 
-Now that we've built out the underlying databases that describe how and what type of data is stored, we're going to start grouping these into application-level "systems", another critical Fides resource.
+This app contains a single Flaskr Web Application system resource. Create a `system` resource to annotate it by adding a `flaskr_system.yml` file to the `fides_resources` directory.
 
-For Best Pizza Co, you can see that they have 2 business-unit-specific applications, `Web Application` and `Analytics`:
+Writing a Fides privacy declaration requires answering the questions: _"What data is this system processing?"_, _"Why is the system processing this data?"_, _"Whose data is involved?"_, and _"How is the data protected?"_ Fides answers these questions with a `privacy_declaration` that describes the data categories, use, subjects, and qualifier. This application is quite simple, so it only has a single use: to provide the service to users. In order to do so, it requires some identifiable data (name, email, contact, etc.) and it derives some data as well (unique IDs).
 
-![Best Pizza Co's Data Ecosystem](../img/BestPizzaCo_DataEcosystem.png)
+For this project, the file should contain the following configuration:
 
-At Best Pizza Co, we'll have to create a `system` resource for each of the two systems above.
+```yml
+system:
+  - fides_key: flaskr_system
+    name: Flaskr Web Application
+    description: An example Flask web app that simulates an e-commerce application
+    system_type: Application
+    privacy_declarations:
+      - name: Provide e-commerce operations to example customers
+        data_categories:
+          - user.provided.identifiable
+          - user.derived.identifiable
+          - system.operations
+        data_use: provide.system.operations
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - flaskr_postgres_dataset
+```
+
+Privacy Declarations can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`".
+
+In a production app, create as many systems as are necessary to cover all relevant business applications.
 
 ## Understanding Systems
-In Fides, Systems are used to model things that process data for your organization (applications, services, 3<sup>rd</sup> party APIs, etc.) and describe how these datasets are used for business functions. These dataset groupings are not mutually exclusive; they answer "_How and why are these datasets being used?_" At Best Pizza Co, you might also have a "Marketing" system and a "Financial data database" (separate from the other dbs!). The System resource groups the lowest level of data (your datasets) with your business use cases and associates qualitative attributes describing the type of data being used.
+
+In fidesctl, Systems are used to model things that process data for organizations (applications, services, 3rd party APIs, etc.) and describe how these datasets are used for business functions. These groupings are not mutually exclusive; they answer "_How and why are these datasets being used?_" The System resource groups the lowest level of data (your datasets) with your business use cases, and associates qualitative attributes describing the type of data being used.
 
 Systems use the following attributes:
 
@@ -23,58 +46,20 @@ Systems use the following attributes:
 | data_qualifier | List[FidesKey] | The level of deidentification for the dataset |
 | dataset_refereneces | List[FidesKey] | The `fides_key`(s) of the dataset fields used in this Privacy Declaration |
 
-## Creating a System Resource
+> For more detail on System resources, see the full [System resource documentation](../language/resources/system.md).
 
-Let's take a look at the following system annotations for a data analytics and marketing system:
+### Maintaining a System Resource
 
-```yaml
-system:
-- fides_key: web_app
-  name: Pizza Ordering Web Application
-  description: A system used to order pizza from Best Pizza Co
-  system_type: Service
-  privacy_declarations:
-  - name: Provide services and order tracking for customers.
-    data_categories:
-    - user.provided.identifiable.contact
-    data_use: provide_product_or_service
-    data_subjects:
-    - customer
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    dataset_references:
-    - appdb
-
-- fides_key: analytics
-  name: Analytics system
-  description: Provide BI and insights on customer, order and inventory data
-  system_type: Service
-  privacy_declarations:
-  - name: Collect data for business intelligence
-    data_categories:
-    - user.provided.identifiable.contact
-    - user.derived.identifiable.device
-    data_use: improve_product_or_service
-    data_subjects:
-    - customer
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-```
-
-The system is comprised of Privacy Declarations. These can be read colloquially as "This system uses sensitive data types of `data_categories` for `data_subjects` with the purpose of `data_use` at a deidentification level of `data_qualifier`".
-
-You can create as many systems as are necessary to cover all of your company's business applications.
-
-## Maintaining a System Resource
-
-As business use cases evolve, your systems' data subjects, data categories and data uses will change with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.
+As use cases evolve, your systems' data subjects, data categories, and data uses will change as well. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.
 
 ---
 
 **PRO TIP**
 
-As you add more systems to your ever-changing data ecosystem, you might want to consider grouping your systems into another Fides resource type, called a [Registry](../language/resources.md#registry).
+As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a [Registry](../language/resources.md#registry).
 
 ---
 
-## Next: Policy
+## Next: Write a Policy
 
-With our datasets and systems in place, we've now declarated rich metadata about data privacy at Best Pizza Co. Now, we can enforce constraints on those declarations by writing [Policies](policy.md).
+With database and system resources declared, you must now enforce your data constraints by [writing a Policy](policy.md).
