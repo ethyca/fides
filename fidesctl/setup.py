@@ -9,6 +9,8 @@ long_description = open("README.md").read()
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
+extras = {}
+
 setup(
     name="fidesctl",
     version=versioneer.get_version(),
