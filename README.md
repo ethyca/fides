@@ -19,9 +19,10 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands: 
 
     <details>
+
     This will spin up the entire project and open a shell within the `fidesctl` container. Once you see the `fidesctl#` prompt (takes ~3 minutes the first time), you know you're ready to go:
 
-    <summary>Run `make cli`</summary>
+    <summary>Run <code>make cli</code></summary>
 
       ```bash
       ~/git/fides% make cli
@@ -41,7 +42,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     <details>
     This builds the required images, spins up the database, and runs the initialization scripts.
 
-    <summary>Run `fidesctl init-db`</summary>
+    <summary>Run <code>fidesctl init-db</code></summary>
 
       ```bash
       ~/git/fides% fidesctl init-db
@@ -52,9 +53,10 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     </details>
 
     <details>
+
     This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
-    <summary>Run `fidesctl ping`</summary>
+    <summary>Run <code>fidesctl ping</code></summary>
 
       ```bash
       root@796cfde906f1:/fides/fidesctl# fidesctl ping
@@ -72,7 +74,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 2. Run `fidesctl evaluate demo_resources/`. This command ensures that the demo_analytics_system and demo_marketing_system systems are compliant with your privacy policy as code:
     <details>
 
-    <summary>Results of`fidesctl evaluate`</summary>
+    <summary>Results of <code>fidesctl evaluate</code></summary>
 
       ```bash
       root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
@@ -116,7 +118,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system that uses contact information for marketing purposes.
     <details>
-      <summary>Run `cat demo_resources/demo_policy.yml`</summary>
+      <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
 
       ```yaml
       policy:
@@ -148,6 +150,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 4. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
     <details>
+
     Edit `demo_resources/demo_system.yml` and uncomment the line that adds `user.provided.identifiable.contact` to the list of `data_categories` for the `demo_marketing_system`.
       <summary>Add User-provided contact info to the demo_marketing_system</summary>
 
@@ -166,7 +169,8 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     <details>
 
-      <summary>Run `fidesctl evaluate` again</summary>
+      <summary>Run <code>fidesctl evaluate</code> again</summary>
+      
         Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes. 
 
      ```bash
