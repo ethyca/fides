@@ -1,6 +1,6 @@
 # Tutorial Overview
 
-In this tutorial you will learn how to use Fidesctl to solve a real-world data privacy problem. These steps closely follow the example found in the `ethyca/fidesdemo` repository [here](https://github.com/ethyca/fidesdemo).
+In this tutorial you will learn how to use fidesctl to solve a real-world data privacy problem. These steps closely follow the example found in the `ethyca/fidesdemo` repository [here](https://github.com/ethyca/fidesdemo).
 
 You will run a local instance of a basic web app to demonstrate the use of Fidesctl as part of a "real" project that uses:
 

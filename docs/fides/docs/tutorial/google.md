@@ -36,8 +36,9 @@ Open the `flaskr/templates/base.html` file in your favorite editor, and include 
 ## Annotate a Fidesctl System Resource
 
 To ensure that the app's policies can account for the data collected by Google Analytics, define a new fidesctl System resource by adding a `google_analytics_system.yml` file to the `fides_resources` directory. This System resource annotation should reflect the uses of the Google Analytics features configured in this app's implementation. Some things to think about might be:
-- What fields are being tracked? (See the [field reference documentation](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) for a list of all possible fields)
-- What `data_use` value would be appropriate for this app? (`provide` vs. `improve`)
+
+* What fields are being tracked? (See the [field reference documentation](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) for a list of all possible fields)
+* What `data_use` value would be appropriate for this app? (`provide` vs. `improve`)
 
 For this System resource, the file should contain the following configuration:
 
@@ -78,6 +79,7 @@ system:
 ```
 
 There are two `privacy_declaration`s defined:
+
 1. The use of pseudonymized behavioral data to analyze app usage
 1. The use of user IP addresses to derive their geographic location
 

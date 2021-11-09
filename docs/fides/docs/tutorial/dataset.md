@@ -110,7 +110,7 @@ Additionally, `fideslang` has attributes that describe what kind of data is cont
 
 ### PRO TIP
 
-As you're progressing with the tutorial, we recommend installing our [FidesCtl VS Code extension](https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl), which will validate the syntax in real-time as you're writing your resource files!
+As you're progressing with the tutorial, we recommend installing our [fidesctl VS Code extension](https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl), which will validate the syntax in real-time as you're writing your resource files!
 
 ---
 

@@ -67,10 +67,11 @@ policy:
 ```
 
 This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:
+
 1. Do not use identifiable data for anything other than the app's primary functions (after all, it's just a demo app!).
 1. Do not collect _any_ sensitive data at all. As a safe default, this is the type of policy you might add to all projects. Later, you can make exceptions (if you are working on a project that requires these categories).
 
-### Understanding the Policy
+## Understanding the Policy
 
 The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In fidesctl, a Policy is comprised of rules against which the system's privacy declarations are evaluated. Policies will evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
 

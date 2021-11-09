@@ -32,9 +32,9 @@ Privacy Declarations can be read colloquially as "This system uses sensitive dat
 
 In a production app, create as many systems as are necessary to cover all relevant business applications.
 
-### Understanding Systems
+## Understanding Systems
 
-In fidesctl, Systems are used to model things that process data for organizations (applications, services, 3<sup>rd</sup> party APIs, etc.) and describe how these datasets are used for business functions. These groupings are not mutually exclusive; they answer "_How and why are these datasets being used?_" The System resource groups the lowest level of data (your datasets) with your business use cases, and associates qualitative attributes describing the type of data being used.
+In fidesctl, Systems are used to model things that process data for organizations (applications, services, 3rd party APIs, etc.) and describe how these datasets are used for business functions. These groupings are not mutually exclusive; they answer "_How and why are these datasets being used?_" The System resource groups the lowest level of data (your datasets) with your business use cases, and associates qualitative attributes describing the type of data being used.
 
 Systems use the following attributes:
 
