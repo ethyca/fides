@@ -9,14 +9,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/tutorial/ci/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/tutorial/google/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.2.5">
     
     
       
-        <title>Integrate your CI - Fides</title>
+        <title>Add Google Analytics - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#integrate-your-ci" class="md-skip">
+        <a href="#add-google-analytics" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Integrate your CI
+              Add Google Analytics
             
           </span>
         </div>
@@ -315,7 +315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -327,8 +327,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
+      <a href="../add/" class="md-nav__link">
+        Add Fidesctl to the App
       </a>
     </li>
   
@@ -340,7 +340,7 @@
   
     <li class="md-nav__item">
       <a href="../dataset/" class="md-nav__link">
-        Annotate your Datasets
+        Annotate the Dataset
       </a>
     </li>
   
@@ -352,7 +352,7 @@
   
     <li class="md-nav__item">
       <a href="../system/" class="md-nav__link">
-        Declare your Systems
+        Annotate the System
       </a>
     </li>
   
@@ -364,19 +364,7 @@
   
     <li class="md-nav__item">
       <a href="../policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../evaluate/" class="md-nav__link">
-        Evaluate your Resources
+        Write a Policy
       </a>
     </li>
   
@@ -397,12 +385,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Integrate your CI
+          Add Google Analytics
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Integrate your CI
+        Add Google Analytics
       </a>
       
         
@@ -420,29 +408,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#repository-structure" class="md-nav__link">
-    Repository Structure
+  <a href="#define-the-apps-google-analytics-identifier" class="md-nav__link">
+    Define the App's Google Analytics Identifier
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#pull-requests" class="md-nav__link">
-    Pull Requests
+  <a href="#add-the-google-analytics-script" class="md-nav__link">
+    Add the Google Analytics Script
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#merge-event" class="md-nav__link">
-    Merge Event
+  <a href="#annotate-a-fidesctl-system-resource" class="md-nav__link">
+    Annotate a Fidesctl System Resource
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#additional-resources" class="md-nav__link">
-    Additional Resources
+  <a href="#check-your-progress" class="md-nav__link">
+    Check Your Progress
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-manage-google-analytics-with-fidesctl" class="md-nav__link">
+    Next: Manage Google Analytics with Fidesctl
   </a>
   
 </li>
@@ -451,6 +446,18 @@
   
 </nav>
       
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
+      </a>
     </li>
   
 
@@ -1129,29 +1136,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#repository-structure" class="md-nav__link">
-    Repository Structure
+  <a href="#define-the-apps-google-analytics-identifier" class="md-nav__link">
+    Define the App's Google Analytics Identifier
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#pull-requests" class="md-nav__link">
-    Pull Requests
+  <a href="#add-the-google-analytics-script" class="md-nav__link">
+    Add the Google Analytics Script
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#merge-event" class="md-nav__link">
-    Merge Event
+  <a href="#annotate-a-fidesctl-system-resource" class="md-nav__link">
+    Annotate a Fidesctl System Resource
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#additional-resources" class="md-nav__link">
-    Additional Resources
+  <a href="#check-your-progress" class="md-nav__link">
+    Check Your Progress
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-manage-google-analytics-with-fidesctl" class="md-nav__link">
+    Next: Manage Google Analytics with Fidesctl
   </a>
   
 </li>
@@ -1169,42 +1183,142 @@
               
                 
                 
-                <h1 id="integrate-your-ci">Integrate your CI</h1>
-<p><em>In this section, we'll reference a few examples and best practices for setting up your CI.</em></p>
-<!-- (TODO: rewrite) -->
-
-<p>Fides is meant to exist as a part of your CI pipeline, in order to enforce your organization's privacy policy before changes are released. We recommend setting up two events to trigger during each run of your CI pipeline.</p>
-<h2 id="repository-structure">Repository Structure</h2>
-<p>Within your organization, you'll write manifest files and add these to version control with your source code, tests, etc. Each of these individual projects can then publish their manifests to the Fidesctl server via the API:</p>
-<p><img alt="Fides Manifest Workflow" src="../../img/Manifest_Flow.svg" /></p>
-<h2 id="pull-requests">Pull Requests</h2>
-<p><img alt="Fides CI Workflow" src="../../img/CI_Workflow.svg" /></p>
-<ol>
-<li>Set up a new CI workflow to trigger whenever a system or registry file is changed within a pull request.</li>
-<li>
-<p>Configure the new workflow to run the following command:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate --dry fides_manifests/
+                <h1 id="add-google-analytics">Add Google Analytics</h1>
+<p>To better understand the behavior of the app's users, add Google Analytics to the app and a fidesctl System resource to annotate it.</p>
+<h2 id="define-the-apps-google-analytics-identifier">Define the App's Google Analytics Identifier</h2>
+<p>Open the <code>flaskr/__init__.py</code> file in your favorite editor, and define the <code>GOOGLE_ANALYTICS_ID</code> constant below line 7:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span> <span class="o">=</span> <span class="s2">&quot;UA-xxxxxxxxx-y&quot;</span>
 </code></pre></div>
 </td></tr></table>
-</li>
-<li>
-<p>The command will exit with a non-zero status if the evaluation fails.</p>
-</li>
-</ol>
-<p>Use the result of this job to determine whether or not a system change is safe to merge. If the command fails, check the error messages to see why.</p>
-<h2 id="merge-event">Merge Event</h2>
+<p>In the <code>create_app</code> function defined on line 11, include the Google Analytics ID value in the application's configuration by adding the following line below line 17:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span><span class="o">=</span><span class="n">GOOGLE_ANALYTICS_ID</span><span class="p">,</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="add-the-google-analytics-script">Add the Google Analytics Script</h2>
+<p>Open the <code>flaskr/templates/base.html</code> file in your favorite editor, and include the following at the beginning of the <code>&lt;head&gt;</code> tag:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>{% if config[&#39;GOOGLE_ANALYTICS_ID&#39;] %}
+    <span class="c">&lt;!-- Global site tag (gtag.js) - Google Analytics --&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">async</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://www.googletagmanager.com/gtag/js?id={{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+        <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">||</span> <span class="p">[];</span>
+        <span class="kd">function</span> <span class="nx">gtag</span><span class="p">(){</span><span class="nx">dataLayer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);}</span>
+        <span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;js&quot;</span><span class="p">,</span> <span class="ow">new</span> <span class="nb">Date</span><span class="p">());</span>
+        <span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;{{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;</span><span class="p">);</span>
+    <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+{% endif %}
+</code></pre></div>
+</td></tr></table>
+<h2 id="annotate-a-fidesctl-system-resource">Annotate a Fidesctl System Resource</h2>
+<p>To ensure that the app's policies can account for the data collected by Google Analytics, define a new fidesctl System resource by adding a <code>google_analytics_system.yml</code> file to the <code>fides_resources</code> directory. This System resource annotation should reflect the uses of the Google Analytics features configured in this app's implementation. Some things to think about might be:</p>
+<ul>
+<li>What fields are being tracked? (See the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference">field reference documentation</a> for a list of all possible fields)</li>
+<li>What <code>data_use</code> value would be appropriate for this app? (<code>provide</code> vs. <code>improve</code>)</li>
+</ul>
+<p>For this System resource, the file should contain the following configuration:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>system:
+  - fides_key: google_analytics_system
+    name: Google Analytics
+    description: Hosted third party analytics to track and analyze user behaviour
+    system_type: Third Party
+    privacy_declarations:
+      # See the Google Analytics documentation for a description of the possible
+      # fields collected by the tracker, including page URL, referrer, cookie ID, etc.
+      # https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference
+      - name: Track &amp; report on page views
+        data_categories:
+          - user.derived.identifiable.browsing_history
+          - user.derived.identifiable.device.cookie_id
+          - user.derived.identifiable.telemetry
+          - user.derived.identifiable.location
+          - user.derived.nonidentifiable
+        data_use: improve
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+      # Google Analytics collects the user&#39;s IP address and derives geographic dimensions server-side.
+      # See https://developers.google.com/analytics/devguides/reporting/realtime/dimsmets/geonetwork
+      - name: Derive user geographic location
+        data_categories:
+          - user.derived.identifiable.device.ip_address
+          - user.derived.identifiable.location
+          - user.derived.identifiable
+        data_use: improve
+        data_subjects:
+          - customer
+        # With &quot;IP Anonymization&quot; enabled, IP addresses will be pseudonymized in Google Analytics
+        # See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+</code></pre></div>
+</td></tr></table>
+<p>There are two <code>privacy_declaration</code>s defined:</p>
 <ol>
-<li>Set up a new CI workflow to trigger whenever a file in your manifests directory changes, and the branch gets merged in to the <code>main</code> branch.</li>
-<li>Configure the new workflow to run two commands:<ol>
-<li><code>fidesctl apply fides_manifest/</code></li>
-<li><code>fidesctl evaluate system &lt;fides_key&gt;</code></li>
+<li>The use of pseudonymized behavioral data to analyze app usage</li>
+<li>The use of user IP addresses to derive their geographic location</li>
 </ol>
-</li>
-</ol>
-<p>This will apply all of your manifests to the API and evaluate the current state of your system on the <code>main</code> branch.</p>
-<h2 id="additional-resources">Additional Resources</h2>
-<p>We have compiled a few reference implementations for some popular CI tools, which you can find here soon!</p>
-<!-- (TODO: provide examples) -->
+<p>The two declarations reflect the separate purposes for which data is collected and used by Google Analytics here. They are meant to align with the app's actual usage of its specific Google Analytics implementation; there are many other data uses for Google Analytics, but this app does not leverage them.</p>
+<h2 id="check-your-progress">Check Your Progress</h2>
+<p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-add-google-analytics"><code>fidesctl-add-google-analytics</code></a> tag.</p>
+<h2 id="next-manage-google-analytics-with-fidesctl">Next: Manage Google Analytics with Fidesctl</h2>
+<p>Google Analytics is implemented and working correctly, but - oh no! - executing <code>make fidesctl-evaluate</code> shows a failure:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;fides_key&quot;</span><span class="p">:</span> <span class="s2">&quot;4e739b1b_732e_43b1_8747_e833905dfc4c_1635789050&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;details&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;Declaration (Derive user geographic location) of System (google_analytics_system) failed Rule (Minimize User Identifiable Data) from Policy (flaskr_policy)&quot;</span>
+  <span class="p">],</span>
+  <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div>
+</td></tr></table>
+<p>In the final step, enable the fidesctl policy already in place to pass by <a href="../pass/">updating Google Analytics</a>.</p>
                 
               
               
@@ -1261,9 +1375,9 @@
       
         
         <a
-          href="../evaluate/"
+          href="../policy/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Evaluate your Resources"
+          aria-label="Previous: Write a Policy"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1274,7 +1388,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Evaluate your Resources
+              Write a Policy
             </div>
           </div>
         </a>
@@ -1284,9 +1398,9 @@
       
         
         <a
-          href="../../deployment/"
+          href="../pass/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Deployment Guide"
+          aria-label="Next: Manage Google Analytics with Fidesctl"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1294,7 +1408,7 @@
               <span class="md-footer__direction">
                 Next
               </span>
-              Deployment Guide
+              Manage Google Analytics with Fidesctl
             </div>
           </div>
           <div class="md-footer__button md-icon">

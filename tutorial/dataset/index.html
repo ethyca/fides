@@ -16,7 +16,7 @@
     
     
       
-        <title>Annotate your Datasets - Fides</title>
+        <title>Annotate the Dataset - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#annotate-your-datasets" class="md-skip">
+        <a href="#annotate-the-dataset" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Annotate your Datasets
+              Annotate the Dataset
             
           </span>
         </div>
@@ -315,7 +315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -327,8 +327,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
+      <a href="../add/" class="md-nav__link">
+        Add Fidesctl to the App
       </a>
     </li>
   
@@ -349,12 +349,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Annotate your Datasets
+          Annotate the Dataset
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Annotate your Datasets
+        Annotate the Dataset
       </a>
       
         
@@ -372,36 +372,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#generating-a-dataset-resource" class="md-nav__link">
-    Generating a Dataset Resource
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#understanding-the-dataset-resource" class="md-nav__link">
     Understanding the Dataset Resource
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dataset-annotations" class="md-nav__link">
-    Create Dataset Annotations
+    <nav class="md-nav" aria-label="Understanding the Dataset Resource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pro-tip" class="md-nav__link">
+    PRO TIP
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#maintaining-a-dataset-resource" class="md-nav__link">
     Maintaining a Dataset Resource
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#next-systems" class="md-nav__link">
-    Next: Systems
+  <a href="#next-annotate-the-system-resource" class="md-nav__link">
+    Next: Annotate the System Resource
   </a>
   
 </li>
@@ -420,7 +419,7 @@
   
     <li class="md-nav__item">
       <a href="../system/" class="md-nav__link">
-        Declare your Systems
+        Annotate the System
       </a>
     </li>
   
@@ -432,7 +431,7 @@
   
     <li class="md-nav__item">
       <a href="../policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
+        Write a Policy
       </a>
     </li>
   
@@ -443,8 +442,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../evaluate/" class="md-nav__link">
-        Evaluate your Resources
+      <a href="../google/" class="md-nav__link">
+        Add Google Analytics
       </a>
     </li>
   
@@ -455,8 +454,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci/" class="md-nav__link">
-        Integrate your CI
+      <a href="../pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
       </a>
     </li>
   
@@ -1136,36 +1135,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#generating-a-dataset-resource" class="md-nav__link">
-    Generating a Dataset Resource
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#understanding-the-dataset-resource" class="md-nav__link">
     Understanding the Dataset Resource
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dataset-annotations" class="md-nav__link">
-    Create Dataset Annotations
+    <nav class="md-nav" aria-label="Understanding the Dataset Resource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pro-tip" class="md-nav__link">
+    PRO TIP
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#maintaining-a-dataset-resource" class="md-nav__link">
     Maintaining a Dataset Resource
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#next-systems" class="md-nav__link">
-    Next: Systems
+  <a href="#next-annotate-the-system-resource" class="md-nav__link">
+    Next: Annotate the System Resource
   </a>
   
 </li>
@@ -1183,20 +1181,15 @@
               
                 
                 
-                <h1 id="annotate-your-datasets">Annotate your Datasets</h1>
-<p><em>In this section, we'll review what a dataset resource is, why it's needed, and how it's created and managed.</em></p>
-<p>Fundamentally, your data ecosystem is built on data that is stored <em>somewhere</em>. In Fides, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, you might declare one dataset for your Postgres application database, a second dataset for your Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer that other tooling can consume.</p>
-<p>For Best Pizza Co, you can see the three Datasets, <code>postgres appdb</code>, <code>firestore auth</code>, and <code>redshift analyticsdb</code>, are aligned with data storage services in their data ecosystem:</p>
-<p><img alt="Best Pizza Co's Data Ecosystem" src="../../img/BestPizzaCo_DataEcosystem.png" /></p>
-<p>At Best Pizza Co, we'll want to create a <code>dataset</code> resource for each of the 3 datasets above, starting with the Postgres Application DB.</p>
-<h2 id="generating-a-dataset-resource">Generating a Dataset Resource</h2>
-<p>To create a dataset resource, you can either author a resource YAML file manually or use the <code>generate-dataset</code> CLI command. The CLI will connect to your database and automatically generate a non-annotated resource YAML file based on your database schema:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@0419219d14e1:/fides/fidesctl# fidesctl generate-dataset postgresql://USERNAME:PASSWORD@best-pizza-co.us-east-1.rds.amazonaws.com:5432/postgres dataset1.yml
-Generated dataset manifest written to dataset1.yml
-</code></pre></div>
-</td></tr></table>
-<p>Fidesctl has stored the structure of that database as a YAML file in the location provided (<code>dataset1.yml</code>). This file will serve as the first building block in creating Privacy as Code at the lowest level.</p>
+                <h1 id="annotate-the-dataset">Annotate the Dataset</h1>
+<p>Making the fidesctl tools available within the app's virtual environment is just the beginning. Next, configure fidesctl for this app by annotating its resources using manifest files.</p>
+<p>First, create a <code>fides_resources</code> directory at the project root. This is where the manifest files will be stored.</p>
+<blockquote>
+<p><strong>Note:</strong> In a production app this directory can have any name, but it's a best practice to create a specific directory to house the fidesctl manifest files.</p>
+</blockquote>
+<p>Fundamentally, the data ecosystem is built on data that is stored <em>somewhere</em>. In fidesctl, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, an app might declare one dataset for a Postgres application database, a second dataset for a Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer consumable by other tooling.</p>
+<p>This app contains a single PostgreSQL dataset. Create a <code>dataset</code> resource to annotate it by adding a <code>flaskr_postgres_dataset.yml</code> file to the <code>fides_resources</code> directory. To annotate this dataset correctly, go through each column of each table and answer the question: <em>"What data categories are stored here?"</em></p>
+<p>For this project, the file should contain the following configuration:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1211,36 +1204,126 @@ Generated dataset manifest written to dataset1.yml
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">appdb</span>
-  <span class="nt">organization_fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default_organization</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Postgres App Database</span>
-  <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Dataset:</span><span class="nv"> </span><span class="s">Postgres</span><span class="nv"> </span><span class="s">App</span><span class="nv"> </span><span class="s">Database&#39;</span>
-  <span class="nt">collections</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">users</span>
-    <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">users&#39;</span>
-    <span class="nt">fields</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first_name</span>
-      <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span>
-      <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
-    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">zip_code</span>
-      <span class="nt">description</span><span class="p">:</span> <span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">zip_code&#39;</span>
-      <span class="nt">data_categories</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>dataset:
+- fides_key: flaskr_postgres_dataset
+  name: Flaskr Example PostgreSQL Database
+  description: Application database for Flaskr example app
+  collections:
+  - name: products
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [user.provided.identifiable]
+    - name: id
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [user.provided.identifiable]
+    - name: price
+      data_categories: [user.provided.identifiable]
+    - name: seller_id
+      data_categories: [user.derived.identifiable.unique_id]
+  - name: purchases
+    fields:
+    - name: buyer_id
+      data_categories: [user.derived.identifiable.unique_id]
+    - name: city
+      data_categories: [user.provided.identifiable.contact.city]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: product_id
+      data_categories: [system.operations]
+    - name: state
+      data_categories: [user.provided.identifiable.contact.state]
+    - name: street_1
+      data_categories: [user.provided.identifiable.contact.street]
+    - name: street_2
+      data_categories: [user.provided.identifiable.contact.street]
+    - name: zip
+      data_categories: [user.provided.identifiable.contact.postal_code]
+  - name: users
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: email
+      data_categories: [user.provided.identifiable.contact.email]
+    - name: first_name
+      data_categories: [user.provided.identifiable.name]
+    - name: id
+      data_categories: [user.derived.identifiable.unique_id]
+    - name: last_name
+      data_categories: [user.provided.identifiable.name]
+    - name: password
+      data_categories: [user.provided.identifiable.credentials.password]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+</code></pre></div>
+</td></tr></table>
+<!-- TODO: Link to the `generate-dataset` usage documentation below, when it exists. -->
+
+<p>As an alternative to manually authoring the resource file, you can also use the <code>generate-dataset</code> CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate-dataset <span class="se">\</span>
+  postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
+  fides_resources/flaskr_postgres_dataset.yml
 </code></pre></div>
 </td></tr></table>
 <h2 id="understanding-the-dataset-resource">Understanding the Dataset Resource</h2>
-<p>This YAML serves as the foundation of the Fides language; it answers "<em>What data and kinds of data do we have?</em>" and "<em>How is our data organized?</em>". The language is built on declaring the types of data found in storage for your organization.</p>
-<p>In traditional SQL, Fides defines the following:</p>
+<p>This YAML serves as the foundation of <a href="https://github.com/ethyca/fideslang"><code>fideslang</code></a>, the Fides language; it answers "<em>What data and kinds of data do we have?</em>" and "<em>How is our data organized?</em>". The language is built on declaring the types of data found in storage for your organization.</p>
+<p>In traditional SQL, fidesctl defines the following:</p>
 <ul>
 <li>"datasets" as database schemas</li>
 <li>"collections" as database tables</li>
 <li>"fields" as database columns</li>
 </ul>
-<p>For NoSQL datasets, Fides defines the following:
-* "dataset"
-* "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
-* "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")</p>
-<p>Additionally, fideslang has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:</p>
+<p>For NoSQL datasets, fidesctl defines the following:</p>
+<ul>
+<li>"dataset"</li>
+<li>"collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")</li>
+<li>"fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")</li>
+</ul>
+<p>Additionally, <code>fideslang</code> has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:</p>
 <table>
 <thead>
 <tr>
@@ -1272,63 +1355,17 @@ Generated dataset manifest written to dataset1.yml
 </tr>
 </tbody>
 </table>
-<h2 id="create-dataset-annotations">Create Dataset Annotations</h2>
-<p>The <code>fidesctl generate-dataset</code> command has already pre-filled the required attributes for this exported YAML file. We can update the YAML file with some information that might be appropriate for your organization, such as:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code> dataset:
- - fides_key: appdb
-   organization_fides_key: default_organization
-   name: Postgres App Database
-<span class="gi">+  description: &#39;This is our primary web application database&#39;</span>
-<span class="gd">-  description: &#39;Fides Generated Description for Dataset: Postgres App Database&#39;</span>
-   collections:
-     - name: users
-<span class="gi">+      description: &#39;Table that contains all user account data as entered by the user&#39;</span>
-<span class="gd">-      description: &#39;Fides Generated Description for Table: users&#39;</span>
-       fields:
-       - name: first_name
-         description: &#39;Fides Generated Description for Column: first_name&#39;
-<span class="gi">+        data_categories:</span>
-<span class="gi">+        - user.provided.identifiable.name</span>
-<span class="gi">+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-<span class="gd">-        data_categories: []</span>
-       - name: zip_code
-         description: &#39;Fides Generated Description for Column: zip_code&#39;
-<span class="gi">+        data_categories:</span>
-<span class="gi">+        - user.provided.identifiable.contact.postal_code</span>
-<span class="gi">+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized</span>
-<span class="gd">-        data_categories: []</span>
-</code></pre></div>
-</td></tr></table>
+<blockquote>
+<p>For more detail on Dataset resources, see the full <a href="../../language/resources/dataset/">Dataset resource documentation</a>.</p>
+</blockquote>
 <hr />
-<p><strong>PRO TIP</strong></p>
-<p>As you're progressing with the tutorial, we recommend installing our <a href="https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl">Fides' VS Code plugin</a>, which will validate the syntax in real-time as you're writing your resource files!</p>
+<h3 id="pro-tip">PRO TIP</h3>
+<p>As you're progressing with the tutorial, we recommend installing our <a href="https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl">fidesctl VS Code extension</a>, which will validate the syntax in real-time as you're writing your resource files!</p>
 <hr />
-<h2 id="maintaining-a-dataset-resource">Maintaining a Dataset Resource</h2>
-<p>As your business grows, you will add more databases and other services where you will be storing potentially sensitive data. We recommend that updating this resource file become a part of the development process when building a new feature.</p>
-<h2 id="next-systems">Next: Systems</h2>
-<p>Now that we've seen how to annotate dataset resources (e.g. databases, flat-files) we can move up to the next layer: <a href="../system/">Systems</a>.</p>
+<h3 id="maintaining-a-dataset-resource">Maintaining a Dataset Resource</h3>
+<p>As apps add more databases and other services to store potentially sensitive data, it is recommended that updating this resource file becomes a part of the development process when building a new feature.</p>
+<h2 id="next-annotate-the-system-resource">Next: Annotate the System Resource</h2>
+<p>With the underlying database resource declared, you must now include the database in an application-level <a href="../system/">System resource annotation</a>.</p>
                 
               
               
@@ -1385,9 +1422,9 @@ Generated dataset manifest written to dataset1.yml
       
         
         <a
-          href="../taxonomy/"
+          href="../add/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Understanding the Fides Taxonomy"
+          aria-label="Previous: Add Fidesctl to the App"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1398,7 +1435,7 @@ Generated dataset manifest written to dataset1.yml
               <span class="md-footer__direction">
                 Previous
               </span>
-              Understanding the Fides Taxonomy
+              Add Fidesctl to the App
             </div>
           </div>
         </a>
@@ -1410,7 +1447,7 @@ Generated dataset manifest written to dataset1.yml
         <a
           href="../system/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Declare your Systems"
+          aria-label="Next: Annotate the System"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1418,7 +1455,7 @@ Generated dataset manifest written to dataset1.yml
               <span class="md-footer__direction">
                 Next
               </span>
-              Declare your Systems
+              Annotate the System
             </div>
           </div>
           <div class="md-footer__button md-icon">

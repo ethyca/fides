@@ -9,14 +9,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/tutorial/evaluate/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/tutorial/add/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.2.5">
     
     
       
-        <title>Evaluate your Resources - Fides</title>
+        <title>Add Fidesctl to the App - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#evaluate-your-policy" class="md-skip">
+        <a href="#add-fidesctl-to-the-app" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Evaluate your Resources
+              Add Fidesctl to the App
             
           </span>
         </div>
@@ -315,56 +315,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         Overview
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dataset/" class="md-nav__link">
-        Annotate your Datasets
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../system/" class="md-nav__link">
-        Declare your Systems
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
       </a>
     </li>
   
@@ -385,12 +337,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Evaluate your Resources
+          Add Fidesctl to the App
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Evaluate your Resources
+        Add Fidesctl to the App
       </a>
       
         
@@ -408,15 +360,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#run-an-evaluation" class="md-nav__link">
-    Run an Evaluation
+  <a href="#add-the-fidesctl-dependency" class="md-nav__link">
+    Add the fidesctl Dependency
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-continuous-integration" class="md-nav__link">
-    Next: Continuous Integration
+  <a href="#configure-fidesctl" class="md-nav__link">
+    Configure Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-fidesctl-via-docker" class="md-nav__link">
+    Run Fidesctl via Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-makefile-commands" class="md-nav__link">
+    Add Makefile Commands
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-your-progress" class="md-nav__link">
+    Check Your Progress
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-annotate-the-resources" class="md-nav__link">
+    Next: Annotate the Resources
   </a>
   
 </li>
@@ -434,8 +414,56 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci/" class="md-nav__link">
-        Integrate your CI
+      <a href="../dataset/" class="md-nav__link">
+        Annotate the Dataset
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system/" class="md-nav__link">
+        Annotate the System
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policy/" class="md-nav__link">
+        Write a Policy
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../google/" class="md-nav__link">
+        Add Google Analytics
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
       </a>
     </li>
   
@@ -1115,15 +1143,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#run-an-evaluation" class="md-nav__link">
-    Run an Evaluation
+  <a href="#add-the-fidesctl-dependency" class="md-nav__link">
+    Add the fidesctl Dependency
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-continuous-integration" class="md-nav__link">
-    Next: Continuous Integration
+  <a href="#configure-fidesctl" class="md-nav__link">
+    Configure Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-fidesctl-via-docker" class="md-nav__link">
+    Run Fidesctl via Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-makefile-commands" class="md-nav__link">
+    Add Makefile Commands
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-your-progress" class="md-nav__link">
+    Check Your Progress
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-annotate-the-resources" class="md-nav__link">
+    Next: Annotate the Resources
   </a>
   
 </li>
@@ -1141,19 +1197,36 @@
               
                 
                 
-                <h1 id="evaluate-your-policy">Evaluate your Policy</h1>
-<p><em>In this section, we'll review how to evaluate your policy and address any errors.</em></p>
-<p>Now that we're done with all the setup, it's time to put your policy to the test!</p>
-<h2 id="run-an-evaluation">Run an Evaluation</h2>
-<p>Since we're running Fides locally, we can use the following command to evaluate our system:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate &lt;path to resources&gt;
+                <h1 id="add-fidesctl-to-the-app">Add Fidesctl to the App</h1>
+<p>In this step you will incorporate <a href="https://github.com/ethyca/fides">fidesctl</a>, which will enable you to declare your <code>system</code>, <code>dataset</code>, and <code>policy</code> resources as manifest YAML files.</p>
+<h2 id="add-the-fidesctl-dependency">Add the <code>fidesctl</code> Dependency</h2>
+<p>Open the <code>requirements.txt</code> file and add the <code>fidesctl</code> dependency by including the following line:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl&gt;=1.0.0
 </code></pre></div>
 </td></tr></table>
-<p>Alternatively, if you'd like to see the evaluation result from just a single resource type, run:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate system &lt;path to resource&gt;
+<p>Then, install the dependencies by running:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -r requirements.txt
 </code></pre></div>
 </td></tr></table>
-<p>If that command returns a <em>PASS</em> evaluation, then you're now in a known-good state and ready to set up automated CI workflows to make sure your application remains compliant over time. If that command returns a <em>FAILED</em> evaluation, you should have received feedback as to why it failed.</p>
+<h2 id="configure-fidesctl">Configure Fidesctl</h2>
+<p>Fidesctl needs some configuration to work for your environment; this is handled by looking for a TOML file in the current working directory. Create a <code>fidesctl.toml</code> file at the root level of the repository. It should contain the following configuration:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span>
+<span class="n">server_url</span> <span class="o">=</span> <span class="s">&quot;http://localhost:8080&quot;</span>
+
+<span class="k">[api]</span>
+<span class="n">database_url</span> <span class="o">=</span> <span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<ul>
+<li>The <code>[cli]</code>-scoped <code>server_url</code> option specifies the address that the fidesctl CLI will use when connecting to the fidesctl server.</li>
+<li>The <code>[api]</code>-scoped <code>database_url</code> option specifies the connection string that the fidesctl API will use to connect to the PostgreSQL database created in the previous step.</li>
+</ul>
+<h2 id="run-fidesctl-via-docker">Run Fidesctl via Docker</h2>
+<p>Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses <code>docker-compose</code> to orchestrate resources, so include <code>fidesctl</code> as a service by adding the following configuration after the database service:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1164,66 +1237,57 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-Loading resource manifests from: demo_resources
-Taxonomy successfully created.
-----------
-Processing registry resources...
-CREATED 1 registry resources.
-UPDATED 0 registry resources.
-SKIPPED 0 registry resources.
-----------
-Processing dataset resources...
-CREATED 1 dataset resources.
-UPDATED 0 dataset resources.
-SKIPPED 0 dataset resources.
-----------
-Processing policy resources...
-CREATED 1 policy resources.
-UPDATED 0 policy resources.
-SKIPPED 0 policy resources.
-----------
-Processing system resources...
-CREATED 2 system resources.
-UPDATED 0 system resources.
-SKIPPED 0 system resources.
-----------
-Loading resource manifests from: demo_resources
-Taxonomy successfully created.
-Evaluating the following policies:
-demo_privacy_policy
-----------
-Checking for missing resources...
-Executing evaluations...
-Sending the evaluation results to the server...
-Evaluation passed!
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl:
+  image: ethyca/fidesctl:latest
+  depends_on:
+    - db
+  command: fidesctl webserver
+  expose:
+    - 8080
+  ports:
+    - &quot;8080:8080&quot;
+  environment:
+    - FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl
 </code></pre></div>
 </td></tr></table>
-<p>Congratulations, you've now created your annotated datasets, system-level business cases, and your policy for enforcement — you've laid the groundwork for a comprehensive data privacy software program at your organization! This is a great starting point for training your peers and colleagues so they can evaluate their new code locally prior to committing any code to the repository.</p>
-<h2 id="next-continuous-integration">Next: Continuous Integration</h2>
-<p>The final step is to <a href="../ci/">integrate with your CI environment</a> so you can fully realize Fides' potential. Allowing Fides <code>evaluate</code> calls to be triggered by your pipeline is critical for automatically assessing compliance at build time going forward.</p>
+<blockquote>
+<p>See <a href="../deployment#step-2-setup-the-fidesctl-web-server">the fidesctl deployment guide</a> for a more detailed fidesctl server setup walkthrough, and <a href="https://docs.docker.com/compose/compose-file/">the <code>docker-compose</code> documentation</a> for an explanation of the above configuration options.</p>
+</blockquote>
+<h2 id="add-makefile-commands">Add <code>Makefile</code> Commands</h2>
+<blockquote>
+<p>This step is optional, but the commands added to the <code>Makefile</code> here will be referenced later in this tutorial.</p>
+</blockquote>
+<p>The above changes will enable fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the fidesctl CLI by adding commands to the <code>Makefile</code> like the following:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nf">fidesctl-init-db</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Initializing fidesctl db..&quot;</span>
+    ./venv/bin/fidesctl init-db
+
+<span class="nf">fidesctl-evaluate</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Evaluating policy with fidesctl...&quot;</span>
+    ./venv/bin/fidesctl evaluate --dry fides_resources
+
+<span class="nf">fidesctl-generate-dataset</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Generating dataset with fidesctl...&quot;</span>
+    ./venv/bin/fidesctl generate-dataset postgresql://postgres:postgres@localhost:5432/flaskr example.yml
+</code></pre></div>
+</td></tr></table>
+<blockquote>
+<p><strong>Note:</strong> There are additional <code>Makefile</code> changes included in the <code>fidesdemo</code> repository, but they are only intended to enable cleaner usage of this project for demonstration purposes.</p>
+</blockquote>
+<h2 id="check-your-progress">Check Your Progress</h2>
+<p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesops-start"><code>fidesops-start</code></a> tag.</p>
+<h2 id="next-annotate-the-resources">Next: Annotate the Resources</h2>
+<p>Now that the fidesctl tools are available to use within the app's virtual environment, the next step is to configure fidesctl to work with the specifics of this app. This can be done by creating manifest files to <a href="../dataset/">annotate the resources</a>.</p>
                 
               
               
@@ -1280,9 +1344,9 @@ Evaluation passed!
       
         
         <a
-          href="../policy/"
+          href="../"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Write Privacy Policy (as code)"
+          aria-label="Previous: Overview"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1293,7 +1357,7 @@ Evaluation passed!
               <span class="md-footer__direction">
                 Previous
               </span>
-              Write Privacy Policy (as code)
+              Overview
             </div>
           </div>
         </a>
@@ -1303,9 +1367,9 @@ Evaluation passed!
       
         
         <a
-          href="../ci/"
+          href="../dataset/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Integrate your CI"
+          aria-label="Next: Annotate the Dataset"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1313,7 +1377,7 @@ Evaluation passed!
               <span class="md-footer__direction">
                 Next
               </span>
-              Integrate your CI
+              Annotate the Dataset
             </div>
           </div>
           <div class="md-footer__button md-icon">

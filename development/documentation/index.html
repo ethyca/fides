@@ -313,7 +313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/overview/" class="md-nav__link">
+      <a href="../../tutorial/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -325,8 +325,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
+      <a href="../../tutorial/add/" class="md-nav__link">
+        Add Fidesctl to the App
       </a>
     </li>
   
@@ -338,7 +338,7 @@
   
     <li class="md-nav__item">
       <a href="../../tutorial/dataset/" class="md-nav__link">
-        Annotate your Datasets
+        Annotate the Dataset
       </a>
     </li>
   
@@ -350,7 +350,7 @@
   
     <li class="md-nav__item">
       <a href="../../tutorial/system/" class="md-nav__link">
-        Declare your Systems
+        Annotate the System
       </a>
     </li>
   
@@ -362,7 +362,7 @@
   
     <li class="md-nav__item">
       <a href="../../tutorial/policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
+        Write a Policy
       </a>
     </li>
   
@@ -373,8 +373,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/evaluate/" class="md-nav__link">
-        Evaluate your Resources
+      <a href="../../tutorial/google/" class="md-nav__link">
+        Add Google Analytics
       </a>
     </li>
   
@@ -385,8 +385,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/ci/" class="md-nav__link">
-        Integrate your CI
+      <a href="../../tutorial/pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
       </a>
     </li>
   
@@ -1189,10 +1189,10 @@
 <p>To write concept docs, add Markdown files to the <code>docs/fides/docs/</code> directory (or one of its subdirectories). To ensure that your page is displayed in the navigation, edit <code>mkdocs.yml</code> to include a reference to it.</p>
 <h2 id="semantics">Semantics</h2>
 <h3 id="capitalization">Capitalization</h3>
-<p>Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides" and "FidesAPI".</p>
+<p>Concepts that refer to proper nouns or are trademarked should always be capitalized. The exception here is fidesctl and fidesops, which are lowercased as a stylistic choice.</p>
 <p>Other Fides terms, like "Data Category" or "System", should also be capitalized to be clear about the fact that a Fides resource is being referenced.</p>
 <blockquote>
-<p>When a System is applied, it is either created or updated through the FidesAPI.</p>
+<p>When a System is applied, it is either created or updated through the fidesctl api.</p>
 <p>The System model requires a field called <code>fides_key</code>.</p>
 </blockquote>
 <h2 id="previewing-docs-locally">Previewing docs locally</h2>

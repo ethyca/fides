@@ -16,7 +16,7 @@
     
     
       
-        <title>Declare your Systems - Fides</title>
+        <title>Annotate the System - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#declare-your-systems" class="md-skip">
+        <a href="#annotate-the-system" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Declare your Systems
+              Annotate the System
             
           </span>
         </div>
@@ -315,7 +315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -327,8 +327,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
+      <a href="../add/" class="md-nav__link">
+        Add Fidesctl to the App
       </a>
     </li>
   
@@ -340,7 +340,7 @@
   
     <li class="md-nav__item">
       <a href="../dataset/" class="md-nav__link">
-        Annotate your Datasets
+        Annotate the Dataset
       </a>
     </li>
   
@@ -361,12 +361,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Declare your Systems
+          Annotate the System
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Declare your Systems
+        Annotate the System
       </a>
       
         
@@ -388,25 +388,24 @@
     Understanding Systems
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#creating-a-system-resource" class="md-nav__link">
-    Creating a System Resource
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="Understanding Systems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#maintaining-a-system-resource" class="md-nav__link">
     Maintaining a System Resource
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#next-policy" class="md-nav__link">
-    Next: Policy
+  <a href="#next-write-a-policy" class="md-nav__link">
+    Next: Write a Policy
   </a>
   
 </li>
@@ -425,7 +424,7 @@
   
     <li class="md-nav__item">
       <a href="../policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
+        Write a Policy
       </a>
     </li>
   
@@ -436,8 +435,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../evaluate/" class="md-nav__link">
-        Evaluate your Resources
+      <a href="../google/" class="md-nav__link">
+        Add Google Analytics
       </a>
     </li>
   
@@ -448,8 +447,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci/" class="md-nav__link">
-        Integrate your CI
+      <a href="../pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
       </a>
     </li>
   
@@ -1133,25 +1132,24 @@
     Understanding Systems
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#creating-a-system-resource" class="md-nav__link">
-    Creating a System Resource
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="Understanding Systems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#maintaining-a-system-resource" class="md-nav__link">
     Maintaining a System Resource
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#next-policy" class="md-nav__link">
-    Next: Policy
+  <a href="#next-write-a-policy" class="md-nav__link">
+    Next: Write a Policy
   </a>
   
 </li>
@@ -1169,14 +1167,50 @@
               
                 
                 
-                <h1 id="declare-your-systems">Declare your Systems</h1>
-<p><em>In this section, we'll review what a system resource is, why it's needed, and how it's created and managed.</em></p>
-<p>Now that we've built out the underlying databases that describe how and what type of data is stored, we're going to start grouping these into application-level "systems", another critical Fides resource.</p>
-<p>For Best Pizza Co, you can see that they have 2 business-unit-specific applications, <code>Web Application</code> and <code>Analytics</code>:</p>
-<p><img alt="Best Pizza Co's Data Ecosystem" src="../../img/BestPizzaCo_DataEcosystem.png" /></p>
-<p>At Best Pizza Co, we'll have to create a <code>system</code> resource for each of the two systems above.</p>
+                <h1 id="annotate-the-system">Annotate the System</h1>
+<p>Now that you've built out the underlying database that describes how and what type of data is stored, include the database in application-level "systems", another critical fidesctl resource.</p>
+<p>This app contains a single Flaskr Web Application system resource. Create a <code>system</code> resource to annotate it by adding a <code>flaskr_system.yml</code> file to the <code>fides_resources</code> directory.</p>
+<p>Writing a Fides privacy declaration requires answering the questions: <em>"What data is this system processing?"</em>, <em>"Why is the system processing this data?"</em>, <em>"Whose data is involved?"</em>, and <em>"How is the data protected?"</em> Fides answers these questions with a <code>privacy_declaration</code> that describes the data categories, use, subjects, and qualifier. This application is quite simple, so it only has a single use: to provide the service to users. In order to do so, it requires some identifiable data (name, email, contact, etc.) and it derives some data as well (unique IDs).</p>
+<p>For this project, the file should contain the following configuration:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>system:
+  - fides_key: flaskr_system
+    name: Flaskr Web Application
+    description: An example Flask web app that simulates an e-commerce application
+    system_type: Application
+    privacy_declarations:
+      - name: Provide e-commerce operations to example customers
+        data_categories:
+          - user.provided.identifiable
+          - user.derived.identifiable
+          - system.operations
+        data_use: provide.system.operations
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - flaskr_postgres_dataset
+</code></pre></div>
+</td></tr></table>
+<p>Privacy Declarations can be read colloquially as "This system uses sensitive data types of <code>data_categories</code> for <code>data_subjects</code> with the purpose of <code>data_use</code> at a deidentification level of <code>data_qualifier</code>".</p>
+<p>In a production app, create as many systems as are necessary to cover all relevant business applications.</p>
 <h2 id="understanding-systems">Understanding Systems</h2>
-<p>In Fides, Systems are used to model things that process data for your organization (applications, services, 3<sup>rd</sup> party APIs, etc.) and describe how these datasets are used for business functions. These dataset groupings are not mutually exclusive; they answer "<em>How and why are these datasets being used?</em>" At Best Pizza Co, you might also have a "Marketing" system and a "Financial data database" (separate from the other dbs!). The System resource groups the lowest level of data (your datasets) with your business use cases and associates qualitative attributes describing the type of data being used.</p>
+<p>In fidesctl, Systems are used to model things that process data for organizations (applications, services, 3rd party APIs, etc.) and describe how these datasets are used for business functions. These groupings are not mutually exclusive; they answer "<em>How and why are these datasets being used?</em>" The System resource groups the lowest level of data (your datasets) with your business use cases, and associates qualitative attributes describing the type of data being used.</p>
 <p>Systems use the following attributes:</p>
 <table>
 <thead>
@@ -1214,77 +1248,17 @@
 </tr>
 </tbody>
 </table>
-<h2 id="creating-a-system-resource">Creating a System Resource</h2>
-<p>Let's take a look at the following system annotations for a data analytics and marketing system:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span>
-<span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">web_app</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Pizza Ordering Web Application</span>
-  <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">A system used to order pizza from Best Pizza Co</span>
-  <span class="nt">system_type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Service</span>
-  <span class="nt">privacy_declarations</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Provide services and order tracking for customers.</span>
-    <span class="nt">data_categories</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span>
-    <span class="nt">data_use</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">provide_product_or_service</span>
-    <span class="nt">data_subjects</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
-    <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-    <span class="nt">dataset_references</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">appdb</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">analytics</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Analytics system</span>
-  <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Provide BI and insights on customer, order and inventory data</span>
-  <span class="nt">system_type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Service</span>
-  <span class="nt">privacy_declarations</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Collect data for business intelligence</span>
-    <span class="nt">data_categories</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.device</span>
-    <span class="nt">data_use</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">improve_product_or_service</span>
-    <span class="nt">data_subjects</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
-    <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-</code></pre></div>
-</td></tr></table>
-<p>The system is comprised of Privacy Declarations. These can be read colloquially as "This system uses sensitive data types of <code>data_categories</code> for <code>data_subjects</code> with the purpose of <code>data_use</code> at a deidentification level of <code>data_qualifier</code>".</p>
-<p>You can create as many systems as are necessary to cover all of your company's business applications.</p>
-<h2 id="maintaining-a-system-resource">Maintaining a System Resource</h2>
-<p>As business use cases evolve, your systems' data subjects, data categories and data uses will change with them. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.</p>
+<blockquote>
+<p>For more detail on System resources, see the full <a href="../../language/resources/system/">System resource documentation</a>.</p>
+</blockquote>
+<h3 id="maintaining-a-system-resource">Maintaining a System Resource</h3>
+<p>As use cases evolve, your systems' data subjects, data categories, and data uses will change as well. We recommend that updating this resource file becomes a regular part of the development planning process when building a new feature.</p>
 <hr />
 <p><strong>PRO TIP</strong></p>
-<p>As you add more systems to your ever-changing data ecosystem, you might want to consider grouping your systems into another Fides resource type, called a <a href="../language/resources.md#registry">Registry</a>.</p>
+<p>As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a <a href="../language/resources.md#registry">Registry</a>.</p>
 <hr />
-<h2 id="next-policy">Next: Policy</h2>
-<p>With our datasets and systems in place, we've now declarated rich metadata about data privacy at Best Pizza Co. Now, we can enforce constraints on those declarations by writing <a href="../policy/">Policies</a>.</p>
+<h2 id="next-write-a-policy">Next: Write a Policy</h2>
+<p>With database and system resources declared, you must now enforce your data constraints by <a href="../policy/">writing a Policy</a>.</p>
                 
               
               
@@ -1343,7 +1317,7 @@
         <a
           href="../dataset/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Annotate your Datasets"
+          aria-label="Previous: Annotate the Dataset"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1354,7 +1328,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Annotate your Datasets
+              Annotate the Dataset
             </div>
           </div>
         </a>
@@ -1366,7 +1340,7 @@
         <a
           href="../policy/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Write Privacy Policy (as code)"
+          aria-label="Next: Write a Policy"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1374,7 +1348,7 @@
               <span class="md-footer__direction">
                 Next
               </span>
-              Write Privacy Policy (as code)
+              Write a Policy
             </div>
           </div>
           <div class="md-footer__button md-icon">

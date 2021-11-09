@@ -313,7 +313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/overview/" class="md-nav__link">
+      <a href="../tutorial/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -325,8 +325,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/taxonomy/" class="md-nav__link">
-        Understanding the Fides Taxonomy
+      <a href="../tutorial/add/" class="md-nav__link">
+        Add Fidesctl to the App
       </a>
     </li>
   
@@ -338,7 +338,7 @@
   
     <li class="md-nav__item">
       <a href="../tutorial/dataset/" class="md-nav__link">
-        Annotate your Datasets
+        Annotate the Dataset
       </a>
     </li>
   
@@ -350,7 +350,7 @@
   
     <li class="md-nav__item">
       <a href="../tutorial/system/" class="md-nav__link">
-        Declare your Systems
+        Annotate the System
       </a>
     </li>
   
@@ -362,7 +362,7 @@
   
     <li class="md-nav__item">
       <a href="../tutorial/policy/" class="md-nav__link">
-        Write Privacy Policy (as code)
+        Write a Policy
       </a>
     </li>
   
@@ -373,8 +373,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/evaluate/" class="md-nav__link">
-        Evaluate your Resources
+      <a href="../tutorial/google/" class="md-nav__link">
+        Add Google Analytics
       </a>
     </li>
   
@@ -385,8 +385,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/ci/" class="md-nav__link">
-        Integrate your CI
+      <a href="../tutorial/pass/" class="md-nav__link">
+        Manage Google Analytics with Fidesctl
       </a>
     </li>
   
@@ -1494,7 +1494,7 @@ SKIPPED <span class="m">0</span> data_qualifier resources.
 <p>Once the database is initialized, you're ready to use the <code>fidesctl</code> CLI in your project. The final step is to setup your CI build server to automatically run the core <code>fidesctl</code> commands as part of your CI workflow.</p>
 <h2 id="step-5-install-fidesctl-cli-on-ci-build-server">Step 5: Install fidesctl CLI on CI Build Server</h2>
 <p>Nowadays, most CI providers tend to have simple solutions to run Docker images, so you can follow the setup instructions from step 2 to <code>docker pull ethyca/fidesctl</code> in your CI scripts (also see step 2 for how to set <code>FIDESCTL__CLI__SERVER_URL</code> accordingly to point to your hosted web server). You'll want to use commands like <code>fidesctl ping</code> in some test CI actions at first, to make sure that your web server is connected, and then you can move on to automating your CI workflow.</p>
-<p>See the <a href="../tutorial/ci/">Integrate your CI</a> tutorial for more detail on what kinds of CI actions make sense, but generally you'll want to configure two:</p>
+<p>See the <a href="tutorial/ci.md">Integrate your CI</a> tutorial for more detail on what kinds of CI actions make sense, but generally you'll want to configure two:</p>
 <ol>
 <li>Run <code>fidesctl evaluate --dry &lt;path/to/resources&gt;</code> as a "check" on every commit for development branches (or at least for every pull request)</li>
 <li>Run <code>fidesctl evaluate &lt;path/to/resources&gt;</code> on every commit to your main branch</li>
@@ -1556,9 +1556,9 @@ SKIPPED <span class="m">0</span> data_qualifier resources.
       
         
         <a
-          href="../tutorial/ci/"
+          href="../tutorial/pass/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Integrate your CI"
+          aria-label="Previous: Manage Google Analytics with Fidesctl"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1569,7 +1569,7 @@ SKIPPED <span class="m">0</span> data_qualifier resources.
               <span class="md-footer__direction">
                 Previous
               </span>
-              Integrate your CI
+              Manage Google Analytics with Fidesctl
             </div>
           </div>
         </a>
