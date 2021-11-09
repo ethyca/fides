@@ -23,13 +23,7 @@ There are two options to remedy this situation, and to get the `make fidesctl-ev
 
 Open the `flaskr/templates/base.html` file in your favorite editor, and add the following line just above the closing `<script>` tag in the Google Analytics script:
 
-```js
-gtag("config", "{{ config['GOOGLE_ANALYTICS_ID'] }}", { 'anonymize_ip': true });
-```
-
-The full script should now be:
-
-```html
+```diff
 {% if config['GOOGLE_ANALYTICS_ID'] %}
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ config['GOOGLE_ANALYTICS_ID'] }}"></script>
@@ -38,7 +32,7 @@ The full script should now be:
         function gtag(){dataLayer.push(arguments);}
         gtag("js", new Date());
         gtag("config", "{{ config['GOOGLE_ANALYTICS_ID'] }}");
-        gtag("config", "{{ config['GOOGLE_ANALYTICS_ID'] }}", { 'anonymize_ip': true });
++       gtag("config", "{{ config['GOOGLE_ANALYTICS_ID'] }}", { 'anonymize_ip': true });
     </script>
 {% endif %}
 ```
