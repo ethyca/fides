@@ -1,6 +1,6 @@
 # Add Fidesctl to the App
 
-In this step you will incorporate the [Fidesctl](https://github.com/ethyca/fides) open-source developer tools, which will enable you to declare your `system`, `dataset`s, and `policy`s as manifest YAML files later in this tutorial.
+In this step you will incorporate the [fidesctl](https://github.com/ethyca/fides) open-source developer tools, which will enable you to declare your `system`, `dataset`s, and `policy`s as manifest YAML files later in this tutorial.
 
 ## Add the `fidesctl` Dependency
 
@@ -28,8 +28,8 @@ server_url = "http://localhost:8080"
 database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
 ```
 
-- The `[cli]`-scoped `server_url` option specifies the address that the Fidesctl CLI will use when connecting to the Fidesctl server.
-- The `[api]`-scoped `database_url` option specifies the connection string that the Fidesctl API will use to connect to the PostgreSQL database created in the previous step.
+- The `[cli]`-scoped `server_url` option specifies the address that the fidesctl CLI will use when connecting to the fidesctl server.
+- The `[api]`-scoped `database_url` option specifies the connection string that the fidesctl API will use to connect to the PostgreSQL database created in the previous step.
 
 ## Run Fidesctl via Docker
 
@@ -55,7 +55,7 @@ fidesctl:
 
 > This step is optional, but the commands added to the `Makefile` here will be referenced later in this tutorial.
 
-The above changes will enable Fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the Fidesctl CLI by adding commands to the `Makefile` like the following:
+The above changes will enable fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the fidesctl CLI by adding commands to the `Makefile` like the following:
 
 ```makefile
 fidesctl-init-db: compose-up
@@ -79,4 +79,4 @@ After making the above changes, your app should resemble the state of the [`ethy
 
 ## Next: Annotate the Resources
 
-Now that the Fidesctl tools are available to use within the app's virtual environment, the next step is to configure Fidesctl to work with the specifics of this app. This can be done by creating manifest files to [annotate the resources](dataset.md).
+Now that the fidesctl tools are available to use within the app's virtual environment, the next step is to configure fidesctl to work with the specifics of this app. This can be done by creating manifest files to [annotate the resources](dataset.md).

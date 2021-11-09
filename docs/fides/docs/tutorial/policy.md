@@ -72,7 +72,7 @@ This demo application is built without any real controls on user data, so the Fi
 
 ### Understanding the Policy
 
-The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In Fidesctl, a Policy is comprised of rules against which the system's privacy declarations are evaluated. Policies will evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
+The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In fidesctl, a Policy is comprised of rules against which the system's privacy declarations are evaluated. Policies will evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
 
 Policies use the following attributes:
 

@@ -1,12 +1,12 @@
 # Annotate the Dataset
 
-Making the Fidesctl tools available within the app's virtual environment is just the beginning. Next, configure Fidesctl for this app by annotating its resources using manifest files.
+Making the fidesctl tools available within the app's virtual environment is just the beginning. Next, configure fidesctl for this app by annotating its resources using manifest files.
 
 First, create a `fides_resources` directory at the project root. This is where the manifest files will be stored.
 
-> **Note:** In a production app this directory can have any name, but it's a best practice to create a specific directory to house the Fidesctl manifest files.
+> **Note:** In a production app this directory can have any name, but it's a best practice to create a specific directory to house the fidesctl manifest files.
 
-Fundamentally, the data ecosystem is built on data that is stored _somewhere_. In Fidesctl, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, an app might declare one dataset for a Postgres application database, a second dataset for a Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer consumable by other tooling.
+Fundamentally, the data ecosystem is built on data that is stored _somewhere_. In fidesctl, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, an app might declare one dataset for a Postgres application database, a second dataset for a Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer consumable by other tooling.
 
 This app contains a single PostgreSQL dataset. Create a `dataset` resource to annotate it by adding a `flaskr_postgres_dataset.yml` file to the `fides_resources` directory. To annotate this dataset correctly, go through each column of each table and answer the question: _"What data categories are stored here?"_
 
@@ -83,12 +83,12 @@ As an alternative to manually authoring the resource file, you can also use the 
 
 This YAML serves as the foundation of [`fideslang`](https://github.com/ethyca/fideslang), the Fides language; it answers "_What data and kinds of data do we have?_" and "_How is our data organized?_". The language is built on declaring the types of data found in storage for your organization.
 
-In traditional SQL, Fidesctl defines the following:
+In traditional SQL, fidesctl defines the following:
 - "datasets" as database schemas
 - "collections" as database tables
 - "fields" as database columns
 
-For NoSQL datasets, Fidesctl defines the following:
+For NoSQL datasets, fidesctl defines the following:
 - "dataset"
 - "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
 - "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")

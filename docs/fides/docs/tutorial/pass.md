@@ -1,6 +1,6 @@
 # Manage Google Analytics with Fidesctl
 
-By default, Google Analytics disables "IP Anonymization" (see [the documentation](https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization) for more information). The "Minimize User Identifiable Data" Fidesctl Policy resource created earlier in this tutorial is configured to reject data collection of this nature.
+By default, Google Analytics disables "IP Anonymization" (see [the documentation](https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization) for more information). The "Minimize User Identifiable Data" fidesctl Policy resource created earlier in this tutorial is configured to reject data collection of this nature.
 
 ---
 
@@ -39,7 +39,7 @@ Open the `flaskr/templates/base.html` file in your favorite editor, and add the 
 
 ## Update the Google Analytics System Resource
 
-Now that the data collection practices in the Google Analytics script have changed, the associated Fidesctl System resource should be updated accordingly. Open the `fides_resources/google_analytics_system.yml` file in your favorite editor, and modify the last line (the `data_qualifier` configuration) so that it reads:
+Now that the data collection practices in the Google Analytics script have changed, the associated fidesctl System resource should be updated accordingly. Open the `fides_resources/google_analytics_system.yml` file in your favorite editor, and modify the last line (the `data_qualifier` configuration) so that it reads:
 
 ```yml
 data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
@@ -82,7 +82,7 @@ Executing evaluations...
 Evaluation passed!
 ```
 
-The Fidesctl policy evaluation passes!
+The fidesctl policy evaluation passes!
 
 ## Check Your Progress
 

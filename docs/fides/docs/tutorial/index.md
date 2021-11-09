@@ -1,8 +1,8 @@
 # Tutorial Overview
 
-In this tutorial you will learn how to use the Fidesctl open-source developer tools to solve a real-world data privacy problem. The steps closely follow the commits found in [the `ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo).
+In this tutorial you will learn how to use the fidesctl open-source developer tools to solve a real-world data privacy problem. The steps closely follow the commits found in [the `ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo).
 
-You will run a local instance of a basic web app to demonstrate the use of Fidesctl as part of a "real" project that uses:
+You will run a local instance of a basic web app to demonstrate the use of fidesctl as part of a "real" project that uses:
 
 * Flask to run a web server simulating the basic e-commerce application
 * PostgreSQL as the application's database
@@ -87,4 +87,4 @@ After running the commands outlined in the [Installation](#installation) section
 
 ## Next: Add Fidesctl to the App
 
-Work within the sample app prior to the installation and configuration of the Fides developer tools to [add Fidesctl](add.md).
+Work within the sample app prior to the installation and configuration of the Fides developer tools to [add fidesctl](add.md).
