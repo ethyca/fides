@@ -10,7 +10,7 @@
 
 ## :zap: Overview
 
-Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/evaluate/) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/tutorial/ci/).
+Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
@@ -188,7 +188,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     </details>
 
-At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/overview/) to keep learning.
+At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
 
 ## :book: Learn More
 
@@ -201,7 +201,7 @@ We are committed to fostering a safe and collaborative environment, such that al
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects: 
 
 - Documentation: https://ethyca.github.io/fides/
-- Tutorial: https://ethyca.github.io/fides/tutorial/overview/
+- Tutorial: https://ethyca.github.io/fides/tutorial/
 - Deployment: https://ethyca.github.io/fides/deployment/
 - Roadmap: https://github.com/ethyca/fides/milestones
 - Website: www.ethyca.com/fides
