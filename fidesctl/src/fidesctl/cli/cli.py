@@ -4,7 +4,6 @@ import pprint
 import click
 
 from fidesapi import database
-from fidesapi.main import start_webserver
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -22,7 +21,6 @@ from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
-    annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
 from fidesctl.core.utils import echo_green, echo_red
@@ -174,6 +172,13 @@ def annotate_dataset(
 
         input_filename: the dataset.yml file to be read and edited
     """
+    try:
+        import fastapi
+    except ModuleNotFoundError as err:
+        echo_red('FastAPI not found. Try: pip install "fidesctl[webserver]"')
+        raise SystemExit
+    from fidesctl.core import annotate_dataset as _annotate_dataset
+
     _annotate_dataset.annotate_dataset(
         input_filename, annotate_all=all_members, validate=validate
     )
@@ -316,4 +321,11 @@ def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server.
     """
+    try:
+        import fastapi
+    except ModuleNotFoundError as err:
+        echo_red('FastAPI not found. Try: pip install "fidesctl[webserver]"')
+        raise SystemExit
+    from fidesapi.main import start_webserver
+
     start_webserver()
