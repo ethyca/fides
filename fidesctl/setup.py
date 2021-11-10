@@ -9,6 +9,13 @@ long_description = open("README.md").read()
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
+extras = {
+    "postgres": ["psycopg2-binary==2.9.1"],
+    "mysql": ["pymysql==1.0.2"],
+    "webserver": ["fastapi[all]==0.68.1", "psycopg2-binary==2.9.1"],
+}
+extras["all"] = sum(extras.values(), [])
+
 setup(
     name="fidesctl",
     version=versioneer.get_version(),
@@ -28,6 +35,7 @@ setup(
     license="Apache License 2.0",
     install_requires=install_requires,
     dev_requires=dev_requires,
+    extras_require=extras,
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3 :: Only",

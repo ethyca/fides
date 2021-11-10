@@ -6,6 +6,7 @@ nav:
       - Overview: getting_started/overview.md
       - Fidesctl in Docker: getting_started/docker.md
       - Fidesctl Manually (without Docker): getting_started/manual.md
+  - Installation: installation.md
   - Tutorial:
       - Overview: tutorial/index.md
       - Add Fidesctl to the App: tutorial/add.md
