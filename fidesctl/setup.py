@@ -9,7 +9,11 @@ long_description = open("README.md").read()
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
-extras = {"postgres": ["psycopg2-binary==2.9.1"], "mysql": ["pymysql==1.0.2"]}
+extras = {
+    "postgres": ["psycopg2-binary==2.9.1"],
+    "mysql": ["pymysql==1.0.2"],
+    "webserver": ["fastapi[all]==0.68.1", "psycopg2-binary==2.9.1"],
+}
 extras["all"] = sum(extras.values(), [])
 
 setup(
