@@ -218,7 +218,8 @@ def init_db(ctx: click.Context) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    database.init_db(config.api.database_url, fidesctl_config=config)
+    init_url = config.cli.server_url + "/admin/init-db"
+    handle_cli_response(_api.init_db(init_url, config.api.database_url))
 
 
 @click.command()
@@ -296,7 +297,7 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 
     if are_you_sure.lower() == "y":
         database.reset_db(database_url)
-        database.init_db(database_url, config)
+        ctx.invoke(init_db)
         echo_green("Database reset!")
     else:
         print("Aborting!")

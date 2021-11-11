@@ -33,6 +33,15 @@ async def health() -> Dict:
     "Confirm that the API is running and healthy."
     return {"data": {"message": "Fides service is healthy!"}}
 
+@app.post("/admin/init-db", tags=["Admin"])
+async def init_db(database_url: str) -> Dict:
+    """
+    Connect to the database, run any outstanding migrations,
+    and load the default taxonomy.
+    """
+    configure_db(database_url)
+    return {"data": {"message": "Fides database initialized"}}
+
 
 def start_webserver() -> None:
     "Run the webserver."

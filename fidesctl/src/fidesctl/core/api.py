@@ -99,3 +99,10 @@ def evaluate(
     resource_url = generate_resource_url(url, resource_type)
     url = f"{resource_url}evaluate/{fides_key}"
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
+
+
+def init_db(url: str, database_url: str) -> requests.Response:
+    """
+    Initialize the fides database.
+    """
+    return requests.post(url, params={"database_url": database_url})
