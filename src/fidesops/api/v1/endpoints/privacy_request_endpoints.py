@@ -32,7 +32,6 @@ from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestRunner,
     PrivacyRequestStatus,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
@@ -43,6 +42,7 @@ from fidesops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
 )
+from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis

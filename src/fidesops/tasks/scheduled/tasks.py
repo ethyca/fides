@@ -7,8 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import StorageType, StorageDetails
-from fidesops.service.request_intake.onetrust_service import intake_onetrust_requests
-
+from fidesops.service.privacy_request.onetrust_service import OneTrustService
 
 logger = logging.getLogger(__name__)
 
@@ -61,4 +60,4 @@ def initiate_scheduled_request_intake() -> None:
 
 def _intake_onetrust_requests(config_key: str) -> None:
     """Begins onetrust request intake"""
-    intake_onetrust_requests(config_key)
+    OneTrustService.intake_onetrust_requests(config_key)
