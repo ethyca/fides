@@ -7,7 +7,7 @@ from typing import Dict
 import uvicorn
 from fastapi import FastAPI
 
-from fidesapi import crud, db_session, visualize
+from fidesapi import crud, database, db_session, visualize
 from fidesctl.core.config import get_config
 
 app = FastAPI(title="fidesctl")
@@ -25,6 +25,7 @@ def configure_routes() -> None:
 def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     db_session.global_init(database_url)
+    database.init_db(database_url)
 
 
 @app.get("/health", tags=["Health"])

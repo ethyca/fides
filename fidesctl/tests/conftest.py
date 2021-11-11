@@ -27,7 +27,7 @@ def setup_db(test_config):
     "Sets up the database for testing."
     database_url = test_config.api.database_url
     database.reset_db(database_url)
-    database.init_db(database_url, test_config)
+    database.init_db(database_url)
     yield
 
 

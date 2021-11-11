@@ -8,6 +8,7 @@ from typing import List, Dict
 
 from fastapi import APIRouter, status
 from sqlalchemy import update as _update
+from sqlalchemy.dialects.postgresql import Insert as _insert
 
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
@@ -74,6 +75,25 @@ def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: s
         return {"error": {"message": f"{fides_key} is not an existing fides_key!"}}
 
     return result_sql_resource
+
+
+def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> None:
+    """
+    Insert a new resource into the database. If the resource already exists,
+    update it by it's fides_key.
+    """
+    session = db_session.create_session()
+    try:
+        insert_stmt = _insert(sql_model).values(resource_dicts)
+        session.execute(
+            insert_stmt.on_conflict_do_update(
+                index_elements=["fides_key"],
+                set_=insert_stmt.excluded,
+            )
+        )
+        session.commit()
+    finally:
+        session.close()
 
 
 def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
