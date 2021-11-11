@@ -1,8 +1,14 @@
-# Installation
+# Installation from PyPI
+
+This page describes installations using the `fidesctl` package [published on PyPI](https://pypi.org/project/fidesctl/).
+
+## Installation Tools
+
+Only `pip` installation is currently officially supported.
+
+While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as pip - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.
 
 ## Basic Installation
-
-Fidesctl is tested to be compatible with Python 3.8 and above.
 
 To install Fidesctl, run:
 
