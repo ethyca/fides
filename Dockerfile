@@ -1,8 +1,8 @@
 FROM python:3.9.6-slim-buster
 
 # Install auxiliary software
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
     git \
     make \
     ipython \
@@ -11,11 +11,8 @@ RUN apt-get install -y \
     gcc
 
 # Update pip and install requirements
-RUN pip install -U pip
-COPY requirements.txt requirements.txt
-COPY dev-requirements.txt dev-requirements.txt
-RUN pip install -r requirements.txt
-RUN pip install -r dev-requirements.txt
+COPY requirements.txt dev-requirements.txt ./
+RUN pip install -U pip && pip install -r requirements.txt -r dev-requirements.txt
 
 # Copy in the application files and install it locally
 COPY . /fidesops_install
