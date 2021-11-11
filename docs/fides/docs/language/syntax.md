@@ -1,3 +1,4 @@
+
 # Fides Configuration Syntax
 
 Other pages in this language section describe various concepts and resources that appear in the Fides language. This page describes the syntax of the language in more detail to help better interpret Fides whether you're authoring or reading.
