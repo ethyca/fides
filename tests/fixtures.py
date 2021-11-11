@@ -28,7 +28,6 @@ from fidesops.models.policy import (
 )
 from fidesops.models.privacy_request import (
     PrivacyRequest,
-    PrivacyRequestRunner,
     PrivacyRequestStatus,
     ExecutionLog,
     ExecutionLogStatus,
@@ -42,6 +41,7 @@ from fidesops.schemas.storage.storage import (
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
+from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)

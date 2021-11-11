@@ -13,14 +13,6 @@ class OneTrustSubtaskStatus(Enum):
     REJECTED = "REJECTED"
 
 
-class OneTrustSubtaskContext(BaseSchema):
-    """Onetrust subtask context"""
-
-    access_token: str
-    hostname: str
-    subtask_id: str
-
-
 class OneTrustSubtask(BaseSchema):
     """Onetrust subtask schema"""
 

@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from typing import Any, Optional, Dict
 
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.storage.storage import (
     StorageType,
     FileNaming,
@@ -86,9 +87,6 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
 def _onetrust_uploader(
     db: Session, config: StorageConfig, data: Dict, request_id: str
 ) -> str:
-    # todo: shortcut for now, since we have a circular dependency between
-    # src/app/models/privacy_request_endpoints.py and this file
-    from fidesops.models.privacy_request import PrivacyRequest
 
     """Constructs necessary info needed for onetrust before calling upload"""
     request_details: Optional[PrivacyRequest] = PrivacyRequest.get(db, id=request_id)
