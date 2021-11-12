@@ -79,7 +79,7 @@ def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: s
 
 def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> None:
     """
-    Insert a new resource into the database. If the resource already exists,
+    Insert new resources into the database. If a resource already exists,
     update it by it's fides_key.
     """
     session = db_session.create_session()
