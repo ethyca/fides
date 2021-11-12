@@ -630,7 +630,7 @@ if __name__ == "__main__":
     )
     print("""
     ┌─┐┌┬┐┌─┐┌─┐  ┌┬┐┬ ┬┌─┐
-    └─┐ │ ├┤ ├─┘   │ ││││ │  ...  Create an access policy 
+    └─┐ │ ├┤ ├─┘   │ ││││ │  ...  Create an access policy rule
     └─┘ ┴ └─┘┴     ┴ └┴┘└─┘
     """)
     print(
@@ -638,7 +638,7 @@ if __name__ == "__main__":
     )
     data_category = 'user.provided.identifiable'
     print(
-        f"Press [enter] to create a Policy that accesses information with the data category '{data_category}':"
+        f"Press [enter] to create a Policy Rule that accesses information with the data category '{data_category}':"
     )
     input()
 
@@ -694,7 +694,7 @@ if __name__ == "__main__":
     print(
     """
     ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌─┐┬ ┬┬─┐
-    └─┐ │ ├┤ ├─┘  ├┤ │ ││ │├┬┘   ...  Create an erasure policy
+    └─┐ │ ├┤ ├─┘  ├┤ │ ││ │├┬┘   ...  Create an erasure policy rule
     └─┘ ┴ └─┘┴    └  └─┘└─┘┴└─    
     """
     )
@@ -704,7 +704,7 @@ if __name__ == "__main__":
 
     # Create a policy that erases all user data
     print(
-        f"Press [enter] to create a Policy describing how to erase information with the data category `{data_category}`:"
+        f"Press [enter] to create a Policy Rule describing how to erase information with the data category `{data_category}`:"
     )
     input()
 

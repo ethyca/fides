@@ -35,6 +35,7 @@ services:
 
   mysql_example:
     image: mysql
+    platform: linux/amd64
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
