@@ -13,13 +13,13 @@ Docker and Docker-Compose are the only requirements here.
 
 ## Docker Setup
 
-This is a reference file that you can copy/paste into a local `docker-compose.yml` file.
+This is a reference file that you can copy/paste into a local `docker-compose.yml` file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port `5432` or `8080` before using this file.
 
 ```docker-compose title="docker-compose.yml"
 services:
   fidesctl:
     image: ethyca/fidesctl:1.0.0
-    command: fidesctl
+    command: fidesctl webserver
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health"]
       interval: 5s
@@ -32,13 +32,9 @@ services:
       - 8080
     ports:
       - "8080:8080"
-    volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
-    env_file:
-      - env_files/fidesctl.env
+    environment:
+      - FIDESCTL__CLI__SERVER_URL=http://fidesctl:8080
+      - FIDESCTL__API__DATABASE_URL=postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl
 
   fidesctl-db:
     image: postgres:12
@@ -48,28 +44,18 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - postgres-fidesctl:/var/lib/postgresql/data
     expose:
       - 5432
     ports:
       - "5432:5432"
-    env_file:
-      - env_files/db.env
-
-  docs:
-    build:
-      context: docs/fides/
-      dockerfile: Dockerfile
-    volumes:
-      - ./docs/fides:/docs
-    expose:
-      - 8000
-    ports:
-      - "8000:8000"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=fidesctl
+      - POSTGRES_DB=fidesctl
 
 volumes:
-  postgres:
-
+  postgres-fidesctl:
 ```
 
 1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
