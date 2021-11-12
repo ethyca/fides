@@ -1200,16 +1200,19 @@
 <p>Except for the <code>DELETE</code>, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the <a href="/language/resources/organization/">Fides Language: Resources chapter</a> -- it's the same structure that's used in the resource manifest files.</p>
 </li>
 </ul>
-<p>That's about all there is to it. There are an additional four endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the <code>fidesctl</code> API.</p>
-<p>After a brief review of the four addition endpoints, we'll provide a complete API reference followed by a set of cURL calls that you can use to exercise the API on your system.</p>
+<p>That's about all there is to it. There are an additional six endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the <code>fidesctl</code> API.</p>
+<p>After a brief review of the six additional endpoints, we'll provide a complete API reference followed by a set of cURL calls that you can use to exercise the API on your system.</p>
 <h2 id="other-endpoints">Other endpoints</h2>
-<p>The four additional endpoints are:</p>
+<p>The six additional endpoints are:</p>
 <ul>
 <li>
 <p><code>GET /health</code> pings the API server to see if it's up and running. The call returns <code>200</code> if it's up and ready to receive messages, and <code>404</code> if not.</p>
 </li>
 <li>
 <p>Three of the taxonomic resources, <code>/data_category</code>, <code>/data_use</code>, and <code>/data_qualifier</code> (but  <em>not</em> <code>/data_subject</code>) define a <code>GET /resource_type/visualize/{figure_type}</code> endpoint that returns a graph of the resource's taxonomy.  For details, see the <strong>API Reference</strong>, below.</p>
+</li>
+<li>
+<p><code>POST admin/db/init</code> and <code>POST admin/db/reset</code> reinitialize the database and reset the database, respectfully. They also repopulate the database with the default fideslang taxonomy.</p>
 </li>
 </ul>
 <h2 id="api-reference">API Reference</h2>

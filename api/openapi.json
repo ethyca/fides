@@ -25,6 +25,46 @@
         }
       }
     },
+    "/admin/db/{action}": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/data_category/": {
       "get": {
         "tags": [
@@ -2770,6 +2810,15 @@
         ],
         "type": "string",
         "description": "The ActionEnum resource model.\n\nDescribes what the result of the PolicyRule should be if it is fulfilled."
+      },
+      "DBActions": {
+        "title": "DBActions",
+        "enum": [
+          "init",
+          "reset"
+        ],
+        "type": "string",
+        "description": "The available path parameters for the `/admin/db/{action}` endpoint."
       },
       "DataCategory": {
         "title": "DataCategory",
