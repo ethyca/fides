@@ -24,4 +24,7 @@ COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
 RUN pip install -e ".[all]"
 
+# Immediately flush to stdout, globally
+ENV PYTHONUNBUFFERED=TRUE
+
 CMD ["/bin/bash"]

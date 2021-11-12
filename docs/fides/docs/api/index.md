@@ -14,17 +14,19 @@ The `fidesctl` API is almost completely programmatic, so it's easier to grasp th
 
 * Except for the `DELETE`, the endpoints accept and/or return JSON objects that represent the named resource. The structure of these objects is given in the [Fides Language: Resources chapter](/language/resources/organization/) -- it's the same structure that's used in the resource manifest files.
 
-That's about all there is to it. There are an additional four endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the `fidesctl` API.
+That's about all there is to it. There are an additional six endpoints that we'll look at below, but the sets of quintuplet endpoints listed above make up the core of the `fidesctl` API.
 
-After a brief review of the four addition endpoints, we'll provide a complete API reference followed by a set of cURL calls that you can use to exercise the API on your system.
+After a brief review of the six additional endpoints, we'll provide a complete API reference followed by a set of cURL calls that you can use to exercise the API on your system.
 
 ## Other endpoints
 
-The four additional endpoints are:
+The six additional endpoints are:
 
 * `GET /health` pings the API server to see if it's up and running. The call returns `200` if it's up and ready to receive messages, and `404` if not.
 
 * Three of the taxonomic resources, `/data_category`, `/data_use`, and `/data_qualifier` (but  _not_ `/data_subject`) define a `GET /resource_type/visualize/{figure_type}` endpoint that returns a graph of the resource's taxonomy.  For details, see the **API Reference**, below.
+
+* `POST admin/db/init` and `POST admin/db/reset` reinitialize the database and reset the database, respectfully. They also repopulate the database with the default fideslang taxonomy.
 
 ## API Reference
 

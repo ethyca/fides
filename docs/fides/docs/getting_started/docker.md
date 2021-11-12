@@ -29,14 +29,6 @@ The following commands should all be run from the top-level `fides` directory (w
     root@1a742083cedf:/fides/fidesctl#
     ```
 
-1. `fidesctl init-db` -> Builds the required images, spins up the database, and runs the initialization scripts:
-
-    ```bash
-    ~/git/fides% fidesctl init-db
-    INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
-    INFO  [alembic.runtime.migration] Will assume transactional DDL.
-    ```
-
 1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
@@ -49,4 +41,4 @@ The following commands should all be run from the top-level `fides` directory (w
 
 Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!
 
-See the [Tutorial](../tutorial/overview.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.
+See the [Tutorial](../tutorial/index.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.
