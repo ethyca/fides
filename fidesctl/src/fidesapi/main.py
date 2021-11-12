@@ -22,10 +22,10 @@ def configure_routes() -> None:
         app.include_router(router)
 
 
-def configure_db(database_url: str) -> None:
+def configure_db() -> None:
     "Set up the db to be used by the app."
-    db_session.global_init(database_url)
-    database.init_db(database_url)
+    db_session.global_init(config.api.database_url)
+    database.init_db(config.api.database_url)
 
 
 @app.get("/health", tags=["Health"])
@@ -35,16 +35,16 @@ async def health() -> Dict:
 
 
 @app.post("/admin/db/{action}", tags=["Admin"])
-async def db_action(action: str, database_url: str) -> Dict:
+async def db_action(action: str) -> Dict:
     """
     Initiate either the init_db or reset_db action.
     """
     action_text = "initialized"
     if action == "reset":
-        database.reset_db(database_url)
+        database.reset_db(config.api.database_url)
         action_text = action
 
-    configure_db(database_url)
+    configure_db()
     return {"data": {"message": f"Fides database {action_text}"}}
 
 
@@ -55,4 +55,4 @@ def start_webserver() -> None:
 
 config = get_config()
 configure_routes()
-configure_db(config.api.database_url)
+configure_db()

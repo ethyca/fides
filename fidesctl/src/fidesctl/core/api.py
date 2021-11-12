@@ -101,8 +101,8 @@ def evaluate(
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
 
 
-def db_action(url: str, database_url: str) -> requests.Response:
+def db_action(server_url: str, action: str) -> requests.Response:
     """
-    Initialize the fides database.
+    Initialize or reset the fides database.
     """
-    return requests.post(url, params={"database_url": database_url})
+    return requests.post(f"{server_url}/admin/db/{action}")

@@ -217,8 +217,7 @@ def init_db(ctx: click.Context) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    init_url = config.cli.server_url + "/admin/db/init"
-    handle_cli_response(_api.db_action(init_url, config.api.database_url))
+    handle_cli_response(_api.db_action(config.cli.server_url, "init"))
 
 
 @click.command()
@@ -287,7 +286,6 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    database_url = config.api.database_url
     if yes:
         are_you_sure = "y"
     else:
@@ -297,8 +295,7 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
         are_you_sure = input("Are you sure [y/n]? ")
 
     if are_you_sure.lower() == "y":
-        reset_url = config.cli.server_url + "/admin/db/reset"
-        handle_cli_response(_api.db_action(reset_url, database_url))
+        handle_cli_response(_api.db_action(config.cli.server_url, "reset"))
     else:
         print("Aborting!")
 
