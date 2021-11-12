@@ -35,6 +35,11 @@ services:
     environment:
       - FIDESCTL__CLI__SERVER_URL=http://fidesctl:8080
       - FIDESCTL__API__DATABASE_URL=postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl
+    volumes:
+      - type: bind
+        source: ./fides_resources/ # Update this to be the path of your fides_resource folder
+        target: /fides/fides_resources/
+        read_only: False
 
   fidesctl-db:
     image: postgres:12
@@ -56,8 +61,13 @@ services:
 
 volumes:
   postgres-fidesctl:
+
 ```
 
+Now we can start interacting with our installation. Let's run the following commands to get going:
+
+1. `docker-compose up -d` -> This will spin up the docker-compose file in the background
+1. `docker-compose run --rm fidesctl /bin/bash` -> Opens a shell within the fidesctl container
 1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
