@@ -103,6 +103,6 @@ def evaluate(
 
 def db_action(server_url: str, action: str) -> requests.Response:
     """
-    Initialize or reset the fides database.
+    Tell the API to perform a database action.
     """
     return requests.post(f"{server_url}/admin/db/{action}")
