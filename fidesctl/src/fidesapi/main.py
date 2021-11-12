@@ -37,7 +37,7 @@ def configure_db() -> None:
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {"data": {"message": "Fides service is healthy!"}}
+    return {"data": {"message": "Fidesctl service is healthy!"}}
 
 
 @app.post("/admin/db/{action}", tags=["Admin"])
@@ -51,7 +51,7 @@ async def db_action(action: DBActions) -> Dict:
         action_text = DBActions.reset
 
     configure_db()
-    return {"data": {"message": f"Fides database {action_text}"}}
+    return {"data": {"message": f"Fidesctl database {action_text}"}}
 
 
 def start_webserver() -> None:

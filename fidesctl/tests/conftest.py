@@ -6,8 +6,8 @@ import pytest
 import yaml
 
 from fideslang import models
-from fidesapi.main import db_action
 from fidesctl.core.config import get_config
+from fidesctl.core import api
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 
@@ -25,9 +25,7 @@ def test_config(test_config_path):
 @pytest.fixture(scope="session", autouse=True)
 def setup_db(test_config):
     "Sets up the database for testing."
-    database_url = test_config.api.database_url
-    db_action("reset", database_url)
-    yield
+    yield api.db_action(test_config.cli.server_url, "reset")
 
 
 @pytest.fixture(scope="session")
