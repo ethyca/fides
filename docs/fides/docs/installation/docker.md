@@ -6,4 +6,4 @@ The fidesctl community releases Docker Images which are reference images for fid
 
 Those are "reference" images. They contain all of the extras and dependencies for running the Python application. However they do not contain the required Postgres database.
 
-Airflow requires multiple components to function as it is a multi-part application. You may therefore also be interested in launching fidesctl in the Docker Compose environment, see: [Running Fidesctl in Docker](../quickstart/docker.md).
+Fidesctl requires multiple components to function as it is a multi-part application. You may therefore also be interested in launching fidesctl in the Docker Compose environment, see: [Running Fidesctl in Docker](../quickstart/docker.md).

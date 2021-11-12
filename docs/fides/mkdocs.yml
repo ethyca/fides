@@ -12,6 +12,7 @@ nav:
       - Installation from PyPI: installation/pypi.md
       - Installation from Docker: installation/docker.md
       - Setting up the database: installation/database.md
+      - Configuration: installation/configuration.md
   - Tutorial:
       - Overview: tutorial/index.md
       - Add Fidesctl to the App: tutorial/add.md
