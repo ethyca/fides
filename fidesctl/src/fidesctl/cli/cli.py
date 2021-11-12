@@ -3,7 +3,6 @@ import pprint
 
 import click
 
-from fidesapi import database
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -218,8 +217,8 @@ def init_db(ctx: click.Context) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    init_url = config.cli.server_url + "/admin/init-db"
-    handle_cli_response(_api.init_db(init_url, config.api.database_url))
+    init_url = config.cli.server_url + "/admin/db/init"
+    handle_cli_response(_api.db_action(init_url, config.api.database_url))
 
 
 @click.command()
@@ -292,13 +291,14 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
     if yes:
         are_you_sure = "y"
     else:
-        echo_red("This will drop all data from the Fides database!")
-        are_you_sure = input("Are you sure [y/n]?")
+        echo_red(
+            "This will drop all data from the Fides database and reload the default taxonomy!"
+        )
+        are_you_sure = input("Are you sure [y/n]? ")
 
     if are_you_sure.lower() == "y":
-        database.reset_db(database_url)
-        ctx.invoke(init_db)
-        echo_green("Database reset!")
+        reset_url = config.cli.server_url + "/admin/db/reset"
+        handle_cli_response(_api.db_action(reset_url, database_url))
     else:
         print("Aborting!")
 

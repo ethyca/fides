@@ -101,7 +101,7 @@ def evaluate(
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
 
 
-def init_db(url: str, database_url: str) -> requests.Response:
+def db_action(url: str, database_url: str) -> requests.Response:
     """
     Initialize the fides database.
     """

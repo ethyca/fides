@@ -33,14 +33,19 @@ async def health() -> Dict:
     "Confirm that the API is running and healthy."
     return {"data": {"message": "Fides service is healthy!"}}
 
-@app.post("/admin/init-db", tags=["Admin"])
-async def init_db(database_url: str) -> Dict:
+
+@app.post("/admin/db/{action}", tags=["Admin"])
+async def db_action(action: str, database_url: str) -> Dict:
     """
-    Connect to the database, run any outstanding migrations,
-    and load the default taxonomy.
+    Initiate either the init_db or reset_db action.
     """
+    action_text = "initialized"
+    if action == "reset":
+        database.reset_db(database_url)
+        action_text = action
+
     configure_db(database_url)
-    return {"data": {"message": "Fides database initialized"}}
+    return {"data": {"message": f"Fides database {action_text}"}}
 
 
 def start_webserver() -> None:

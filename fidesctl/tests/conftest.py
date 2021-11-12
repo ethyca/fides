@@ -1,13 +1,13 @@
 """Common fixtures to be used across tests."""
 from typing import Any, Dict
 
+import os
 import pytest
 import yaml
-import os
 
 from fideslang import models
+from fidesapi.main import db_action
 from fidesctl.core.config import get_config
-from fidesapi import database
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 
@@ -26,15 +26,14 @@ def test_config(test_config_path):
 def setup_db(test_config):
     "Sets up the database for testing."
     database_url = test_config.api.database_url
-    database.reset_db(database_url)
-    database.init_db(database_url)
+    db_action("reset", database_url)
     yield
 
 
 @pytest.fixture(scope="session")
 def resources_dict():
     """
-    Yields an resource containing sample representations of different
+    Yields a resource containing sample representations of different
     Fides resources.
     """
     resources_dict: Dict[str, Any] = {
