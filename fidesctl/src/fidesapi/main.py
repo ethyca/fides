@@ -43,7 +43,7 @@ async def health() -> Dict:
 @app.post("/admin/db/{action}", tags=["Admin"])
 async def db_action(action: DBActions) -> Dict:
     """
-    Initiate either the init_db or reset_db action.
+    Initiate one of the enumerated DBActions.
     """
     action_text = "initialized"
     if action == DBActions.reset:
