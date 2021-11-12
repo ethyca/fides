@@ -44,7 +44,7 @@ def init_db(database_url: str) -> None:
 def load_default_taxonomy() -> None:
     "Upserts the default taxonomy into the database."
     print("UPSERTING the default fideslang taxonomy")
-    for resource_type in DEFAULT_TAXONOMY.__fields_set__:
+    for resource_type in list(DEFAULT_TAXONOMY.__fields_set__):
         print("-" * 10)
         print(f"Processing {resource_type} resources...")
         resources = list(map(dict, dict(DEFAULT_TAXONOMY)[resource_type]))
