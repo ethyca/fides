@@ -2,15 +2,21 @@
 Contains the code that sets up the API.
 """
 
+from enum import Enum
 from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
-
 from fidesapi import crud, database, db_session, visualize
 from fidesctl.core.config import get_config
 
 app = FastAPI(title="fidesctl")
+
+
+class DBActions(str, Enum):
+    "The available path parameters for the `/admin/db/{action}` endpoint."
+    init = "init"
+    reset = "reset"
 
 
 def configure_routes() -> None:
@@ -35,14 +41,14 @@ async def health() -> Dict:
 
 
 @app.post("/admin/db/{action}", tags=["Admin"])
-async def db_action(action: str) -> Dict:
+async def db_action(action: DBActions) -> Dict:
     """
     Initiate either the init_db or reset_db action.
     """
     action_text = "initialized"
-    if action == "reset":
+    if action == DBActions.reset:
         database.reset_db(config.api.database_url)
-        action_text = action
+        action_text = DBActions.reset
 
     configure_db()
     return {"data": {"message": f"Fides database {action_text}"}}
