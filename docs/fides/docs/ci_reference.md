@@ -33,7 +33,7 @@ jobs:
       - name: Dry Evaluation
         run: fidesctl evaluate --dry fides_resources/
         env:
-          FIDESCTL__CLI__SERVER_URL: "fidesctl.privacyco.com"
+          FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
 
 ```yaml
@@ -59,5 +59,5 @@ jobs:
       - name: Evaluation
         run: fidesctl evaluate fides_resources/
         env:
-          FIDESCTL__CLI__SERVER_URL: "fidesctl.privacyco.com"
+          FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
