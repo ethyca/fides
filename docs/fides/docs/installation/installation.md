@@ -12,7 +12,7 @@ More details: [Installation from PyPI](pypi.md)
 
 **When this option works best**
 
-* This installation method is useful when you are not familiar with Containers and Docker. and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
+* This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
 * The only officially supported mechanism of installation is via pip.
 
 **Intended users**
@@ -41,17 +41,17 @@ More details: [Installation from Docker](pypi.md)
 
 **When this option works best**
 
-* This installation method is useful if you are familiar with the Container/Docker stack. It provides a capability of running fidesctl components in isolation from other software running on the same physical or virtual machines with easy maintenance of dependencies.
+* This installation method is useful if you are familiar with the container/Docker stack. It provides a capability of running fidesctl components in isolation from other software running on the same physical or virtual machines with easy maintenance of dependencies.
 * The images are built by fidesctl CI/CD pipelines and offer versions for official releases as well as for every commit made to the main branch. For this reason, it is highly discouraged to use the `latest` tag, as any non-official release versions may contain some instability.
 
 **Intended users**
 
-* Users who are familiar with Containers and Docker stack and understand how to build and extend their own container images.
-* Users who know how to create deployments using Docker by linking together multiple docker containers and maintaining such deployments.
+* Users who are familiar with containers and Docker stack and understand how to build and extend their own container images.
+* Users who know how to create deployments using Docker by linking together multiple Docker containers and maintaining such deployments.
 
 **What are you expected to handle**
 
-* You are expected to be able to customize or extend Container/Docker images if you want to add extra dependencies. You are expected to put together a deployment built of several containers (for example using docker-compose) and to make sure that they are linked together.
+* You are expected to be able to customize or extend container/Docker images if you want to add extra dependencies. You are expected to put together a deployment built of several containers (for example using docker-compose) and to make sure that they are linked together.
 * You are responsible for setting up the database, automated startup and recovery, maintenance, cleanup and upgrades of fidesctl.
 * You should choose the right deployment mechanism. There a number of available options of deployments of containers. You can use your own custom mechanism, custom Kubernetes deployments, custom Docker Compose, custom Helm charts etc., and you should choose it based on your experience and expectations.
 

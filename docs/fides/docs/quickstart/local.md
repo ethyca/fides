@@ -20,7 +20,7 @@ For more information on pip installing fidesctl as well as the other potential e
 
 ## Database installation
 
-Due to environmental differences, there is no specific guide on running/configuring your own postgres database outside of the version constraints mentioned in the `System Requirements` section above.
+Due to environmental differences, there is no specific guide on running/configuring your own Postgres database outside of the version constraints mentioned in the `System Requirements` section above.
 
 Make sure to note your database credentials and use them to generate a [SQLAlchemy Connection String](https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql). This will be used in the `database_url` configuration value mentioned below.
 

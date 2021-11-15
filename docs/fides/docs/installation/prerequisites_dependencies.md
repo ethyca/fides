@@ -1,10 +1,10 @@
 # Prerequisites
 
-Fidesctl is tested with (required for any part of fidesctl):
+Fidesctl supports the following Python versions:
 
 * Python: 3.8
 
-Databases (required when running the fidesctl webserver):
+Fidesctl supports the following databases as the application database:
 
 * PostgreSQL: 12
 
