@@ -1,6 +1,6 @@
 # Installation
 
-This page describes installation options that you might use when considering how to install fidesctl. Fidesctl consists of multiple components, possibly distributed among various physical or virtual machines. Therefore installation of fidesctl might be complex, depending on the options you choose.
+This page describes installation options that you might use when considering how to install fidesctl. Fidesctl consists of multiple components, possibly distributed among various physical or virtual machines. Fidesctl can be deployed flexibly, meeting the needs of various environments with different levels of complexity.
 
 You should also check-out the [Prerequisites](prerequisites_dependencies.md) that must be fulfilled when installing fidesctl. Fidesctl requires additional [Dependencies](prerequisites_dependencies.md) to be installed - which can be done via `extras`.
 
