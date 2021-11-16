@@ -56,7 +56,7 @@ As use cases evolve, your systems' data subjects, data categories, and data uses
 
 **PRO TIP**
 
-As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a [Registry](../language/resources.md#registry).
+As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a [Registry](../language/resources/registry.md).
 
 ---
 

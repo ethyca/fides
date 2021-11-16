@@ -2,7 +2,7 @@
 
 This is the documentation for Fides' configuration language. It is relevant to users of **Fides Control** ([`fidesctl`](https://github.com/ethyca/fides/)), **Fides Ops** ([`fidesops`](https://github.com/ethyca/fidesops/), and other privacy tools that are in the roadmap.
 
-> **Hands-on**: Try the [fidesctl: Getting Started](../getting_started/overview.md).
+> **Hands-on**: Try the [fidesctl: Getting Started](../quickstart/overview.md).
 
 The Fides language is Fides' primary user interface. In every use of Fides, configuration files written in the Fides language is always at the heart of the workflow.
 

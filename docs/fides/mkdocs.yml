@@ -2,11 +2,17 @@ site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
   - What is Fides?: index.md
-  - Getting Started:
-      - Overview: getting_started/overview.md
-      - Fidesctl in Docker: getting_started/docker.md
-      - Fidesctl Manually (without Docker): getting_started/manual.md
-  - Installation: installation.md
+  - Quick Start:
+      - Overview: quickstart/overview.md
+      - Running Fidesctl locally: quickstart/local.md
+      - Running Fidesctl in Docker: quickstart/docker.md
+  - Installation:
+      - Installation Overview: installation/installation.md
+      - Prerequisites & Dependencies: installation/prerequisites_dependencies.md
+      - Installation from PyPI: installation/pypi.md
+      - Installation from Docker: installation/docker.md
+      - Setting up the database: installation/database.md
+      - Configuration: installation/configuration.md
   - Tutorial:
       - Overview: tutorial/index.md
       - Add Fidesctl to the App: tutorial/add.md
@@ -15,7 +21,7 @@ nav:
       - Write a Policy: tutorial/policy.md
       - Add Google Analytics: tutorial/google.md
       - Manage Google Analytics with Fidesctl: tutorial/pass.md
-  - Deployment Guide: deployment.md
+  - CI Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
@@ -34,6 +40,7 @@ nav:
           - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
       - CLI Overview: cli/cli.md
+      - annotate-dataset: cli/annotate-dataset.md
       - apply: cli/apply.md
       - delete: cli/delete.md
       - evaluate: cli/evaluate.md

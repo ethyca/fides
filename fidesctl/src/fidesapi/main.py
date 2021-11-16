@@ -37,7 +37,8 @@ def configure_db() -> None:
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {"data": {"message": "Fidesctl service is healthy!"}}
+    ## TODO: this should also hit the database
+    return {"data": {"message": "Fidesctl API service is healthy!"}}
 
 
 @app.post("/admin/db/{action}", tags=["Admin"])

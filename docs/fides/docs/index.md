@@ -44,4 +44,4 @@ Fides' data orchestration capabilities mean you can use declarations to generate
 
 ## Next Steps
 
-To start learning how Fides works, visit the [Tutorial](tutorial/overview.md) page to walkthrough using the taxonomy, annotating datasets and systems, writing and evaluating policies, and more. Welcome!
+To start learning how Fides works, visit the [Tutorial](tutorial/index.md) page to walkthrough using the taxonomy, annotating datasets and systems, writing and evaluating policies, and more. Welcome!
