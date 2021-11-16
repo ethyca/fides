@@ -102,6 +102,7 @@ def evaluate(
     """
     Assess your data's compliance to policies.
 
+    TODO: Make this runnable locally
     This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
 
     """
