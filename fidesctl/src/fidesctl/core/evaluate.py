@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Callable, cast
 import uuid
 import time
 from pydantic import AnyHttpUrl
+from pydantic.utils import deep_update
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
@@ -22,6 +23,7 @@ from fideslang.models import (
     System,
     Taxonomy,
 )
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
@@ -506,6 +508,7 @@ def evaluate(
     fides_key: str,
     headers: Dict[str, str],
     message: str,
+    local: bool,
     dry: bool,
 ) -> Evaluation:
     """
@@ -515,7 +518,13 @@ def evaluate(
     Local Policy definition files will be used as opposed to their
     server-definitions if available.
     """
-    taxonomy = parse(manifests_dir)
+    user_taxonomy = parse(manifests_dir)
+    taxonomy = Taxonomy.parse_obj(
+        {
+            **DEFAULT_TAXONOMY.dict(exclude_unset=True),
+            **user_taxonomy.dict(exclude_unset=True),
+        }
+    )
 
     # Populate all of the policies to evaluate
     taxonomy.policy = get_evaluation_policies(
@@ -534,6 +543,11 @@ def evaluate(
     )
     print("-" * 10)
 
+    missing_resources = get_referenced_missing_keys(taxonomy)
+    if local and missing_resources:
+        echo_red(str(missing_resources))
+        echo_red("Not all referenced resources exist locally!")
+        raise SystemExit(1)
     echo_green("Checking for missing resources...")
     populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 

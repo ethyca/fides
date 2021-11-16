@@ -91,30 +91,40 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     "--message",
     help="A message that you can supply to describe the purpose of this evaluation.",
 )
+@click.option(
+    "--local",
+    is_flag=True,
+    help="Runs in a local mode that doesn't utilize server calls.",
+)
 @dry_flag
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
     fides_key: str,
     message: str,
+    local: bool,
     dry: bool,
 ) -> None:
     """
     Assess your data's compliance to policies.
 
-    TODO: Make this runnable locally
     This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
 
     """
 
     config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-        dry=dry,
-    )
+
+    if local:
+        dry = True
+
+    if not local:
+        taxonomy = _parse.parse(manifests_dir)
+        _apply.apply(
+            url=config.cli.server_url,
+            taxonomy=taxonomy,
+            headers=config.user.request_headers,
+            dry=dry,
+        )
 
     _evaluate.evaluate(
         url=config.cli.server_url,
@@ -122,6 +132,7 @@ def evaluate(
         manifests_dir=manifests_dir,
         fides_key=fides_key,
         message=message,
+        local=local,
         dry=dry,
     )
 
