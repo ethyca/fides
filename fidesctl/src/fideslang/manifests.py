@@ -4,6 +4,7 @@ from functools import reduce
 from typing import Dict, List, Set, Union
 
 import yaml
+from fidesctl.core.utils import echo_red
 
 
 def write_manifest(
@@ -26,7 +27,12 @@ def load_yaml_into_dict(file_path: str) -> Dict:
     This loads yaml files into a dictionary to be used in API calls.
     """
     with open(file_path, "r") as yaml_file:
-        return yaml.load(yaml_file, Loader=yaml.FullLoader)
+        loaded = yaml.safe_load(yaml_file)
+        if isinstance(loaded, dict):
+            return loaded
+
+    echo_red(f"Failed to parse invalid manifest: {file_path.split('/')[-1]}. Skipping.")
+    return {}
 
 
 def filter_manifest_by_type(
