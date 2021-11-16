@@ -232,13 +232,13 @@
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       <label class="md-nav__link" for="__nav_2">
-        Getting Started
+        Quick Start
         <span class="md-nav__icon md-icon"></span>
       </label>
-      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+      <nav class="md-nav" aria-label="Quick Start" data-md-level="1">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
-          Getting Started
+          Quick Start
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -247,7 +247,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/overview/" class="md-nav__link">
+      <a href="../../quickstart/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -259,8 +259,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/docker/" class="md-nav__link">
-        Fidesctl in Docker
+      <a href="../../quickstart/local/" class="md-nav__link">
+        Running Fidesctl locally
       </a>
     </li>
   
@@ -271,8 +271,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/manual/" class="md-nav__link">
-        Fidesctl Manually (without Docker)
+      <a href="../../quickstart/docker/" class="md-nav__link">
+        Running Fidesctl in Docker
       </a>
     </li>
   
@@ -291,10 +291,97 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../installation/" class="md-nav__link">
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
         Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/installation/" class="md-nav__link">
+        Installation Overview
       </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/prerequisites_dependencies/" class="md-nav__link">
+        Prerequisites & Dependencies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/pypi/" class="md-nav__link">
+        Installation from PyPI
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/docker/" class="md-nav__link">
+        Installation from Docker
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/database/" class="md-nav__link">
+        Setting up the database
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/configuration/" class="md-nav__link">
+        Configuration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -421,8 +508,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/" class="md-nav__link">
-        Deployment Guide
+      <a href="../../ci_reference/" class="md-nav__link">
+        CI Reference
       </a>
     </li>
   
@@ -699,6 +786,18 @@
     <li class="md-nav__item">
       <a href="../../cli/cli/" class="md-nav__link">
         CLI Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/annotate-dataset/" class="md-nav__link">
+        annotate-dataset
       </a>
     </li>
   
@@ -1099,12 +1198,13 @@
                 
                 <h1 id="pull-requests">Pull Requests</h1>
 <hr />
-<p>Pull Requests are the primary unit of work within the Fides project. All code changes are expected to be submitted via a PR, and as such here are a few requirements for submitting PRs:</p>
+<p>Pull requests are the primary unit of work within the Fidesctl project. All code changes are expected to be submitted via a PR, and as such here are a few requirements for submitting PRs:</p>
 <ol>
-<li>Completely fill out the provided pull request template</li>
-<li>If you're unsure about a potential feature implementation or there is anything else that needs discussing, feel free to ask for an early review/feedback in the comments of the PR.</li>
-<li>Make sure that all checks are passing and all boxes have been checked before passing it off to a reviewer for a final approval. PR reviews require other people to spend their time, so please be courteous and double check your work before passing it to a reviewer.</li>
-<li>If there is a bug in a PR, fix it <em>within</em> that PR, do not create another PR to fix a bug in a separate PR.</li>
+<li>Completely fill out the provided pull request template.</li>
+<li>PRs should be in a <code>draft</code> state until they are ready for a final review + merge. A non-draft PR signals to the community that the author believes the PR is ready to ship! If you need early feedback on your PR, feel free to ask for it directly while your PR is in a draft state.</li>
+<li>Make sure that all checks are passing and all boxes have been checked before taking the PR out of a <code>draft</code> state. PR reviews require other people to spend their time, so please be courteous and double check your work before passing it to a reviewer.</li>
+<li>If you're unsure about a potential feature implementation or there is anything else that needs discussing, feel free to ask for an early review/feedback in the comments of the draft PR.</li>
+<li>PRs should be focused, reflecting a single logical change or feature. Generally, it is better to have multiple smaller PRs than one big one. This reduces the merge risk and shortens review time.</li>
 </ol>
                 
               

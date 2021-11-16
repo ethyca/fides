@@ -16,7 +16,7 @@
     
     
       
-        <title>Annotate dataset - Fides</title>
+        <title>annotate-dataset - Fides</title>
       
     
     
@@ -101,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Annotate dataset
+              annotate-dataset
             
           </span>
         </div>
@@ -227,13 +227,13 @@
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       <label class="md-nav__link" for="__nav_2">
-        Getting Started
+        Quick Start
         <span class="md-nav__icon md-icon"></span>
       </label>
-      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+      <nav class="md-nav" aria-label="Quick Start" data-md-level="1">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
-          Getting Started
+          Quick Start
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -242,7 +242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/overview/" class="md-nav__link">
+      <a href="../../quickstart/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -254,8 +254,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/docker/" class="md-nav__link">
-        Fidesctl in Docker
+      <a href="../../quickstart/local/" class="md-nav__link">
+        Running Fidesctl locally
       </a>
     </li>
   
@@ -266,8 +266,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/manual/" class="md-nav__link">
-        Fidesctl Manually (without Docker)
+      <a href="../../quickstart/docker/" class="md-nav__link">
+        Running Fidesctl in Docker
       </a>
     </li>
   
@@ -286,10 +286,97 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../installation/" class="md-nav__link">
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
         Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/installation/" class="md-nav__link">
+        Installation Overview
       </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/prerequisites_dependencies/" class="md-nav__link">
+        Prerequisites & Dependencies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/pypi/" class="md-nav__link">
+        Installation from PyPI
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/docker/" class="md-nav__link">
+        Installation from Docker
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/database/" class="md-nav__link">
+        Setting up the database
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/configuration/" class="md-nav__link">
+        Configuration
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -416,8 +503,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/" class="md-nav__link">
-        Deployment Guide
+      <a href="../../ci_reference/" class="md-nav__link">
+        CI Reference
       </a>
     </li>
   
@@ -669,12 +756,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
       
       <label class="md-nav__link" for="__nav_7">
         CLI
@@ -695,6 +784,26 @@
       <a href="../cli/" class="md-nav__link">
         CLI Overview
       </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        annotate-dataset
+      </a>
+      
     </li>
   
 
@@ -1157,6 +1266,58 @@
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../cli/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: CLI Overview"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              CLI Overview
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../apply/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: apply"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              apply
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
 
 
