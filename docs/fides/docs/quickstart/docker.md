@@ -1,4 +1,4 @@
-# Getting Started with Fidesctl in Docker
+# Running Fidesctl in Docker
 
 ---
 

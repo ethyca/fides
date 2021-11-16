@@ -1,4 +1,4 @@
-# Prerequisites
+# Prerequisites & Dependencies
 
 Fidesctl supports the following Python versions:
 
