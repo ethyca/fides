@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Callable, cast
 import uuid
 import time
 from pydantic import AnyHttpUrl
-from pydantic.utils import deep_update
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
@@ -527,12 +526,14 @@ def evaluate(
     )
 
     # Populate all of the policies to evaluate
-    taxonomy.policy = get_evaluation_policies(
-        local_policies=taxonomy.policy,
-        evaluate_fides_key=fides_key,
-        url=url,
-        headers=headers,
-    )
+    if not local:
+        taxonomy.policy = get_evaluation_policies(
+            local_policies=taxonomy.policy,
+            evaluate_fides_key=fides_key,
+            url=url,
+            headers=headers,
+        )
+
     validate_policies_exist(policies=taxonomy.policy, evaluate_fides_key=fides_key)
     validate_supported_policy_rules(policies=taxonomy.policy)
 
@@ -551,7 +552,7 @@ def evaluate(
     echo_green("Checking for missing resources...")
     populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 
-    echo_green("Executing evaluations...")
+    echo_green("Executing evaluation...")
     evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
     if not dry:

@@ -3,8 +3,7 @@ policy:
     name: Demo Privacy Policy
     description: The main privacy policy for the organization.
     rules:
-      - fides_key: reject_direct_marketing
-        name: Reject Direct Marketing
+      - name: Reject Direct Marketing
         description: Disallow collecting any user contact info to use for marketing.
         data_categories:
           inclusion: ANY

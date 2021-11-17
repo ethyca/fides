@@ -128,6 +128,22 @@ def test_evaluate_demo_resources_pass(
 
 
 @pytest.mark.integration
+def test_local_evaluate(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "evaluate",
+            "tests/data/passing_dataset_taxonomy.yml",
+            "--local",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 1
+
+
+@pytest.mark.integration
 def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,

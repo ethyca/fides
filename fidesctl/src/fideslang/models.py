@@ -8,7 +8,6 @@ from pydantic import validator, BaseModel, Field
 
 from fideslang.validation import (
     FidesKey,
-    sort_list_objects_by_key,
     sort_list_objects_by_name,
     no_self_reference,
     matching_parent_key,
@@ -204,7 +203,7 @@ class PrivacyRule(BaseModel):
     values: List[FidesKey]
 
 
-class PolicyRule(FidesModel):
+class PolicyRule(BaseModel):
     """
     The PolicyRule resource model.
 
@@ -212,6 +211,7 @@ class PolicyRule(FidesModel):
     and what action that combination constitutes.
     """
 
+    name: str
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
@@ -231,7 +231,7 @@ class Policy(FidesModel):
     rules: List[PolicyRule]
 
     _sort_rules: classmethod = validator("rules", allow_reuse=True)(
-        sort_list_objects_by_key
+        sort_list_objects_by_name
     )
 
 

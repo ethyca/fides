@@ -119,7 +119,7 @@ def test_get_referenced_missing_policy_keys():
                 fides_key="policy_1",
                 rules=[
                     PolicyRule(
-                        fides_key="policy_rule_1",
+                        name="policy_rule_1",
                         action=ActionEnum.REJECT,
                         data_categories={
                             "values": ["policy_rule_data_category_1"],
@@ -141,7 +141,6 @@ def test_get_referenced_missing_policy_keys():
     )
     expected_referenced_key = {
         "default_organization",
-        "policy_rule_1",
         "policy_rule_data_category_1",
         "policy_rule_data_use_1",
         "policy_rule_data_subject_1",

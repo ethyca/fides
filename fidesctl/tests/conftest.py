@@ -111,11 +111,7 @@ def resources_dict():
             rules=[],
         ),
         "policy_rule": models.PolicyRule(
-            organization_fides_key=1,
-            policyId=1,
-            fides_key="test_policy",
             name="Test Policy",
-            description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
             data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
