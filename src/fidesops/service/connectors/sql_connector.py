@@ -5,11 +5,16 @@ from typing import Any, Dict, List
 from sqlalchemy import Column
 from sqlalchemy.engine import Engine, create_engine, CursorResult, LegacyCursorResult
 from sqlalchemy.exc import OperationalError, InternalError
+from snowflake.sqlalchemy import URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.policy import Policy
-from fidesops.schemas.connection_configuration import PostgreSQLSchema
+from fidesops.schemas.connection_configuration import (
+    PostgreSQLSchema,
+    RedshiftSchema,
+    SnowflakeSchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -150,4 +155,59 @@ class MySQLConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a MySQL database"""
         config = MySQLSchema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
+        return create_engine(uri, hide_parameters=True)
+
+
+class RedshiftConnector(SQLConnector):
+    """Connector specific to Amazon Redshift"""
+
+    def build_uri(self) -> str:
+        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
+        config = RedshiftSchema(**self.configuration.secrets or {})
+
+        port = f":{config.port}" if config.port else ""
+        database = f"/{config.database}" if config.database else ""
+        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
+        return url
+
+    def client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with an Amazon Redshift cluster"""
+        config = RedshiftSchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(uri, hide_parameters=True)
+
+
+class SnowflakeConnector(SQLConnector):
+    """Connector specific to Snowflake"""
+
+    def build_uri(self) -> str:
+        """Build URI of format 'snowflake://<user_login_name>:<password>@<account_identifier>/<database_name>/
+        <schema_name>?warehouse=<warehouse_name>&role=<role_name>'
+        """
+        config = SnowflakeSchema(**self.configuration.secrets or {})
+
+        kwargs = {}
+
+        if config.account_identifier:
+            kwargs["account"] = config.account_identifier
+        if config.user_login_name:
+            kwargs["user"] = config.user_login_name
+        if config.password:
+            kwargs["password"] = config.password
+        if config.database_name:
+            kwargs["database"] = config.database_name
+        if config.schema_name:
+            kwargs["schema"] = config.schema_name
+        if config.warehouse_name:
+            kwargs["warehouse"] = config.warehouse_name
+        if config.role_name:
+            kwargs["role"] = config.role_name
+
+        url: str = URL(**kwargs)
+        return url
+
+    def client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with Snowflake"""
+        config = SnowflakeSchema(**self.configuration.secrets or {})
+        uri: str = config.url or self.build_uri()
         return create_engine(uri, hide_parameters=True)

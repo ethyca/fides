@@ -99,7 +99,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure"
+		pytest $(pytestpath) -m "not integration and not integration_erasure and not external_integration"
 
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
@@ -122,6 +122,13 @@ pytest-integration-erasure: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "integration_erasure"
+
+# These tests connect to external third-party test databases
+pytest-external-integration: compose-build
+	@echo "Running tests that connect to external third party test databases"
+	@docker-compose run -e REDSHIFT_TEST_URI -e SNOWFLAKE_TEST_URI $(IMAGE_NAME) \
+		pytest $(pytestpath) -m "external_integration"
+
 
 ####################
 # Utils
