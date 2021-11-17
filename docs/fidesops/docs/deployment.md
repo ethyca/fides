@@ -142,7 +142,7 @@ Releases of `fidesops` are published to PyPI here: [fidesops](https://pypi.org/p
 pip install fidesops
 ```
 
-Once installed, you'll need a minimial config TOML file to specify the required config variables to run the server. Create a file called `fidesops.toml` in the working directory you'll run `fidesops` from using the following template, replacing the values as needed. For details on these config variables, refer to the table in [Option 1](#option-1-install-fidesops-via-docker) above.
+Once installed, you'll need a minimal config TOML file to specify the required config variables to run the server. Create a file called `fidesops.toml` in the working directory you'll run `fidesops` from using the following template, replacing the values as needed. For details on these config variables, refer to the table in [Option 1](#option-1-install-fidesops-via-docker) above.
 ```toml
 [database]
 SERVER="postgres.internal"

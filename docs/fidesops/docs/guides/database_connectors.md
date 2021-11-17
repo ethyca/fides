@@ -24,6 +24,8 @@ Fidesops supports connections to the following databases:
 * PostgreSQL
 * MongoDB
 * MySQL
+* Amazon Redshift
+* Snowflake
 
 Other platforms will be added in future releases.
 
@@ -35,7 +37,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to kebab-case (slugified), is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application-postgresql-db`.
 
-* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, and `mysql`.
+* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `redshift`, and `snowflake`.
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
