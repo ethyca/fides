@@ -130,7 +130,7 @@ def evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
-        fides_key=fides_key,
+        policy_fides_key=fides_key,
         message=message,
         local=local,
         dry=dry,

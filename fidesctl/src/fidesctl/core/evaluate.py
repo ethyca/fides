@@ -501,10 +501,32 @@ def populate_referenced_keys(
     return taxonomy
 
 
+def populate_evaluation_policies(
+    policies: List[Policy],
+    policy_fides_key: str,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+    local: bool = False,
+) -> List[Policy]:
+    "Fetch all policies from the server if not running in local mode and validate the policies."
+
+    if not local:
+        policies = get_evaluation_policies(
+            local_policies=policies,
+            evaluate_fides_key=policy_fides_key,
+            url=url,
+            headers=headers,
+        )
+
+    validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
+    validate_supported_policy_rules(policies=policies)
+    return policies
+
+
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
-    fides_key: str,
+    policy_fides_key: str,
     headers: Dict[str, str],
     message: str,
     local: bool,
@@ -517,6 +539,8 @@ def evaluate(
     Local Policy definition files will be used as opposed to their
     server-definitions if available.
     """
+
+    # Combine the User-defined taxonomy with the Default Taxonomy
     user_taxonomy = parse(manifests_dir)
     taxonomy = Taxonomy.parse_obj(
         {
@@ -525,18 +549,13 @@ def evaluate(
         }
     )
 
-    # Populate all of the policies to evaluate
-    if not local:
-        taxonomy.policy = get_evaluation_policies(
-            local_policies=taxonomy.policy,
-            evaluate_fides_key=fides_key,
-            url=url,
-            headers=headers,
-        )
-
-    validate_policies_exist(policies=taxonomy.policy, evaluate_fides_key=fides_key)
-    validate_supported_policy_rules(policies=taxonomy.policy)
-
+    taxonomy.policy = populate_evaluation_policies(
+        policies=taxonomy.policy,
+        policy_fides_key=policy_fides_key,
+        url=url,
+        headers=headers,
+        local=local,
+    )
     echo_green(
         "Evaluating the following policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
