@@ -45,7 +45,10 @@ class MongoDBConnector(BaseConnector):
         """Returns a client for a MongoDB instance"""
         config = MongoDBSchema(**self.configuration.secrets or {})
         uri = config.url if config.url else self.build_uri()
-        return MongoClient(uri, serverSelectionTimeoutMS=5000)
+        try:
+            return MongoClient(uri, serverSelectionTimeoutMS=5000)
+        except ValueError:
+            raise ConnectionException("Value Error connecting to MongoDB.")
 
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""

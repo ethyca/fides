@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Params, Page
@@ -44,6 +44,7 @@ from fidesops.models.storage import (
     StorageConfig,
     get_schema_for_secrets,
 )
+from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 from fidesops.service.storage.storage_authenticator_service import secrets_are_valid
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.common_exceptions import StorageUploadError, KeyOrNameAlreadyExists
@@ -158,14 +159,13 @@ def put_config_secrets(
     config_key: str,
     *,
     db: Session = Depends(deps.get_db),
-    storage_secrets: Dict[str, str] = Body(...),
+    unvalidated_storage_secrets: possible_storage_secrets,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
     Add or update secrets for storage config.
     """
     logger.info(f"Finding storage config with key '{config_key}'")
-
     storage_config = StorageConfig.get_by(db=db, field="key", value=config_key)
     if not storage_config:
         raise HTTPException(
@@ -176,7 +176,7 @@ def put_config_secrets(
     try:
         secrets_schema = get_schema_for_secrets(
             storage_type=storage_config.type,
-            secrets=storage_secrets,
+            secrets=unvalidated_storage_secrets,
         )
     except KeyError as exc:
         raise HTTPException(

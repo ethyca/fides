@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from pydantic import BaseModel
 
@@ -20,3 +20,13 @@ class FidesopsSchema(BaseModel):
 
 
 BaseSchema = FidesopsSchema
+
+
+class NoValidationSchema(BaseModel):
+    """A schema to be used for API documentation only, when validation is handled later in the request process,
+    but we still want valid request schemas to show up in the docs."""
+
+    @classmethod
+    def validate(cls: "NoValidationSchema", value: Any) -> Any:
+        """Returns value exactly as it was passed in, when validation is going to be handled later."""
+        return value
