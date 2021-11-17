@@ -18,7 +18,6 @@ from pydantic.main import BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 
-
 logger = logging.getLogger(__name__)
 
 

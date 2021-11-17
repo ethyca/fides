@@ -1,16 +1,19 @@
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
+    MongoDBDocsSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
+    MySQLDocsSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema,
+    PostgreSQLDocsSchema,
 )
 from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connections_secrets_https import (
@@ -40,3 +43,8 @@ def get_connection_secrets_validator(
         raise NotImplementedError(
             f"Add {connection_type} to the 'secrets_validators' mapping."
         )
+
+
+connection_secrets_schemas = Union[
+    MongoDBDocsSchema, PostgreSQLDocsSchema, MySQLDocsSchema
+]

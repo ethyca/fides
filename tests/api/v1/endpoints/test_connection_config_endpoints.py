@@ -437,6 +437,7 @@ class TestPutConnectionConfigSecrets:
         resp = api_client.put(
             f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-not-a-known-key/secret",
             headers=auth_header,
+            json={}
         )
         assert resp.status_code == 404
 

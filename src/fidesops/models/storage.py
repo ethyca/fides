@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 from pydantic import ValidationError
 from sqlalchemy import (
@@ -27,13 +26,14 @@ from fidesops.schemas.storage.storage import (
 
 from fidesops.core.config import config
 from fidesops.db.base_class import JSONTypeOverride
+from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 
 logger = logging.getLogger(__name__)
 
 
 def get_schema_for_secrets(
     storage_type: StorageType,
-    secrets: Dict[str, str],
+    secrets: possible_storage_secrets,
 ) -> SUPPORTED_STORAGE_SECRETS:
     """
     Returns the secrets that pertain to `storage_type` represented as a Pydantic schema
@@ -86,7 +86,7 @@ class StorageConfig(Base):
         self,
         *,
         db: Session,
-        storage_secrets: Dict[str, str],
+        storage_secrets: possible_storage_secrets,
     ) -> None:
         """Creates or updates secrets associated with a config id"""
 
