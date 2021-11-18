@@ -22,6 +22,7 @@ from fideslang.models import (
     System,
     Taxonomy,
 )
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
@@ -503,9 +504,10 @@ def populate_referenced_keys(
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
-    fides_key: str,
+    policy_fides_key: str,
     headers: Dict[str, str],
     message: str,
+    local: bool,
     dry: bool,
 ) -> Evaluation:
     """
@@ -515,29 +517,45 @@ def evaluate(
     Local Policy definition files will be used as opposed to their
     server-definitions if available.
     """
-    taxonomy = parse(manifests_dir)
 
-    # Populate all of the policies to evaluate
-    taxonomy.policy = get_evaluation_policies(
-        local_policies=taxonomy.policy,
-        evaluate_fides_key=fides_key,
-        url=url,
-        headers=headers,
+    # Merge the User-defined taxonomy & Default Taxonomy
+    user_taxonomy = parse(manifests_dir)
+    taxonomy = Taxonomy.parse_obj(
+        {
+            **DEFAULT_TAXONOMY.dict(exclude_unset=True),
+            **user_taxonomy.dict(exclude_unset=True),
+        }
     )
-    validate_policies_exist(policies=taxonomy.policy, evaluate_fides_key=fides_key)
-    validate_supported_policy_rules(policies=taxonomy.policy)
 
+    # Determine which Policies will be evaluated
+    policies = taxonomy.policy
+    if not local:
+        # Append server-side Policies if not running in local_mode
+        policies = get_evaluation_policies(
+            local_policies=policies,
+            evaluate_fides_key=policy_fides_key,
+            url=url,
+            headers=headers,
+        )
+
+    validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
+    validate_supported_policy_rules(policies=policies)
     echo_green(
-        "Evaluating the following policies:\n{}".format(
+        "Evaluating the following Policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
         )
     )
     print("-" * 10)
 
     echo_green("Checking for missing resources...")
+    missing_resources = get_referenced_missing_keys(taxonomy)
+    if local and missing_resources:
+        echo_red(str(missing_resources))
+        echo_red("Not all referenced resources exist locally!")
+        raise SystemExit(1)
     populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 
-    echo_green("Executing evaluations...")
+    echo_green("Executing Policy evaluation(s)...")
     evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
     if not dry:

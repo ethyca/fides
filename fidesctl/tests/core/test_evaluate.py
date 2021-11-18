@@ -66,7 +66,7 @@ def create_policy_rule_with_action(
     policy_rule_key: str, action: ActionEnum
 ) -> PolicyRule:
     return PolicyRule(
-        fides_key=policy_rule_key,
+        name=policy_rule_key,
         action=action,
         data_categories={
             "values": ["data_category_1"],
@@ -90,7 +90,7 @@ def create_policy_rule_with_keys(
     data_qualifier: str,
 ) -> PolicyRule:
     return PolicyRule(
-        fides_key="policy_rule_1",
+        name="policy_rule_1",
         data_categories={
             "values": data_categories,
             "inclusion": InclusionEnum.ANY,

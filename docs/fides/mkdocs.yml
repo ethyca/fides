@@ -4,7 +4,8 @@ nav:
   - What is Fides?: index.md
   - Quick Start:
       - Overview: quickstart/overview.md
-      - Running Fidesctl locally: quickstart/local.md
+      - Running Fidesctl Locally (Standalone): quickstart/local_standalone.md
+      - Running Fidesctl Locally (Full Installation): quickstart/local_full.md
       - Running Fidesctl in Docker: quickstart/docker.md
   - Installation:
       - Installation Overview: installation/installation.md

@@ -28,11 +28,11 @@ More details: [Installation from PyPI](pypi.md)
 **What the Fidesctl community provides for this method**
 
 * You have [Installation from PyPI](pypi.md) on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.
-* You have [Running fidesctl locally](../quickstart/local.md) where you can see an example of running fidesctl locally. You can use this guide to start fidesctl quickly for local testing and development. However this is just an inspiration.
+* You have the [Running fidesctl Locally](../quickstart/local_full.md) guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.
 
 **Where to ask for help**
 
-* The #troubleshooting channel on the fidesctl Slack for quick general troubleshooting questions. The [GitHub discussions](https://github.com/ethyca/fides/discussions) if you look for longer discussion and have more information to share.
+* For quick and general troubleshooting questions, visit the #troubleshooting channel on the fidesctl Slack. For longer discussions or to share information, visit the [GitHub discussions](https://github.com/ethyca/fides/discussions) page.
 * If you can provide description of a reproducible problem with the fidesctl software, you can open issue in [GitHub issues](https://github.com/ethyca/fides/issues).
 
 ## Using Production Docker Images
@@ -62,5 +62,5 @@ More details: [Installation from Docker](pypi.md)
 
 **Where to ask for help**
 
-* The #troubleshooting channel on the fidesctl Slack for quick general troubleshooting questions. The [GitHub discussions](https://github.com/ethyca/fides/discussions) if you look for longer discussion and have more information to share.
+* For quick and general troubleshooting questions, visit the #troubleshooting channel on the fidesctl Slack. For longer discussions or to share information, visit the [GitHub discussions](https://github.com/ethyca/fides/discussions) page.
 * If you can provide description of a reproducible problem with the fidesctl software, you can open issue in [GitHub issues](https://github.com/ethyca/fides/issues).

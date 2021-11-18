@@ -107,20 +107,25 @@ def evaluate(
     """
 
     config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-        dry=dry,
-    )
+
+    if config.cli.local_mode:
+        dry = True
+    else:
+        taxonomy = _parse.parse(manifests_dir)
+        _apply.apply(
+            url=config.cli.server_url,
+            taxonomy=taxonomy,
+            headers=config.user.request_headers,
+            dry=dry,
+        )
 
     _evaluate.evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
-        fides_key=fides_key,
+        policy_fides_key=fides_key,
         message=message,
+        local=config.cli.local_mode,
         dry=dry,
     )
 

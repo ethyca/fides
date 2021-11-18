@@ -1,8 +1,8 @@
-# Running Fidesctl Locally
+# Running Fidesctl Locally (Full Installation)
 
 ---
 
-Fidesctl can be spun up locally without relying on Docker, but it is a bit more complicated. If you'd like something simpler, please see the [Running Fidesctl in Docker](docker.md) guide for the recommended setup experience.
+Fidesctl can be spun up locally in its entirety without relying on Docker, but it is a bit more complicated. If you'd like something simpler, please see the [Running Fidesctl in Docker](docker.md) guide for the recommended setup experience or [Running Fidesctl Locally (Standalone)](local_standalone.md) for the simplest possible installation.
 
 ## System Requirements
 

@@ -107,7 +107,7 @@ xenon: compose-build
 	@docker-compose run --rm $(IMAGE_NAME) \
 	xenon src \
 	--max-absolute B \
-	--max-modules A \
+	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
 	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
