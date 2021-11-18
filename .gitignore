@@ -1,4 +1,6 @@
 fidesapi/src/main/resources/application.conf
+docs/fides/docs/api/openapi.json
+
 ## generic files to ignore
 *~
 *.lock

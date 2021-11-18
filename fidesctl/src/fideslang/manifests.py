@@ -1,18 +1,25 @@
 """This module handles anything related to working with raw manifest files."""
 import glob
 from functools import reduce
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 
 import yaml
+from fidesctl.core.utils import echo_red
 
 
-def write_manifest(file_name: str, manifest: Dict, resource_type: str) -> None:
+def write_manifest(
+    file_name: str, manifest: Union[List, Dict], resource_type: str
+) -> None:
     """
     Write a dict representation of a resource out to a file.
     """
-    resource = {resource_type: [manifest]}
+    if isinstance(manifest, dict):
+        manifest = {resource_type: [manifest]}
+    else:
+        manifest = {resource_type: manifest}
+
     with open(file_name, "w") as manifest_file:
-        yaml.dump(resource, manifest_file, sort_keys=False, indent=2)
+        yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
 
 
 def load_yaml_into_dict(file_path: str) -> Dict:
@@ -20,7 +27,12 @@ def load_yaml_into_dict(file_path: str) -> Dict:
     This loads yaml files into a dictionary to be used in API calls.
     """
     with open(file_path, "r") as yaml_file:
-        return yaml.load(yaml_file, Loader=yaml.FullLoader)
+        loaded = yaml.safe_load(yaml_file)
+        if isinstance(loaded, dict):
+            return loaded
+
+    echo_red(f"Failed to parse invalid manifest: {file_path.split('/')[-1]}. Skipping.")
+    return {}
 
 
 def filter_manifest_by_type(

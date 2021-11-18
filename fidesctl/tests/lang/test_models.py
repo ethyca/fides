@@ -172,7 +172,7 @@ def test_valid_policy_rule():
         data_categories=PrivacyRule(inclusion="NONE", values=[]),
         data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
         data_subjects=PrivacyRule(inclusion="ANY", values=[]),
-        data_qualifier="unlinked_pseudonymized_data",
+        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
         action="REJECT",
     ),
     assert True
@@ -190,7 +190,7 @@ def test_invalid_action_enum_policy_rule():
             data_categories=PrivacyRule(inclusion="NONE", values=[]),
             data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=PrivacyRule(inclusion="ANY", values=[]),
-            data_qualifier="unlinked_pseudonymized_data",
+            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
             action="REJT",
         ),
     assert True

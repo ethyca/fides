@@ -1,15 +1,59 @@
 site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
-  - Home: index.md
-  - License: license.md
-  - Fides Resources: fides_resources.md
-  - Getting Started:
-      - getting_started/docker.md
-      - getting_started/local.md
-  - Tutorial: tutorial.md
-  - Deployment: deployment.md
-  - CLI: cli.md
+  - What is Fides?: index.md
+  - Quick Start:
+      - Overview: quickstart/overview.md
+      - Running Fidesctl Locally (Standalone): quickstart/local_standalone.md
+      - Running Fidesctl Locally (Full Installation): quickstart/local_full.md
+      - Running Fidesctl in Docker: quickstart/docker.md
+  - Installation:
+      - Installation Overview: installation/installation.md
+      - Prerequisites & Dependencies: installation/prerequisites_dependencies.md
+      - Installation from PyPI: installation/pypi.md
+      - Installation from Docker: installation/docker.md
+      - Setting up the database: installation/database.md
+      - Configuration: installation/configuration.md
+  - Tutorial:
+      - Overview: tutorial/index.md
+      - Add Fidesctl to the App: tutorial/add.md
+      - Annotate the Dataset: tutorial/dataset.md
+      - Annotate the System: tutorial/system.md
+      - Write a Policy: tutorial/policy.md
+      - Add Google Analytics: tutorial/google.md
+      - Manage Google Analytics with Fidesctl: tutorial/pass.md
+  - CI Reference: ci_reference.md
+  - Fides Language:
+      - Overview: language/overview.md
+      - Syntax: language/syntax.md
+      - Resources:
+          - Organization: language/resources/organization.md
+          - Policy: language/resources/policy.md
+          - Registry: language/resources/registry.md
+          - System: language/resources/system.md
+          - Dataset: language/resources/dataset.md
+      - Taxonomy:
+          - Overview: language/taxonomy/overview.md
+          - Taxonomy Explorer: language/taxonomy/explorer.md
+          - Data Categories: language/taxonomy/data_categories.md
+          - Data Uses: language/taxonomy/data_uses.md
+          - Data Subjects: language/taxonomy/data_subjects.md
+          - Data Qualifiers: language/taxonomy/data_qualifiers.md
+  - CLI:
+      - CLI Overview: cli/cli.md
+      - annotate-dataset: cli/annotate-dataset.md
+      - apply: cli/apply.md
+      - delete: cli/delete.md
+      - evaluate: cli/evaluate.md
+      - get: cli/get.md
+      - init-db: cli/init-db.md
+      - ls: cli/ls.md
+      - parse: cli/parse.md
+      - ping: cli/ping.md
+      - reset-db: cli/reset-db.md
+      - view-config: cli/view-config.md
+      - webserver: cli/webserver.md
+  - API: api/index.md
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
@@ -18,26 +62,53 @@ nav:
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
   - Community:
-      - GitHub: community/github.md
+      - Github, Slack & Discord: community/overview.md
+      - Community Hints & Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
+  - About Ethyca: ethyca.md
+  - License: license.md
+
 theme:
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
   name: material
-  favicon: img/favicon.png
-  logo: img/logo.png
+  favicon: img/favicon.ico
+  logo: img/fides-logo.svg
+  font:
+    text: Source Sans Pro
   features:
-    - naviation.top
+    - navigation.top
     - navigation.instant
+  custom_dir: overrides
 
 markdown_extensions:
+  - attr_list
   - pymdownx.superfences
   - pymdownx.snippets
   - pymdownx.inlinehilite
   - pymdownx.tabbed
+  - admonition
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+  - css/fides.css
+  - css/api.css
+  - css/cli.css
+  - css/taxonomy.css
+
+plugins:
+  - render_swagger
+  - search

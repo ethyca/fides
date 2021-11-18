@@ -8,7 +8,6 @@ from pydantic import validator, BaseModel, Field
 
 from fideslang.validation import (
     FidesKey,
-    sort_list_objects_by_key,
     sort_list_objects_by_name,
     no_self_reference,
     matching_parent_key,
@@ -105,10 +104,8 @@ class DatasetCollection(BaseModel):
     name: str
     description: Optional[str]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     fields: List[DatasetField]
 
@@ -122,10 +119,8 @@ class Dataset(FidesModel):
 
     meta: Optional[Dict[str, str]]
     data_categories: Optional[List[FidesKey]]
-    data_qualifiers: List[FidesKey] = Field(
-        default=[
-            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        ],
+    data_qualifier: FidesKey = Field(
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     collections: List[DatasetCollection]
 
@@ -149,9 +144,15 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
+    fides_key: FidesKey
     status: StatusEnum
     details: List[str]
     message: str = ""
+
+    class Config:
+        "Config for the Evaluation"
+        extra = "ignore"
+        orm_mode = True
 
 
 # Organization
@@ -162,8 +163,8 @@ class Organization(FidesModel):
     This resource is used as a way to organize all other resources.
     """
 
-    # It inherits this from FidesModel but Organization's don't have this field
-    organiztion_parent_key: None = None
+    # It inherits this from FidesModel but Organizations don't have this field
+    organization_parent_key: None = None
 
 
 # Policy
@@ -202,7 +203,7 @@ class PrivacyRule(BaseModel):
     values: List[FidesKey]
 
 
-class PolicyRule(FidesModel):
+class PolicyRule(BaseModel):
     """
     The PolicyRule resource model.
 
@@ -210,6 +211,7 @@ class PolicyRule(FidesModel):
     and what action that combination constitutes.
     """
 
+    name: str
     data_categories: PrivacyRule
     data_uses: PrivacyRule
     data_subjects: PrivacyRule
@@ -229,7 +231,7 @@ class Policy(FidesModel):
     rules: List[PolicyRule]
 
     _sort_rules: classmethod = validator("rules", allow_reuse=True)(
-        sort_list_objects_by_key
+        sort_list_objects_by_name
     )
 
 
@@ -259,7 +261,7 @@ class PrivacyDeclaration(BaseModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     data_subjects: List[FidesKey]
-    dataset_references: Optional[List[str]]
+    dataset_references: Optional[List[FidesKey]]
 
 
 class System(FidesModel):

@@ -102,10 +102,10 @@ pytest: compose-build
 xenon: compose-build
 	@$(RUN) xenon src \
 	--max-absolute B \
-	--max-modules A \
+	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
-	--exclude "src/fidesctl/_version.py"
+	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
 
 ####################
 # Utils
@@ -129,7 +129,12 @@ compose-build:
 	@docker-compose down
 	@docker-compose build
 
+.PHONY: docs-build
+docs-build: compose-build
+	@docker-compose run --rm $(IMAGE_NAME) \
+	python generate_openapi.py ../docs/fides/docs/api/openapi.json
+
 .PHONY: docs-serve
-docs-serve:
+docs-serve: docs-build
 	@docker-compose build docs
 	@docker-compose up docs

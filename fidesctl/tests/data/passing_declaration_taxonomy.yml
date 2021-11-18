@@ -1,0 +1,36 @@
+system:
+  - fides_key: customer_data_sharing_system
+    name: Customer Data Sharing System
+    description: Share data about our users with third-parties for payment processing
+    system_type: Service
+    privacy_declarations:
+      - name: Share Political Opinions
+        data_categories:
+          - user.provided.identifiable.political_opinion
+        data_use: third_party_sharing.payment_processing
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_subjects:
+          - customer
+    system_dependencies: []
+
+policy:
+  - fides_key: primary_privacy_policy
+    name: Primary Privacy Policy
+    description: The main privacy policy for the organization.
+    rules:
+      - name: reject_targeted_marketing
+        description: Disallow advertising of customer data
+        data_categories:
+          inclusion: ANY
+          values:
+            - user.provided
+        data_uses:
+          inclusion: ANY
+          values:
+            - advertising
+        data_subjects:
+          inclusion: ANY
+          values:
+            - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        action: REJECT
