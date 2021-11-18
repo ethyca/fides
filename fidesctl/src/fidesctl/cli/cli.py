@@ -94,7 +94,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.option(
     "--local",
     is_flag=True,
-    help="Runs in a local mode that doesn't utilize server calls.",
+    help="Do not make any API calls to the webserver.",
 )
 @dry_flag
 def evaluate(
