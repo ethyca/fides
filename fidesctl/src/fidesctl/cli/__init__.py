@@ -43,7 +43,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
 
     local_commands = [evaluate, parse, view_config]
-    all_commands = [
+    api_commands = [
         annotate_dataset,
         apply,
         delete,
@@ -59,14 +59,14 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
-	config.cli.local_mode = True
     for command in local_commands:
-    	cli.add_command(command)
-    	
+        cli.add_command(command)
+
+    # If local_mode is enabled, don't add unsupported commands
     if not (local or config.cli.local_mode):
-    	config.cli.local_mode = False
-    	for command in api_commands:
-    		cli.add_command(command)
+        config.cli.local_mode = False
+        for command in api_commands:
+            cli.add_command(command)
     ctx.obj["CONFIG"] = config
 
     if not ctx.invoked_subcommand:

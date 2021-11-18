@@ -501,28 +501,6 @@ def populate_referenced_keys(
     return taxonomy
 
 
-def populate_evaluation_policies(
-    policies: List[Policy],
-    policy_fides_key: str,
-    url: AnyHttpUrl,
-    headers: Dict[str, str],
-    local: bool = False,
-) -> List[Policy]:
-    "Fetch all policies from the server if not running in local mode and validate the policies."
-
-    if not local:
-        policies = get_evaluation_policies(
-            local_policies=policies,
-            evaluate_fides_key=policy_fides_key,
-            url=url,
-            headers=headers,
-        )
-
-    validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
-    validate_supported_policy_rules(policies=policies)
-    return policies
-
-
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
@@ -550,13 +528,18 @@ def evaluate(
     )
 
     # Determine which Policies will be evaluated
-    taxonomy.policy = populate_evaluation_policies(
-        policies=taxonomy.policy,
-        policy_fides_key=policy_fides_key,
-        url=url,
-        headers=headers,
-        local=local,
-    )
+    policies = taxonomy.policy
+    if not local:
+        # Append server-side Policies if not running in local_mode
+        policies = get_evaluation_policies(
+            local_policies=policies,
+            evaluate_fides_key=policy_fides_key,
+            url=url,
+            headers=headers,
+        )
+
+    validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
+    validate_supported_policy_rules(policies=policies)
     echo_green(
         "Evaluating the following Policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
