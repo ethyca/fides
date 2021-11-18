@@ -1,6 +1,11 @@
 from typing import Dict, List
 
-from fidesops.util.collection_util import append, merge_dicts, partition
+from fidesops.util.collection_util import (
+    append,
+    merge_dicts,
+    partition,
+    filter_nonempty_values,
+)
 
 
 def test_merge_dicts() -> None:
@@ -37,3 +42,10 @@ def test_partition() -> None:
         "D": ["Dc", "Dcc"],
         "E": ["E", "Ef"],
     }
+
+
+def test_filter_nonempty_values() -> None:
+    assert filter_nonempty_values({"A": 1, "B": None}) == {"A": 1}
+    assert filter_nonempty_values({"B": None}) == {}
+    assert filter_nonempty_values({}) == {}
+    assert filter_nonempty_values(None) == {}

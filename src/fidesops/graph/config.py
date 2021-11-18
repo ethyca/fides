@@ -78,15 +78,14 @@ Field identities:
 from __future__ import annotations
 
 from collections import defaultdict
-
-from typing import List, Optional, Tuple, Set, Dict, Literal
-from pydantic import BaseModel
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 
 from fideslang.models import FidesKey
+from pydantic import BaseModel
 
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.data_type import DataType
-
+from fidesops.graph.data_type import DataTypeConverter, DataType
+from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
 SeedAddress = str
@@ -204,6 +203,21 @@ class Field(BaseModel):
 
         arbitrary_types_allowed = True
 
+    def cast(self, value: Any) -> Optional[Any]:
+        """Cast the input value into the form represented by data_type.
+
+        - If the data_type is None, then it has not been specified, so just return the input value.
+        - Return either a cast value or None"""
+
+        if self.data_type:
+            # if no data type is specified just return the input value.
+            # Skip conversions for query tokens, which are only for display output
+            if not isinstance(value, QueryToken):
+                converter: DataTypeConverter = self.data_type.value
+                return converter.to_value(value)
+
+        return value
+
 
 class Collection(BaseModel):
     """A single grouping of individual data points that are accessed together"""
@@ -212,6 +226,11 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
+    field_dict: Dict[str, Field] = {}
+
+    def __init__(self, **kwargs: dict) -> None:
+        super().__init__(**kwargs)
+        self.field_dict = {f.name: f for f in self.fields}
 
     def references(
         self,
@@ -224,6 +243,10 @@ class Collection(BaseModel):
         """return identity pointers included in the table"""
         flds_w_ident = filter(lambda f: f.identity, self.fields)
         return {f.name: f.identity for f in flds_w_ident}
+
+    def field(self, name: str) -> Optional[Field]:
+        """return field by name, or None if not found"""
+        return self.field_dict[name] if name in self.field_dict else None
 
     @property
     def fields_by_category(self) -> Dict[str, List]:

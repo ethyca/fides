@@ -1,4 +1,4 @@
-from typing import List, Dict, TypeVar, Iterable, Callable
+from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -34,3 +34,11 @@ def partition(_iterable: Iterable[T], extractor: Callable[[T], U]) -> Dict[U, Li
     for t in _iterable:
         append(out, extractor(t), t)
     return out
+
+
+def filter_nonempty_values(d: Optional[Dict[Any, Any]]) -> Dict[Any, Any]:
+    """Return the input map with empty values removed. On an input of None
+    will return an empty Dict."""
+    if d:
+        return {e[0]: e[1] for e in d.items() if e[1]}
+    return {}

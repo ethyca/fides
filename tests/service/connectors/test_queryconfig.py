@@ -36,7 +36,7 @@ user_node = traversal_nodes[CollectionAddress("postgres_example", "payment_card"
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
         def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
-            return set(qconfig.filter_values(values).keys())
+            return set(qconfig.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
         assert config.fields == [
@@ -60,21 +60,26 @@ class TestSQLQueryConfig:
         assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
         assert found_query_keys(config, {}) == set()
 
-    def test_filter_values(self):
+    def test_typed_filtered_values(self):
         config = SQLQueryConfig(payment_card_node)
-        assert config.filter_values(
+        assert config.typed_filtered_values(
             {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
         ) == {"id": ["A"], "customer_id": ["V"]}
 
-        assert config.filter_values(
+        assert config.typed_filtered_values(
             {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
         ) == {"id": ["A"]}
 
-        assert config.filter_values({"id": ["A"], "ignore_me": ["X"]}) == {"id": ["A"]}
+        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
+            "id": ["A"]
+        }
 
-        assert config.filter_values({"id": [], "customer_id": ["V"]}) == {
+        assert config.typed_filtered_values({"id": [], "customer_id": ["V"]}) == {
             "customer_id": ["V"]
         }
+        # test for type casting: id has type "string":
+        assert config.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
+        assert config.typed_filtered_values({"id": [1, 2]}) == {"id": ["1", "2"]}
 
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""

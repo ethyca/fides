@@ -10,9 +10,11 @@ import pytest
 
 from fidesops.common_exceptions import InsufficientDataException
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress
+from fidesops.graph.config import FieldAddress, Collection, Field, Dataset
+from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import Policy
 from fidesops.models.policy import Rule, RuleTarget, ActionType
@@ -363,6 +365,76 @@ def test_filter_on_data_categories(
     rule_target_two.delete(db)
     rule_target_three.delete(db)
     rule_target.delete(db)
+
+
+@pytest.mark.integration
+def test_access_erasure_type_conversion(
+    db,
+    integration_postgres_config: ConnectionConfig,
+) -> None:
+    """Retrieve data from the type_link table. This requires retrieving data from
+    the employee id field, which is an int, and converting it into a string to query
+    against the type_link_test.id field."""
+    privacy_request = PrivacyRequest(id=f"test_postgtres_task_{random.randint(0,1000)}")
+    policy = erasure_policy("A")
+    employee = Collection(
+        name="employee",
+        fields=[
+            Field(name="id", primary_key=True),
+            Field(name="name", data_type=DataType.string),
+            Field(name="email", identity="email", data_type=DataType.string),
+        ],
+    )
+
+    type_link = Collection(
+        name="type_link_test",
+        fields=[
+            Field(
+                name="id",
+                primary_key=True,
+                data_type=DataType.string,
+                references=[
+                    (FieldAddress("postgres_example", "employee", "id"), "from")
+                ],
+            ),
+            Field(name="name", data_type=DataType.string, data_categories=["A"]),
+        ],
+    )
+
+    dataset = Dataset(
+        name="postgres_example",
+        collections=[employee, type_link],
+        connection_key=integration_postgres_config.key,
+    )
+
+    access_request_data = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+    )
+
+    employee = access_request_data["postgres_example:employee"][0]
+    link = access_request_data["postgres_example:type_link_test"][0]
+
+    assert employee["id"] == 1
+    assert link["id"] == "1"
+
+    # erasure
+    erasure = graph_task.run_erasure(
+        privacy_request,
+        policy,
+        DatasetGraph(dataset),
+        [integration_postgres_config],
+        {"email": "employee-1@example.com"},
+        access_request_data,
+    )
+
+    assert erasure == {
+        "postgres_example:employee": 0,
+        "postgres_example:type_link_test": 1,
+    }
 
 
 class TestRetrievingData:

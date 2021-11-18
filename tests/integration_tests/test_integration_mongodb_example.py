@@ -24,7 +24,8 @@ def mongo_example_db() -> Generator:
 def test_mongo_example_data(mongo_example_db):
     """Confirm that the example database is populated with simulated data"""
     db = mongo_example_db["mongo_test"]
-    assert set(db.collection_names()) == {
+    collection_names = set(db.collection_names())
+    assert {
         "payment_card",
         "orders",
         "customer",
@@ -32,7 +33,8 @@ def test_mongo_example_data(mongo_example_db):
         "product",
         "reports",
         "customer_details",
-    }
+    }.difference(collection_names) == set()
+
     assert db.customer.count() == 3
     assert db.payment_card.count() == 2
     assert db.orders.count() == 4
