@@ -16,7 +16,6 @@ import yaml
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 # For tutorial simplicity. In prod, this should go in an ENV file or similar.
 FIDESOPS_URL = "http://localhost:8000"

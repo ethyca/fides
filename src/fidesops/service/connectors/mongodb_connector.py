@@ -14,8 +14,8 @@ from fidesops.service.connectors.base_connector import (
     BaseConnector,
 )
 from fidesops.service.connectors.query_config import QueryConfig, MongoQueryConfig
+from fidesops.util.logger import NotPii
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -103,13 +103,7 @@ class MongoDBConnector(BaseConnector):
         logger.info(f"Found {len(rows)} on {node.address}")
         return rows
 
-    def mask_data(
-        self,
-        node: TraversalNode,
-        policy: Policy,
-        rows: List[Row],
-        log_queries_with_data: bool = True,
-    ) -> int:
+    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""
         query_config = self.query_config(node)
@@ -124,10 +118,11 @@ class MongoDBConnector(BaseConnector):
                 collection = db[collection_name]
                 update_result = collection.update_one(query, update, upsert=False)
                 update_ct += update_result.modified_count
-
-                if log_queries_with_data:
-                    logger.info(
-                        f"db.{collection_name}.update_one({query}, {update}, upsert=False)"
-                    )
+                logger.info(
+                    "db.%s.update_one(%s, %s, upsert=False)",
+                    NotPii(collection_name),
+                    query,
+                    update,
+                )
 
         return update_ct

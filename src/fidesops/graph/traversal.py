@@ -14,10 +14,10 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
 )
 from fidesops.graph.graph import Node, Edge, DatasetGraph
+from fidesops.util.logger import NotPii
 from fidesops.util.queue import Queue
 from fidesops.util.collection_util import append
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -174,7 +174,7 @@ class Traversal:
         and raises an error on any traversal failure conditions."""
         self.traverse(
             {self.root_node.address: [self.seed_data]},
-            lambda n, m: logger.info("Traverse %s", n.address),
+            lambda n, m: logger.info("Traverse %s", NotPii(n.address)),
         )
 
     def traversal_map(

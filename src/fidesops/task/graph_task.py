@@ -24,8 +24,8 @@ from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
+from fidesops.util.logger import NotPii
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 dask.config.set(scheduler="processes")
@@ -142,9 +142,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
-                self,
-                len(self.input_keys),
-                len(data),
+                NotPii(self),
+                NotPii(len(self.input_keys)),
+                NotPii(len(data)),
             )
 
         output: Dict[str, List[Any]] = {}
@@ -249,7 +249,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             return 0
 
         output = self.connector.mask_data(
-            self.traversal_node, self.resources.policy, retrieved_data, True
+            self.traversal_node, self.resources.policy, retrieved_data
         )
         self.log_end(ActionType.erasure)
         return output

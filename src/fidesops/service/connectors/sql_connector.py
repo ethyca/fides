@@ -23,7 +23,6 @@ from fidesops.service.connectors.base_connector import (
 )
 from fidesops.service.connectors.query_config import SQLQueryConfig
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -87,13 +86,7 @@ class SQLConnector(BaseConnector):
             results = connection.execute(stmt)
             return SQLConnector.cursor_result_to_rows(results)
 
-    def mask_data(
-        self,
-        node: TraversalNode,
-        policy: Policy,
-        rows: List[Row],
-        log_queries_with_data: bool = True,
-    ) -> int:
+    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0

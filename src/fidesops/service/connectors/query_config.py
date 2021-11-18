@@ -12,7 +12,6 @@ from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.util.collection_util import append
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 

@@ -21,6 +21,7 @@ from fidesops.graph.config import (
 )
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +154,9 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
         ]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
-            dataset_name,
-            collection.name,
-            len(graph_fields),
+            NotPii(dataset_name),
+            NotPii(collection.name),
+            NotPii(len(graph_fields)),
         )
         collection_after: Set[CollectionAddress] = set()
         if collection.fidesops_meta and collection.fidesops_meta.after:
@@ -169,8 +170,8 @@ def convert_dataset_to_graph(dataset: FidesopsDataset, connection_key: str) -> D
         graph_collections.append(graph_collection)
     logger.debug(
         "Finished parsing dataset %s with %s collections",
-        dataset_name,
-        len(graph_collections),
+        NotPii(dataset_name),
+        NotPii(len(graph_collections)),
     )
 
     return Dataset(

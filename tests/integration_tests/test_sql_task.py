@@ -30,7 +30,6 @@ from ..graph.graph_test_util import (
 from ..task.traversal_data import integration_db_graph, integration_db_dataset
 
 dask.config.set(scheduler="processes")
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",

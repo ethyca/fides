@@ -1,5 +1,4 @@
 # pylint: disable=R0401
-import logging
 from typing import Any, Dict
 
 from enum import Enum as EnumType
@@ -25,8 +24,6 @@ from fidesops.util.cache import (
     get_identity_cache_key,
     FidesopsRedis,
 )
-
-logging.basicConfig(level=logging.INFO)
 
 
 class PrivacyRequestStatus(EnumType):

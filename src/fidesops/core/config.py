@@ -17,6 +17,7 @@ from pydantic import (
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig
+from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -201,9 +202,9 @@ def load_file(file_name: str) -> str:
     for dir_str in directories:
         possible_location = os.path.join(dir_str, file_name)
         if possible_location and os.path.isfile(possible_location):
-            logger.info("Loading file %s from %s", file_name, dir_str)
+            logger.info("Loading file %s from %s", NotPii(file_name), NotPii(dir_str))
             return possible_location
-        logger.debug("%s not found at %s", file_name, dir_str)
+        logger.debug("%s not found at %s", NotPii(file_name), NotPii(dir_str))
     raise FileNotFoundError
 
 
@@ -229,14 +230,14 @@ def get_config() -> FidesopsConfig:
     try:
         return FidesopsConfig.parse_obj(load_toml("fidesops.toml"))
     except (FileNotFoundError, ValidationError) as e:
-        logger.warning("fidesops.toml could not be loaded: %s", e)
+        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
         # If no path is specified Pydantic will attempt to read settings from
         # the environment. Default values will still be used if the matching
         # environment variable is not set.
         try:
             return FidesopsConfig()
         except ValidationError as exc:
-            logger.error(exc)
+            logger.error("ValidationError: %s", exc)
             # If FidesopsConfig is missing any required values Pydantic will throw
             # an ImportError. This means the config has not been correctly specified
             # so we can throw the missing config error.

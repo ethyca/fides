@@ -48,7 +48,7 @@ class ExtendedSession(Session):
         try:
             return super().commit()
         except Exception as exc:
-            logger.error(exc)
+            logger.error("Exception: %s", exc)
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise
