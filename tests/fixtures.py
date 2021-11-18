@@ -40,7 +40,9 @@ from fidesops.schemas.storage.storage import (
     StorageType,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import STRING_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+    STRING_REWRITE,
+)
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
 
@@ -309,7 +311,9 @@ def erasure_policy(
 
 
 @pytest.fixture(scope="function")
-def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_policy: Policy) -> Generator:
+def erasure_policy_two_rules(
+    db: Session, oauth_client: ClientDetail, erasure_policy: Policy
+) -> Generator:
 
     second_erasure_rule = Rule.create(
         db=db,
@@ -325,14 +329,16 @@ def erasure_policy_two_rules(db: Session, oauth_client: ClientDetail, erasure_po
     # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
     second_erasure_rule.masking_strategy = {
         "strategy": STRING_REWRITE,
-        "configuration": {"rewrite_value": "*****"}
+        "configuration": {"rewrite_value": "*****"},
     }
 
     second_rule_target = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
-            "data_category": DataCategory("user.provided.identifiable.contact.email").value,
+            "data_category": DataCategory(
+                "user.provided.identifiable.contact.email"
+            ).value,
             "rule_id": second_erasure_rule.id,
         },
     )
