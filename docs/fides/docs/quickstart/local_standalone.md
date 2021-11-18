@@ -27,7 +27,7 @@ The next step is to install fidesctl via pip:
 pip install fidesctl
 ```
 
-For more information on pip installing fidesctl as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
+For more information on installing fidesctl with pip, as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
 
 ## Using the CLI
 
