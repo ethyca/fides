@@ -211,7 +211,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
             return None
-        query_str = f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE  {','.join(pk_clauses)}"
+        query_str = f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE  {' AND '.join(pk_clauses)}"
         logger.info("query = %s, params = %s", query_str, update_value_map)
         return text(query_str).params(update_value_map)
 
@@ -310,7 +310,6 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                 f"There is not enough data to generate a valid update for {self.node.address}"
             )
             return None
-
         return pk_clauses, {"$set": update_clauses}
 
     def query_to_str(self, t: MongoStatement, input_data: Dict[str, List[Any]]) -> str:

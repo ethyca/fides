@@ -152,7 +152,11 @@ class TestAESDecrypt:
         orig_data = "test_data"
         encrypted_data = encrypt(orig_data, key.encode(config.security.ENCODING), nonce)
 
-        request = {"value": encrypted_data, "key": key, "nonce": bytes_to_b64_str(nonce)}
+        request = {
+            "value": encrypted_data,
+            "key": key,
+            "nonce": bytes_to_b64_str(nonce),
+        }
 
         response = api_client.put(
             url,
