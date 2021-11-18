@@ -61,7 +61,7 @@ For this call, we have to populate the `Authorization` header. Notice that the h
 
 To add scopes to the client, the body of your request must contain an array of scope tokens. 
 
-You can retrieve the available scopes by calling [`GET /api/v1/oauth/scopes`](/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get), or you can look in [the scope registry file](https://github.com/ethyca/solon/blob/main/src/fidesops/api/v1/scope_registry.py).
+You can retrieve the available scopes by calling [`GET /api/v1/oauth/scopes`](/fidesops/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get), or you can look in [the scope registry file](https://github.com/ethyca/fidesops/blob/main/src/fidesops/api/v1/scope_registry.py).
 
 If the call is successful, Fidesapi responds with a new client ID/client secret pair:
 
@@ -75,7 +75,7 @@ Content-Type: application/json
 }
 ```
 ## Create an Access Token
-You then create a new access token by calling [`POST /api/v1/oauth/token`](/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
+You then create a new access token by calling [`POST /api/v1/oauth/token`](/fidesops/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
 
 In the above example, your new access token only lets the client read policies and rules -- the client nor create other clients, nor write policies, nor perform other operations using Fidesops APIs.
 
@@ -88,6 +88,6 @@ If you call a Fidesops API with an expired token, the call returns `401`.
 
 ### Other OAuth Calls
 
-Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/api#operations-tag-OAuth) for details. 
+Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/fidesops/api#operations-tag-OAuth) for details. 
 
 

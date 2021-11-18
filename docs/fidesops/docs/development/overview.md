@@ -36,7 +36,7 @@ commands to give you different functionality.
 - `make check-migrations` - verifies there are no un-run migrations 
 - `make docs-serve` - spins up just the docs
 
-See [Makefile](../../../../Makefile) for more options. 
+See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more options. 
 
 
 #### Issues 

@@ -7,7 +7,7 @@ In this section we'll cover:
 - How to configure OneTrust request intake and storage
 - How to test the OneTrust integration
 
-API docs for OneTrust are part of the [storage](/api#operations-tag-Storage) module (you'll need to `make server` first).
+API docs for OneTrust are part of the [storage](/fidesops/api#operations-tag-Storage) module.
 
 ## Overview
 

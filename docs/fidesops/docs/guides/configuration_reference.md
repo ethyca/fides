@@ -7,7 +7,7 @@ In this section we'll cover:
 - An example `fidesops.toml` configuration file
 - Reporting a running application's configuration
 
-Take me directly to [api docs](/docs#/Config).
+Take me directly to [api docs](/fidesops/api#operations-tag-Config).
 
 
 ## How to configure the Fidesops application
@@ -124,4 +124,4 @@ Please note: Fidesops will filter out any sensitive configuration variables. The
 - `TASK_RETRY_DELAY`
 - `TASK_RETRY_BACKOFF`
 
-For more information please see the [api docs](/docs#/Config).
+For more information please see the [api docs](/fidesops/api#operations-tag-Config).

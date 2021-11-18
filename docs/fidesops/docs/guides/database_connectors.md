@@ -10,7 +10,7 @@ In this section we'll cover:
 - How does a ConnectionConfig differ from a Dataset?
 
 
-Take me directly to the [ConnectionConfig API documentation](/api#operations-tag-Connections).
+Take me directly to the [ConnectionConfig API documentation](/fidesops/api#operations-tag-Connections).
 
 ## What is a connection?
 
@@ -31,7 +31,7 @@ Other platforms will be added in future releases.
 
 ## Creating a ConnectionConfig object 
 
-The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/api#operations-Connections-get_connections_api_v1_connection_get) operation, passing a payload that contains the properties listed below. 
+The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
 
 * `name`  is a  a human-readable name for your database.
 
@@ -93,7 +93,7 @@ PUT api/v1/connection
 
 ### Set the ConnectionConfig's Secrets
 
-After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password. You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
+After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password. You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
 
 If you set the `verify` query parameter to `true`, the operation  will  test the connection by issuing a trivial request to the database. The `test_status` response property announces the success of the connection attempt as `succeeded` or `failed`. If the attempt has failed, the `failure_reason` property gives further details about the failure.
 
@@ -133,7 +133,7 @@ PUT api/v1/connection/my-mongo-db/secret?verify=false`
 
 ### Testing your connection 
 
-You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
+You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
 
 
 ```
@@ -141,7 +141,7 @@ GET /api/v1/connection/application-postgresql-db/test
 ```
 
 Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test. If the test failed,
-you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/api#operations-ConnectionConfigs-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
+you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
 
 
 #### Example 1: Connection Succeeded

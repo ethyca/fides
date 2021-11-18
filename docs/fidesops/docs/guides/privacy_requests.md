@@ -10,7 +10,7 @@ In this section we'll cover:
 - Specifying encryption of access request results 
 - Decrypting access request results
 
-Take me directly to [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 ## What is a Privacy Request?
 A Privacy Request in its simplest form describes a request by a user, to process data pertaining to their identity. Privacy Requests are currently supported in two forms, `access` and `erasure`. For more information on action types, please see [How-To: Configure Request Policies](policies.md#rule-attributes).
@@ -44,7 +44,7 @@ Privacy Requests can be executed by submitting them to Fidesops via the Privacy 
 - This request will submit a Privacy Request for execution that applies the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` or the phone number `+1 (123) 456 7891`.
 - Specifying a `external_id` enables us to track this Privacy Request with that `external_id` later on. See [How-To: Report on Privacy Requests](reporting.md) for more information.
 - `policy_key` should correspond to a previously configured `Policy` object. See [How-To: Configure Request Policies](policies.md) for more information.
-- A full list of attributes available to set on the Privacy Request can be found in the [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+- A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 
 ## How do I monitor Privacy Requests as they execute?

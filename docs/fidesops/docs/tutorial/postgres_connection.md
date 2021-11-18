@@ -16,7 +16,7 @@ Let's add a method that hits the PUT `connection` endpoint, and creates a Connec
 def create_postgres_connection(key, access_token):
     """
     Create a connection in fidesops for our PostgreSQL database. Returns the response JSON if successful.
-    See http://localhost:8000/docs#/Connections/put_connections_api_v1_connection_put
+    See http://localhost:8000/api#operations-Connections-put_connections_api_v1_connection_put
     """
     connection_create_data = [
         {
@@ -44,7 +44,7 @@ def configure_postgres_connection(
 ):
     """
     Configure the connection with the given `key` in fidesops with our PostgreSQL database credentials. Returns the response JSON if successful.
-    See http://localhost:8000/docs#/Connections/put_connection_config_secrets_api_v1_connection__connection_key__secret_put
+    See http://localhost:8000/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put
     """
     connection_secrets_data = {
         "host": host,

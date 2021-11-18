@@ -77,7 +77,7 @@ Example: `PUT /masking/mask?value=test@example.com`
 
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
-See [Masking values API docs](http://0.0.0.0:8080/docs#/Masking/mask_value_api_v1_masking_mask_put) on how to use fidesops to as a masking service .
+See [Masking values API docs](/fidesops/api#operations-tag-Masking) on how to use fidesops to as a masking service .
 
 
 ## Supported Masking Strategies
@@ -128,7 +128,7 @@ See the [Policy guide](policies.md) for more detailed instructions on creating P
 
 ## Getting masking options
 
-Issue a GET request to [`/api/v1/masking/strategy`](http://0.0.0.0:8080/docs#/Masking/list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
+Issue a GET request to [`/api/v1/masking/strategy`](/fidesops/api#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
 strategies available, along with their configuration options. 
 
 
@@ -219,7 +219,7 @@ from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingS
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fidesops.common_exceptions import ValidationError as SolonValidationError
+from fidesops.common_exceptions import ValidationError as FidesopsValidationError
 
 from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
 
@@ -252,7 +252,7 @@ def get_strategy(
         strategy_config = strategy.get_configuration_model()(**configuration)
         return strategy(configuration=strategy_config)
     except ValidationError as e:
-        raise SolonValidationError(message=str(e))
+        raise FidesopsValidationError(message=str(e))
 
 ```
 

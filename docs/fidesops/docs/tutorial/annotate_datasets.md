@@ -63,7 +63,7 @@ def create_dataset(connection_key, yaml_path, access_token):
     Requires the `connection_key` for the PostgreSQL connection, and `yaml_path`
     that is a local filepath to a .yml Dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Datasets/put_datasets_api_v1_connection__connection_key__dataset_put
+    See http://localhost:8000/api#operations-tag-Datasets
     """
 
     with open(yaml_path, "r") as file:
