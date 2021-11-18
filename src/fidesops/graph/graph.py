@@ -15,7 +15,6 @@ from fidesops.graph.config import (
     Field,
 )
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

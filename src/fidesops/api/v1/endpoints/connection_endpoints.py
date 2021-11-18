@@ -32,6 +32,7 @@ from fidesops.api.v1.scope_registry import (
     CONNECTION_DELETE,
     CONNECTION_CREATE_OR_UPDATE,
 )
+from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.api import deps
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -191,7 +192,9 @@ def connection_status(
     try:
         connector.test_connection()
     except ConnectionException as exc:
-        logger.warning(f"Connection test failed on {connection_config.key}: {str(exc)}")
+        logger.warning(
+            "Connection test failed on %s: %s", NotPii(connection_config.key), str(exc)
+        )
         connection_config.update_test_status(succeeded=False, db=db)
         return TestStatusMessage(
             msg=msg,

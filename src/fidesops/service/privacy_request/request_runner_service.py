@@ -18,8 +18,6 @@ from fidesops.task.graph_task import (
 )
 from fidesops.util.cache import FidesopsRedis
 
-logging.basicConfig(level=logging.INFO)
-
 
 class PrivacyRequestRunner:
     """The class responsible for dispatching PrivacyRequests into the execution layer"""

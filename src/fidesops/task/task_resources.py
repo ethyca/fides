@@ -18,7 +18,6 @@ from fidesops.service.connectors import (
 )
 from fidesops.util.cache import get_cache
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

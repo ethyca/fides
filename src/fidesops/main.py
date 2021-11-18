@@ -8,8 +8,10 @@ from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.db.database import init_db
 from fidesops.core.config import config
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.util.logger import get_fides_log_record_factory
 
 logging.basicConfig(level=logging.INFO)
+logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fidesops", openapi_url=f"{V1_URL_PREFIX}/openapi.json")

@@ -103,7 +103,7 @@ class StorageConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error(exc)
+            logger.error("Error: %s", exc)
             # We don't want to handle these explicitly here, only in the API view
             raise
 

@@ -120,7 +120,7 @@ def create_or_update_policies(
                 },
             )
         except KeyOrNameAlreadyExists as exc:
-            logger.warning(f"Create/update failed for policy: {exc}")
+            logger.warning("Create/update failed for policy: %s", exc)
             failure = {
                 "message": exc.args[0],
                 "data": policy_data,
@@ -128,7 +128,7 @@ def create_or_update_policies(
             failed.append(BulkUpdateFailed(**failure))
             continue
         except PolicyValidationError as exc:
-            logger.warning(f"Create/update failed for policy: {exc}")
+            logger.warning("Create/update failed for policy: %s", exc)
             failure = {
                 "message": "This record could not be added because the data provided was invalid.",
                 "data": policy_data,
