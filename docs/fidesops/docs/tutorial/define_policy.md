@@ -20,7 +20,7 @@ convenience (handy if you'll be running this script multiple times).
 def create_policy(key, access_token):
     """
     Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_policies_api_v1_policy_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     policy_create_data = [
@@ -45,7 +45,7 @@ def create_policy_rule(
     """
     Create a Policy Rule to return matched data in an access request to the given Storage destination.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rules_api_v1_policy__policy_key__rule_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     rule_create_data = [
@@ -72,7 +72,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
     """
     Create a Policy Rule Target that matches the given data_category.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/docs#/Policy/create_or_update_rule_targets_api_v1_policy__policy_key__rule__rule_key__target_put
+    See http://localhost:8000/api#operations-Policy-create_or_update_rules_api_v1_policy__policy_key__rule_put
     """
 
     target_create_data = [
@@ -95,7 +95,7 @@ def delete_policy_rule(policy_key, key, access_token):
     """
     Deletes a Policy rule with the given key.
     Returns the response JSON.
-    See http://localhost:8000/docs#/Policy/delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
+    See http://localhost:8000/api#operations-Policy-delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
     """
     return requests.delete(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{key}",

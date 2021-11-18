@@ -6,7 +6,7 @@ In this section we'll cover:
 - How to get more detailed execution logs of queries that were run as part of your privacy requests. 
 
 
-Take me directly to [API docs](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 
 ## Overview
@@ -20,7 +20,7 @@ information about the individual queries executed internally.
 
 This request displays concise, high-level information for all your PrivacyRequests including their status and related timestamps.
 
-Check out the [API docs here](/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 `GET api/v1/privacy-request`
 
@@ -73,7 +73,7 @@ Use the following query params to further filter your privacy requests.  Filters
 To view all the execution logs for a Privacy Request, visit `/api/v1/privacy-request/{privacy_request_id}/logs`.
 Embedded logs in the previous endpoints are truncated at 50 logs.
 
-Check out the [API docs here](/api#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
+Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
 
 ## View Individual Privacy Request Log Details
 
