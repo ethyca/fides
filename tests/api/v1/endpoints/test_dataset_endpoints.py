@@ -133,6 +133,43 @@ class TestValidateDataset:
             e["loc"] for e in details
         ]
 
+    def test_put_validate_dataset_invalid_length(
+        self,
+        example_datasets: List,
+        validate_dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        invalid_dataset = example_datasets[0]
+
+        # string is properly read:
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "length": 123
+        }
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=invalid_dataset
+        )
+        assert response.status_code == 200
+        assert (
+            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
+                "fidesops_meta"
+            ]["length"]
+            == 123
+        )
+
+        # fails with an invalid value
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {"length": -1}
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=invalid_dataset
+        )
+
+        assert response.status_code == 422
+        assert (
+            json.loads(response.text)["detail"][0]["msg"]
+            == "Illegal length (-1). Only positive non-zero values are allowed."
+        )
+
     def test_put_validate_dataset_invalid_fidesops_meta(
         self,
         example_datasets: List,
