@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from io import BytesIO
-from typing import Dict, Any
+from typing import Dict, Any, Generator
 from unittest import mock
 from unittest.mock import Mock
 from zipfile import ZipFile
@@ -11,6 +11,7 @@ import pandas as pd
 import pytest
 from sqlalchemy.orm import Session
 
+from fidesops.core.config import config
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import (
@@ -23,10 +24,14 @@ from fidesops.schemas.storage.storage import (
 from fidesops.service.storage.storage_uploader_service import (
     upload,
     get_extension,
-    LOCAL_FIDES_UPLOAD_DIRECTORY,
 )
-from fidesops.tasks.storage import write_to_in_memory_buffer
+from fidesops.tasks.storage import (
+    write_to_in_memory_buffer,
+    LOCAL_FIDES_UPLOAD_DIRECTORY,
+    encrypt_access_request_results,
+)
 from fidesops.common_exceptions import StorageUploadError
+from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt, decrypt_combined_nonce_and_message
 
 
 @mock.patch("fidesops.service.storage.storage_uploader_service.upload_to_s3")
@@ -70,6 +75,7 @@ def test_uploader_s3_success(
         mock_config["details"][StorageDetails.BUCKET.value],
         f"{request_id}.json",
         "json",
+        request_id,
     )
 
     storage_config.delete(db)
@@ -277,6 +283,13 @@ def test_uploader_local_success(
 
 
 class TestWriteToInMemoryBuffer:
+    key = "test--encryption"
+
+    @pytest.fixture(scope="function")
+    def privacy_request_with_encryption_keys(self, privacy_request) -> Generator:
+        privacy_request.cache_encryption(self.key)
+        return privacy_request
+
     @pytest.fixture(scope="function")
     def data(self) -> Dict[str, Any]:
         return {
@@ -292,12 +305,12 @@ class TestWriteToInMemoryBuffer:
         }
 
     def test_json_data(self, data):
-        buff = write_to_in_memory_buffer("json", data)
+        buff = write_to_in_memory_buffer("json", data, "test_request_id")
         assert isinstance(buff, BytesIO)
         assert json.load(buff) == data
 
     def test_csv_format(self, data):
-        buff = write_to_in_memory_buffer("csv", data)
+        buff = write_to_in_memory_buffer("csv", data, "test_request_id")
         assert isinstance(buff, BytesIO)
 
         zipfile = ZipFile(buff)
@@ -364,7 +377,66 @@ class TestWriteToInMemoryBuffer:
 
     def test_not_implemented(self, data):
         with pytest.raises(NotImplementedError):
-            write_to_in_memory_buffer("not-a-valid-format", data)
+            write_to_in_memory_buffer("not-a-valid-format", data, "test_request_id")
+
+    def test_encrypted_json(self, data, privacy_request_with_encryption_keys):
+        original_data = data
+        buff = write_to_in_memory_buffer(
+            "json", data, privacy_request_with_encryption_keys.id
+        )
+        assert isinstance(buff, BytesIO)
+        encrypted = buff.read()
+        data = encrypted.decode(config.security.ENCODING)
+        decrypted = decrypt_combined_nonce_and_message(data, self.key.encode(config.security.ENCODING))
+        assert json.loads(decrypted) == original_data
+
+    def test_encrypted_csv(self, data, privacy_request_with_encryption_keys):
+        buff = write_to_in_memory_buffer(
+            "csv", data, privacy_request_with_encryption_keys.id
+        )
+        assert isinstance(buff, BytesIO)
+
+        zipfile = ZipFile(buff)
+
+        with zipfile.open("mongo:address.csv", "r") as address_csv:
+            data = address_csv.read().decode(config.security.ENCODING)
+
+            decrypted = decrypt_combined_nonce_and_message(data, self.key.encode(config.security.ENCODING))
+
+            binary_stream = BytesIO(decrypted.encode(config.security.ENCODING))
+            df = pd.read_csv(binary_stream, encoding=config.security.ENCODING)
+            assert list(df.columns) == [
+                "id",
+                "zip",
+                "city",
+            ]
+            assert list(df.iloc[0]) == [
+                1,
+                10024,
+                "Cañon City",
+            ]
+
+            assert list(df.iloc[1]) == [
+                2,
+                10011,
+                "Venice",
+            ]
+
+
+class TestEncryptResultsPackage:
+    def test_no_encryption_keys_set(self):
+        data = "test data"
+        ret = encrypt_access_request_results(data, request_id="test-request-id")
+
+        assert ret == data
+
+    def test_key_and_nonce_set(self, privacy_request):
+        key = "abvnfhrke8398398"
+        privacy_request.cache_encryption("abvnfhrke8398398")
+        data = "test data"
+        ret = encrypt_access_request_results(data, request_id=privacy_request.id)
+        decrypted = decrypt_combined_nonce_and_message(ret, key.encode(config.security.ENCODING))
+        assert data == decrypted
 
 
 def test_get_extension():

@@ -12,9 +12,12 @@ from fidesops.api.v1.urn_registry import (
     ENCRYPT_AES,
     V1_URL_PREFIX,
 )
+from fidesops.core.config import config
+from fidesops.util.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
+from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt, encrypt
 
 
-class TestGetEnrcyptionKey:
+class TestGetEncryptionKey:
     @pytest.fixture
     def url(self) -> str:
         return V1_URL_PREFIX + ENCRYPTION_KEY
@@ -68,26 +71,32 @@ class TestAESEncrypt:
         )
         assert response.status_code == 403
 
-    @mock.patch(
-        "fidesops.api.v1.endpoints.encryption_endpoints.cryptographic_util"
-        ".generate_secure_random_string"
-    )
-    @mock.patch("fidesops.api.v1.endpoints.encryption_endpoints.aes_gcm_encrypt")
-    def test_aes_encrypt(
+    def test_invalid_key(
         self,
-        mock_aes_gcm_encrypt: Mock,
-        mock_generate_secure_random: Mock,
         url,
         api_client: TestClient,
         generate_auth_header,
     ):
-        nonce_val = "a nonce"
         plain_val = "plain value"
-        encrypted_val = "encrypted value"
-        key = "the key"
+        key = "short"
         request_body = {"value": plain_val, "key": key}
-        mock_generate_secure_random.return_value = nonce_val
-        mock_aes_gcm_encrypt.return_value = encrypted_val
+
+        response = api_client.put(
+            url,
+            headers=generate_auth_header([ENCRYPTION_EXEC]),
+            json=request_body,
+        )
+        assert response.status_code == 422
+
+    def test_aes_encrypt(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        plain_val = "plain value"
+        key = "zfkslapqlwodaqld"
+        request_body = {"value": plain_val, "key": key}
 
         response = api_client.put(
             url,
@@ -95,10 +104,16 @@ class TestAESEncrypt:
             json=request_body,
         )
         response_body = json.loads(response.text)
+        encrypted_value = response_body["encrypted_value"]
+        nonce = b64_str_to_bytes(response_body["nonce"])
 
         assert response.status_code == 200
-        assert response_body["encrypted_value"] == encrypted_val
-        assert response_body["nonce"] == nonce_val
+        decrypted = decrypt(
+            encrypted_value,
+            key.encode(config.security.ENCODING),
+            nonce,
+        )
+        assert decrypted == plain_val
 
 
 class TestAESDecrypt:
@@ -126,20 +141,18 @@ class TestAESDecrypt:
         )
         assert response.status_code == 403
 
-    @mock.patch("fidesops.api.v1.endpoints.encryption_endpoints.aes_gcm_decrypt")
     def test_aes_decrypt(
         self,
-        mock_aes_gcm_decrypt: Mock,
         url,
         api_client: TestClient,
         generate_auth_header,
     ):
-        encrypted_value = "ucenwic"
-        key = "the key"
-        decrypted_value = "value"
-        nonce = "the nonce"
-        request = {"value": encrypted_value, "key": key, "nonce": nonce}
-        mock_aes_gcm_decrypt.return_value = decrypted_value
+        key = "zfkslapqlwodaqld"
+        nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
+        orig_data = "test_data"
+        encrypted_data = encrypt(orig_data, key.encode(config.security.ENCODING), nonce)
+
+        request = {"value": encrypted_data, "key": key, "nonce": bytes_to_b64_str(nonce)}
 
         response = api_client.put(
             url,
@@ -149,4 +162,4 @@ class TestAESDecrypt:
         response_body = json.loads(response.text)
 
         assert response.status_code == 200
-        assert response_body["decrypted_value"] == decrypted_value
+        assert response_body["decrypted_value"] == orig_data

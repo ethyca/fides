@@ -1,3 +1,5 @@
+import secrets
+
 import logging
 from fastapi import APIRouter, Security
 
@@ -16,6 +18,7 @@ from fidesops.schemas.encryption_request import (
     AesDecryptionRequest,
 )
 from fidesops.util import cryptographic_util
+from fidesops.util.cryptographic_util import bytes_to_b64_str, b64_str_to_bytes
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt as aes_gcm_encrypt,
 )
@@ -49,13 +52,16 @@ def get_encryption_key() -> str:
 )
 def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionResponse:
     logger.info("Starting AES Encryption")
-    nonce = cryptographic_util.generate_secure_random_string(
-        config.security.AES_GCM_NONCE_LENGTH
+    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+
+    encrypted_value: str = aes_gcm_encrypt(
+        encryption_request.value,
+        encryption_request.key,
+        nonce,
     )
-    encrypted_value = aes_gcm_encrypt(
-        encryption_request.value, encryption_request.key, nonce
+    return AesEncryptionResponse(
+        encrypted_value=encrypted_value, nonce=bytes_to_b64_str(nonce)
     )
-    return AesEncryptionResponse(encrypted_value=encrypted_value, nonce=nonce)
 
 
 @router.put(
@@ -65,7 +71,11 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
 )
 def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionResponse:
     logger.info("Starting AES Decryption")
-    decrypted_value = aes_gcm_decrypt(
-        decryption_request.value, decryption_request.key, decryption_request.nonce
+    nonce: bytes = b64_str_to_bytes(decryption_request.nonce)
+
+    decrypted_value: str = aes_gcm_decrypt(
+        decryption_request.value,
+        decryption_request.key.encode(config.security.ENCODING),
+        nonce,
     )
     return AesDecryptionResponse(decrypted_value=decrypted_value)
