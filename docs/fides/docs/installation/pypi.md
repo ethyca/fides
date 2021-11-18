@@ -14,7 +14,7 @@ To install Fidesctl, run:
 
 `pip install fidesctl`
 
-With the basic installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as `evaluate` and `parse` without the need to be running a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.
+With the default installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as `evaluate` and `parse` without the need to be running a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.
 
 ## Installing Optional Dependencies
 

@@ -540,7 +540,7 @@ def evaluate(
     server-definitions if available.
     """
 
-    # Combine the User-defined taxonomy with the Default Taxonomy
+    # Merge the User-defined taxonomy & Default Taxonomy
     user_taxonomy = parse(manifests_dir)
     taxonomy = Taxonomy.parse_obj(
         {
@@ -549,6 +549,7 @@ def evaluate(
         }
     )
 
+    # Determine which Policies will be evaluated
     taxonomy.policy = populate_evaluation_policies(
         policies=taxonomy.policy,
         policy_fides_key=policy_fides_key,
@@ -557,21 +558,24 @@ def evaluate(
         local=local,
     )
     echo_green(
-        "Evaluating the following policies:\n{}".format(
+        "Evaluating the following Policies:\n{}".format(
             "\n".join([key.fides_key for key in taxonomy.policy])
         )
     )
     print("-" * 10)
 
+    echo_green("Checking for missing resources...")
     missing_resources = get_referenced_missing_keys(taxonomy)
     if local and missing_resources:
         echo_red(str(missing_resources))
         echo_red("Not all referenced resources exist locally!")
         raise SystemExit(1)
-    echo_green("Checking for missing resources...")
-    populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
+    else:
+        populate_referenced_keys(
+            taxonomy=taxonomy, url=url, headers=headers, last_keys=[]
+        )
 
-    echo_green("Executing evaluation...")
+    echo_green("Executing Policy evaluation(s)...")
     evaluation = execute_evaluation(taxonomy)
     evaluation.message = message
     if not dry:

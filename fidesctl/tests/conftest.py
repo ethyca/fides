@@ -20,6 +20,12 @@ def test_config_path():
 
 @pytest.fixture(scope="session")
 def test_invalid_config_path():
+    """
+    This config file contains url/connection strings that are invalid.
+
+    This ensures that the CLI isn't calling out to those resources
+    directly during certain tests.
+    """
     yield TEST_INVALID_CONFIG_PATH
 
 

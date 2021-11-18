@@ -116,8 +116,7 @@ def evaluate(
 
     if local:
         dry = True
-
-    if not local:
+    else:
         taxonomy = _parse.parse(manifests_dir)
         _apply.apply(
             url=config.cli.server_url,

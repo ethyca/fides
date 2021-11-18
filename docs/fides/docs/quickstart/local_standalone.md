@@ -1,6 +1,6 @@
 # Running Fidesctl locally (Standalone)
 
-This method of running fidesctl requires zero dependencies outside of Python and a pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
+This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
 
 In standalone mode most CLI commands will not work as they require webserver or database connectivity for persistence. Crucially though, the core evaluation functionality is still present. To run evaluations in standalone mode, use the `--local` flag, but note that the evaluation results won't be persisted.
 
@@ -22,7 +22,7 @@ For more information on pip installing fidesctl as well as the other potential e
 
 ## Using the CLI
 
-Now that we have fidesctl pip installed, let's verify the installation:
+Now that we have fidesctl installed, let's verify the installation:
 
 ```sh title="Command"
 fidesctl --version
@@ -32,7 +32,7 @@ fidesctl --version
 fidesctl, version 1.0.0
 ```
 
-That's it! Your local standalone installation of fidesctl is completely up and running.
+That's it! Your local standalone installation of fidesctl is up and running.
 
 ## Next Steps
 
