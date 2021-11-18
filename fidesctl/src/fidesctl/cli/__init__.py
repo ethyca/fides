@@ -59,13 +59,14 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
-    if local or config.cli.local_mode:
-        config.cli.local_mode = True
-        for command in local_commands:
-            cli.add_command(command)
-    else:
-        for command in all_commands:
-            cli.add_command(command)
+	config.cli.local_mode = True
+    for command in local_commands:
+    	cli.add_command(command)
+    	
+    if not (local or config.cli.local_mode):
+    	config.cli.local_mode = False
+    	for command in api_commands:
+    		cli.add_command(command)
     ctx.obj["CONFIG"] = config
 
     if not ctx.invoked_subcommand:
