@@ -91,18 +91,12 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     "--message",
     help="A message that you can supply to describe the purpose of this evaluation.",
 )
-@click.option(
-    "--local",
-    is_flag=True,
-    help="Runs in a local mode that doesn't utilize server calls.",
-)
 @dry_flag
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
     fides_key: str,
     message: str,
-    local: bool,
     dry: bool,
 ) -> None:
     """
@@ -114,7 +108,7 @@ def evaluate(
 
     config = ctx.obj["CONFIG"]
 
-    if local:
+    if config.cli.local_mode:
         dry = True
     else:
         taxonomy = _parse.parse(manifests_dir)
@@ -131,7 +125,7 @@ def evaluate(
         manifests_dir=manifests_dir,
         policy_fides_key=fides_key,
         message=message,
-        local=local,
+        local=config.cli.local_mode,
         dry=dry,
     )
 

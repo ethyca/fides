@@ -22,7 +22,7 @@ from fidesctl.core.config import get_config
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True, chain=True)
 @click.version_option(version=fidesctl.__version__)
 @click.option(
     "--config-path",
@@ -31,26 +31,42 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     default="",
     help="Optional configuration file",
 )
+@click.option(
+    "--local",
+    is_flag=True,
+    help="Runs in a local mode that doesn't utilize server calls.",
+)
 @click.pass_context
-def cli(ctx: click.Context, config_path: str) -> None:
+def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    The parent group for the Fides CLI.
-    Loads the config and passes it within the context.
+    The parent group for the Fidesctl CLI.
     """
+
+    local_commands = [evaluate, parse, view_config]
+    all_commands = [
+        annotate_dataset,
+        apply,
+        delete,
+        generate_dataset,
+        get,
+        init_db,
+        ls,
+        ping,
+        reset_db,
+        webserver,
+    ] + local_commands
+
     ctx.ensure_object(dict)
-    ctx.obj["CONFIG"] = get_config(config_path)
+    config = get_config(config_path)
 
+    if local or config.cli.local_mode:
+        config.cli.local_mode = True
+        for command in local_commands:
+            cli.add_command(command)
+    else:
+        for command in all_commands:
+            cli.add_command(command)
+    ctx.obj["CONFIG"] = config
 
-cli.add_command(apply)
-cli.add_command(delete)
-cli.add_command(evaluate)
-cli.add_command(generate_dataset)
-cli.add_command(annotate_dataset)
-cli.add_command(get)
-cli.add_command(init_db)
-cli.add_command(ls)
-cli.add_command(parse)
-cli.add_command(ping)
-cli.add_command(reset_db)
-cli.add_command(view_config)
-cli.add_command(webserver)
+    if not ctx.invoked_subcommand:
+        click.echo(cli.get_help(ctx))
