@@ -10,7 +10,7 @@ For more information on running a full fidesctl installation, see the [Running F
 
 See the Python section of the [Prerequisites and Dependencies](../installation/prerequisites_dependencies.md) page for more information.
 
-## Fidesctl installation
+## Fidesctl Installation
 
 The next step is to install fidesctl via pip with the required extras:
 
