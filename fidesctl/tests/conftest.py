@@ -10,11 +10,17 @@ from fidesctl.core.config import get_config
 from fidesctl.core import api
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
+TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
 
 @pytest.fixture(scope="session")
 def test_config_path():
     yield TEST_CONFIG_PATH
+
+
+@pytest.fixture(scope="session")
+def test_invalid_config_path():
+    yield TEST_INVALID_CONFIG_PATH
 
 
 @pytest.fixture(scope="session")
