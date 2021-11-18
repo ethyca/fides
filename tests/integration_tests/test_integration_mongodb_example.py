@@ -33,6 +33,7 @@ def test_mongo_example_data(mongo_example_db):
         "product",
         "reports",
         "customer_details",
+        "composite_pk_test",
     }.difference(collection_names) == set()
 
     assert db.customer.count() == 3

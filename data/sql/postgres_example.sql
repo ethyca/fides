@@ -10,7 +10,9 @@ DROP TABLE IF EXISTS public.employee;
 DROP TABLE IF EXISTS public.customer;
 DROP TABLE IF EXISTS public.address;
 DROP TABLE IF EXISTS public.product;
+DROP TABLE IF EXISTS public.composite_pk_test;
 DROP TABLE IF EXISTS public.type_link_test;
+
 
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
@@ -96,6 +98,19 @@ CREATE TABLE public.report (
     month INT,
     total_visits INT
 );
+
+CREATE TABLE public.composite_pk_test (
+    id_a INT NOT NULL,
+    id_b INT NOT NULL,
+    description VARCHAR(100),
+    customer_id INT,
+    PRIMARY KEY(id_a, id_b)
+);
+
+INSERT INTO public.composite_pk_test VALUES
+    (1,10,'linked to customer 1',1),
+    (1,11,'linked to customer 2',2),
+    (2,10,'linked to customer 3',3);
 
 CREATE TABLE public.type_link_test (
     id CHARACTER VARYING(100) PRIMARY KEY,
