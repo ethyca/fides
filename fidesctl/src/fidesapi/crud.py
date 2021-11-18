@@ -21,7 +21,7 @@ def get_resource_type(router: APIRouter) -> str:
 
 
 # CRUD Functions
-def create_resource(sql_resource: SqlAlchemyBase) -> None:
+def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> Dict:
     """Create a resource in the database."""
     session = db_session.create_session()
     try:
@@ -29,6 +29,8 @@ def create_resource(sql_resource: SqlAlchemyBase) -> None:
         session.commit()
     finally:
         session.close()
+
+    return get_resource(sql_model, sql_resource.fides_key)
 
 
 def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
@@ -38,11 +40,15 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     session = db_session.create_session()
     try:
         sql_resource = (
-            session.query(sql_model).filter(sql_model.fides_key == fides_key).first()
+            session.query(sql_model)
+            .filter(sql_model.fides_key == fides_key)
+            .limit(1)
+            .first()
         )
     finally:
         session.close()
-    return sql_resource
+
+    return sql_resource or {}
 
 
 def list_resource(sql_model: SqlAlchemyBase) -> List:
@@ -54,10 +60,13 @@ def list_resource(sql_model: SqlAlchemyBase) -> List:
         sql_resource = session.query(sql_model).all()
     finally:
         session.close()
+
     return sql_resource
 
 
-def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str):
+def update_resource(
+    sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str
+) -> Dict:
     """Update a resource in the database by its fides_key."""
     session = db_session.create_session()
     try:
@@ -70,11 +79,7 @@ def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: s
     finally:
         session.close()
 
-    result_sql_resource = get_resource(sql_model, fides_key)
-    if not result_sql_resource:
-        return {"error": {"message": f"{fides_key} is not an existing fides_key!"}}
-
-    return result_sql_resource
+    return get_resource(sql_model, resource_dict.get("fides_key"))
 
 
 def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> None:
@@ -98,17 +103,18 @@ def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> N
 
 def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """Delete a resource by its fides_key."""
-    result_sql_resource = get_resource(sql_model, fides_key)
-    if not result_sql_resource:
-        return {"error": {"message": f"{fides_key} is not an existing fides_key!"}}
+    sql_resource = get_resource(sql_model, fides_key)
+    if not sql_resource:
+        return {}
 
     session = db_session.create_session()
     try:
-        session.delete(result_sql_resource)
+        session.delete(sql_resource)
         session.commit()
     finally:
         session.close()
-    return {}
+
+    return sql_resource
 
 
 # CRUD Endpoints
@@ -128,9 +134,9 @@ for resource_type, resource_model in model_map.items():
         resource_type: str = get_resource_type(router),
     ) -> Dict:
         """Create a resource."""
-        sql_resource = sql_model_map[resource_type](**resource.dict())
-        create_resource(sql_resource)
-        return sql_resource
+        sql_model = sql_model_map[resource_type]
+        sql_resource = sql_model(**resource.dict())
+        return create_resource(sql_model, sql_resource)
 
     @router.get("/", response_model=List[resource_model], name="List")
     async def ls(  # pylint: disable=invalid-name
@@ -138,8 +144,7 @@ for resource_type, resource_model in model_map.items():
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[resource_type]
-        query_result = list_resource(sql_model)
-        return query_result
+        return list_resource(sql_model)
 
     @router.get("/{fides_key}", response_model=resource_model)
     async def get(
@@ -162,7 +167,7 @@ for resource_type, resource_model in model_map.items():
         query_result = update_resource(sql_model, resource_dict, fides_key)
         return query_result
 
-    @router.delete("/{fides_key}", status_code=status.HTTP_204_NO_CONTENT)
+    @router.delete("/{fides_key}")
     async def delete(
         fides_key: str, resource_type: str = get_resource_type(router)
     ) -> Dict:
@@ -170,7 +175,8 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         delete_resource(sql_model, fides_key)
         return {
-            "Message": f"Resource with fides_key: {fides_key} deleted successfully!"
+            "message": "resource deleted",
+            "resource": query_result,
         }
 
     routers += [router]
