@@ -44,6 +44,7 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
+
 from fidesops.util.cache import FidesopsRedis
 
 logging.getLogger("faker").setLevel(logging.ERROR)

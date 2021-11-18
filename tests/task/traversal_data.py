@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple
 
 from fidesops.graph.config import (
     Collection,
@@ -21,7 +21,7 @@ def integration_db_mongo_graph(
         id_field = next(f for f in coll.fields if f.name == "id")
         id_field.primary_key = False
         coll.fields.append(
-            Field(name="_id", data_type=DataType.mongo_object_id, primary_key=True)
+            Field(name="_id", data_type=DataType.object_id, primary_key=True)
         )
     return dataset, DatasetGraph(dataset)
 
@@ -69,7 +69,7 @@ def combined_mongo_posgresql_graph(
         connection_key=mongo_config.key,
     )
 
-    return (mongo_dataset, postgres_dataset)
+    return mongo_dataset, postgres_dataset
 
 
 def integration_db_dataset(db_name: str, connection_key: str) -> Dataset:

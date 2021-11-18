@@ -6,11 +6,12 @@ from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
-from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress
+from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress, Field
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
-from fidesops.util.collection_util import append
+from fidesops.util.collection_util import append, filter_nonempty_values
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -18,15 +19,6 @@ T = TypeVar("T")
 
 class QueryConfig(Generic[T], ABC):
     """A wrapper around a resource-type dependant query object that can generate runnable queries and string representations."""
-
-    class QueryToken:
-        """A placeholder token for query output"""
-
-        def __str__(self) -> str:
-            return "?"
-
-        def __repr__(self) -> str:
-            return "?"
 
     def __init__(self, node: TraversalNode):
         self.node = node
@@ -61,9 +53,9 @@ class QueryConfig(Generic[T], ABC):
         return rule_updates
 
     @property
-    def primary_keys(self) -> List[str]:
+    def primary_key_fields(self) -> List[Field]:
         """List of fields marked as primary keys"""
-        return [f.name for f in self.node.node.collection.fields if f.primary_key]
+        return [f for f in self.node.node.collection.fields if f.primary_key]
 
     @property
     def query_keys(self) -> Set[str]:
@@ -73,19 +65,23 @@ class QueryConfig(Generic[T], ABC):
         """
         return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
 
-    def filter_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
+    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
         Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set
+        the list of incoming edge fields, and contain data in the input data set.
+
+        The values are cast based on field types, if those types are specified.
         """
-        return {
-            key: value
-            for (key, value) in input_data.items()
-            if key in self.query_keys
-            and isinstance(value, list)
-            and len(value)
-            and None not in value
-        }
+
+        out = {}
+        for key, values in input_data.items():
+            field = self.node.node.collection.field(key)
+            if field and key in self.query_keys and isinstance(values, list):
+                cast_values = [field.cast(v) for v in values]
+                filtered = list(filter(lambda x: x is not None, cast_values))
+                if filtered:
+                    out[key] = filtered
+        return out
 
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input sources for each query key"""
@@ -98,11 +94,11 @@ class QueryConfig(Generic[T], ABC):
     def display_query_data(self) -> Dict[str, Any]:
         """Data to represent a display (dry-run) query. Since we don't know
         what data is available, just generate a query where the input identity
-        values are assumed to be present and singulur and all other values that
+        values are assumed to be present and singular and all other values that
         may be multiple are represented by a pair [?,?]"""
 
         data = {}
-        t = QueryConfig.QueryToken()
+        t = QueryToken()
 
         for k, v in self.query_sources().items():
 
@@ -111,7 +107,7 @@ class QueryConfig(Generic[T], ABC):
             else:
                 data[k] = [
                     t,
-                    QueryConfig.QueryToken(),
+                    QueryToken(),
                 ]  # intentionally want a second instance so that set does not collapse into 1 value
 
         return data
@@ -169,7 +165,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
-        filtered_data = self.filter_values(input_data)
+        filtered_data = self.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -197,10 +193,17 @@ class SQLQueryConfig(QueryConfig[TextClause]):
     def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
         update_value_map = self.update_value_map(row, policy)
         update_clauses = [f"{k} = :{k}" for k in update_value_map]
-        pk_clauses = [f"{k} = :{k}" for k in self.primary_keys]
+        non_empty_primary_keys = filter_nonempty_values(
+            {
+                f.name: f.cast(row[f.name])
+                for f in self.primary_key_fields
+                if f.name in row
+            }
+        )
+        pk_clauses = [f"{k} = :{k}" for k in non_empty_primary_keys]
 
-        for pk in self.primary_keys:
-            update_value_map[pk] = row[pk]
+        for k, v in non_empty_primary_keys.items():
+            update_value_map[k] = v
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
@@ -250,7 +253,7 @@ MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
 
 
 class MongoQueryConfig(QueryConfig[MongoStatement]):
-    """Query config that translates paramters into mongo statements"""
+    """Query config that translates parameters into mongo statements"""
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
@@ -265,7 +268,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
-            filtered_data = self.filter_values(input_data)
+            filtered_data = self.typed_filtered_values(input_data)
             if filtered_data:
                 field_list = {field_name: 1 for field_name in self.fields}
                 query_pairs = {}
@@ -284,7 +287,6 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
                     transform_query_pairs(query_pairs),
                     field_list,
                 )
-
                 return query_fields, return_fields
 
         logger.warning(
@@ -297,7 +299,10 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy)
-        pk_clauses = {k: row[k] for k in self.primary_keys}
+
+        pk_clauses = filter_nonempty_values(
+            {k.name: k.cast(row[k.name]) for k in self.primary_key_fields}
+        )
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:

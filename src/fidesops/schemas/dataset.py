@@ -4,8 +4,10 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 from pydantic import BaseModel, root_validator, validator, ConstrainedStr
 
+from fidesops.common_exceptions import InvalidDataTypeValidationError
 from fidesops.common_exceptions import InvalidDataLengthValidationError
 from fidesops.graph.config import EdgeDirection
+from fidesops.graph.data_type import DataType
 from fidesops.models.policy import _validate_data_category
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -23,6 +25,21 @@ def _valid_data_categories(
     if data_categories:
         return [dc for dc in data_categories if _validate_data_category(dc)]
     return data_categories
+
+
+def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
+    """If the data_type is provided ensure that it is a member of DataType."""
+
+    if data_type_str is not None:
+        try:
+            DataType[data_type_str]  # pylint: disable=pointless-statement
+            return data_type_str
+        except KeyError:
+            raise InvalidDataTypeValidationError(
+                f"The data type {data_type_str} is not supported."
+            )
+
+    return None
 
 
 def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
@@ -85,7 +102,15 @@ class FidesopsMeta(BaseModel):
     references: Optional[List[FidesopsDatasetReference]]
     identity: Optional[str]
     primary_key: Optional[bool]
+    data_type: Optional[str]
+    """Optionally specify the data type. Fidesops will attempt to cast values to this type when querying."""
     length: Optional[int]
+    """Optionally specify the allowable field length. Fidesops will not generate values that exceed this size."""
+
+    @validator("data_type")
+    def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that all annotated data categories exist in the taxonomy"""
+        return _valid_data_type(v)
 
     @validator("length")
     def valid_length(cls, v: Optional[int]) -> Optional[int]:

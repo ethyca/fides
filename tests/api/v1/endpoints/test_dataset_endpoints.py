@@ -170,6 +170,46 @@ class TestValidateDataset:
             == "Illegal length (-1). Only positive non-zero values are allowed."
         )
 
+    def test_put_validate_dataset_invalid_data_type(
+        self,
+        example_datasets: List,
+        validate_dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        invalid_dataset = example_datasets[0]
+
+        # string is properly read:
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "data_type": "string"
+        }
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=invalid_dataset
+        )
+        assert response.status_code == 200
+        assert (
+            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
+                "fidesops_meta"
+            ]["data_type"]
+            == "string"
+        )
+
+        # fails with an invalid value
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "data_type": "stringsssssss"
+        }
+
+        response = api_client.put(
+            validate_dataset_url, headers=auth_header, json=invalid_dataset
+        )
+
+        assert response.status_code == 422
+        assert (
+            json.loads(response.text)["detail"][0]["msg"]
+            == "The data type stringsssssss is not supported."
+        )
+
     def test_put_validate_dataset_invalid_fidesops_meta(
         self,
         example_datasets: List,

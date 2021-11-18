@@ -34,6 +34,15 @@ def test_collection_address_to_string():
         CollectionAddress.from_string("A:B:C")
 
 
+def test_collection_field_map():
+    c = Collection(
+        name="t3",
+        fields=[Field(name="f1")],
+    )
+    assert c.field("f1").name == "f1"
+    assert c.field("not found") is None
+
+
 def test_collection_identities() -> None:
     ds = Collection(
         name="t3",
