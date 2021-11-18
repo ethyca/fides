@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Dry Evaluation
-        run: fidesctl evaluate --dry fidesctl/fides_resources/
+      - name: Local Evaluation
+        run: fidesctl evaluate --local fidesctl/fides_resources/
         env:
           FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
