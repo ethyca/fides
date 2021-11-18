@@ -34,7 +34,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.option(
     "--local",
     is_flag=True,
-    help="Runs in a local mode that doesn't utilize server calls.",
+    help="Do not make any API calls to the webserver.",
 )
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
