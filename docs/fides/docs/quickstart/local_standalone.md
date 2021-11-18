@@ -1,8 +1,17 @@
-# Running Fidesctl locally (Standalone)
+# Running Fidesctl Locally (Standalone)
 
 This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
 
-In standalone mode most CLI commands will not work as they require webserver connectivity for persistence. Crucially though, the core evaluation functionality is still present. To run evaluations in standalone mode, use the `--local` flag, but note that the evaluation results won't be persisted.
+In standalone mode most CLI commands will not work as they require webserver connectivity for persistence. Crucially though, the core evaluation functionality is still present. To run in standalone mode, use one of the following methods:
+
+```sh title="CLI flag"
+fidesctl --local <subcommand>
+```
+
+```toml title="fidesctl.toml"
+[cli]
+local_mode = true
+```
 
 For more information on running a full fidesctl installation, see the [Running Fidesctl Locally (Full Installation)](local_full.md) or [Running Fidesctl in Docker](docker.md) pages.
 
