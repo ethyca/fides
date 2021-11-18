@@ -1,5 +1,11 @@
+import secrets
+
+from datetime import datetime
+
+import os
+
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import json
 import zipfile
@@ -10,8 +16,12 @@ import pandas as pd
 
 from botocore.exceptions import ClientError, ParamValidationError
 
+from fidesops.core.config import config
 from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
+from fidesops.util.cache import get_encryption_cache_key, get_cache
+from fidesops.util.cryptographic_util import bytes_to_b64_str
+from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt_to_bytes
 
 from fidesops.util.storage_authenticator import (
     get_s3_session,
@@ -21,15 +31,50 @@ from fidesops.util.storage_authenticator import (
 logger = logging.getLogger(__name__)
 
 
-def write_to_in_memory_buffer(resp_format: str, data: Dict[str, Any]) -> BytesIO:
-    """Write JSON/CSV data to in-memory file-like object to be passed to S3
+LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
+
+
+def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
+    """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
+    cache = get_cache()
+    encryption_cache_key = get_encryption_cache_key(
+        privacy_request_id=request_id,
+        encryption_attr="key",
+    )
+    if isinstance(data, bytes):
+        data = data.decode(config.security.ENCODING)
+
+    encryption_key: str = cache.get(encryption_cache_key)
+    if not encryption_key:
+        return data
+
+    bytes_encryption_key: bytes = encryption_key.encode(
+        encoding=config.security.ENCODING
+    )
+    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+    # b64encode the entire nonce and the encrypted message together
+    return bytes_to_b64_str(nonce + encrypt_to_bytes(data, bytes_encryption_key, nonce))
+
+
+def write_to_in_memory_buffer(
+    resp_format: str, data: Dict[str, Any], request_id: str
+) -> BytesIO:
+    """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
+    has been cached for the given privacy request id
+
     :param resp_format: str, should be one of ResponseFormat
     :param data: Dict
+    :param request_id: str, The privacy request id
     """
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        return BytesIO(json.dumps(data, indent=2).encode("utf-8"))
+        json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
+        return BytesIO(
+            encrypt_access_request_results(json_str, request_id).encode(
+                config.security.ENCODING
+            )
+        )
 
     if resp_format == ResponseFormat.csv.value:
         zipped_csvs = BytesIO()
@@ -37,9 +82,12 @@ def write_to_in_memory_buffer(resp_format: str, data: Dict[str, Any]) -> BytesIO
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding="utf-8")
+                df.to_csv(buffer, index=False, encoding=config.security.ENCODING)
                 buffer.seek(0)
-                f.writestr(f"{key}.csv", buffer.getvalue())
+                f.writestr(
+                    f"{key}.csv",
+                    encrypt_access_request_results(buffer.getvalue(), request_id),
+                )
 
         zipped_csvs.seek(0)
         return zipped_csvs
@@ -47,12 +95,13 @@ def write_to_in_memory_buffer(resp_format: str, data: Dict[str, Any]) -> BytesIO
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def upload_to_s3(
+def upload_to_s3(  # pylint: disable=R0913
     storage_secrets: Dict[StorageSecrets, Any],
     data: Dict,
     bucket_name: str,
     file_key: str,
     resp_format: str,
+    request_id: str,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info(f"Starting S3 Upload of {file_key}")
@@ -68,7 +117,7 @@ def upload_to_s3(
 
         # handles file chunking
         s3.upload_fileobj(
-            Fileobj=write_to_in_memory_buffer(resp_format, data),
+            Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
             Bucket=bucket_name,
             Key=file_key,
         )
@@ -101,4 +150,26 @@ def upload_to_onetrust(
         data=payload,
         headers=headers,
     )
+    return "success"
+
+
+def _handle_json_encoding(field: Any) -> str:
+    """Specify str format for datetime objects"""
+    if isinstance(field, datetime):
+        return field.strftime("%Y-%m-%dT%H:%M:%S")
+    return field
+
+
+def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
+    """Uploads access request data to a local folder - for testing/demo purposes only"""
+    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
+        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
+
+    filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
+    data_str: str = encrypt_access_request_results(
+        json.dumps(payload, default=_handle_json_encoding), request_id
+    )
+    with open(filename, "w") as file:
+        file.write(data_str)
+
     return "success"

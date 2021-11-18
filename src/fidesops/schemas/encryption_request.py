@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+
+from fidesops.core.config import config
+from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
 
 class AesEncryptionRequest(BaseModel):
@@ -6,6 +9,13 @@ class AesEncryptionRequest(BaseModel):
 
     value: str
     key: str
+
+    @validator("key")
+    def validate_key(cls, v: str) -> bytes:
+        """Convert string into bytes and verify this is the correct length"""
+        key = v.encode(config.security.ENCODING)
+        verify_encryption_key(key)
+        return key
 
 
 class AesEncryptionResponse(BaseModel):

@@ -1,7 +1,4 @@
-import json
 import logging
-import os
-from datetime import datetime
 from typing import Any, Optional, Dict
 
 from fidesops.models.privacy_request import PrivacyRequest
@@ -13,14 +10,11 @@ from fidesops.schemas.storage.storage import (
 )
 from sqlalchemy.orm import Session
 from fidesops.models.storage import StorageConfig
-from fidesops.tasks.storage import upload_to_s3, upload_to_onetrust
+from fidesops.tasks.storage import upload_to_s3, upload_to_onetrust, upload_to_local
 from fidesops.common_exceptions import StorageUploadError
 
 
 logger = logging.getLogger(__name__)
-
-
-LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
 def upload(db: Session, *, request_id: str, data: Dict, storage_key: str) -> str:
@@ -80,7 +74,7 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value
+        config.secrets, data, bucket_name, file_key, config.format.value, request_id
     )
 
 
@@ -111,15 +105,4 @@ def _local_uploader(
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(request_id, config)
-    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
-        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
-    with open(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}", "w") as f:
-        json.dump(data, f, default=_handle_json_encoding)
-    return "success"
-
-
-def _handle_json_encoding(field: Any) -> str:
-    """Specify str format for datetime objects"""
-    if isinstance(field, datetime):
-        return field.strftime("%Y-%m-%dT%H:%M:%S")
-    return field
+    return upload_to_local(data, file_key, request_id)

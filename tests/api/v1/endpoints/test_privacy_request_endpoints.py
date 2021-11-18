@@ -38,7 +38,7 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.policy import DataCategory, ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.util.cache import get_identity_cache_key
+from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
 
 page_size = Params().size
 
@@ -216,6 +216,59 @@ class TestCreatePrivacyRequest:
             identity_attribute=list(identity.keys())[0],
         )
         assert cache.get(key) == list(identity.values())[0]
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    def test_create_privacy_request_invalid_encryption_values(
+        self, url, db, api_client: TestClient, generate_auth_header, policy, cache
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identities": ["test@example.com"],
+                "encryption_key": "test",
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_access_request"
+    )
+    def test_create_privacy_request_caches_encryption_keys(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        cache,
+    ):
+        identity = {"email": "test@example.com"}
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identities": [identity],
+                "encryption_key": "test--encryption",
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        encryption_key = get_encryption_cache_key(
+            privacy_request_id=pr.id,
+            encryption_attr="key",
+        )
+        assert cache.get(encryption_key) == "test--encryption"
+
         pr.delete(db=db)
         assert run_access_request_mock.called
 

@@ -130,6 +130,7 @@ def create_privacy_request(
             logger.info(f"Caching identities for privacy request {privacy_request.id}")
             for identity in privacy_request_data.identities:
                 privacy_request.cache_identity(identity)
+                privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
             PrivacyRequestRunner(
                 cache=cache,

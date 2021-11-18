@@ -119,6 +119,11 @@ def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> 
     return f"id-{privacy_request_id}-identity-{identity_attribute}"
 
 
+def get_encryption_cache_key(privacy_request_id: str, encryption_attr: str) -> str:
+    """Return the key at which to save this PrivacyRequest's encryption attribute"""
+    return f"id-{privacy_request_id}-encryption-{encryption_attr}"
+
+
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> Set:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
