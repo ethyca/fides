@@ -570,10 +570,7 @@ def evaluate(
         echo_red(str(missing_resources))
         echo_red("Not all referenced resources exist locally!")
         raise SystemExit(1)
-    else:
-        populate_referenced_keys(
-            taxonomy=taxonomy, url=url, headers=headers, last_keys=[]
-        )
+    populate_referenced_keys(taxonomy=taxonomy, url=url, headers=headers, last_keys=[])
 
     echo_green("Executing Policy evaluation(s)...")
     evaluation = execute_evaluation(taxonomy)
