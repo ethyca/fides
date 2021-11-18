@@ -259,8 +259,20 @@
   
   
     <li class="md-nav__item">
-      <a href="../../quickstart/local/" class="md-nav__link">
-        Running Fidesctl locally
+      <a href="../../quickstart/local_standalone/" class="md-nav__link">
+        Running Fidesctl Locally (Standalone)
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/local_full/" class="md-nav__link">
+        Running Fidesctl Locally (Full Installation)
       </a>
     </li>
   
@@ -1277,7 +1289,7 @@
 <h2 id="basic-installation">Basic Installation</h2>
 <p>To install Fidesctl, run:</p>
 <p><code>pip install fidesctl</code></p>
-<p>With the basic installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the CLI, such as <code>apply</code>, <code>evaluate</code>, and <code>parse</code>. For interacting directly with databases and running the webserver, see the optional dependencies below.</p>
+<p>With the default installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as <code>evaluate</code> and <code>parse</code> without the need to run a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.</p>
 <h2 id="installing-optional-dependencies">Installing Optional Dependencies</h2>
 <p>Fidesctl ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:</p>
 <p><code>pip install "fidesctl[extra_1, extra_2]"</code></p>

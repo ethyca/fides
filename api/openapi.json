@@ -3246,7 +3246,7 @@
       "PolicyRule": {
         "title": "PolicyRule",
         "required": [
-          "fides_key",
+          "name",
           "data_categories",
           "data_uses",
           "data_subjects",
@@ -3254,28 +3254,9 @@
         ],
         "type": "object",
         "properties": {
-          "fides_key": {
-            "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
-            "type": "string",
-            "description": "A unique key used to identify this resource."
-          },
-          "organization_fides_key": {
-            "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
-            "type": "string",
-            "description": "Defines the Organization that this resource belongs to.",
-            "default": "default_organization"
-          },
           "name": {
             "title": "Name",
-            "type": "string",
-            "description": "Human-Readable string name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "In-depth description of what this resource is."
+            "type": "string"
           },
           "data_categories": {
             "$ref": "#/components/schemas/PrivacyRule"
