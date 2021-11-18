@@ -12,7 +12,7 @@ See the Python section of the [Prerequisites and Dependencies](../installation/p
 
 ## Fidesctl Installation
 
-The next step is to install fidesctl via pip with the required extras:
+The next step is to install fidesctl via pip:
 
 ```sh
 pip install fidesctl
