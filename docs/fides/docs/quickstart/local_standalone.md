@@ -2,7 +2,7 @@
 
 This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
 
-In standalone mode most CLI commands will not work as they require webserver connectivity for persistence. Crucially though, the core evaluation functionality is still present. To run in standalone mode, use one of the following methods:
+In standalone mode most CLI commands will not work as they require webserver connectivity for persistence, and so those commands are not available. Crucially though, the core evaluation functionality is still present. To run in standalone mode, use one of the following methods:
 
 ```sh title="CLI flag"
 fidesctl --local <subcommand>
