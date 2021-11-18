@@ -6,13 +6,28 @@ generated programmatically for each resource.
 
 from typing import List, Dict
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fideslang import model_map
+
+
+class NotFoundError(HTTPException):
+    """
+    To be raised when a requested resource does not exist in the database.
+    """
+
+    def __init__(self, resource_type: str, fides_key: str) -> None:
+        detail = {
+            "error": "resource does not exist",
+            "resource_type": resource_type,
+            "fides_key": fides_key,
+        }
+
+        super().__init__(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
 
 
 def get_resource_type(router: APIRouter) -> str:
@@ -153,6 +168,9 @@ for resource_type, resource_model in model_map.items():
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
         query_result = get_resource(sql_model, fides_key)
+        if not query_result:
+            raise NotFoundError(resource_type, fides_key)
+
         return query_result
 
     @router.post("/{fides_key}", response_model=resource_model)
@@ -165,6 +183,9 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         resource_dict = resource.dict()
         query_result = update_resource(sql_model, resource_dict, fides_key)
+        if not query_result:
+            raise NotFoundError(resource_type, fides_key)
+
         return query_result
 
     @router.delete("/{fides_key}")
@@ -173,7 +194,10 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Delete a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        delete_resource(sql_model, fides_key)
+        query_result = delete_resource(sql_model, fides_key)
+        if not query_result:
+            raise NotFoundError(resource_type, fides_key)
+
         return {
             "message": "resource deleted",
             "resource": query_result,
