@@ -28,7 +28,7 @@ More details: [Installation from PyPI](pypi.md)
 **What the Fidesctl community provides for this method**
 
 * You have [Installation from PyPI](pypi.md) on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.
-* You have the [Running fidesctl locally](../quickstart/local_full.md) guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.
+* You have the [Running fidesctl Locally](../quickstart/local_full.md) guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.
 
 **Where to ask for help**
 
