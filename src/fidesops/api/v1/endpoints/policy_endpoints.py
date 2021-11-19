@@ -8,6 +8,7 @@ from fastapi_pagination import (
 )
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -69,7 +70,7 @@ def get_policy_list(
 )
 def get_policy(
     *,
-    policy_key: str,
+    policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
 ) -> schemas.PolicyResponse:
     """
@@ -155,7 +156,7 @@ def create_or_update_rules(
         verify_oauth_client,
         scopes=[scopes.RULE_CREATE_OR_UPDATE],
     ),
-    policy_key: str,
+    policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     input_data: conlist(schemas.RuleCreate, max_items=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleResponse:
@@ -242,6 +243,16 @@ def create_or_update_rules(
             }
             failed.append(BulkUpdateFailed(**failure))
             continue
+        except ValueError as exc:
+            logger.warning(
+                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+            )
+            failure = {
+                "message": exc.args[0],
+                "data": dict(schema),
+            }
+            failed.append(BulkUpdateFailed(**failure))
+            continue
         else:
             created_or_updated.append(rule)
 
@@ -255,8 +266,8 @@ def create_or_update_rules(
 )
 def delete_rule(
     *,
-    policy_key: str,
-    rule_key: str,
+    policy_key: FidesOpsKey,
+    rule_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
 ) -> None:
     """
@@ -296,8 +307,8 @@ def create_or_update_rule_targets(
     client: ClientDetail = Security(
         verify_oauth_client, scopes=[scopes.RULE_CREATE_OR_UPDATE]
     ),
-    policy_key: str,
-    rule_key: str,
+    policy_key: FidesOpsKey,
+    rule_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     input_data: conlist(schemas.RuleTarget, max_items=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleTargetResponse:
@@ -389,9 +400,9 @@ def create_or_update_rule_targets(
 )
 def delete_rule_target(
     *,
-    policy_key: str,
-    rule_key: str,
-    rule_target_key: str,
+    policy_key: FidesOpsKey,
+    rule_key: FidesOpsKey,
+    rule_target_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
 ) -> None:
     """

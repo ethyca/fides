@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional, Dict
 
 from pydantic import Field, validator
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
@@ -22,7 +23,7 @@ class PrivacyRequestCreate(BaseSchema):
     finished_processing_at: Optional[datetime]
     requested_at: datetime
     identities: List[PrivacyRequestIdentity]
-    policy_key: str
+    policy_key: FidesOpsKey
     encryption_key: Optional[str] = None
 
     @validator("encryption_key")

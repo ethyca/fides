@@ -59,7 +59,7 @@ class TestStorageConfigModel:
         assert storage_config.type == StorageType.s3
         assert storage_config.details == storage_details_s3
         assert storage_config.format == ResponseFormat.csv
-        assert storage_config.key == "test-storage-destination-1"
+        assert storage_config.key == "test_storage_destination_1"
         assert storage_config.secrets is None
 
         storage_config.delete(db)

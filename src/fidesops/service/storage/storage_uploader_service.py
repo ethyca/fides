@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Optional, Dict
 
+from fidesops.schemas.shared_schemas import FidesOpsKey
+
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.storage.storage import (
     StorageType,
@@ -17,7 +19,9 @@ from fidesops.common_exceptions import StorageUploadError
 logger = logging.getLogger(__name__)
 
 
-def upload(db: Session, *, request_id: str, data: Dict, storage_key: str) -> str:
+def upload(
+    db: Session, *, request_id: str, data: Dict, storage_key: FidesOpsKey
+) -> str:
     """Retrieves storage configs and calls appropriate upload method"""
     config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="key", value=storage_key

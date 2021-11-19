@@ -40,7 +40,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
     "destinations": [
       {
         "name": str,
-        "key": str (optional),
+        "key": FidesOpsKey (optional),
         "type": str,
         "format": str
         "details": {
@@ -60,7 +60,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
 Params:
 
 - `name`: A unique user-friendly name for your storage destination.
-- `key`: A unique key used to manage your storage destination. This is auto-generated from `name` (dasherized) if left blank.
+- `key`: A unique key used to manage your storage destination. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`.
 - `type`: Type of storage destination. Supported types include `s3`, `onetrust`, and `local`. You may configure multiple destinations of the same type.
 - `format`: Format of uploaded data. Supported formats include `json` and `csv`. For OneTrust and local destination types, use `json`.
 
@@ -95,7 +95,7 @@ Example response:
                 "naming": "request_id",
                 "object_name": "requests"
             },
-            "key": "s3-storage-2"
+            "key": "s3_storage_2"
         }
     ],
     "total": 1,

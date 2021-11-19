@@ -40,14 +40,14 @@ def create_local_storage(key, format, access_token):
 
 ### Call helper method to set up Storage
 
-This will define a local Storage location called `example-storage` that expects JSON data.  
+This will define a local Storage location called `example_storage` that expects JSON data.  
 
 ```python
     if __name__ == "__main__":
         ...
         # Configure a Storage Config to upload the results
         create_local_storage(
-            key="example-storage",
+            key="example_storage",
             format="json",
             access_token=access_token,
         )

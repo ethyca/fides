@@ -59,7 +59,7 @@ if __name__ == "__main__":
     email = "user@example.com"
     privacy_requests = create_privacy_request(
         email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
         access_token=access_token,
     )
 ```

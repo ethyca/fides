@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, Extra
+from pydantic import Extra, BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.models.connectionconfig import ConnectionType, AccessLevel
 
 
@@ -15,7 +16,7 @@ class CreateConnectionConfiguration(BaseModel):
     """
 
     name: str
-    key: Optional[str]
+    key: Optional[FidesOpsKey]
     connection_type: ConnectionType
     access: AccessLevel
 
@@ -35,7 +36,7 @@ class ConnectionConfigurationResponse(BaseModel):
     """
 
     name: str
-    key: str
+    key: FidesOpsKey
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime

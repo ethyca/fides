@@ -541,7 +541,7 @@ class TestCreatePrivacyRequest:
         assert (
             errored_execution_logs[0].message
             == "No values were erased since this connection "
-            "my-postgres-db-1-read-config has not been given write access"
+            "my_postgres_db_1_read_config has not been given write access"
         )
         pr.delete(db=db)
 

@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import six
+
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -18,21 +19,22 @@ from sqlalchemy.sql import func
 from sqlalchemy_utils import JSONType
 
 from fidesops.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fidesops.util.text import slugify
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.text import to_snake_case
 
 
 def get_key_from_data(data: Dict[str, Any], cls_name: str) -> str:
     """
-    Extracts key from data and slugifies. If no key, uses a slugified name.
+    Extracts key from data, validates. If no key, uses a snake-cased name.
 
-    Will be used as the URL slug on applicable classes.
+    Will be used as the URL on applicable classes.
     """
-    key = slugify(data.get("key")) if data.get("key") else None
+    key = FidesOpsKey.validate(data.get("key")) if data.get("key") else None
     if key is None:
         name = data.get("name")
         if name is None:
             raise KeyValidationError(f"{cls_name} requires a name.")
-        key = slugify(name)
+        key = FidesOpsKey.validate(to_snake_case(name))
     return key
 
 
@@ -151,7 +153,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
             data["key"] = get_key_from_data(data, cls.__name__)
             if db.query(cls).filter_by(key=data["key"]).first():
                 raise KeyOrNameAlreadyExists(
-                    f"Key {data['key']} already exists in {cls.__name__}. Keys will be slugified names if not provided. "
+                    f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased names if not provided. "
                     f"If you are seeing this error without providing a key, please provide a key or a different name."
                     ""
                 )
@@ -176,7 +178,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         Create an object, or update the existing version. There's an edge case where
         `data["id"]` and `data["key"]` can point at different records, in which case
         this method will attempt to update the fetched record with the key of another,
-        and a `KeyAlreadyExists` error will be thrown. If neither `key`, nor `id` are
+        and a `KeyOrNameAlreadyExists` error will be thrown. If neither `key`, nor `id` are
         passed in, leave `db_obj` as None and assume we are creating a new object.
         """
         db_obj = None

@@ -34,7 +34,7 @@ class TestPatchConnections:
         return [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres db 1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
             },
@@ -60,7 +60,7 @@ class TestPatchConnections:
         payload_with_secrets = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
                 "secrets": {"host": "localhost"},
@@ -86,10 +86,10 @@ class TestPatchConnections:
 
         postgres_connection = response_body["succeeded"][0]
         postgres_resource = (
-            db.query(ConnectionConfig).filter_by(key="postgres-db-1").first()
+            db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_connection["name"] == "My Main Postgres DB"
-        assert postgres_connection["key"] == "postgres-db-1"
+        assert postgres_connection["key"] == "postgres_db_1"
         assert postgres_connection["connection_type"] == "postgres"
         assert postgres_connection["access"] == "write"
         assert postgres_connection["created_at"] is not None
@@ -98,9 +98,9 @@ class TestPatchConnections:
         assert "secrets" not in postgres_connection
 
         mongo_connection = response_body["succeeded"][1]
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my-mongo-db").first()
+        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_connection["name"] == "My Mongo DB"
-        assert mongo_connection["key"] == "my-mongo-db"  # stringified name
+        assert mongo_connection["key"] == "my_mongo_db"  # stringified name
         assert mongo_connection["connection_type"] == "mongodb"
         assert mongo_connection["access"] == "read"
         assert mongo_connection["created_at"] is not None
@@ -125,20 +125,19 @@ class TestPatchConnections:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 2
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 1
 
+        succeeded = response_body["succeeded"]
         failed = response_body["failed"]
-        # non-slugified key was supplied in request body, which turned into a key that exists
-        assert failed[0]["data"]["key"] == "postgres db 1"
-        assert (
-            "Key postgres-db-1 already exists in ConnectionConfig"
-            in failed[0]["message"]
-        )
+
+        # key supplied matches existing key, so the rest of the configs are updated
+        assert succeeded[0]["key"] == "postgres_db_1"
+
         # No key was supplied in request body, just a name, and that name turned into a key that exists
-        assert failed[1]["data"]["key"] is None
+        assert failed[0]["data"]["key"] is None
         assert (
-            "Key my-mongo-db already exists in ConnectionConfig" in failed[1]["message"]
+            "Key my_mongo_db already exists in ConnectionConfig" in failed[0]["message"]
         )
 
     def test_patch_connections_bulk_create_limit_exceeded(
@@ -149,7 +148,7 @@ class TestPatchConnections:
             payload.append(
                 {
                     "name": f"My Main Postgres DB {i}",
-                    "key": f"postgres-db-{i}",
+                    "key": f"postgres_db_{i}",
                     "connection_type": "postgres",
                     "access": "read",
                 }
@@ -174,24 +173,24 @@ class TestPatchConnections:
         payload = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "read",
             },
             {
-                "key": "my-mongo-db",
+                "key": "my_mongo_db",
                 "name": "My Mongo DB",
                 "connection_type": "mongodb",
                 "access": "write",
             },
             {
-                "key": "my-redshift-cluster",
+                "key": "my_redshift_cluster",
                 "name": "My Amazon Redshift",
                 "connection_type": "redshift",
                 "access": "read",
             },
             {
-                "key": "my-snowflake",
+                "key": "my_snowflake",
                 "name": "Snowflake Warehouse",
                 "connection_type": "snowflake",
                 "access": "write",
@@ -213,14 +212,14 @@ class TestPatchConnections:
         assert "secrets" not in postgres_connection
         assert postgres_connection["updated_at"] is not None
         postgres_resource = (
-            db.query(ConnectionConfig).filter_by(key="postgres-db-1").first()
+            db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
         assert postgres_resource.access.value == "read"
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
         assert mongo_connection["updated_at"] is not None
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my-mongo-db").first()
+        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
 
@@ -228,7 +227,7 @@ class TestPatchConnections:
         assert redshift_connection["access"] == "read"
         assert redshift_connection["updated_at"] is not None
         redshift_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-redshift-cluster").first()
+            db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
         )
         assert redshift_resource.access.value == "read"
         assert "secrets" not in redshift_connection
@@ -237,7 +236,7 @@ class TestPatchConnections:
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
         snowflake_resource = (
-            db.query(ConnectionConfig).filter_by(key="my-snowflake").first()
+            db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
         )
         assert snowflake_resource.access.value == "write"
         assert "secrets" not in snowflake_connection
@@ -256,7 +255,7 @@ class TestPatchConnections:
         payload = [
             {
                 "name": "My Main Postgres DB",
-                "key": "postgres-db-1",
+                "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
             },
@@ -278,7 +277,7 @@ class TestPatchConnections:
 
         assert response_body["failed"][0]["data"] == {
             "name": "My Main Postgres DB",
-            "key": "postgres-db-1",
+            "key": "postgres_db_1",
             "connection_type": "postgres",
             "access": "write",
         }
@@ -330,7 +329,7 @@ class TestGetConnections:
             "created_at",
         }
 
-        assert connection["key"] == "my-postgres-db-1"
+        assert connection["key"] == "my_postgres_db_1"
         assert connection["connection_type"] == "postgres"
         assert connection["access"] == "write"
         assert connection["updated_at"] is not None
@@ -364,7 +363,7 @@ class TestGetConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-a-nonexistant-key",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_a_nonexistent_key",
             headers=auth_header,
         )
         assert resp.status_code == 404
@@ -388,7 +387,7 @@ class TestGetConnection:
             "created_at",
         }
 
-        assert response_body["key"] == "my-postgres-db-1"
+        assert response_body["key"] == "my_postgres_db_1"
         assert response_body["connection_type"] == "postgres"
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
@@ -419,7 +418,7 @@ class TestDeleteConnection:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/non-existent-config", headers=auth_header
+            f"{V1_URL_PREFIX}{CONNECTIONS}/non_existent_config", headers=auth_header
         )
         assert resp.status_code == 404
 
@@ -467,7 +466,7 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
-            f"{V1_URL_PREFIX}{CONNECTIONS}/this-is-not-a-known-key/secret",
+            f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_not_a_known_key/secret",
             headers=auth_header,
             json={},
         )
