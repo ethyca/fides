@@ -541,8 +541,8 @@ def evaluate(
     validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
     validate_supported_policy_rules(policies=policies)
     echo_green(
-        "Evaluating the following Policies:\n{}".format(
-            "\n".join([key.fides_key for key in taxonomy.policy])
+        "Evaluating the following Policies:\n- {}".format(
+            "\n- ".join([key.fides_key for key in taxonomy.policy])
         )
     )
     print("-" * 10)
