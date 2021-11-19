@@ -107,6 +107,9 @@ xenon: compose-build
 	--ignore "data, tests, docs" \
 	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
 
+fidesctl: compose-build
+	@$(RUN) fidesctl --local evaluate fides_resources/
+
 ####################
 # Utils
 ####################

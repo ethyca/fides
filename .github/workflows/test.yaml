@@ -21,6 +21,9 @@ jobs:
       - name: Check fidesctl installed
         run: make check-install
 
+      - name: Fidesctl Evaluation
+        run: make fidesctl
+
       - name: Format
         run: make black
 
@@ -35,14 +38,3 @@ jobs:
 
       - name: Test
         run: make pytest
-
-  Fidesctl:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install Fidesctl
-        run: pip install -e ./fidesctl/
-
-      - name: Local Evaluation
-        run: fidesctl --local evaluate fidesctl/fides_resources/
