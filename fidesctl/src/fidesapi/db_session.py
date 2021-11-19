@@ -6,6 +6,7 @@ from typing import Callable, Optional
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 FACTORY: Optional[Callable[[], Session]] = None
@@ -32,7 +33,9 @@ def create_session() -> Session:
     global FACTORY  # pylint: disable=global-statement
 
     if not FACTORY:
-        raise Exception("You must call global_init() before using this method.")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "Database unavailable"
+        )
 
     session: Session = FACTORY()
     session.expire_on_commit = False
