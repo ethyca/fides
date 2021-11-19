@@ -28,3 +28,5 @@ The optional dependencies are as follows:
 * `webserver`: includes FastAPI and the Postgres database connector. Enables `fidesctl webserver`.
 * `postgres`: includes the Postgres database connector.
 * `mysql`: includes the MySQL database connector.
+
+** Note ** pg conf
