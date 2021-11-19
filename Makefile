@@ -70,7 +70,7 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy pytest pytest-integration check-migrations
+check-all: black-ci pylint mypy check-migrations pytest pytest-integration-access pytest-integration-erasure
 
 black-ci: compose-build
 	@echo "Running black checks..."
@@ -99,7 +99,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure and not external_integration"
+		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
 
 # Run the pytest integration tests.
 pytest-integration-access: compose-build
@@ -124,10 +124,10 @@ pytest-integration-erasure: compose-build
 		pytest $(pytestpath) -m "integration_erasure"
 
 # These tests connect to external third-party test databases
-pytest-external-integration: compose-build
+pytest-integration-external: compose-build
 	@echo "Running tests that connect to external third party test databases"
 	@docker-compose run -e REDSHIFT_TEST_URI -e SNOWFLAKE_TEST_URI $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "external_integration"
+		pytest $(pytestpath) -m "integration_external"
 
 
 ####################
