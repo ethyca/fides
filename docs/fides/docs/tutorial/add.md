@@ -49,7 +49,7 @@ fidesctl:
     - FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl
 ```
 
-> See [the fidesctl deployment guide](../deployment#step-2-setup-the-fidesctl-web-server) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
+> See [the fidesctl deployment guide](../installation/installation.md) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
 
 ## Add `Makefile` Commands
 
