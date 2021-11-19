@@ -83,13 +83,13 @@ def get_connection_detail(
     return connection_config
 
 
-@router.put(
+@router.patch(
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutConnectionConfiguration,
 )
-def put_connections(
+def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
     configs: conlist(CreateConnectionConfiguration, max_items=50),  # type: ignore

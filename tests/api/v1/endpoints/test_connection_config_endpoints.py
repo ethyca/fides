@@ -24,7 +24,7 @@ from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 page_size = Params().size
 
 
-class TestPutConnections:
+class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + CONNECTIONS
@@ -41,20 +41,20 @@ class TestPutConnections:
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
 
-    def test_put_connections_not_authenticated(
+    def test_patch_connections_not_authenticated(
         self, api_client: TestClient, generate_auth_header, url, payload
     ) -> None:
-        response = api_client.put(url, headers={}, json=payload)
+        response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
-    def test_put_connections_incorrect_scope(
+    def test_patch_connections_incorrect_scope(
         self, api_client: TestClient, generate_auth_header, url, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_put_connections_add_secret_invalid(
+    def test_patch_connections_add_secret_invalid(
         self, api_client: TestClient, generate_auth_header, url
     ) -> None:
         payload_with_secrets = [
@@ -68,16 +68,16 @@ class TestPutConnections:
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload_with_secrets)
+        response = api_client.patch(url, headers=auth_header, json=payload_with_secrets)
         assert 422 == response.status_code
         response_body = json.loads(response.text)
         assert "extra fields not permitted" == response_body["detail"][0]["msg"]
 
-    def test_put_connections_bulk_create(
+    def test_patch_connections_bulk_create(
         self, api_client: TestClient, db: Session, generate_auth_header, url, payload
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
@@ -113,15 +113,15 @@ class TestPutConnections:
         postgres_resource.delete(db)
         mongo_resource.delete(db)
 
-    def test_put_connections_bulk_update_key_error(
+    def test_patch_connections_bulk_update_key_error(
         self, url, api_client: TestClient, db: Session, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.put(url, headers=auth_header, json=payload)
+        api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
@@ -141,7 +141,7 @@ class TestPutConnections:
             "Key my-mongo-db already exists in ConnectionConfig" in failed[1]["message"]
         )
 
-    def test_put_connections_bulk_create_limit_exceeded(
+    def test_patch_connections_bulk_create_limit_exceeded(
         self, url, api_client: TestClient, db: Session, generate_auth_header
     ):
         payload = []
@@ -156,19 +156,19 @@ class TestPutConnections:
             )
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
             == "ensure this value has at most 50 items"
         )
 
-    def test_put_connections_bulk_update(
+    def test_patch_connections_bulk_update(
         self, url, api_client: TestClient, db: Session, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.put(url, headers=auth_header, json=payload)
+        api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
         payload = [
@@ -198,7 +198,7 @@ class TestPutConnections:
             },
         ]
 
-        response = api_client.put(
+        response = api_client.patch(
             V1_URL_PREFIX + CONNECTIONS, headers=auth_header, json=payload
         )
 
@@ -248,7 +248,7 @@ class TestPutConnections:
         snowflake_resource.delete(db)
 
     @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
-    def test_put_connections_failed_response(
+    def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
@@ -263,7 +263,7 @@ class TestPutConnections:
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
+        response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert response_body["succeeded"] == []

@@ -111,13 +111,13 @@ def validate_dataset(
     )
 
 
-@router.put(
+@router.patch(
     DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=200,
     response_model=BulkPutDataset,
 )
-def put_datasets(
+def patch_datasets(
     datasets: conlist(FidesopsDataset, max_items=50),  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),

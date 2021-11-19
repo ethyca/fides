@@ -18,14 +18,14 @@ Policy
 
 This is reflected in the API paths that create these elements:
 
-* `PUT /policy`
-* `PUT /policy/{policy_key}/rule`
-* `PUT /policy/{policy_key}/rule/{rule_key}/target`
+* `PATCH /policy`
+* `PATCH /policy/{policy_key}/rule`
+* `PATCH /policy/{policy_key}/rule/{rule_key}/target`
 
 Each operation takes an array of objects, so you can create more than one at a time. 
 
-!!! Note "A note about `PUT` endpoints"
-    The PUT requests that perform the equivalent of a `create_or_update` operation. This means that any existing objects sent to this endpoint will:
+!!! Note "A note about `PATCH` endpoints"
+    The PATCH requests perform the equivalent of a `create_or_update` operation. This means that any existing objects sent to this endpoint will:
 
     - be updated,
     - any non-existing objects will be created, AND
@@ -37,7 +37,7 @@ Each operation takes an array of objects, so you can create more than one at a t
 Let's say you want to make a Policy that contains rules about a user's email address. You would start by first creating a Policy object:
 
 ```
-PUT /api/v1/policy
+PATCH /api/v1/policy
 
 [
   {
@@ -52,7 +52,7 @@ This policy is subtly different from the concept of a Policy in [Fidesctl](https
 The policy creation operation returns a Policy key, which we'll use to add a Rule:
 
 ```
-PUT /api/v1/policy/{policy_key}/rule
+PATCH /api/v1/policy/{policy_key}/rule
 
 [
   {
@@ -69,7 +69,7 @@ Note that `storage_key` must identify an existing StorageConfig object.
 Finally, we use the Rule key to add a Target:
 
 ```
-PUT /api/v1/policy/{policy_key}/rule/{rule_key}/target
+PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
 
 [
   {
@@ -92,7 +92,7 @@ The simple access policy we've created above, will simply pull all data of categ
 
 
 ```json
-PUT /api/v1/policy/{policy_key}/rule
+PATCH /api/v1/policy/{policy_key}/rule
 [
   {
     "name": "Mask Provided Emails",
@@ -110,7 +110,7 @@ PUT /api/v1/policy/{policy_key}/rule
 This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to creat a target for this rule:
 
 ```json
-PUT api/v1/policy/{policy_key}/rule/{rule_key}
+PATCH api/v1/policy/{policy_key}/rule/{rule_key}
   [
     {
       "data_category": "user.provided.identifiable.contact.email",
