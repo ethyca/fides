@@ -1,0 +1,20 @@
+name: CI Checks - Unsafe
+on:
+  push:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  Integration-Tests-External:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    steps:
+      - run: echo "Running CI for branch ${{ github.ref }}."
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - name: Run unit tests that connect to an external db
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: make pytest-external-integration
