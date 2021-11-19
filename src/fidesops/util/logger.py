@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Any, Mapping, Union
+from numbers import Number
 
 MASKED = "MASKED"
 
@@ -42,11 +43,14 @@ def get_fides_log_record_factory() -> Any:
     return factory
 
 
-def _mask_pii_for_logs(pii_text: Any) -> Any:
+def _mask_pii_for_logs(parameter: Any) -> Any:
     """
-    :param pii_text: param that contains possible pii
-    :return: depending on ENV config, returns masked pii param
+    :param parameter: param that contains possible pii
+    :return: depending on ENV config, returns masked pii param.
+
+    Don't mask numeric values as this can throw errors in consumers
+    format strings.
     """
-    if isinstance(pii_text, NotPii):
-        return pii_text
+    if isinstance(parameter, (NotPii, Number)):
+        return parameter
     return MASKED
