@@ -38,11 +38,11 @@ jobs:
 
   Fidesctl:
     runs-on: ubuntu-latest
-    container:
-      image: ethyca/fidesctl:latest
-
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install Fidesctl
+        run: pip install -e ./fidesctl/
 
       - name: Local Evaluation
         run: fidesctl --local evaluate fidesctl/fides_resources/
