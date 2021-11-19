@@ -27,7 +27,7 @@ class NotFoundError(HTTPException):
             "fides_key": fides_key,
         }
 
-        super().__init__(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
+        super().__init__(status.HTTP_404_NOT_FOUND, detail=detail)
 
 
 def get_resource_type(router: APIRouter) -> str:
