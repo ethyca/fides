@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class FidesopsSchema(BaseModel):
     """
-    A base template for all other FidesOps Schemas to inherit from.
+    A base template for all other Fidesops Schemas to inherit from.
     """
 
     @classmethod
