@@ -35,7 +35,7 @@ To configure a StorageConfig, you'll first need to choose a storage destination 
 Let's get started. To create a new StorageConfig, use the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_api_v1_storage_config_put)):
 
 ```bash
-  PUT {host}/api/v1/storage/config
+  PATCH {host}/api/v1/storage/config
   {
     "destinations": [
       {

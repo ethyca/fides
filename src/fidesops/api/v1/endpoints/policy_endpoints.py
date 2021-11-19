@@ -86,7 +86,7 @@ def get_policy(
     return policy
 
 
-@router.put(
+@router.patch(
     urls.POLICY_LIST,
     status_code=200,
     response_model=schemas.BulkPutPolicyResponse,
@@ -144,7 +144,7 @@ def create_or_update_policies(
     )
 
 
-@router.put(
+@router.patch(
     urls.RULE_LIST,
     status_code=200,
     response_model=schemas.BulkPutRuleResponse,
@@ -286,7 +286,7 @@ def delete_rule(
     rule.delete(db=db)
 
 
-@router.put(
+@router.patch(
     urls.RULE_TARGET_LIST,
     status_code=200,
     response_model=schemas.BulkPutRuleTargetResponse,

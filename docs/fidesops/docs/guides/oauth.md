@@ -7,7 +7,7 @@ In this section we'll cover:
 - Authorizing your client with scopes
 - Creating OAuth tokens
 
-When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must included a _scope_ that gives you permission to do take an action on the API. For example, let's say you want to create a new Policy by calling `PUT /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
+When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must included a _scope_ that gives you permission to do take an action on the API. For example, let's say you want to create a new Policy by calling `PATCH /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
 
 This document explains how to craft a properly-scoped access token.
 

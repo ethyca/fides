@@ -103,7 +103,7 @@ Currently, erasure requests will replace customer data with null values.
 In the future, to configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
 that captures that strategy for the Policy.
 
-Issue a PUT request to `/policy/policy_key/rule`:
+Issue a PATCH request to `/policy/policy_key/rule`:
 
 ```json
     [{

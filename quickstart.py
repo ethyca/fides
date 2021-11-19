@@ -105,7 +105,7 @@ def create_connection(key: str, connection_type: ConnectionType):
             "access": "write",
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection",
         headers=oauth_header,
         json=connection_create_data,
@@ -239,7 +239,7 @@ def create_dataset(connection_key: str, yaml_path: str):
         dataset = yaml.safe_load(file).get("dataset", [])[0]
 
     dataset_create_data = [dataset]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection/{connection_key}/dataset",
         headers=oauth_header,
         json=dataset_create_data,
@@ -275,7 +275,7 @@ def create_local_storage(key: str, file_format: str):
             },
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/storage/config",
         headers=oauth_header,
         json=storage_create_data,
@@ -307,7 +307,7 @@ def create_policy(key: str):
             "key": key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy",
         headers=oauth_header,
         json=policy_create_data,
@@ -362,7 +362,7 @@ def create_policy_rule(
             "configuration": {},
         }
 
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule",
         headers=oauth_header,
         json=[rule_create_data],
@@ -393,7 +393,7 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
             "data_category": data_cat,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{rule_key}/target",
         headers=oauth_header,
         json=target_create_data,

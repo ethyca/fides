@@ -47,7 +47,7 @@ While the ConnectionConfig object contains meta information about the database, 
 #### Example 1: PostgreSQL ConnectionConfig
 
 ``` 
-PUT api/v1/connection
+PATCH api/v1/connection
 
 [
   { 
@@ -64,7 +64,7 @@ PUT api/v1/connection
 
 
 ```
-PUT api/v1/connection
+PATCH api/v1/connection
 
 [
   { 
@@ -79,7 +79,7 @@ PUT api/v1/connection
 #### Example 3: MySQL ConnectionConfig 
 
 ```
-PUT api/v1/connection 
+PATCH api/v1/connection 
 [
   { 
     "name": "My MySQL DB",

@@ -361,13 +361,13 @@ class TestPutDatasets:
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
-    def test_put_datasets_not_authenticated(
+    def test_patch_datasets_not_authenticated(
         self, example_datasets: List, datasets_url, api_client
     ) -> None:
-        response = api_client.put(datasets_url, headers={}, json=example_datasets)
+        response = api_client.patch(datasets_url, headers={}, json=example_datasets)
         assert response.status_code == 401
 
-    def test_put_datasets_wrong_scope(
+    def test_patch_datasets_wrong_scope(
         self,
         example_datasets: List,
         datasets_url,
@@ -375,12 +375,12 @@ class TestPutDatasets:
         generate_auth_header,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        response = api_client.put(
+        response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 403
 
-    def test_put_datasets_invalid_connection_key(
+    def test_patch_datasets_invalid_connection_key(
         self, example_datasets: List, api_client: TestClient, generate_auth_header
     ) -> None:
         path = V1_URL_PREFIX + DATASETS
@@ -388,12 +388,12 @@ class TestPutDatasets:
         datasets_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
-        response = api_client.put(
+        response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 404
 
-    def test_put_datasets_bulk_create_limit_exceeded(
+    def test_patch_datasets_bulk_create_limit_exceeded(
         self, api_client: TestClient, db: Session, generate_auth_header, datasets_url
     ):
         payload = []
@@ -401,7 +401,7 @@ class TestPutDatasets:
             payload.append({"collections": [{"fields": [], "fides_key": i}]})
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
-        response = api_client.put(datasets_url, headers=auth_header, json=payload)
+        response = api_client.patch(datasets_url, headers=auth_header, json=payload)
 
         assert 422 == response.status_code
         assert (
@@ -409,7 +409,7 @@ class TestPutDatasets:
             == "ensure this value has at most 50 items"
         )
 
-    def test_put_datasets_bulk_create(
+    def test_patch_datasets_bulk_create(
         self,
         example_datasets: List,
         datasets_url,
@@ -419,7 +419,7 @@ class TestPutDatasets:
         connection_config,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
-        response = api_client.put(
+        response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
 
@@ -453,7 +453,7 @@ class TestPutDatasets:
         postgres_config.delete(db)
         mongo_config.delete(db)
 
-    def test_put_datasets_bulk_update(
+    def test_patch_datasets_bulk_update(
         self,
         example_datasets,
         datasets_url,
@@ -463,7 +463,7 @@ class TestPutDatasets:
     ) -> None:
         # Create first, then update
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
-        api_client.put(datasets_url, headers=auth_header, json=example_datasets)
+        api_client.patch(datasets_url, headers=auth_header, json=example_datasets)
 
         updated_datasets = example_datasets.copy()
         # Remove all collections from the postgres example, except for the customer table.
@@ -482,7 +482,7 @@ class TestPutDatasets:
             for f in updated_datasets[1]["collections"][0]["fields"]
             if f["name"] != "birthday"
         ]
-        response = api_client.put(
+        response = api_client.patch(
             datasets_url, headers=auth_header, json=updated_datasets
         )
 
@@ -517,7 +517,7 @@ class TestPutDatasets:
         mongo_config.delete(db)
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
-    def test_put_datasets_failed_response(
+    def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
         example_datasets: List,
@@ -527,7 +527,7 @@ class TestPutDatasets:
     ) -> None:
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
-        response = api_client.put(
+        response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 200  # Returns 200 regardless
