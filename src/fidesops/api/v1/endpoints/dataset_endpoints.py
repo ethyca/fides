@@ -37,6 +37,7 @@ from fidesops.schemas.dataset import (
     ValidateDatasetResponse,
     BulkPutDataset,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_connection_config(
-    connection_key: str, db: Session = Depends(deps.get_db)
+    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     logger.info(f"Finding connection config with key '{connection_key}'")
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -196,7 +197,7 @@ def get_datasets(
     response_model=FidesopsDataset,
 )
 def get_dataset(
-    fides_key: str,
+    fides_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> FidesopsDataset:
@@ -226,7 +227,7 @@ def get_dataset(
     status_code=204,
 )
 def delete_dataset(
-    fides_key: str,
+    fides_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),

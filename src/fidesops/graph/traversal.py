@@ -121,12 +121,14 @@ class TraversalNode:
         }
 
 
-def traversal_node(address: CollectionAddress) -> TraversalNode:
+def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     """generate an 'artificial' traversal_node pointing to the given address. This is used to
     generate artificial root and termination nodes that correspond to just an address, but
     have no actual corresponding collection dataset"""
     ds: Collection = Collection(name=address.collection, fields=[])
-    node = Node(Dataset(name=address.dataset, collections=[ds], connection_key=""), ds)
+    node = Node(
+        Dataset(name=address.dataset, collections=[ds], connection_key="__IGNORE__"), ds
+    )
     return TraversalNode(node)
 
 
@@ -150,7 +152,7 @@ class Traversal:
         self.seed_data = data
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
-        self.root_node = traversal_node(ROOT_COLLECTION_ADDRESS)
+        self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
 
         for (
             start_field_address,

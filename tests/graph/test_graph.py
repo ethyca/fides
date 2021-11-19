@@ -87,7 +87,7 @@ def test_retry_decorator():
         @retry(action_type=ActionType.access, default_return=[])
         def test_function(self):
             self.call_count += 1
-            input_data["nonexistant_value"]
+            input_data["nonexistent_value"]
 
     test_obj = TestRetryDecorator()
     test_obj.test_function()

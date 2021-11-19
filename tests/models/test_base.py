@@ -7,17 +7,23 @@ from fidesops.db.base_class import get_key_from_data
 
 
 def test_get_key_from_data_method() -> None:
-    # Test key in data not slugified
-    key = get_key_from_data({"key": "test key", "name": "config name"}, "StorageConfig")
-    assert key == "test-key"
+    # Test key in data
+    key = get_key_from_data({"key": "test_key", "name": "config name"}, "StorageConfig")
+    assert key == "test_key"
 
     # Test no key
     key = get_key_from_data({"name": "config name"}, "StorageConfig")
-    assert key == "config-name"
+    assert key == "config_name"
 
+    # Test no data
     with pytest.raises(KeyValidationError) as exc:
         get_key_from_data({}, "StorageConfig")
     assert str(exc.value) == "StorageConfig requires a name."
+
+    # Test key not valid
+    with pytest.raises(ValueError) as exc:
+        get_key_from_data({"key": "test-key", "name": "config name"}, "StorageConfig")
+    assert str(exc.value) == "FidesKey must only contain alphanumeric characters, '.' or '_'."
 
 
 def test_create_key(db: Session):
@@ -49,16 +55,16 @@ def test_create_key(db: Session):
         },
     )
 
-    assert sc.key == "test-dest"
-    db.query(StorageConfig).filter_by(key="test-dest").delete()
+    assert sc.key == "test_dest"
+    db.query(StorageConfig).filter_by(key="test_dest").delete()
 
 
 def test_update_key(db: Session, storage_config, privacy_request):
     # Test happy path
-    data = {"key": "test key", "name": "test name"}
+    data = {"key": "test_key", "name": "test name"}
 
     sc = storage_config.update(db, data=data)
-    assert sc.key == "test-key"
+    assert sc.key == "test_key"
     assert sc.name == "test name"
 
     data = {"key": None}
@@ -90,9 +96,9 @@ def test_save_key(db: Session, storage_config, privacy_request):
     assert str(exc.value) == "Key 'None' on StorageConfig is invalid."
 
     # Test save with valid key
-    storage_config.key = "valid-key"
+    storage_config.key = "valid_key"
     storage_config.save(db)
-    assert storage_config.key == "valid-key"
+    assert storage_config.key == "valid_key"
 
     # Test save on model with no key required
     assert hasattr(privacy_request, "key") is False

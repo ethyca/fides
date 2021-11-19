@@ -42,7 +42,7 @@ class TestUploadData:
     @pytest.fixture(scope="function")
     def payload(self, oauth_client: ClientDetail, privacy_request) -> Dict:
         return {
-            "storage_key": "s3 destination key",
+            "storage_key": "s3_destination_key",
             "data": {
                 "email": "email@gmail.com",
                 "address": "123 main ST, Asheville NC",
@@ -175,7 +175,7 @@ class TestPatchStorageConfig:
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
-    def test_patch_storage_config_with_no_name(
+    def test_patch_storage_config_with_no_key(
         self,
         mock_scheduled_task,
         db: Session,
@@ -191,9 +191,26 @@ class TestPatchStorageConfig:
         mock_scheduled_task.assert_called()
         response_body = json.loads(response.text)
 
-        assert response_body["succeeded"][0]["key"] == "test-destination"
-        storage_config = db.query(StorageConfig).filter_by(key="test-destination")[0]
+        assert response_body["succeeded"][0]["key"] == "test_destination"
+        storage_config = db.query(StorageConfig).filter_by(key="test_destination")[0]
         storage_config.delete(db)
+
+    def test_put_storage_config_with_invalid_key(
+            self,
+            db: Session,
+            api_client: TestClient,
+            payload,
+            url,
+            generate_auth_header,
+    ):
+        payload[0]["key"] = "*invalid-key"
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+        assert (
+                json.loads(response.text)["detail"][0]["msg"]
+                == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+        )
 
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
@@ -236,7 +253,7 @@ class TestPatchStorageConfig:
     @mock.patch(
         "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
-    def test_patch_storage_config(
+    def test_patch_storage_config_with_key(
         self,
         mock_scheduled_task,
         db: Session,
@@ -245,7 +262,7 @@ class TestPatchStorageConfig:
         url,
         generate_auth_header,
     ):
-        payload[0]["key"] = "my s3 bucket"
+        payload[0]["key"] = "my_s3_bucket"
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
@@ -254,7 +271,7 @@ class TestPatchStorageConfig:
 
         response_body = json.loads(response.text)
         mock_scheduled_task.assert_called()
-        storage_config = db.query(StorageConfig).filter_by(key="my-s3-bucket")[0]
+        storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
 
         expected_response = {
             "succeeded": [
@@ -267,7 +284,7 @@ class TestPatchStorageConfig:
                         "max_retries": 10,
                         "object_name": "requests",
                     },
-                    "key": "my-s3-bucket",
+                    "key": "my_s3_bucket",
                     "format": "csv",
                 }
             ],
@@ -287,7 +304,7 @@ class TestPatchStorageConfig:
         api_client: TestClient,
         generate_auth_header,
     ):
-        key = "my-s3-upload"
+        key = "my_s3_upload"
         payload = [
             {
                 "key": key,
@@ -336,7 +353,7 @@ class TestPatchStorageConfig:
             headers=auth_header,
             json=[
                 {
-                    "key": "my-onetrust-upload",
+                    "key": "my_onetrust_upload",
                     "name": "my-test-dest",
                     "type": "s3",
                     "details": {
@@ -397,7 +414,7 @@ class TestPutStorageConfigSecretsS3:
         self, api_client: TestClient, payload, generate_auth_header
     ):
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid-key")
+        url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid_key")
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
@@ -436,7 +453,7 @@ class TestPutStorageConfigSecretsS3:
         db.refresh(storage_config)
 
         assert json.loads(response.text) == {
-            "msg": "Secrets updated for StorageConfig with key: my-test-config.",
+            "msg": "Secrets updated for StorageConfig with key: my_test_config.",
             "test_status": None,
             "failure_reason": None,
         }
@@ -468,7 +485,7 @@ class TestPutStorageConfigSecretsS3:
         db.refresh(storage_config)
 
         assert json.loads(response.text) == {
-            "msg": "Secrets updated for StorageConfig with key: my-test-config.",
+            "msg": "Secrets updated for StorageConfig with key: my_test_config.",
             "test_status": "succeeded",
             "failure_reason": None,
         }
@@ -485,7 +502,7 @@ class TestPutStorageConfigSecretsS3:
         mock_valid.return_value = False
         response = api_client.put(url, headers=auth_header, json=payload)
         assert json.loads(response.text) == {
-            "msg": "Secrets updated for StorageConfig with key: my-test-config.",
+            "msg": "Secrets updated for StorageConfig with key: my_test_config.",
             "test_status": "failed",
             "failure_reason": None,
         }
@@ -559,7 +576,7 @@ class TestPutStorageConfigSecretsOneTrust:
         self, api_client: TestClient, payload, generate_auth_header
     ):
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid-key")
+        url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid_key")
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
@@ -691,7 +708,7 @@ class TestGetStorageConfigs:
         expected_response = {
             "items": [
                 {
-                    "key": "my-test-config",
+                    "key": "my_test_config",
                     "name": storage_config.name,
                     "type": storage_config.type.value,
                     "details": {"bucket": "test_bucket", "naming": "request_id"},
@@ -745,7 +762,7 @@ class TestGetStorageConfig:
             "name": storage_config.name,
             "type": "s3",
             "details": {"bucket": "test_bucket", "naming": "request_id"},
-            "key": "my-test-config",
+            "key": "my_test_config",
             "format": "json",
         }
 
@@ -793,7 +810,7 @@ class TestDeleteConfig:
                     StorageDetails.NAMING.value: FileNaming.request_id.value,
                     StorageDetails.BUCKET.value: "test_bucket",
                 },
-                "key": "my-storage-config",
+                "key": "my_storage_config",
                 "format": ResponseFormat.json,
             },
         )

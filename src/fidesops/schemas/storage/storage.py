@@ -8,6 +8,7 @@ from typing import (
     Union,
 )
 
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import (
     Extra,
     ValidationError,
@@ -151,7 +152,7 @@ class StorageDestination(BaseModel):
         StorageDetailsOneTrust,
         StorageDetailsLocal,
     ]
-    key: Optional[str]
+    key: Optional[FidesOpsKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
 
     class Config:
@@ -219,7 +220,7 @@ class StorageDestinationResponse(BaseModel):
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
-    key: str
+    key: FidesOpsKey
     format: ResponseFormat
 
     class Config:

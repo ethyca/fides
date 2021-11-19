@@ -3,12 +3,13 @@ import re
 import unidecode
 
 
-def slugify(text: str) -> str:
+def to_snake_case(text: str) -> str:
     """
-    Returns a URL compatible slug based upon the input text.
+    Returns a snake-cased str based upon the input text.
+    E.g. "my example str" becomes "my_example_str"
     """
     text = unidecode.unidecode(text).lower().strip()
     text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"[\s-]+", "-", text)
+    text = re.sub(r"[\s-]+", "_", text)
     text = re.sub(r"^-+|-+$", "", text)
     return text

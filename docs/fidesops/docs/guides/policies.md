@@ -96,7 +96,7 @@ PATCH /api/v1/policy/{policy_key}/rule
 [
   {
     "name": "Mask Provided Emails",
-    "key": "mask-provided-emails",
+    "key": "mask_provided_emails",
     "action_type": "erasure",
     "masking_strategy": {
       "strategy": "hash",

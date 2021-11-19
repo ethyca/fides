@@ -7,7 +7,7 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
     AccessLevel,
 )
-from fidesops.util.text import slugify
+from fidesops.util.text import to_snake_case
 
 
 class TestConnectionConfigModel:
@@ -21,7 +21,7 @@ class TestConnectionConfigModel:
                 "access": AccessLevel.read,
             },
         )
-        assert config.key == slugify(name)
+        assert config.key == to_snake_case(name)
 
         secrets = {
             "host": "host.docker.internal",
@@ -38,7 +38,7 @@ class TestConnectionConfigModel:
         loaded_config = db.query(ConnectionConfig).filter_by(name=name).first()
 
         assert loaded_config.secrets == secrets
-        assert loaded_config.key == "my-main-database"
+        assert loaded_config.key == "my_main_database"
         assert loaded_config.name == name
         assert loaded_config.connection_type.value == "postgres"
         assert loaded_config.access.value == "read"
@@ -84,6 +84,6 @@ class TestConnectionConfigModel:
             )
         assert (
             str(exc.value)
-            == "Key my-postgres-db-1 already exists in ConnectionConfig. Keys will be slugified names if not provided. "
+            == "Key my_postgres_db_1 already exists in ConnectionConfig. Keys will be snake-cased names if not provided. "
             "If you are seeing this error without providing a key, please provide a key or a different name."
         )

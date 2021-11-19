@@ -32,7 +32,7 @@ class MockResources(TaskResources):
     #
     # def db_store(self, value: str) -> None:
     #     print(f"db store {value}")
-    def get_connector(self, key: str) -> Any:
+    def get_connector(self, key: FidesOpsKey) -> Any:
         return MockSqlConnector()
 
 

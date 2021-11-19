@@ -21,7 +21,7 @@ class BaseConnector(ABC):
     SessionLocal = get_db_session()
     db = SessionLocal()
 
-    config = db.query(ConnectionConfig).filter_by(key='my-postgres-db').first()
+    config = db.query(ConnectionConfig).filter_by(key='my_postgres_db').first()
     connector = get_connector(config)
     connector.test_connection()
     """

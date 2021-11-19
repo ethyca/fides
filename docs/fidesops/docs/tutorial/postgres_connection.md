@@ -65,7 +65,7 @@ def configure_postgres_connection(
 
 ### Call helper methods to connect to Postgres
 
-Add calls for our new methods, to create a Postgres ConnectionConfig called `flaskr-postgres`, and 
+Add calls for our new methods, to create a Postgres ConnectionConfig called `flaskr_postgres`, and 
 then update that connection's secrets with individual URI components.  This will encrypt and save the URI components 
 and also attempt to make a test connection to our Flask App's Postgres Database.
 ```python
@@ -73,10 +73,10 @@ and also attempt to make a test connection to our Flask App's Postgres Database.
 if __name__ == "__main__":
     ...
     # Connect to our PostgreSQL database
-    create_postgres_connection(key="flaskr-postgres", access_token=access_token)
+    create_postgres_connection(key="flaskr_postgres", access_token=access_token)
 
     configure_postgres_connection(
-        key="flaskr-postgres",
+        key="flaskr_postgres",
         host=POSTGRES_SERVER,
         port=POSTGRES_PORT,
         dbname="flaskr",

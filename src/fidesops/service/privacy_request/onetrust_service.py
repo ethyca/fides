@@ -25,6 +25,7 @@ from fidesops.schemas.third_party.onetrust import (
     OneTrustGetRequestsResponse,
     OneTrustRequest,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fidesops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
@@ -46,7 +47,7 @@ class OneTrustService:
     """OneTrust Service for privacy requests"""
 
     @staticmethod
-    def intake_onetrust_requests(config_key: str) -> None:
+    def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
         SessionLocal = get_db_session()
         db = SessionLocal()

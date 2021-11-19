@@ -1,3 +1,4 @@
+import pytest
 import yaml
 
 from fidesops.graph.config import CollectionAddress
@@ -36,3 +37,23 @@ def test_dataset_yaml_format():
         CollectionAddress("c", "d"),
         CollectionAddress("e", "f"),
     }
+
+def test_dataset_yaml_format_invalid_format():
+    """Test that 'after' parameters are properly read"""
+    d = yaml.safe_load(f)
+    dataset = d.get("dataset")[0]
+    dataset.get("collections")[0].get("fidesops_meta").get("after")[0] = "invalid"
+    with pytest.raises(ValueError) as exc:
+        d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+        convert_dataset_to_graph(d, "ignore")
+    assert "FidesCollection must be specified in the form 'FidesKey.FidesKey'" in str(exc.value)
+
+def test_dataset_yaml_format_invalid_fides_keys():
+    """Test that 'after' parameters are properly read"""
+    d = yaml.safe_load(f)
+    dataset = d.get("dataset")[0]
+    dataset.get("collections")[0].get("fidesops_meta").get("after")[0] = "invalid-dataset-name.invalid-collection-name"
+    with pytest.raises(ValueError) as exc:
+        d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+        convert_dataset_to_graph(d, "ignore")
+    assert "FidesKey must only contain alphanumeric characters, '.' or '_'." in str(exc.value)
