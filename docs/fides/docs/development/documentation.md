@@ -2,11 +2,11 @@
 
 ---
 
-Documentation is incredibly important to Fides, both for explaining its concepts to general audiences and describing its usage to developers.
+Documentation is incredibly important to Fidesctl, both for explaining its concepts to general audiences and describing its usage to developers.
 
 ## Concepts
 
-Fides includes a great deal of "concept" documentation, which covers features, tutorials, guides, and examples separately from the auto-generated API reference. This page is part of the concept documentation for development!
+Fidesctl includes a great deal of "concept" documentation, which covers features, tutorials, guides, and examples separately from the auto-generated API reference. This page is part of the concept documentation for development!
 
 To write concept docs, add Markdown files to the `docs/fides/docs/` directory (or one of its subdirectories). To ensure that your page is displayed in the navigation, edit `mkdocs.yml` to include a reference to it.
 
