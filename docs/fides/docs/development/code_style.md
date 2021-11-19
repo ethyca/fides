@@ -68,16 +68,21 @@ foods_list = ["apple", "banana"]
 
 ## CI Checks
 
+The following CI checks are stored as targets within the Makefile, and can be run from the top-level `fides` directory with the following pattern:
+
+```bash title="Pattern"
+make <lowercased_name>
+```
+
+```bash title="Examples"
+make black
+make mypy
+make xenon
+```
+
 ### Black formatting
 
 Fidesctl's code is formatted using the [black](https://github.com/ambv/black) style. This style is checked in a CI step, and merges to master are prevented if code does not conform.
-
-To apply black to your code, run black from the root Fidesctl directory:
-
-```bash
-cd fidesctl
-black .
-```
 
 A number of extensions are available for popular editors that will automatically apply black to your code.
 
@@ -85,21 +90,9 @@ A number of extensions are available for popular editors that will automatically
 
 Fidesctl's code is linted using [pylint](https://pylint.org/). Linter checks run as part of a CI step and merges to master are prevented if code does not conform.
 
-To apply pylint to your code, run pylint from the root Fidesctl directory:
-
-```bash
-cd fidesctl
-pylint src
-```
-
-### Mypy typing
+### Mypy
 
 Fidesctl's code is statically-typed using [mypy](http://mypy-lang.org/). Type checking is validated as a CI step, and merges to master are prevented if code does not pass type checks. As a general rule, mypy typing requires all function arguments and return values to be annotated.
-
-```bash
-cd fidesctl
-mypy src
-```
 
 ### Xenon
 
