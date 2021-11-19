@@ -39,13 +39,13 @@ class PrivacyRequestStatus(EnumType):
 class PrivacyRequest(Base):
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing a data subject request's progression within the FidesOps system.
+    database record representing a data subject request's progression within the Fidesops system.
     """
 
     external_id = Column(String, index=True)
-    # When the request was dispatched into the FideOps pipeline
+    # When the request was dispatched into the Fidesops pipeline
     started_processing_at = Column(DateTime(timezone=True), nullable=True)
-    # When the request finished or errored in the FidesOps pipeline
+    # When the request finished or errored in the Fidesops pipeline
     finished_processing_at = Column(DateTime(timezone=True), nullable=True)
     # When the request was created at the origin
     requested_at = Column(DateTime(timezone=True), nullable=True)

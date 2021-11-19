@@ -1,10 +1,10 @@
-# Contributing to FidesOps
+# Contributing to Fidesops
 
-Welcome to the contribution guidelines for Ethyca's FidesOps system. Please follow these as best you can when contributing new code.
+Welcome to the contribution guidelines for Ethyca's Fidesops system. Please follow these as best you can when contributing new code.
 
 ## Database -- Postgres
 
-FidesOps uses a local database to store application context. This database in configured in `docker-compose.yml` as a Postgres SQL instance. Connection details for this instance can be provided inside `.env.dev` or inside the config class in `src/app/core/config.py`, and will be automatically detected by Alembic when generating and running migrations.
+Fidesops uses a local database to store application context. This database in configured in `docker-compose.yml` as a Postgres SQL instance. Connection details for this instance can be provided inside `.env.dev` or inside the config class in `src/app/core/config.py`, and will be automatically detected by Alembic when generating and running migrations.
 
 Running the database will happen automatically when you run `make compose-build`. The database can also be initialised manually inside a `make server-shell` by running
 
@@ -66,7 +66,7 @@ db = SessionLocal()
 ```
 db_obj = User(
     email="admin@fidesops.app",
-    full_name="FidesOps Admin",
+    full_name="Fidesops Admin",
     is_superuser=True,
     is_active=True,
 )

@@ -70,7 +70,7 @@ def create_privacy_request(
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
-    or report failure and execute them within the FidesOps system.
+    or report failure and execute them within the Fidesops system.
 
     You cannot update privacy requests after they've been created.
     """

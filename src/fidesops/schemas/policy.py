@@ -81,7 +81,7 @@ class Rule(RuleBase):
 
 
 class Policy(BaseSchema):
-    """An external representation of a FidesOps Policy"""
+    """An external representation of a Fidesops Policy"""
 
     name: str
     key: Optional[str]
