@@ -4,6 +4,7 @@
 # CONSTANTS
 ####################
 RUN = docker-compose run --rm $(IMAGE_NAME)
+RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
 
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
@@ -79,36 +80,36 @@ push: build
 # CI
 ####################
 
-check-all: check-install black pylint mypy xenon pytest
+black: compose-build
+	@$(RUN_NO_DEPS) black --check src/
+
+check-all: check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN) fidesctl
+	@$(RUN_NO_DEPS) fidesctl
 
-black: compose-build
-	@$(RUN) black --check src/
+fidesctl: compose-build
+	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
 mypy: compose-build
-	@$(RUN) mypy
+	@$(RUN_NO_DEPS) mypy
 
 pylint: compose-build
-	@$(RUN) pylint src/
+	@$(RUN_NO_DEPS) pylint src/
 
 pytest: compose-build
 	@docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest
 
 xenon: compose-build
-	@$(RUN) xenon src \
+	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
 	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
-
-fidesctl: compose-build
-	@$(RUN) fidesctl --local evaluate fides_resources/
 
 ####################
 # Utils
