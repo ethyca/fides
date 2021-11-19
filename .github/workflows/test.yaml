@@ -10,7 +10,7 @@ on:
       - .github/workflows/test.yaml
 
 jobs:
-  Test:
+  Tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -46,5 +46,3 @@ jobs:
 
       - name: Local Evaluation
         run: fidesctl --local evaluate fidesctl/fides_resources/
-        env:
-          FIDESCTL_CONFIG_PATH: fidesctl/fidesctl.toml
