@@ -6,7 +6,22 @@
 
 ### Docstrings
 
-Docstrings are required for every function, class and method. No specific style is required or encourage, as we expect that most of the relevant information can be gleaned from both the function signature's type-hints as well as descriptive parameter names.
+Docstrings are required for every function, class and method. No specific style is required or encouraged, as we expect that most of the relevant information can be gleaned from both the function signature's type-hints as well as descriptive parameter names. The docstring should serve to give additional context/flavour beyond that which can be gained from the code itself.
+
+```python title="Docstring Example"
+# Bad
+def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
+    """
+    Execute an evaluation. 
+    """
+
+# Good
+def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
+    """
+    Check the stated constraints of each Privacy Policy's rules against
+    each system's privacy declarations.
+    """
+```
 
 ### Variable/Parameter Naming
 
