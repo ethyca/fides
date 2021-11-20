@@ -9,7 +9,6 @@ from typing import List, Dict
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
-from sqlalchemy.exc import SQLAlchemyError
 
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
@@ -31,13 +30,17 @@ class NotFoundError(HTTPException):
         super().__init__(status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-class QueryError(HTTPException):
+class ResourceAlreadyExistsError(HTTPException):
     """
-    To be raised when a database query fails.
+    To be raised when a requested resource does not exist in the database.
     """
 
-    def __init__(self, err: SQLAlchemyError) -> None:
-        detail = {"error": str(err.__dict__["orig"])}
+    def __init__(self, resource_type: str, fides_key: str) -> None:
+        detail = {
+            "error": f"{resource_type} with that fides_key already exists",
+            "fides_key": fides_key,
+        }
+
         super().__init__(status.HTTP_409_CONFLICT, detail=detail)
 
 
@@ -50,12 +53,18 @@ def get_resource_type(router: APIRouter) -> str:
 def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> Dict:
     """Create a resource in the database."""
     session = db_session.create_session()
+
+    # Make sure that the resource isn't found before trying to create it
+    try:
+        get_resource(sql_model, sql_resource.fides_key)
+    except NotFoundError:
+        pass
+    else:
+        raise ResourceAlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
+
     try:
         session.add(sql_resource)
         session.commit()
-    except SQLAlchemyError as err:
-        session.rollback()
-        raise QueryError(err)
     finally:
         session.close()
 
@@ -74,9 +83,6 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
             .limit(1)
             .first()
         )
-    except SQLAlchemyError as err:
-        session.rollback()
-        raise QueryError(err)
     finally:
         session.close()
 
@@ -93,9 +99,6 @@ def list_resource(sql_model: SqlAlchemyBase) -> List:
     session = db_session.create_session()
     try:
         sql_resource = session.query(sql_model).all()
-    except SQLAlchemyError as err:
-        session.rollback()
-        raise QueryError(err)
     finally:
         session.close()
 
@@ -107,6 +110,8 @@ def update_resource(
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
     session = db_session.create_session()
+
+    get_resource(sql_model, fides_key)
     try:
         session.execute(
             _update(sql_model)
@@ -114,9 +119,6 @@ def update_resource(
             .values(resource_dict)
         )
         session.commit()
-    except SQLAlchemyError as err:
-        session.rollback()
-        raise QueryError(err)
     finally:
         session.close()
 
@@ -149,9 +151,6 @@ def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     try:
         session.delete(sql_resource)
         session.commit()
-    except SQLAlchemyError as err:
-        session.rollback()
-        raise QueryError(err)
     finally:
         session.close()
 
