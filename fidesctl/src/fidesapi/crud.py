@@ -9,6 +9,7 @@ from typing import List, Dict
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
+from sqlalchemy.exc import SQLAlchemyError
 
 from fidesapi import db_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
@@ -30,6 +31,16 @@ class NotFoundError(HTTPException):
         super().__init__(status.HTTP_404_NOT_FOUND, detail=detail)
 
 
+class QueryError(HTTPException):
+    """
+    To be raised when a database query fails.
+    """
+
+    def __init__(self, err: SQLAlchemyError) -> None:
+        detail = {"error": str(err.__dict__["orig"])}
+        super().__init__(status.HTTP_409_CONFLICT, detail=detail)
+
+
 def get_resource_type(router: APIRouter) -> str:
     "Extracts the name of the resource type from the prefix."
     return router.prefix[1:]
@@ -42,6 +53,9 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
     try:
         session.add(sql_resource)
         session.commit()
+    except SQLAlchemyError as err:
+        session.rollback()
+        raise QueryError(err)
     finally:
         session.close()
 
@@ -60,6 +74,9 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
             .limit(1)
             .first()
         )
+    except SQLAlchemyError as err:
+        session.rollback()
+        raise QueryError(err)
     finally:
         session.close()
 
@@ -73,6 +90,9 @@ def list_resource(sql_model: SqlAlchemyBase) -> List:
     session = db_session.create_session()
     try:
         sql_resource = session.query(sql_model).all()
+    except SQLAlchemyError as err:
+        session.rollback()
+        raise QueryError(err)
     finally:
         session.close()
 
@@ -91,6 +111,9 @@ def update_resource(
             .values(resource_dict)
         )
         session.commit()
+    except SQLAlchemyError as err:
+        session.rollback()
+        raise QueryError(err)
     finally:
         session.close()
 
@@ -126,6 +149,9 @@ def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     try:
         session.delete(sql_resource)
         session.commit()
+    except SQLAlchemyError as err:
+        session.rollback()
+        raise QueryError(err)
     finally:
         session.close()
 
