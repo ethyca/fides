@@ -80,7 +80,10 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     finally:
         session.close()
 
-    return sql_resource or {}
+    if sql_resource is None:
+        raise NotFoundError(sql_model.__name__, fides_key)
+
+    return sql_resource
 
 
 def list_resource(sql_model: SqlAlchemyBase) -> List:
@@ -142,9 +145,6 @@ def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> N
 def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """Delete a resource by its fides_key."""
     sql_resource = get_resource(sql_model, fides_key)
-    if not sql_resource:
-        return {}
-
     session = db_session.create_session()
     try:
         session.delete(sql_resource)
@@ -193,11 +193,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        query_result = get_resource(sql_model, fides_key)
-        if not query_result:
-            raise NotFoundError(resource_type, fides_key)
-
-        return query_result
+        return get_resource(sql_model, fides_key)
 
     @router.post("/{fides_key}", response_model=resource_model)
     async def update(
@@ -208,11 +204,7 @@ for resource_type, resource_model in model_map.items():
         """Update a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
         resource_dict = resource.dict()
-        query_result = update_resource(sql_model, resource_dict, fides_key)
-        if not query_result:
-            raise NotFoundError(resource_type, fides_key)
-
-        return query_result
+        return update_resource(sql_model, resource_dict, fides_key)
 
     @router.delete("/{fides_key}")
     async def delete(
@@ -221,9 +213,6 @@ for resource_type, resource_model in model_map.items():
         """Delete a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
         query_result = delete_resource(sql_model, fides_key)
-        if not query_result:
-            raise NotFoundError(resource_type, fides_key)
-
         return {
             "message": "resource deleted",
             "resource": query_result,
