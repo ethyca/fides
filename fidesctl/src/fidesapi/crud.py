@@ -6,55 +6,14 @@ generated programmatically for each resource.
 
 from typing import List, Dict
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
 
-from fidesapi import db_session
+from fidesapi import db_session, errors
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fideslang import model_map
-
-
-class NotFoundError(HTTPException):
-    """
-    To be raised when a requested resource does not exist in the database.
-    """
-
-    def __init__(self, resource_type: str, fides_key: str) -> None:
-        detail = {
-            "error": "resource does not exist",
-            "resource_type": resource_type,
-            "fides_key": fides_key,
-        }
-
-        super().__init__(status.HTTP_404_NOT_FOUND, detail=detail)
-
-
-class AlreadyExistsError(HTTPException):
-    """
-    To be raised when attempting to create a new resource violates a uniqueness constraint.
-    """
-
-    def __init__(self, resource_type: str, fides_key: str) -> None:
-        detail = {
-            "error": "resource already exists",
-            "resource_type": resource_type,
-            "fides_key": fides_key,
-        }
-
-        super().__init__(status.HTTP_409_CONFLICT, detail=detail)
-
-
-class QueryError(HTTPException):
-    """
-    To be raised when a database query fails.
-    TODO: Improve the messaging here.
-    """
-
-    def __init__(self) -> None:
-        detail = {"error": "a database query failed"}
-        super().__init__(status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail)
 
 
 def get_resource_type(router: APIRouter) -> str:
@@ -67,10 +26,10 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
     """Create a resource in the database."""
     try:
         get_resource(sql_model, sql_resource.fides_key)
-    except NotFoundError:
+    except errors.NotFoundError:
         pass
     else:
-        raise AlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
+        raise errors.AlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
 
     session = db_session.create_session()
     try:
@@ -78,7 +37,7 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
         session.commit()
     except SQLAlchemyError:
         session.rollback()
-        raise QueryError()
+        raise errors.QueryError()
     finally:
         session.close()
 
@@ -99,12 +58,12 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
         )
     except SQLAlchemyError:
         session.rollback()
-        raise QueryError()
+        raise errors.QueryError()
     finally:
         session.close()
 
     if sql_resource is None:
-        raise NotFoundError(sql_model.__name__, fides_key)
+        raise errors.NotFoundError(sql_model.__name__, fides_key)
 
     return sql_resource
 
@@ -118,7 +77,7 @@ def list_resource(sql_model: SqlAlchemyBase) -> List:
         sql_resource = session.query(sql_model).all()
     except SQLAlchemyError:
         session.rollback()
-        raise QueryError()
+        raise errors.QueryError()
     finally:
         session.close()
 
@@ -140,7 +99,7 @@ def update_resource(
         session.commit()
     except SQLAlchemyError:
         session.rollback()
-        raise QueryError()
+        raise errors.QueryError()
     finally:
         session.close()
 
@@ -177,7 +136,7 @@ def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
         session.commit()
     except SQLAlchemyError:
         session.rollback()
-        raise QueryError()
+        raise errors.QueryError()
     finally:
         session.close()
 
