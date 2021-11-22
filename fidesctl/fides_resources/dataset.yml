@@ -2,7 +2,7 @@ dataset:
   - fides_key: fidesctl
     organization_fides_key: default_organization
     name: fidesctl
-    description: "Fides Generated Description for Dataset: fidesctl"
+    description: "The dataset responsible for storing all of the data related to a fidesctl instance."
     meta: {}
     data_categories:
       - system.operations
