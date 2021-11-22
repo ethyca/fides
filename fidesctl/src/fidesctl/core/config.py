@@ -77,6 +77,7 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     """
     Attempt to read config file from:
     a) passed in configuration, if it exists
+    b) env var FIDESCTL_CONFIG_OVERRIDE_PATH
     b) env var FIDESCTL_CONFIG_PATH
     b) local directory
     c) home directory
@@ -87,6 +88,7 @@ def get_config(config_path: str = "") -> FidesctlConfig:
 
     possible_config_locations = [
         config_path,
+        os.getenv("FIDESCTL_CONFIG_OVERRIDE_PATH", ""),
         os.getenv("FIDESCTL_CONFIG_PATH", ""),
         os.path.join(os.curdir, default_file_name),
         os.path.join(os.path.expanduser("~"), default_file_name),

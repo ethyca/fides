@@ -5,6 +5,12 @@ import os
 import pytest
 import yaml
 
+from sqlalchemy_utils.functions import (
+    create_database,
+    database_exists,
+    drop_database,
+)
+
 from fideslang import models
 from fidesctl.core.config import get_config
 from fidesctl.core import api
@@ -25,7 +31,13 @@ def test_config(test_config_path):
 @pytest.fixture(scope="session", autouse=True)
 def setup_db(test_config):
     "Sets up the database for testing."
+    if not database_exists(test_config.api.database_url):
+        create_database(test_config.api.database_url)     
+
+    api.db_action(test_config.cli.server_url, "set-test-context")
     yield api.db_action(test_config.cli.server_url, "reset")
+    api.db_action(test_config.cli.server_url, "set-std-context")
+    drop_database(test_config.api.database_url)
 
 @pytest.fixture(scope="session")
 def resources_dict():
