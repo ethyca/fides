@@ -72,7 +72,7 @@ foods_list = ["apple", "banana"]
 
 ## CI Checks
 
-The following CI checks are stored as targets within the Makefile, and can be run from the top-level `fides` directory with the following pattern:
+CI checks are stored as targets within the Makefile, and can be run from the top-level `fides` directory with the following pattern:
 
 ```bash title="Pattern"
 make <lowercased_name>
