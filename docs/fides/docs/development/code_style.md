@@ -29,14 +29,18 @@ Variable and parameter names should be as self-describing as possible. Brevity i
 
 ```python title="Single Letter Variable Names"
 # Incorrect
-for k, v in example_dict.items():
-    print(k)
-    print(v)
+s = 726
 
 # Correct
-for key, value in example_dict.items():
-    print(key)
-    print(value)
+elapsed_time_seconds = 726
+
+# Incorrect
+for n in nodes:
+    print(n)
+
+# Correct
+for node in nodes:
+    print(node)
 ```
 
 ```python title="Abbreviated Variable Names"
