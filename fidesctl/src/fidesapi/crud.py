@@ -30,14 +30,15 @@ class NotFoundError(HTTPException):
         super().__init__(status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-class ResourceAlreadyExistsError(HTTPException):
+class AlreadyExistsError(HTTPException):
     """
-    To be raised when a requested resource does not exist in the database.
+    To be raised when attempting to create a new resource violates a uniqueness constraint.
     """
 
     def __init__(self, resource_type: str, fides_key: str) -> None:
         detail = {
-            "error": f"{resource_type} with that fides_key already exists",
+            "error": "resource already exists",
+            "resource_type": resource_type,
             "fides_key": fides_key,
         }
 
@@ -60,7 +61,7 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
     except NotFoundError:
         pass
     else:
-        raise ResourceAlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
+        raise AlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
 
     try:
         session.add(sql_resource)
