@@ -1,0 +1,15 @@
+system:
+  - fides_key: fidesctl_system
+    name: Fidesctl System
+    description: Software that functionally applies Fides.
+    system_type: Service
+    privacy_declarations:
+      - name: Store system data.
+        data_categories:
+          - system.operations
+        data_use: improve.system
+        data_subjects:
+          - anonymous_user
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - fidesctl

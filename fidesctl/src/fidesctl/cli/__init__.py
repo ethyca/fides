@@ -67,6 +67,8 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         config.cli.local_mode = False
         for command in api_commands:
             cli.add_command(command)
+    else:
+        config.cli.local_mode = True
     ctx.obj["CONFIG"] = config
 
     if not ctx.invoked_subcommand:

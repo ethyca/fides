@@ -127,15 +127,15 @@ def test_local_evaluate(test_invalid_config_path: str, test_cli_runner: CliRunne
     result = test_cli_runner.invoke(
         cli,
         [
+            "--local",
             "-f",
             test_invalid_config_path,
-            "--local",
             "evaluate",
-            "tests/data/passing_dataset_taxonomy.yml",
+            "tests/data/passing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)
-    assert result.exit_code == 1
+    assert result.exit_code == 0
 
 
 @pytest.mark.integration

@@ -27,4 +27,4 @@ RUN pip install -e ".[all]"
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
-CMD ["/bin/bash"]
+CMD ["fidesctl", "webserver"]
