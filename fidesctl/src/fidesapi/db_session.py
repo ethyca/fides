@@ -6,8 +6,8 @@ from typing import Callable, Optional
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from fidesapi.errors import DatabaseUnavailableError
 
 FACTORY: Optional[Callable[[], Session]] = None
 
@@ -33,9 +33,7 @@ def create_session() -> Session:
     global FACTORY  # pylint: disable=global-statement
 
     if not FACTORY:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "Database unavailable"
-        )
+        raise DatabaseUnavailableError()
 
     session: Session = FACTORY()
     session.expire_on_commit = False
