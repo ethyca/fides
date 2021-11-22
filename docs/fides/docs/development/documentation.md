@@ -2,7 +2,7 @@
 
 ---
 
-Documentation is incredibly important to Fidesctl, both for explaining its concepts to general audiences and describing its usage to developers.
+Documentation is incredibly important to fidesctl, both for explaining its concepts to general audiences and describing its usage to developers.
 
 ## Concepts
 

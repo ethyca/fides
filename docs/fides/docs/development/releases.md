@@ -14,7 +14,7 @@ Fidesctl does not follow a set release schedule, but instead ships versions base
 
 For each release a corresponding GitHub Project is created. These projects can be found [here](https://github.com/ethyca/fides/projects). Issues are then added to release projects as a way to organize what will be included in each release.
 
-Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub's release page [here](https://github.com/ethyca/fides/releases). This will trigger a GitHub Action that pushes the new version to PyPI as well as pushes a clean version to DockerHub. The release project is then marked as `closed`.
+Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all fidesctl releases [here](https://github.com/ethyca/fides/releases). Each new release triggers a GitHub Action that pushes the new version to PyPI as well as pushes a clean version to DockerHub. The release project is then marked as `closed`.
 
 Hotfixes are an exception to this and can be added and pushed as patch versions when needed.
 
