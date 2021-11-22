@@ -53,9 +53,6 @@ def get_resource_type(router: APIRouter) -> str:
 # CRUD Functions
 def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> Dict:
     """Create a resource in the database."""
-    session = db_session.create_session()
-
-    # Make sure that the resource isn't found before trying to create it
     try:
         get_resource(sql_model, sql_resource.fides_key)
     except NotFoundError:
@@ -63,6 +60,7 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
     else:
         raise AlreadyExistsError(sql_model.__name__, sql_resource.fides_key)
 
+    session = db_session.create_session()
     try:
         session.add(sql_resource)
         session.commit()
@@ -110,9 +108,8 @@ def update_resource(
     sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
-    session = db_session.create_session()
-
     get_resource(sql_model, fides_key)
+    session = db_session.create_session()
     try:
         session.execute(
             _update(sql_model)
