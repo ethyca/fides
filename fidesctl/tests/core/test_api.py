@@ -140,4 +140,4 @@ def test_api_delete(test_config, resources_dict, endpoint):
         headers=test_config.user.request_headers,
     )
     print(result.text)
-    assert result.status_code == 204
+    assert result.status_code == 200

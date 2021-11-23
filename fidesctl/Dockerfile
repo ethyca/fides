@@ -3,6 +3,7 @@ FROM python:3.8-slim-buster
 # Install auxiliary software
 RUN apt-get update
 RUN apt-get install -y \
+    curl \
     git \
     ipython \
     make \

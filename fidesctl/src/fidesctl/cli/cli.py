@@ -2,6 +2,7 @@
 import pprint
 
 import click
+import requests
 
 from fidesctl.cli.options import (
     dry_flag,
@@ -277,7 +278,10 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     config = ctx.obj["CONFIG"]
     healthcheck_url = config.cli.server_url + "/health"
     echo_green(f"Pinging {healthcheck_url}...")
-    handle_cli_response(_api.ping(healthcheck_url))
+    try:
+        handle_cli_response(_api.ping(healthcheck_url))
+    except requests.exceptions.ConnectionError:
+        echo_red("Connection failed, webserver is unreachable.")
 
 
 @click.command()
