@@ -45,11 +45,11 @@ Follow these five easy steps:
 ### Step Two: Define an Access Policy
 
 Policies help describe what data you care about and how you want to manage it.  In this example, you'll create an `access` 
-Policy,`example-request-policy`, to get all data with the data category: `user.provided.identifiable`.
+Policy,`example_request_policy`, to get all data with the data category: `user.provided.identifiable`.
   
 ### Step Three: Run a Privacy Request to Access Data
 
-Finally, you can issue a Privacy Request using Policy `example-request-policy` across your test databases for `jane@example.com`.
+Finally, you can issue a Privacy Request using Policy `example_request_policy` across your test databases for `jane@example.com`.
 The following response will be uploaded to a local folder (for demo purposes). We've collected identifiable user-provided
 information for Jane across tables in both the postgres and mongo databases.
 
@@ -88,12 +88,12 @@ information for Jane across tables in both the postgres and mongo databases.
 
 ### Step Four: Create an Erasure Policy
 
-Now you'll create another Policy, `example-erasure-policy`, that describes how to `erase` data with the same category, by replacing values with null.
+Now you'll create another Policy, `example_erasure_policy`, that describes how to `erase` data with the same category, by replacing values with null.
 
 
 ### Step Five: Issue a Privacy Request to erase data and verify
 
-The last step is to issue a Privacy Request using `example-erasure-policy` to remove identifiable user-provided data 
+The last step is to issue a Privacy Request using `example_erasure_policy` to remove identifiable user-provided data 
 related to "jane@example.com". Then we'll re-run step #3 again to see what data is remaining for data category `user.provided.identifiable`:
 
 ```json

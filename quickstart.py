@@ -551,10 +551,10 @@ if __name__ == "__main__":
     input()
 
     create_connection(
-        key="test-application-postgres-db", connection_type=ConnectionType.postgres
+        key="test_application_postgres_db", connection_type=ConnectionType.postgres
     )
     configure_postgres_connection(
-        key="test-application-postgres-db",
+        key="test_application_postgres_db",
         host=POSTGRES_SERVER,
         port=POSTGRES_PORT,
         dbname=POSTGRES_DB_NAME,
@@ -570,11 +570,11 @@ if __name__ == "__main__":
     input()
 
     create_connection(
-        key="test-application-mongo-db", connection_type=ConnectionType.mongodb
+        key="test_application_mongo_db", connection_type=ConnectionType.mongodb
     )
     sleep(5)
     configure_mongo_connection(
-        key="test-application-mongo-db",
+        key="test_application_mongo_db",
         host=MONGO_SERVER,
         port=MONGO_PORT,
         dbname=MONGO_DB,
@@ -590,11 +590,11 @@ if __name__ == "__main__":
     input()
 
     validate_dataset(
-        connection_key="test-application-postgres-db",
+        connection_key="test_application_postgres_db",
         yaml_path="data/dataset/postgres_example_test_dataset.yml",
     )
     postgres_dataset = create_dataset(
-        connection_key="test-application-postgres-db",
+        connection_key="test_application_postgres_db",
         yaml_path="data/dataset/postgres_example_test_dataset.yml",
     )
 
@@ -606,7 +606,7 @@ if __name__ == "__main__":
     input()
 
     mongo_dataset = create_dataset(
-        connection_key="test-application-mongo-db",
+        connection_key="test_application_mongo_db",
         yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )
 
@@ -620,7 +620,7 @@ if __name__ == "__main__":
     input()
 
     create_local_storage(
-        key="example-storage",
+        key="example_storage",
         file_format="json",
     )
 
@@ -643,22 +643,22 @@ if __name__ == "__main__":
     input()
 
     create_policy(
-        key="example-request-policy",
+        key="example_request_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
     delete_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
     )
     create_policy_rule(
-        policy_key="example-request-policy",
-        key="access-user-data",
+        policy_key="example_request_policy",
+        key="access_user_data",
         action_type=ActionType.access,
-        storage_destination_key="example-storage",
+        storage_destination_key="example_storage",
     )
     create_policy_rule_target(
-        policy_key="example-request-policy",
-        rule_key="access-user-data",
+        policy_key="example_request_policy",
+        rule_key="access_user_data",
         data_cat=data_category,
     )
 
@@ -676,12 +676,12 @@ if __name__ == "__main__":
         "-------------------------------------------------------------------------------------"
     )
     email = "jane@example.com"
-    print(f"Press [enter] to run an access request for {email} with Policy `example-request-policy`:")
+    print(f"Press [enter] to run an access request for {email} with Policy `example_request_policy`:")
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
     )
     privacy_request_id = privacy_requests["succeeded"][0]["id"]
     print_results(request_id=privacy_request_id)
@@ -709,21 +709,21 @@ if __name__ == "__main__":
     input()
 
     create_policy(
-        key="example-erasure-policy",
+        key="example_erasure_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
     delete_policy_rule(
-        policy_key="example-erasure-policy",
-        key="erase-user-data",
+        policy_key="example_erasure_policy",
+        key="erase_user_data",
     )
     create_policy_rule(
-        policy_key="example-erasure-policy",
-        key="erase-user-data",
+        policy_key="example_erasure_policy",
+        key="erase_user_data",
         action_type=ActionType.erasure,
     )
     create_policy_rule_target(
-        policy_key="example-erasure-policy",
-        rule_key="erase-user-data",
+        policy_key="example_erasure_policy",
+        rule_key="erase_user_data",
         data_cat=data_category,
     )
 
@@ -743,12 +743,12 @@ if __name__ == "__main__":
 
     # Execute a privacy request for jane@example.com
     email = "jane@example.com"
-    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example-erasure-policy`")
+    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example_erasure_policy`")
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-erasure-policy",
+        policy_key="example_erasure_policy",
     )
     erasure_privacy_request_id = privacy_requests["succeeded"][0]["id"]
 
@@ -759,7 +759,7 @@ if __name__ == "__main__":
     print("Please wait...")
     privacy_requests = create_privacy_request(
         user_email=email,
-        policy_key="example-request-policy",
+        policy_key="example_request_policy",
     )
     print(
         "-------------------------------------------------------------------------------------"

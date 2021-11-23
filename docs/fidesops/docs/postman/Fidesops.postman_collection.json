@@ -1499,23 +1499,23 @@
 		},
 		{
 			"key": "policy_key",
-			"value": "my-primary-policy"
+			"value": "my_primary_policy"
 		},
 		{
 			"key": "rule_key",
-			"value": "my-access-rule"
+			"value": "my_access_rule"
 		},
 		{
 			"key": "target_key",
-			"value": "my-user-info"
+			"value": "my_user_info"
 		},
 		{
 			"key": "postgres_key",
-			"value": "app-postgres-db"
+			"value": "app_postgres_db"
 		},
 		{
 			"key": "mongo_key",
-			"value": "app-mongo-db"
+			"value": "app_mongo_db"
 		},
 		{
 			"key": "privacy_request_id",
@@ -1523,7 +1523,7 @@
 		},
 		{
 			"key": "storage_key",
-			"value": "my-local-storage"
+			"value": "my_local_storage"
 		},
 		{
 			"key": "AWS_ACCESS_KEY_ID",
@@ -1535,19 +1535,19 @@
 		},
 		{
 			"key": "S3_BUCKET_KEY",
-			"value": "my-access-request-upload-bucket"
+			"value": "my_access_request_upload_bucket"
 		},
 		{
 			"key": "separate_policy_key",
-			"value": "my-separate-policy"
+			"value": "my_separate_policy"
 		},
 		{
 			"key": "erasure_rule_key",
-			"value": "my-erasure-rule"
+			"value": "my_erasure_rule"
 		},
 		{
 			"key": "mask_target_key",
-			"value": "my-mask-target"
+			"value": "my_mask_target"
 		}
 	]
 }
