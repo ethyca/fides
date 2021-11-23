@@ -14,7 +14,7 @@
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>evaluate</code> command applies the resources defined in <i>manifest_dir</i> to your server (by calling <a href="/cli/apply/"><code>apply</code></a>), and then assesses your data's compliance to your policies. A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
+    The <code>evaluate</code> command applies the resources defined in <i>manifest_dir</i> to your server (by calling <a href="/fides/cli/apply/"><code>apply</code></a>), and then assesses your data's compliance to your policies. A failure means that you're trying to publish data that shouldn't be published; it's expected that you'll correct the data (or adjust the policy) before your next app deployment.
     <p>If you want to evaluate a single policy, use the <code>&#8209;&#8209;fides&#8209;key</code> option, passing the fides key of the policy you wish to evaluate.
     </p>
     <p>
