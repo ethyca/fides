@@ -61,3 +61,34 @@ jobs:
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
+
+## GitLab CI
+
+```yaml title="<code>.gitlab-ci.yml</code>"
+stages:
+  - test
+  - deploy
+
+variables: &global-variables
+  FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+
+fidesctl-ci:
+  stage: test
+  image: ethyca/fidesctl
+  script: fidesctl evaluate --dry fides_resources/
+  only:
+    if: '$CI_PIPELINE_SOURCE = merge_request_event'
+    changes:
+      - fides_resources/**
+      - .gitlab-ci.yml
+  variables:
+    <<: *global-variables
+
+fidesctl-cd:
+  stage: deploy
+  image: ethyca/fidesctl
+  script: fidesctl evaluate fides_resources/
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  variables:
+    <<: *global-variables
+```
