@@ -11,10 +11,10 @@ Fidesctl is primarily a tool designed to integrate with your CI pipeline configu
 
 The following code snippets are meant only as simple example implementations, to illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
 
-Let's see what those look like for GitHub Actions:
+## GitHub Actions
 
-```yaml
-name: Fidesctl CI Check
+```yaml title="<code>.github/workflows/fidesctl_ci.yml</code>"
+name: Fidesctl CI
 
 # Only check on Pull Requests that target main
 on:
@@ -23,27 +23,25 @@ on:
       - main
     paths: # Only run checks when the resource files change or the workflow file changes
       - fides_resources/**
-      - .github/workflows/fidesctl_ci.yaml
+      - .github/workflows/fidesctl_ci.yml
 
 jobs:
-  Fidesctl:
+  fidesctl_ci:
     runs-on: ubuntu-latest
     container:
       image: ethyca/fidesctl:latest
-
     steps:
-      - uses: actions/checkout@v2
-
       - name: Dry Evaluation
+        uses: actions/checkout@v2
         run: fidesctl evaluate --dry fides_resources/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
 
-```yaml
-name: Fidesctl CD Check
+```yaml title="<code>.github/workflows/fidesctl_cd.yml</code>"
+name: Fidesctl CD
 
-# Run the checks every single time a new commit hits Main
+# Run the check every time a new commit hits the default branch
 on:
   push:
     branches:
@@ -52,15 +50,13 @@ on:
       - "*"
 
 jobs:
-  Fidesctl:
+  fidesctl_cd:
     runs-on: ubuntu-latest
     container:
       image: ethyca/fidesctl:latest
-
     steps:
-      - uses: actions/checkout@v2
-
       - name: Evaluation
+        uses: actions/checkout@v2
         run: fidesctl evaluate fides_resources/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
