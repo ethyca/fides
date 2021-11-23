@@ -133,12 +133,8 @@ compose-build:
 	@docker-compose down
 	@docker-compose build
 
-.PHONY: docs-build
-docs-build: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py ../docs/fides/docs/api/openapi.json
-
 .PHONY: docs-serve
-docs-serve: docs-build
+docs-serve:
 	@docker-compose build docs
-	@docker-compose up docs
+	@docker-compose run --rm --service-ports docs \
+	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"

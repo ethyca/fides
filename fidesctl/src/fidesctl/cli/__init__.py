@@ -20,9 +20,27 @@ from fidesctl.cli.cli import (
 from fidesctl.core.config import get_config
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+LOCAL_COMMANDS = [evaluate, parse, view_config]
+API_COMMANDS = [
+    annotate_dataset,
+    apply,
+    delete,
+    generate_dataset,
+    get,
+    init_db,
+    ls,
+    ping,
+    reset_db,
+    webserver,
+] + LOCAL_COMMANDS
 
 
-@click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True, chain=True)
+@click.group(
+    context_settings=CONTEXT_SETTINGS,
+    invoke_without_command=True,
+    chain=True,
+    name="fidesctl",
+)
 @click.version_option(version=fidesctl.__version__)
 @click.option(
     "--config-path",
@@ -73,3 +91,11 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
+
+
+# This is a dummy section used for auto-generating docs
+# This has to be done due to the dynamic way in which commands are added
+cli_docs = cli
+
+for command in API_COMMANDS:
+    cli_docs.add_command(command)
