@@ -1,4 +1,4 @@
-# CI Reference
+# CI/CD Reference
 
 Fidesctl is a CI/CD tool first and foremost. With that in mind, we've included example CI/CD files for GitHub Actions to give an idea of what it looks like to run Fidesctl as part of a software development workflow.
 

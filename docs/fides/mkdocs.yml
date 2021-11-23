@@ -22,7 +22,7 @@ nav:
       - Write a Policy: tutorial/policy.md
       - Add Google Analytics: tutorial/google.md
       - Manage Google Analytics with Fidesctl: tutorial/pass.md
-  - CI Reference: ci_reference.md
+  - CI/CD Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
