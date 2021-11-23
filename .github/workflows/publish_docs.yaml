@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "docs/**"
-  
+
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
@@ -15,7 +15,6 @@ jobs:
       - uses: actions/setup-python@v2
       - run: pip install -r docs/fides/requirements.txt
       - name: Build docs
-        run: make docs-build
+        run: python generate_openapi.py ./docs/api/openapi.json
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
-        

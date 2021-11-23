@@ -12,13 +12,12 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # Copy in the required files
-COPY ./docs /docs
+COPY . /docs
 WORKDIR /docs
 
 # Generate the OpenAPI Docs
-ADD generate_openapi.py generate_openapi.py
-RUN python generate_openapi.py ./api/openapi.json
-
+COPY generate_openapi.py generate_openapi.py
+RUN python generate_openapi.py ./docs/api/openapi.json
 
 EXPOSE 8000
 CMD ["mkdocs", "serve", "--dev-addr=0.0.0.0:8000"]
