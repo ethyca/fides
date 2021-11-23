@@ -87,7 +87,7 @@ The two declarations reflect the separate purposes for which data is collected a
 
 ## Check Your Progress
 
-After making the above changes, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesctl-add-google-analytics` tag](https://github.com/ethyca/fidesdemo/releases/).
+After making the above changes, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesctl-add-google-analytics` tag](https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-add-google-analytics).
 
 ## Next: Manage Google Analytics with Fidesctl
 

@@ -94,7 +94,7 @@ As global privacy laws change and businesses scale, a company's policies will ev
 
 ## Check Your Progress
 
-After making the above changes and the changes in the previous two steps, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesctl-manifests` tag](https://github.com/ethyca/fidesdemo/releases/).
+After making the above changes and the changes in the previous two steps, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesctl-manifests` tag](https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-manifests).
 
 ## Next: Add Google Analytics
 
