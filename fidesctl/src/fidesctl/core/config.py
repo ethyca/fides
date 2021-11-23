@@ -59,7 +59,8 @@ class CLISettings(FidesSettings):
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    database_url: str = "postgresql+psycopg2://fidesdb:fidesdb@localhost:5432/fidesdb"
+    database_url: str = "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    test_database_url: str = "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
     class Config:
         env_prefix = "FIDESCTL__API__"
@@ -77,7 +78,6 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     """
     Attempt to read config file from:
     a) passed in configuration, if it exists
-    b) env var FIDESCTL_CONFIG_OVERRIDE_PATH
     b) env var FIDESCTL_CONFIG_PATH
     b) local directory
     c) home directory
@@ -88,7 +88,6 @@ def get_config(config_path: str = "") -> FidesctlConfig:
 
     possible_config_locations = [
         config_path,
-        os.getenv("FIDESCTL_CONFIG_OVERRIDE_PATH", ""),
         os.getenv("FIDESCTL_CONFIG_PATH", ""),
         os.path.join(os.curdir, default_file_name),
         os.path.join(os.path.expanduser("~"), default_file_name),
@@ -104,3 +103,13 @@ def get_config(config_path: str = "") -> FidesctlConfig:
                 echo_red(f"Error reading config file from {file_location}")
     fidesctl_config = FidesctlConfig()
     return fidesctl_config
+
+def is_test_mode_enabled() -> bool:
+    "Returns True if the server was started in test mode"
+    isTestModeEnabled = os.getenv('FIDESCTL_TEST_MODE', '') == 'True'
+    return isTestModeEnabled
+
+def get_database_url(config: FidesctlConfig) -> str:
+    "Returns the database url to use."
+    database_url = config.api.test_database_url if is_test_mode_enabled() else config.api.database_url
+    return database_url

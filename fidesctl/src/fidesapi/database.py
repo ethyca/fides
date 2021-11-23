@@ -6,6 +6,7 @@ import os
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fidesapi.crud import upsert_resources
@@ -40,6 +41,12 @@ def init_db(database_url: str) -> None:
     upgrade_db(alembic_config)
     load_default_taxonomy()
 
+def create_db(database_url: str) -> None:
+    """
+    Creates a database which does not exist already.
+    """
+    if not database_exists(database_url):
+        create_database(database_url)
 
 def load_default_taxonomy() -> None:
     "Upserts the default taxonomy into the database."

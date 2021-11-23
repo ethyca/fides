@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from fidesctl.core.config import get_config
+from fidesctl.core.config import get_config, get_database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -41,7 +41,8 @@ def run_migrations_offline():
     script output.
 
     """
-    url = get_config().api.database_url
+    fides_config = get_config()
+    url = get_database_url(fides_config)
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -60,8 +61,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    fides_config = get_config()
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_config().api.database_url
+    configuration["sqlalchemy.url"] = get_database_url(fides_config)
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

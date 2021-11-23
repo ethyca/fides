@@ -9,7 +9,7 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from fidesapi import crud, database, db_session, visualize
-from fidesctl.core.config import get_config
+from fidesctl.core.config import get_config, is_test_mode_enabled, get_database_url
 
 app = FastAPI(title="fidesctl")
 
@@ -18,8 +18,6 @@ class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
     init = "init"
     reset = "reset"
-    set_test_context = "set-test-context"
-    set_std_context = "set-std-context"
 
 
 def configure_routes() -> None:
@@ -30,12 +28,16 @@ def configure_routes() -> None:
     for router in visualize.routers:
         app.include_router(router)
 
-
 def configure_db() -> None:
     "Set up the db to be used by the app."
-    db_session.global_init(CONFIG.api.database_url)
-    database.init_db(CONFIG.api.database_url)
+    databse_url = get_database_url(config)
+    #Only create database if for test databases
+    if is_test_mode_enabled():
+        print("Test mode is enabled, creating test database if needed")
+        database.create_db(databse_url)
 
+    db_session.global_init(databse_url)
+    database.init_db(databse_url)
 
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
@@ -49,19 +51,10 @@ async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
     """
-    global CONFIG  # pylint: disable=global-statement
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(CONFIG.api.database_url)
+        database.reset_db(get_database_url(config))
         action_text = DBActions.reset
-
-    if action == DBActions.set_test_context:
-        os.environ["FIDESCTL_CONFIG_OVERRIDE_PATH"] = "tests/test_config.toml"
-        CONFIG = get_config()
-
-    if action == DBActions.set_std_context:
-        os.environ["FIDESCTL_CONFIG_OVERRIDE_PATH"] = ""
-        CONFIG = get_config()
 
     configure_db()
     return {"data": {"message": f"Fidesctl database {action_text}"}}
@@ -72,6 +65,6 @@ def start_webserver() -> None:
     uvicorn.run(app, host="0.0.0.0", port=8080)
 
 
-CONFIG = get_config()
+config = get_config()
 configure_routes()
 configure_db()
