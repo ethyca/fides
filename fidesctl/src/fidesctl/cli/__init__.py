@@ -60,30 +60,16 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     The parent group for the Fidesctl CLI.
     """
 
-    local_commands = [evaluate, parse, view_config]
-    api_commands = [
-        annotate_dataset,
-        apply,
-        delete,
-        generate_dataset,
-        get,
-        init_db,
-        ls,
-        ping,
-        reset_db,
-        webserver,
-    ] + local_commands
-
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
-    for command in local_commands:
+    for command in LOCAL_COMMANDS:
         cli.add_command(command)
 
     # If local_mode is enabled, don't add unsupported commands
     if not (local or config.cli.local_mode):
         config.cli.local_mode = False
-        for command in api_commands:
+        for command in API_COMMANDS:
             cli.add_command(command)
     else:
         config.cli.local_mode = True
@@ -93,9 +79,9 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         click.echo(cli.get_help(ctx))
 
 
-# This is a dummy section used for auto-generating docs
-# This has to be done due to the dynamic way in which commands are added
+# This is a special section used for auto-generating the CLI docs
+# This has to be done due to the dynamic way in which commands are added for the real CLI group
 cli_docs = cli
 
-for command in API_COMMANDS:
-    cli_docs.add_command(command)
+for cli_command in API_COMMANDS:
+    cli_docs.add_command(cli_command)
