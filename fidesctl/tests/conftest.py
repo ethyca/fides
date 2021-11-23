@@ -27,6 +27,7 @@ def setup_db(test_config):
     "Sets up the database for testing."
     yield api.db_action(test_config.cli.server_url, "reset")
 
+
 @pytest.fixture(scope="session")
 def resources_dict():
     """

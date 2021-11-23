@@ -4,7 +4,6 @@ Contains the code that sets up the API.
 
 from enum import Enum
 from typing import Dict
-import os
 
 import uvicorn
 from fastapi import FastAPI
@@ -28,16 +27,18 @@ def configure_routes() -> None:
     for router in visualize.routers:
         app.include_router(router)
 
+
 def configure_db() -> None:
     "Set up the db to be used by the app."
     databse_url = get_database_url(config)
-    #Only create database if for test databases
+    # Only create database if for test databases
     if is_test_mode_enabled():
         print("Test mode is enabled, creating test database if needed")
         database.create_db(databse_url)
 
     db_session.global_init(databse_url)
     database.init_db(databse_url)
+
 
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:

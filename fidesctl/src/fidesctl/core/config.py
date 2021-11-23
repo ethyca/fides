@@ -59,8 +59,12 @@ class CLISettings(FidesSettings):
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    database_url: str = "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    test_database_url: str = "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+    database_url: str = (
+        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    )
+    test_database_url: str = (
+        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+    )
 
     class Config:
         env_prefix = "FIDESCTL__API__"
@@ -104,12 +108,18 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     fidesctl_config = FidesctlConfig()
     return fidesctl_config
 
+
 def is_test_mode_enabled() -> bool:
     "Returns True if the server was started in test mode"
-    isTestModeEnabled = os.getenv('FIDESCTL_TEST_MODE', '') == 'True'
-    return isTestModeEnabled
+    is_enabled = os.getenv("FIDESCTL_TEST_MODE", "") == "True"
+    return is_enabled
+
 
 def get_database_url(config: FidesctlConfig) -> str:
     "Returns the database url to use."
-    database_url = config.api.test_database_url if is_test_mode_enabled() else config.api.database_url
+    database_url = (
+        config.api.test_database_url
+        if is_test_mode_enabled()
+        else config.api.database_url
+    )
     return database_url
