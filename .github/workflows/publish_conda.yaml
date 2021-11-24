@@ -23,5 +23,7 @@ jobs:
         run: |
           conda install conda-build
           conda install anaconda-client
+          conda install conda-verify
+          conda activate
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
