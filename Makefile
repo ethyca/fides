@@ -54,13 +54,13 @@ reset-db: compose-build
 .PHONY: api
 api: compose-build
 	@echo "Spinning up the webserver..."
-	@ docker-compose up $(IMAGE_NAME)
+	@docker-compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
 cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@ docker-compose up -d $(IMAGE_NAME)
+	@docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
 

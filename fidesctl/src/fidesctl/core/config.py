@@ -60,6 +60,7 @@ class CLISettings(FidesSettings):
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
+    # This has to be defined before database_url for validation
     test_database_url: str = (
         "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     )

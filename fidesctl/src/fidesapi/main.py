@@ -2,8 +2,6 @@
 Contains the code that sets up the API.
 """
 
-import os
-
 from enum import Enum
 from typing import Dict
 
