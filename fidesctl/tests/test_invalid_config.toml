@@ -1,0 +1,5 @@
+[cli]
+server_url = "http://invalid:8080"
+
+[api]
+database_url = "postgresql+psycopg2://postgres:fidesctl@invalid:5432/fidesctl"

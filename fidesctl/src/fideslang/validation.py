@@ -38,15 +38,6 @@ def sort_list_objects_by_name(values: List) -> List:
     return values
 
 
-def sort_list_objects_by_key(values: List) -> List:
-    """
-    Sort objects in a list by their fides_key.
-    This makes resource comparisons deterministic.
-    """
-    values.sort(key=lambda value: value.fides_key)
-    return values
-
-
 def no_self_reference(value: FidesKey, values: Dict) -> FidesKey:
     """
     Check to make sure that the fides_key doesn't match other fides_key

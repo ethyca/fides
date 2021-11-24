@@ -3,6 +3,8 @@
 ####################
 # CONSTANTS
 ####################
+RUN = docker-compose run --rm $(IMAGE_NAME)
+RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
 
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
@@ -39,14 +41,14 @@ help:
 init-db: compose-build
 	@echo "Checking for new migrations to run..."
 	@docker-compose up -d $(IMAGE_NAME)
-	@docker-compose run --rm $(IMAGE_NAME) fidesctl init-db
+	@$(RUN) fidesctl init-db
 	@make teardown
 
 .PHONY: reset-db
 reset-db: compose-build
 	@echo "Reset the database..."
 	@docker-compose up -d $(IMAGE_NAME)
-	@docker-compose run --rm $(IMAGE_NAME)  fidesctl reset-db -y
+	@$(RUN) fidesctl reset-db -y
 	@make teardown
 
 .PHONY: api
@@ -59,7 +61,7 @@ api: compose-build
 cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker-compose up -d $(IMAGE_NAME)
-	@docker-compose run --rm $(IMAGE_NAME) /bin/bash
+	@$(RUN) /bin/bash
 	@make teardown
 
 ####################
@@ -78,36 +80,33 @@ push: build
 # CI
 ####################
 
-check-all: check-install black pylint mypy xenon pytest
+black: compose-build
+	@$(RUN_NO_DEPS) black --check src/
+
+check-all: check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@docker-compose run --rm $(IMAGE_NAME) \
-	fidesctl
+	@$(RUN_NO_DEPS) fidesctl
 
-black: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
-	black --check src/
+fidesctl: compose-build
+	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
 mypy: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
-	mypy
+	@$(RUN_NO_DEPS) mypy
 
 pylint: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
-	pylint src/
+	@$(RUN_NO_DEPS) pylint src/
 
 pytest: compose-build
 	@export FIDESCTL_TEST_MODE=True; docker-compose up -d $(IMAGE_NAME)
-	@export FIDESCTL_TEST_MODE=True; docker-compose run --rm $(IMAGE_NAME) \
-	pytest
+	@$(RUN) pytest
 
 xenon: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
-	xenon src \
+	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
-	--max-modules A \
+	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
 	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"

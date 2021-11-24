@@ -2,4 +2,4 @@
 
 ---
 
-The fastest way to get Fidesctl running is to launch it using the [Docker instructions here](docker.md), alternatively you can manually deploy and customize a production configuration using the [manual instructions here](local.md).
+The fastest way to get fidesctl running is to launch it using the [fidesctl standlone)](local_standalone.md) guide. For guides on setting up a complete installation, see the [Docker instructions here](docker.md) or the [local full-installation instructions here](local_full.md).

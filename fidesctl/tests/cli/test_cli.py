@@ -52,7 +52,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "demo_resources/", "--dry"]
+        cli, ["-f", test_config_path, "apply", "--dry", "demo_resources/"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -61,7 +61,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "demo_resources/", "--diff"]
+        cli, ["-f", test_config_path, "apply", "--diff", "demo_resources/"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -70,7 +70,7 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "demo_resources/", "--dry", "--diff"]
+        cli, ["-f", test_config_path, "apply", "--dry", "--diff", "demo_resources/"]
     )
     print(result.output)
     assert result.exit_code == 0
@@ -91,11 +91,6 @@ def test_ls(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
     print(result.output)
     assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_generate_dataset(test_config_path: str, test_cli_runner: CliRunner):
-    assert True
 
 
 @pytest.mark.integration
@@ -128,6 +123,22 @@ def test_evaluate_demo_resources_pass(
 
 
 @pytest.mark.integration
+def test_local_evaluate(test_invalid_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "--local",
+            "-f",
+            test_invalid_config_path,
+            "evaluate",
+            "tests/data/passing_declaration_taxonomy.yml",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
@@ -135,9 +146,9 @@ def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunne
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/passing_declaration_taxonomy.yml",
             "-k",
             "primary_privacy_policy",
+            "tests/data/passing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)

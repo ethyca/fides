@@ -10,11 +10,23 @@ from fidesctl.core.config import get_config
 from fidesctl.core import api
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
+TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
 
 @pytest.fixture(scope="session")
 def test_config_path():
     yield TEST_CONFIG_PATH
+
+
+@pytest.fixture(scope="session")
+def test_invalid_config_path():
+    """
+    This config file contains url/connection strings that are invalid.
+
+    This ensures that the CLI isn't calling out to those resources
+    directly during certain tests.
+    """
+    yield TEST_INVALID_CONFIG_PATH
 
 
 @pytest.fixture(scope="session")
@@ -111,11 +123,7 @@ def resources_dict():
             rules=[],
         ),
         "policy_rule": models.PolicyRule(
-            organization_fides_key=1,
-            policyId=1,
-            fides_key="test_policy",
             name="Test Policy",
-            description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
             data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),

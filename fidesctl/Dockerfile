@@ -3,6 +3,7 @@ FROM python:3.8-slim-buster
 # Install auxiliary software
 RUN apt-get update
 RUN apt-get install -y \
+    curl \
     git \
     ipython \
     make \
@@ -27,4 +28,4 @@ RUN pip install -e ".[all]"
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
-CMD ["/bin/bash"]
+CMD ["fidesctl", "webserver"]
