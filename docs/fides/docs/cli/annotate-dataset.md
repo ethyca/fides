@@ -1,5 +1,5 @@
-<div class="cli">
-  <h1>delete</h1>
+<div id="cli-docs" class="cli">
+  <h1>annotate-dataset</h1>
 
   <div class="label">NAME</div>
   <div class="content">
@@ -43,6 +43,14 @@
     </div>
     <div class="content">
       Flag that allows you to annotate all dataset members, rather than just fields.
+    </div>
+  </div>
+  <div class="content">
+    <div class="mono">
+      -h/--help
+    </div>
+    <div class="content">
+      Prints a synopsis of this command.
     </div>
   </div>
 </div>
