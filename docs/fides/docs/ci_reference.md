@@ -92,3 +92,43 @@ fidesctl-cd:
   variables:
     <<: *global-variables
 ```
+
+## Jenkins
+
+```groovy title="<code>Jenkinsfile</code> (Declaritive Syntax)"
+pipeline {
+  agent {
+    docker {
+      image 'ethyca/fidesctl:latest'
+    }
+  }
+  stages {
+    stage('test'){
+      environment {
+        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+      }
+      steps {
+        sh 'fidesctl evaluate --dry fides_resources/'
+      }
+      when {
+        anyOf {
+          changeset 'fides_resources/**'
+          changeset 'Jenkinsfile'
+        }
+        changeRequest()
+      }
+    }
+    stage('deploy') {
+      environment {
+        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+      }
+      steps {
+        sh 'fidesctl evaluate fides_resources/'
+      }
+      when {
+        branch 'main'
+      }
+    }
+  }
+}
+```
