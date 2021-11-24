@@ -20,12 +20,14 @@ jobs:
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
           bash miniconda.sh -b -p $HOME/miniconda
           export PATH="$HOME/miniconda/bin:$PATH"
-          export PATH=~/anaconda3/bin:$PATH
+          export PATH="$HOME/anaconda3/bin:$PATH"
       - name: Conda Upload
         run: |
           conda install conda-build
           conda install anaconda-client
           conda install conda-verify
-          conda config --set anaconda_upload no
+          ls $HOME/miniconda/bin
+          ls $HOME/anaconda3/bin
+          anaconda upload
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
