@@ -22,5 +22,6 @@ jobs:
       - name: Conda Upload
         run: |
           conda install conda-build
+          conda install anaconda-client
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
