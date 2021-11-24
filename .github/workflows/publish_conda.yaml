@@ -1,0 +1,22 @@
+name: Publish the CLI on Conda
+
+# on:
+#   push:
+#     tags:
+#       - "*"
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "*"
+jobs:
+  upload_to_conda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+      - name: Conda Upload
+        run: |
+          conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
+          anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
