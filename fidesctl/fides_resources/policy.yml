@@ -1,0 +1,21 @@
+policy:
+  - fides_key: fidesctl_policy
+    name: Fidesctl Policy
+    description: The main privacy policy for Fidesctl.
+    rules:
+      - name: reject_non_system_data
+        description: Disallow any non-system data or uses.
+        data_categories:
+          inclusion: NONE
+          values:
+            - system.operations
+        data_uses:
+          inclusion: NONE
+          values:
+            - provide
+        data_subjects:
+          inclusion: NONE
+          values:
+            - anonymous_user
+        data_qualifier: aggregated
+        action: REJECT

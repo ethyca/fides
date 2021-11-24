@@ -2,9 +2,8 @@
 import pprint
 
 import click
+import requests
 
-from fidesapi import database
-from fidesapi.main import start_webserver
 from fidesctl.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -22,7 +21,6 @@ from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
-    annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
 from fidesctl.core.utils import echo_green, echo_red
@@ -110,20 +108,25 @@ def evaluate(
     """
 
     config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-        dry=dry,
-    )
+
+    if config.cli.local_mode:
+        dry = True
+    else:
+        taxonomy = _parse.parse(manifests_dir)
+        _apply.apply(
+            url=config.cli.server_url,
+            taxonomy=taxonomy,
+            headers=config.user.request_headers,
+            dry=dry,
+        )
 
     _evaluate.evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
-        fides_key=fides_key,
+        policy_fides_key=fides_key,
         message=message,
+        local=config.cli.local_mode,
         dry=dry,
     )
 
@@ -174,6 +177,12 @@ def annotate_dataset(
 
         input_filename: the dataset.yml file to be read and edited
     """
+    try:
+        from fidesctl.core import annotate_dataset as _annotate_dataset
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
+        raise SystemExit
+
     _annotate_dataset.annotate_dataset(
         input_filename, annotate_all=all_members, validate=validate
     )
@@ -214,7 +223,7 @@ def init_db(ctx: click.Context) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    database.init_db(config.api.database_url, fidesctl_config=config)
+    handle_cli_response(_api.db_action(config.cli.server_url, "init"))
 
 
 @click.command()
@@ -269,7 +278,10 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
     config = ctx.obj["CONFIG"]
     healthcheck_url = config.cli.server_url + "/health"
     echo_green(f"Pinging {healthcheck_url}...")
-    handle_cli_response(_api.ping(healthcheck_url))
+    try:
+        handle_cli_response(_api.ping(healthcheck_url))
+    except requests.exceptions.ConnectionError:
+        echo_red("Connection failed, webserver is unreachable.")
 
 
 @click.command()
@@ -283,17 +295,16 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 
     """
     config = ctx.obj["CONFIG"]
-    database_url = config.api.database_url
     if yes:
         are_you_sure = "y"
     else:
-        echo_red("This will drop all data from the Fides database!")
-        are_you_sure = input("Are you sure [y/n]?")
+        echo_red(
+            "This will drop all data from the Fides database and reload the default taxonomy!"
+        )
+        are_you_sure = input("Are you sure [y/n]? ")
 
     if are_you_sure.lower() == "y":
-        database.reset_db(database_url)
-        database.init_db(database_url, config)
-        echo_green("Database reset!")
+        handle_cli_response(_api.db_action(config.cli.server_url, "reset"))
     else:
         print("Aborting!")
 
@@ -316,4 +327,10 @@ def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server.
     """
+    try:
+        from fidesapi.main import start_webserver
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
+        raise SystemExit
+
     start_webserver()

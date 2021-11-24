@@ -14,11 +14,11 @@ To write concept docs, add Markdown files to the `docs/fides/docs/` directory (o
 
 ### Capitalization
 
-Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides" and "FidesAPI".
+Concepts that refer to proper nouns or are trademarked should always be capitalized. The exception here is fidesctl and fidesops, which are lowercased as a stylistic choice.
 
 Other Fides terms, like "Data Category" or "System", should also be capitalized to be clear about the fact that a Fides resource is being referenced.
 
-> When a System is applied, it is either created or updated through the FidesAPI.
+> When a System is applied, it is either created or updated through the fidesctl api.
 >
 > The System model requires a field called `fides_key`.
 

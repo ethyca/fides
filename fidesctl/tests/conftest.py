@@ -1,20 +1,32 @@
 """Common fixtures to be used across tests."""
 from typing import Any, Dict
 
+import os
 import pytest
 import yaml
-import os
 
 from fideslang import models
 from fidesctl.core.config import get_config
-from fidesapi import database
+from fidesctl.core import api
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
+TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
 
 @pytest.fixture(scope="session")
 def test_config_path():
     yield TEST_CONFIG_PATH
+
+
+@pytest.fixture(scope="session")
+def test_invalid_config_path():
+    """
+    This config file contains url/connection strings that are invalid.
+
+    This ensures that the CLI isn't calling out to those resources
+    directly during certain tests.
+    """
+    yield TEST_INVALID_CONFIG_PATH
 
 
 @pytest.fixture(scope="session")
@@ -25,16 +37,13 @@ def test_config(test_config_path):
 @pytest.fixture(scope="session", autouse=True)
 def setup_db(test_config):
     "Sets up the database for testing."
-    database_url = test_config.api.database_url
-    database.reset_db(database_url)
-    database.init_db(database_url, test_config)
-    yield
+    yield api.db_action(test_config.cli.server_url, "reset")
 
 
 @pytest.fixture(scope="session")
 def resources_dict():
     """
-    Yields an resource containing sample representations of different
+    Yields a resource containing sample representations of different
     Fides resources.
     """
     resources_dict: Dict[str, Any] = {
@@ -70,7 +79,7 @@ def resources_dict():
                             description="A First Name Field",
                             path="another.path",
                             data_categories=["user.provided.identifiable.name"],
-                            data_qualifier="identified_data",
+                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                         models.DatasetField(
                             name="Email",
@@ -79,7 +88,7 @@ def resources_dict():
                             data_categories=[
                                 "user.provided.identifiable.contact.email"
                             ],
-                            data_qualifier="identified_data",
+                            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                     ],
                 )
@@ -114,15 +123,11 @@ def resources_dict():
             rules=[],
         ),
         "policy_rule": models.PolicyRule(
-            organization_fides_key=1,
-            policyId=1,
-            fides_key="test_policy",
             name="Test Policy",
-            description="Test Policy",
             data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
             data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
-            data_qualifier="unlinked_pseudonymized_data",
+            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
             action="REJECT",
         ),
         "registry": models.Registry(

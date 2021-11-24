@@ -1,97 +1,123 @@
-# Annotate your Datasets
-_In this section, we'll review what a dataset resource is, why it's needed, and how it's created and managed._
+# Annotate the Dataset
 
-Fundamentally, your data ecosystem is built on data that is stored _somewhere_. In Fides, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where. For example, you might declare one dataset for your Postgres application database, a second dataset for your Mongo orders collection, and a third dataset for some CSV files in your storage buckets. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer for other tooling to consume.
+Making the fidesctl tools available within the app's virtual environment is just the beginning. Next, configure fidesctl for this app by annotating its resources using manifest files.
 
-For Best Pizza Co, you can see that their 3 Datasets, `postgres appdb`, `firestore auth`, and `redshift analyticsdb` are aligned with data storage services in their data ecosystem:
-![Best Pizza Co's Data Ecosystem](../img/BestPizzaCo_DataEcosystem.png)
+First, create a `fides_resources` directory at the project root. This is where the manifest files will be stored.
 
-At Best Pizza Co, we'll want to create a `Dataset` resource for each of the 3 datasets above, starting with the first database, the Postgres Application DB. 
+> **Note:** In a production app this directory can have any name, but it's a best practice to create a specific directory to house the fidesctl manifest files.
 
-## Generating a Dataset Resource
-To create a dataset resource, you can either author a resource YAML manually or use the `generate-dataset` CLI command to connect to your database and automatically generate an (un-annotated)resource YAML based on your database schema:
-```bash
-root@0419219d14e1:/fides/fidesctl# fidesctl generate-dataset postgresql://USERNAME:PASSWORD@best-pizza-co.us-east-1.rds.amazonaws.com:5432/postgres dataset1.yml
-Generated dataset manifest written to dataset1.yml
-```
-Fidesctl has stored the structure of that database as a YAML file in the location provided ("dataset1.yml"). This file will serve as the first building block in creating Privacy as Code at the lowest level. 
+Fundamentally, the data ecosystem is built on data that is stored _somewhere_. In fidesctl, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, an app might declare one dataset for a Postgres application database, a second dataset for a Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer consumable by other tooling.
 
-```yaml
+This app contains a single PostgreSQL dataset. Create a `dataset` resource to annotate it by adding a `flaskr_postgres_dataset.yml` file to the `fides_resources` directory. To annotate this dataset correctly, go through each column of each table and answer the question: _"What data categories are stored here?"_
+
+For this project, the file should contain the following configuration:
+
+```yml
 dataset:
-- fides_key: appdb
-  organization_fides_key: default_organization
-  name: Postgres App Database
-  description: 'Fides Generated Description for Dataset: Postgres App Database'
+- fides_key: flaskr_postgres_dataset
+  name: Flaskr Example PostgreSQL Database
+  description: Application database for Flaskr example app
   collections:
+  - name: products
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [user.provided.identifiable]
+    - name: id
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [user.provided.identifiable]
+    - name: price
+      data_categories: [user.provided.identifiable]
+    - name: seller_id
+      data_categories: [user.derived.identifiable.unique_id]
+  - name: purchases
+    fields:
+    - name: buyer_id
+      data_categories: [user.derived.identifiable.unique_id]
+    - name: city
+      data_categories: [user.provided.identifiable.contact.city]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: product_id
+      data_categories: [system.operations]
+    - name: state
+      data_categories: [user.provided.identifiable.contact.state]
+    - name: street_1
+      data_categories: [user.provided.identifiable.contact.street]
+    - name: street_2
+      data_categories: [user.provided.identifiable.contact.street]
+    - name: zip
+      data_categories: [user.provided.identifiable.contact.postal_code]
   - name: users
-      description: 'Fides Generated Description for Table: users'
-      fields:
-      - name: first_name
-          description: 'Fides Generated Description for Column: first_name'
-          data_categories: []
-      - name: zip_code
-          description: 'Fides Generated Description for Column: zip_code'
-          data_categories: []
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: email
+      data_categories: [user.provided.identifiable.contact.email]
+    - name: first_name
+      data_categories: [user.provided.identifiable.name]
+    - name: id
+      data_categories: [user.derived.identifiable.unique_id]
+    - name: last_name
+      data_categories: [user.provided.identifiable.name]
+    - name: password
+      data_categories: [user.provided.identifiable.credentials.password]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+```
+
+<!-- TODO: Link to the `generate-dataset` usage documentation below, when it exists. -->
+
+As an alternative to manually authoring the resource file, you can also use the `generate-dataset` CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
+
+```sh
+./venv/bin/fidesctl generate-dataset \
+  postgresql://postgres:postgres@localhost:5432/flaskr \
+  fides_resources/flaskr_postgres_dataset.yml
 ```
 
 ## Understanding the Dataset Resource
-This YAML serves as the foundation of the Fides language; it answers the questions of "_What data and kinds of data do we have?_" and "_How is it organized?_". The language is built on the declaring what types of data are found in storage for your organization.
 
-In traditional SQL, Fides defines the following:
+This YAML serves as the foundation of [`fideslang`](https://github.com/ethyca/fideslang), the Fides language; it answers "_What data and kinds of data do we have?_" and "_How is our data organized?_". The language is built on declaring the types of data found in storage for your organization.
+
+In traditional SQL, fidesctl defines the following:
+
 * "datasets" as database schemas
 * "collections" as database tables
 * "fields" as database columns
 
-For NoSQL datasets, Fides defines the following:
+For NoSQL datasets, fidesctl defines the following:
+
 * "dataset"
 * "collection" as a logical grouping of data fields (ie: in MongoDB, this is called a "Collection")
 * "fields" as a reference to an individual data element (ie: in MongoDB, this is called a "field")
 
-Further, fideslang has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:
+Additionally, `fideslang` has attributes that describe what kind of data is contained in this dataset. We use the following attributes to describe the data:
 
 | Name | Type | Description |
-|  --- | --- | --- |
+| --- | --- | --- |
 | name | String | The name of this field |
 | description | String | A description of what this field contains |
-| data_categories | List[FidesKey] | The data categories, or types of sensitive data as defined in the taxonomy, that can be found in this field |
-| data_qualifier | FidesKey | Data qualifier describes the level of deidentification for the dataset |
+| data_categories | List[FidesKey] | The types of sensitive data, as defined by the taxonomy, that can be found in this field |
+| data_qualifier | FidesKey | The level of deidentification for the dataset |
 
-
-## Create Dataset Annotations
-As you can see, `fidesctl generate-dataset` has already pre-filled the required attributes for this exported YAML file. We can update the YAML file with some information that might be appropriate for your organization, such as:
-
-```yaml
-dataset:
-- fides_key: appdb
-  organization_fides_key: default_organization
-  name: Postgres App Database
-  description: 'This is our primary web application database'
-  collections:
-    - name: users
-      description: 'Table that contains all user account data as entered by the user'
-      fields:
-        - name: first_name
-          description: 'Fides Generated Description for Column: first_name'
-          data_categories:
-            - user.provided.identifiable.name
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: zip_code
-          description: 'Fides Generated Description for Column: zip_code'
-          data_categories:
-            - user.provided.identifiable.contact.postal_code
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized
-```
-
----
-**PRO TIP**
-
-As you're progressing with the tutorial, we recommend installing our [Fides' VS Code plugin](https://marketplace.visualstudio.com/items?itemName=fidesctl-plugin-publisher.fidesctl-config-parser), which will validate the syntax in real-time as you're writing your resource files!
+> For more detail on Dataset resources, see the full [Dataset resource documentation](../language/resources/dataset.md).
 
 ---
 
+### PRO TIP
 
-## Maintaining a Dataset Resource
-As your business grows, you will add more databases and other services where you will be storing potentially sensitive data. We recommend that updating this resource file become a part of the development process when building a new feature. 
+As you're progressing with the tutorial, we recommend installing our [fidesctl VS Code extension](https://marketplace.visualstudio.com/items?itemName=ethyca.fidesctl), which will validate the syntax in real-time as you're writing your resource files!
 
-## Next: Systems
-Now that we've seen how to annotate dataset resources (e.g. databases, flat-files) we can move up to the next layer, [Systems](system.md).
+---
+
+### Maintaining a Dataset Resource
+
+As apps add more databases and other services to store potentially sensitive data, it is recommended that updating this resource file becomes a part of the development process when building a new feature.
+
+## Next: Annotate the System Resource
+
+With the underlying database resource declared, you must now include the database in an application-level [System resource annotation](system.md).

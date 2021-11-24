@@ -2,29 +2,7 @@
 
 ---
 
-`fidesctl` provides an interactive shell that drives the Fides functionality. If you run Fides in a  Docker container, you launch the `fidesctl` shell by `cd`ing to your `fides` root directory and running `make cli`.
-
-```bash
-$ cd <your-fides-root>
-$ make cli
-```
-
-When it's finished,  `make cli` shows you a success message, `cd`s into the `fidesctl` directory, and presents you with the Docker prompt. Notice that the prompt includes your current working directory within the Docker container.
-
-```bash
-⠿ Container fides-fidesctl-db-1  Running   0.0s //success message
-root@f76b4a7af333:/fides/fidesctl# //prompt
-```
-
-You can then use the `fidesctl` command line interface commands. The commands are provided as arguments to the `fidesctl` program. For example, to run the `init-db` command, you do this:
-
-```bash
-root@f76b4a7af333:/fides/fidesctl# fidesctl init-db
-```
-
-`fidesctl` itself takes a set of options. The most important option is `--config-path` which lets you supply a file that configures the `fidesctl` environment.
-All `fidesctl` commands return 0 upon success.
-
+`fidesctl` provides an interactive shell that drives the Fides functionality. It can be pip installed with `pip install fidesctl`, but some functionality will not work unless the API and database are also set up.
 
 <div id="cli-docs" class="cli">
   <div class="label">OPTIONS</div>
@@ -33,7 +11,7 @@ All `fidesctl` commands return 0 upon success.
       -f/--config-path <i>config_file</i> 
     </div>
     <div class="content">
-      Identifies a file that you can use to configure the <code>fidesctl</code> environment. For more information about the file, see <a href="configuration-file">fidesctl Configuration File</a>. To see the current configuration file, do <code>fidesctl&nbsp;view&#8209;config</code>.
+      Identifies a file that you can use to configure the <code>fidesctl</code> environment. For more information about the file, see <a href="/fides/installation/configuration">fidesctl Configuration File</a>. To see the current configuration file, do <code>fidesctl&nbsp;view&#8209;config</code>.
     </div>
   </div>
   <div class="content">

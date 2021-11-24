@@ -16,7 +16,7 @@
   <div class="label">DESCRIPTION</div>
 
   <div class="content">
-    The <code>reset-db</code> command removes the resources that you added through previous <a href="apply"><code>apply</code></a> calls. The database is then re-initialized through <code>init&#8209;db</code>.
+    The <code>reset-db</code> command removes the resources that you added through previous <a href="/cli/apply/"><code>apply</code></a> calls. The database is then re-initialized through <code>init&#8209;db</code>.
   </div>
 
   

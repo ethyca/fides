@@ -1,6 +1,36 @@
 # Data Uses Reference
 
-Data Uses are labels that describe how, or for what purpose(s) a component of your system is using data.
+A Data Use is a label that denotes the way data is used in your system: "Advertising, Marketing or Promotion", "First Party Advertising", and "Sharing for Legal Obligation", as examples.
+
+Data Use objects form a hierarchy: A Data Use can contain any number of children, but a given Data Use may only have one parent. You assign a child Data Use to a parent by setting the child's `parent_key` property. For example, the `third_party_sharing.personalized_advertising` Data Use type is data used for personalized advertising when shared with third parties. 
+
+## Object Structure
+
+**fides_key**<span class="required"/>_string_
+
+A string token that uniquely identifies this Data Use. The value is a dot-separated concatenation of the `fides_key` values of the resource's ancestors plus a final element for this resource:
+
+`grandparent.parent.this_data_use`
+
+The final element (`this_data_use`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). The dot character is reserved as a separator.
+
+
+**name**<span class="spacer"/>_string_
+
+A UI-friendly label for the Data Use. 
+
+**description**<span class="spacer"/>_string_
+
+A human-readable description of the Data Use.
+
+**parent_key**<span class="spacer"/>_string_<span class="spacer"/>
+
+The fides key of the the Data Use's parent.
+
+**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+
+The fides key of the organization to which this Data Use belongs.
+
 
 !!! Note "Extensibility and Interopability"
     Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 

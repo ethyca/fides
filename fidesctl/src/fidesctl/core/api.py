@@ -99,3 +99,10 @@ def evaluate(
     resource_url = generate_resource_url(url, resource_type)
     url = f"{resource_url}evaluate/{fides_key}"
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
+
+
+def db_action(server_url: str, action: str) -> requests.Response:
+    """
+    Tell the API to perform a database action.
+    """
+    return requests.post(f"{server_url}/admin/db/{action}")

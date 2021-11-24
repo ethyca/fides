@@ -3,6 +3,7 @@ FROM python:3.8-slim-buster
 # Install auxiliary software
 RUN apt-get update
 RUN apt-get install -y \
+    curl \
     git \
     ipython \
     make \
@@ -22,6 +23,9 @@ RUN pip install -r dev-requirements.txt
 # Copy in the application files and install it locally
 COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
-RUN pip install -e .
+RUN pip install -e ".[all]"
 
-CMD ["/bin/bash"]
+# Immediately flush to stdout, globally
+ENV PYTHONUNBUFFERED=TRUE
+
+CMD ["fidesctl", "webserver"]

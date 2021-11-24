@@ -2,33 +2,43 @@ site_name: Fides
 site_url: https://ethyca.github.io/fides/
 nav:
   - What is Fides?: index.md
-  - Use Cases:
-      - Evaluating Privacy in CI: use_cases/use_case1.md
-      - Automating Data Rights: use_cases/use_case2.md
-  - Getting Started:
-      - Overview: getting_started/overview.md
-      - Fidesctl in Docker: getting_started/docker.md
-      - Fidesctl Manually (without Docker): getting_started/manual.md
+  - Quick Start:
+      - Overview: quickstart/overview.md
+      - Running Fidesctl Locally (Standalone): quickstart/local_standalone.md
+      - Running Fidesctl Locally (Full Installation): quickstart/local_full.md
+      - Running Fidesctl in Docker: quickstart/docker.md
+  - Installation:
+      - Installation Overview: installation/installation.md
+      - Prerequisites & Dependencies: installation/prerequisites_dependencies.md
+      - Installation from PyPI: installation/pypi.md
+      - Installation from Docker: installation/docker.md
+      - Setting up the database: installation/database.md
+      - Configuration: installation/configuration.md
   - Tutorial:
-      - Overview: tutorial/overview.md
-      - Understanding the Fides Taxonomy: tutorial/taxonomy.md
-      - Annotate your Datasets: tutorial/dataset.md
-      - Declare your Systems: tutorial/system.md
-      - Write Privacy Policy (as code): tutorial/policy.md
-      - Evaluate your Resources: tutorial/evaluate.md
-      - Integrate your CI: tutorial/ci.md
-  - Deployment Guide: deployment.md
+      - Overview: tutorial/index.md
+      - Add Fidesctl to the App: tutorial/add.md
+      - Annotate the Dataset: tutorial/dataset.md
+      - Annotate the System: tutorial/system.md
+      - Write a Policy: tutorial/policy.md
+      - Add Google Analytics: tutorial/google.md
+      - Manage Google Analytics with Fidesctl: tutorial/pass.md
+  - CI Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
-      - Resources: language/resources.md
+      - Resources:
+          - Organization: language/resources/organization.md
+          - Policy: language/resources/policy.md
+          - Registry: language/resources/registry.md
+          - System: language/resources/system.md
+          - Dataset: language/resources/dataset.md
       - Taxonomy:
-        - Overview: language/taxonomy/overview.md
-        - Taxonomy Explorer: language/taxonomy/explorer.md
-        - Data Categories: language/taxonomy/data_categories.md
-        - Data Uses: language/taxonomy/data_uses.md
-        - Data Subjects: language/taxonomy/data_subjects.md
-        - Data Qualifiers: language/taxonomy/data_qualifiers.md
+          - Overview: language/taxonomy/overview.md
+          - Taxonomy Explorer: language/taxonomy/explorer.md
+          - Data Categories: language/taxonomy/data_categories.md
+          - Data Uses: language/taxonomy/data_uses.md
+          - Data Subjects: language/taxonomy/data_subjects.md
+          - Data Qualifiers: language/taxonomy/data_qualifiers.md
   - CLI:
     - CLI Overview: cli/cli.md
     - annotate-dataset: cli/annotate-dataset.md
@@ -70,7 +80,7 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
   name: material
-  favicon: img/favicon.png
+  favicon: img/favicon.ico
   logo: img/fides-logo.svg
   font:
     text: Source Sans Pro
@@ -102,3 +112,4 @@ extra_css:
 
 plugins:
   - render_swagger
+  - search
