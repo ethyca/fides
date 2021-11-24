@@ -1080,9 +1080,60 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Releases
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Releases
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    Versioning
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-schedule" class="md-nav__link">
+    Release Schedule
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning" class="md-nav__link">
+    Planning
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branching" class="md-nav__link">
+    Branching
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1209,6 +1260,42 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    Versioning
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-schedule" class="md-nav__link">
+    Release Schedule
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning" class="md-nav__link">
+    Planning
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branching" class="md-nav__link">
+    Branching
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1222,9 +1309,16 @@
                 
                 <h1 id="releases">Releases</h1>
 <hr />
-<p>Fides uses semantic versioning. Each release version has a corresponding GitHub Project assigned to it. Issues are then assigned to them as a way to determine what new features/bug fixes will be included in each release.</p>
-<p>When a release project is complete, a new version is cut using GitHub's release page <a href="https://github.com/ethyca/fides/releases">here</a>. This will trigger a GitHub Action that pushes the new version to PyPi.</p>
-<p>Hotfixes are an exception to this and can be added and pushed mid-release as needed.</p>
+<h2 id="versioning">Versioning</h2>
+<p>Fidesctl uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. Best practice is always pinning versions and carefully testing before bumping to a new version. Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.</p>
+<h2 id="release-schedule">Release Schedule</h2>
+<p>Fidesctl does not follow a set release schedule, but instead ships versions based on the addition of features/functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.</p>
+<h2 id="planning">Planning</h2>
+<p>For each release a corresponding GitHub Project is created. These projects can be found <a href="https://github.com/ethyca/fides/projects">here</a>. Issues are then added to release projects as a way to organize what will be included in each release.</p>
+<p>Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all fidesctl releases <a href="https://github.com/ethyca/fides/releases">here</a>. Each new release triggers a GitHub Action that pushes the new version to PyPI as well as pushes a clean version to DockerHub. The release project is then marked as <code>closed</code>.</p>
+<p>Hotfixes are an exception to this and can be added and pushed as patch versions when needed.</p>
+<h2 id="branching">Branching</h2>
+<p>Fidesctl uses continuous delivery with a single <code>main</code> branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.</p>
                 
               
               
