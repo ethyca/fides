@@ -68,9 +68,7 @@ class APISettings(FidesSettings):
 
     # Simplify the usage of database_url field based on test mode
     @validator("database_url", pre=True, always=True)
-    def get_database_url(
-        cls: FidesSettings, value: str, values: Dict
-    ) -> Dict[str, str]:
+    def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
         url = (
             values["test_database_url"]
             if os.getenv("FIDESCTL_TEST_MODE", "") == "True"
@@ -119,19 +117,3 @@ def get_config(config_path: str = "") -> FidesctlConfig:
                 echo_red(f"Error reading config file from {file_location}")
     fidesctl_config = FidesctlConfig()
     return fidesctl_config
-
-
-def is_test_mode_enabled() -> bool:
-    "Returns True if the server was started in test mode"
-    is_enabled = os.getenv("FIDESCTL_TEST_MODE", "") == "True"
-    return is_enabled
-
-
-def get_database_url(config: FidesctlConfig) -> str:
-    "Returns the database url to use."
-    database_url = (
-        config.api.test_database_url
-        if is_test_mode_enabled()
-        else config.api.database_url
-    )
-    return database_url
