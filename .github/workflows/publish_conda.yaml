@@ -15,11 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Anaconda
-        run: |
-          wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
-          bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh -b
+      - uses: conda-incubator/setup-miniconda@v2
       - name: Conda Upload
         run: |
+          conda install conda-build
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
