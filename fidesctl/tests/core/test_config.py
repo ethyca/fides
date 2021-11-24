@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from fidesctl.core.config import get_config, FidesctlConfig
+from fidesctl.core.config import get_config, FidesctlConfig, APISettings
 
 
 # Unit
@@ -43,3 +43,21 @@ def test_config_from_env_vars():
     # assert config.user.user_id == "2"
     # assert config.user.api_key == "test_api_key"
     # assert config.cli.server_url == "test"
+
+@pytest.mark.unit
+def test_database_url_test_mode_disabled():
+    os.environ["FIDESCTL_TEST_MODE"] = "False"
+    api_settings = APISettings(
+    test_database_url="test_database_url",
+    database_url="database_url"
+    )
+    assert api_settings.database_url == "database_url"
+
+@pytest.mark.unit
+def test_database_url_test_mode_enabled():
+    os.environ["FIDESCTL_TEST_MODE"] = "True"
+    api_settings = APISettings(
+    test_database_url="test_database_url",
+    database_url="database_url"
+    )
+    assert api_settings.database_url == "test_database_url"
