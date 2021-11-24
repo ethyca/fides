@@ -59,12 +59,24 @@ class CLISettings(FidesSettings):
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    database_url: str = (
-        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    )
     test_database_url: str = (
         "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     )
+    database_url: str = (
+        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    )
+
+    # Simplify the usage of database_url field based on test mode
+    @validator("database_url", pre=True, always=True)
+    def get_database_url(
+        cls: FidesSettings, value: str, values: Dict
+    ) -> Dict[str, str]:
+        url = (
+            values["test_database_url"]
+            if os.getenv("FIDESCTL_TEST_MODE", "") == "True"
+            else value
+        )
+        return url
 
     class Config:
         env_prefix = "FIDESCTL__API__"

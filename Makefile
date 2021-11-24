@@ -99,8 +99,8 @@ pylint: compose-build
 	pylint src/
 
 pytest: compose-build
-	@docker-compose up -d $(IMAGE_NAME)
-	@docker-compose run --rm $(IMAGE_NAME) \
+	@export FIDESCTL_TEST_MODE=True; docker-compose up -d $(IMAGE_NAME)
+	@export FIDESCTL_TEST_MODE=True; docker-compose run --rm $(IMAGE_NAME) \
 	pytest
 
 xenon: compose-build

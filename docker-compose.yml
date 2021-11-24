@@ -21,6 +21,8 @@ services:
         source: .
         target: /fides
         read_only: False
+    environment:
+      FIDESCTL_TEST_MODE: ${FIDESCTL_TEST_MODE:-False}
     env_file:
       - env_files/fidesctl.env
 

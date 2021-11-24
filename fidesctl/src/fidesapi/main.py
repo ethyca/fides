@@ -2,13 +2,15 @@
 Contains the code that sets up the API.
 """
 
+import os
+
 from enum import Enum
 from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
 from fidesapi import crud, database, db_session, visualize
-from fidesctl.core.config import get_config, is_test_mode_enabled, get_database_url
+from fidesctl.core.config import get_config
 
 app = FastAPI(title="fidesctl")
 
@@ -30,9 +32,9 @@ def configure_routes() -> None:
 
 def configure_db() -> None:
     "Set up the db to be used by the app."
-    databse_url = get_database_url(config)
+    databse_url = config.api.database_url
     # Only create database if for test databases
-    if is_test_mode_enabled():
+    if os.getenv("FIDESCTL_TEST_MODE", "") == "True":
         print("Test mode is enabled, creating test database if needed")
         database.create_db(databse_url)
 
@@ -54,7 +56,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(get_database_url(config))
+        database.reset_db(config.api.database_url)
         action_text = DBActions.reset
 
     configure_db()
