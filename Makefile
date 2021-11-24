@@ -101,7 +101,7 @@ pylint: compose-build
 
 pytest: compose-build
 	@docker-compose up -d $(IMAGE_NAME)
-	@$(RUN) pytest
+	@$(RUN) pytest -x
 
 xenon: compose-build
 	@$(RUN_NO_DEPS) xenon src \

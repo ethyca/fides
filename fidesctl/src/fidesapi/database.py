@@ -3,6 +3,7 @@ Contains all of the logic for spinning up/tearing down the database.
 """
 import os
 
+from sqlalchemy_utils.functions import create_database, database_exists
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
@@ -39,6 +40,14 @@ def init_db(database_url: str) -> None:
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
     load_default_taxonomy()
+
+
+def create_db_if_not_exists(database_url: str) -> None:
+    """
+    Creates a database which does not exist already.
+    """
+    if not database_exists(database_url):
+        create_database(database_url)
 
 
 def load_default_taxonomy() -> None:
