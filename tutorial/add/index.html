@@ -1340,16 +1340,19 @@
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span>
 <span class="n">server_url</span> <span class="o">=</span> <span class="s">&quot;http://localhost:8080&quot;</span>
 
 <span class="k">[api]</span>
 <span class="n">database_url</span> <span class="o">=</span> <span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl&quot;</span>
+<span class="n">test_database_url</span> <span class="o">=</span> <span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl_test&quot;</span>
 </code></pre></div>
 </td></tr></table>
 <ul>
 <li>The <code>[cli]</code>-scoped <code>server_url</code> option specifies the address that the fidesctl CLI will use when connecting to the fidesctl server.</li>
 <li>The <code>[api]</code>-scoped <code>database_url</code> option specifies the connection string that the fidesctl API will use to connect to the PostgreSQL database created in the previous step.</li>
+<li>The <code>[api]</code>-scoped <code>test_database_url</code> option that will override <code>database_url</code> when the fidesctl server is started with the environment variable <code>FIDESCTL_TEST_MODE</code> set to <code>True</code></li>
 </ul>
 <h2 id="run-fidesctl-via-docker">Run Fidesctl via Docker</h2>
 <p>Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses <code>docker-compose</code> to orchestrate resources, so include <code>fidesctl</code> as a service by adding the following configuration after the database service:</p>
