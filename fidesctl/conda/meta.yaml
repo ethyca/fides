@@ -1,0 +1,45 @@
+{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
+
+package:
+  name: "{{ data.get('name')|lower }}"
+  version: "{{ data.get('version') }}"
+
+source:
+  path: "../.."
+
+build:
+  number: 0
+  entry_points:
+    - fidesctl=fidesctl.cli:cli
+  script: |
+    cd fidesctl
+    {{ PYTHON }} -m pip install . -vv
+  noarch: python
+
+requirements:
+  host:
+    - pip
+    - python >=3.7, <4
+  run:
+    - python >=3.7, <4
+    {% for package in data.get('install_requires') %}
+    - {{ package }}
+    {% endfor %}
+    {% for package in data.get('extras_require')['all'] %}
+    - {{ package }}
+    {% endfor %}
+
+test:
+  imports:
+    - fidesctl
+  commands:
+    - fidesctl --help
+
+about:
+  home: "{{ data.get('url') }}"
+  license: "{{ data.get('license') }}"
+  license_family: APACHE
+  license_file: LICENSE
+  summary: "{{ data.get('description') }}"
+  description: "{{ data.get('long_description') }}"
+  doc_url: "https://ethyca.github.io/fides/"
