@@ -14,6 +14,7 @@ server_url = "http://localhost:8080"
 
 [api]
 database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
+test_database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl_test"
 ```
 
 By default fidesctl will look for a configuration file in the following three places:

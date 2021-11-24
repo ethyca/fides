@@ -30,14 +30,15 @@ def configure_routes() -> None:
 
 def configure_db() -> None:
     "Set up the db to be used by the app."
-    db_session.global_init(config.api.database_url)
-    database.init_db(config.api.database_url)
+    databse_url = config.api.database_url
+    database.create_db_if_not_exists(databse_url)
+    db_session.global_init(databse_url)
+    database.init_db(databse_url)
 
 
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    ## TODO: this should also hit the database
     return {"data": {"message": "Fidesctl API service is healthy!"}}
 
 

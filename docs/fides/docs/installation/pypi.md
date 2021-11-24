@@ -28,3 +28,5 @@ The optional dependencies are as follows:
 * `webserver`: includes FastAPI and the Postgres database connector. Enables `fidesctl webserver`.
 * `postgres`: includes the Postgres database connector.
 * `mysql`: includes the MySQL database connector.
+
+**NOTE:** When installing database adapters there may be other dependencies, such as the [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file that usually requires a Postgres installation.
