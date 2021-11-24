@@ -15,7 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Install Anaconda
+        run: |
+          wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+          bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh -b
       - name: Conda Upload
         run: |
           conda install conda-build
