@@ -23,6 +23,7 @@ jobs:
           export PATH="$HOME/anaconda3/bin:$PATH"
       - name: Conda Upload
         run: |
+          conda config --set auto_activate_base true
           conda install conda-build
           conda install anaconda-client
           conda install conda-verify
