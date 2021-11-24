@@ -132,3 +132,43 @@ pipeline {
   }
 }
 ```
+
+## CircleCI
+
+```yaml title="<code>.circleci/config.yml</code>"
+version: 2.1
+
+executors:
+  fidesctl:
+    docker:
+      - image: ethyca/fidesctl:latest
+        environment:
+          FIDESCTL__CLI__SERVER_URL: 'https://fidesctl.privacyco.com'
+
+jobs:
+  fidesctl-evaluate-dry:
+    executor: fidesctl
+    steps:
+      - run: fidesctl evaluate --dry fides_resources/
+
+  fidesctl-evaluate:
+    executor: fidesctl
+    steps:
+      - run: fidesctl evaluate fides_resources/
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - fidesctl-evaluate-dry:
+          filters:
+            branches:
+              ignore: main
+
+  deploy:
+    jobs:
+      - fidesctl-evaluate:
+          filters:
+            branches:
+              only: main
+```
