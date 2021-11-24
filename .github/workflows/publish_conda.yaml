@@ -17,14 +17,14 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install Anaconda
         run: |
-          wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
-          bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh -b
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+          bash miniconda.sh -b -p $HOME/miniconda
+          export PATH="$HOME/miniconda/bin:$PATH"
       - name: Conda Upload
         run: |
           conda install conda-build
           conda install anaconda-client
           conda install conda-verify
-          conda init bash
-          conda activate
+          conda config --set anaconda_upload no
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
