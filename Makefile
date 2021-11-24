@@ -13,8 +13,6 @@ IMAGE_NAME := fidesctl
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
-FIDESCTL_TEST_MODE := False
-
 .PHONY: help
 help:
 	@echo --------------------
@@ -56,14 +54,12 @@ reset-db: compose-build
 .PHONY: api
 api: compose-build
 	@echo "Spinning up the webserver..."
-	@export FIDESCTL_TEST_MODE=$(FIDESCTL_TEST_MODE); \
 	docker-compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
 cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@export FIDESCTL_TEST_MODE=$(FIDESCTL_TEST_MODE); \
 	docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
@@ -104,7 +100,7 @@ pylint: compose-build
 	@$(RUN_NO_DEPS) pylint src/
 
 pytest: compose-build
-	@export FIDESCTL_TEST_MODE=True; docker-compose up -d $(IMAGE_NAME)
+	docker-compose up -e FIDESCTL_TEST_MODE=True -d $(IMAGE_NAME)
 	@$(RUN) pytest
 
 xenon: compose-build
