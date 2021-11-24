@@ -24,7 +24,7 @@
       connection_string
     </div>
     <div class="content">
-      An SQLAlchemy-compatible statement that connects to your database and reads one more schemas.
+      An SQLAlchemy-compatible database connection URL that connects to your database and reads one or more schemas.
     </div>
   </div>
   <div class="content">
@@ -33,7 +33,7 @@
     </div>
     <div class="content">
       <div class="content">
-        The name of the Dataset manifest file that the command will write. The value can be an absolute or relative path, and should include the <code>.yml</code> or <code>.yaml</code> extension.
+        The name of the Dataset manifest file that the command will write to. The value can be an absolute or relative path, and should include the <code>.yml</code> or <code>.yaml</code> extension.
 
       </div>
     </div>
