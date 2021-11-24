@@ -61,13 +61,17 @@ food = ["apple", "banana"]
 # Incorrect
 foods = ["apple", "banana"] 
 
-# More Correct
+# Correct
 # Use type annotations if the name is somewhat ambiguous
 foods: List[str] = ["apple", "banana"] 
 
-# Most Correct
+# Correct
 # The type is contained in the name
 foods_list = ["apple", "banana"] 
+
+# Correct
+# Both of the above styles
+foods_list: List[str] = ["apple", "banana"] 
 ```
 
 ## CI Checks
