@@ -42,7 +42,7 @@ def init_db(database_url: str) -> None:
     load_default_taxonomy()
 
 
-def create_db(database_url: str) -> None:
+def create_db_if_not_exists(database_url: str) -> None:
     """
     Creates a database which does not exist already.
     """

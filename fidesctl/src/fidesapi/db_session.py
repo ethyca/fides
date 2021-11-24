@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from fidesapi.errors import DatabaseUnavailableError
 
 FACTORY: Optional[Callable[[], Session]] = None
-CURRENT_DATABASE_URL: str = ""
 
 
 def global_init(database_url: str) -> None:
@@ -19,14 +18,12 @@ def global_init(database_url: str) -> None:
     set up the database connection and session factories.
     """
     global FACTORY  # pylint: disable=global-statement
-    global CURRENT_DATABASE_URL  # pylint: disable=global-statement
 
-    if FACTORY and CURRENT_DATABASE_URL == database_url:
+    if FACTORY:
         return
 
     engine = sa.create_engine(database_url, echo=False)
     FACTORY = orm.sessionmaker(bind=engine)
-    CURRENT_DATABASE_URL = database_url
 
 
 def create_session() -> Session:

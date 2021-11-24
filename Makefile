@@ -54,13 +54,13 @@ reset-db: compose-build
 .PHONY: api
 api: compose-build
 	@echo "Spinning up the webserver..."
-	docker-compose up $(IMAGE_NAME)
+	@ docker-compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
 cli: compose-build
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	docker-compose up -d $(IMAGE_NAME)
+	@ docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
 
@@ -100,8 +100,8 @@ pylint: compose-build
 	@$(RUN_NO_DEPS) pylint src/
 
 pytest: compose-build
-	docker-compose up -e FIDESCTL_TEST_MODE=True -d $(IMAGE_NAME)
-	@$(RUN) pytest
+	@docker-compose up -d $(IMAGE_NAME)
+	@$(RUN) pytest -x
 
 xenon: compose-build
 	@$(RUN_NO_DEPS) xenon src \

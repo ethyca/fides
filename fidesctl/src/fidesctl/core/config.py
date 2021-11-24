@@ -67,12 +67,12 @@ class APISettings(FidesSettings):
         "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
     )
 
-    # Simplify the usage of database_url field based on test mode
     @validator("database_url", pre=True, always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
+        "Set the database_url to the test_database_url if in test mode."
         url = (
             values["test_database_url"]
-            if os.getenv("FIDESCTL_TEST_MODE", "") == "True"
+            if os.getenv("FIDESCTL_TEST_MODE") == "True"
             else value
         )
         return url

@@ -33,11 +33,7 @@ def configure_routes() -> None:
 def configure_db() -> None:
     "Set up the db to be used by the app."
     databse_url = config.api.database_url
-    # Only create database if for test databases
-    if os.getenv("FIDESCTL_TEST_MODE", "") == "True":
-        print("Test mode is enabled, creating test database if needed")
-        database.create_db(databse_url)
-
+    database.create_db_if_not_exists(databse_url)
     db_session.global_init(databse_url)
     database.init_db(databse_url)
 
