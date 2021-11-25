@@ -21,6 +21,7 @@ jobs:
           auto-activate-base: true
           activate-environment: ""
       - name: Conda Upload
+        shell: bash -l {0}
         run: |
           conda install conda-build
           conda install anaconda-client
