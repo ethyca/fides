@@ -15,6 +15,6 @@ jobs:
       - uses: actions/setup-python@v2
       - run: pip install -r docs/fides/requirements.txt
       - name: Build docs
-        run: python docs/fides/generate_openapi.py docs/fides/docs/api/openapi.json
+        run: make docs-build
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
