@@ -1,14 +1,8 @@
 name: Publish the CLI on Conda
 
-# on:
-#   push:
-#     tags:
-#       - "*"
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
+  push:
+    tags:
       - "*"
 jobs:
   upload_to_conda:
