@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "docs/**"
-  
+
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
@@ -18,4 +18,3 @@ jobs:
         run: make docs-build
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
-        

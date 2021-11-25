@@ -1,5 +1,7 @@
 # Fidesctl API
 
+These docs represent the cutting-edge, and may contain endpoints/features that have yet to be released in stable versions.
+
 ---
 
 !!swagger openapi.json!!

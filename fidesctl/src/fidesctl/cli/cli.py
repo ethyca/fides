@@ -1,6 +1,4 @@
 """Contains all of the CLI commands for Fides."""
-import pprint
-
 import click
 import requests
 
@@ -37,10 +35,7 @@ from fidesctl.core.utils import echo_green, echo_red
 @manifests_dir_argument
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
-    Update server with your local resources.
-
-    Reads the resource manifest files that are stored in MANIFESTS_DIR (and its subdirectories) and applies the resources to your server. If a named resource already exists, the resource is completely overwritten with the new description; if it doesn't exist, it's created.
-
+    Validates local manifest files and then sends them to the server to be persisted.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -59,13 +54,7 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @fides_key_argument
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Delete a specified resource.
-
-    Args:
-
-        [resource type list] (string): the type of resource from the enumeration that you want to delete
-
-        FIDES_KEY (string): the Fides key of the resource that you want to delete.
+    Delete a resource on the server.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -85,12 +74,12 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     "-k",
     "--fides-key",
     default="",
-    help="The Fides key of the single policy that you wish to evaluate. This key is a string token that uniquely identifies the policy.",
+    help="The fides_key of the single policy that you wish to evaluate.",
 )
 @click.option(
     "-m",
     "--message",
-    help="A message that you can supply to describe the purpose of this evaluation.",
+    help="A message that you can supply to describe the context of this evaluation.",
 )
 @dry_flag
 def evaluate(
@@ -101,10 +90,12 @@ def evaluate(
     dry: bool,
 ) -> None:
     """
-    Assess your data's compliance to policies.
+    Compare your System's Privacy Declarations with your Organization's Policy Rules.
 
-    This command will first `apply` the resources defined in MANIFESTS_DIR to your server and then assess your data's compliance to your policies or single policy.
+    All local resources are applied to the server before evaluation.
 
+    If your policy evaluation fails, it is expected that you will need to
+    either adjust your Privacy Declarations, Datasets, or Policies before trying again.
     """
 
     config = ctx.obj["CONFIG"]
@@ -139,15 +130,11 @@ def generate_dataset(
     ctx: click.Context, connection_string: str, output_filename: str
 ) -> None:
     """
-    Connect a database to create a dataset.
+    Connect to a database directly via a SQLAlchemy-stlye connection string and
+    generate a dataset manifest file that consists of every schema/table/field.
 
-    Automatically create a dataset .yml file by directly connecting the database.
-
-    Args:
-
-        connection_string (string): A SQLAlchemy-compatible connection string
-
-        output_filename (str): A path to where the manifest will be written
+    This is a one-time operation that does not track the state of the database.
+    It will need to be run again if the database schema changes.
     """
 
     _generate_dataset.generate_dataset(connection_string, output_filename)
@@ -163,19 +150,17 @@ def generate_dataset(
     help="Annotate all dataset members, not just fields",
 )
 @click.option(
-    "-v", "--validate", is_flag=True, default=False, help="Validate annotation inputs"
+    "-v",
+    "--validate",
+    is_flag=True,
+    default=False,
+    help="Strictly validate annotation inputs.",
 )
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
     """
-    Guided dataset annotation.
-
-    Read and annotate a dataset.yml file to add data_categories in a guided UI. This command edits the input file in place.
-
-    Args:
-
-        input_filename: the dataset.yml file to be read and edited
+    Guided flow for annotating datasets. The dataset file will be edited in-place.
     """
     try:
         from fidesctl.core import annotate_dataset as _annotate_dataset
@@ -194,13 +179,7 @@ def annotate_dataset(
 @fides_key_argument
 def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Print the resource as a JSON object.
-
-    Args:
-
-        [resource type list] (string): the type of resource from the enumeration that you want to retrieve
-
-        FIDES_KEY (string): the Fides key of the resource that you want to retrieve
+    View a resource from the server as a JSON object.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -217,10 +196,7 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 def init_db(ctx: click.Context) -> None:
     """
-    Initialize and launch your Fides policy database.
-
-    After you've initialized your database, you should add your policy resources by calling 'apply'.
-
+    Initialize the Fidesctl database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(_api.db_action(config.cli.server_url, "init"))
@@ -231,13 +207,7 @@ def init_db(ctx: click.Context) -> None:
 @resource_type_argument
 def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
     """
-    List resource objects.
-
-    This command will print the JSON object for the specified resource.
-
-    Args:
-
-        [resource type list] (string): the type of resource from the enumeration that you want to retrieve
+    Get a list of all resources of this type from the server and display them as JSON.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -255,25 +225,21 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
 @verbose_flag
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
-    Validate the taxonomy described by the manifest files.
+    Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify
+    the validity of all manifest files.
 
-    Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify presence of taxonomy valuse. If the taxonomy is successfully validated, the command prints a success message and returns 0. If invalid, the command prints one or more error messages and returns non-0.
-
-    Note: No resources are applied to your server in this command. Enabling -v will print the taxonomy.
+    If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.
     """
-
     taxonomy = _parse.parse(manifests_dir)
     if verbose:
-        pprint.pprint(taxonomy)
+        pretty_echo(taxonomy.dict(), color="green")
 
 
 @click.command()
 @click.pass_context
 def ping(ctx: click.Context, config_path: str = "") -> None:
     """
-    Confirm fidesctl is running.
-
-    Sends a message to the Fides API health-check endpoint and prints the response.
+    Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
     """
     config = ctx.obj["CONFIG"]
     healthcheck_url = config.cli.server_url + "/health"
@@ -289,10 +255,7 @@ def ping(ctx: click.Context, config_path: str = "") -> None:
 @yes_flag
 def reset_db(ctx: click.Context, yes: bool) -> None:
     """
-    Full database cleanse.
-
-    Removes the resources that you added through previous 'apply' calls, and then re-initializes the database by running `init-db`.
-
+    Wipes all user-created data and resets the database back to its freshly initialized state.
     """
     config = ctx.obj["CONFIG"]
     if yes:
@@ -313,9 +276,7 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 @click.pass_context
 def view_config(ctx: click.Context) -> None:
     """
-    Prints the current fidesctl configuration. You can modify the configuration by passing a configuration file to the 'fidesctl' command:
-
-    $ fidesctl --config-path config_files
+    Prints the current fidesctl configuration values.
     """
     config = ctx.obj["CONFIG"]
     pretty_echo(config.dict(), color="green")
@@ -325,7 +286,7 @@ def view_config(ctx: click.Context) -> None:
 @click.pass_context
 def webserver(ctx: click.Context) -> None:
     """
-    Starts the fidesctl API server.
+    Starts the fidesctl API server using Uvicorn on port 8080.
     """
     try:
         from fidesapi.main import start_webserver
