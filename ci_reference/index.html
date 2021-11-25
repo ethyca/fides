@@ -16,7 +16,7 @@
     
     
       
-        <title>CI Reference - Fides</title>
+        <title>CI/CD Reference - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ci-reference" class="md-skip">
+        <a href="#cicd-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              CI Reference
+              CI/CD Reference
             
           </span>
         </div>
@@ -529,9 +529,60 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          CI/CD Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
-        CI Reference
+        CI/CD Reference
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    GitHub Actions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gitlab-ci" class="md-nav__link">
+    GitLab CI
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jenkins" class="md-nav__link">
+    Jenkins
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#circleci" class="md-nav__link">
+    CircleCI
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1207,6 +1258,42 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#github-actions" class="md-nav__link">
+    GitHub Actions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gitlab-ci" class="md-nav__link">
+    GitLab CI
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jenkins" class="md-nav__link">
+    Jenkins
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#circleci" class="md-nav__link">
+    CircleCI
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1218,15 +1305,112 @@
               
                 
                 
-                <h1 id="ci-reference">CI Reference</h1>
-<p>Fidesctl is a CI/CD tool first and foremost. With that in mind, we've included example CI/CD files for GitHub Actions to give an idea of what it looks like to run Fidesctl as part of a software development workflow.</p>
-<p>You should plan to implement two CI actions:</p>
+                <h1 id="cicd-reference">CI/CD Reference</h1>
+<p>Fidesctl is primarily a tool designed to integrate with your CI pipeline configuration. You should plan to implement at least two CI actions:</p>
 <ol>
-<li>Run <code>fidesctl evaluate --dry &lt;resource_dir&gt;</code> on pull requests, to check if new code will be accepted without applying those changes to the server.</li>
-<li>Run <code>fidesctl evaluate &lt;resource_dir&gt;</code> on commits to main, to synchronize the latest changes to the server.</li>
+<li><code>fidesctl evaluate --dry &lt;resource_dir&gt;</code><ul>
+<li>Run against the latest commit on code changesets (pull requests, merge requests, etc.)</li>
+<li>Checks if code changes will be accepted, without also applying changes to the fidesctl server</li>
+</ul>
+</li>
+<li><code>fidesctl evaluate &lt;resource_dir&gt;</code><ul>
+<li>Run against commits representing merges into the default branch</li>
+<li>Synchronizes the latest changes to the fidesctl server</li>
+</ul>
+</li>
 </ol>
-<p>Let's see what those look like for GitHub Actions:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<p>The following code snippets are meant only as simple example implementations, to illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.</p>
+<h2 id="github-actions">GitHub Actions</h2>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.github/workflows/fidesctl_ci.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fidesctl CI</span>
+
+<span class="c1"># Only check on Pull Requests that target main</span>
+<span class="nt">on</span><span class="p">:</span>
+  <span class="nt">pull_request</span><span class="p">:</span>
+    <span class="nt">branches</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
+    <span class="nt">paths</span><span class="p">:</span> <span class="c1"># Only run checks when the resource files change or the workflow file changes</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">fides_resources/**</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">.github/workflows/fidesctl_ci.yml</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+  <span class="nt">fidesctl_ci</span><span class="p">:</span>
+    <span class="nt">runs-on</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+    <span class="nt">container</span><span class="p">:</span>
+      <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span>
+    <span class="nt">steps</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Dry Evaluation</span>
+        <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
+        <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry fides_resources/</span>
+        <span class="nt">env</span><span class="p">:</span>
+          <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&quot;https://fidesctl.privacyco.com&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.github/workflows/fidesctl_cd.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fidesctl CD</span>
+
+<span class="c1"># Run the check every time a new commit hits the default branch</span>
+<span class="nt">on</span><span class="p">:</span>
+  <span class="nt">push</span><span class="p">:</span>
+    <span class="nt">branches</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
+    <span class="nt">tags</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;*&quot;</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+  <span class="nt">fidesctl_cd</span><span class="p">:</span>
+    <span class="nt">runs-on</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+    <span class="nt">container</span><span class="p">:</span>
+      <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span>
+    <span class="nt">steps</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Evaluation</span>
+        <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
+        <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate fides_resources/</span>
+        <span class="nt">env</span><span class="p">:</span>
+          <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&quot;https://fidesctl.privacyco.com&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="gitlab-ci">GitLab CI</h2>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.gitlab-ci.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1249,33 +1433,38 @@
 <span class="normal">21</span>
 <span class="normal">22</span>
 <span class="normal">23</span>
-<span class="normal">24</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fidesctl CI Check</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">stages</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">test</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">deploy</span>
 
-<span class="c1"># Only check on Pull Requests that target main</span>
-<span class="nt">on</span><span class="p">:</span>
-  <span class="nt">pull_request</span><span class="p">:</span>
-    <span class="nt">branches</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
-    <span class="nt">paths</span><span class="p">:</span> <span class="c1"># Only run checks when the resource files change or the workflow file changes</span>
+<span class="nt">variables</span><span class="p">:</span> <span class="nl">&amp;global-variables</span>
+  <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&quot;https://fidesctl.privacyco.com&quot;</span>
+
+<span class="nt">fidesctl-ci</span><span class="p">:</span>
+  <span class="nt">stage</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test</span>
+  <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl</span>
+  <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry fides_resources/</span>
+  <span class="nt">only</span><span class="p">:</span>
+    <span class="nt">if</span><span class="p">:</span> <span class="s">&#39;$CI_PIPELINE_SOURCE</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">merge_request_event&#39;</span>
+    <span class="nt">changes</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">fides_resources/**</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">.github/workflows/fidesctl_ci.yaml</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">.gitlab-ci.yml</span>
+  <span class="nt">variables</span><span class="p">:</span>
+    <span class="nt">&lt;&lt;</span><span class="p">:</span> <span class="nv">*global-variables</span>
 
-<span class="nt">jobs</span><span class="p">:</span>
-  <span class="nt">Fidesctl</span><span class="p">:</span>
-    <span class="nt">runs-on</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-    <span class="nt">container</span><span class="p">:</span>
-      <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span>
-
-    <span class="nt">steps</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
-
-      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Dry Evaluation</span>
-        <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry fides_resources/</span>
-        <span class="nt">env</span><span class="p">:</span>
-          <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&quot;https://fidesctl.privacyco.com&quot;</span>
+<span class="nt">fidesctl-cd</span><span class="p">:</span>
+  <span class="nt">stage</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">deploy</span>
+  <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl</span>
+  <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate fides_resources/</span>
+  <span class="nt">if</span><span class="p">:</span> <span class="s">&#39;$CI_COMMIT_BRANCH</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">$CI_DEFAULT_BRANCH&#39;</span>
+  <span class="nt">variables</span><span class="p">:</span>
+    <span class="nt">&lt;&lt;</span><span class="p">:</span> <span class="nv">*global-variables</span>
 </code></pre></div>
 </td></tr></table>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<h2 id="jenkins">Jenkins</h2>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>Jenkinsfile</code> (Declarative Syntax)</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1297,29 +1486,125 @@
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fidesctl CD Check</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">pipeline</span> <span class="o">{</span>
+  <span class="n">agent</span> <span class="o">{</span>
+    <span class="n">docker</span> <span class="o">{</span>
+      <span class="n">image</span> <span class="s1">&#39;ethyca/fidesctl:latest&#39;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="n">stages</span> <span class="o">{</span>
+    <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;test&#39;</span><span class="o">){</span>
+      <span class="n">environment</span> <span class="o">{</span>
+        <span class="n">FIDESCTL__CLI__SERVER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://fidesctl.privacyco.com&#39;</span>
+      <span class="o">}</span>
+      <span class="n">steps</span> <span class="o">{</span>
+        <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate --dry fides_resources/&#39;</span>
+      <span class="o">}</span>
+      <span class="n">when</span> <span class="o">{</span>
+        <span class="n">anyOf</span> <span class="o">{</span>
+          <span class="n">changeset</span> <span class="s1">&#39;fides_resources/**&#39;</span>
+          <span class="n">changeset</span> <span class="s1">&#39;Jenkinsfile&#39;</span>
+        <span class="o">}</span>
+        <span class="n">changeRequest</span><span class="o">()</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;deploy&#39;</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">environment</span> <span class="o">{</span>
+        <span class="n">FIDESCTL__CLI__SERVER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://fidesctl.privacyco.com&#39;</span>
+      <span class="o">}</span>
+      <span class="n">steps</span> <span class="o">{</span>
+        <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate fides_resources/&#39;</span>
+      <span class="o">}</span>
+      <span class="n">when</span> <span class="o">{</span>
+        <span class="n">branch</span> <span class="s1">&#39;main&#39;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="circleci">CircleCI</h2>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.circleci/config.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2.1</span>
 
-<span class="c1"># Run the checks every single time a new commit hits Main</span>
-<span class="nt">on</span><span class="p">:</span>
-  <span class="nt">push</span><span class="p">:</span>
-    <span class="nt">branches</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
-    <span class="nt">tags</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;*&quot;</span>
+<span class="nt">executors</span><span class="p">:</span>
+  <span class="nt">fidesctl</span><span class="p">:</span>
+    <span class="nt">docker</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span>
+        <span class="nt">environment</span><span class="p">:</span>
+          <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&#39;https://fidesctl.privacyco.com&#39;</span>
 
 <span class="nt">jobs</span><span class="p">:</span>
-  <span class="nt">Fidesctl</span><span class="p">:</span>
-    <span class="nt">runs-on</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-    <span class="nt">container</span><span class="p">:</span>
-      <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span>
-
+  <span class="nt">fidesctl-evaluate-dry</span><span class="p">:</span>
+    <span class="nt">executor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl</span>
     <span class="nt">steps</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
+      <span class="p p-Indicator">-</span> <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry fides_resources/</span>
 
-      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Evaluation</span>
-        <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate fides_resources/</span>
-        <span class="nt">env</span><span class="p">:</span>
-          <span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span> <span class="s">&quot;https://fidesctl.privacyco.com&quot;</span>
+  <span class="nt">fidesctl-evaluate</span><span class="p">:</span>
+    <span class="nt">executor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl</span>
+    <span class="nt">steps</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate fides_resources/</span>
+
+<span class="nt">workflows</span><span class="p">:</span>
+  <span class="nt">version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+  <span class="nt">test</span><span class="p">:</span>
+    <span class="nt">jobs</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">fidesctl-evaluate-dry</span><span class="p">:</span>
+          <span class="nt">filters</span><span class="p">:</span>
+            <span class="nt">branches</span><span class="p">:</span>
+              <span class="nt">ignore</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
+
+  <span class="nt">deploy</span><span class="p">:</span>
+    <span class="nt">jobs</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">fidesctl-evaluate</span><span class="p">:</span>
+          <span class="nt">filters</span><span class="p">:</span>
+            <span class="nt">branches</span><span class="p">:</span>
+              <span class="nt">only</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">main</span>
 </code></pre></div>
 </td></tr></table>
                 
