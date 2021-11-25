@@ -16,18 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Anaconda
-        run: |
-          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-          bash miniconda.sh -b -p $HOME/miniconda
-          export PATH="$HOME/miniconda/bin:$PATH"
-          export PATH="$HOME/anaconda3/bin:$PATH"
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: ""
       - name: Conda Upload
         run: |
-          conda config --set auto_activate_base true
           conda install conda-build
           conda install anaconda-client
           conda install conda-verify
-          ls $HOME/miniconda/bin
           anaconda upload
           conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
           anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
