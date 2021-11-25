@@ -1,16 +1,20 @@
-# CI Reference
+# CI/CD Reference
 
-Fidesctl is a CI/CD tool first and foremost. With that in mind, we've included example CI/CD files for GitHub Actions to give an idea of what it looks like to run Fidesctl as part of a software development workflow.
+Fidesctl is primarily a tool designed to integrate with your CI pipeline configuration. You should plan to implement at least two CI actions:
 
-You should plan to implement two CI actions:
+1. `fidesctl evaluate --dry <resource_dir>`
+    - Run against the latest commit on code changesets (pull requests, merge requests, etc.)
+    - Checks if code changes will be accepted, without also applying changes to the fidesctl server
+2. `fidesctl evaluate <resource_dir>`
+    - Run against commits representing merges into the default branch
+    - Synchronizes the latest changes to the fidesctl server
 
-1. Run `fidesctl evaluate --dry <resource_dir>` on pull requests, to check if new code will be accepted without applying those changes to the server.
-2. Run `fidesctl evaluate <resource_dir>` on commits to main, to synchronize the latest changes to the server.
+The following code snippets are meant only as simple example implementations, to illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
 
-Let's see what those look like for GitHub Actions:
+## GitHub Actions
 
-```yaml
-name: Fidesctl CI Check
+```yaml title="<code>.github/workflows/fidesctl_ci.yml</code>"
+name: Fidesctl CI
 
 # Only check on Pull Requests that target main
 on:
@@ -19,27 +23,25 @@ on:
       - main
     paths: # Only run checks when the resource files change or the workflow file changes
       - fides_resources/**
-      - .github/workflows/fidesctl_ci.yaml
+      - .github/workflows/fidesctl_ci.yml
 
 jobs:
-  Fidesctl:
+  fidesctl_ci:
     runs-on: ubuntu-latest
     container:
       image: ethyca/fidesctl:latest
-
     steps:
-      - uses: actions/checkout@v2
-
       - name: Dry Evaluation
+        uses: actions/checkout@v2
         run: fidesctl evaluate --dry fides_resources/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
 
-```yaml
-name: Fidesctl CD Check
+```yaml title="<code>.github/workflows/fidesctl_cd.yml</code>"
+name: Fidesctl CD
 
-# Run the checks every single time a new commit hits Main
+# Run the check every time a new commit hits the default branch
 on:
   push:
     branches:
@@ -48,16 +50,125 @@ on:
       - "*"
 
 jobs:
-  Fidesctl:
+  fidesctl_cd:
     runs-on: ubuntu-latest
     container:
       image: ethyca/fidesctl:latest
-
     steps:
-      - uses: actions/checkout@v2
-
       - name: Evaluation
+        uses: actions/checkout@v2
         run: fidesctl evaluate fides_resources/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+```
+
+## GitLab CI
+
+```yaml title="<code>.gitlab-ci.yml</code>"
+stages:
+  - test
+  - deploy
+
+variables: &global-variables
+  FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+
+fidesctl-ci:
+  stage: test
+  image: ethyca/fidesctl
+  script: fidesctl evaluate --dry fides_resources/
+  only:
+    if: '$CI_PIPELINE_SOURCE = merge_request_event'
+    changes:
+      - fides_resources/**
+      - .gitlab-ci.yml
+  variables:
+    <<: *global-variables
+
+fidesctl-cd:
+  stage: deploy
+  image: ethyca/fidesctl
+  script: fidesctl evaluate fides_resources/
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  variables:
+    <<: *global-variables
+```
+
+## Jenkins
+
+```groovy title="<code>Jenkinsfile</code> (Declarative Syntax)"
+pipeline {
+  agent {
+    docker {
+      image 'ethyca/fidesctl:latest'
+    }
+  }
+  stages {
+    stage('test'){
+      environment {
+        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+      }
+      steps {
+        sh 'fidesctl evaluate --dry fides_resources/'
+      }
+      when {
+        anyOf {
+          changeset 'fides_resources/**'
+          changeset 'Jenkinsfile'
+        }
+        changeRequest()
+      }
+    }
+    stage('deploy') {
+      environment {
+        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+      }
+      steps {
+        sh 'fidesctl evaluate fides_resources/'
+      }
+      when {
+        branch 'main'
+      }
+    }
+  }
+}
+```
+
+## CircleCI
+
+```yaml title="<code>.circleci/config.yml</code>"
+version: 2.1
+
+executors:
+  fidesctl:
+    docker:
+      - image: ethyca/fidesctl:latest
+        environment:
+          FIDESCTL__CLI__SERVER_URL: 'https://fidesctl.privacyco.com'
+
+jobs:
+  fidesctl-evaluate-dry:
+    executor: fidesctl
+    steps:
+      - run: fidesctl evaluate --dry fides_resources/
+
+  fidesctl-evaluate:
+    executor: fidesctl
+    steps:
+      - run: fidesctl evaluate fides_resources/
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - fidesctl-evaluate-dry:
+          filters:
+            branches:
+              ignore: main
+
+  deploy:
+    jobs:
+      - fidesctl-evaluate:
+          filters:
+            branches:
+              only: main
 ```
