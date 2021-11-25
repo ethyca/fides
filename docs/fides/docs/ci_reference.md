@@ -95,7 +95,7 @@ fidesctl-cd:
 
 ## Jenkins
 
-```groovy title="<code>Jenkinsfile</code> (Declaritive Syntax)"
+```groovy title="<code>Jenkinsfile</code> (Declarative Syntax)"
 pipeline {
   agent {
     docker {
