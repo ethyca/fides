@@ -47,12 +47,12 @@ API_COMMANDS = [
     "-f",
     "config_path",
     default="",
-    help="Optional configuration file",
+    help="Path to a configuration file. Use 'fidesctl view-config' to print the config.",
 )
 @click.option(
     "--local",
     is_flag=True,
-    help="Do not make any API calls to the webserver.",
+    help="Run in 'local_mode'. This mode doesn't make API calls and can be used without the API server/database.",
 )
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
