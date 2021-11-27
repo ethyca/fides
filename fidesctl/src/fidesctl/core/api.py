@@ -8,7 +8,7 @@ def generate_resource_url(
     url: str, resource_type: str = "", resource_id: str = "", version: str = "v1"
 ) -> str:
     """
-    Generate an resource's URL using a base url, the resource type and a version.
+    Generate a resource's URL using a base url, the resource type and a version.
     """
     return f"{url}/{resource_type}/{resource_id}"
 
@@ -17,7 +17,7 @@ def get(
     url: str, resource_type: str, resource_id: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Get an resource by its id.
+    Get a resource by its id.
     """
     resource_url = generate_resource_url(url, resource_type, resource_id)
     return requests.get(resource_url, headers=headers)
@@ -44,7 +44,7 @@ def delete(
     url: str, resource_type: str, resource_id: str, headers: Dict[str, str]
 ) -> requests.Response:
     """
-    Delete an resource by its id.
+    Delete a resource by its id.
     """
     resource_url = generate_resource_url(url, resource_type, resource_id)
     return requests.delete(resource_url, headers=headers)
