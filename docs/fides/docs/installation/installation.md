@@ -17,7 +17,7 @@ While there are some successes with using other tools like poetry or pip-tools, 
 **When this option works best**
 
 * This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
-* The only officially supported mechanisms of installation are pip or conda.
+* The only officially supported mechanisms of installation are pip and conda.
 
 **Intended users**
 
