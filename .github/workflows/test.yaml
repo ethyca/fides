@@ -1,6 +1,5 @@
-name: Tests
+name: Test
 
-# Only test on Pull Requests that target main
 on:
   pull_request:
     branches:
@@ -9,32 +8,211 @@ on:
       - fidesctl/**
       - .github/workflows/test.yaml
 
+env:
+  CONTAINER: fidesctl-${{ github.sha }}
+  IMAGE: ethyca/fidesctl:${{ github.sha }}
+
 jobs:
-  Tests:
+  Build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      - name: Build the Docker Images
-        run: make compose-build
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
 
-      - name: Check fidesctl installed
-        run: make check-install
+      - name: Build fidesctl and export
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./fidesctl
+          file: ./fidesctl/Dockerfile
+          outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
+          push: false
+          tags: ${{ env.IMAGE }}
 
-      - name: Fidesctl Evaluation
-        run: make fidesctl
+      - name: Upload fidesctl artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/${{ env.CONTAINER }}.tar
+          retention-days: 7
 
-      - name: Format
-        run: make black
+  Evaluate:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
 
-      - name: Lint
-        run: make pylint
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
-      - name: TypeCheck
-        run: make mypy
+      - name: Check install
+        run: docker run ${{ env.IMAGE }} fidesctl
 
-      - name: Complexity Check
-        run: make xenon
+      - name: Fidesctl evaluation
+        run: docker run --rm ${{ env.IMAGE }} fidesctl --local evaluate fides_resources/
 
-      - name: Test
-        run: make pytest
+  Format:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Run formatter
+        run: docker run ${{ env.IMAGE }} black --check src/
+
+  Lint:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Run linter
+        run: docker run ${{ env.IMAGE }} pylint src/
+
+  TypeCheck:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Run typechecker
+        run: docker run ${{ env.IMAGE }} mypy
+
+  Complexity:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Run cyclomatic complexity check
+        run: docker run ${{ env.IMAGE }} xenon src --max-absolute B --max-modules B --max-average A --ignore "data, tests, docs" --exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
+
+  Test:
+    needs: Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: fidesctl
+          POSTGRES_PASSWORD: fidesctl
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Download fidesctl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Run test suite
+        run: docker run ${{ env.IMAGE }} pytest -x
