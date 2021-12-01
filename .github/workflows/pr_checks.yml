@@ -9,8 +9,8 @@ on:
       - .github/workflows/test.yaml
 
 env:
-  CONTAINER: fidesctl-${{ github.sha }}
-  IMAGE: ethyca/fidesctl:${{ github.sha }}
+  CONTAINER: fidesctl-${{ github.event.pull_request.head.sha }}
+  IMAGE: ethyca/fidesctl:${{ github.event.pull_request.head.sha }}
 
 jobs:
   Build:
