@@ -43,19 +43,6 @@ jobs:
   Evaluate:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
@@ -75,19 +62,6 @@ jobs:
   Format:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
@@ -104,19 +78,6 @@ jobs:
   Lint:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
@@ -133,19 +94,6 @@ jobs:
   TypeCheck:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
@@ -162,19 +110,6 @@ jobs:
   Complexity:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
