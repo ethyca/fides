@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column
 from sqlalchemy.engine import Engine, create_engine, CursorResult, LegacyCursorResult
@@ -9,6 +9,7 @@ from snowflake.sqlalchemy import URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
 from fidesops.schemas.connection_configuration import (
     PostgreSQLSchema,
@@ -18,9 +19,7 @@ from fidesops.schemas.connection_configuration import (
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
-from fidesops.service.connectors.base_connector import (
-    BaseConnector,
-)
+from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import SQLQueryConfig
 
 logger = logging.getLogger(__name__)
@@ -52,7 +51,7 @@ class SQLConnector(BaseConnector):
         """Query wrapper corresponding to the input traversal_node."""
         return SQLQueryConfig(node)
 
-    def test_connection(self) -> None:
+    def test_connection(self) -> Optional[TestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
         logger.info(f"Starting test connection to {self.configuration.key}")
 
@@ -70,6 +69,8 @@ class SQLConnector(BaseConnector):
             )
         except Exception:
             raise ConnectionException("Connection error.")
+
+        return TestStatus.succeeded
 
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]

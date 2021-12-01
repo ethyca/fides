@@ -73,6 +73,21 @@ class TestPatchConnections:
         response_body = json.loads(response.text)
         assert "extra fields not permitted" == response_body["detail"][0]["msg"]
 
+    def test_patch_http_connection(self, url, api_client, db: Session, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = [{
+            "name": "My Post-Execution Webhook",
+            "key": "webhook_key",
+            "connection_type": "https",
+            "access": "read"
+        }]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body['succeeded'][0]["connection_type"] == "https"
+        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
+        http_config.delete(db)
+
     def test_patch_connections_bulk_create(
         self, api_client: TestClient, db: Session, generate_auth_header, url, payload
     ) -> None:
@@ -641,3 +656,39 @@ class TestPutConnectionConfigSecrets:
         }
         assert snowflake_connection_config.last_test_timestamp is None
         assert snowflake_connection_config.last_test_succeeded is None
+
+    def test_put_http_connection_config_secrets(
+            self,
+            api_client: TestClient,
+            db: Session,
+            generate_auth_header,
+            https_connection_config,
+    ) -> None:
+        """Note: HTTP Connection Configs don't attempt to test secrets"""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
+        payload = {
+            "url": "example.com",
+            "authorization": "test_authorization123"
+        }
+
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+                body["msg"]
+                == f"Secrets updated for ConnectionConfig with key: {https_connection_config.key}."
+        )
+        assert body["test_status"] == "skipped"
+        db.refresh(https_connection_config)
+        assert https_connection_config.secrets == {
+            "url": "example.com",
+            "authorization": "test_authorization123"
+        }
+        assert https_connection_config.last_test_timestamp is None
+        assert https_connection_config.last_test_succeeded is None
+

@@ -95,6 +95,10 @@ class AuthenticationException(BaseException):
     """Custom Exception - Authentication Failed"""
 
 
+class WebhookOrderException(BaseException):
+    """Custom Exception - Issue with webhooks order"""
+
+
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
 

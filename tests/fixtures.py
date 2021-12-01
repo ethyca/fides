@@ -25,6 +25,7 @@ from fidesops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
+    PolicyPreWebhook, PolicyPostWebhook,
 )
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -258,6 +259,99 @@ def snowflake_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def https_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_webhook_config",
+            "connection_type": ConnectionType.https,
+            "access": AccessLevel.read,
+            "secrets": {"url": "example.com", "authorization": "test_authorization"},
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def policy_pre_execution_webhooks(
+    db: Session, https_connection_config, policy
+) -> Generator:
+    pre_webhook = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_one_way_webhook",
+            "order": 0,
+        },
+    )
+    pre_webhook_two = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "two_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_two_way_webhook",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [pre_webhook, pre_webhook_two]
+    try:
+        pre_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def policy_post_execution_webhooks(
+    db: Session, https_connection_config, policy
+) -> Generator:
+    post_webhook = PolicyPostWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "cache_busting_webhook",
+            "order": 0,
+        },
+    )
+    post_webhook_two = PolicyPostWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "cleanup_webhook",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [post_webhook, post_webhook_two]
+    try:
+        post_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        post_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")

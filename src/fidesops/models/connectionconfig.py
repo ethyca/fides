@@ -21,6 +21,14 @@ from fidesops.core.config import config
 from fidesops.db.base_class import Base, JSONTypeOverride
 
 
+class TestStatus(enum.Enum):
+    """Enum for supplying statuses of validating credentials for a Connection Config to the user"""
+
+    succeeded = "succeeded"
+    failed = "failed"
+    skipped = "skipped"
+
+
 class ConnectionType(enum.Enum):
     """
     Supported types to which we can connect fides-ops.
@@ -69,8 +77,14 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
-    def update_test_status(self, succeeded: bool, db: Session) -> None:
-        """Updates last_test_timestamp and last_test_succeeded after an attempt to make a test connection."""
+    def update_test_status(self, test_status: TestStatus, db: Session) -> None:
+        """Updates last_test_timestamp and last_test_succeeded after an attempt to make a test connection.
+
+        If the test was skipped, for example, on an HTTP Connector, don't update these fields.
+        """
+        if test_status == TestStatus.skipped:
+            return
+
         self.last_test_timestamp = datetime.now()
-        self.last_test_succeeded = succeeded
+        self.last_test_succeeded = test_status == TestStatus.succeeded
         self.save(db)

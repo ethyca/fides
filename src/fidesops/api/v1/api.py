@@ -9,6 +9,7 @@ from fidesops.api.v1.endpoints import (
     masking_endpoints,
     oauth_endpoints,
     policy_endpoints,
+    policy_webhook_endpoints,
     privacy_request_endpoints,
     storage_endpoints,
 )
@@ -23,5 +24,6 @@ api_router.include_router(health_endpoints.router)
 api_router.include_router(masking_endpoints.router)
 api_router.include_router(oauth_endpoints.router)
 api_router.include_router(policy_endpoints.router)
+api_router.include_router(policy_webhook_endpoints.router)
 api_router.include_router(privacy_request_endpoints.router)
 api_router.include_router(storage_endpoints.router)

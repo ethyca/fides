@@ -17,6 +17,10 @@ PRIVACY_REQUEST_CREATE = "privacy-request:create"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 
+WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
+WEBHOOK_READ = "webhook:read"
+WEBHOOK_DELETE = "webhook:delete"
+
 RULE_CREATE_OR_UPDATE = "rule:create_or_update"
 RULE_READ = "rule:read"
 RULE_DELETE = "rule:delete"
@@ -59,4 +63,7 @@ SCOPE_REGISTRY = [
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+    WEBHOOK_CREATE_OR_UPDATE,
+    WEBHOOK_READ,
+    WEBHOOK_DELETE,
 ]

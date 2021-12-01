@@ -1,11 +1,12 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError, OperationFailure
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
@@ -54,7 +55,7 @@ class MongoDBConnector(BaseConnector):
         """Query wrapper corresponding to the input traversal_node."""
         return MongoQueryConfig(node)
 
-    def test_connection(self) -> None:
+    def test_connection(self) -> Optional[TestStatus]:
         """
         Connects to the Mongo database and makes two trivial queries to ensure connection is valid.
         """
@@ -77,6 +78,8 @@ class MongoDBConnector(BaseConnector):
             raise ConnectionException("Connection Error connecting to MongoDB.")
         finally:
             client.close()
+
+        return TestStatus.succeeded
 
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import (
@@ -8,6 +8,7 @@ from fastapi_pagination import (
 )
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
@@ -62,6 +63,19 @@ def get_policy_list(
     return paginate(policies, params=params)
 
 
+def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
+    """Helper method to load Policy or throw a 404"""
+    logger.info(f"Finding policy with key '{policy_key}'")
+    policy = Policy.get_by(db=db, field="key", value=policy_key)
+    if not policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Policy found for key {policy_key}.",
+        )
+
+    return policy
+
+
 @router.get(
     urls.POLICY_DETAIL,
     status_code=200,
@@ -76,15 +90,7 @@ def get_policy(
     """
     Return a single Policy
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
-    policy = Policy.get_by(db=db, field="key", value=policy_key)
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {policy_key}.",
-        )
-
-    return policy
+    return get_policy_or_error(db, policy_key)
 
 
 @router.patch(
@@ -166,12 +172,7 @@ def create_or_update_rules(
     """
     logger.info(f"Finding policy with key '{policy_key}'")
 
-    policy = Policy.get_by(db=db, field="key", value=policy_key)
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {policy_key}.",
-        )
+    policy = get_policy_or_error(db, policy_key)
 
     created_or_updated: List[Rule] = []
     failed: List[BulkUpdateFailed] = []
@@ -273,14 +274,7 @@ def delete_rule(
     """
     Delete a policy rule.
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
-
-    policy = Policy.get_by(db=db, field="key", value=policy_key)
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {policy_key}.",
-        )
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
 
@@ -316,13 +310,7 @@ def create_or_update_rule_targets(
     Given a list of Rule data elements, create corresponding Rule objects
     or report failure
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
-    policy = Policy.get_by(db=db, field="key", value=policy_key)
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {policy_key}.",
-        )
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
     rule = Rule.filter(
@@ -408,14 +396,7 @@ def delete_rule_target(
     """
     Delete the rule target.
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
-
-    policy = Policy.get_by(db=db, field="key", value=policy_key)
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Policy found for key {policy_key}.",
-        )
+    policy = get_policy_or_error(db, policy_key)
 
     logger.info(f"Finding rule with key '{rule_key}'")
     rule = Rule.filter(

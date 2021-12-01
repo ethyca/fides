@@ -1,5 +1,4 @@
 from typing import Dict, List, Optional, Union
-
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.models.policy import (
