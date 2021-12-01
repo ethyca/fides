@@ -122,6 +122,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+conda-out/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

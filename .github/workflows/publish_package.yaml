@@ -1,0 +1,42 @@
+name: Publish fidesctl
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  upload_to_pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Twine
+        run: pip install twine
+
+      - name: Twine Upload
+        run: |
+          cd fidesctl/
+          python setup.py sdist 
+          twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+  upload_to_conda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Anaconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: ""
+      - name: Conda Upload
+        shell: bash -l {0}
+        run: |
+          conda install conda-build
+          conda install anaconda-client
+          conda install conda-verify
+          conda build --output-folder ./conda-out/ ./fidesctl/conda/ -c plotly -c conda-forge
+          anaconda -t "${{ secrets.CONDA_TOKEN }}" upload -u ethyca ./conda-out/noarch/fidesctl*.bz2
