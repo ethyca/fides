@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, List
 
 from pydantic import BaseModel, Extra, root_validator
 
+from fidesops.models.connectionconfig import TestStatus
 from fidesops.schemas import Msg
 
 
@@ -49,5 +50,5 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 class TestStatusMessage(Msg):
     """A schema for checking status."""
 
-    test_status: Optional[str]
+    test_status: Optional[TestStatus] = None
     failure_reason: Optional[str] = None

@@ -1,9 +1,9 @@
 import logging
 from abc import abstractmethod, ABC
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
 from fidesops.models.policy import Policy
 from fidesops.service.connectors.query_config import QueryConfig
 
@@ -34,7 +34,7 @@ class BaseConnector(ABC):
         """Return the query config that corresponds to this connector type"""
 
     @abstractmethod
-    def test_connection(self) -> None:
+    def test_connection(self) -> Optional[TestStatus]:
         """Used to make a trivial query with the client to ensure secrets are correct.
 
         If no issues are encountered, this should run without error, otherwise a ConnectionException

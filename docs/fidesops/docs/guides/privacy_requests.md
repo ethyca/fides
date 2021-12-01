@@ -3,7 +3,7 @@
 In this section we'll cover:
 
 - What is a Privacy Request?
-- How does a Privacy Rquest work in conjunction with a policy?
+- How does a Privacy Request work in conjunction with a policy?
 - How can I execute a Privacy Request?
 - How do I monitor Privacy Requests as they execute?
 - How can I integrate the Privacy Request flow into my existing support tools?

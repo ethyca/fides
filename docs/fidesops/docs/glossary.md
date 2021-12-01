@@ -23,6 +23,10 @@
 
 - [`Traversal`](guides/query_execution.md): Created from an identity and an identity graph. In short, it says here's the first table I'm going to visit, I'm going to get this Field, cache it, and then use that to get this information from the next Collection, and so on.
 
+- [`PolicyPreWebhook`](guides/policy_webhooks.md): Webhooks configured on a Policy to be triggered **before** a PrivacyRequest is executed.
+
+- [`PolicyPostWebhook`](guides/policy_webhooks.md): Webhooks configured on a Policy to be triggered **after** a PrivacyRequest is executed.
+
 - Database terms:
 
     - `Datasets` - Resources at the database level. Datasets can have many Collections.

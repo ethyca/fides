@@ -167,10 +167,7 @@ class OrmWrappedFidesopsBase(FidesopsBase):
 
         # Create
         db_obj = cls(**data)  # type: ignore
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        return cls.persist_obj(db, db_obj)
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
@@ -272,10 +269,18 @@ class OrmWrappedFidesopsBase(FidesopsBase):
                     f"Key '{key}' on {self.__class__.__name__} is invalid."
                 )
 
-        db.add(self)
+        return OrmWrappedFidesopsBase.persist_obj(db, self)
+
+    @classmethod
+    def persist_obj(cls, db: Session, resource: FidesopsBase) -> FidesopsBase:
+        """Method to be run after 'create' or 'save' to write the resource to the db
+
+        Can be overridden on subclasses to not commit immediately when creating/updating.
+        """
+        db.add(resource)
         db.commit()
-        db.refresh(self)
-        return self
+        db.refresh(resource)
+        return resource
 
 
 class JSONTypeOverride(JSONType):  # pylint: disable=W0223

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0dbbda6e-cefe-48c6-a6ef-c93d80848835",
+		"_postman_id": "471d19d0-a102-4125-b276-6e96f47ba757",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1444,6 +1444,363 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Create/Update HTTPS Connection Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"My Webhook Connection Configuration\",\n    \"key\": \"{{http_connection_key}}\",\n    \"connection_type\": \"https\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update HTTPS Connection Secrets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\": \"example.com\",\n    \"authorization\": \"test_authorization\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{http_connection_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{http_connection_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Pre-Execution Webhooks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"connection_config_key\": \"{{http_connection_key}}\",\n        \"direction\": \"one_way\",\n        \"key\": \"{{pre_webhook_one}}\",\n        \"name\": \"Wake up Snowflake DB Webhook\"\n    },\n     {\n        \"connection_config_key\": \"{{http_connection_key}}\",\n        \"direction\": \"two_way\",\n        \"key\": \"{{pre_webhook_two}}\",\n        \"name\": \"Prep Systems Webhook\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"pre_execution"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pre-Execution Webhook Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"pre_execution",
+								"{{pre_webhook_one}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Pre-Execution Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"direction\": \"two_way\",\n    \"order\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"pre_execution",
+								"{{pre_webhook_one}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Pre-Execution Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"pre_execution",
+								"{{pre_webhook_one}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Post-Execution Webhooks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"connection_config_key\": \"{{http_connection_key}}\",\n        \"direction\": \"one_way\",\n        \"key\": \"{{post_webhook_one}}\",\n        \"name\": \"Cache Busting Webhook\"\n    },\n     {\n        \"connection_config_key\": \"{{http_connection_key}}\",\n        \"direction\": \"one_way\",\n        \"key\": \"{{post_webhook_two}}\",\n        \"name\": \"Finalize Privacy Request Webhook\"\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"post_execution"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post-Execution Webhook Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"post_execution",
+								"{{post_webhook_one}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post-Execution Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"direction\": \"two_way\",\n    \"order\": 1\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"post_execution",
+								"{{post_webhook_one}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post-Execution Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_two}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"policy",
+								"{{policy_key}}",
+								"webhook",
+								"post_execution",
+								"{{post_webhook_two}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -1548,6 +1905,26 @@
 		{
 			"key": "mask_target_key",
 			"value": "my_mask_target"
+		},
+		{
+			"key": "http_connection_key",
+			"value": "my_http_connection"
+		},
+		{
+			"key": "pre_webhook_one",
+			"value": "wake_up_snowflake_db"
+		},
+		{
+			"key": "pre_webhook_two",
+			"value": "prep_systems_webhook"
+		},
+		{
+			"key": "post_webhook_one",
+			"value": "cache_busting_webhook"
+		},
+		{
+			"key": "post_webhook_two",
+			"value": "finalize_privacy_request"
 		}
 	]
 }

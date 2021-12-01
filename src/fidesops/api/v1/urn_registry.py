@@ -43,6 +43,16 @@ RULE_DETAIL = "/policy/{policy_key}/rule/{rule_key}"
 RULE_TARGET_LIST = "/policy/{policy_key}/rule/{rule_key}/target"
 RULE_TARGET_DETAIL = "/policy/{policy_key}/rule/{rule_key}/target/{rule_target_key}"
 
+# Policy Webhook URL's
+POLICY_WEBHOOKS_PRE = "/policy/{policy_key}/webhook/pre_execution"
+POLICY_WEBHOOKS_POST = "/policy/{policy_key}/webhook/post_execution"
+POLICY_PRE_WEBHOOK_DETAIL = (
+    "/policy/{policy_key}/webhook/pre_execution/{pre_webhook_key}"
+)
+POLICY_POST_WEBHOOK_DETAIL = (
+    "/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
+)
+
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"
