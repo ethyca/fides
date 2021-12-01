@@ -9,14 +9,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/cli/generate-dataset/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/installation/conda/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.2.5">
     
     
       
-        <title>Generate dataset - Fides</title>
+        <title>Installation from Conda - Fides</title>
       
     
     
@@ -76,6 +76,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#installation-from-conda" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -101,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Generate dataset
+              Installation from Conda
             
           </span>
         </div>
@@ -297,12 +302,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       <label class="md-nav__link" for="__nav_3">
         Installation
@@ -320,7 +327,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         Installation Overview
       </a>
     </li>
@@ -332,7 +339,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/prerequisites_dependencies/" class="md-nav__link">
+      <a href="../prerequisites_dependencies/" class="md-nav__link">
         Prerequisites & Dependencies
       </a>
     </li>
@@ -344,7 +351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/pypi/" class="md-nav__link">
+      <a href="../pypi/" class="md-nav__link">
         Installation from PyPI
       </a>
     </li>
@@ -354,9 +361,61 @@
             
   
   
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Installation from Conda
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Installation from Conda
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
   
     <li class="md-nav__item">
-      <a href="../../installation/docker/" class="md-nav__link">
+      <a href="../docker/" class="md-nav__link">
         Installation from Docker
       </a>
     </li>
@@ -368,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/database/" class="md-nav__link">
+      <a href="../database/" class="md-nav__link">
         Setting up the database
       </a>
     </li>
@@ -380,7 +439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         Configuration
       </a>
     </li>
@@ -770,7 +829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         CLI
       </a>
     </li>
@@ -997,63 +1056,59 @@
               </div>
             
             
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
                 
                 
-                <div id="cli-docs" class="cli">
-  <h1>generate-dataset</h1>
-
-  <div class="label">NAME</div>
-  <div class="content">
-    <span class="mono">annotate-dataset</span> &mdash; guided dataset annotation
-  </div>
-  <div class="label">SYNOPSIS</div>
-  <div class="content">
-    <pre><code>fidesctl generate-dataset <i>connection_string</i> <i>output_filename</i></code></pre>
-  </div>
-
-  <div class="label">DESCRIPTION</div>
-  <div class="content">
-    The <code>generate-dataset</code>  command reads one more schemas from a database by executing the <code><i>connection_string</i></code> statement, transforms the schemas into Dataset resources, and writes the Datasets (as YAML) to <code><i>output_filename</i></code>. 
-
-    The connection to your database isn't dynamic. If you update your database schemas, you have to re-generate (or modify) your Dataset objects.
-
-  </div>
-
-  <div class="label">ARGUMENTS</div>
-  <div class="content">
-    <div class="monoi">
-      connection_string
-    </div>
-    <div class="content">
-      An SQLAlchemy-compatible database connection URL that connects to your database and reads one or more schemas.
-    </div>
-  </div>
-  <div class="content">
-    <div class="monoi">
-      output_filename
-    </div>
-    <div class="content">
-      <div class="content">
-        The name of the Dataset manifest file that the command will write to. The value can be an absolute or relative path, and should include the <code>.yml</code> or <code>.yaml</code> extension.
-
-      </div>
-    </div>
-  </div>
-
-  <div class="label">OPTIONS</div>
-  <div class="content">
-    <div class="mono">
-      -h/--help
-    </div>
-    <div class="content">
-      Prints a synopsis of this command.
-    </div>
-  </div>
-</div>
+                <h1 id="installation-from-conda">Installation from Conda</h1>
+<p>This page describes installations using the <code>fidesctl</code> package <a href="https://anaconda.org/ethyca/fidesctl">published on Conda</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>To install fidesctl, first create an environment with the fidesctl package and necessary channels:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>conda create --name fidesctl-environment fidesctl <span class="se">\</span>
+             --channel ethyca <span class="se">\</span>
+             --channel plotly <span class="se">\</span>
+             --channel conda-forge
+</code></pre></div>
+</td></tr></table>
+<p>Then activate your environment to begin using the <code>fidesctl</code> cli:
+<code>conda activate fidesctl-environment</code></p>
                 
               
               
@@ -1100,6 +1155,58 @@
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../pypi/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Installation from PyPI"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Installation from PyPI
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../docker/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: Installation from Docker"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Installation from Docker
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
 
 
