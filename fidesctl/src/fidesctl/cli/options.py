@@ -12,7 +12,8 @@ from fideslang import model_list
 def resource_type_argument(command: Callable) -> Callable:
     "Add the resource_type option."
     command = click.argument(
-        "resource_type", type=click.Choice(model_list, case_sensitive=False)
+        "resource_type",
+        type=click.Choice(model_list, case_sensitive=False),
     )(command)
     return command
 
@@ -38,9 +39,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
 def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
-        "--dry",
-        is_flag=True,
-        help="Dry run mode: this only prints the resources the command would normally create, update, and delete, without sending the changes to the server",
+        "--dry", is_flag=True, help="Does not send changes to the server."
     )(command)
     return command
 

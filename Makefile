@@ -141,4 +141,5 @@ docs-build: compose-build
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker-compose build docs
-	@docker-compose up docs
+	@docker-compose run --rm --service-ports docs \
+	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"

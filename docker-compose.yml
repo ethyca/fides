@@ -46,6 +46,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./docs/fides:/docs
+      - ./fidesctl:/fidesctl
     expose:
       - 8000
     ports:

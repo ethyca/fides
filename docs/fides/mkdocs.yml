@@ -23,7 +23,7 @@ nav:
       - Write a Policy: tutorial/policy.md
       - Add Google Analytics: tutorial/google.md
       - Manage Google Analytics with Fidesctl: tutorial/pass.md
-  - CI Reference: ci_reference.md
+  - CI/CD Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
@@ -40,21 +40,7 @@ nav:
           - Data Uses: language/taxonomy/data_uses.md
           - Data Subjects: language/taxonomy/data_subjects.md
           - Data Qualifiers: language/taxonomy/data_qualifiers.md
-  - CLI:
-      - CLI Overview: cli/cli.md
-      - annotate-dataset: cli/annotate-dataset.md
-      - apply: cli/apply.md
-      - delete: cli/delete.md
-      - evaluate: cli/evaluate.md
-      - generate-dataset: cli/generate-dataset.md
-      - get: cli/get.md
-      - init-db: cli/init-db.md
-      - ls: cli/ls.md
-      - parse: cli/parse.md
-      - ping: cli/ping.md
-      - reset-db: cli/reset-db.md
-      - view-config: cli/view-config.md
-      - webserver: cli/webserver.md
+  - CLI: cli.md
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
@@ -97,6 +83,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.tabbed
   - admonition
+  - mkdocs-click
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
