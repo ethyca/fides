@@ -127,7 +127,7 @@ jobs:
     needs: Build
     runs-on: ubuntu-latest
     services:
-      postgres:
+      fidesctl-db:
         image: postgres:12
         env:
           POSTGRES_DB: fidesctl
