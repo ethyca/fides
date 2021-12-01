@@ -1,6 +1,7 @@
 # Meet Fidesctl: Privacy Policies as Code
 
 [![Latest Version][pypi-image]][pypi-url]
+[![Latest Version][conda-image]][conda-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
@@ -229,6 +230,8 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 
 [pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
 [pypi-url]: https://pypi.python.org/pypi/fidesctl/
+[conda-image]: https://anaconda.org/ethyca/fidesctl/badges/version.svg
+[conda-url]: https://anaconda.org/ethyca/fidesctl
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg

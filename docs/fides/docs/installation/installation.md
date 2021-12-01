@@ -6,14 +6,18 @@ You should also check-out the [prerequisites](prerequisites_dependencies.md) tha
 
 When you install fidesctl, you need to [setup the database](database.md) which must also be kept updated when fidesctl is upgraded.
 
-## Using PyPI
+## Installation Tools
 
-More details: [Installation from PyPI](pypi.md)
+Only `pip` and `conda` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md) or [Installation from Conda](conda.md)
+
+In some cases a lightweight installation might be desired, for instance, if the webserver is not needed. If this is the case, our `pip` installation supports optional dependencies.
+
+While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as the supported tools - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.
 
 **When this option works best**
 
 * This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
-* The only officially supported mechanism of installation is via pip.
+* The only officially supported mechanisms of installation are pip or conda.
 
 **Intended users**
 
@@ -27,7 +31,7 @@ More details: [Installation from PyPI](pypi.md)
 
 **What the Fidesctl community provides for this method**
 
-* You have [Installation from PyPI](pypi.md) on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.
+* You have [Installation from PyPI](pypi.md) and [Installation from Conda](conda.md) on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.
 * You have the [Running fidesctl Locally](../quickstart/local_full.md) guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.
 
 **Where to ask for help**
@@ -37,7 +41,7 @@ More details: [Installation from PyPI](pypi.md)
 
 ## Using Production Docker Images
 
-More details: [Installation from Docker](pypi.md)
+More details: [Installation from Docker](docker.md)
 
 **When this option works best**
 
