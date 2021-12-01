@@ -4,7 +4,7 @@ This page describes installations using the `fidesctl` package [published on Con
 
 ## Installation
 
-To install Fidesctl, first create an environment with the fidesctl package and necessary channels:
+To install fidesctl, first create an environment with the fidesctl package and necessary channels:
 
 ```bash
 conda create --name fidesctl-environment fidesctl \
