@@ -1,3 +1,4 @@
+# Loosen these
 alembic==1.6.5
 click==7.1.2
 colorama==0.4.4
