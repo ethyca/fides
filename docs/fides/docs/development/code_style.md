@@ -74,6 +74,14 @@ foods_list = ["apple", "banana"]
 foods_list: List[str] = ["apple", "banana"] 
 ```
 
+## Pre-Commit Hooks
+
+Fidesctl includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `dev-requirements.txt`. Once that is installed, follow these steps to get up and running:
+
+1. `pre-commit install` - This is a one-time setup step to create the git pre-commit hooks
+2. `pre-commit run` - This step will run all of the pre-commit jobs. They should all pass.
+3. These pre-commit hooks will run now for you automatically.
+
 ## CI Checks
 
 CI checks are stored as targets within the Makefile, and can be run from the top-level `fides` directory with the following pattern:

@@ -7,5 +7,23 @@ repos:
       - id: black
         name: black
         entry: make black
+        files: "fidesctl/"
         language: system
-        always_run: True
+
+      - id: mypy
+        name: mypy
+        entry: make mypy
+        files: "fidesctl/"
+        language: system
+
+      - id: xenon
+        name: xenon
+        entry: make xenon
+        files: "fidesctl/"
+        language: system
+
+      - id: pylint
+        name: pylint
+        entry: make pylint
+        files: "fidesctl/"
+        language: system
