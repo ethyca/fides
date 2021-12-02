@@ -1,9 +1,11 @@
-# Fix This
+fail_fast: true
+minimum_pre_commit_version: "2"
+
 repos:
   - repo: local
     hooks:
       - id: black
         name: black
         entry: make black
-        language: python
+        language: system
         always_run: True
