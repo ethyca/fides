@@ -1,5 +1,12 @@
+# Site Configuration
 site_name: Fides
 site_url: https://ethyca.github.io/fides/
+
+# GitHub Configuration
+repo_url: https://github.com/ethyca/fides
+edit_uri: blob/main/docs/fides/docs/
+
+# Navigation
 nav:
   - What is Fides?: index.md
   - Quick Start:
@@ -56,6 +63,7 @@ nav:
   - About Ethyca: ethyca.md
   - License: license.md
 
+# Theme
 theme:
   palette:
     - scheme: default
@@ -67,6 +75,9 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
   name: material
+  # GitHub Icon
+  icon:
+    repo: fontawesome/brands/github
   favicon: img/favicon.ico
   logo: img/fides-logo.svg
   font:
@@ -87,10 +98,6 @@ markdown_extensions:
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
-      
-extra:
-  social:
-    - icon: fontawesome/brands/github
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
@@ -103,5 +110,8 @@ extra_css:
   - css/taxonomy.css
 
 plugins:
+  # The "Last Update" footer only shows in production
+  - git-revision-date:
+      enabled_if_env: CI
   - render_swagger
   - search
