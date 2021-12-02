@@ -87,6 +87,10 @@ markdown_extensions:
   - pymdownx.highlight:
       linenums: true
       linenums_style: table
+      
+extra:
+  social:
+    - icon: fontawesome/brands/github
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
