@@ -35,6 +35,7 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
@@ -55,6 +56,7 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
@@ -159,6 +161,7 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: id
             data_categories: [system.operations]
           - name: month
@@ -176,12 +179,14 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: closed
             data_categories: [system.operations]
           - name: email
             data_categories: [system.operations]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: employee_id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
@@ -200,5 +205,6 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: last_visit
             data_categories: [system.operations]

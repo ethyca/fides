@@ -73,13 +73,7 @@ class TestMaskValues:
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 200 == response.status_code
-        json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert (
-            "bf4f5048cc2daf518311f55154dd68c372cf41304e3c439cba62e99fde57333c"
-            == json_response["masked_value"]
-        )
+        assert 404 == response.status_code
 
     def test_mask_value_hash(self, api_client: TestClient):
         value = "867-5309"
@@ -91,13 +85,7 @@ class TestMaskValues:
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 200 == response.status_code
-        json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert (
-            "c67e2f74843b247b72aae44b6d28bc63ead8bc1f125a4074be2c49941772c142"
-            == json_response["masked_value"]
-        )
+        assert 404 == response.status_code
 
     def test_mask_value_aes_encrypt(self, api_client: TestClient):
         value = "last name"
@@ -112,10 +100,7 @@ class TestMaskValues:
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 200 == response.status_code
-        json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert "nG0BmcgF2VTqn36mNxdW/uMixR/Zz002EA==" == json_response["masked_value"]
+        assert 404 == response.status_code
 
     def test_mask_value_no_such_strategy(self, api_client: TestClient):
         value = "check"
@@ -158,11 +143,7 @@ class TestMaskValues:
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 400 == response.status_code
-        assert (
-            "Encryption key must be 16 bytes long"
-            == json.loads(response.text)["detail"]
-        )
+        assert 404 == response.status_code
 
     def test_masking_value_null(self, api_client: TestClient):
         value = "my_email"

@@ -3,7 +3,6 @@ from typing import Dict, List, Union
 
 from pydantic import ValidationError
 
-from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -11,10 +10,6 @@ from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite im
     RandomStringRewriteMaskingStrategy,
 )
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
@@ -23,7 +18,10 @@ from fidesops.common_exceptions import (
     NoSuchStrategyException,
 )
 
-from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
+from fidesops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+    MaskingConfiguration,
+)
 
 
 class SupportedMaskingStrategies(Enum):
@@ -32,10 +30,7 @@ class SupportedMaskingStrategies(Enum):
     """
 
     string_rewrite = StringRewriteMaskingStrategy
-    hash = HashMaskingStrategy
     random_string_rewrite = RandomStringRewriteMaskingStrategy
-    aes_encrypt = AesEncryptionMaskingStrategy
-    hmac = HmacMaskingStrategy
     null_rewrite = NullMaskingStrategy
 
 
@@ -57,7 +52,9 @@ def get_strategy(
         )
     strategy = SupportedMaskingStrategies[strategy_name].value
     try:
-        strategy_config = strategy.get_configuration_model()(**configuration)
+        strategy_config: MaskingConfiguration = strategy.get_configuration_model()(
+            **configuration
+        )
         return strategy(configuration=strategy_config)
     except ValidationError as e:
         raise FidesopsValidationError(message=str(e))

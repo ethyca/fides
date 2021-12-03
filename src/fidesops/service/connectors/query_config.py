@@ -6,11 +6,21 @@ from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
-from fidesops.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress, Field
+from fidesops.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    CollectionAddress,
+    Field,
+    MaskingOverride,
+)
+from fidesops.graph.data_type import DataTypeConverter
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.querytoken import QueryToken
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    get_strategy,
+)
 from fidesops.util.collection_util import append, filter_nonempty_values
 
 logger = logging.getLogger(__name__)
@@ -121,18 +131,77 @@ class QueryConfig(Generic[T], ABC):
         for a given customer_id will be replaced with null values.
 
         """
-        rule_to_collection_fields = self.build_rule_target_fields(policy)
+        rule_to_collection_fields: Dict[
+            Rule, List[str]
+        ] = self.build_rule_target_fields(policy)
 
         value_map: Dict[str, Any] = {}
         for rule, field_names in rule_to_collection_fields.items():
             strategy_config = rule.masking_strategy
-            strategy = get_strategy(
+            if not strategy_config:
+                continue
+            strategy: MaskingStrategy = get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
 
             for field_name in field_names:
-                value_map[field_name] = strategy.mask(row[field_name])
+                masking_override: MaskingOverride = [
+                    MaskingOverride(field.data_type, field.length)
+                    for field in self.node.node.collection.fields
+                    if field.name == field_name
+                ][0]
+                null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
+                if not self._supported_data_type(
+                    masking_override, null_masking, strategy
+                ):
+                    logger.warning(
+                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type}"
+                    )
+                    continue
+                val: Any = row[field_name]
+                masked_val = self._generate_masked_value(
+                    strategy, val, masking_override, null_masking, field_name
+                )
+                value_map[field_name] = masked_val
         return value_map
+
+    @staticmethod
+    def _supported_data_type(
+        masking_override: MaskingOverride, null_masking: bool, strategy: MaskingStrategy
+    ) -> bool:
+        """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
+        if null_masking:
+            return True
+        if not masking_override.data_type:
+            return False
+        if not strategy.data_type_supported(data_type=masking_override.data_type.name):
+            return False
+        return True
+
+    @staticmethod
+    def _generate_masked_value(
+        strategy: MaskingStrategy,
+        val: Any,
+        masking_override: MaskingOverride,
+        null_masking: bool,
+        field_name: str,
+    ) -> T:
+        masked_val = strategy.mask(val)
+        logger.debug(
+            f"Generated the following masked val for field {field_name}: {masked_val}"
+        )
+        if null_masking:
+            return masked_val
+        if masking_override.length:
+            logger.warning(
+                f"Because a length has been specified for field {field_name}, we will truncate length of masked value to match, regardless of masking strategy"
+            )
+            #  for strategies other than null masking we assume that masked data type is the same as specified data type
+            data_type_convertor: DataTypeConverter = masking_override.data_type.value
+            masked_val = data_type_convertor.truncate(
+                masking_override.length, masked_val
+            )
+        return masked_val
 
     @abstractmethod
     def generate_query(

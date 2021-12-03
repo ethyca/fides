@@ -33,6 +33,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(self.rewrite_value)
+        # fixme: how to handle length if different than rewrite_value?
         return self.rewrite_value
 
     @staticmethod
@@ -53,3 +54,9 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
                 )
             ],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        supported_data_types = {"string"}
+        return data_type in supported_data_types

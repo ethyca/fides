@@ -406,6 +406,59 @@ def erasure_policy(
 
 
 @pytest.fixture(scope="function")
+def erasure_policy_string_rewrite_long(
+        db: Session,
+        oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy string rewrite",
+            "key": "example_erasure_policy_string_rewrite",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {
+                    "rewrite_value": "some rewrite value that is very long and goes on and on"
+                },
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_two_rules(
     db: Session, oauth_client: ClientDetail, erasure_policy: Policy
 ) -> Generator:

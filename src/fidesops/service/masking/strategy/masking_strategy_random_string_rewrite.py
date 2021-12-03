@@ -55,3 +55,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
                 )
             ],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        supported_data_types = {"string"}
+        return data_type in supported_data_types

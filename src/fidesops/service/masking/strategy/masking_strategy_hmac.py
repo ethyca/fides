@@ -93,6 +93,12 @@ class HmacMaskingStrategy(MaskingStrategy):
             value=value, hmac_key=hmac_key, salt=salt, hashing_alg=hashlib.sha512
         )
 
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        supported_data_types = {"string"}
+        return data_type in supported_data_types
+
 
 def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> str:
     """Generic HMAC algorithm"""

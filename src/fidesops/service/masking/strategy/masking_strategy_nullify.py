@@ -38,3 +38,8 @@ class NullMaskingStrategy(MaskingStrategy):
             description="Masks the input value with a null value",
             configurations=[],
         )
+
+    @staticmethod
+    def data_type_supported(data_type: Optional[str]) -> bool:
+        """Determines whether or not the given data type is supported by this masking strategy"""
+        return True

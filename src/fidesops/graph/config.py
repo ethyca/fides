@@ -78,6 +78,7 @@ Field identities:
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set, Dict, Literal, Any
 
 from pydantic import BaseModel
@@ -217,6 +218,14 @@ class Field(BaseModel):
                 return converter.to_value(value)
 
         return value
+
+
+@dataclass
+class MaskingOverride:
+    """Data class to store override params related to data masking"""
+
+    data_type: Optional[DataType]
+    length: Optional[int]
 
 
 class Collection(BaseModel):
