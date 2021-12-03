@@ -1,6 +1,7 @@
 import pytest
 from typing import Dict, Any, Set
 
+from fidesops.common_exceptions import NoSuchStrategyException
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
@@ -178,6 +179,34 @@ class TestSQLQueryConfig:
         assert text_clause._bindparams["name"].key == "name"
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
 
+    def test_generate_update_stmt_length_truncation(
+            self, erasure_policy_string_rewrite_long, example_datasets, integration_postgres_config
+    ):
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ]
+
+        config = SQLQueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+
+        text_clause = config.generate_update_stmt(row, erasure_policy_string_rewrite_long)
+        assert (
+                text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
+        )
+        assert text_clause._bindparams["name"].key == "name"
+        # length truncation on name field
+        assert text_clause._bindparams["name"].value == "some rewrite value that is very long and"
+
     def test_generate_update_stmt_multiple_fields_same_rule(
         self, erasure_policy, example_datasets, integration_postgres_config
     ):
@@ -209,18 +238,9 @@ class TestSQLQueryConfig:
             "configuration": {"algorithm": "SHA-512"},
         }
 
-        text_clause = config.generate_update_stmt(row, erasure_policy)
-        assert (
-            text_clause.text
-            == "UPDATE customer SET email = :email,name = :name WHERE  id = :id"
-        )
-        assert text_clause._bindparams["name"].key == "name"
-        assert text_clause._bindparams["name"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("John Customer")
-        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("customer-1@example.com")
+        with pytest.raises(NoSuchStrategyException):
+            config.generate_update_stmt(row, erasure_policy)
+
 
     def test_generate_update_stmts_from_multiple_rules(
         self, erasure_policy_two_rules, example_datasets, integration_postgres_config
@@ -345,9 +365,5 @@ class TestMongoQueryConfig:
         target = rule_two.targets[0]
         target.data_category = DataCategory("user.provided.identifiable.gender").value
 
-        mongo_statement = config.generate_update_stmt(row, erasure_policy_two_rules)
-        assert mongo_statement[0] == {"_id": 1}
-        assert len(mongo_statement[1]["$set"]["gender"]) == 30
-        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("1988-01-10")
+        with pytest.raises(NoSuchStrategyException):
+            config.generate_update_stmt(row, erasure_policy_two_rules)

@@ -49,6 +49,12 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RANDOM_STRING_REWRITE,
+)
+from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+    STRING_REWRITE,
+)
 
 
 class ActionType(EnumType):
@@ -111,14 +117,15 @@ def _validate_rule(
             "Erasure Rules must have masking strategies."
         )
 
-    # Temporary, remove when we have the pieces in place to support more than null masking.
+    # Temporary, remove when we have the pieces in place to support more than these masking strategies.
     if (
         action_type == ActionType.erasure.value
         and masking_strategy
-        and masking_strategy.get("strategy") != NULL_REWRITE
+        and masking_strategy.get("strategy")
+        not in [NULL_REWRITE, STRING_REWRITE, RANDOM_STRING_REWRITE]
     ):
         raise common_exceptions.RuleValidationError(
-            "Only the Null Masking Strategy (null_rewrite) is supported at this time."
+            "Only the following masking strategies are supported at this time:  null_rewrite, string_rewrite, random_string_rewrite"
         )
 
     if action_type == ActionType.access.value and storage_destination_id is None:

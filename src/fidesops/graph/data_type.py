@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod, ABC
 from typing import Generic, Optional, Any, TypeVar
 from enum import Enum
@@ -5,6 +6,7 @@ from enum import Enum
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 
+logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -21,6 +23,13 @@ class DataTypeConverter(ABC, Generic[T]):
     def empty_value(self) -> T:
         """A value that represents `empty` in whatever way makes sense for type T"""
 
+    def truncate(self, length: int, val: T) -> T:
+        """Truncates value to given length"""
+        logger.warning(
+            f"{self.__class__.__name__} does not support length truncation. Using original masked value instead for update query."
+        )
+        return val
+
 
 class StringTypeConverter(DataTypeConverter[str]):
     """String data type converter. This type just uses str() type conversion."""
@@ -32,6 +41,10 @@ class StringTypeConverter(DataTypeConverter[str]):
     def empty_value(self) -> str:
         """Empty string value"""
         return ""
+
+    def truncate(self, length: int, val: str) -> str:
+        """Truncates value to given length"""
+        return val[:length]
 
 
 class IntTypeConverter(DataTypeConverter[int]):
