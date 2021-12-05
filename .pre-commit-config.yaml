@@ -1,4 +1,3 @@
-fail_fast: true
 minimum_pre_commit_version: "2"
 
 repos:
@@ -7,23 +6,27 @@ repos:
       - id: black
         name: black
         entry: make black
-        files: "fidesctl/"
+        files: "^fidesctl/"
+        types_or: [file, python]
         language: system
 
       - id: mypy
         name: mypy
         entry: make mypy
-        files: "fidesctl/"
+        files: "^fidesctl/"
+        types_or: [file, python]
         language: system
 
       - id: xenon
         name: xenon
         entry: make xenon
-        files: "fidesctl/"
+        files: "^fidesctl/"
+        types_or: [file, python]
         language: system
 
       - id: pylint
         name: pylint
         entry: make pylint
-        files: "fidesctl/"
+        files: "^fidesctl/"
+        types_or: [file, python]
         language: system
