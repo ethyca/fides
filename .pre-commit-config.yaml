@@ -1,8 +1,32 @@
+minimum_pre_commit_version: "2"
+
 repos:
   - repo: local
     hooks:
       - id: black
         name: black
         entry: make black
-        language: python
-        always_run: True
+        files: "^fidesctl/"
+        types_or: [file, python]
+        language: system
+
+      - id: mypy
+        name: mypy
+        entry: make mypy
+        files: "^fidesctl/"
+        types_or: [file, python]
+        language: system
+
+      - id: xenon
+        name: xenon
+        entry: make xenon
+        files: "^fidesctl/"
+        types_or: [file, python]
+        language: system
+
+      - id: pylint
+        name: pylint
+        entry: make pylint
+        files: "^fidesctl/"
+        types_or: [file, python]
+        language: system
