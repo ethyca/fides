@@ -19,4 +19,4 @@ jobs:
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
         env:
-          CI: true
+          PROD_PUBLISH: true

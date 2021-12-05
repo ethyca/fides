@@ -112,6 +112,6 @@ extra_css:
 plugins:
   # The "Last Update" footer only shows in production
   - git-revision-date:
-      enabled_if_env: CI
+      enabled_if_env: PROD_PUBLISH
   - render_swagger
   - search
