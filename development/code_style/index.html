@@ -938,6 +938,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    Pre-Commit Hooks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ci-checks" class="md-nav__link">
     CI Checks
   </a>
@@ -1189,6 +1196,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    Pre-Commit Hooks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ci-checks" class="md-nav__link">
     CI Checks
   </a>
@@ -1357,6 +1371,13 @@
 <span class="n">foods_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">]</span> 
 </code></pre></div>
 </td></tr></table>
+<h2 id="pre-commit-hooks">Pre-Commit Hooks</h2>
+<p>Fidesctl includes a <code>.pre-commit-config.yaml</code> to facilitate running CI checks before pushing up to a PR. The <code>pre-commit</code> package is included in the <code>dev-requirements.txt</code>. Once that is installed, follow these steps to get up and running:</p>
+<ol>
+<li><code>pre-commit install</code> - This is a one-time setup step to create the git pre-commit hooks.</li>
+<li>These pre-commit hooks will now run automatically. However you can also use <code>pre-commit run</code> to run them manually once all of your changes have been staged.</li>
+</ol>
+<p><strong>NOTE</strong>: A Python interpreter must be available from wherever the git commands are being run, as this is required to run the <code>pre-commit</code> package.</p>
 <h2 id="ci-checks">CI Checks</h2>
 <p>CI checks are stored as targets within the Makefile, and can be run from the top-level <code>fides</code> directory with the following pattern:</p>
 <table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Pattern</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>make &lt;lowercased_name&gt;
