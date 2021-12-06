@@ -8,7 +8,6 @@ IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --a
 
 # Various Image Names
 IMAGE_NAME := fidesctl
-LOCAL_IMAGE_NAME := ethyca/fidesctl:local
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 

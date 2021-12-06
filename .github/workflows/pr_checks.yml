@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check fidesctl installation
-        run: make check-installation
+        run: make check-install
 
       - name: Run fidesctl evaluation
         run: make fidesctl

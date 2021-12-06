@@ -28,4 +28,5 @@ RUN pip install -e ".[all]"
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
+EXPOSE 8080
 CMD ["fidesctl", "webserver"]

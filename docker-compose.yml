@@ -3,8 +3,7 @@ services:
     build:
       context: fidesctl
       cache_from:
-        - ethyca/fidesctl # If the container already exists, pull from the cache
-    image: ethyca/fidesctl
+        - ethyca/fidesctl:local # If the container already exists, pull from the cache
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
@@ -45,7 +44,6 @@ services:
   docs:
     build:
       context: docs/fides/
-    image: ethyca/fidesctl-docs
     volumes:
       - ./docs/fides:/docs
       - ./fidesctl:/fidesctl
