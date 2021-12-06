@@ -113,8 +113,7 @@ pylint:
 
 .PHONY: pytest
 pytest: compose-build
-	@docker run -d --env-file env_files/fidesctl.env $(LOCAL_IMAGE_NAME)
-	@$(RUN_) pytest -x
+	@$(RUN) pytest -x
 
 .PHONY: xenon
 xenon:

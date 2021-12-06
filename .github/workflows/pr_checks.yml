@@ -9,7 +9,7 @@ on:
       - .github/workflows/test.yaml
 
 env:
-  CONTAINER: fidesctl:local
+  CONTAINER: fidesctl-local
   IMAGE: ethyca/fidesctl:local
 
 jobs:
@@ -126,19 +126,6 @@ jobs:
   Test:
     needs: Build
     runs-on: ubuntu-latest
-    services:
-      fidesctl-db:
-        image: postgres:12
-        env:
-          POSTGRES_DB: fidesctl
-          POSTGRES_PASSWORD: fidesctl
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v2
@@ -149,8 +136,5 @@ jobs:
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
-      - name: Start fidesctl
-        run: docker run ${{ env.IMAGE }}
-
       - name: Run test suite
-        run: docker run ${{ env.IMAGE }} pytest -x
+        run: make pytest
