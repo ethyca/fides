@@ -5,8 +5,8 @@ To quickly experiment with `fidesops`, it's easiest to clone the source repo and
 Fully deployed, `fidesops` has three individual systems you'll need to run:
 
 1. [**Hosted Database**](#step-1-setup-hosted-database): PostgreSQL database server used for permanent storage of configuration data for the web server
-1. [**Hosted Cache**](#step-2-setup-hosted-cache): Redis database server used as a temporary cache during execution and scheduling of tasks
-1. [**fidesops Web Server**](#step-3-setup-fidesops-web-server): Main application with API endpoints to configure, execute, and report on privacy requests
+2. [**Hosted Cache**](#step-2-setup-hosted-cache): Redis database server used as a temporary cache during execution and scheduling of tasks
+3. [**fidesops Web Server**](#step-3-setup-fidesops-web-server): Main application with API endpoints to configure, execute, and report on privacy requests
 
 ![Deployment Diagram](img/Deployment_Diagram.svg)
 
@@ -30,6 +30,9 @@ Setting up a production-grade PostgreSQL database is likely something your team 
 | `FIDESOPS__DATABASE__USER` | fidesops | username `fidesops` should use to access the database |
 | `FIDESOPS__DATABASE__PASSWORD` | fidesopssecret | password `fidesops` should use to access the database |
 | `FIDESOPS__DATABASE__DB` | fidesops | database name |
+
+### Fidesops PostgreSQL `app` database diagram
+![PostgreSQL Database](img/app_database.png)
 
 ## Step 2: Setup Hosted Cache
 
