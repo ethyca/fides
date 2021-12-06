@@ -16,9 +16,6 @@ IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 RUN = docker-compose run --rm $(IMAGE_NAME)
 RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
 
-# Run using standalone containers
-RUN_LOCAL = docker run --rm $(LOCAL_IMAGE_NAME)
-
 .PHONY: help
 help:
 	@echo --------------------
@@ -86,38 +83,33 @@ push: build
 # CI
 ####################
 
-.PHONY: black
 black:
-	@$(RUN_LOCAL) black --check src/
+	@$(RUN_NO_DEPS) black --check src/
 
-.PHONY: check-all
+# The order of dependent targets here is intentional
 check-all: compose-build check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
-.PHONY: check-install
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_LOCAL) fidesctl
+	@$(RUN_NO_DEPS) fidesctl
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_LOCAL) fidesctl --local evaluate fides_resources/
+	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
-.PHONY: mypy
 mypy:
-	@$(RUN_LOCAL) mypy
+	@$(RUN_NO_DEPS) mypy
 
-.PHONY: pylint
 pylint:
-	@$(RUN_LOCAL) pylint src/
+	@$(RUN_NO_DEPS) pylint src/
 
-.PHONY: pytest
-pytest: compose-build
+pytest:
+	@docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest -x
 
-.PHONY: xenon
 xenon:
-	@$(RUN_LOCAL) xenon src \
+	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
 	--max-average A \

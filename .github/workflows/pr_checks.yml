@@ -53,6 +53,9 @@ jobs:
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Check fidesctl installation
         run: make check-installation
 
@@ -72,6 +75,9 @@ jobs:
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Run formatter
         run: make black
 
@@ -87,6 +93,9 @@ jobs:
 
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Run linter
         run: make pylint
@@ -104,6 +113,9 @@ jobs:
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Run typechecker
         run: make mypy
 
@@ -120,6 +132,9 @@ jobs:
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Run cyclomatic complexity check
         run: make xenon
 
@@ -135,6 +150,9 @@ jobs:
 
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Run test suite
         run: make pytest
