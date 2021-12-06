@@ -3,15 +3,21 @@
 ####################
 # CONSTANTS
 ####################
-RUN = docker-compose run --rm $(IMAGE_NAME)
-RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
-
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
+# Various Image Names
 IMAGE_NAME := fidesctl
+LOCAL_IMAGE_NAME := ethyca/fidesctl:local
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
+
+# Run in Compose
+RUN = docker-compose run --rm $(IMAGE_NAME)
+RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
+
+# Run using standalone containers
+RUN_LOCAL = docker run --rm $(LOCAL_IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -80,31 +86,39 @@ push: build
 # CI
 ####################
 
-black: compose-build
-	@$(RUN_NO_DEPS) black --check src/
+.PHONY: black
+black:
+	@$(RUN_LOCAL) black --check src/
 
-check-all: check-install fidesctl black pylint mypy xenon pytest
+.PHONY: check-all
+check-all: compose-build check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
+.PHONY: check-install
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl
+	@$(RUN_LOCAL) fidesctl
 
-fidesctl: compose-build
-	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
+.PHONY: fidesctl
+fidesctl:
+	@$(RUN_LOCAL) fidesctl --local evaluate fides_resources/
 
-mypy: compose-build
-	@$(RUN_NO_DEPS) mypy
+.PHONY: mypy
+mypy:
+	@$(RUN_LOCAL) mypy
 
-pylint: compose-build
-	@$(RUN_NO_DEPS) pylint src/
+.PHONY: pylint
+pylint:
+	@$(RUN_LOCAL) pylint src/
 
+.PHONY: pytest
 pytest: compose-build
-	@docker-compose up -d $(IMAGE_NAME)
-	@$(RUN) pytest -x
+	@docker run -d --env-file env_files/fidesctl.env $(LOCAL_IMAGE_NAME)
+	@$(RUN_) pytest -x
 
-xenon: compose-build
-	@$(RUN_NO_DEPS) xenon src \
+.PHONY: xenon
+xenon:
+	@$(RUN_LOCAL) xenon src \
 	--max-absolute B \
 	--max-modules B \
 	--max-average A \
@@ -131,7 +145,7 @@ teardown:
 compose-build:
 	@echo "Build the images required in the docker-compose file..."
 	@docker-compose down
-	@docker-compose build
+	@docker-compose build fidesctl
 
 .PHONY: docs-build
 docs-build: compose-build
