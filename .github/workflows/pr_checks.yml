@@ -11,6 +11,7 @@ on:
 env:
   CONTAINER: fidesctl-local
   IMAGE: ethyca/fidesctl:local
+  DOCKER_BUILDKIT: 1
 
 jobs:
   Build:
@@ -52,8 +53,6 @@ jobs:
 
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - run: docker image ls
 
       - name: Checkout
         uses: actions/checkout@v2
