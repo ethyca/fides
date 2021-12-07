@@ -50,10 +50,10 @@ jobs:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - run: docker image ls
-
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - run: docker image ls
 
       - name: Checkout
         uses: actions/checkout@v2
