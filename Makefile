@@ -82,32 +82,32 @@ push: build
 # CI
 ####################
 
-black:
+black: compose-build
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
 check-all: compose-build check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
-check-install:
+check-install: compose-build
 	@echo "Checking that fidesctl is installed..."
 	@$(RUN_NO_DEPS) fidesctl
 
 .PHONY: fidesctl
-fidesctl:
+fidesctl: compose-build
 	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
-mypy:
+mypy: compose-build
 	@$(RUN_NO_DEPS) mypy
 
-pylint:
+pylint: compose-build
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest:
+pytest: compose-build
 	@docker-compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest -x
 
-xenon:
+xenon: compose-build
 	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
