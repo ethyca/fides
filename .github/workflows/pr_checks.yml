@@ -50,6 +50,8 @@ jobs:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
+      - run: docker image ls
+
       - name: Load fidesctl image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
