@@ -16,20 +16,26 @@ router = APIRouter(
 async def evaluation_view() -> HTMLResponse:
     "Returns an html document with a list of evaluations"
 
-    html = f'<h2>Fidesctl Evaluations</h2>'
-    html += f'<table style="text-align: left;">'
-    html += f'<tr><th>Id</th><th>Status</th><th>Details</th><th>Message</th></tr>'
+    html = '<html lang="en">'
+    html += '<head>'
+    html += '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">'
+    html += '<body>'
+    html += '<h2>Evaluations</h2>'
+    html += '<table class="table table-striped" style="text-align: left;">'
+    html += '<tr><th>Id</th><th>Status</th><th>Details</th><th>Message</th></tr>'
     for evaluation in list_resource(Evaluation):
-        html += f'<tr>'
-        html += f'<td><div style="width: 400px;">{evaluation.fides_key}</div></td>';
-        html += f'<td><div style="width: 50px;">{evaluation.status}</div></td>';
+        html += '<tr>'
+        html += f'<td><div">{evaluation.fides_key}</div></td>';
+        html += f'<td><div">{evaluation.status}</div></td>';
 
-        html += f'<td><div style="width: 500px;">';
+        html += '<td><div">';
         for detail in evaluation.details:
             html += f'{detail}<br/>';
-        html += f'</div></td>';
+        html += '</div></td>';
         
-        html += f'<td><div style="width: 500px;">{evaluation.message}</div></td>';
-        html += f'</tr>'
-    html += f'</table>'
+        html += f'<td><div">{evaluation.message}</div></td>';
+        html += '</tr>'
+    html += '</table>'
+    html += '</head>'
+    html += '</html>'
     return HTMLResponse(html)
