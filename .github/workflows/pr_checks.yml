@@ -32,6 +32,7 @@ jobs:
           context: ./fidesctl
           file: ./fidesctl/Dockerfile
           outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
+          load: True
           push: false
           tags: ${{ env.IMAGE }}
 
