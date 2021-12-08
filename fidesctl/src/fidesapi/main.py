@@ -20,10 +20,9 @@ class DBActions(str, Enum):
 
 
 def configure_routes() -> None:
-    "Include all of the routers not defined here."
+    "Include all of the routers not defined in this module."
     for router in crud.routers:
         app.include_router(router)
-    # add router for the category viz endpoints
     for router in visualize.routers:
         app.include_router(router)
     app.include_router(view.router)
