@@ -8,7 +8,6 @@ from sqlalchemy.orm import (
     sessionmaker,
     Session,
 )
-
 from fidesops.core.config import config
 
 logger = logging.getLogger(__name__)
@@ -19,15 +18,16 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
     Return a database engine. If the TESTING environment var is set the
     database engine returned will be connected to the test DB.
     """
-
     if database_uri is None:
         # Don't override any database_uri explicity passed in
         if os.getenv("TESTING"):
             database_uri = config.database.SQLALCHEMY_TEST_DATABASE_URI
         else:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI
-
     return create_engine(database_uri, pool_pre_ping=True)
+
+
+ENGINE = get_db_engine()
 
 
 def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
@@ -35,7 +35,7 @@ def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
     return sessionmaker(
         autocommit=False,
         autoflush=False,
-        bind=engine or get_db_engine(),
+        bind=engine or ENGINE,
         class_=ExtendedSession,
     )
 

@@ -4,7 +4,7 @@ from typing import Optional, Callable, TypeVar, Generic
 T = TypeVar("T")
 
 
-class Queue(Generic[T]):
+class MatchingQueue(Generic[T]):
     """A basic LILO queue with the added ability to pop not only the head, but the first value matching a given input function."""
 
     def __init__(self, *values: T):

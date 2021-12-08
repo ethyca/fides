@@ -20,7 +20,7 @@ from fidesops.util.logger import NotPii
 logger = logging.getLogger(__name__)
 
 
-class MongoDBConnector(BaseConnector):
+class MongoDBConnector(BaseConnector[MongoClient]):
     """MongoDB Connector"""
 
     def build_uri(self) -> str:
@@ -42,7 +42,7 @@ class MongoDBConnector(BaseConnector):
         url = f"mongodb://{user_pass}{config.host}{port}{default_auth_db}"
         return url
 
-    def client(self) -> MongoClient:
+    def create_client(self) -> MongoClient:
         """Returns a client for a MongoDB instance"""
         config = MongoDBSchema(**self.configuration.secrets or {})
         uri = config.url if config.url else self.build_uri()
@@ -129,3 +129,8 @@ class MongoDBConnector(BaseConnector):
                 )
 
         return update_ct
+
+    def close(self) -> None:
+        """Close any held resources"""
+        if self.db_client:
+            self.db_client.close()

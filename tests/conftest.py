@@ -34,18 +34,11 @@ def migrate_test_db() -> None:
     logger.debug("Migrations successfully applied")
 
 
-@pytest.fixture(autouse=True, scope="session")
-def set_os_env() -> Generator:
-    """Sets an environment variable to tell the application it is in test mode."""
-    os.environ["TESTING"] = "True"
-    yield
-    os.environ["TESTING"] = "False"
-
-
 @pytest.fixture(scope="session")
-def db(set_os_env: None) -> Generator:
+def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
+    ## This asserts that TESTING==True
     assert os.getenv("TESTING", False)
     engine = get_db_engine(
         database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,

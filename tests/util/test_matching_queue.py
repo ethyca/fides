@@ -1,8 +1,8 @@
-from fidesops.util.queue import *
+from fidesops.util.matching_queue import *
 
 
 def test_queue() -> None:
-    queue = Queue("A", "B", "B1", "C")
+    queue = MatchingQueue("A", "B", "B1", "C")
     assert queue.pop() == "A"
     assert queue.pop_first_match(lambda x: x.startswith("B")) == "B"
     assert queue.pop_first_match(lambda x: x.startswith("B")) == "B1"
