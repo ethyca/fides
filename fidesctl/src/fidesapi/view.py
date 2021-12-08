@@ -19,23 +19,23 @@ async def evaluation_view() -> HTMLResponse:
     html = '<html lang="en">'
     html += "<head>"
     html += '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">'
-    html += '<body>'
-    html += '<h2>Evaluations</h2>'
+    html += "<body>"
+    html += "<h2>Evaluations</h2>"
     html += '<table class="table table-striped" style="text-align: left;">'
-    html += '<tr><th>Id</th><th>Status</th><th>Details</th><th>Message</th></tr>'
+    html += "<tr><th>Id</th><th>Status</th><th>Details</th><th>Message</th></tr>"
     for evaluation in list_resource(Evaluation):
-        html += '<tr>'
-        html += f'<td>{evaluation.fides_key}</td>'
-        html += f'<td>{evaluation.status}</td>'
+        html += "<tr>"
+        html += f"<td>{evaluation.fides_key}</td>"
+        html += f"<td>{evaluation.status}</td>"
 
-        html += '<td>'
+        html += "<td>"
         for detail in evaluation.details:
             html += f"{detail}<br/>"
-        html += '</td>'
+        html += "</td>"
 
-        html += f'<td>{evaluation.message}</td>'
-        html += '</tr>'
-    html += '</table>'
-    html += '</head>'
-    html += '</html>'
+        html += f"<td>{evaluation.message}</td>"
+        html += "</tr>"
+    html += "</table>"
+    html += "</head>"
+    html += "</html>"
     return HTMLResponse(html)
