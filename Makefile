@@ -9,6 +9,7 @@ IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --a
 # Image Names & Tags
 IMAGE_NAME := fidesctl
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+LOCAL_IMAGE := $(REGISTRY)/$(IMAGE_NAME):local
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 # Run in Compose
@@ -39,28 +40,21 @@ help:
 # Dev
 ####################
 
-.PHONY: init-db
-init-db: compose-build
-	@echo "Checking for new migrations to run..."
-	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) fidesctl init-db
-	@make teardown
-
 .PHONY: reset-db
-reset-db: compose-build
+reset-db: build-local
 	@echo "Reset the database..."
 	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) fidesctl reset-db -y
 	@make teardown
 
 .PHONY: api
-api: compose-build
+api: build-local
 	@echo "Spinning up the webserver..."
 	@docker compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
-cli: compose-build
+cli: build-local
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
@@ -73,6 +67,9 @@ cli: compose-build
 build:
 	docker build --tag $(IMAGE) fidesctl/
 
+build-local:
+	docker build --tag $(LOCAL_IMAGE) fidesctl/
+
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
 	docker push $(IMAGE)
@@ -82,32 +79,32 @@ push: build
 # CI
 ####################
 
-black: compose-build
+black: build-local
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: compose-build check-install fidesctl black pylint mypy xenon pytest
+check-all: build-local check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
-check-install: compose-build
+check-install: build-local
 	@echo "Checking that fidesctl is installed..."
 	@$(RUN_NO_DEPS) fidesctl
 
 .PHONY: fidesctl
-fidesctl: compose-build
+fidesctl: build-local
 	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
-mypy: compose-build
+mypy: build-local
 	@$(RUN_NO_DEPS) mypy
 
-pylint: compose-build
+pylint: build-local
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest: compose-build
+pytest: build-local
 	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest -x
 
-xenon: compose-build
+xenon: build-local
 	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
@@ -131,14 +128,8 @@ teardown:
 	@docker compose down
 	@echo "Teardown complete"
 
-.PHONY: compose-build
-compose-build:
-	@echo "Build the images required in the docker-compose file..."
-	@docker compose down
-	@docker compose build fidesctl
-
 .PHONY: docs-build
-docs-build: compose-build
+docs-build: build-local
 	@docker compose run --rm $(IMAGE_NAME) \
 	python generate_openapi.py ../docs/fides/docs/api/openapi.json
 
