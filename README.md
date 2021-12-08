@@ -1,6 +1,6 @@
 # Meet Fidesctl: Privacy Policies as Code
 
-[![Latest Version][pypi-image]][pypi-url]
+[![Latest Release Version][release-image]][release-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
@@ -223,12 +223,12 @@ Read about the [Fides community](https://ethyca.github.io/fides/community/hints_
 ## :balance_scale: License
 
 The Fides ecosystem of tools ([Fidesops](https://github.com/ethyca/fidesops) and [Fidesctl](https://github.com/ethyca/fides)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE). 
+Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
 
 Fides is created and sponsored by Ethyca: a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 
-[pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
-[pypi-url]: https://pypi.python.org/pypi/fidesctl/
+[release-image]: https://img.shields.io/github/release/ethyca/fides.svg
+[release-url]: https://github.com/ethyca/fides/releases
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg
