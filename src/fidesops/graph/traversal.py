@@ -15,7 +15,7 @@ from fidesops.graph.config import (
 )
 from fidesops.graph.graph import Node, Edge, DatasetGraph
 from fidesops.util.logger import NotPii
-from fidesops.util.queue import Queue
+from fidesops.util.matching_queue import MatchingQueue
 from fidesops.util.collection_util import append
 
 logger = logging.getLogger(__name__)
@@ -244,7 +244,7 @@ class Traversal:
             self.traversal_node_dict.keys()
         )
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
-        running_node_queue: Queue[TraversalNode] = Queue(self.root_node)
+        running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
         remaining_edges: Set[Edge] = self.edges.copy()
         while not running_node_queue.is_empty():
 

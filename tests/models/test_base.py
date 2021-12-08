@@ -23,7 +23,10 @@ def test_get_key_from_data_method() -> None:
     # Test key not valid
     with pytest.raises(ValueError) as exc:
         get_key_from_data({"key": "test-key", "name": "config name"}, "StorageConfig")
-    assert str(exc.value) == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+    assert (
+        str(exc.value)
+        == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+    )
 
 
 def test_create_key(db: Session):

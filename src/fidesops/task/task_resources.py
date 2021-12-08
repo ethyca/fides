@@ -51,6 +51,11 @@ class Connections:
             f"No connector available for {connection_config.connection_type}"
         )
 
+    def close(self) -> None:
+        """Close all held connection resources."""
+        for connector in self.connections.values():
+            connector.close()
+
 
 class TaskResources:
     """Shared information and environment for all nodes of a given task.
@@ -75,6 +80,14 @@ class TaskResources:
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
+
+    def __enter__(self) -> "TaskResources":
+        """Support 'with' useage for closing resources"""
+        return self
+
+    def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
+        """Support 'with' useage for closing resources"""
+        self.close()
 
     def cache_object(self, key: str, value: Any) -> None:
         """Store in cache. Object will be
@@ -118,3 +131,8 @@ class TaskResources:
         if key in self.connection_configs:
             return self.connections.get_connector(self.connection_configs[key])
         raise ConnectorNotFoundException(f"No available connector for {key}")
+
+    def close(self) -> None:
+        """Close any held resources"""
+        logger.debug(f"Closing all task resources for {self.request.id}")
+        self.connections.close()

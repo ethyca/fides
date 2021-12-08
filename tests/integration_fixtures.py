@@ -15,11 +15,9 @@ from fidesops.models.connectionconfig import (
     AccessLevel,
 )
 from fidesops.service.connectors import PostgreSQLConnector, MongoDBConnector
-from .fixtures import faker
+from .fixtures import faker, integration_config, integration_secrets
 
 logger = logging.getLogger(__name__)
-
-integration_config = load_toml("fidesops-integration.toml")
 
 
 def generate_integration_records():
@@ -109,19 +107,12 @@ def generate_integration_records():
 
 @pytest.fixture(autouse=True, scope="session")
 def integration_postgres_config() -> ConnectionConfig:
-    postgres_conf = integration_config["postgres_example"]
     return ConnectionConfig(
         name="postgres_test",
         key="postgres_example",
         connection_type=ConnectionType.postgres,
         access=AccessLevel.write,
-        secrets={
-            "host": postgres_conf["SERVER"],
-            "port": postgres_conf["PORT"],
-            "dbname": postgres_conf["DB"],
-            "username": postgres_conf["USER"],
-            "password": postgres_conf["PASSWORD"],
-        },
+        secrets=integration_secrets["postgres_example"],
     )
 
 
@@ -162,18 +153,12 @@ def postgres_inserts(integration_postgres_db_engine):
 
 
 @pytest.fixture(scope="session")
-def integration_mongodb_config(set_os_env: None) -> ConnectionConfig:
-    mongo_conf = integration_config["mongodb_example"]
+def integration_mongodb_config() -> ConnectionConfig:
     return ConnectionConfig(
         key="mongo_example",
         connection_type=ConnectionType.mongodb,
         access=AccessLevel.write,
-        secrets={
-            "host": mongo_conf["SERVER"],
-            "defaultauthdb": mongo_conf["DB"],
-            "username": mongo_conf["USER"],
-            "password": mongo_conf["PASSWORD"],
-        },
+        secrets=integration_secrets["mongo_example"],
     )
 
 

@@ -180,7 +180,10 @@ class TestSQLQueryConfig:
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
 
     def test_generate_update_stmt_length_truncation(
-            self, erasure_policy_string_rewrite_long, example_datasets, integration_postgres_config
+        self,
+        erasure_policy_string_rewrite_long,
+        example_datasets,
+        integration_postgres_config,
     ):
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
@@ -199,13 +202,18 @@ class TestSQLQueryConfig:
             "id": 1,
         }
 
-        text_clause = config.generate_update_stmt(row, erasure_policy_string_rewrite_long)
+        text_clause = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite_long
+        )
         assert (
-                text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
+            text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
         )
         assert text_clause._bindparams["name"].key == "name"
         # length truncation on name field
-        assert text_clause._bindparams["name"].value == "some rewrite value that is very long and"
+        assert (
+            text_clause._bindparams["name"].value
+            == "some rewrite value that is very long and"
+        )
 
     def test_generate_update_stmt_multiple_fields_same_rule(
         self, erasure_policy, example_datasets, integration_postgres_config
@@ -240,7 +248,6 @@ class TestSQLQueryConfig:
 
         with pytest.raises(NoSuchStrategyException):
             config.generate_update_stmt(row, erasure_policy)
-
 
     def test_generate_update_stmts_from_multiple_rules(
         self, erasure_policy_two_rules, example_datasets, integration_postgres_config

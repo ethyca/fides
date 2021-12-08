@@ -9,3 +9,4 @@ requests-mock==1.8.0
 mypy==0.812
 pdbpp
 ipython
+pytest-env==0.6.2

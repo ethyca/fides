@@ -280,44 +280,44 @@ def run_access_request(
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
-    resources = TaskResources(privacy_request, policy, connection_configs)
+    with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-    def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
-        """Return a function that returns the seed value to kick off the dask function chain.
+        def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
+            """Return a function that returns the seed value to kick off the dask function chain.
 
-        The first traversal_node in the dask function chain is just a function that when called returns
-        the graph seed value."""
+            The first traversal_node in the dask function chain is just a function that when called returns
+            the graph seed value."""
 
-        def g() -> List[Dict[str, Any]]:
-            return [seed]
+            def g() -> List[Dict[str, Any]]:
+                return [seed]
 
-        return g
+            return g
 
-    def collect_tasks_fn(
-        tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-    ) -> None:
-        """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-        if not tn.is_root_node():
-            data[tn.address] = GraphTask(tn, resources)
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, resources)
 
-    def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
 
-        """A termination function that just returns its inputs mapped to their source addresses.
+            """A termination function that just returns its inputs mapped to their source addresses.
 
-        This needs to wait for all dependent keys because this is how dask is informed to wait for
-        all terminating addresses before calling this."""
+            This needs to wait for all dependent keys because this is how dask is informed to wait for
+            all terminating addresses before calling this."""
 
-        return resources.get_all_cached_objects()
+            return resources.get_all_cached_objects()
 
-    env: Dict[CollectionAddress, Any] = {}
-    end_nodes = traversal.traverse(env, collect_tasks_fn)
+        env: Dict[CollectionAddress, Any] = {}
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-    dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
-    dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
-    dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-    v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
-    return v.compute()
+        return v.compute()
 
 
 def run_erasure(  # pylint: disable = too-many-arguments
@@ -330,40 +330,42 @@ def run_erasure(  # pylint: disable = too-many-arguments
 ) -> Dict[str, int]:
     """Run an erasure request"""
     traversal: Traversal = Traversal(graph, identity)
-    resources = TaskResources(privacy_request, policy, connection_configs)
+    with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-    def collect_tasks_fn(
-        tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-    ) -> None:
-        """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-        if not tn.is_root_node():
-            data[tn.address] = GraphTask(tn, resources)
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, resources)
 
-    env: Dict[CollectionAddress, Any] = {}
-    traversal.traverse(env, collect_tasks_fn)
+        env: Dict[CollectionAddress, Any] = {}
+        traversal.traverse(env, collect_tasks_fn)
 
-    def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
+        def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
 
-        """The dependent_values here is an int output from each task feeding in, where
-        each task reports the output of 'task.rtf(access_request_data)', which is the number of
-        records updated.
+            """The dependent_values here is an int output from each task feeding in, where
+            each task reports the output of 'task.rtf(access_request_data)', which is the number of
+            records updated.
 
-        The termination function just returns this tuple of ints."""
-        return dependent_values
+            The termination function just returns this tuple of ints."""
+            return dependent_values
 
-    dsk: Dict[CollectionAddress, Any] = {
-        k: (t.erasure_request, access_request_data[str(k)]) for k, t in env.items()
-    }
-    # terminator function waits for all keys
-    dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
-    v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        dsk: Dict[CollectionAddress, Any] = {
+            k: (t.erasure_request, access_request_data[str(k)]) for k, t in env.items()
+        }
+        # terminator function waits for all keys
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
 
-    update_cts: Tuple[int, ...] = v.compute()
-    # we combine the output of the termination function with the input keys to provide
-    # a map of {collection_name: records_updated}:
-    erasure_update_map: Dict[str, int] = dict(zip([str(x) for x in env], update_cts))
+        update_cts: Tuple[int, ...] = v.compute()
+        # we combine the output of the termination function with the input keys to provide
+        # a map of {collection_name: records_updated}:
+        erasure_update_map: Dict[str, int] = dict(
+            zip([str(x) for x in env], update_cts)
+        )
 
-    return erasure_update_map
+        return erasure_update_map
 
 
 def filter_data_categories(

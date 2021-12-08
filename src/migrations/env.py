@@ -42,10 +42,10 @@ def get_url():
     Returns a Fidesops database URL. If the environment is set to TESTING
     the URL will point at the test database.
     """
+
     database_uri = fides_config.database.SQLALCHEMY_DATABASE_URI
     if os.getenv("TESTING"):
         database_uri = fides_config.database.SQLALCHEMY_TEST_DATABASE_URI
-
     return database_uri
 
 

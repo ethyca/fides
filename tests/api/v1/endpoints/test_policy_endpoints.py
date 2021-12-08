@@ -316,12 +316,12 @@ class TestCreatePolicies:
         pol.delete(db=db)
 
     def test_create_policy_with_invalid_key(
-            self,
-            url,
-            db,
-            api_client: TestClient,
-            generate_auth_header,
-            storage_config,
+        self,
+        url,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config,
     ):
         key = "here-is-an-invalid-key"
         data = [
@@ -337,8 +337,8 @@ class TestCreatePolicies:
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 422
         assert (
-                json.loads(resp.text)["detail"][0]["msg"]
-                == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+            json.loads(resp.text)["detail"][0]["msg"]
+            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
         )
 
     def test_create_policy_already_exists(

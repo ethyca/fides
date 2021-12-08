@@ -999,9 +999,6 @@ class TestDeletePolicyPostWebhook:
             headers=auth_header,
         )
         body = json.loads(resp.text)
-        assert body == {
-            "new_order": []
-        }
+        assert body == {"new_order": []}
 
         assert policy.post_execution_webhooks.count() == 0
-

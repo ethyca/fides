@@ -12,7 +12,7 @@ from fidesops.service.connectors.query_config import QueryConfig
 logger = logging.getLogger(__name__)
 
 
-class HTTPSConnector(BaseConnector):
+class HTTPSConnector(BaseConnector[None]):
     """HTTP Connector - for connecting to second and third-party endpoints"""
 
     def build_uri(self) -> str:
@@ -41,3 +41,10 @@ class HTTPSConnector(BaseConnector):
 
     def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
+
+    def create_client(self) -> None:
+        """Not required for this type"""
+        return None
+
+    def close(self) -> None:
+        """Not required for this type"""

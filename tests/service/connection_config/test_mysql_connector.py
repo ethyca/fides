@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Session
-
+import json
 from fidesops.service.connectors.sql_connector import MySQLConnector
 
 
 def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
     connector = MySQLConnector(configuration=connection_config_mysql)
-    assert (
-        connector.build_uri()
-        == "mysql+pymysql://mysql_user:mysql_pw@mysql_example/mysql_example"
-    )
+    s = connection_config_mysql.secrets
+    port = s["port"] and f":{s['port']}" or ""
+    uri = f"mysql+pymysql://{s['username']}:{s['password']}@{s['host']}{port}/{s['dbname']}"
+    assert connector.build_uri() == uri
 
     connection_config_mysql.secrets = {
         "username": "mysql_user",

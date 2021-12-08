@@ -196,20 +196,20 @@ class TestPatchStorageConfig:
         storage_config.delete(db)
 
     def test_put_storage_config_with_invalid_key(
-            self,
-            db: Session,
-            api_client: TestClient,
-            payload,
-            url,
-            generate_auth_header,
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
     ):
         payload[0]["key"] = "*invalid-key"
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
-                json.loads(response.text)["detail"][0]["msg"]
-                == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+            json.loads(response.text)["detail"][0]["msg"]
+            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
         )
 
     @mock.patch(
