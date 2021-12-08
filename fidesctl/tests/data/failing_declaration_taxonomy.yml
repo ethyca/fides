@@ -18,7 +18,7 @@ policy:
     name: Primary Privacy Policy
     description: The main privacy policy for the organization.
     rules:
-      - fides_key: reject_targeted_marketing
+      - name: reject_targeted_marketing
         description: Disallow third party sharing of customer data
         data_categories:
           inclusion: ANY

@@ -7,7 +7,7 @@ from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
-from fidesapi import crud, database, db_session, visualize
+from fidesapi import crud, database, db_session, view, visualize
 from fidesctl.core.config import get_config
 
 app = FastAPI(title="fidesctl")
@@ -20,12 +20,12 @@ class DBActions(str, Enum):
 
 
 def configure_routes() -> None:
-    "Include all of the routers not defined here."
+    "Include all of the routers not defined in this module."
     for router in crud.routers:
         app.include_router(router)
-    # add router for the category viz endpoints
     for router in visualize.routers:
         app.include_router(router)
+    app.include_router(view.router)
 
 
 def configure_db() -> None:
