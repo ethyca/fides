@@ -79,32 +79,32 @@ push: build
 # CI
 ####################
 
-black: build-local
+black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
 check-all: build-local check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
-check-install: build-local
+check-install:
 	@echo "Checking that fidesctl is installed..."
 	@$(RUN_NO_DEPS) fidesctl
 
 .PHONY: fidesctl
-fidesctl: build-local
+fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
-mypy: build-local
+mypy:
 	@$(RUN_NO_DEPS) mypy
 
-pylint: build-local
+pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest: build-local
+pytest:
 	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest -x
 
-xenon: build-local
+xenon:
 	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
