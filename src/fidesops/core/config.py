@@ -174,6 +174,8 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
 
+    is_test_mode: bool = os.getenv("TESTING") == "True"
+
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 

@@ -229,8 +229,41 @@ class QueryConfig(Generic[T], ABC):
 class SQLQueryConfig(QueryConfig[TextClause]):
     """Query config that translates parameters into SQL statements."""
 
+    def format_fields_for_query(
+        self,
+        fields: List[str],
+    ) -> List[str]:
+        """Returns fields in a format they can be added into SQL queries."""
+        return fields
+
+    def format_clause_for_query(
+        self,
+        field_name: str,
+        operator: str,
+    ) -> str:
+        """Returns clauses in a format they can be added into SQL queries."""
+        return f"{field_name} {operator} :{field_name}"
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns an SQL query string."""
+        return f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
+
+    def get_formatted_update_stmt(
+        self,
+        update_clauses: List[str],
+        pk_clauses: List[str],
+    ) -> str:
+        """Returns a formatted SQL UPDATE statement to fit the Snowflake syntax."""
+        return f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
+
     def generate_query(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy] = None
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
@@ -239,19 +272,21 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         if filtered_data:
             clauses = []
             query_data: Dict[str, Tuple[Any, ...]] = {}
-            field_list = ",".join(self.fields)
+            formatted_fields = self.format_fields_for_query(self.fields)
+            field_list = ",".join(formatted_fields)
             for field_name, data in filtered_data.items():
+                data = set(data)
                 if len(data) == 1:
-                    clauses.append(f"{field_name} = :{field_name}")
-                    query_data[field_name] = (data[0],)
+                    clauses.append(self.format_clause_for_query(field_name, "="))
+                    query_data[field_name] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(f"{field_name} IN :{field_name}")
-                    query_data[field_name] = tuple(set(data))
+                    clauses.append(self.format_clause_for_query(field_name, "IN"))
+                    query_data[field_name] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
             if len(clauses) > 0:
-                query_str = f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
+                query_str = self.get_formatted_query_string(field_list, clauses)
                 return text(query_str).params(query_data)
 
         logger.warning(
@@ -259,9 +294,14 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
+    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+        """Adds the appropriate formatting for update statements in this datastore."""
+        return [f"{k} = :{k}" for k in key_map]
+
     def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
+        """Returns an update statement in generic SQL dialect."""
         update_value_map = self.update_value_map(row, policy)
-        update_clauses = [f"{k} = :{k}" for k in update_value_map]
+        update_clauses = self.format_key_map_for_update_stmt(update_value_map)
         non_empty_primary_keys = filter_nonempty_values(
             {
                 f.name: f.cast(row[f.name])
@@ -269,7 +309,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 if f.name in row
             }
         )
-        pk_clauses = [f"{k} = :{k}" for k in non_empty_primary_keys]
+        pk_clauses = self.format_key_map_for_update_stmt(non_empty_primary_keys)
 
         for k, v in non_empty_primary_keys.items():
             update_value_map[k] = v
@@ -280,7 +320,11 @@ class SQLQueryConfig(QueryConfig[TextClause]):
                 f"There is not enough data to generate a valid update statement for {self.node.address}"
             )
             return None
-        query_str = f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE  {' AND '.join(pk_clauses)}"
+
+        query_str = self.get_formatted_update_stmt(
+            update_clauses,
+            pk_clauses,
+        )
         logger.info("query = %s, params = %s", query_str, update_value_map)
         return text(query_str).params(update_value_map)
 
@@ -301,11 +345,51 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return query_str
 
     def dry_run_query(self) -> Optional[str]:
+        """Returns a text representation of the query."""
         query_data = self.display_query_data()
         text_clause = self.generate_query(query_data, None)
         if text_clause is not None:
             return self.query_to_str(text_clause, query_data)
         return None
+
+
+class SnowflakeQueryConfig(SQLQueryConfig):
+    """Generates SQL in Snowflake's custom dialect."""
+
+    def format_fields_for_query(
+        self,
+        fields: List[str],
+    ) -> List[str]:
+        """Returns fields surrounded by quotation marks as required by Snowflake syntax."""
+        return [f'"{field}"' for field in fields]
+
+    def format_clause_for_query(
+        self,
+        field_name: str,
+        operator: str,
+    ) -> str:
+        """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
+        return f'"{field_name}" {operator} (:{field_name})'
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
+        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+        """Adds the appropriate formatting for update statements in this datastore."""
+        return [f'"{k}" = :{k}' for k in key_map]
+
+    def get_formatted_update_stmt(
+        self,
+        update_clauses: List[str],
+        pk_clauses: List[str],
+    ) -> str:
+        """Returns a parameterised update statement in Snowflake dialect."""
+        return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]

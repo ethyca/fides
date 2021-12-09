@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod, ABC
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
+from fidesops.core.config import config
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
 from fidesops.models.policy import Policy
@@ -29,6 +30,11 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
+        # If Fidesops is running in test mode, it's OK to show
+        # parameters inside queries for debugging purposes. By
+        # default we assume that Fidesops is not running in test
+        # mode.
+        self.hide_parameters = not config.is_test_mode
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod

@@ -34,7 +34,7 @@ def _reject_key(dict: Dict, key: str) -> Dict:
 def test_example_datasets(example_datasets):
     """Ensure the test fixture loads the right sample data"""
     assert example_datasets
-    assert len(example_datasets) == 2
+    assert len(example_datasets) == 3
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
@@ -425,7 +425,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["succeeded"]) == 3
         assert len(response_body["failed"]) == 0
 
         # Confirm that the created dataset matches the values we provided
@@ -488,7 +488,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["succeeded"]) == 3
         assert len(response_body["failed"]) == 0
 
         postgres_dataset = response_body["succeeded"][0]
@@ -513,8 +513,20 @@ class TestPutDatasets:
         assert mongo_config is not None
         assert mongo_config.updated_at is not None
 
+        snowflake_dataset = response_body["succeeded"][2]
+        assert snowflake_dataset["fides_key"] == "snowflake_example_test_dataset"
+        assert "birthday" not in [
+            f["name"] for f in snowflake_dataset["collections"][0]["fields"]
+        ]
+        snowflake_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="snowflake_example_test_dataset"
+        )
+        assert snowflake_config is not None
+        assert snowflake_config.updated_at is not None
+
         postgres_config.delete(db)
         mongo_config.delete(db)
+        snowflake_config.delete(db)
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
@@ -533,20 +545,14 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 2
+        assert len(response_body["failed"]) == 3
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
-        assert (
-            response_body["failed"][0]["data"]["fides_key"]
-            == example_datasets[0]["fides_key"]
-        )
-        assert (
-            response_body["failed"][1]["data"]["fides_key"]
-            == example_datasets[1]["fides_key"]
-        )
+        for index, failed in enumerate(response_body["failed"]):
+            assert failed["data"]["fides_key"] == example_datasets[index]["fides_key"]
 
 
 class TestGetDatasets:

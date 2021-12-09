@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Optional
 
 from sqlalchemy import create_engine
@@ -20,7 +19,7 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
     """
     if database_uri is None:
         # Don't override any database_uri explicity passed in
-        if os.getenv("TESTING"):
+        if config.is_test_mode:
             database_uri = config.database.SQLALCHEMY_TEST_DATABASE_URI
         else:
             database_uri = config.database.SQLALCHEMY_DATABASE_URI

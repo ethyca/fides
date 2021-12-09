@@ -8,7 +8,10 @@ from sqlalchemy_utils.functions import (
     drop_database,
 )
 
-from fidesops.core.config import config
+from fidesops.core.config import (
+    config,
+    load_toml,
+)
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.main import app
@@ -29,7 +32,7 @@ logger = logging.getLogger(__name__)
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Applying migrations...")
-    assert os.getenv("TESTING", False)
+    assert config.is_test_mode
     init_db(config.database.SQLALCHEMY_TEST_DATABASE_URI)
     logger.debug("Migrations successfully applied")
 
@@ -38,8 +41,7 @@ def migrate_test_db() -> None:
 def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
-    ## This asserts that TESTING==True
-    assert os.getenv("TESTING", False)
+    assert config.is_test_mode
     engine = get_db_engine(
         database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,
     )
@@ -107,3 +109,8 @@ def generate_auth_header(oauth_client):
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
+
+
+@pytest.fixture(scope="session")
+def integration_config():
+    yield load_toml("fidesops-integration.toml")

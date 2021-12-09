@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pydash
 import pytest
@@ -16,6 +17,7 @@ from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
 from fidesops.service.connectors import PostgreSQLConnector
+from fidesops.service.connectors.sql_connector import SnowflakeConnector
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 
@@ -129,7 +131,7 @@ def test_create_and_process_access_request(
 
     policy.delete(db=db)
     pr.delete(db=db)
-    db.expunge_all()
+    assert not pr in db  # Check that `pr` has been expunged from the session
     assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
 
 
@@ -317,3 +319,93 @@ def test_create_and_process_erasure_request_read_access(
             # "read" access
             assert row[1] is not None
     assert customer_found
+
+
+@pytest.fixture(scope="function")
+def snowflake_resources(
+    snowflake_example_test_dataset_config,
+):
+    snowflake_connection_config = (
+        snowflake_example_test_dataset_config.connection_config
+    )
+    snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
+    uuid = str(uuid4())
+    customer_email = f"customer-{uuid}@example.com"
+    formatted_customer_email = f"'{customer_email}'"
+    customer_name = f"{uuid}"
+    formatted_customer_name = f"'{customer_name}'"
+
+    stmt = 'select max("id") from "customer";'
+    res = snowflake_client.execute(stmt).all()
+    customer_id = res[0][0] + 1
+
+    stmt = f"""
+    insert into "customer" ("id", "email", "name", "variant_eg")
+    select {customer_id}, {formatted_customer_email}, {formatted_customer_name}, to_variant({formatted_customer_name});
+    """
+    res = snowflake_client.execute(stmt).all()
+    assert res[0][0] == 1
+    yield {
+        "email": customer_email,
+        "formatted_email": formatted_customer_email,
+        "name": customer_name,
+        "id": customer_id,
+        "client": snowflake_client,
+    }
+    # Remove test data and close Snowflake connection in teardown
+    stmt = f'delete from "customer" where "email" = {formatted_customer_email};'
+    res = snowflake_client.execute(stmt).all()
+    assert res[0][0] == 1
+
+
+@pytest.mark.integration_external
+def test_create_and_process_access_request_snowflake(
+    snowflake_resources,
+    db,
+    cache,
+    policy,
+):
+    customer_email = snowflake_resources["email"]
+    customer_name = snowflake_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identities": [{"email": customer_email}],
+    }
+    pr = get_privacy_request_results(db, policy, cache, data)
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__snowflake_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+def test_create_and_process_erasure_request_snowflake(
+    snowflake_example_test_dataset_config,
+    snowflake_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
+):
+    customer_email = snowflake_resources["email"]
+    snowflake_client = snowflake_resources["client"]
+    formatted_customer_email = snowflake_resources["formatted_email"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identities": [{"email": customer_email}],
+    }
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
+    res = snowflake_client.execute(stmt).all()
+    for row in res:
+        assert row[0] == None
+        assert row[1] == None
