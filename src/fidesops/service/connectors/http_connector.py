@@ -1,6 +1,10 @@
+import json
+
 import logging
 from typing import Dict, Any, List, Optional
+import requests
 
+from fidesops.common_exceptions import ClientUnsuccessfulException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
@@ -22,6 +26,33 @@ class HTTPSConnector(BaseConnector[None]):
         config = HttpsSchema(**self.configuration.secrets or {})
         return config.url
 
+    def build_authorization_header(self) -> Dict[str, str]:
+        """
+        Returns Authorization headers
+        """
+        config = HttpsSchema(**self.configuration.secrets or {})
+        return {"Authorization": config.authorization}
+
+    def execute(
+        self,
+        request_body: Dict[str, Any],
+        response_expected: bool,
+        additional_headers: Dict[str, Any] = {},
+    ) -> Optional[Dict[str, Any]]:
+        """Calls a client-defined endpoint and returns the data that it responds with"""
+        config = HttpsSchema(**self.configuration.secrets or {})
+        headers = self.build_authorization_header()
+        headers.update(additional_headers)
+
+        response = requests.post(url=config.url, headers=headers, json=request_body)
+        if not response_expected:
+            return {}
+
+        if not response.ok:
+            logger.error("Invalid response received from webhook.")
+            raise ClientUnsuccessfulException(status_code=response.status_code)
+        return json.loads(response.text)
+
     def test_connection(self) -> Optional[TestStatus]:
         """
         Override to skip connection test
@@ -37,10 +68,16 @@ class HTTPSConnector(BaseConnector[None]):
         """Retrieve data in a connector dependent way based on input data.
 
         The input data is expected to include a key and list of values for
-        each input key that may be queried on."""
+        each input key that may be queried on.
+
+        TODO: implement when HTTPS Connectors can be part of the traversal.
+        """
 
     def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
-        """Execute a masking request. Return the number of rows that have been updated"""
+        """Execute a masking request. Return the number of rows that have been updated
+
+        TODO: implement when HTTPS Connectors can be part of the traversal.
+        """
 
     def create_client(self) -> None:
         """Not required for this type"""

@@ -1,5 +1,6 @@
 # pylint: disable=E1101
 from enum import Enum as EnumType
+
 from typing import (
     Any,
     Dict,
@@ -578,3 +579,6 @@ class PolicyPostWebhook(WebhookBase, Base):
         """Override to have PolicyPostWebhooks not be committed to the database automatically."""
         db.add(resource)
         return resource
+
+
+WebhookTypes = Union[PolicyPreWebhook, PolicyPostWebhook]

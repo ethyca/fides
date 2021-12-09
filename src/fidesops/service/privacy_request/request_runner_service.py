@@ -1,15 +1,20 @@
 import logging
 from datetime import datetime
-from typing import Set, Awaitable
+from typing import Set, Optional, Awaitable
 
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fidesops import common_exceptions
 from fidesops.db.session import get_db_session
+from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import ActionType
+from fidesops.models.policy import (
+    ActionType,
+    WebhookTypes,
+)
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.service.storage.storage_uploader_service import upload
 from fidesops.task.graph_task import (
@@ -33,6 +38,60 @@ class PrivacyRequestRunner:
         self.cache = cache
         self.db = db
         self.privacy_request = privacy_request
+
+    def run_webhooks(
+        self, webhook_cls: WebhookTypes, after_webhook: Optional[WebhookTypes] = None
+    ) -> bool:
+        """
+        Runs a series of webhooks either pre- or post- privacy request execution.
+        Updates privacy request status if execution is paused/errored.
+        Returns True if execution should proceed.
+        """
+        webhooks = self.db.query(webhook_cls).filter_by(
+            policy_id=self.privacy_request.policy.id
+        )
+
+        if after_webhook:
+            # Only run webhooks configured to run after this webhook
+            webhooks = webhooks.filter(webhook_cls.order > after_webhook.order)
+
+        for webhook in webhooks.order_by(webhook_cls.order):
+            try:
+                self.privacy_request.trigger_policy_webhook(webhook)
+            except PrivacyRequestPaused:
+                logging.info(
+                    f"Pausing execution of privacy request {self.privacy_request.id}. Halt instruction received from webhook {webhook.key}."
+                )
+                self.privacy_request.update(
+                    db=self.db, data={"status": PrivacyRequestStatus.paused}
+                )
+                return False
+            except ClientUnsuccessfulException as exc:
+                logging.error(
+                    f"Privacy Request exited after response from webhook '{webhook.key}': {exc.args[0]}."
+                )
+                self.privacy_request.update(
+                    db=self.db,
+                    data={
+                        "status": PrivacyRequestStatus.error,
+                        "finished_processing_at": datetime.utcnow(),
+                    },
+                )
+                return False
+            except ValidationError:
+                logging.error(
+                    f"Privacy Request {self.privacy_request.id} errored due to response validation error from webhook '{webhook.key}'."
+                )
+                self.privacy_request.update(
+                    db=self.db,
+                    data={
+                        "status": PrivacyRequestStatus.error,
+                        "finished_processing_at": datetime.utcnow(),
+                    },
+                )
+                return False
+
+        return True
 
     def submit(self) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""

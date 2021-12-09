@@ -19,8 +19,11 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fidesops.api.v1.urn_registry import REQUEST_PREVIEW
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+)
+from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
 from fidesops.common_exceptions import TraversalError
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
@@ -28,13 +31,17 @@ from fidesops.graph.traversal import Traversal
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
+from fidesops.schemas.external_https import (
+    SecondPartyResponseFormat,
+    PrivacyRequestResumeFormat,
+)
 from fidesops.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
@@ -46,12 +53,29 @@ from fidesops.service.privacy_request.request_runner_service import PrivacyReque
 from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
-from fidesops.util.oauth_util import verify_oauth_client
+from fidesops.util.oauth_util import verify_oauth_client, verify_callback_oauth
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
+
+
+def get_privacy_request_or_error(
+    db: Session, privacy_request_id: str
+) -> PrivacyRequest:
+    """Load the privacy request or throw a 404"""
+    logger.info(f"Finding privacy request with id '{privacy_request_id}'")
+
+    privacy_request = PrivacyRequest.get(db, id=privacy_request_id)
+
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request found with id '{privacy_request_id}'.",
+        )
+
+    return privacy_request
 
 
 @router.post(
@@ -283,15 +307,7 @@ def get_request_status_logs(
 ) -> AbstractPage[ExecutionLog]:
     """Returns all the execution logs associated with a given privacy request ordered by updated asc."""
 
-    logger.info(f"Finding privacy request with id '{privacy_request_id}'")
-
-    privacy_request = PrivacyRequest.get(db, id=privacy_request_id)
-
-    if not privacy_request:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No privacy request found with id '{privacy_request_id}'.",
-        )
+    get_privacy_request_or_error(db, privacy_request_id)
 
     logger.info(
         f"Finding all execution logs for privacy request {privacy_request_id} with params '{params}'"
@@ -369,3 +385,24 @@ def get_request_preview_queries(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Dry run failed",
         )
+
+
+@router.post(
+    PRIVACY_REQUEST_RESUME,
+    status_code=200,
+)
+def resume_privacy_request(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    webhook: PolicyPreWebhook = Security(
+        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
+    ),
+    webhook_callback: PrivacyRequestResumeFormat,
+) -> None:
+    """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+    privacy_request.cache_identity(webhook_callback.derived_identities)
+
+    # TODO resume running privacy request from specific webhook

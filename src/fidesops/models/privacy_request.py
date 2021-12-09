@@ -1,4 +1,9 @@
 # pylint: disable=R0401
+import logging
+from datetime import datetime
+
+import json
+
 from typing import Any, Dict, Optional
 
 from enum import Enum as EnumType
@@ -14,10 +19,24 @@ from sqlalchemy import (
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, Session
 
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.db.base_class import Base
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import (
+    Policy,
+    ActionType,
+    PolicyPreWebhook,
+    WebhookDirection,
+    WebhookTypes,
+)
+from fidesops.schemas.external_https import (
+    SecondPartyRequestFormat,
+    SecondPartyResponseFormat,
+    WebhookJWE,
+)
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.service.connectors import HTTPSConnector, get_connector
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_cache,
@@ -25,6 +44,9 @@ from fidesops.util.cache import (
     FidesopsRedis,
     get_encryption_cache_key,
 )
+from fidesops.util.oauth_util import generate_jwe
+
+logger = logging.getLogger(__name__)
 
 
 class PrivacyRequestStatus(EnumType):
@@ -33,7 +55,18 @@ class PrivacyRequestStatus(EnumType):
     in_processing = "in_processing"
     pending = "pending"
     complete = "complete"
+    paused = "paused"
     error = "error"
+
+
+def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
+    """Generate a JWE to be used to resume privacy request execution."""
+    jwe = WebhookJWE(
+        webhook_id=webhook.id,
+        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
+        iat=datetime.now().isoformat(),
+    )
+    return generate_jwe(json.dumps(jwe.dict()))
 
 
 class PrivacyRequest(Base):
@@ -70,6 +103,16 @@ class PrivacyRequest(Base):
     policy = relationship(
         Policy,
         backref="privacy_requests",
+    )
+
+    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    execution_logs = relationship(
+        "ExecutionLog",
+        backref="privacy_request",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
     )
 
     def delete(self, db: Session) -> None:
@@ -118,15 +161,57 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
-    # a privacy_request is deleted.  We want to retain for record-keeping.
-    execution_logs = relationship(
-        "ExecutionLog",
-        backref="privacy_request",
-        lazy="dynamic",
-        passive_deletes="all",
-        primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
-    )
+    def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
+        """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
+        should cause privacy request execution to stop.
+
+        Pre-Execution webhooks send headers to the webhook in case the service needs to send back instructions
+        to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
+        """
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)
+        request_body = SecondPartyRequestFormat(
+            privacy_request_id=self.id,
+            direction=webhook.direction.value,
+            callback_type=webhook.prefix,
+            identities=self.get_cached_identity_data(),
+        )
+
+        headers = {}
+        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
+        response_expected = webhook.direction == WebhookDirection.two_way
+        if is_pre_webhook and response_expected:
+            headers = {
+                "reply-to": f"/privacy-request/{self.id}/resume",
+                "reply-to-token": generate_request_callback_jwe(webhook),
+            }
+
+        logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
+        response: Optional[SecondPartyResponseFormat] = https_connector.execute(
+            request_body.dict(),
+            response_expected=response_expected,
+            additional_headers=headers,
+        )
+        if not response:
+            return
+
+        response_body = SecondPartyResponseFormat(**response)
+
+        # Cache any new identities
+        if response_body.derived_identities and any(
+            [response_body.derived_identities.dict().values()]
+        ):
+            logger.info(
+                f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
+            )
+            self.cache_identity(response_body.derived_identities)
+
+        # Pause execution if instructed
+        if response_body.halt and is_pre_webhook:
+            raise PrivacyRequestPaused(
+                f"Halt instruction received on privacy request {self.id}."
+            )
+
+        return
 
 
 class ExecutionLogStatus(EnumType):
