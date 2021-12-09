@@ -33,6 +33,7 @@ POLICY_DETAIL = "/policy/{policy_key}"
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 REQUEST_PREVIEW = "/privacy-request/preview"
 
 # Rule URLs

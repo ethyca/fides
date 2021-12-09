@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+import requests_mock
 import json
 import os
 from datetime import datetime
@@ -15,11 +17,13 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
     REQUEST_PREVIEW,
+    PRIVACY_REQUEST_RESUME,
 )
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.models.privacy_request import (
@@ -30,6 +34,7 @@ from fidesops.models.privacy_request import (
 from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
+from fidesops.util.oauth_util import generate_jwe
 
 page_size = Params().size
 
@@ -793,3 +798,100 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
+
+
+class TestResumePrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_RESUME.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_resume_privacy_request_not_authenticated(
+        self,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_pre_execution_webhooks,
+    ):
+        response = api_client.post(url)
+        assert response.status_code == 401
+
+    def test_resume_privacy_request_invalid_jwe_format(
+        self,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_pre_execution_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps({"unexpected": "format"}))
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_resume_privacy_request_invalid_scopes(
+        self,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_pre_execution_webhooks,
+    ):
+        """
+        Test scopes are correct, although we just gave a user this token with the
+        correct scopes, the check doesn't mean much
+        """
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": policy_pre_execution_webhooks[0].id,
+                        "scopes": [PRIVACY_REQUEST_READ],
+                        "iat": datetime.now().isoformat(),
+                    }
+                )
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
+
+    def test_resume_privacy_request_invalid_webhook(
+        self,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_post_execution_webhooks,
+    ):
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(
+                json.dumps(
+                    {
+                        "webhook_id": policy_post_execution_webhooks[0].id,
+                        "scopes": [PRIVACY_REQUEST_CALLBACK_RESUME],
+                        "iat": datetime.now().isoformat(),
+                    }
+                )
+            )
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 404
+
+    def test_resume_privacy_request(
+        self,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_pre_execution_webhooks,
+    ):
+        auth_header = generate_webhook_auth_header(
+            webhook=policy_pre_execution_webhooks[0]
+        )
+        response = api_client.post(
+            url, headers=auth_header, json={"derived_identities": {}}
+        )
+        assert response.status_code == 200
+        # TODO add to test after more of this is connected

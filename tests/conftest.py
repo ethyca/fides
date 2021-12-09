@@ -1,3 +1,5 @@
+from typing import Union
+
 import json
 import os
 
@@ -15,6 +17,7 @@ from fidesops.core.config import (
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.main import app
+from fidesops.models.privacy_request import generate_request_callback_jwe
 from fidesops.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
@@ -106,6 +109,15 @@ def generate_auth_header(oauth_client):
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         jwe = generate_jwe(json.dumps(payload))
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
+@pytest.fixture(scope="function")
+def generate_webhook_auth_header():
+    def _build_jwt(webhook: PolicyPreWebhook):
+        jwe = generate_request_callback_jwe(webhook)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt

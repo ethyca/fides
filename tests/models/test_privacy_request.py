@@ -1,9 +1,13 @@
+import pytest
+import requests_mock
 from datetime import datetime, timedelta
+from pydantic import ValidationError
 from typing import List
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
+from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -129,3 +133,194 @@ def test_delete_privacy_request_removes_cached_data(
     from_db = PrivacyRequest.get(db=db, id=privacy_request.id)
     assert from_db is None
     assert cache.get(key) is None
+
+
+class TestPrivacyRequestTriggerWebhooks:
+
+    def test_trigger_one_way_policy_webhook(
+        self,
+        https_connection_config,
+        db,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[0]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            # One-way requests ignore any responses returned
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                },
+                status_code=500,
+            )
+            privacy_request.trigger_policy_webhook(webhook)
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+    def test_trigger_two_way_policy_webhook_with_error(
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[1]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                },
+                status_code=500,
+            )
+            with pytest.raises(ClientUnsuccessfulException):
+                privacy_request.trigger_policy_webhook(webhook)
+
+    def test_trigger_two_way_policy_webhook_200_proceed(
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[1]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                    "halt": False,
+                },
+                status_code=200,
+            )
+            privacy_request.trigger_policy_webhook(webhook)
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.in_processing
+
+    def test_trigger_two_way_policy_webhook_200_pause(
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[1]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                    "halt": True,
+                },
+                status_code=200,
+            )
+
+            with pytest.raises(PrivacyRequestPaused):
+                privacy_request.trigger_policy_webhook(webhook)
+
+
+    def test_trigger_two_way_policy_webhook_add_derived_identities(
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[1]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                    "derived_identities": {"phone_number": "555-555-5555"},
+                    "halt": False,
+                },
+                status_code=200,
+            )
+            privacy_request.trigger_policy_webhook(webhook)
+            db.refresh(privacy_request)
+            assert privacy_request.status == PrivacyRequestStatus.in_processing
+            assert privacy_request.get_cached_identity_data() == {
+                "email": "customer-1@example.com",
+                "phone_number": "555-555-5555",
+            }
+
+    def test_two_way_validation_issues(
+            self,
+            db,
+            https_connection_config,
+            privacy_request,
+            policy,
+            policy_pre_execution_webhooks,
+    ):
+        webhook = policy_pre_execution_webhooks[1]
+        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        privacy_request.cache_identity(identity)
+
+        # halt not included
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                },
+                status_code=200,
+            )
+            with pytest.raises(ValidationError):
+                privacy_request.trigger_policy_webhook(webhook)
+
+        # Derived identity invalid
+        with requests_mock.Mocker() as mock_response:
+            mock_response.post(
+                https_connection_config.secrets["url"],
+                json={
+                    "privacy_request_id": privacy_request.id,
+                    "direction": webhook.direction.value,
+                    "callback_type": webhook.prefix,
+                    "identities": identity.dict(),
+                    "derived_identities": {"unsupported_identity": "1200 Fides Road"},
+                    "halt": True,
+                },
+                status_code=200,
+            )
+            with pytest.raises(ValidationError):
+                privacy_request.trigger_policy_webhook(webhook)

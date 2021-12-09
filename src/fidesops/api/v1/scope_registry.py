@@ -16,6 +16,9 @@ CONNECTION_DELETE = "connection:delete"
 PRIVACY_REQUEST_CREATE = "privacy-request:create"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
+PRIVACY_REQUEST_CALLBACK_RESUME = (
+    "privacy-request:resume"  # User has permission to restart a paused privacy request
+)
 
 WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
 WEBHOOK_READ = "webhook:read"
@@ -56,6 +59,7 @@ SCOPE_REGISTRY = [
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
     RULE_CREATE_OR_UPDATE,
     RULE_READ,
     RULE_DELETE,

@@ -1,8 +1,10 @@
 import json
 from datetime import datetime
 from typing import Optional
+from starlette.status import HTTP_404_NOT_FOUND
+from pydantic import ValidationError
 
-from fastapi import Depends, Security
+from fastapi import Depends, Security, HTTPException
 from fastapi.security import SecurityScopes
 from jose import jwe
 from jose.constants import ALGORITHMS
@@ -13,6 +15,8 @@ from fidesops.api.v1.urn_registry import V1_URL_PREFIX, TOKEN
 from fidesops.common_exceptions import AuthorizationError, AuthenticationFailure
 from fidesops.core.config import config
 from fidesops.models.client import ClientDetail
+from fidesops.models.policy import PolicyPreWebhook
+from fidesops.schemas.external_https import WebhookJWE
 from fidesops.schemas.oauth import OAuth2ClientCredentialsBearer
 from fidesops.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
@@ -94,3 +98,56 @@ def generate_jwe(payload: str) -> str:
 def extract_payload(jwe_string: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form"""
     return jwe.decrypt(jwe_string, config.security.APP_ENCRYPTION_KEY)
+
+
+def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
+    """Returns True if the token is older than the expiration of the redis cache.  We
+    can't resume executing the privacy request if the identity data is gone.
+    """
+    if not issued_at:
+        return True
+
+    return (
+        datetime.now() - issued_at
+    ).total_seconds() / 60.0 > config.redis.DEFAULT_TTL_SECONDS
+
+
+def verify_callback_oauth(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(deps.get_db),
+) -> PolicyPreWebhook:
+    """
+    Verifies the specific token that accompanies a request when a user wants to resume executing
+    a PrivacyRequest after it was paused by a webhook. Note that this token was sent along with the
+    request when calling the webhook originally.
+
+    Verifies that the webhook token hasn't expired and loads the webhook from that token.
+
+    Also verifies scopes, but note that this was given to the user in a request header and they've
+    just returned it back.
+    """
+    if authorization is None:
+        raise AuthenticationFailure(detail="Authentication Failure")
+
+    token_data = json.loads(extract_payload(authorization))
+    try:
+        token = WebhookJWE(**token_data)
+    except ValidationError:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
+    if not set(security_scopes.scopes).issubset(assigned_scopes):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    if is_callback_token_expired(datetime.fromisoformat(token.iat)):
+        raise AuthorizationError(detail="Webhook token expired")
+
+    webhook = PolicyPreWebhook.get_by(db, field="id", value=token.webhook_id)
+
+    if not webhook:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Policy Pre-Execution Webhook found with id '{token.webhook_id}'.",
+        )
+    return webhook

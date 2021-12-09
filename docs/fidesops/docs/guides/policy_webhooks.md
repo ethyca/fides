@@ -7,7 +7,8 @@ In this section we'll cover:
     - Create a ConnectionConfig
     - Add ConnectionConfig secrets
     - Define PolicyPreWebhooks or PolicyPostWebhooks
-- Expected webhook request and response format
+- Expected webhook request and response formats
+- Resuming Privacy Request Execution
 
 Take me directly to the [Policy Webhooks API documentation](/fidesops/api/#operations-Policy_Webhooks-get_policy_pre_execution_webhooks_api_v1_policy__policy_key__webhook_pre_execution_get).
 
@@ -71,8 +72,8 @@ See API docs on how to [Set a ConnectionConfig's Secrets](/fidesops/api#operatio
 ```
 
 ### Defining Pre-Execution or Post-Execution Policy Webhooks
-After you've defined a ConnectionConfig, you can create lists of webhooks to run *before* (PolicyPreWebhooks)
-or *after* (PolicyPostWebhooks) a PrivacyRequest is executed.
+After you've defined a `ConnectionConfig`, you can create lists of webhooks to run *before* (`PolicyPreWebhooks`)
+or *after* (`PolicyPostWebhooks`) a PrivacyRequest is executed.
 
 If you are defining PolicyPreWebhooks, all desired PolicyPreWebhooks should be included in the request
 body in the desired order.  Any PolicyPreWebhooks on the Policy *not* included in the request, will be removed from the 
@@ -162,7 +163,82 @@ See API docs for more information on how to [PATCH a PolicyPreWebhook](/fidesops
 and how to [PATCH a PolicyPostWebhook](/fidesops/api#operations-Policy_Webhooks-update_post_execution_webhook_api_v1_policy__policy_key__webhook_post_execution__post_webhook_key__patch).
 
 
-## Expected Webhook Request and Response Format
+## Webhook Request Format
 
-In progress, this will be added in the next release.  For now, you have the ability to configure webhooks. The work
-to trigger those callbacks is ongoing.
+NOTE: FEATURE IN PROGRESS.
+
+
+Before and after running access or erasure requests, Fidesops will send requests to any configured webhooks in sequential order
+with the following request body:
+
+POST <user-defined URL>
+```json
+{
+  "privacy_request_id": "pri_029832ba-3b84-40f7-8946-82aec6f95448",
+  "direction": "one_way | two_way",
+  "callback_type": "pre | post",
+  "identities": {
+    "email": "customer-1@example.com",
+    "phone_number": "555-5555"
+  }
+}
+```
+
+Most of these attributes were configured by you: the `direction`, the `callback_type` ("pre" for `PolicyPreWebhook`s that will run 
+before PrivacyRequest execution or "post" for `PolicyPostWebhook`s that will run after PrivacyRequestExecution).
+Known identities are also embedded in the request.
+
+For `two-way` `PolicyPreWebhooks`, we include specific headers in case you need to pause PrivacyRequest 
+execution while you take care of additional processing on your end.
+
+```json
+     {
+        "reply-to": "/privacy-request/<privacy_request_id>/resume",
+        "reply-to-token": "<jwe_token>"
+     }
+```
+ To resume, you should send a request back to the `reply-to` URL with the `reply-to-token`.
+
+## Expected Webhook Response Format
+
+Your webhook should respond immediately. If more processing time is needed, either make sure it is configured as a 
+`one-way` webhook, or reply back with `halt=True` if you want to pause execution and wait for your processing to finish.
+Note that only `PolicyPreWebhooks` can pause execution. 
+
+We don't expect a response from `one-way` webhooks, but `two-way` webhooks should respond with the following: 
+
+```json
+{
+  "derived_identities": {
+    "email": "customer-1@gmail.com",
+    "phone_number": "555-5555"
+  },
+  "halt": "true | false"
+}
+```
+
+Derived identities are optional: a returned email or phone number will replace currently known emails or phone numbers.
+
+## Resuming PrivacyRequest Execution
+
+If your webhook needed more processing time, once completed, send a request to the `reply-to` URL 
+given to you in the original request header with the `reply-to-token` auth token.
+
+`POST privacy_request/<privacy-request-id>/resume`
+
+```json
+{
+  "derived_identities": {
+    "email": "customer-1@gmail.com",
+    "phone_number": "555-5555"
+  }
+}
+
+```
+
+If there are no derived identities, an empty `{}` request body will suffice.
+
+The `reply-to-token` is a JWE containing the current webhook id, scopes to access the callback endpoint, 
+and the datetime the token is issued.  We unpack this and resume the privacy request execution after the 
+specified webhook. The `reply-to-token` expires when the redis cache expires (`config.redis.DEFAULT_TTL_SECONDS`).
+Once the redis cache expires, Fidesops no longer has the original identity data and the privacy request should be resubmitted.

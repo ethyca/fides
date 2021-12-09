@@ -296,7 +296,7 @@ def https_connection_config(db: Session) -> Generator:
             "key": "my_webhook_config",
             "connection_type": ConnectionType.https,
             "access": AccessLevel.read,
-            "secrets": {"url": "example.com", "authorization": "test_authorization"},
+            "secrets": {"url": "http://example.com", "authorization": "test_authorization"},
         },
     )
     yield connection_config
