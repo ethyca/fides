@@ -173,9 +173,7 @@ class TestSQLQueryConfig:
         }
 
         text_clause = config.generate_update_stmt(row, erasure_policy)
-        assert (
-            text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
-        )
+        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
         assert text_clause._bindparams["name"].key == "name"
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
 
@@ -205,9 +203,7 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(
             row, erasure_policy_string_rewrite_long
         )
-        assert (
-            text_clause.text == """UPDATE customer SET name = :name WHERE  id = :id"""
-        )
+        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
         assert text_clause._bindparams["name"].key == "name"
         # length truncation on name field
         assert (
@@ -273,7 +269,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET name = :name,email = :email WHERE  id = :id"
+            == "UPDATE customer SET name = :name,email = :email WHERE id = :id"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy

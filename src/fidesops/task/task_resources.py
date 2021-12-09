@@ -14,9 +14,10 @@ from fidesops.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import (
     BaseConnector,
-    PostgreSQLConnector,
     MongoDBConnector,
     MySQLConnector,
+    PostgreSQLConnector,
+    SnowflakeConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -47,6 +48,8 @@ class Connections:
             return MongoDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mysql:
             return MySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.snowflake:
+            return SnowflakeConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

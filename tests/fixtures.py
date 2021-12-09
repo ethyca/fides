@@ -1,6 +1,6 @@
 import logging
-from datetime import datetime, timedelta
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
+import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
@@ -36,6 +36,9 @@ from fidesops.models.privacy_request import (
     ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
+from fidesops.schemas.connection_configuration import (
+    SnowflakeSchema,
+)
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -242,7 +245,13 @@ def redshift_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def snowflake_connection_config(db: Session) -> Generator:
+def snowflake_connection_config_without_secrets(
+    db: Session,
+) -> Generator:
+    """
+    Returns a Snowflake ConnectionConfig without secrets
+    attached that is safe to usein any tests.
+    """
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -254,6 +263,27 @@ def snowflake_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def snowflake_connection_config(
+    db: Session,
+    integration_config: Dict[str, str],
+    snowflake_connection_config_without_secrets: ConnectionConfig,
+) -> Generator:
+    """
+    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    in the configuration.
+    """
+    snowflake_connection_config = snowflake_connection_config_without_secrets
+    uri = integration_config.get("snowflake", {}).get("external_uri") or os.environ.get(
+        "SNOWFLAKE_TEST_URI"
+    )
+    if uri is not None:
+        schema = SnowflakeSchema(url=uri)
+        snowflake_connection_config.secrets = schema.dict()
+        snowflake_connection_config.save(db=db)
+    yield snowflake_connection_config
 
 
 @pytest.fixture(scope="function")
@@ -847,18 +877,43 @@ def dataset_config_preview(
     dataset_config.delete(db)
 
 
+def load_dataset(filename: str) -> Dict:
+    yaml_file = load_file(filename)
+    with open(yaml_file, "r") as file:
+        return yaml.safe_load(file).get("dataset", [])
+
+
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
     example_filenames = [
         "data/dataset/postgres_example_test_dataset.yml",
         "data/dataset/mongo_example_test_dataset.yml",
+        "data/dataset/snowflake_example_test_dataset.yml",
     ]
     for filename in example_filenames:
-        yaml_file = load_file(filename)
-        with open(yaml_file, "r") as file:
-            example_datasets += yaml.safe_load(file).get("dataset", [])
+        example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture
+def snowflake_example_test_dataset_config(
+    snowflake_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[2]
+    fides_key = dataset["fides_key"]
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": snowflake_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
 
 
 @pytest.fixture

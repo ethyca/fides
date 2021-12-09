@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import (
     Column,
@@ -18,7 +19,10 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import (
+    Base,
+    JSONTypeOverride,
+)
 
 
 class TestStatus(enum.Enum):
@@ -88,3 +92,10 @@ class ConnectionConfig(Base):
         self.last_test_timestamp = datetime.now()
         self.last_test_succeeded = test_status == TestStatus.succeeded
         self.save(db)
+
+    def delete(self, db: Session) -> Optional[Base]:
+        """Hard deletes datastores that map this ConnectionConfig."""
+        for dataset in self.datasets:
+            dataset.delete(db=db)
+
+        return super().delete(db=db)
