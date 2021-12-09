@@ -1,15 +1,15 @@
 ---
-name: Feature request
+name: Fidesctl Feature request
 about: Suggest a new feature/enhancement for this project
 title: ''
 labels: enhancement
-assignees: ''
 
 ---
 
-### Is your feature request related to a problem? Please describe.
+### Is your feature request related to a specific problem?
 
-_A description of what the problem is. Ex. I'm always frustrated when [...]_
+_A description of what the problem is._
+_Ex. I'm always frustrated when [...]_
 
 ### Describe the solution you'd like
 

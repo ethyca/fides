@@ -3,13 +3,12 @@ name: Fidesctl Bug report
 about: Problems and issues with the code of Fidesctl
 title: ''
 labels: bug
-assignees: ''
 
 ---
 
 ### Bug Description
 
-_A description of what the bug is_
+_A description of what the bug is._
 
 #### Steps to Reproduce
 
@@ -18,11 +17,11 @@ _A description of what the bug is_
 
 ### Expected behavior
 
-_A description of what you expected to happen_
+_A description of what you expected to happen._
 
 ### Screenshots
 
-_If applicable, add screenshots to help explain your problem_
+_If applicable, add screenshots to help explain your problem._
 
 ### Environment
 
@@ -33,4 +32,4 @@ _If applicable, add screenshots to help explain your problem_
 
 ### Additional context
 
-_Add any other context about the problem here_
+_Add any other context about the problem here._
