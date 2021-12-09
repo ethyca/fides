@@ -15,10 +15,12 @@ RUN apt-get -y install libpq-dev
 
 # Update pip and install requirements
 RUN pip install -U pip
-COPY requirements.txt requirements.txt
+
 COPY dev-requirements.txt dev-requirements.txt
-RUN pip install -r requirements.txt
 RUN pip install -r dev-requirements.txt
+
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
 # Copy in the application files and install it locally
 COPY . /fides/fidesctl
