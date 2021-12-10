@@ -3,6 +3,13 @@ minimum_pre_commit_version: "2"
 repos:
   - repo: local
     hooks:
+      - id: docker
+        name: docker
+        entry: make build-local
+        files: "^fidesctl/"
+        types_or: [file, python]
+        language: system
+
       - id: black
         name: black
         entry: make black
