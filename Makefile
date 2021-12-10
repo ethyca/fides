@@ -3,15 +3,18 @@
 ####################
 # CONSTANTS
 ####################
-RUN = docker-compose run --rm $(IMAGE_NAME)
-RUN_NO_DEPS = docker-compose run --no-deps --rm $(IMAGE_NAME)
-
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
 
+# Image Names & Tags
 IMAGE_NAME := fidesctl
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+IMAGE_LOCAL := $(REGISTRY)/$(IMAGE_NAME):local
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
+
+# Run in Compose
+RUN = docker compose run --rm $(IMAGE_NAME)
+RUN_NO_DEPS = docker compose run --no-deps --rm $(IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -37,30 +40,23 @@ help:
 # Dev
 ####################
 
-.PHONY: init-db
-init-db: compose-build
-	@echo "Checking for new migrations to run..."
-	@docker-compose up -d $(IMAGE_NAME)
-	@$(RUN) fidesctl init-db
-	@make teardown
-
 .PHONY: reset-db
-reset-db: compose-build
+reset-db: build-local
 	@echo "Reset the database..."
-	@docker-compose up -d $(IMAGE_NAME)
+	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) fidesctl reset-db -y
 	@make teardown
 
 .PHONY: api
-api: compose-build
+api: build-local
 	@echo "Spinning up the webserver..."
-	@docker-compose up $(IMAGE_NAME)
+	@docker compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
-cli: compose-build
+cli: build-local
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@docker-compose up -d $(IMAGE_NAME)
+	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
 
@@ -71,6 +67,9 @@ cli: compose-build
 build:
 	docker build --tag $(IMAGE) fidesctl/
 
+build-local:
+	docker build --tag $(IMAGE_LOCAL) fidesctl/
+
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
 	docker push $(IMAGE)
@@ -80,30 +79,32 @@ push: build
 # CI
 ####################
 
-black: compose-build
+black:
 	@$(RUN_NO_DEPS) black --check src/
 
-check-all: check-install fidesctl black pylint mypy xenon pytest
+# The order of dependent targets here is intentional
+check-all: build-local check-install fidesctl black pylint mypy xenon pytest
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
 	@$(RUN_NO_DEPS) fidesctl
 
-fidesctl: compose-build
+.PHONY: fidesctl
+fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
 
-mypy: compose-build
+mypy:
 	@$(RUN_NO_DEPS) mypy
 
-pylint: compose-build
+pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest: compose-build
-	@docker-compose up -d $(IMAGE_NAME)
+pytest:
+	@docker compose up -d $(IMAGE_NAME)
 	@$(RUN) pytest -x
 
-xenon: compose-build
+xenon:
 	@$(RUN_NO_DEPS) xenon src \
 	--max-absolute B \
 	--max-modules B \
@@ -124,22 +125,16 @@ clean:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker-compose down
+	@docker compose down
 	@echo "Teardown complete"
 
-.PHONY: compose-build
-compose-build:
-	@echo "Build the images required in the docker-compose file..."
-	@docker-compose down
-	@docker-compose build
-
 .PHONY: docs-build
-docs-build: compose-build
-	@docker-compose run --rm $(IMAGE_NAME) \
+docs-build: build-local
+	@docker compose run --rm $(IMAGE_NAME) \
 	python generate_openapi.py ../docs/fides/docs/api/openapi.json
 
 .PHONY: docs-serve
 docs-serve: docs-build
-	@docker-compose build docs
-	@docker-compose run --rm --service-ports docs \
+	@docker compose build docs
+	@docker compose run --rm --service-ports docs \
 	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"

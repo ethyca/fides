@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fidesapi import crud, database, db_session, visualize
+from fidesapi import crud, database, db_session, view, visualize
 from fidesapi.logger import setup as setup_logging
 from fidesctl.core.config import get_config
 
@@ -25,11 +25,13 @@ class DBActions(str, Enum):
 
 
 def configure_routes() -> None:
-    "Include all of the routers not defined here."
+    "Include all of the routers not defined in this module."
     routers = crud.routers + visualize.routers
     for router in routers:
         log.debug(f'Adding router to fidesctl: {" ".join(router.tags)}')
         app.include_router(router)
+
+    app.include_router(view.router)
 
 
 def configure_db() -> None:

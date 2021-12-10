@@ -6,14 +6,21 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
 
 # Requirements
+
 # Explicitly add optional dependencies for conda compatiblity, for instance, avoid using fastapi[all]
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
+# Human-Readable/Reusable Extras
+postgres_connector = "psycopg2-binary==2.9.0"
+mysql_connector = "pymysql==1.0.0"
+fastapi = "fastapi==0.68"
+uvicorn = "uvicorn==0.15"
+
 extras = {
-    "postgres": ["psycopg2-binary==2.9.1"],
-    "mysql": ["pymysql==1.0.2"],
-    "webserver": ["fastapi==0.68.1", "uvicorn==0.15.0", "psycopg2-binary==2.9.1"],
+    "postgres": [postgres_connector],
+    "mysql": [mysql_connector],
+    "webserver": [fastapi, uvicorn, postgres_connector],
 }
 extras["all"] = sum(extras.values(), [])
 
