@@ -43,15 +43,6 @@ def get_fides_log_record_factory() -> Any:
     return factory
 
 
-def _can_log_pii() -> bool:
-    """
-    Returns whether Fidesops in its current state can be permitted
-    to output any PII to the logs. Right now this is being allowed
-    in test mode only.
-    """
-    return os.getenv("TESTING") == "True"
-
-
 def _mask_pii_for_logs(parameter: Any) -> Any:
     """
     :param parameter: param that contains possible pii
@@ -60,10 +51,8 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
     Don't mask numeric values as this can throw errors in consumers
     format strings.
     """
-    if isinstance(parameter, (NotPii, Number)):
-        return parameter
 
-    if _can_log_pii():
+    if isinstance(parameter, (NotPii, Number)):
         return parameter
 
     return MASKED
