@@ -3,10 +3,12 @@ Contains the code that sets up the API.
 """
 
 import logging
+import time
 from enum import Enum
 from typing import Dict
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from loguru import logger as log
 from uvicorn import Config, Server
 
 from fidesapi import crud, database, db_session, visualize
@@ -24,10 +26,9 @@ class DBActions(str, Enum):
 
 def configure_routes() -> None:
     "Include all of the routers not defined here."
-    for router in crud.routers:
-        app.include_router(router)
-    # add router for the category viz endpoints
-    for router in visualize.routers:
+    routers = crud.routers + visualize.routers
+    for router in routers:
+        log.debug(f'Adding router to fidesctl: {" ".join(router.tags)}')
         app.include_router(router)
 
 
@@ -37,6 +38,21 @@ def configure_db() -> None:
     database.create_db_if_not_exists(databse_url)
     db_session.global_init(databse_url)
     database.init_db(databse_url)
+
+
+@app.middleware("http")
+async def log_request(request: Request, call_next):
+    "Log basic information about every request handled by the server."
+    start = time.time()
+    response = await call_next(request)
+    handle_time = time.time() - start
+    log.bind(
+        method=request.method,
+        status_code=response.status_code,
+        handler_time=f"{handle_time}s",
+        path=request.url.path,
+    ).info("Request received")
+    return response
 
 
 @app.get("/health", tags=["Health"])

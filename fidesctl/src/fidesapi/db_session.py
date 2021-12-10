@@ -6,7 +6,9 @@ from typing import Callable, Optional
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from loguru import logger as log
 from sqlalchemy.orm import Session
+
 from fidesapi.errors import DatabaseUnavailableError
 
 FACTORY: Optional[Callable[[], Session]] = None
@@ -34,6 +36,8 @@ def create_session() -> Session:
 
     if not FACTORY:
         raise DatabaseUnavailableError()
+
+    log.debug("Creating database session")
 
     session: Session = FACTORY()
     session.expire_on_commit = False
