@@ -2,12 +2,15 @@
 Contains the code that sets up the API.
 """
 
+import logging
 from enum import Enum
 from typing import Dict
 
-import uvicorn
 from fastapi import FastAPI
+from uvicorn import Config, Server
+
 from fidesapi import crud, database, db_session, visualize
+from fidesapi.logger import setup as setup_logging
 from fidesctl.core.config import get_config
 
 app = FastAPI(title="fidesctl")
@@ -58,9 +61,20 @@ async def db_action(action: DBActions) -> Dict:
 
 def start_webserver() -> None:
     "Run the webserver."
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=logging.WARNING))
+    setup_logging(
+        config.api.log_level,
+        serialize=config.api.log_serialization,
+        desination=config.api.log_destination,
+    )
+    server.run()
 
 
 config = get_config()
+setup_logging(
+    config.api.log_level,
+    serialize=config.api.log_serialization,
+    desination=config.api.log_destination,
+)
 configure_routes()
 configure_db()
