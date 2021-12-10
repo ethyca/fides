@@ -6,13 +6,11 @@ on:
       - main
     paths:
       - fidesctl/**
-      - .github/workflows/test.yaml
+      - .github/workflows/pr_checks.yaml
 
 env:
   CONTAINER: fidesctl-local
   IMAGE: ethyca/fidesctl:local
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
   Build:
@@ -32,7 +30,6 @@ jobs:
           context: ./fidesctl
           file: ./fidesctl/Dockerfile
           outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
-          load: True
           push: false
           tags: ${{ env.IMAGE }}
 
@@ -41,7 +38,7 @@ jobs:
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/${{ env.CONTAINER }}.tar
-          retention-days: 7
+          retention-days: 1
 
   Fidesctl:
     needs: Build

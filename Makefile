@@ -9,7 +9,7 @@ IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --a
 # Image Names & Tags
 IMAGE_NAME := fidesctl
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
-LOCAL_IMAGE := $(REGISTRY)/$(IMAGE_NAME):local
+IMAGE_LOCAL := $(REGISTRY)/$(IMAGE_NAME):local
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 # Run in Compose
@@ -68,7 +68,7 @@ build:
 	docker build --tag $(IMAGE) fidesctl/
 
 build-local:
-	docker build --tag $(LOCAL_IMAGE) fidesctl/
+	docker build --tag $(IMAGE_LOCAL) fidesctl/
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
