@@ -2,7 +2,6 @@
 from typing import Dict, List, Optional, Callable, cast
 
 import uuid
-import time
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
@@ -178,58 +177,6 @@ def compare_rule_to_declaration(
     return result
 
 
-def validate_fides_keys_exist_for_evaluation(
-    taxonomy: Taxonomy,
-    policy_rule: PolicyRule,
-    data_subjects: List[str],
-    data_categories: List[str],
-    data_qualifier: str,
-    data_use: str,
-) -> None:
-    """
-    Validates that keys used in evaluations are valid in the taxonomy
-    """
-    missing_key_errors = []
-
-    categories_keys = [category.fides_key for category in taxonomy.data_category]
-    for missing_data_category in set(
-        data_categories + policy_rule.data_categories.values
-    ) - set(categories_keys):
-        missing_key_errors.append(
-            "Missing DataCategory ({})".format(missing_data_category)
-        )
-
-    subject_keys = [subject.fides_key for subject in taxonomy.data_subject]
-    for missing_data_subject in set(
-        data_subjects + policy_rule.data_subjects.values
-    ) - set(subject_keys):
-        missing_key_errors.append(
-            "Missing DataSubject ({})".format(missing_data_subject)
-        )
-
-    qualifiers_keys = [qualifier.fides_key for qualifier in taxonomy.data_qualifier]
-    for missing_data_qualifier in set(
-        [data_qualifier, policy_rule.data_qualifier]
-    ) - set(qualifiers_keys):
-        missing_key_errors.append(
-            "Missing DataQualifier ({})".format(missing_data_qualifier)
-        )
-
-    data_use_keys = [data_use.fides_key for data_use in taxonomy.data_use]
-    for missing_data_use in set([data_use] + policy_rule.data_uses.values) - set(
-        data_use_keys
-    ):
-        missing_key_errors.append("Missing DataUse ({})".format(missing_data_use))
-
-    if missing_key_errors:
-        echo_red(
-            "Found missing keys referenced in taxonomy \n{}".format(
-                "\n ".join(missing_key_errors)
-            )
-        )
-        raise SystemExit(1)
-
-
 def evaluate_policy_rule(
     taxonomy: Taxonomy,
     policy_rule: PolicyRule,
@@ -243,15 +190,6 @@ def evaluate_policy_rule(
     builds hierarchies of applicable types and evaluates the result of a
     policy rule
     """
-    validate_fides_keys_exist_for_evaluation(
-        taxonomy=taxonomy,
-        policy_rule=policy_rule,
-        data_subjects=data_subjects,
-        data_categories=data_categories,
-        data_qualifier=data_qualifier,
-        data_use=data_use,
-    )
-
     category_hierarchies = [
         get_fides_key_parent_hierarchy(
             taxonomy=taxonomy, fides_key=declaration_category
@@ -465,10 +403,8 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
     )
     new_uuid = str(uuid.uuid4()).replace("-", "_")
-    timestamp = str(time.time()).split(".")[0]
-    generated_key = f"{new_uuid}_{timestamp}"
     evaluation = Evaluation(
-        fides_key=generated_key,
+        fides_key=new_uuid,
         status=status_enum,
         details=evaluation_detail_list,
     )
@@ -488,7 +424,12 @@ def populate_referenced_keys(
     Recursively calls itself after every hydration to make sure there are no new missing keys.
     """
     missing_resource_keys = get_referenced_missing_keys(taxonomy)
-    if missing_resource_keys and set(missing_resource_keys) != set(last_keys):
+    keys_not_found = set(last_keys).intersection(set(missing_resource_keys))
+    if keys_not_found:
+        echo_red(f"Missing resource keys: {keys_not_found}")
+        raise SystemExit(1)
+
+    if missing_resource_keys:
         taxonomy = hydrate_missing_resources(
             url=url,
             headers=headers,
