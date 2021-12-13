@@ -88,10 +88,7 @@ class APISettings(FidesSettings):
         """
         Print logs to sys.stdout, unless a valid file path is specified.
         """
-        if isinstance(value, str):
-            return value if os.path.exists(value) else ""
-
-        return ""
+        return value if os.path.exists(value) else ""
 
     @validator("log_level", pre=True)
     def get_log_level(cls: FidesSettings, value: str) -> str:
@@ -105,8 +102,6 @@ class APISettings(FidesSettings):
 
         if isinstance(value, str):
             value = value.upper()
-        elif isinstance(value, int):
-            value = getLevelName(value)
 
         return value if getLevelName(value) != f"Level {value}" else getLevelName(INFO)
 
