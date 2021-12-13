@@ -15,6 +15,11 @@ server_url = "http://localhost:8080"
 [api]
 database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
 test_database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl_test"
+
+# The following are set to their current default values
+log_destination = ""    # Also accepts: Any valid file path
+log_level = "INFO"      # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL (Not case sensitive)
+log_serialization = ""  # Also accepts: JSON (Not case sensitive)
 ```
 
 By default fidesctl will look for a configuration file in the following three places:
