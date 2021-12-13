@@ -5,7 +5,8 @@ Defines the logging format to be used throughout the fidesapi server code.
 
 import logging
 import sys
-from typing import Dict, Union
+from types import FrameType
+from typing import Dict, Optional, Union
 
 from loguru import logger
 
@@ -23,21 +24,23 @@ class FidesAPIHandler(logging.Handler):
         sink: str = "",
     ) -> None:
         super().__init__(level=level)
-        self.level = level
-        self.serialize = serialize == "json"
-        self.sink = sys.stdout if sink == "" else sink
+        self.loguru_vals: Dict = {
+            "level": level,
+            "serialize": serialize == "json",
+            "sink": sys.stdout if sink == "" else sink,
+        }
 
         format_module = ""
         if level == logging.DEBUG or level == logging.getLevelName(logging.DEBUG):
             format_module = " (<c>{module}:{function}:{line}</c>)"
 
         format_extra = ""
-        self.filter = "lambda logRecord: not bool(logRecord['extra'])"
+        self.loguru_vals["filter"] = "lambda logRecord: not bool(logRecord['extra'])"
         if include_extra:
             format_extra = " | {extra}"
-            self.filter = "lambda logRecord: bool(logRecord['extra'])"
+            self.loguru_vals["filter"] = "lambda logRecord: bool(logRecord['extra'])"
 
-        self.format = (
+        self.loguru_vals["format"] = (
             "<d>{time:YYYY-MM-DD HH:mm:ss.SSS}</d> [<lvl>{level}</lvl>]%s: {message}%s"
             % (format_module, format_extra)
         )
@@ -47,14 +50,16 @@ class FidesAPIHandler(logging.Handler):
         Log the specified record.
         """
         # Get corresponding Loguru level if it exists
+        level: Union[int, str]
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
 
         # Determine the caller that originated the log entry
-        frame, depth = logging.currentframe(), 2
-        while frame.f_code.co_filename == logging.__file__:
+        frame: Optional[FrameType] = logging.currentframe()
+        depth = 2
+        while frame is not None and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
 
@@ -68,11 +73,11 @@ class FidesAPIHandler(logging.Handler):
         as a handler kwarg in Loguru's logger.configure().
         """
         return {
-            "level": self.level,
-            "filter": eval(self.filter),
-            "format": self.format,
-            "serialize": self.serialize,
-            "sink": self.sink,
+            "level": self.loguru_vals["level"],
+            "filter": eval(self.loguru_vals["filter"]),
+            "format": self.loguru_vals["format"],
+            "serialize": self.loguru_vals["serialize"],
+            "sink": self.loguru_vals["sink"],
         }
 
 

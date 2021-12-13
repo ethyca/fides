@@ -5,9 +5,9 @@ Contains the code that sets up the API.
 import logging
 import time
 from enum import Enum
-from typing import Dict
+from typing import Callable, Dict
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -43,7 +43,7 @@ def configure_db() -> None:
 
 
 @app.middleware("http")
-async def log_request(request: Request, call_next):
+async def log_request(request: Request, call_next: Callable) -> Response:
     "Log basic information about every request handled by the server."
     start = time.time()
     response = await call_next(request)
