@@ -173,7 +173,7 @@ class PrivacyRequest(Base):
             privacy_request_id=self.id,
             direction=webhook.direction.value,
             callback_type=webhook.prefix,
-            identities=self.get_cached_identity_data(),
+            identity=self.get_cached_identity_data(),
         )
 
         headers = {}
@@ -197,13 +197,13 @@ class PrivacyRequest(Base):
         response_body = SecondPartyResponseFormat(**response)
 
         # Cache any new identities
-        if response_body.derived_identities and any(
-            [response_body.derived_identities.dict().values()]
+        if response_body.derived_identity and any(
+            [response_body.derived_identity.dict().values()]
         ):
             logger.info(
                 f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
             )
-            self.cache_identity(response_body.derived_identities)
+            self.cache_identity(response_body.derived_identity)
 
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:

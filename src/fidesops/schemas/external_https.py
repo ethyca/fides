@@ -20,7 +20,7 @@ class SecondPartyRequestFormat(BaseModel):
     privacy_request_id: str
     direction: WebhookDirection
     callback_type: CallbackType
-    identities: PrivacyRequestIdentity
+    identity: PrivacyRequestIdentity
 
     class Config:
         """Using enum values"""
@@ -34,7 +34,7 @@ class SecondPartyResponseFormat(BaseModel):
     Responses are only expected (and considered) for two_way webhooks.
     """
 
-    derived_identities: Optional[PrivacyRequestIdentity] = None
+    derived_identity: Optional[PrivacyRequestIdentity] = None
     halt: bool
 
     class Config:
@@ -46,7 +46,7 @@ class SecondPartyResponseFormat(BaseModel):
 class PrivacyRequestResumeFormat(BaseModel):
     """Expected request body to resume a privacy request after it was paused by a webhook"""
 
-    derived_identities: Optional[PrivacyRequestIdentity] = {}
+    derived_identity: Optional[PrivacyRequestIdentity] = {}
 
     class Config:
         """Using enum values"""

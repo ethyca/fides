@@ -19,9 +19,9 @@ A Policy Webhook is an HTTPS Callback that you've defined on a Policy to call an
 REST API endpoint *before* or *after* a PrivacyRequest executes.
 
 You can define as many webhooks as you'd like.  Webhooks can be `one_way`, 
-where we will just ping your API and move on, or `two_way`, where we will wait for a response. Any `derived_identities`
+where we will just ping your API and move on, or `two_way`, where we will wait for a response. Any new fields in `derived_identity`
 returned from a `two_way` webhook will be saved and can be used to locate other user information.  For example, a webhook
-might take a known `email` `identity` and use that to find a `phone_number` `identity`.
+might take a known `email` `identity` and use that to find a `phone_number` `derived_identity`.
 
 Another use case for a Policy Webhook might be to log a user out of your mobile app after you've cleared
 their data from your system.  In this case, you'd create a `Policy` and a `ConnectionConfig` to describe the URL to hit
@@ -177,7 +177,7 @@ POST <user-defined URL>
   "privacy_request_id": "pri_029832ba-3b84-40f7-8946-82aec6f95448",
   "direction": "one_way | two_way",
   "callback_type": "pre | post",
-  "identities": {
+  "identity": {
     "email": "customer-1@example.com",
     "phone_number": "555-5555"
   }
@@ -209,7 +209,7 @@ We don't expect a response from `one-way` webhooks, but `two-way` webhooks shoul
 
 ```json
 {
-  "derived_identities": {
+  "derived_identity": {
     "email": "customer-1@gmail.com",
     "phone_number": "555-5555"
   },
@@ -217,7 +217,7 @@ We don't expect a response from `one-way` webhooks, but `two-way` webhooks shoul
 }
 ```
 
-Derived identities are optional: a returned email or phone number will replace currently known emails or phone numbers.
+Derived identity is optional: a returned email or phone number will replace currently known emails or phone numbers.
 
 ## Resuming PrivacyRequest Execution
 
@@ -228,7 +228,7 @@ given to you in the original request header with the `reply-to-token` auth token
 
 ```json
 {
-  "derived_identities": {
+  "derived_identity": {
     "email": "customer-1@gmail.com",
     "phone_number": "555-5555"
   }

@@ -157,7 +157,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
+                    "identity": identity.dict(),
                 },
                 status_code=500,
             )
@@ -184,7 +184,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
+                    "identity": identity.dict(),
                 },
                 status_code=500,
             )
@@ -210,7 +210,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
+                    "identity": identity.dict(),
                     "halt": False,
                 },
                 status_code=200,
@@ -238,7 +238,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
+                    "identity": identity.dict(),
                     "halt": True,
                 },
                 status_code=200,
@@ -248,7 +248,7 @@ class TestPrivacyRequestTriggerWebhooks:
                 privacy_request.trigger_policy_webhook(webhook)
 
 
-    def test_trigger_two_way_policy_webhook_add_derived_identities(
+    def test_trigger_two_way_policy_webhook_add_derived_identity(
         self,
         db,
         https_connection_config,
@@ -267,8 +267,8 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
-                    "derived_identities": {"phone_number": "555-555-5555"},
+                    "identity": identity.dict(),
+                    "derived_identity": {"phone_number": "555-555-5555"},
                     "halt": False,
                 },
                 status_code=200,
@@ -301,7 +301,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
+                    "identity": identity.dict(),
                 },
                 status_code=200,
             )
@@ -316,8 +316,8 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identities": identity.dict(),
-                    "derived_identities": {"unsupported_identity": "1200 Fides Road"},
+                    "identity": identity.dict(),
+                    "derived_identity": {"unsupported_identity": "1200 Fides Road"},
                     "halt": True,
                 },
                 status_code=200,

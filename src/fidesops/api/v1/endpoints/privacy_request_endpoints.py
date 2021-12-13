@@ -107,9 +107,9 @@ def create_privacy_request(
 
     optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
     for privacy_request_data in data:
-        if len(privacy_request_data.identities) == 0:
+        if not any(privacy_request_data.identity.dict().values()):
             logger.warning(
-                "Create failed for privacy request with no identities provided"
+                "Create failed for privacy request with no identity provided"
             )
             failure = {
                 "message": "You must provide at least one identity to process",
@@ -151,10 +151,9 @@ def create_privacy_request(
             privacy_request = PrivacyRequest.create(db=db, data=kwargs)
 
             # Store identity in the cache
-            logger.info(f"Caching identities for privacy request {privacy_request.id}")
-            for identity in privacy_request_data.identities:
-                privacy_request.cache_identity(identity)
-                privacy_request.cache_encryption(privacy_request_data.encryption_key)
+            logger.info(f"Caching identity for privacy request {privacy_request.id}")
+            privacy_request.cache_identity(privacy_request_data.identity)
+            privacy_request.cache_encryption(privacy_request_data.encryption_key)
 
             PrivacyRequestRunner(
                 cache=cache,
@@ -403,6 +402,6 @@ def resume_privacy_request(
 ) -> None:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
-    privacy_request.cache_identity(webhook_callback.derived_identities)
+    privacy_request.cache_identity(webhook_callback.derived_identity)
 
     # TODO resume running privacy request from specific webhook

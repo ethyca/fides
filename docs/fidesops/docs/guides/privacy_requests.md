@@ -31,10 +31,10 @@ Privacy Requests can be executed by submitting them to Fidesops via the Privacy 
     "external_id": "a-user-defined-id",
     "requested_at": "2021-10-31T16:00:00.000Z",
     "policy_key": "a-demo-policy",
-    "identities": [{
+    "identity": {
       "email": "identity@example.com",
       "phone_number: "+1 (123) 456 7891"
-    }],
+    },
   }
 ]
 ```
@@ -76,7 +76,7 @@ POST /privacy-request
 [
     {
         "requested_at": "2021-08-30T16:09:37.359Z",
-        "identities": [{"email": "customer-1@example.com"}],
+        "identity": {"email": "customer-1@example.com"},
         "policy_key": "my_access_policy",
         "encryption_key": "test--encryption"
     }

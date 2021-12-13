@@ -22,7 +22,7 @@ class PrivacyRequestCreate(BaseSchema):
     started_processing_at: Optional[datetime]
     finished_processing_at: Optional[datetime]
     requested_at: datetime
-    identities: List[PrivacyRequestIdentity]
+    identity: PrivacyRequestIdentity
     policy_key: FidesOpsKey
     encryption_key: Optional[str] = None
 

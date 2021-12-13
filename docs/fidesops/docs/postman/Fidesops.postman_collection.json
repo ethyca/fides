@@ -548,7 +548,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identities\": [{\"email\": \"customer-1@example.com\"}],\n        \"policy_key\": \"{{policy_key}}\"\n    }\n]",
+							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identity\": {\"email\": \"customer-1@example.com\"},\n        \"policy_key\": \"{{policy_key}}\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -705,7 +705,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identities\": [{\"email\": \"customer-2@example.com\"}],\n        \"policy_key\": \"{{separate_policy_key}}\"\n    }\n]",
+							"raw": "[\n    {\n        \"requested_at\": \"2021-08-30T16:09:37.359Z\",\n        \"identity\": {\"email\": \"customer-2@example.com\"},\n        \"policy_key\": \"{{separate_policy_key}}\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"

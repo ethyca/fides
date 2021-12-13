@@ -17,7 +17,7 @@ To summarize so far, we have:
     5) Defined Policies describing what data we're looking for and what to do with that data.
 
 For our last step, we'll write a method that will let us create a Privacy Request.  We need to specify the
-Policy we want applied to that Privacy Request, as well as the starting Identities of the user we'll need
+Policy we want applied to that Privacy Request, as well as the starting identity of the user we'll need
 to locate the remaining user information:
 
 ### Define helper method
@@ -33,7 +33,7 @@ def create_privacy_request(email, policy_key, access_token):
         {
             "requested_at": datetime(2021, 1, 1).isoformat(),
             "policy_key": policy_key,
-            "identities": [{"email": email}],
+            "identity": {"email": email},
         },
     ]
     response = requests.post(
