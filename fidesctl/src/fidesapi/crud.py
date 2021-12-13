@@ -26,7 +26,7 @@ def get_resource_type(router: APIRouter) -> str:
 def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> Dict:
     """Create a resource in the database."""
     with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=sql_resource["fides_key"]
+        sql_model=sql_model.__name__, fides_key=sql_resource.fides_key
     ):
         try:
             get_resource(sql_model, sql_resource.fides_key)
@@ -39,7 +39,11 @@ def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> 
             log.bind(error=error.detail["error"]).error("Failed to insert resource")
             raise error
 
-        session = db_session.create_session()
+    session = db_session.create_session()
+
+    with log.contextualize(
+        sql_model=sql_model.__name__, fides_key=sql_resource.fides_key
+    ):
         try:
             log.debug("Creating resource")
             session.add(sql_resource)
@@ -59,8 +63,9 @@ def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """
     Get a resource from the databse by its FidesKey.
     """
+    session = db_session.create_session()
+
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
-        session = db_session.create_session()
         try:
             log.debug("Fetching resource")
             sql_resource = (
@@ -89,8 +94,9 @@ def list_resource(sql_model: SqlAlchemyBase) -> List:
     """
     Get a list of all of the resources of this type from the database.
     """
+    session = db_session.create_session()
+
     with log.contextualize(sql_model=sql_model.__name__):
-        session = db_session.create_session()
         try:
             log.debug("Fetching resources")
             sql_resource = session.query(sql_model).all()
@@ -109,9 +115,10 @@ def update_resource(
     sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
+    session = db_session.create_session()
+
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         get_resource(sql_model, fides_key)
-        session = db_session.create_session()
         try:
             log.debug("Updating resource")
             session.execute(
@@ -136,11 +143,12 @@ def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> N
     Insert new resources into the database. If a resource already exists,
     update it by it's fides_key.
     """
+    session = db_session.create_session()
+
     with log.contextualize(
         sql_model=sql_model.__name__,
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
-        session = db_session.create_session()
         try:
             log.debug("Upserting resources")
             insert_stmt = _insert(sql_model).values(resource_dicts)
@@ -161,9 +169,10 @@ def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> N
 
 def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """Delete a resource by its fides_key."""
+    session = db_session.create_session()
+
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = get_resource(sql_model, fides_key)
-        session = db_session.create_session()
         try:
             log.debug("Deleting resource")
             session.delete(sql_resource)
