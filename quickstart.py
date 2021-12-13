@@ -423,7 +423,7 @@ def create_privacy_request(user_email: str, policy_key: str):
         {
             "requested_at": str(datetime.utcnow()),
             "policy_key": policy_key,
-            "identities": [{"email": user_email}],
+            "identity": {"email": user_email},
         },
     ]
     response = requests.post(

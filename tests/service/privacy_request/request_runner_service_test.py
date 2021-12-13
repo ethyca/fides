@@ -72,7 +72,6 @@ def get_privacy_request_results(
         "requested_at": pydash.get(privacy_request_data, "requested_at"),
         "policy_id": policy.id,
         "status": "pending",
-        # "client_id": client.id,
     }
     optional_fields = ["started_processing_at", "finished_processing_at"]
     for field in optional_fields:
@@ -83,12 +82,9 @@ def get_privacy_request_results(
         except AttributeError:
             pass
     privacy_request = PrivacyRequest.create(db=db, data=kwargs)
-
-    print(json.dumps(privacy_request_data, indent=2))
-    for identity in privacy_request_data["identities"]:
-        privacy_request.cache_identity(identity)
-        if "encryption_key" in privacy_request_data:
-            privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+    privacy_request.cache_identity(privacy_request_data["identity"])
+    if "encryption_key" in privacy_request_data:
+        privacy_request.cache_encryption(privacy_request_data["encryption_key"])
 
     wait_for(
         PrivacyRequestRunner(
@@ -113,7 +109,7 @@ def test_create_and_process_access_request(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
 
     pr = get_privacy_request_results(db, policy, cache, data)
@@ -154,7 +150,7 @@ def test_create_and_process_erasure_request_specific_category(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
@@ -199,7 +195,7 @@ def test_create_and_process_erasure_request_generic_category(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
-        "identities": [{"email": email}],
+        "identity": {"email": email},
     }
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
@@ -250,7 +246,7 @@ def test_create_and_process_erasure_request_with_table_joins(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
@@ -293,7 +289,7 @@ def test_create_and_process_erasure_request_read_access(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
 
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
@@ -375,7 +371,7 @@ def test_create_and_process_access_request_snowflake(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
     pr = get_privacy_request_results(db, policy, cache, data)
     results = pr.get_results()
@@ -404,7 +400,7 @@ def test_create_and_process_erasure_request_snowflake(
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy.key,
-        "identities": [{"email": customer_email}],
+        "identity": {"email": customer_email},
     }
     pr = get_privacy_request_results(db, erasure_policy, cache, data)
     pr.delete(db=db)
