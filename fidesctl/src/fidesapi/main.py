@@ -18,6 +18,7 @@ from fidesctl.core.config import get_config, FidesctlConfig
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
 
+
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."
     routers = crud.routers + visualize.routers
@@ -34,6 +35,7 @@ def configure_db(database_url: str) -> None:
     db_session.global_init(database_url)
     database.init_db(database_url)
 
+
 @app.on_event("startup")
 def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
@@ -44,7 +46,6 @@ def setup_server() -> None:
     )
     configure_routes()
     configure_db(CONFIG.api.database_url)
-
 
 
 @app.middleware("http")
@@ -67,11 +68,11 @@ async def health() -> Dict:
     "Confirm that the API is running and healthy."
     return {"data": {"message": "Fidesctl API service is healthy!"}}
 
+
 class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
     init = "init"
     reset = "reset"
-
 
 
 @app.post("/admin/db/{action}", tags=["Admin"])
