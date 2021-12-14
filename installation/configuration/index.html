@@ -1143,17 +1143,27 @@
 <p>By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.</p>
 <h2 id="configuration-file">Configuration file</h2>
 <p>Here's an example of a fidesctl configuration file:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span>
 <span class="n">server_url</span> <span class="o">=</span> <span class="s">&quot;http://localhost:8080&quot;</span>
 
 <span class="k">[api]</span>
 <span class="n">database_url</span> <span class="o">=</span> <span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl&quot;</span>
 <span class="n">test_database_url</span> <span class="o">=</span> <span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl_test&quot;</span>
+
+<span class="c1"># The following are set to their current default values</span>
+<span class="n">log_destination</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>    <span class="c1"># Also accepts: Any valid file path</span>
+<span class="n">log_level</span> <span class="o">=</span> <span class="s">&quot;INFO&quot;</span>      <span class="c1"># Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL (Not case sensitive)</span>
+<span class="n">log_serialization</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>  <span class="c1"># Also accepts: JSON (Not case sensitive)</span>
 </code></pre></div>
 </td></tr></table>
 <p>By default fidesctl will look for a configuration file in the following three places:</p>
