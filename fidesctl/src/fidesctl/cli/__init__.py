@@ -47,7 +47,7 @@ API_COMMANDS = [
     "-f",
     "config_path",
     default="",
-    help="Path to a configuration file. Does not work when running the webserver. Use 'fidesctl view-config' to print the config.",
+    help="Path to a configuration file. Use 'fidesctl view-config' to print the config. Not compatible with the 'fidesctl webserver' subcommand.",
 )
 @click.option(
     "--local",
