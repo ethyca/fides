@@ -2,12 +2,13 @@
 # pylint: disable=C0115,C0116, E0213
 
 import os
-from typing import Dict, Optional, Tuple
+from logging import DEBUG, INFO, getLevelName
+from typing import Dict, Optional, Tuple, Union
 
 import toml
 
-from pydantic.env_settings import SettingsSourceCallable
 from pydantic import BaseModel, BaseSettings, validator
+from pydantic.env_settings import SettingsSourceCallable
 
 from fidesctl.core.utils import echo_red, generate_request_headers
 
@@ -77,6 +78,40 @@ class APISettings(FidesSettings):
             else value
         )
         return url
+
+    log_destination: str = ""
+    log_level: Union[int, str] = INFO
+    log_serialization: str = ""
+
+    @validator("log_destination", pre=True)
+    def get_log_destination(cls: FidesSettings, value: str) -> str:
+        """
+        Print logs to sys.stdout, unless a valid file path is specified.
+        """
+        return value if os.path.exists(value) else ""
+
+    @validator("log_level", pre=True)
+    def get_log_level(cls: FidesSettings, value: str) -> str:
+        """
+        Set the log_level to DEBUG if in test mode, INFO by default.
+        Ensures that the string-form of a valid logging._Level is
+        always returned.
+        """
+        if os.getenv("FIDESCTL_TEST_MODE") == "True":
+            return getLevelName(DEBUG)
+
+        if isinstance(value, str):
+            value = value.upper()
+
+        return value if getLevelName(value) != f"Level {value}" else getLevelName(INFO)
+
+    @validator("log_serialization", pre=True)
+    def get_log_serialization(cls: FidesSettings, value: str) -> str:
+        """
+        Ensure that only JSON serialization, or no serialization, is used.
+        """
+        value = value.lower()
+        return value if value == "json" else ""
 
     class Config:
         env_prefix = "FIDESCTL__API__"

@@ -36,28 +36,6 @@ def sample_categories_list():
 
 
 @pytest.mark.unit
-def test_category_sunburst_plot(sample_categories_list):
-    print("reading file...")
-    with open("tests/data/sample_sunburst.json", "r") as f:
-        expected_sample_sunburst = json.load(f)
-    print("file read, using function")
-    sample_sunburst = visualize.sunburst_plot(
-        sample_categories_list, resource_type="data_category", json_out=True
-    )
-    assert json.loads(sample_sunburst) == expected_sample_sunburst
-
-
-# @pytest.mark.unit
-def test_category_sankey_plot(sample_categories_list):
-    with open("tests/data/sample_sankey.json", "r") as f:
-        expected_sample_sankey = json.load(f)
-    sample_sankey = visualize.sankey_plot(
-        sample_categories_list, resource_type="data_category", json_out=True
-    )
-    assert json.loads(sample_sankey) == expected_sample_sankey
-
-
-@pytest.mark.unit
 def test_hierarchy_figures(sample_categories_list):
     with open("tests/data/sample_hierarchy_figures.json", "r") as f:
         expected_sample_hierarchy_figures = json.load(f)
