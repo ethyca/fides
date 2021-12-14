@@ -157,7 +157,6 @@ class OneTrustService:
         try:
             PrivacyRequestRunner(
                 cache=get_cache(),
-                db=db,
                 privacy_request=privacy_request,
             ).submit()
             request_status = OneTrustSubtaskStatus.COMPLETED

@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any, Dict
 from unittest import mock
 from unittest.mock import Mock
@@ -15,6 +16,7 @@ from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
+from fidesops.core.config import config
 from fidesops.models.policy import PolicyPreWebhook
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
@@ -89,7 +91,6 @@ def get_privacy_request_results(
     wait_for(
         PrivacyRequestRunner(
             cache=cache,
-            db=db,
             privacy_request=privacy_request,
         ).submit()
     )
@@ -98,11 +99,15 @@ def get_privacy_request_results(
 
 
 @pytest.mark.integration
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request(
+    trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
     db,
     cache,
     policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -129,6 +134,14 @@ def test_create_and_process_access_request(
     assert results[visit_key][0]["email"] == customer_email
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+
+    for webhook in policy_pre_execution_webhooks:
+        webhook.delete(db=db)
+
+    for webhook in policy_post_execution_webhooks:
+        webhook.delete(db=db)
 
     policy.delete(db=db)
     pr.delete(db=db)
@@ -417,6 +430,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_halt_received(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -425,22 +439,46 @@ class TestPrivacyRequestRunnerRunWebhooks:
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+    def test_run_webhooks_ap_scheduler_cleanup(
+            self,
+            mock_trigger_policy_webhook,
+            db,
+            privacy_request,
+            privacy_request_runner,
+            policy_pre_execution_webhooks,
+    ):
+        config.redis.DEFAULT_TTL_SECONDS = 1  # Set redis cache to expire very quickly for testing purposes
+        mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
+            "Request received to halt"
+        )
+
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        assert not proceed
+        time.sleep(3)
+
+        db.refresh(privacy_request)
+        # Privacy request has been set to errored by ap scheduler, because it took too long for webhook to report back
+        assert privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.finished_processing_at is not None
+
+    @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_client_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         mock_trigger_policy_webhook.side_effect = ClientUnsuccessfulException(status_code=500)
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
 
@@ -448,6 +486,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_validation_error(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
@@ -456,7 +495,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
             errors={}, model=SecondPartyResponseFormat
         )
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
@@ -465,12 +504,13 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
 
-        proceed = privacy_request_runner.run_webhooks(PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None
@@ -480,13 +520,14 @@ class TestPrivacyRequestRunnerRunWebhooks:
     def test_run_webhooks_after_webhook(
         self,
         mock_trigger_policy_webhook,
+        db,
         privacy_request,
         privacy_request_runner,
         policy_pre_execution_webhooks,
     ):
         """Test running webhooks after specific webhook - for when we're resuming privacy request execution"""
-        proceed = privacy_request_runner.run_webhooks(
-            PolicyPreWebhook, policy_pre_execution_webhooks[0]
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook, policy_pre_execution_webhooks[0].id
         )
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing

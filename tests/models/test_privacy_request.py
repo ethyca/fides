@@ -247,7 +247,6 @@ class TestPrivacyRequestTriggerWebhooks:
             with pytest.raises(PrivacyRequestPaused):
                 privacy_request.trigger_policy_webhook(webhook)
 
-
     def test_trigger_two_way_policy_webhook_add_derived_identity(
         self,
         db,

@@ -985,11 +985,9 @@ def mysql_example_test_dataset_config(
 @pytest.fixture
 def privacy_request_runner(
     cache: FidesopsRedis,
-    db: Session,
     privacy_request: PrivacyRequest,
 ) -> Generator:
     yield PrivacyRequestRunner(
         cache=cache,
-        db=db,
         privacy_request=privacy_request,
     )

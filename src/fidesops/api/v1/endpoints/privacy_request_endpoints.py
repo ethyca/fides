@@ -21,7 +21,6 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
 )
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
 from fidesops.common_exceptions import TraversalError
@@ -157,7 +156,6 @@ def create_privacy_request(
 
             PrivacyRequestRunner(
                 cache=cache,
-                db=db,
                 privacy_request=privacy_request,
             ).submit()
 
@@ -387,8 +385,7 @@ def get_request_preview_queries(
 
 
 @router.post(
-    PRIVACY_REQUEST_RESUME,
-    status_code=200,
+    PRIVACY_REQUEST_RESUME, status_code=200, response_model=PrivacyRequestResponse
 )
 def resume_privacy_request(
     privacy_request_id: str,
@@ -399,9 +396,27 @@ def resume_privacy_request(
         verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
     ),
     webhook_callback: PrivacyRequestResumeFormat,
-) -> None:
+) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
     privacy_request.cache_identity(webhook_callback.derived_identity)
 
-    # TODO resume running privacy request from specific webhook
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}' from webhook '{webhook.key}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_webhook=webhook)
+
+    return privacy_request

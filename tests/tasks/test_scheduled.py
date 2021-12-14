@@ -1,14 +1,13 @@
-from typing import Any
-from unittest import mock
-from unittest.mock import Mock
-
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
 
+from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.storage.storage import (
     StorageDetails,
 )
+from fidesops.service.privacy_request.request_runner_service import initiate_paused_privacy_request_followup
+from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import (
-    get_scheduler,
     initiate_scheduled_request_intake,
     ONETRUST_INTAKE_TASK,
 )
@@ -16,7 +15,6 @@ from fidesops.tasks.scheduled.tasks import (
 
 def test_initiate_scheduled_request_intake(storage_config_onetrust) -> None:
     initiate_scheduled_request_intake()
-    scheduler = get_scheduler()
     assert scheduler.running
     job = scheduler.get_job(job_id=ONETRUST_INTAKE_TASK)
     assert job is not None
@@ -34,3 +32,13 @@ def test_initiate_scheduled_request_intake(storage_config_onetrust) -> None:
         job.trigger.fields[5].expressions[0].first
         == storage_config_onetrust.details[StorageDetails.ONETRUST_POLLING_HR.value]
     )
+
+
+def test_initiate_scheduled_paused_privacy_request_followup(privacy_request, db) -> None:
+    privacy_request.status = PrivacyRequestStatus.paused
+    privacy_request.save(db=db)
+    initiate_paused_privacy_request_followup(privacy_request)
+    assert scheduler.running
+    job = scheduler.get_job(job_id=privacy_request.id)
+    assert job is not None
+    assert isinstance(job.trigger, DateTrigger)

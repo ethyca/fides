@@ -213,6 +213,22 @@ class PrivacyRequest(Base):
 
         return
 
+    def start_processing(self, db: Session) -> None:
+        """Dispatches this PrivacyRequest throughout the Fidesops System"""
+        if self.started_processing_at is None:
+            self.started_processing_at = datetime.utcnow()
+            self.save(db=db)
+
+    def error_processing(self, db: Session) -> None:
+        """Mark privacy request as errored, and note time processing was finished"""
+        self.update(
+            db,
+            data={
+                "status": PrivacyRequestStatus.error,
+                "finished_processing_at": datetime.utcnow(),
+            },
+        )
+
 
 class ExecutionLogStatus(EnumType):
     """Enum for execution log statuses, reflecting where they are in their workflow"""
