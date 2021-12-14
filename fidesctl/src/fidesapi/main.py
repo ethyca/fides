@@ -18,6 +18,7 @@ from fidesctl.core.config import get_config, FidesctlConfig
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
 
+
 class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
     init = "init"
@@ -81,7 +82,9 @@ def start_webserver() -> None:
     server = Server(Config(app, host="0.0.0.0", port=8080, log_level=logging.WARNING))
     server.run()
 
+
 def setup_server() -> None:
+    "Run all of the required setup steps for the webserver."
     setup_logging(
         CONFIG.api.log_level,
         serialize=CONFIG.api.log_serialization,
@@ -89,5 +92,6 @@ def setup_server() -> None:
     )
     configure_routes()
     configure_db(CONFIG.api.database_url)
+
 
 setup_server()

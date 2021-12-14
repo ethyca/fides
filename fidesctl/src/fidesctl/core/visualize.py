@@ -5,7 +5,6 @@ Creates data visualizations for hierarchical Fides resource types.
 from typing import Generator, List, Dict
 
 import plotly
-import plotly.express as px
 import plotly.graph_objects as go
 
 from fidesctl.core import config
@@ -110,91 +109,6 @@ def hierarchy_figures(
     )
 
 
-def sunburst_plot(
-    categories: List[dict], resource_type: str, json_out: bool = False
-) -> str:
-    """
-    Create a sunburst plot from data categories yaml file
-    Reference: https://plotly.com/python/sunburst-charts/
-    Args:
-        categories: list of the dictionaries for each taxonomy member
-        resource_type: the name of the resource type
-        json_out: Flag to return a json representation of the visualization
-
-    Returns:
-        Json representation of the figure if `json_out` is True, html otherwise
-    """
-
-    # add color map
-    for category in categories:
-        category["color"] = category[FIDES_KEY_NAME].split(".")[0]
-
-    fig = px.sunburst(
-        categories, names=FIDES_KEY_NAME, parents=FIDES_PARENT_NAME, color="color"
-    )
-    fig.update_layout(
-        title_text=f'Fides {resource_type.replace("_", " ").title()} Hierarchy',
-        font_size=10,
-    )
-
-    if json_out:
-        return fig.to_json()
-    return fig.to_html()
-
-
-def sankey_plot(
-    categories: List[dict], resource_type: str, json_out: bool = False
-) -> str:
-    """
-    Create a sankey plot from data categories yaml file
-    Reference: https://plotly.com/python/sankey-diagram/
-    Args:
-        categories: list of the dictionaries for each taxonomy member
-        resource_type: the name of the resource type
-        json_out: Flag to return a json representation of the visualization
-
-    Returns:
-        Json representation of the figure if `json_out` is True, html otherwise
-    """
-
-    fides_key_dict = {v[FIDES_KEY_NAME]: i for i, v in enumerate(categories)}
-    source = []
-    target = []
-
-    for category in categories:
-        if FIDES_PARENT_NAME in category.keys():
-            if category[FIDES_PARENT_NAME]:
-                source.append(fides_key_dict[category[FIDES_PARENT_NAME]])
-                target.append(fides_key_dict[category[FIDES_KEY_NAME]])
-
-    fig = go.Figure(
-        data=[
-            go.Sankey(
-                valueformat=".1f",
-                valuesuffix="%",
-                node=dict(
-                    pad=15,
-                    thickness=20,
-                    line=dict(color="black", width=0.5),
-                    label=list(fides_key_dict.keys()),
-                    color="blue",  # Maybe make this 'ethyca blue'?
-                    hovertemplate="%{label}",
-                ),
-                link=dict(source=source, target=target, value=target),
-            )
-        ]
-    )
-
-    fig.update_layout(
-        title_text=f'Fides {resource_type.replace("_", " ").title()} Hierarchy',
-        font_size=10,
-    )
-
-    if json_out:
-        return fig.to_json()
-    return fig.to_html()
-
-
 def create_hierarchical_dict(data: dict, keys: List) -> None:
     """
     Create a nested dictionary given a list of strings as a key path
@@ -213,6 +127,7 @@ def create_hierarchical_dict(data: dict, keys: List) -> None:
             data = data[key]
         else:
             data[key] = {}
+
 
 def convert_categories_to_nested_dict(categories: List[dict]) -> dict:
     """
@@ -262,6 +177,7 @@ def nest_to_html(nested_dict: dict, indent_factor: int) -> Generator:
                 spacing=spacing,
                 member="\n".join(nest_to_html(value, indent_factor + 1)),
             )
+
 
 def nested_categories_to_html_list(
     categories: List[dict], resource_type: str, indent: int = 1
