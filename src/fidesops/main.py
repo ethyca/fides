@@ -7,6 +7,7 @@ from fidesops.api.v1.api import api_router
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.db.database import init_db
 from fidesops.core.config import config
+from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
 
@@ -34,6 +35,7 @@ def start_webserver() -> None:
     logger.info("****************fidesops****************")
     logger.info("Running any pending DB migrations...")
     init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    scheduler.start()
 
     logger.info("Starting scheduled request intake...")
     initiate_scheduled_request_intake()

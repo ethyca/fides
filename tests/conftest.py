@@ -1,7 +1,4 @@
-from typing import Union
-
 import json
-import os
 
 from fastapi.testclient import TestClient
 from sqlalchemy_utils.functions import (
@@ -12,7 +9,6 @@ from sqlalchemy_utils.functions import (
 
 from fidesops.core.config import (
     config,
-    load_toml,
 )
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session, get_db_engine
@@ -24,6 +20,7 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import get_cache
 from fidesops.util.oauth_util import generate_jwe
 from .fixtures import *
@@ -57,6 +54,7 @@ def db() -> Generator:
         logger.debug(f"Database at: {engine.url} already exists")
 
     migrate_test_db()
+    scheduler.start()
     SessionLocal = get_db_session(engine=engine)
     the_session = SessionLocal()
     # Setup above...

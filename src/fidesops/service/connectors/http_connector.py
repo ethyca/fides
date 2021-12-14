@@ -44,7 +44,12 @@ class HTTPSConnector(BaseConnector[None]):
         headers = self.build_authorization_header()
         headers.update(additional_headers)
 
-        response = requests.post(url=config.url, headers=headers, json=request_body)
+        try:
+            response = requests.post(url=config.url, headers=headers, json=request_body)
+        except requests.ConnectionError:
+            logger.info("Requests connection error received.")
+            raise ClientUnsuccessfulException(status_code=500)
+
         if not response_expected:
             return {}
 

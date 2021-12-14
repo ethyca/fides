@@ -1,7 +1,4 @@
-from unittest.mock import Mock
-import requests_mock
 import json
-import os
 from datetime import datetime
 from typing import List, Dict
 from unittest import mock
@@ -30,6 +27,7 @@ from fidesops.models.privacy_request import (
     PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
+    PrivacyRequestStatus,
 )
 from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
@@ -289,6 +287,7 @@ class TestCreatePrivacyRequest:
         assert len(response_data) == 0
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
+
 
 class TestGetPrivacyRequests:
     @pytest.fixture(scope="function")
@@ -865,6 +864,7 @@ class TestResumePrivacyRequest:
         generate_webhook_auth_header,
         policy_post_execution_webhooks,
     ):
+        """Only can resume execution after Pre-Execution webhooks"""
         auth_header = {
             "Authorization": "Bearer "
             + generate_jwe(
@@ -880,13 +880,38 @@ class TestResumePrivacyRequest:
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == 404
 
-    def test_resume_privacy_request(
+    def test_resume_privacy_request_not_paused(
         self,
         url,
         api_client,
         generate_webhook_auth_header,
         policy_pre_execution_webhooks,
+        privacy_request,
+        db,
     ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=db)
+        auth_header = generate_webhook_auth_header(
+            webhook=policy_pre_execution_webhooks[0]
+        )
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 400
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_resume_privacy_request(
+        self,
+        submit_mock,
+        url,
+        api_client,
+        generate_webhook_auth_header,
+        policy_pre_execution_webhooks,
+        privacy_request,
+        db,
+    ):
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db=db)
         auth_header = generate_webhook_auth_header(
             webhook=policy_pre_execution_webhooks[0]
         )
@@ -894,4 +919,15 @@ class TestResumePrivacyRequest:
             url, headers=auth_header, json={"derived_identity": {}}
         )
         assert response.status_code == 200
-        # TODO add to test after more of this is connected
+        response_body = json.loads(response.text)
+        assert submit_mock.called
+        assert response_body == {
+            "id": privacy_request.id,
+            "created_at": stringify_date(privacy_request.created_at),
+            "started_processing_at": stringify_date(
+                privacy_request.started_processing_at
+            ),
+            "finished_processing_at": None,
+            "status": "in_processing",
+            "external_id": privacy_request.external_id,
+        }
