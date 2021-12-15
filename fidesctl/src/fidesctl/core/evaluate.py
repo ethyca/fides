@@ -1,5 +1,5 @@
 """Module for evaluating policies."""
-from typing import Dict, List, Optional, Callable, cast
+from typing import Dict, List, Optional, Set, Callable, cast
 
 import uuid
 from pydantic import AnyHttpUrl
@@ -20,6 +20,8 @@ from fideslang.models import (
     PrivacyDeclaration,
     System,
     Taxonomy,
+    Violation,
+    ViolationAttributes,
 )
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
@@ -157,24 +159,33 @@ def compare_rule_to_declaration(
     rule_types: List[FidesKey],
     declaration_type_hierarchies: List[List[FidesKey]],
     rule_inclusion: InclusionEnum,
-) -> bool:
+) -> Set[str]:
     """
     Compare the list of fides_keys within the rule against the list
     of fides_keys hierarchies from the declaration and uses the rule's inclusion
-    field to determine whether the rule is triggered or not.
+    field to determine whether the rule is triggered or not. Returns the offending
+    keys, prioritizing the first descendant in the hierarchy.
     """
     inclusion_map: Dict[InclusionEnum, Callable] = {
-        InclusionEnum.ANY: any,
-        InclusionEnum.ALL: all,
-        InclusionEnum.NONE: lambda x: not any(x),
+        InclusionEnum.ANY: lambda x: x if any(x) else set(),
+        InclusionEnum.ALL: lambda x: x
+        if all(x) and len(x) == len(declaration_type_hierarchies)
+        else set(),
+        InclusionEnum.NONE: lambda x: {
+            hierarchy[0] for hierarchy in declaration_type_hierarchies
+        }
+        if not any(x)
+        else set(),
     }
 
-    matching_data_categories = [
-        bool(len(set(data_category_hierarchy).intersection(set(rule_types))) > 0)
+    matching_declaration_types = {
+        data_category_hierarchy[0]
         for data_category_hierarchy in declaration_type_hierarchies
-    ]
-    result = inclusion_map[rule_inclusion](matching_data_categories)
-    return result
+        if len(set(data_category_hierarchy).intersection(set(rule_types))) > 0
+    }
+
+    inclusion_result = inclusion_map[rule_inclusion](matching_declaration_types)
+    return inclusion_result
 
 
 def evaluate_policy_rule(
@@ -184,7 +195,8 @@ def evaluate_policy_rule(
     data_categories: List[str],
     data_qualifier: str,
     data_use: str,
-) -> bool:
+    declaration_violation_message: str,
+) -> List[Violation]:
     """
     Given data subjects, data categories, data qualifier and data use,
     builds hierarchies of applicable types and evaluates the result of a
@@ -196,7 +208,7 @@ def evaluate_policy_rule(
         )
         for declaration_category in data_categories
     ]
-    data_category_result = compare_rule_to_declaration(
+    data_category_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_categories.values,
         declaration_type_hierarchies=category_hierarchies,
         rule_inclusion=policy_rule.data_categories.inclusion,
@@ -206,33 +218,56 @@ def evaluate_policy_rule(
     data_use_hierarchies = [
         get_fides_key_parent_hierarchy(taxonomy=taxonomy, fides_key=data_use)
     ]
-    data_use_result = compare_rule_to_declaration(
+    data_use_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_uses.values,
         declaration_type_hierarchies=data_use_hierarchies,
         rule_inclusion=policy_rule.data_uses.inclusion,
     )
 
     # A data subject does not have a hierarchical structure
-    data_subject_result = compare_rule_to_declaration(
+    data_subject_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_subjects.values,
         declaration_type_hierarchies=[[data_subject] for data_subject in data_subjects],
         rule_inclusion=policy_rule.data_subjects.inclusion,
     )
 
-    data_qualifier_result = (
+    data_qualifier_violation = (
         policy_rule.data_qualifier
         in get_fides_key_parent_hierarchy(taxonomy=taxonomy, fides_key=data_qualifier)
     )
 
     evaluation_result = all(
         [
-            data_category_result,
-            data_subject_result,
-            data_use_result,
-            data_qualifier_result,
+            data_category_violations,
+            data_use_violations,
+            data_subject_violations,
+            data_qualifier_violation,
         ]
     )
-    return evaluation_result
+
+    if evaluation_result:
+        violations = [
+            Violation(
+                detail="{}. Violated usage of {} data qualified by {} for data use {} and subject {}".format(
+                    declaration_violation_message,
+                    data_category_violation,
+                    data_qualifier,
+                    data_use_violation,
+                    data_subject_violation,
+                ),
+                violating_attributes=ViolationAttributes(
+                    data_category=data_category_violation,
+                    data_use=data_use_violation,
+                    data_subject=data_subject_violation,
+                    data_qualifier=data_qualifier,
+                ),
+            )
+            for data_category_violation in data_category_violations
+            for data_subject_violation in data_subject_violations
+            for data_use_violation in data_use_violations
+        ]
+        return violations
+    return []
 
 
 def get_dataset_by_fides_key(taxonomy: Taxonomy, fides_key: str) -> Optional[Dataset]:
@@ -255,76 +290,81 @@ def evaluate_dataset_reference(
     policy_rule: PolicyRule,
     privacy_declaration: PrivacyDeclaration,
     dataset: Dataset,
-) -> List[str]:
+) -> List[Violation]:
     """
     Evaluates the contraints of a given rule and dataset that was referenced
     from a given privacy declaration
     """
-    evaluation_detail_list = []
+    evaluation_violation_list = []
     if dataset.data_categories:
-        dataset_result = evaluate_policy_rule(
+
+        dataset_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset ({})".format(
+            privacy_declaration.name,
+            system.fides_key,
+            policy_rule.name,
+            policy.fides_key,
+            dataset.fides_key,
+        )
+
+        dataset_result_violations = evaluate_policy_rule(
             taxonomy=taxonomy,
             policy_rule=policy_rule,
             data_subjects=privacy_declaration.data_subjects,
             data_categories=dataset.data_categories,
             data_qualifier=dataset.data_qualifier,
             data_use=privacy_declaration.data_use,
+            declaration_violation_message=dataset_violation_message,
         )
 
-        if dataset_result:
-            evaluation_detail_list += [
-                "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset ({})".format(
-                    privacy_declaration.name,
-                    system.fides_key,
-                    policy_rule.name,
-                    policy.fides_key,
-                    dataset.fides_key,
-                )
-            ]
+        evaluation_violation_list += dataset_result_violations
+
     for collection in dataset.collections:
+
+        collection_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetCollection ({})".format(
+            privacy_declaration.name,
+            system.fides_key,
+            policy_rule.name,
+            policy.fides_key,
+            collection.name,
+        )
+
         if collection.data_categories:
-            dataset_collection_result = evaluate_policy_rule(
+            dataset_collection_result_violations = evaluate_policy_rule(
                 taxonomy=taxonomy,
                 policy_rule=policy_rule,
                 data_subjects=privacy_declaration.data_subjects,
                 data_categories=collection.data_categories,
                 data_qualifier=collection.data_qualifier,
                 data_use=privacy_declaration.data_use,
+                declaration_violation_message=collection_violation_message,
             )
 
-            if dataset_collection_result:
-                evaluation_detail_list += [
-                    "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetCollection ({})".format(
-                        privacy_declaration.name,
-                        system.fides_key,
-                        policy_rule.name,
-                        policy.fides_key,
-                        collection.name,
-                    )
-                ]
+            evaluation_violation_list += dataset_collection_result_violations
 
         for field in collection.fields:
+
+            field_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetField ({})".format(
+                privacy_declaration.name,
+                system.fides_key,
+                policy_rule.name,
+                policy.fides_key,
+                field.name,
+            )
+
             if field.data_categories:
-                field_result = evaluate_policy_rule(
+                field_result_violations = evaluate_policy_rule(
                     taxonomy=taxonomy,
                     policy_rule=policy_rule,
                     data_subjects=privacy_declaration.data_subjects,
                     data_categories=field.data_categories,
                     data_qualifier=field.data_qualifier,
                     data_use=privacy_declaration.data_use,
+                    declaration_violation_message=field_violation_message,
                 )
 
-                if field_result:
-                    evaluation_detail_list += [
-                        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetField ({})".format(
-                            privacy_declaration.name,
-                            system.fides_key,
-                            policy_rule.name,
-                            policy.fides_key,
-                            field.name,
-                        )
-                    ]
-    return evaluation_detail_list
+                evaluation_violation_list += field_result_violations
+
+    return evaluation_violation_list
 
 
 def evaluate_privacy_declaration(
@@ -333,37 +373,40 @@ def evaluate_privacy_declaration(
     system: System,
     policy_rule: PolicyRule,
     privacy_declaration: PrivacyDeclaration,
-) -> List[str]:
+) -> List[Violation]:
     """
     Evaluates the contraints of a given rule and privacy declaration. This
     includes additional data set references
     """
-    evaluation_detail_list = []
-    declaration_result = evaluate_policy_rule(
+    evaluation_violation_list = []
+
+    declaration_violation_message = (
+        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
+            privacy_declaration.name,
+            system.fides_key,
+            policy_rule.name,
+            policy.fides_key,
+        )
+    )
+
+    declaration_result_violations = evaluate_policy_rule(
         taxonomy=taxonomy,
         policy_rule=policy_rule,
         data_subjects=privacy_declaration.data_subjects,
         data_categories=privacy_declaration.data_categories,
         data_qualifier=privacy_declaration.data_qualifier,
         data_use=privacy_declaration.data_use,
+        declaration_violation_message=declaration_violation_message,
     )
 
-    if declaration_result:
-        evaluation_detail_list += [
-            "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
-                privacy_declaration.name,
-                system.fides_key,
-                policy_rule.name,
-                policy.fides_key,
-            )
-        ]
+    evaluation_violation_list += declaration_result_violations
 
     for dataset_reference in privacy_declaration.dataset_references or []:
         dataset = get_dataset_by_fides_key(
             taxonomy=taxonomy, fides_key=dataset_reference
         )
         if dataset:
-            evaluation_detail_list += evaluate_dataset_reference(
+            evaluation_violation_list += evaluate_dataset_reference(
                 taxonomy=taxonomy,
                 policy=policy,
                 system=system,
@@ -378,7 +421,7 @@ def evaluate_privacy_declaration(
                 )
             )
             raise SystemExit(1)
-    return evaluation_detail_list
+    return evaluation_violation_list
 
 
 def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
@@ -386,13 +429,13 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     Check the stated constraints of each Privacy Policy's rules against
     each system's privacy declarations.
     """
-    evaluation_detail_list = []
+    evaluation_violation_list = []
     for policy in taxonomy.policy:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
 
-                    evaluation_detail_list += evaluate_privacy_declaration(
+                    evaluation_violation_list += evaluate_privacy_declaration(
                         taxonomy=taxonomy,
                         policy=policy,
                         system=system,
@@ -400,13 +443,13 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
                         privacy_declaration=declaration,
                     )
     status_enum = (
-        StatusEnum.FAIL if len(evaluation_detail_list) > 0 else StatusEnum.PASS
+        StatusEnum.FAIL if len(evaluation_violation_list) > 0 else StatusEnum.PASS
     )
     new_uuid = str(uuid.uuid4()).replace("-", "_")
     evaluation = Evaluation(
         fides_key=new_uuid,
         status=status_enum,
-        details=evaluation_detail_list,
+        violations=evaluation_violation_list,
     )
     return evaluation
 
