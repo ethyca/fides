@@ -100,9 +100,14 @@ mypy:
 pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest:
+pytest-unit:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) pytest -x
+	@$(RUN_NO_DEPS) pytest -x -m unit
+
+pytest-integration:
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@$(RUN) pytest -x -m integration
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down
 
 xenon:
 	@$(RUN_NO_DEPS) xenon src \
