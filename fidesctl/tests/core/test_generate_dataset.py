@@ -1,10 +1,67 @@
 import sqlalchemy
 import pytest
-from unittest import mock
 
 
 from fidesctl.core import generate_dataset
 from fideslang.models import Dataset, DatasetCollection, DatasetField
+
+
+# These URLs are for the databases in the docker-compose.integration-tests.yml file
+POSTGRES_URL = (
+    "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example"
+)
+MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
+TEST_DATABASE_URLS = [POSTGRES_URL, MYSQL_URL]
+
+
+@pytest.fixture()
+def test_dataset():
+    collections = [
+        DatasetCollection(
+            name="visit",
+            description="Fides Generated Description for Table: visit",
+            fields=[
+                DatasetField(
+                    name="email",
+                    description="Fides Generated Description for Column: email",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="last_visit",
+                    description="Fides Generated Description for Column: last_visit",
+                    data_categories=[],
+                ),
+            ],
+        ),
+        DatasetCollection(
+            name="login",
+            description="Fides Generated Description for Table: login",
+            fields=[
+                DatasetField(
+                    name="id",
+                    description="Fides Generated Description for Column: id",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="customer_id",
+                    description="Fides Generated Description for Column: customer_id",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="time",
+                    description="Fides Generated Description for Column: time",
+                    data_categories=[],
+                ),
+            ],
+        ),
+    ]
+    dataset = Dataset(
+        fides_key="fidesdb",
+        name="fidesdb",
+        description="Fides Generated Description for Dataset: fidesdb",
+        collections=collections,
+    )
+    yield dataset
 
 
 # Unit
@@ -56,51 +113,38 @@ def test_generate_dataset_collections():
     assert actual_result == expected_result
 
 
-# Integration
-@pytest.mark.integration
-def test_generate_dataset_info():
+@pytest.mark.unit
+def test_generate_dataset_info(test_dataset):
     test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     test_engine = sqlalchemy.create_engine(test_url)
-    expected_collection = [
-        DatasetCollection(
-            name="bar",
-            description="Fides Generated Description for Table: bar",
-            fields=[
-                DatasetField(
-                    name=4,
-                    description="Fides Generated Description for Column: 4",
-                    data_categories=[],
-                ),
-            ],
-        )
-    ]
-    expected_result = Dataset(
-        fides_key="fidesdb",
-        name="fidesdb",
-        description="Fides Generated Description for Dataset: fidesdb",
-        collections=expected_collection,
+    actual_result = generate_dataset.create_dataset(
+        test_engine, test_dataset.collections
     )
-    actual_result = generate_dataset.create_dataset(test_engine, expected_collection)
+    assert actual_result == test_dataset
+
+
+# Integration
+@pytest.mark.integration
+def test_get_db_tables_postgres():
+    engine = sqlalchemy.create_engine(POSTGRES_URL)
+    expected_result = {
+        "public": {
+            "public.visit": ["email", "last_visit"],
+            "public.login": ["id", "customer_id", "time"],
+        }
+    }
+    actual_result = generate_dataset.get_db_collections_and_fields(engine)
     assert actual_result == expected_result
 
 
 @pytest.mark.integration
-def test_get_db_tables():
-    # Test Setup
-    inspector = mock.Mock()
-    inspector.get_table_names = lambda schema: test_tables
-    inspector.get_columns = lambda x, schema: {
-        "foo": [{"name": "1"}, {"name": "2"}],
-        "bar": [{"name": "3"}, {"name": "4"}],
-    }.get(x)
-    inspector.get_schema_names = lambda: ["test_db", "information_schema"]
-
-    engine = mock.Mock()
-    sqlalchemy.inspect = mock.Mock(return_value=inspector)
-    test_tables = ["foo", "bar"]
-
+def test_get_db_tables_mysql():
+    engine = sqlalchemy.create_engine(MYSQL_URL)
     expected_result = {
-        "test_db": {"test_db.foo": ["1", "2"], "test_db.bar": ["3", "4"]}
+        "mysql_example": {
+            "mysql_example.visit": ["email", "last_visit"],
+            "mysql_example.login": ["id", "customer_id", "time"],
+        }
     }
     actual_result = generate_dataset.get_db_collections_and_fields(engine)
     assert actual_result == expected_result

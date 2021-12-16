@@ -1,10 +1,10 @@
 services:
   fidesctl:
     depends_on:
-      - postgres_test
-      - mysql_test
+      - postgres-test
+      - mysql-test
 
-  postgres_test:
+  postgres-test:
     image: postgres:12
     environment:
       - POSTGRES_USER=postgres
@@ -13,13 +13,13 @@ services:
     expose:
       - 6432
     ports:
-      - "0.0.0.0:6432:5432"
+      - "6432:5432"
     volumes:
       # NOTE: consider running initialization SQL in Python instead of this
       # (see "Initialization scripts" section at https://hub.docker.com/_/postgres)
-      - ./data/sql/postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql
+      - ./fidesctl/tests/data/example_sql/postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql
 
-  mysql_test:
+  mysql-test:
     image: mysql
     platform: linux/amd64
     command: --default-authentication-plugin=mysql_native_password
@@ -35,9 +35,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
+      - ./fidesctl/tests/data/example_sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
 
-  sqlserver_test:
+  sqlserver-test:
     image: docker pull mcr.microsoft.com/mssql/server:2019-latest
     environment:
       - ACCEPT_EULA=Y

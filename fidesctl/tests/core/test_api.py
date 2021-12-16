@@ -143,8 +143,13 @@ def test_api_delete(test_config, resources_dict, endpoint):
     print(result.text)
     assert result.status_code == 200
 
+
 @pytest.mark.integration
-@pytest.mark.parametrize("resource_type", ["data_category", "data_use", "data_qualifier"])
+@pytest.mark.parametrize(
+    "resource_type", ["data_category", "data_use", "data_qualifier"]
+)
 def test_visualize(test_config, resource_type):
-    response = requests.get(f"{test_config.cli.server_url}/{resource_type}/visualize/graphs")
+    response = requests.get(
+        f"{test_config.cli.server_url}/{resource_type}/visualize/graphs"
+    )
     assert response.status_code == 200
