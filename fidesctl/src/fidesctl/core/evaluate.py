@@ -542,7 +542,7 @@ def evaluate(
     validate_supported_policy_rules(policies=policies)
     echo_green(
         "Evaluating the following Policies:\n- {}".format(
-            "\n- ".join([key.fides_key for key in taxonomy.policy])
+            "\n- ".join([key.fides_key for key in policies])
         )
     )
     print("-" * 10)
