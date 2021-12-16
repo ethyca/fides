@@ -4,8 +4,10 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
-from sqlalchemy import Column, Integer, Text, String, ARRAY, JSON
-import sqlalchemy.ext.declarative
+from sqlalchemy import ARRAY, JSON, Column, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+from sqlalchemy.sql.sqltypes import DateTime
 
 
 class SqlModelBase:
@@ -25,9 +27,15 @@ class FidesBase(SqlModelBase):
     organization_fides_key = Column(Text)
     name = Column(Text)
     description = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 
-SqlAlchemyBase = sqlalchemy.ext.declarative.declarative_base(cls=SqlModelBase)
+SqlAlchemyBase = declarative_base(cls=SqlModelBase)
 
 
 # Privacy Types
