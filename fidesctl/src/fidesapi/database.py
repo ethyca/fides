@@ -9,6 +9,7 @@ from alembic.migration import MigrationContext
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
+from fidesapi.errors import QueryError
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fidesapi.crud import upsert_resources
 from fideslang import DEFAULT_TAXONOMY
@@ -58,8 +59,15 @@ def load_default_taxonomy() -> None:
     for resource_type in list(DEFAULT_TAXONOMY.__fields_set__):
         log.info(f"Processing {resource_type} resources...")
         resources = list(map(dict, dict(DEFAULT_TAXONOMY)[resource_type]))
-        upsert_resources(sql_model_map[resource_type], resources)
-        log.info(f"Successfully UPSERTED {len(resources)} {resource_type} resources")
+
+        try:
+            upsert_resources(sql_model_map[resource_type], resources)
+        except QueryError:
+            pass  # The upsert_resources function will log the error
+        else:
+            log.info(
+                f"Successfully UPSERTED {len(resources)} {resource_type} resources"
+            )
 
 
 def reset_db(database_url: str) -> None:
