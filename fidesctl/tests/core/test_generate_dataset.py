@@ -13,9 +13,9 @@ POSTGRES_URL = (
 
 MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 
-SQLSERVER_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
-SQLSERVER_URL = SQLSERVER_URL_TEMPLATE.format("sqlserver_example")
-MASTER_SQLSERVER_URL = SQLSERVER_URL_TEMPLATE.format("master") + "&autocommit=True"
+MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 
 @pytest.fixture()
@@ -145,6 +145,7 @@ class TestPostgres:
         yield
 
     @pytest.mark.integration
+    @pytest.mark.postgres
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
         expected_result = {
@@ -157,6 +158,7 @@ class TestPostgres:
         assert actual_result == expected_result
 
     @pytest.mark.integration
+    @pytest.mark.postgres
     def test_generate_dataset_postgres(self):
         actual_result = generate_dataset.generate_dataset(POSTGRES_URL, "test_file.yml")
         assert actual_result
@@ -179,6 +181,7 @@ class TestMySQL:
         yield
 
     @pytest.mark.integration
+    @pytest.mark.mysql
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
         expected_result = {
@@ -191,6 +194,7 @@ class TestMySQL:
         assert actual_result == expected_result
 
     @pytest.mark.integration
+    @pytest.mark.mysql
     def test_generate_dataset_mysql(self):
         actual_result = generate_dataset.generate_dataset(MYSQL_URL, "test_file.yml")
         assert actual_result
@@ -198,14 +202,14 @@ class TestMySQL:
 
 class TestSQLServer:
     @pytest.fixture(scope="class", autouse=True)
-    def sqlserver_setup(self):
+    def mssql_setup(self):
         """
         Set up the SQL Server Database for testing.
 
         The query file must have each query on a separate line.
         Initial connection must be done to the master database.
         """
-        engine = sqlalchemy.create_engine(MASTER_SQLSERVER_URL)
+        engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
         with open("tests/data/example_sql/sqlserver_example.sql", "r") as query_file:
             queries = [query for query in query_file.read().splitlines() if query != ""]
         print(queries)
@@ -214,8 +218,9 @@ class TestSQLServer:
         yield
 
     @pytest.mark.integration
-    def test_get_db_tables_sqlserver(self):
-        engine = sqlalchemy.create_engine(SQLSERVER_URL)
+    @pytest.mark.mssql
+    def test_get_db_tables_mssql(self):
+        engine = sqlalchemy.create_engine(MSSQL_URL)
         expected_result = {
             "dbo": {
                 "visit": ["email", "last_visit"],
@@ -226,8 +231,7 @@ class TestSQLServer:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    def test_generate_dataset_sqlserver(self):
-        actual_result = generate_dataset.generate_dataset(
-            SQLSERVER_URL, "test_file.yml"
-        )
+    @pytest.mark.mssql
+    def test_generate_dataset_mssql(self):
+        actual_result = generate_dataset.generate_dataset(MSSQL_URL, "test_file.yml")
         assert actual_result
