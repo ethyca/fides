@@ -1,6 +1,6 @@
 -- Each query needs to be on a single line for this implementation
 USE master;
-DROP DATABASE sqlserver_example;
+DROP DATABASE IF EXISTS sqlserver_example;
 CREATE DATABASE sqlserver_example;
 USE sqlserver_example;
 
