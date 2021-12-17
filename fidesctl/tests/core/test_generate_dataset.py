@@ -3,7 +3,7 @@ import pytest
 
 
 from fidesctl.core import generate_dataset
-from fideslang.models import Dataset, DatasetCollection, DatasetField, System
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
 # These URLs are for the databases in the docker-compose.integration-tests.yml file
@@ -134,6 +134,7 @@ def test_unsupported_dialect_error():
         generate_dataset.generate_dataset(test_url, "test_file.yml")
 
 
+@pytest.mark.postgres
 class TestPostgres:
     @pytest.fixture(scope="class", autouse=True)
     def postgres_setup(self):
@@ -145,7 +146,6 @@ class TestPostgres:
         yield
 
     @pytest.mark.integration
-    @pytest.mark.postgres
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
         expected_result = {
@@ -158,12 +158,12 @@ class TestPostgres:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    @pytest.mark.postgres
     def test_generate_dataset_postgres(self):
         actual_result = generate_dataset.generate_dataset(POSTGRES_URL, "test_file.yml")
         assert actual_result
 
 
+@pytest.mark.mysql
 class TestMySQL:
     @pytest.fixture(scope="class", autouse=True)
     def mysql_setup(self):
@@ -181,7 +181,6 @@ class TestMySQL:
         yield
 
     @pytest.mark.integration
-    @pytest.mark.mysql
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
         expected_result = {
@@ -194,12 +193,12 @@ class TestMySQL:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    @pytest.mark.mysql
     def test_generate_dataset_mysql(self):
         actual_result = generate_dataset.generate_dataset(MYSQL_URL, "test_file.yml")
         assert actual_result
 
 
+@pytest.mark.mssql
 class TestSQLServer:
     @pytest.fixture(scope="class", autouse=True)
     def mssql_setup(self):
@@ -218,7 +217,6 @@ class TestSQLServer:
         yield
 
     @pytest.mark.integration
-    @pytest.mark.mssql
     def test_get_db_tables_mssql(self):
         engine = sqlalchemy.create_engine(MSSQL_URL)
         expected_result = {
@@ -231,7 +229,6 @@ class TestSQLServer:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    @pytest.mark.mssql
     def test_generate_dataset_mssql(self):
         actual_result = generate_dataset.generate_dataset(MSSQL_URL, "test_file.yml")
         assert actual_result
