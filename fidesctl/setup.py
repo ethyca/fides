@@ -14,12 +14,14 @@ dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 # Human-Readable/Reusable Extras
 postgres_connector = "psycopg2-binary==2.9.0"
 mysql_connector = "pymysql==1.0.0"
+mssql_connector = "pyodbc==4.0.32"
 fastapi = "fastapi==0.68"
 uvicorn = "uvicorn==0.15"
 
 extras = {
     "postgres": [postgres_connector],
     "mysql": [mysql_connector],
+    "mssql": [mssql_connector],
     "webserver": [fastapi, uvicorn, postgres_connector],
 }
 extras["all"] = sum(extras.values(), [])

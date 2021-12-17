@@ -10,8 +10,55 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 POSTGRES_URL = (
     "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example"
 )
+
 MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
-TEST_DATABASE_URLS = [POSTGRES_URL, MYSQL_URL]
+
+SQLSERVER_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+SQLSERVER_URL = SQLSERVER_URL_TEMPLATE.format("sqlserver_example")
+MASTER_SQLSERVER_URL = SQLSERVER_URL_TEMPLATE.format("master") + "&autocommit=True"
+
+
+@pytest.fixture(scope="module")
+def postgres_setup():
+    "Set up the Postgres Database for testing."
+    engine = sqlalchemy.create_engine(POSTGRES_URL)
+    with open("tests/data/example_sql/postgres_example.sql", "r") as query_file:
+        query = sqlalchemy.sql.text(query_file.read())
+    engine.execute(query)
+    yield
+
+
+@pytest.fixture(scope="module")
+def mysql_setup():
+    """
+    Set up the MySQL Database for testing.
+
+    The query file must have each query on a separate line.
+    """
+    engine = sqlalchemy.create_engine(MYSQL_URL)
+    with open("tests/data/example_sql/mysql_example.sql", "r") as query_file:
+        queries = [query for query in query_file.read().splitlines() if query != ""]
+    print(queries)
+    for query in queries:
+        engine.execute(sqlalchemy.sql.text(query))
+    yield
+
+
+@pytest.fixture(scope="module")
+def sqlserver_setup():
+    """
+    Set up the SQL Server Database for testing.
+
+    The query file must have each query on a separate line.
+    Initial connection must be done to the master database.
+    """
+    engine = sqlalchemy.create_engine(MASTER_SQLSERVER_URL)
+    with open("tests/data/example_sql/sqlserver_example.sql", "r") as query_file:
+        queries = [query for query in query_file.read().splitlines() if query != ""]
+    print(queries)
+    for query in queries:
+        engine.execute(sqlalchemy.sql.text(query))
+    yield
 
 
 @pytest.fixture()
@@ -125,7 +172,7 @@ def test_generate_dataset_info(test_dataset):
 
 # Integration
 @pytest.mark.integration
-def test_get_db_tables_postgres():
+def test_get_db_tables_postgres(postgres_setup):
     engine = sqlalchemy.create_engine(POSTGRES_URL)
     expected_result = {
         "public": {
@@ -133,17 +180,30 @@ def test_get_db_tables_postgres():
             "public.login": ["id", "customer_id", "time"],
         }
     }
-    actual_result = generate_dataset.get_db_collections_and_fields(engine)
+    actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
     assert actual_result == expected_result
 
 
 @pytest.mark.integration
-def test_get_db_tables_mysql():
+def test_get_db_tables_mysql(mysql_setup):
     engine = sqlalchemy.create_engine(MYSQL_URL)
     expected_result = {
         "mysql_example": {
             "mysql_example.visit": ["email", "last_visit"],
             "mysql_example.login": ["id", "customer_id", "time"],
+        }
+    }
+    actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
+    assert actual_result == expected_result
+
+
+@pytest.mark.integration
+def test_get_db_tables_sqlserver(sqlserver_setup):
+    engine = sqlalchemy.create_engine(SQLSERVER_URL)
+    expected_result = {
+        "sqlserver_example": {
+            "sqlserver_example.visit": ["email", "last_visit"],
+            "sqlserver_example.login": ["id", "customer_id", "time"],
         }
     }
     actual_result = generate_dataset.get_db_collections_and_fields(engine)
