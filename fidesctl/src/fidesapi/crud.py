@@ -163,6 +163,7 @@ def upsert_resources(sql_model: SqlAlchemyBase, resource_dicts: List[Dict]) -> N
             session.rollback()
             error = errors.QueryError()
             log.bind(error=error.detail["error"]).error("Failed to upsert resources")
+            raise error
         finally:
             session.close()
 
