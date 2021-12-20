@@ -169,6 +169,7 @@ def test_populate_referenced_keys_recursively(test_config):
     ]
     assert sorted(populated_subjects) == sorted(["customer"])
 
+
 @pytest.mark.integration
 def test_populate_referenced_keys_fails_missing_keys(test_config):
     """
@@ -198,6 +199,7 @@ def test_populate_referenced_keys_fails_missing_keys(test_config):
             headers=test_config.user.request_headers,
             last_keys=[],
         )
+
 
 @pytest.mark.unit
 def test_get_evaluation_policies_with_key_found_local():
@@ -294,7 +296,7 @@ def test_compare_rule_to_declaration_any_true():
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
         rule_inclusion="ANY",
     )
-    assert result
+    assert {"key_1"} == result
 
 
 @pytest.mark.unit
@@ -304,7 +306,7 @@ def test_compare_rule_to_declaration_any_true_hierarchical():
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
         rule_inclusion="ANY",
     )
-    assert result
+    assert {"key_1"} == result
 
 
 @pytest.mark.unit
@@ -334,7 +336,7 @@ def test_compare_rule_to_declaration_all_true():
         declaration_type_hierarchies=[["key_3"], ["key_1"]],
         rule_inclusion="ALL",
     )
-    assert result
+    assert {"key_3", "key_1"} == result
 
 
 @pytest.mark.unit
@@ -347,7 +349,7 @@ def test_compare_rule_to_declaration_all_true_hierarchical():
         ],
         rule_inclusion="ALL",
     )
-    assert result
+    assert {"key_3", "key_1"} == result
 
 
 @pytest.mark.unit
@@ -377,7 +379,7 @@ def test_compare_rule_to_declaration_none_true():
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
         rule_inclusion="NONE",
     )
-    assert result
+    assert {"key_2", "key_3"} == result
 
 
 @pytest.mark.unit
@@ -387,7 +389,7 @@ def test_compare_rule_to_declaration_none_true_hierarchical():
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
         rule_inclusion="NONE",
     )
-    assert result
+    assert {"key_2", "key_3"} == result
 
 
 @pytest.mark.unit
@@ -436,6 +438,7 @@ def test_get_dataset_by_fides_key_does_not_exist():
         taxonomy=Taxonomy(dataset=[dataset1, dataset_2]), fides_key="dataset_3"
     )
     assert not result
+
 
 @pytest.mark.unit
 def test_validate_supported_policy_rules_throws_with_unsupported_action():

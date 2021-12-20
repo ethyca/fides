@@ -133,10 +133,10 @@ class Dataset(FidesModel):
 class ViolationAttributes(BaseModel):
     "The model for "
 
-    data_category: str
-    data_subject: str
+    data_categories: List[str]
+    data_subjects: List[str]
+    data_uses: List[str]
     data_qualifier: str
-    data_use: str
 
 
 class Violation(BaseModel):

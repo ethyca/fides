@@ -166,25 +166,29 @@ def compare_rule_to_declaration(
     field to determine whether the rule is triggered or not. Returns the offending
     keys, prioritizing the first descendant in the hierarchy.
     """
+    matched_declaration_types = set()
+    mismatched_declaration_types = set()
+    for declaration_type_hierarchy in declaration_type_hierarchies:
+        declared_declaration_type = declaration_type_hierarchy[0]
+        if len(set(declaration_type_hierarchy).intersection(set(rule_types))) > 0:
+            matched_declaration_types.add(declared_declaration_type)
+        else:
+            mismatched_declaration_types.add(declared_declaration_type)
+
     inclusion_map: Dict[InclusionEnum, Callable] = {
-        InclusionEnum.ANY: lambda x: x if any(x) else set(),
-        InclusionEnum.ALL: lambda x: x
-        if all(x) and len(x) == len(declaration_type_hierarchies)
+        # any inclusion returns matching declared values as violations
+        InclusionEnum.ANY: lambda: matched_declaration_types,
+        # all inclusion returns matching declared values as violations if all values match rule values
+        InclusionEnum.ALL: lambda: matched_declaration_types
+        if len(matched_declaration_types) == len(declaration_type_hierarchies)
         else set(),
-        InclusionEnum.NONE: lambda x: {
-            hierarchy[0] for hierarchy in declaration_type_hierarchies
-        }
-        if not any(x)
+        # none inclusion returns mismatched declared values as violations if none of the values matched rule values
+        InclusionEnum.NONE: lambda: mismatched_declaration_types
+        if not any(matched_declaration_types)
         else set(),
     }
 
-    matching_declaration_types = {
-        data_category_hierarchy[0]
-        for data_category_hierarchy in declaration_type_hierarchies
-        if len(set(data_category_hierarchy).intersection(set(rule_types))) > 0
-    }
-
-    inclusion_result = inclusion_map[rule_inclusion](matching_declaration_types)
+    inclusion_result = inclusion_map[rule_inclusion]()
     return inclusion_result
 
 
@@ -248,23 +252,20 @@ def evaluate_policy_rule(
     if evaluation_result:
         violations = [
             Violation(
-                detail="{}. Violated usage of {} data qualified by {} for data use {} and subject {}".format(
+                detail="{}. Violated usage of data categories ({}) with qualifier ({}) for data uses ({}) and subjects ({})".format(
                     declaration_violation_message,
-                    data_category_violation,
+                    ",".join(data_category_violations),
                     data_qualifier,
-                    data_use_violation,
-                    data_subject_violation,
+                    ",".join(data_use_violations),
+                    ",".join(data_subject_violations),
                 ),
                 violating_attributes=ViolationAttributes(
-                    data_category=data_category_violation,
-                    data_use=data_use_violation,
-                    data_subject=data_subject_violation,
+                    data_categories=data_category_violations,
+                    data_uses=data_use_violations,
+                    data_subjects=data_subject_violations,
                     data_qualifier=data_qualifier,
                 ),
             )
-            for data_category_violation in data_category_violations
-            for data_subject_violation in data_subject_violations
-            for data_use_violation in data_use_violations
         ]
         return violations
     return []
@@ -298,7 +299,7 @@ def evaluate_dataset_reference(
     evaluation_violation_list = []
     if dataset.data_categories:
 
-        dataset_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for Dataset ({})".format(
+        dataset_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset ({})".format(
             privacy_declaration.name,
             system.fides_key,
             policy_rule.name,
@@ -320,7 +321,7 @@ def evaluate_dataset_reference(
 
     for collection in dataset.collections:
 
-        collection_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetCollection ({})".format(
+        collection_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset collection ({})".format(
             privacy_declaration.name,
             system.fides_key,
             policy_rule.name,
@@ -343,7 +344,7 @@ def evaluate_dataset_reference(
 
         for field in collection.fields:
 
-            field_violation_message = "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({}) for DatasetField ({})".format(
+            field_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset field ({})".format(
                 privacy_declaration.name,
                 system.fides_key,
                 policy_rule.name,
@@ -381,7 +382,7 @@ def evaluate_privacy_declaration(
     evaluation_violation_list = []
 
     declaration_violation_message = (
-        "Declaration ({}) of System ({}) failed Rule ({}) from Policy ({})".format(
+        "Declaration ({}) of system ({}) failed rule ({}) from policy ({})".format(
             privacy_declaration.name,
             system.fides_key,
             policy_rule.name,
@@ -416,7 +417,7 @@ def evaluate_privacy_declaration(
             )
         else:
             echo_red(
-                "Dataset ({}) referenced in Declaration ({}) could not be found in taxonomy".format(
+                "Dataset ({}) referenced in declaration ({}) could not be found in taxonomy".format(
                     dataset_reference, privacy_declaration.name
                 )
             )
@@ -525,7 +526,7 @@ def evaluate(
     validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
     validate_supported_policy_rules(policies=policies)
     echo_green(
-        "Evaluating the following Policies:\n- {}".format(
+        "Evaluating the following policies:\n- {}".format(
             "\n- ".join([key.fides_key for key in taxonomy.policy])
         )
     )
