@@ -53,4 +53,3 @@ policy:
           values:
             - customer
         data_qualifier: aggregated
-        action: REJECT

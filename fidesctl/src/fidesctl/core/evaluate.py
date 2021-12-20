@@ -1,35 +1,34 @@
 """Module for evaluating policies."""
-from typing import Dict, List, Optional, Set, Callable, cast
-
 import uuid
+from typing import Callable, Dict, List, Optional, Set, cast
+
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
-from fidesctl.core.api_helpers import get_server_resources, get_server_resource
+from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.parse import parse
 from fidesctl.core.utils import echo_green, echo_red
+from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
-    ActionEnum,
-    Evaluation,
     Dataset,
-    StatusEnum,
+    Evaluation,
     InclusionEnum,
     Policy,
     PolicyRule,
     PrivacyDeclaration,
+    StatusEnum,
     System,
     Taxonomy,
     Violation,
     ViolationAttributes,
 )
-from fideslang.default_taxonomy import DEFAULT_TAXONOMY
-from fideslang.validation import FidesKey
 from fideslang.relationships import (
     get_referenced_missing_keys,
     hydrate_missing_resources,
 )
 from fideslang.utils import get_resource_by_fides_key
+from fideslang.validation import FidesKey
 
 
 def get_evaluation_policies(
@@ -106,23 +105,6 @@ def validate_policies_exist(policies: List[Policy], evaluate_fides_key: str) -> 
             else "No Policies found to evaluate"
         )
         raise SystemExit(1)
-
-
-def validate_supported_policy_rules(policies: List[Policy]) -> None:
-    """
-    Validates that only supported actions are used in taxonomy. Currently
-    evaluations only support REJECT policy actions.
-    see: https://github.com/ethyca/fides/issues/150
-    """
-    for policy in policies:
-        for rule in policy.rules:
-            if rule.action != ActionEnum.REJECT:
-                echo_red(
-                    "Policy ({}) uses unsupported policy action ({}). Only REJECT is currently supported".format(
-                        policy.name, rule.action
-                    )
-                )
-                raise SystemExit(1)
 
 
 def get_fides_key_parent_hierarchy(
@@ -524,7 +506,6 @@ def evaluate(
         )
 
     validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
-    validate_supported_policy_rules(policies=policies)
     echo_green(
         "Evaluating the following policies:\n- {}".format(
             "\n- ".join([key.fides_key for key in policies])

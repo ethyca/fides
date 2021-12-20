@@ -18,4 +18,3 @@ policy:
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        action: REJECT

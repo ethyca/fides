@@ -1,25 +1,22 @@
-from unittest.mock import patch, MagicMock
+from typing import List
+from unittest.mock import MagicMock, patch
+
 import pytest
 
-from typing import List
-
-from fidesctl.core import evaluate, api as _api
-
+from fidesctl.core import evaluate
 from fideslang.models import (
     DataCategory,
     DataQualifier,
-    DataSubject,
-    DataUse,
     Dataset,
     DatasetCollection,
-    Policy,
-    PrivacyRule,
-    PrivacyDeclaration,
-    Taxonomy,
-    PolicyRule,
+    DataSubject,
+    DataUse,
     InclusionEnum,
-    ActionEnum,
+    Policy,
+    PolicyRule,
+    PrivacyDeclaration,
     System,
+    Taxonomy,
 )
 
 
@@ -62,27 +59,6 @@ def evaluation_hierarchical_key_basic_taxonomy():
     )
 
 
-def create_policy_rule_with_action(
-    policy_rule_key: str, action: ActionEnum
-) -> PolicyRule:
-    return PolicyRule(
-        name=policy_rule_key,
-        action=action,
-        data_categories={
-            "values": ["data_category_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-        data_uses={
-            "values": ["data_use_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-        data_subjects={
-            "values": ["data_subject_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-    )
-
-
 def create_policy_rule_with_keys(
     data_categories: List[str],
     data_uses: List[str],
@@ -104,7 +80,6 @@ def create_policy_rule_with_keys(
             "inclusion": InclusionEnum.ANY,
         },
         data_qualifier=data_qualifier,
-        action=ActionEnum.REJECT,
     )
 
 
@@ -366,7 +341,7 @@ def test_compare_rule_to_declaration_all_false():
 def test_compare_rule_to_declaration_all_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_1_parent", "key_3"],
-        declaration_type_hierarchies=[["key_2"], ["key_1" "key_1_parent"]],
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
         rule_inclusion="ALL",
     )
     assert not result
@@ -438,45 +413,6 @@ def test_get_dataset_by_fides_key_does_not_exist():
         taxonomy=Taxonomy(dataset=[dataset1, dataset_2]), fides_key="dataset_3"
     )
     assert not result
-
-
-@pytest.mark.unit
-def test_validate_supported_policy_rules_throws_with_unsupported_action():
-    with pytest.raises(SystemExit):
-        evaluate.validate_supported_policy_rules(
-            policies=[
-                Policy(
-                    fides_key="policy_1",
-                    rules=[
-                        create_policy_rule_with_action(
-                            policy_rule_key="policy_rule_1", action=ActionEnum.ACCEPT
-                        ),
-                        create_policy_rule_with_action(
-                            policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
-                        ),
-                    ],
-                )
-            ],
-        )
-
-
-@pytest.mark.unit
-def test_validate_supported_policy_rules_passes():
-    evaluate.validate_supported_policy_rules(
-        policies=[
-            Policy(
-                fides_key="policy_1",
-                rules=[
-                    create_policy_rule_with_action(
-                        policy_rule_key="policy_rule_1", action=ActionEnum.REJECT
-                    ),
-                    create_policy_rule_with_action(
-                        policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
-                    ),
-                ],
-            )
-        ],
-    )
 
 
 @pytest.mark.unit

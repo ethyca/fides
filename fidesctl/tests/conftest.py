@@ -128,7 +128,6 @@ def resources_dict():
             data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
             data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-            action="REJECT",
         ),
         "registry": models.Registry(
             organization_fides_key=1,

@@ -18,4 +18,3 @@ policy:
           values:
             - anonymous_user
         data_qualifier: aggregated
-        action: REJECT

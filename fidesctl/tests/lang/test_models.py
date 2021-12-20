@@ -163,7 +163,7 @@ def test_invalid_inclusion_privacy_rule():
 
 @pytest.mark.unit
 def test_valid_policy_rule():
-    PolicyRule(
+    assert PolicyRule(
         organization_fides_key=1,
         policyId=1,
         fides_key="test_policy",
@@ -173,27 +173,7 @@ def test_valid_policy_rule():
         data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
         data_subjects=PrivacyRule(inclusion="ANY", values=[]),
         data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-        action="REJECT",
-    ),
-    assert True
-
-
-@pytest.mark.unit
-def test_invalid_action_enum_policy_rule():
-    with pytest.raises(ValidationError):
-        PolicyRule(
-            organization_fides_key=1,
-            policyId=1,
-            fides_key="test_policy",
-            name="Test Policy",
-            description="Test Policy",
-            data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
-            data_subjects=PrivacyRule(inclusion="ANY", values=[]),
-            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-            action="REJT",
-        ),
-    assert True
+    )
 
 
 @pytest.mark.unit

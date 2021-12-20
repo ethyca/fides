@@ -196,18 +196,6 @@ class InclusionEnum(str, Enum):
     NONE = "NONE"
 
 
-class ActionEnum(str, Enum):
-    """
-    The ActionEnum resource model.
-
-    Describes what the result of the PolicyRule should be if it is fulfilled.
-    """
-
-    ACCEPT = "ACCEPT"
-    REJECT = "REJECT"
-    REQUIRE = "REQUIRE"
-
-
 class PrivacyRule(BaseModel):
     """
     The PrivacyRule resource model.
@@ -223,8 +211,7 @@ class PolicyRule(BaseModel):
     """
     The PolicyRule resource model.
 
-    Describes combination of the various types of privacy data types
-    and what action that combination constitutes.
+    Describes the allowed combination of the various privacy data types.
     """
 
     name: str
@@ -234,7 +221,6 @@ class PolicyRule(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
     )
-    action: ActionEnum
 
 
 class Policy(FidesModel):
