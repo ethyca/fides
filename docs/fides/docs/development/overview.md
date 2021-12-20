@@ -37,6 +37,7 @@ There are a few different ways to develop Fidesctl, they are listed below _in or
 We have no doubt you can write amazing code! However, we want to help you ensure your code plays nicely with the rest of the Fidesctl ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesctl it's a CI-checked requirement.
 
 * To learn how to style your code, see the [style guide](code_style.md).
+* To learn how to migrate the database schema, see the [database migration guide](database_migration.md).
 * To learn how to document your code, see the [docs guide](documentation.md).
 * To learn how to test your code, see the [tests guide](testing.md).
 * To learn what format your PR should follow, make sure to follow the [pull request guidelines](pull_requests.md).

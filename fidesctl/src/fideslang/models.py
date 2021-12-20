@@ -130,6 +130,22 @@ class Dataset(FidesModel):
 
 
 # Evaluation
+class ViolationAttributes(BaseModel):
+    "The model for "
+
+    data_categories: List[str]
+    data_subjects: List[str]
+    data_uses: List[str]
+    data_qualifier: str
+
+
+class Violation(BaseModel):
+    "The model for violations within an evaluation"
+
+    violating_attributes: ViolationAttributes
+    detail: str
+
+
 class StatusEnum(str, Enum):
     "The model for possible evaluation results."
 
@@ -146,7 +162,7 @@ class Evaluation(BaseModel):
 
     fides_key: FidesKey
     status: StatusEnum
-    details: List[str]
+    violations: List[Violation] = []
     message: str = ""
 
     class Config:

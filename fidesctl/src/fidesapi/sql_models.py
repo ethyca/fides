@@ -93,7 +93,7 @@ class Evaluation(SqlAlchemyBase):
 
     fides_key = Column(String, primary_key=True, index=True, unique=True)
     status = Column(String)
-    details = Column(ARRAY(String))
+    violations = Column(JSON)
     message = Column(String)
 
 
