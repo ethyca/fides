@@ -30,8 +30,7 @@ ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y install \
     apt-transport-https \
     unixodbc-dev \
-    mssql-tools \
-    unixodbc-dev
+    mssql-tools
 
 #######################
 ## Application Setup ##

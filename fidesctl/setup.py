@@ -24,6 +24,7 @@ extras = {
     "mssql": [mssql_connector],
     "webserver": [fastapi, uvicorn, postgres_connector],
 }
+dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(extras.values(), [])
 
 setup(
