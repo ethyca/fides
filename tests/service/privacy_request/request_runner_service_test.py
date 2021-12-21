@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
@@ -17,14 +17,17 @@ from pydantic import ValidationError
 
 from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
 from fidesops.core.config import config
-from fidesops.models.policy import PolicyPreWebhook
+from fidesops.models.policy import PolicyPreWebhook, ActionType
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.schemas.policy import Rule
 from fidesops.service.connectors import PostgreSQLConnector
 from fidesops.service.connectors.sql_connector import SnowflakeConnector
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 
@@ -87,6 +90,23 @@ def get_privacy_request_results(
     privacy_request.cache_identity(privacy_request_data["identity"])
     if "encryption_key" in privacy_request_data:
         privacy_request.cache_encryption(privacy_request_data["encryption_key"])
+
+    erasure_rules: List[Rule] = policy.get_rules_for_action(
+        action_type=ActionType.erasure
+    )
+    unique_masking_strategies_by_name: Set[str] = set()
+    for rule in erasure_rules:
+        strategy_name: str = rule.masking_strategy["strategy"]
+        if strategy_name in unique_masking_strategies_by_name:
+            continue
+        unique_masking_strategies_by_name.add(strategy_name)
+        masking_strategy = get_strategy(strategy_name, {})
+        if masking_strategy.secrets_required():
+            masking_secrets: List[
+                MaskingSecretCache
+            ] = masking_strategy.generate_secrets_for_cache()
+            for masking_secret in masking_secrets:
+                privacy_request.cache_masking_secret(masking_secret)
 
     wait_for(
         PrivacyRequestRunner(
@@ -233,6 +253,60 @@ def test_create_and_process_erasure_request_generic_category(
             # ("user.provided.identifiable.contact.email") has been erased by the parent
             # category ("user.provided.identifiable.contact")
             assert row[1] is None
+            assert row[2] is not None
+        else:
+            # There are two rows other rows, and they should not have been erased
+            assert row[1] in ["customer-1@example.com", "jane@example.com"]
+    assert customer_found
+
+
+@pytest.mark.integration_erasure
+def test_create_and_process_erasure_request_aes_generic_category(
+        postgres_example_test_dataset_config,
+        cache,
+        db,
+        generate_auth_header,
+        erasure_policy_aes,
+        connection_config,
+):
+    # It's safe to change this here since the `erasure_policy` fixture is scoped
+    # at function level
+    target = erasure_policy_aes.rules[0].targets[0]
+    target.data_category = DataCategory("user.provided.identifiable.contact").value
+    target.save(db=db)
+
+    email = "customer-2@example.com"
+    customer_id = 2
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy_aes.key,
+        "identity": {"email": email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy_aes, cache, data)
+    pr.delete(db=db)
+
+    example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
+    engine = get_db_engine(database_uri=example_postgres_uri)
+    SessionLocal = get_db_session(engine=engine)
+    integration_db = SessionLocal()
+    stmt = select(
+        column("id"),
+        column("email"),
+        column("name"),
+    ).select_from(table("customer"))
+    res = integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if customer_id in row:
+            customer_found = True
+            # Check that the `email` field is not original val and that its data category
+            # ("user.provided.identifiable.contact.email") has been erased by the parent
+            # category ("user.provided.identifiable.contact").
+            # masked val for `email` field will change per new privacy request, so the best
+            # we can do here is test that the original val has been changed
+            assert row[1] is not "customer-2@example.com"
             assert row[2] is not None
         else:
             # There are two rows other rows, and they should not have been erased

@@ -11,6 +11,7 @@ from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import (
     PostgreSQLSchema,
     RedshiftSchema,
@@ -86,13 +87,19 @@ class SQLConnector(BaseConnector[Engine]):
             results = connection.execute(stmt)
             return SQLConnector.cursor_result_to_rows(results)
 
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
+    ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy)
+            update_stmt = query_config.generate_update_stmt(row, policy, request)
             if update_stmt is not None:
                 with client.connect() as connection:
                     results: LegacyCursorResult = connection.execute(update_stmt)

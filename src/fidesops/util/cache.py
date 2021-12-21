@@ -15,6 +15,7 @@ from redis.client import Script
 
 from fidesops import common_exceptions
 from fidesops.core.config import config
+from fidesops.schemas.masking.masking_secrets import SecretType
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,11 @@ class FidesopsRedis(Redis):
         """Set an object in redis in an encoded form. This object should be retrieved via
         get_objects_by_prefix or processed with decode_obj."""
         return self.set_with_autoexpire(f"EN_{key}", FidesopsRedis.encode_obj(obj))
+
+    def get_encoded_by_key(self, key: str) -> Optional[Any]:
+        """Returns cached obj decoded from base64"""
+        val = super().get(key)
+        return self.decode_obj(val) if val else None
 
     def get_encoded_objects_by_prefix(self, prefix: str) -> Dict[str, Optional[Any]]:
         """Return all objects stored under a given prefix. This method
@@ -122,6 +128,15 @@ def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> 
 def get_encryption_cache_key(privacy_request_id: str, encryption_attr: str) -> str:
     """Return the key at which to save this PrivacyRequest's encryption attribute"""
     return f"id-{privacy_request_id}-encryption-{encryption_attr}"
+
+
+def get_masking_secret_cache_key(
+    privacy_request_id: str, masking_strategy: str, secret_type: SecretType
+) -> str:
+    """Return the key at which to save this PrivacyRequest's masking secret attribute"""
+    return (
+        f"id-{privacy_request_id}-masking-secret-{masking_strategy}-{secret_type.value}"
+    )
 
 
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> Set:

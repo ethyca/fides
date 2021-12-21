@@ -1,10 +1,15 @@
 import hashlib
-from typing import Optional
+from typing import Optional, List, Dict
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
     MaskingConfiguration,
+)
+from fidesops.schemas.masking.masking_secrets import (
+    MaskingSecretCache,
+    SecretType,
+    MaskingSecretMeta,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -12,7 +17,7 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
+from fidesops.util.encryption.secrets_util import SecretsUtil
 
 HASH = "hash"
 
@@ -29,19 +34,37 @@ class HashMaskingStrategy(MaskingStrategy):
             self.algorithm_function = self._hash_sha256
         elif self.algorithm == HashMaskingConfiguration.Algorithm.SHA_512:
             self.algorithm_function = self._hash_sha512
-        self.salt = configuration.salt
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """Returns the hashed version of the provided value. Returns None if the provided value
         is None"""
         if value is None:
             return None
-        masked: str = self.algorithm_function(value, self.salt)
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
+        salt: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id,
+            SecretType.salt,
+            masking_meta[SecretType.salt],
+        )
+        masked: str = self.algorithm_function(value, salt)
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
+
+    def secrets_required(self) -> bool:
+        return True
+
+    def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
+        return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -61,8 +84,8 @@ class HashMaskingStrategy(MaskingStrategy):
                     "SHA-512. If not provided, default is SHA-256",
                 ),
                 MaskingStrategyConfigurationDescription(
-                    key="salt",
-                    description="Specifies the salt to be used in conjunction with the hash.",
+                    key="format_preservation",
+                    description="Option to preserve format in masking, with a provided suffix",
                 ),
             ],
         )
@@ -86,3 +109,12 @@ class HashMaskingStrategy(MaskingStrategy):
         return hashlib.sha512(
             (value + salt).encode(config.security.ENCODING)
         ).hexdigest()
+
+    @staticmethod
+    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+        return {
+            SecretType.salt: MaskingSecretMeta[str](
+                masking_strategy=HASH,
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            )
+        }

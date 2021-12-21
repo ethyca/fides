@@ -352,19 +352,4 @@ def test_validate_policy(
             },
         )
 
-    with pytest.raises(RuleValidationError):
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.erasure.value,
-                "client_id": oauth_client.id,
-                "name": "Erasure Rule with unsupported masking strategy",
-                "policy_id": erasure_policy.id,
-                "masking_strategy": {
-                    "strategy": HASH,
-                    "configuration": {"algorithm": "SHA-512"},
-                },
-            },
-        )
-
     erasure_policy.delete(db=db)  # This will tear down everything created here

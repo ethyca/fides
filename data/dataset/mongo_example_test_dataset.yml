@@ -18,5 +18,9 @@ dataset:
                   direction: from
           - name: gender
             data_categories: [user.provided.identifiable.gender]
+            fidesops_meta:
+              data_type: string
           - name: birthday
             data_categories: [user.provided.identifiable.date_of_birth]
+            fidesops_meta:
+              data_type: string

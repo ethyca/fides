@@ -3,6 +3,7 @@ import json
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fidesops.schemas.masking.masking_configuration import AesEncryptionMaskingConfiguration
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
@@ -65,42 +66,48 @@ class TestMaskValues:
 
     def test_mask_value_hmac(self, api_client: TestClient):
         value = "867-5309"
-        hmac_key = "my_super_secret_key"
         masking_strategy = {
             "strategy": HMAC,
-            "configuration": {"hmac_key": hmac_key},
+            "configuration": {},
         }
+
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 404 == response.status_code
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"]
+        assert json_response["masked_value"] != value
 
     def test_mask_value_hash(self, api_client: TestClient):
         value = "867-5309"
-        salt = "my_test_salt"
         masking_strategy = {
             "strategy": HASH,
-            "configuration": {"salt": salt},
+            "configuration": {},
         }
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 404 == response.status_code
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"]
+        assert json_response["masked_value"] != value
 
     def test_mask_value_aes_encrypt(self, api_client: TestClient):
         value = "last name"
         masking_strategy = {
             "strategy": AES_ENCRYPT,
             "configuration": {
-                "mode": "GCM",
-                "key": "4838f838d9g939f9",
-                "nonce": "939f929dajr2",
+                "mode": AesEncryptionMaskingConfiguration.Mode.GCM.value
             },
         }
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
         )
-        assert 404 == response.status_code
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"]
+        assert json_response["masked_value"] != value
 
     def test_mask_value_no_such_strategy(self, api_client: TestClient):
         value = "check"
@@ -128,22 +135,6 @@ class TestMaskValues:
         )
 
         assert 400 == response.status_code
-
-    def test_mask_value_aes_invalid_key_len(self, api_client: TestClient):
-        value = "check"
-        masking_strategy = {
-            "strategy": AES_ENCRYPT,
-            "configuration": {
-                "mode": "GCM",
-                "key": "shortkey",
-                "nonce": "939f929dajr2",
-            },
-        }
-
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
-        assert 404 == response.status_code
 
     def test_masking_value_null(self, api_client: TestClient):
         value = "my_email"

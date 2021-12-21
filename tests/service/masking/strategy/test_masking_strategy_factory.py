@@ -14,8 +14,8 @@ from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
 
 
 def test_get_strategy_hash():
-    with pytest.raises(NoSuchStrategyException):
-        get_strategy("hash", {})
+    strategy = get_strategy("hash", {})
+    assert isinstance(strategy, HashMaskingStrategy)
 
 
 def test_get_strategy_rewrite():
@@ -26,8 +26,8 @@ def test_get_strategy_rewrite():
 
 def test_get_strategy_aes_encrypt():
     config = {"mode": "GCM", "key": "keycard", "nonce": "none"}
-    with pytest.raises(NoSuchStrategyException):
-        get_strategy("aes_encrypt", config)
+    strategy = get_strategy("aes_encrypt", config)
+    assert isinstance(strategy, AesEncryptionMaskingStrategy)
 
 
 def test_get_strategy_invalid():

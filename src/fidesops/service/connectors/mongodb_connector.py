@@ -8,6 +8,7 @@ from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import TestStatus
 from fidesops.models.policy import Policy
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
@@ -106,7 +107,13 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         logger.info(f"Found {len(rows)} on {node.address}")
         return rows
 
-    def mask_data(self, node: TraversalNode, policy: Policy, rows: List[Row]) -> int:
+    def mask_data(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        request: PrivacyRequest,
+        rows: List[Row],
+    ) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""
         query_config = self.query_config(node)
@@ -114,7 +121,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         client = self.client()
         update_ct = 0
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy)
+            update_stmt = query_config.generate_update_stmt(row, policy, request)
             if update_stmt is not None:
                 query, update = update_stmt
                 db = client[node.address.dataset]

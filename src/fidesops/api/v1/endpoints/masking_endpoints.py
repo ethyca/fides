@@ -30,7 +30,7 @@ def mask_value(masking_strategy: PolicyMaskingSpec, value: str) -> MaskingAPIRes
             masking_strategy.strategy, masking_strategy.configuration
         )
         logger.info(f"Starting masking with strategy {masking_strategy.strategy}")
-        masked_value = strategy.mask(value)
+        masked_value = strategy.mask(value, None)
         return MaskingAPIResponse(plain=value, masked_value=masked_value)
     except NoSuchStrategyException as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))

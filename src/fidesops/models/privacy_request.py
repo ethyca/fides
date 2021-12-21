@@ -35,14 +35,15 @@ from fidesops.schemas.external_https import (
     SecondPartyResponseFormat,
     WebhookJWE,
 )
+from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.service.connectors import HTTPSConnector, get_connector
 from fidesops.util.cache import (
     get_all_cache_keys_for_privacy_request,
     get_cache,
     get_identity_cache_key,
     FidesopsRedis,
     get_encryption_cache_key,
+    get_masking_secret_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
 
@@ -148,6 +149,20 @@ class PrivacyRequest(Base):
             encryption_key,
         )
 
+    def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
+        """Sets masking encryption secrets in the Fidesops app cache if provided"""
+        if not masking_secret:
+            return
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            get_masking_secret_cache_key(
+                self.id,
+                masking_strategy=masking_secret.masking_strategy,
+                secret_type=masking_secret.secret_type,
+            ),
+            FidesopsRedis.encode_obj(masking_secret.secret),
+        )
+
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         prefix = f"id-{self.id}-identity-*"
@@ -168,6 +183,9 @@ class PrivacyRequest(Base):
         Pre-Execution webhooks send headers to the webhook in case the service needs to send back instructions
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
+        # temp fix for circular dependency
+        from fidesops.service.connectors import HTTPSConnector, get_connector
+
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
