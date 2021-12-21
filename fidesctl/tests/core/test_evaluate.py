@@ -388,6 +388,46 @@ def test_compare_rule_to_declaration_none_false_hierarchical():
 
 
 @pytest.mark.unit
+def test_compare_rule_to_declaration_other_true():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
+        rule_match="OTHER",
+    )
+    assert {"key_2"} == result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
+        rule_match="OTHER",
+    )
+    assert {"key_2"} == result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_false():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_3"]],
+        rule_match="OTHER",
+    )
+    assert result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
+        rule_match="OTHER",
+    )
+    assert result
+
+
+@pytest.mark.unit
 def test_get_dataset_by_fides_key_exists():
     dataset_1 = Dataset(
         fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]

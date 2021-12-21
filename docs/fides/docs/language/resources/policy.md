@@ -42,8 +42,9 @@ The [Data Qualifier](/fides/language/taxonomy/data_qualifiers/) privacy attribut
 * `ANY`
 * `ALL`
 * `NONE`
+* `OTHER`
 
-The matches criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), or only included if at least 1 item in the array matches (`ANY`).
+The matches criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), only included if at least 1 item in the array matches (`ANY`), or excluded with any additional attributes included (`OTHER`).
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 

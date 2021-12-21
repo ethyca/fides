@@ -168,6 +168,8 @@ def compare_rule_to_declaration(
         MatchesEnum.NONE: lambda: mismatched_declaration_types
         if not any(matched_declaration_types)
         else set(),
+        # other matches return mismatched declared values as violations
+        MatchesEnum.OTHER: lambda: mismatched_declaration_types,
     }
 
     return matches_map[rule_match]()

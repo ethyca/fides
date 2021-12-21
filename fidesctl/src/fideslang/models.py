@@ -194,6 +194,7 @@ class MatchesEnum(str, Enum):
     ANY = "ANY"
     ALL = "ALL"
     NONE = "NONE"
+    OTHER = "OTHER"
 
 
 class PrivacyRule(BaseModel):
