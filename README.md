@@ -130,15 +130,15 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
               name: Reject Direct Marketing
               description: Disallow collecting any user contact info to use for marketing.
               data_categories:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - user.provided.identifiable.contact
               data_uses:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - advertising
               data_subjects:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - customer
               data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

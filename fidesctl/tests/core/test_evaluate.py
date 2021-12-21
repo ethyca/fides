@@ -11,7 +11,7 @@ from fideslang.models import (
     DatasetCollection,
     DataSubject,
     DataUse,
-    InclusionEnum,
+    MatchesEnum,
     Policy,
     PolicyRule,
     PrivacyDeclaration,
@@ -69,15 +69,15 @@ def create_policy_rule_with_keys(
         name="policy_rule_1",
         data_categories={
             "values": data_categories,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_uses={
             "values": data_uses,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_subjects={
             "values": data_subjects,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_qualifier=data_qualifier,
     )
@@ -269,7 +269,7 @@ def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert {"key_1"} == result
 
@@ -279,7 +279,7 @@ def test_compare_rule_to_declaration_any_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert {"key_1"} == result
 
@@ -289,7 +289,7 @@ def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert not result
 
@@ -299,7 +299,7 @@ def test_compare_rule_to_declaration_any_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert not result
 
@@ -309,7 +309,7 @@ def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_3"], ["key_1"]],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert {"key_3", "key_1"} == result
 
@@ -322,7 +322,7 @@ def test_compare_rule_to_declaration_all_true_hierarchical():
             ["key_3", "key_3_parent"],
             ["key_1", "key_1_parent"],
         ],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert {"key_3", "key_1"} == result
 
@@ -332,7 +332,7 @@ def test_compare_rule_to_declaration_all_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert not result
 
@@ -342,7 +342,7 @@ def test_compare_rule_to_declaration_all_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_1_parent", "key_3"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert not result
 
@@ -352,7 +352,7 @@ def test_compare_rule_to_declaration_none_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert {"key_2", "key_3"} == result
 
@@ -362,7 +362,7 @@ def test_compare_rule_to_declaration_none_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert {"key_2", "key_3"} == result
 
@@ -372,7 +372,7 @@ def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert not result
 
@@ -382,7 +382,7 @@ def test_compare_rule_to_declaration_none_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1", "key_1_parent"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert not result
 

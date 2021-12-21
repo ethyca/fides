@@ -37,13 +37,13 @@ The [Data Subjects](/fides/language/taxonomy/data_subjects/) privacy attribute d
 
 The [Data Qualifier](/fides/language/taxonomy/data_qualifiers/) privacy attribute describes the acceptable or non-acceptable level of deidentification for this data.
 
-**inclusion**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**matches**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 * `ANY`
 * `ALL`
 * `NONE`
 
-The inclusion criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), or only included if at least 1 item in the array matches (`ANY`).
+The matches criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), or only included if at least 1 item in the array matches (`ANY`).
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
@@ -64,15 +64,15 @@ policy:
         name: Reject Direct Marketing
         description: Disallow collecting any user contact info to use for marketing.
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.contact
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - advertising
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -96,19 +96,19 @@ POST /policy
       "name": "Reject Direct Marketing",
       "description": "Disallow collecting any user contact info to use for marketing.",
       "data_categories": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "user.provided.identifiable.contact"
         ]
       },
       "data_uses": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "advertising"
         ]
       },
       "data_subjects": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "customer"
         ]

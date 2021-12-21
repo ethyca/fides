@@ -14,12 +14,12 @@ policy:
         name: Minimize User Identifiable Data
         description: Reject collecting any user identifiable data for uses other than system operations
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable
             - user.derived.identifiable
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - improve
             - personalize
@@ -28,7 +28,7 @@ policy:
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -37,7 +37,7 @@ policy:
         name: Reject Sensitive Data
         description: Reject collecting sensitive user data for any use
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.biometric
             - user.provided.identifiable.childrens
@@ -48,7 +48,7 @@ policy:
             - user.provided.identifiable.religious_belief
             - user.provided.identifiable.sexual_orientation
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - provide
             - improve
@@ -58,7 +58,7 @@ policy:
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated

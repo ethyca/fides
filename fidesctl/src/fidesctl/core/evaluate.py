@@ -13,7 +13,7 @@ from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
     Dataset,
     Evaluation,
-    InclusionEnum,
+    MatchesEnum,
     Policy,
     PolicyRule,
     PrivacyDeclaration,
@@ -140,11 +140,11 @@ def get_fides_key_parent_hierarchy(
 def compare_rule_to_declaration(
     rule_types: List[FidesKey],
     declaration_type_hierarchies: List[List[FidesKey]],
-    rule_inclusion: InclusionEnum,
+    rule_match: MatchesEnum,
 ) -> Set[str]:
     """
     Compare the list of fides_keys within the rule against the list
-    of fides_keys hierarchies from the declaration and uses the rule's inclusion
+    of fides_keys hierarchies from the declaration and uses the rule's matches
     field to determine whether the rule is triggered or not. Returns the offending
     keys, prioritizing the first descendant in the hierarchy.
     """
@@ -157,21 +157,20 @@ def compare_rule_to_declaration(
         else:
             mismatched_declaration_types.add(declared_declaration_type)
 
-    inclusion_map: Dict[InclusionEnum, Callable] = {
-        # any inclusion returns matching declared values as violations
-        InclusionEnum.ANY: lambda: matched_declaration_types,
-        # all inclusion returns matching declared values as violations if all values match rule values
-        InclusionEnum.ALL: lambda: matched_declaration_types
+    matches_map: Dict[MatchesEnum, Callable] = {
+        # any matches return matching declared values as violations
+        MatchesEnum.ANY: lambda: matched_declaration_types,
+        # all matches return matching declared values as violations if all values match rule values
+        MatchesEnum.ALL: lambda: matched_declaration_types
         if len(matched_declaration_types) == len(declaration_type_hierarchies)
         else set(),
-        # none inclusion returns mismatched declared values as violations if none of the values matched rule values
-        InclusionEnum.NONE: lambda: mismatched_declaration_types
+        # none matches return mismatched declared values as violations if none of the values matched rule values
+        MatchesEnum.NONE: lambda: mismatched_declaration_types
         if not any(matched_declaration_types)
         else set(),
     }
 
-    inclusion_result = inclusion_map[rule_inclusion]()
-    return inclusion_result
+    return matches_map[rule_match]()
 
 
 def evaluate_policy_rule(
@@ -197,7 +196,7 @@ def evaluate_policy_rule(
     data_category_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_categories.values,
         declaration_type_hierarchies=category_hierarchies,
-        rule_inclusion=policy_rule.data_categories.inclusion,
+        rule_match=policy_rule.data_categories.matches,
     )
 
     # A declaration only has one data use, so its hierarchy gets put in a list
@@ -207,14 +206,14 @@ def evaluate_policy_rule(
     data_use_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_uses.values,
         declaration_type_hierarchies=data_use_hierarchies,
-        rule_inclusion=policy_rule.data_uses.inclusion,
+        rule_match=policy_rule.data_uses.matches,
     )
 
     # A data subject does not have a hierarchical structure
     data_subject_violations = compare_rule_to_declaration(
         rule_types=policy_rule.data_subjects.values,
         declaration_type_hierarchies=[[data_subject] for data_subject in data_subjects],
-        rule_inclusion=policy_rule.data_subjects.inclusion,
+        rule_match=policy_rule.data_subjects.matches,
     )
 
     data_qualifier_violation = (

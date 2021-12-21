@@ -6,7 +6,7 @@ from fideslang.models import (
     Dataset,
     DatasetCollection,
     DatasetField,
-    InclusionEnum,
+    MatchesEnum,
     Policy,
     PolicyRule,
     PrivacyDeclaration,
@@ -119,15 +119,15 @@ def test_get_referenced_missing_policy_keys():
                         name="policy_rule_1",
                         data_categories={
                             "values": ["policy_rule_data_category_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_uses={
                             "values": ["policy_rule_data_use_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_subjects={
                             "values": ["policy_rule_data_subject_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_qualifier="policy_rule_data_qualifier_1",
                     )
