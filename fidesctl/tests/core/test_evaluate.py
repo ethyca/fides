@@ -410,21 +410,21 @@ def test_compare_rule_to_declaration_other_true_hierarchical():
 @pytest.mark.unit
 def test_compare_rule_to_declaration_other_false():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"],
-        declaration_type_hierarchies=[["key_2"], ["key_3"]],
+        rule_types=["key_1", "key_3"],
+        declaration_type_hierarchies=[["key_1"], ["key_3"]],
         rule_match="OTHER",
     )
-    assert result
+    assert not result
 
 
 @pytest.mark.unit
 def test_compare_rule_to_declaration_other_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
-        rule_types=["key_1"],
-        declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
+        rule_types=["key_1", "key_3_parent"],
+        declaration_type_hierarchies=[["key_1"], ["key_3", "key_3_parent"]],
         rule_match="OTHER",
     )
-    assert result
+    assert not result
 
 
 @pytest.mark.unit
