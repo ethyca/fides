@@ -7,24 +7,40 @@ from fidesops.core.config import config
 from fidesops.util.cryptographic_util import bytes_to_b64_str
 
 
-def encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> bytes:
+def encrypt_to_bytes_verify_secrets_length(
+    plain_value: Optional[str], key: bytes, nonce: bytes
+) -> bytes:
+    """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
+    Returns encrypted value in bytes"""
+    verify_nonce(nonce)
+    verify_encryption_key(key)
+    return _encrypt_to_bytes(plain_value, key, nonce)
+
+
+def _encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> bytes:
     """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
     Returns encrypted value in bytes"""
     if plain_value is None:
         raise ValueError("plain_value cannot be null")
-    verify_encryption_key(key)
-    verify_nonce(nonce)
-
     gcm = AESGCM(key)
     value_bytes = plain_value.encode(config.security.ENCODING)
     encrypted_bytes = gcm.encrypt(nonce, value_bytes, nonce)
     return encrypted_bytes
 
 
-def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
-    """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
+def encrypt_verify_secret_length(
+    plain_value: Optional[str], key: bytes, nonce: bytes
+) -> str:
+    """Encrypts the value using the AES GCM Algorithm, with secret length verification.
     Returns encrypted value as a string"""
-    encrypted: bytes = encrypt_to_bytes(plain_value, key, nonce)
+    encrypted: bytes = encrypt_to_bytes_verify_secrets_length(plain_value, key, nonce)
+    return bytes_to_b64_str(encrypted)
+
+
+def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
+    """Encrypts the value using the AES GCM Algorithm, without secret length verification.
+    Returns encrypted value as a string"""
+    encrypted: bytes = _encrypt_to_bytes(plain_value, key, nonce)
     return bytes_to_b64_str(encrypted)
 
 

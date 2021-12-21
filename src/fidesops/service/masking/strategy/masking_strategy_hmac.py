@@ -1,11 +1,13 @@
-import hashlib
-import hmac
-from typing import Optional, Callable
+from typing import Optional, List, Dict
 
-from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     HmacMaskingConfiguration,
+)
+from fidesops.schemas.masking.masking_secrets import (
+    MaskingSecretCache,
+    SecretType,
+    MaskingSecretMeta,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
@@ -13,7 +15,8 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
+from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
+from fidesops.util.encryption.secrets_util import SecretsUtil
 
 HMAC = "hmac"
 
@@ -28,28 +31,40 @@ class HmacMaskingStrategy(MaskingStrategy):
         configuration: HmacMaskingConfiguration,
     ):
         self.algorithm = configuration.algorithm
-        algorithm_function_mapping = {
-            HmacMaskingConfiguration.Algorithm.sha_256: self._hmac_sha256,
-            HmacMaskingConfiguration.Algorithm.sha_512: self._hmac_sha512,
-        }
-
-        self.algorithm_function = algorithm_function_mapping.get(self.algorithm)
-        self.hmac_key = configuration.hmac_key
-        self.salt = configuration.salt
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(
+        self, value: Optional[str], privacy_request_id: Optional[str]
+    ) -> Optional[str]:
         """
         Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
         """
         if value is None:
             return None
-        masked: str = self.algorithm_function(value, self.hmac_key, self.salt)
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
+        key: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id, SecretType.key, masking_meta[SecretType.key]
+        )
+        salt: str = SecretsUtil.get_or_generate_secret(
+            privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
+        )
+        masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
         if self.format_preservation is not None:
             formatter = FormatPreservation(self.format_preservation)
             return formatter.format(masked)
         return masked
+
+    def secrets_required(self) -> bool:
+        return True
+
+    def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
+        masking_meta: Dict[
+            SecretType, MaskingSecretMeta
+        ] = self._build_masking_secret_meta()
+        return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -68,29 +83,10 @@ class HmacMaskingStrategy(MaskingStrategy):
                     "SHA-512. If not provided, default is SHA-256",
                 ),
                 MaskingStrategyConfigurationDescription(
-                    key="hmac_key",
-                    description="Specifies the secret key to be used in conjunction with the hash.",
-                ),
-                MaskingStrategyConfigurationDescription(
-                    key="salt",
-                    description="Specifies optional salt that can be added to the value we're hashing.",
+                    key="format_preservation",
+                    description="Option to preserve format in masking, with a provided suffix",
                 ),
             ],
-        )
-
-    # Helpers
-    @staticmethod
-    def _hmac_sha256(value: str, hmac_key: str, salt: str) -> str:
-        """Creates a new hmac object using the sh256 hash algorithm and the hmac_key and then returns the hexdigest."""
-        return _hmac(
-            value=value, hmac_key=hmac_key, salt=salt, hashing_alg=hashlib.sha256
-        )
-
-    @staticmethod
-    def _hmac_sha512(value: str, hmac_key: str, salt: str) -> str:
-        """Creates a new hmac object using the sha512 hash algorithm and the hmac_key and then returns the hexdigest."""
-        return _hmac(
-            value=value, hmac_key=hmac_key, salt=salt, hashing_alg=hashlib.sha512
         )
 
     @staticmethod
@@ -99,11 +95,15 @@ class HmacMaskingStrategy(MaskingStrategy):
         supported_data_types = {"string"}
         return data_type in supported_data_types
 
-
-def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> str:
-    """Generic HMAC algorithm"""
-    return hmac.new(
-        key=hmac_key.encode(config.security.ENCODING),
-        msg=(value + salt).encode(config.security.ENCODING),
-        digestmod=hashing_alg,
-    ).hexdigest()
+    @staticmethod
+    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+        return {
+            SecretType.key: MaskingSecretMeta[str](
+                masking_strategy=HMAC,
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+            SecretType.salt: MaskingSecretMeta[str](
+                masking_strategy=HMAC,
+                generate_secret_func=SecretsUtil.generate_secret_string,
+            ),
+        }

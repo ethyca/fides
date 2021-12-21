@@ -31,7 +31,8 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
-from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key
+from fidesops.schemas.masking.masking_secrets import SecretType
+from fidesops.util.cache import get_identity_cache_key, get_encryption_cache_key, get_masking_secret_cache_key
 from fidesops.util.oauth_util import generate_jwe
 
 page_size = Params().size
@@ -212,6 +213,42 @@ class TestCreatePrivacyRequest:
         assert cache.get(key) == list(identity.values())[0]
         pr.delete(db=db)
         assert run_access_request_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_create_privacy_request_caches_masking_secrets(
+            self,
+            run_erasure_request_mock,
+            url,
+            db,
+            api_client: TestClient,
+            generate_auth_header,
+            erasure_policy_aes,
+            cache,
+    ):
+        identity = {"email": "test@example.com"}
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": erasure_policy_aes.key,
+                "identity": identity,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        resp = api_client.post(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, id=response_data[0]["id"])
+        secret_key = get_masking_secret_cache_key(
+            privacy_request_id=pr.id,
+            masking_strategy="aes_encrypt",
+            secret_type=SecretType.key
+        )
+        assert cache.get_encoded_by_key(secret_key) is not None
+        pr.delete(db=db)
+        assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(
         self, url, db, api_client: TestClient, generate_auth_header, policy, cache

@@ -20,7 +20,7 @@ from fidesops.schemas.encryption_request import (
 from fidesops.util import cryptographic_util
 from fidesops.util.cryptographic_util import bytes_to_b64_str, b64_str_to_bytes
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
-    encrypt as aes_gcm_encrypt,
+    encrypt_verify_secret_length as aes_gcm_encrypt,
 )
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt as aes_gcm_decrypt,

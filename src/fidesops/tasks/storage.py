@@ -21,7 +21,9 @@ from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
 from fidesops.util.cache import get_encryption_cache_key, get_cache
 from fidesops.util.cryptographic_util import bytes_to_b64_str
-from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt_to_bytes
+from fidesops.util.encryption.aes_gcm_encryption_scheme import (
+    encrypt_to_bytes_verify_secrets_length,
+)
 
 from fidesops.util.storage_authenticator import (
     get_s3_session,
@@ -53,7 +55,10 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     )
     nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
     # b64encode the entire nonce and the encrypted message together
-    return bytes_to_b64_str(nonce + encrypt_to_bytes(data, bytes_encryption_key, nonce))
+    return bytes_to_b64_str(
+        nonce
+        + encrypt_to_bytes_verify_secrets_length(data, bytes_encryption_key, nonce)
+    )
 
 
 def write_to_in_memory_buffer(

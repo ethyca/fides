@@ -15,6 +15,7 @@ from fidesops.graph.config import (
 from fidesops.graph.data_type import DataTypeConverter
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.querytoken import QueryToken
@@ -122,7 +123,9 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def update_value_map(self, row: Row, policy: Policy) -> Dict[str, Any]:
+    def update_value_map(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Dict[str, Any]:
         """Map the relevant fields to be updated on the row with their masked values from Policy Rules
 
         Example return:  {'name': None, 'ccn': None, 'code': None}
@@ -160,7 +163,12 @@ class QueryConfig(Generic[T], ABC):
                     continue
                 val: Any = row[field_name]
                 masked_val = self._generate_masked_value(
-                    strategy, val, masking_override, null_masking, field_name
+                    request.id,
+                    strategy,
+                    val,
+                    masking_override,
+                    null_masking,
+                    field_name,
                 )
                 value_map[field_name] = masked_val
         return value_map
@@ -179,14 +187,15 @@ class QueryConfig(Generic[T], ABC):
         return True
 
     @staticmethod
-    def _generate_masked_value(
+    def _generate_masked_value(  # pylint: disable=R0913
+        request_id: str,
         strategy: MaskingStrategy,
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
         field_name: str,
     ) -> T:
-        masked_val = strategy.mask(val)
+        masked_val = strategy.mask(val, request_id)
         logger.debug(
             f"Generated the following masked val for field {field_name}: {masked_val}"
         )
@@ -220,7 +229,9 @@ class QueryConfig(Generic[T], ABC):
         """dry run query for display"""
 
     @abstractmethod
-    def generate_update_stmt(self, row: Row, policy: Optional[Policy]) -> Optional[T]:
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[T]:
         """Generate an update statement. If there is no data to be updated
         (for example, if the policy identifies no fields to be updated)
         returns None"""
@@ -298,9 +309,11 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         """Adds the appropriate formatting for update statements in this datastore."""
         return [f"{k} = :{k}" for k in key_map]
 
-    def generate_update_stmt(self, row: Row, policy: Policy) -> Optional[TextClause]:
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
-        update_value_map = self.update_value_map(row, policy)
+        update_value_map = self.update_value_map(row, policy, request)
         update_clauses = self.format_key_map_for_update_stmt(update_value_map)
         non_empty_primary_keys = filter_nonempty_values(
             {
@@ -448,10 +461,10 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
     def generate_update_stmt(
-        self, row: Row, policy: Optional[Policy] = None
+        self, row: Row, policy: Policy, request: PrivacyRequest = None
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
-        update_clauses = self.update_value_map(row, policy)
+        update_clauses = self.update_value_map(row, policy, request)
 
         pk_clauses = filter_nonempty_values(
             {k.name: k.cast(row[k.name]) for k in self.primary_key_fields}

@@ -3,6 +3,11 @@ from typing import Dict, List, Union
 
 from pydantic import ValidationError
 
+from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+    AesEncryptionMaskingStrategy,
+)
+from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -32,6 +37,9 @@ class SupportedMaskingStrategies(Enum):
     string_rewrite = StringRewriteMaskingStrategy
     random_string_rewrite = RandomStringRewriteMaskingStrategy
     null_rewrite = NullMaskingStrategy
+    hash = HashMaskingStrategy
+    aes_encrypt = AesEncryptionMaskingStrategy
+    hmac = HmacMaskingStrategy
 
 
 def get_strategy(

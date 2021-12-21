@@ -33,7 +33,6 @@ class HashMaskingConfiguration(MaskingConfiguration):
         SHA_512 = "SHA-512"
 
     algorithm: Algorithm = Algorithm.SHA_256
-    salt: str = ""
     format_preservation: Optional[FormatPreservationConfig] = None
 
 
@@ -44,8 +43,6 @@ class AesEncryptionMaskingConfiguration(MaskingConfiguration):
         GCM = "GCM"
 
     mode: Mode = Mode.GCM
-    nonce: bytes
-    key: bytes
     format_preservation: Optional[FormatPreservationConfig] = None
 
 
@@ -68,8 +65,6 @@ class HmacMaskingConfiguration(MaskingConfiguration):
         sha_512 = "SHA-512"
 
     algorithm: Algorithm = Algorithm.sha_256
-    hmac_key: str
-    salt: Optional[str] = ""
     format_preservation: Optional[FormatPreservationConfig] = None
 
 
