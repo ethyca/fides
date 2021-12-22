@@ -142,6 +142,32 @@ def generate_dataset(
 
 @click.command()
 @click.pass_context
+@click.argument("connection_string", type=str)
+@click.argument("dataset_key", type=str)
+@click.option("-c", "--coverage-threshold", type=click.FloatRange(0, 1), default=1.0)
+def database_coverage(
+    ctx: click.Context,
+    connection_string: str,
+    dataset_key: str,
+    coverage_threshold: float,
+) -> None:
+    """
+    Connect to a database directly via a SQLAlchemy-stlye connection string and
+    compare the database definition to an existing dataset. Outputs missing fields
+    and exits in error if coverage is under threshold
+    """
+    config = ctx.obj["CONFIG"]
+    _generate_dataset.database_coverage(
+        connection_string=connection_string,
+        dataset_key=dataset_key,
+        coverage_threshold=coverage_threshold,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+    )
+
+
+@click.command()
+@click.pass_context
 @click.argument("input_filename", type=str)
 @click.option(
     "-a",
