@@ -33,7 +33,7 @@ services:
       - "3306:3306"
 
   sqlserver-test:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/azure-sql-edge:latest
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=SQLserver1
