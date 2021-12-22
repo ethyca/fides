@@ -184,38 +184,27 @@ class Organization(FidesModel):
 
 
 # Policy
-class InclusionEnum(str, Enum):
+class MatchesEnum(str, Enum):
     """
-    The InclusionEnum resouce model.
+    The MatchesEnum resouce model.
 
-    Determines how the listed resources are included in the evaluation logic.
+    Determines how the listed resources are matched in the evaluation logic.
     """
 
     ANY = "ANY"
     ALL = "ALL"
     NONE = "NONE"
-
-
-class ActionEnum(str, Enum):
-    """
-    The ActionEnum resource model.
-
-    Describes what the result of the PolicyRule should be if it is fulfilled.
-    """
-
-    ACCEPT = "ACCEPT"
-    REJECT = "REJECT"
-    REQUIRE = "REQUIRE"
+    OTHER = "OTHER"
 
 
 class PrivacyRule(BaseModel):
     """
     The PrivacyRule resource model.
 
-    A list of privacy data types and what inclusion method to use.
+    A list of privacy data types and what match method to use.
     """
 
-    inclusion: InclusionEnum
+    matches: MatchesEnum
     values: List[FidesKey]
 
 
@@ -223,8 +212,7 @@ class PolicyRule(BaseModel):
     """
     The PolicyRule resource model.
 
-    Describes combination of the various types of privacy data types
-    and what action that combination constitutes.
+    Describes the allowed combination of the various privacy data types.
     """
 
     name: str
@@ -234,7 +222,6 @@ class PolicyRule(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
     )
-    action: ActionEnum
 
 
 class Policy(FidesModel):

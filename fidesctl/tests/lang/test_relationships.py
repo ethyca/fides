@@ -1,20 +1,17 @@
 import pytest
 
 from fideslang import relationships
-
 from fideslang.models import (
     DataCategory,
-    System,
-    Taxonomy,
-    Policy,
     Dataset,
-    PolicyRule,
-    PrivacyRule,
     DatasetCollection,
     DatasetField,
+    MatchesEnum,
+    Policy,
+    PolicyRule,
     PrivacyDeclaration,
-    InclusionEnum,
-    ActionEnum,
+    System,
+    Taxonomy,
 )
 
 
@@ -120,18 +117,17 @@ def test_get_referenced_missing_policy_keys():
                 rules=[
                     PolicyRule(
                         name="policy_rule_1",
-                        action=ActionEnum.REJECT,
                         data_categories={
                             "values": ["policy_rule_data_category_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_uses={
                             "values": ["policy_rule_data_use_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_subjects={
                             "values": ["policy_rule_data_subject_1"],
-                            "inclusion": InclusionEnum.ANY,
+                            "matches": MatchesEnum.ANY,
                         },
                         data_qualifier="policy_rule_data_qualifier_1",
                     )

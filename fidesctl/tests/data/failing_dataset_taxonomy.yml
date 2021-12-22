@@ -40,16 +40,15 @@ policy:
       - fides_key: reject_political_opinion
         description: Disallow advertising of customer political opinion data
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.political_opinion
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - advertising
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated
-        action: REJECT
