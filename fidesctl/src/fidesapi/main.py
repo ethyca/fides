@@ -2,9 +2,9 @@
 Contains the code that sets up the API.
 """
 
-import logging
-import time
+from datetime import datetime
 from enum import Enum
+from logging import WARNING
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response
@@ -13,7 +13,7 @@ from uvicorn import Config, Server
 
 from fidesapi import crud, database, db_session, view, visualize
 from fidesapi.logger import setup as setup_logging
-from fidesctl.core.config import get_config, FidesctlConfig
+from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -51,13 +51,13 @@ def setup_server() -> None:
 @app.middleware("http")
 async def log_request(request: Request, call_next: Callable) -> Response:
     "Log basic information about every request handled by the server."
-    start = time.time()
+    start = datetime.now()
     response = await call_next(request)
-    handle_time = time.time() - start
+    handler_time = datetime.now() - start
     log.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{handle_time}s",
+        handler_time=f"{handler_time.microseconds * 0.001}ms",
         path=request.url.path,
     ).info("Request received")
     return response
@@ -90,5 +90,5 @@ async def db_action(action: DBActions) -> Dict:
 
 def start_webserver() -> None:
     "Run the webserver."
-    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=logging.WARNING))
+    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
     server.run()

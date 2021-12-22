@@ -52,6 +52,7 @@ nav:
   - Development:
       - Overview: development/overview.md
       - Code Style: development/code_style.md
+      - Database Migration: development/database_migration.md
       - Documentation: development/documentation.md
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
