@@ -1193,7 +1193,7 @@
                 
                 
                 <h1 id="policy">Policy</h1>
-<p>A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>). The purpose of the policy is to state what types of data are allowed for certain usages. 
+<p>A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>). The purpose of the policy is to state what types of data are allowed for certain usages.
   <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>organization
@@ -1203,7 +1203,7 @@
 </td></tr></table></p>
 <h2 id="object-structure">Object Structure</h2>
 <p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
-<p>A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (<code>[A-Za-z0-9_]</code>). </p>
+<p>A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (<code>[A-Za-z0-9_]</code>).</p>
 <p><strong>name</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A UI-friendly label for the Policy.</p>
 <p><strong>description</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
@@ -1215,21 +1215,15 @@
 <p><strong>data_subject</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 <p>The <a href="/fides/language/taxonomy/data_subjects/">Data Subjects</a> privacy attribute describes the individual persons whose data your rule pertains to.</p>
 <p><strong>data_qualifier</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-<p>The <a href="/fides/language/taxonomy/data_qualifiers/">Data Qualifier</a> privacy attribute describes the acceptable or non-acceptable level of deidentification for this data. </p>
-<p><strong>inclusion</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p>The <a href="/fides/language/taxonomy/data_qualifiers/">Data Qualifier</a> privacy attribute describes the acceptable or non-acceptable level of deidentification for this data.</p>
+<p><strong>matches</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 <ul>
 <li><code>ANY</code></li>
 <li><code>ALL</code></li>
 <li><code>NONE</code></li>
+<li><code>OTHER</code></li>
 </ul>
-<p>The inclusion criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (<code>ALL</code>), not included at all (<code>NONE</code>), or only included if at least 1 item in the array matches (<code>ANY</code>).</p>
-<p><strong>action</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-<ul>
-<li><code>ACCEPT</code></li>
-<li><code>REJECT</code></li>
-<li><code>REQUIRE</code></li>
-</ul>
-<p>The action describes how the policy should be enforced. These basic actions determine how the rule will be enforced. At the moment, <code>REJECT</code> is the only supported action, but ACCEPT and REQUIRE will be supported in version 1.0+.</p>
+<p>The matches criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (<code>ALL</code>), not included at all (<code>NONE</code>), only included if at least 1 item in the array matches (<code>ANY</code>), or excluded with any additional attributes included (<code>OTHER</code>).</p>
 <p><strong>organization_fides_key</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <code>default_organization</code></p>
 <p>The fides key of the <a href="/fides/language/resources/organization/">Organization</a> to which this Policy belongs.</p>
 <h2 id="examples">Examples</h2>
@@ -1254,8 +1248,7 @@
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
   <span class="p p-Indicator">-</span> <span class="nt">fides_key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">demo_privacy_policy</span>
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Demo Privacy Policy</span>
     <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The main privacy policy for the organization.</span>
@@ -1264,19 +1257,18 @@
         <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Reject Direct Marketing</span>
         <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Disallow collecting any user contact info to use for marketing.</span>
         <span class="nt">data_categories</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+          <span class="nt">matches</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
           <span class="nt">values</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span>
         <span class="nt">data_uses</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+          <span class="nt">matches</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
           <span class="nt">values</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">advertising</span>
         <span class="nt">data_subjects</span><span class="p">:</span>
-          <span class="nt">inclusion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
+          <span class="nt">matches</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ANY</span>
           <span class="nt">values</span><span class="p">:</span>
             <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">customer</span>
         <span class="nt">data_qualifier</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
-        <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">REJECT</span>
 </code></pre></div>
 </td></tr></table>
 <p><strong>Demo manifest file:</strong> <code>/fides/fidesctl/demo_resources/demo_policy.yml</code></p>
@@ -1314,8 +1306,7 @@
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span> <span class="err">/policy</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span> <span class="err">/policy</span>
 <span class="p">{</span>
   <span class="nt">&quot;fides_key&quot;</span><span class="p">:</span> <span class="s2">&quot;demo_privacy_policy&quot;</span><span class="p">,</span>
   <span class="nt">&quot;organization_fides_key&quot;</span><span class="p">:</span> <span class="s2">&quot;default_organization&quot;</span><span class="p">,</span>
@@ -1328,25 +1319,24 @@
       <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Reject Direct Marketing&quot;</span><span class="p">,</span>
       <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Disallow collecting any user contact info to use for marketing.&quot;</span><span class="p">,</span>
       <span class="nt">&quot;data_categories&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;inclusion&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;matches&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
         <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span>
           <span class="s2">&quot;user.provided.identifiable.contact&quot;</span>
         <span class="p">]</span>
       <span class="p">},</span>
       <span class="nt">&quot;data_uses&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;inclusion&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;matches&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
         <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span>
           <span class="s2">&quot;advertising&quot;</span>
         <span class="p">]</span>
       <span class="p">},</span>
       <span class="nt">&quot;data_subjects&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;inclusion&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;matches&quot;</span><span class="p">:</span> <span class="s2">&quot;ANY&quot;</span><span class="p">,</span>
         <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span>
           <span class="s2">&quot;customer&quot;</span>
         <span class="p">]</span>
       <span class="p">},</span>
-      <span class="nt">&quot;data_qualifier&quot;</span><span class="p">:</span> <span class="s2">&quot;aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;REJECT&quot;</span>
+      <span class="nt">&quot;data_qualifier&quot;</span><span class="p">:</span> <span class="s2">&quot;aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified&quot;</span>
     <span class="p">}</span>
   <span class="p">]</span>
 <span class="p">}</span>

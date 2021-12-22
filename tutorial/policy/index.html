@@ -1249,9 +1249,7 @@
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>policy:
+<span class="normal">57</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>policy:
   - fides_key: flaskr_policy
     name: Flaskr Privacy Policy
     description: A privacy policy for the example Flask app
@@ -1260,12 +1258,12 @@
         name: Minimize User Identifiable Data
         description: Reject collecting any user identifiable data for uses other than system operations
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable
             - user.derived.identifiable
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - improve
             - personalize
@@ -1274,17 +1272,16 @@
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        action: REJECT
 
       - fides_key: reject_sensitive_data
         name: Reject Sensitive Data
         description: Reject collecting sensitive user data for any use
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.biometric
             - user.provided.identifiable.childrens
@@ -1295,7 +1292,7 @@
             - user.provided.identifiable.religious_belief
             - user.provided.identifiable.sexual_orientation
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - provide
             - improve
@@ -1305,11 +1302,10 @@
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated
-        action: REJECT
 </code></pre></div>
 </td></tr></table>
 <p>This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:</p>
@@ -1353,11 +1349,6 @@
 <td>data_qualifier</td>
 <td>String</td>
 <td>The acceptable or non-acceptable level of deidentification</td>
-</tr>
-<tr>
-<td>action</td>
-<td>Choice</td>
-<td>A string, either <code>ACCEPT</code> or <code>REJECT</code></td>
 </tr>
 </tbody>
 </table>
