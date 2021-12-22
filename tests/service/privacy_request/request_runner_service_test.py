@@ -664,26 +664,32 @@ class TestPrivacyRequestRunnerRunWebhooks:
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook
+        )
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_ap_scheduler_cleanup(
-            self,
-            mock_trigger_policy_webhook,
-            db,
-            privacy_request,
-            privacy_request_runner,
-            policy_pre_execution_webhooks,
+        self,
+        mock_trigger_policy_webhook,
+        db,
+        privacy_request,
+        privacy_request_runner,
+        policy_pre_execution_webhooks,
     ):
-        config.redis.DEFAULT_TTL_SECONDS = 1  # Set redis cache to expire very quickly for testing purposes
+        config.redis.DEFAULT_TTL_SECONDS = (
+            1  # Set redis cache to expire very quickly for testing purposes
+        )
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
             "Request received to halt"
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook
+        )
         assert not proceed
         time.sleep(3)
 
@@ -705,7 +711,9 @@ class TestPrivacyRequestRunnerRunWebhooks:
             status_code=500
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook
+        )
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
 
@@ -722,7 +730,9 @@ class TestPrivacyRequestRunnerRunWebhooks:
             errors={}, model=SecondPartyResponseFormat
         )
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook
+        )
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
@@ -737,7 +747,9 @@ class TestPrivacyRequestRunnerRunWebhooks:
         policy_pre_execution_webhooks,
     ):
 
-        proceed = privacy_request_runner.run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
+        proceed = privacy_request_runner.run_webhooks_and_report_status(
+            db, privacy_request, PolicyPreWebhook
+        )
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None

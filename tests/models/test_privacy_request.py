@@ -136,7 +136,6 @@ def test_delete_privacy_request_removes_cached_data(
 
 
 class TestPrivacyRequestTriggerWebhooks:
-
     def test_trigger_one_way_policy_webhook(
         self,
         https_connection_config,
@@ -281,12 +280,12 @@ class TestPrivacyRequestTriggerWebhooks:
             }
 
     def test_two_way_validation_issues(
-            self,
-            db,
-            https_connection_config,
-            privacy_request,
-            policy,
-            policy_pre_execution_webhooks,
+        self,
+        db,
+        https_connection_config,
+        privacy_request,
+        policy,
+        policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
         identity = PrivacyRequestIdentity(email="customer-1@example.com")

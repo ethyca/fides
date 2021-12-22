@@ -53,7 +53,4 @@ class TestHttpConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert (
-                exc.value.args[0]
-                == "Client call failed with status code '500'"
-            )
+            assert exc.value.args[0] == "Client call failed with status code '500'"
