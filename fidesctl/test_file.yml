@@ -1,8 +1,8 @@
 dataset:
-- fides_key: dbo
+- fides_key: mysql_example
   organization_fides_key: default_organization
-  name: dbo
-  description: 'Fides Generated Description for Schema: dbo'
+  name: mysql_example
+  description: 'Fides Generated Description for Schema: mysql_example'
   meta: null
   data_categories: null
   data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

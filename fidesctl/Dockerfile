@@ -48,7 +48,7 @@ RUN pip install -r requirements.txt
 # Copy in the application files and install fidesctl locally
 COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
-RUN pip install -e ".[all]"
+RUN pip install -e ".[all,mssql]"
 
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
