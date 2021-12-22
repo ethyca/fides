@@ -405,6 +405,19 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
 
 
+class RedshiftQueryConfig(SQLQueryConfig):
+    """Generates SQL in Redshift's custom dialect."""
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with double quotation mark formatting for tables that have the same names as
+        Redshift reserved words."""
+        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
 """A mongo query is expressed in the form of 2 dicts, the first of which represents
   the query object(s) and the second of which represents fields to return.

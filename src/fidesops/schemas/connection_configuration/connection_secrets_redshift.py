@@ -14,6 +14,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
     database: Optional[str] = None
     user: Optional[str] = None
     password: Optional[str] = None
+    db_schema: Optional[str] = None
 
     _required_components: List[str] = ["host", "user", "password"]
 

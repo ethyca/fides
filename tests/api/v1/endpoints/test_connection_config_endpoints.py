@@ -597,6 +597,7 @@ class TestPutConnectionConfigSecrets:
             "database": "dev",
             "user": "awsuser",
             "password": "test_password",
+            "db_schema": "test"
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -615,6 +616,7 @@ class TestPutConnectionConfigSecrets:
             "database": "dev",
             "user": "awsuser",
             "password": "test_password",
+            "db_schema": "test",
             "url": None,
         }
         assert redshift_connection_config.last_test_timestamp is None
