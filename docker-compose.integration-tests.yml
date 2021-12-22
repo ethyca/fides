@@ -33,7 +33,7 @@ services:
       - "3306:3306"
 
   sqlserver-test:
-    image: mcr.microsoft.com/azure-sql-edge:latest
+    image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=SQLserver1

@@ -25,7 +25,7 @@ extras = {
     "webserver": [fastapi, uvicorn, postgres_connector],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
-extras["all"] = sum(extras.values(), [])
+extras["all"] = sum([value for value in extras.values() if value not in dangerous_extras], [])
 
 setup(
     name="fidesctl",

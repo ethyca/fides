@@ -79,5 +79,8 @@ addopts = ["--cov=fidesctl.core",
             "--disable-pytest-warnings"]
 markers = [
     "unit: only runs tests that don't require external dependencies (i.e. a database)",
-    "integration: only runs tests that require external dependencies (i.e. a database)"
+    "integration: only runs tests that require external dependencies (i.e. a database)",
+    "postgres: only runs the integration tests for postgres",
+    "mssql: only runs the integration tests for sqlserver/mssql",
+    "mysql: only runs the integration tests for mysql"
 ]
