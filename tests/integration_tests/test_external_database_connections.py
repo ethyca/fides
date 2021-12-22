@@ -22,17 +22,24 @@ integration_config = load_toml("fidesops-integration.toml")
 @pytest.fixture(scope="session")
 def redshift_test_engine() -> Generator:
     """Return a connection to an Amazon Redshift Cluster"""
-    # Pulling from integration config file or GitHub secrets
-    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
-        "REDSHIFT_TEST_URI"
-    )
-    schema = RedshiftSchema(url=uri)
+
     connection_config = ConnectionConfig(
         name="My Redshift Config",
         key="test_redshift_key",
         connection_type=ConnectionType.redshift,
-        secrets=schema.dict(),
     )
+
+    # Pulling from integration config file or GitHub secrets
+    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
+        "REDSHIFT_TEST_URI"
+    )
+    db_schema = integration_config.get("redshift", {}).get("db_schema") or os.environ.get(
+        "REDSHIFT_TEST_DB_SCHEMA"
+    )
+    if uri and db_schema:
+        schema = RedshiftSchema(url=uri, db_schema=db_schema)
+        connection_config.secrets = schema.dict()
+
     connector: RedshiftConnector = get_connector(connection_config)
     engine = connector.client()
     yield engine

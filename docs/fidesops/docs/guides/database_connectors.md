@@ -131,6 +131,22 @@ PUT api/v1/connection/my_mongo_db/secret?verify=false`
 }
 ```
 
+#### Example 3: Amazon Redshift: Set URL and Schema
+
+This Amazon Redshift example sets the database secrets as a `url` property and a `db_schema` property.  Redshift
+databases have one or more schemas, with the default being named `public`.  If you need to set a different schema,
+specify `db_schema` for Redshift and it will be set as the `search_path` when querying.
+
+
+```
+PUT api/v1/connection/my_redshift_db/secret`
+ 
+{
+    "url": "redshift+psycopg2://username@host.amazonaws.com:5439/database",
+    "db_schema": "my_test_schema"
+}
+```
+
 ### Testing your connection 
 
 You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:

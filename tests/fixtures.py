@@ -37,7 +37,7 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
 from fidesops.schemas.connection_configuration import (
-    SnowflakeSchema,
+    SnowflakeSchema, RedshiftSchema,
 )
 from fidesops.schemas.storage.storage import (
     FileNaming,
@@ -240,6 +240,17 @@ def redshift_connection_config(db: Session) -> Generator:
             "access": AccessLevel.write,
         },
     )
+    uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
+        "REDSHIFT_TEST_URI"
+    )
+    db_schema = integration_config.get("redshift", {}).get("db_schema") or os.environ.get(
+        "REDSHIFT_TEST_DB_SCHEMA"
+    )
+    if uri and db_schema:
+        schema = RedshiftSchema(url=uri, db_schema=db_schema)
+        connection_config.secrets = schema.dict()
+        connection_config.save(db=db)
+
     yield connection_config
     connection_config.delete(db)
 
@@ -941,6 +952,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/postgres_example_test_dataset.yml",
         "data/dataset/mongo_example_test_dataset.yml",
         "data/dataset/snowflake_example_test_dataset.yml",
+        "data/dataset/redshift_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -966,6 +978,25 @@ def snowflake_example_test_dataset_config(
     yield dataset_config
     dataset_config.delete(db=db)
 
+
+@pytest.fixture
+def redshift_example_test_dataset_config(
+    redshift_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[3]
+    fides_key = dataset["fides_key"]
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": redshift_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
 
 @pytest.fixture
 def postgres_example_test_dataset_config(

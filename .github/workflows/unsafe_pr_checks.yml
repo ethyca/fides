@@ -17,5 +17,6 @@ jobs:
       - name: Integration Tests (External)
         env:
           REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: make pytest-integration-external

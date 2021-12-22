@@ -34,7 +34,6 @@ def _reject_key(dict: Dict, key: str) -> Dict:
 def test_example_datasets(example_datasets):
     """Ensure the test fixture loads the right sample data"""
     assert example_datasets
-    assert len(example_datasets) == 3
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
@@ -425,7 +424,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 3
+        assert len(response_body["succeeded"]) == 4
         assert len(response_body["failed"]) == 0
 
         # Confirm that the created dataset matches the values we provided
@@ -488,7 +487,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 3
+        assert len(response_body["succeeded"]) == 4
         assert len(response_body["failed"]) == 0
 
         postgres_dataset = response_body["succeeded"][0]
@@ -545,7 +544,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 3
+        assert len(response_body["failed"]) == 4
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
