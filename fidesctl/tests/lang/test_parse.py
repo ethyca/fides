@@ -1,8 +1,7 @@
-from fideslang import validation
 import pytest
 
 import fideslang as models
-from fideslang import parse, validation
+from fideslang import parse
 
 
 @pytest.mark.unit

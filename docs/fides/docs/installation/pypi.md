@@ -18,9 +18,12 @@ Fidesctl ships with a number of optional dependencies that extend its functional
 
 The optional dependencies are as follows:
 
-* `all`: includes all of the optional dependencies.
 * `webserver`: includes FastAPI and the Postgres database connector. Enables `fidesctl webserver`.
 * `postgres`: includes the Postgres database connector.
 * `mysql`: includes the MySQL database connector.
+* `mssql`: includes the MSSQL database connector.
+* `all`: includes all of the optional dependencies except for `mssql` due to platform-specific issues.
 
-**NOTE:** When installing database adapters there may be other dependencies, such as the [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file that usually requires a Postgres installation.
+**NOTE:** When installing database adapters there may be other dependencies, such as the [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file that usually requires a Postgres installation or the [Microsoft ODBC Driver for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server)
+
+**Apple M1 users of MSSQL:** Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: https://github.com/mkleehammer/pyodbc/issues/846

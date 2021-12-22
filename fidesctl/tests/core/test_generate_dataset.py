@@ -1,10 +1,71 @@
 import sqlalchemy
 import pytest
-from unittest import mock
 
 
 from fidesctl.core import generate_dataset
 from fideslang.models import Dataset, DatasetCollection, DatasetField
+
+
+# These URLs are for the databases in the docker-compose.integration-tests.yml file
+POSTGRES_URL = (
+    "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
+)
+
+MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
+
+MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+
+
+@pytest.fixture()
+def test_dataset():
+    collections = [
+        DatasetCollection(
+            name="visit",
+            description="Fides Generated Description for Table: visit",
+            fields=[
+                DatasetField(
+                    name="email",
+                    description="Fides Generated Description for Column: email",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="last_visit",
+                    description="Fides Generated Description for Column: last_visit",
+                    data_categories=[],
+                ),
+            ],
+        ),
+        DatasetCollection(
+            name="login",
+            description="Fides Generated Description for Table: login",
+            fields=[
+                DatasetField(
+                    name="id",
+                    description="Fides Generated Description for Column: id",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="customer_id",
+                    description="Fides Generated Description for Column: customer_id",
+                    data_categories=[],
+                ),
+                DatasetField(
+                    name="time",
+                    description="Fides Generated Description for Column: time",
+                    data_categories=[],
+                ),
+            ],
+        ),
+    ]
+    dataset = Dataset(
+        fides_key="fidesdb",
+        name="fidesdb",
+        description="Fides Generated Description for Dataset: fidesdb",
+        collections=collections,
+    )
+    yield dataset
 
 
 # Unit
@@ -56,51 +117,118 @@ def test_generate_dataset_collections():
     assert actual_result == expected_result
 
 
-# Integration
-@pytest.mark.integration
-def test_generate_dataset_info():
+@pytest.mark.unit
+def test_generate_dataset_info(test_dataset):
     test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     test_engine = sqlalchemy.create_engine(test_url)
-    expected_collection = [
-        DatasetCollection(
-            name="bar",
-            description="Fides Generated Description for Table: bar",
-            fields=[
-                DatasetField(
-                    name=4,
-                    description="Fides Generated Description for Column: 4",
-                    data_categories=[],
-                ),
-            ],
-        )
-    ]
-    expected_result = Dataset(
-        fides_key="fidesdb",
-        name="fidesdb",
-        description="Fides Generated Description for Dataset: fidesdb",
-        collections=expected_collection,
+    actual_result = generate_dataset.create_dataset(
+        test_engine, test_dataset.collections
     )
-    actual_result = generate_dataset.create_dataset(test_engine, expected_collection)
-    assert actual_result == expected_result
+    assert actual_result == test_dataset
 
 
-@pytest.mark.integration
-def test_get_db_tables():
-    # Test Setup
-    inspector = mock.Mock()
-    inspector.get_table_names = lambda schema: test_tables
-    inspector.get_columns = lambda x, schema: {
-        "foo": [{"name": "1"}, {"name": "2"}],
-        "bar": [{"name": "3"}, {"name": "4"}],
-    }.get(x)
-    inspector.get_schema_names = lambda: ["test_db", "information_schema"]
+@pytest.mark.unit
+def test_unsupported_dialect_error():
+    test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
+    with pytest.raises(SystemExit):
+        generate_dataset.generate_dataset(test_url, "test_file.yml")
 
-    engine = mock.Mock()
-    sqlalchemy.inspect = mock.Mock(return_value=inspector)
-    test_tables = ["foo", "bar"]
 
-    expected_result = {
-        "test_db": {"test_db.foo": ["1", "2"], "test_db.bar": ["3", "4"]}
-    }
-    actual_result = generate_dataset.get_db_collections_and_fields(engine)
-    assert actual_result == expected_result
+@pytest.mark.postgres
+class TestPostgres:
+    @pytest.fixture(scope="class", autouse=True)
+    def postgres_setup(self):
+        "Set up the Postgres Database for testing."
+        engine = sqlalchemy.create_engine(POSTGRES_URL)
+        with open("tests/data/example_sql/postgres_example.sql", "r") as query_file:
+            query = sqlalchemy.sql.text(query_file.read())
+        engine.execute(query)
+        yield
+
+    @pytest.mark.integration
+    def test_get_db_tables_postgres(self):
+        engine = sqlalchemy.create_engine(POSTGRES_URL)
+        expected_result = {
+            "public": {
+                "public.visit": ["email", "last_visit"],
+                "public.login": ["id", "customer_id", "time"],
+            }
+        }
+        actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
+        assert actual_result == expected_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_postgres(self):
+        actual_result = generate_dataset.generate_dataset(POSTGRES_URL, "test_file.yml")
+        assert actual_result
+
+
+@pytest.mark.mysql
+class TestMySQL:
+    @pytest.fixture(scope="class", autouse=True)
+    def mysql_setup(self):
+        """
+        Set up the MySQL Database for testing.
+
+        The query file must have each query on a separate line.
+        """
+        engine = sqlalchemy.create_engine(MYSQL_URL)
+        with open("tests/data/example_sql/mysql_example.sql", "r") as query_file:
+            queries = [query for query in query_file.read().splitlines() if query != ""]
+        print(queries)
+        for query in queries:
+            engine.execute(sqlalchemy.sql.text(query))
+        yield
+
+    @pytest.mark.integration
+    def test_get_db_tables_mysql(self):
+        engine = sqlalchemy.create_engine(MYSQL_URL)
+        expected_result = {
+            "mysql_example": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        }
+        actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
+        assert actual_result == expected_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_mysql(self):
+        actual_result = generate_dataset.generate_dataset(MYSQL_URL, "test_file.yml")
+        assert actual_result
+
+
+@pytest.mark.mssql
+class TestSQLServer:
+    @pytest.fixture(scope="class", autouse=True)
+    def mssql_setup(self):
+        """
+        Set up the SQL Server Database for testing.
+
+        The query file must have each query on a separate line.
+        Initial connection must be done to the master database.
+        """
+        engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
+        with open("tests/data/example_sql/sqlserver_example.sql", "r") as query_file:
+            queries = [query for query in query_file.read().splitlines() if query != ""]
+        print(queries)
+        for query in queries:
+            engine.execute(sqlalchemy.sql.text(query))
+        yield
+
+    @pytest.mark.integration
+    def test_get_db_tables_mssql(self):
+        engine = sqlalchemy.create_engine(MSSQL_URL)
+        expected_result = {
+            "dbo": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        }
+        actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
+        assert actual_result == expected_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_mssql(self):
+        actual_result = generate_dataset.generate_dataset(MSSQL_URL, "test_file.yml")
+        assert actual_result

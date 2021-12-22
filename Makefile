@@ -60,6 +60,12 @@ cli: build-local
 	@$(RUN) /bin/bash
 	@make teardown
 
+.PHONY: cli-integration
+cli-integration: build-local
+	@echo "Setting up a local development shell... (press CTRL-D to exit)"
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@$(RUN) /bin/bash
+	@make teardown
 ####################
 # Docker
 ####################
@@ -83,7 +89,7 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl black pylint mypy xenon pytest
+check-all: build-local check-install fidesctl black pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
@@ -100,9 +106,14 @@ mypy:
 pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
-pytest:
+pytest-unit:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) pytest -x
+	@$(RUN_NO_DEPS) pytest -x -m unit
+
+pytest-integration:
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@$(RUN) pytest -x -m integration
+	@make teardown
 
 xenon:
 	@$(RUN_NO_DEPS) xenon src \
@@ -125,7 +136,7 @@ clean:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker compose down
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down
 	@echo "Teardown complete"
 
 .PHONY: docs-build

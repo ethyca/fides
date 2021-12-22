@@ -1,3 +1,2 @@
 [console_scripts]
 fidesctl = fidesctl.cli:cli
-

@@ -138,7 +138,7 @@ jobs:
       - name: Run cyclomatic complexity check
         run: make xenon
 
-  Test:
+  Pytest:
     needs: Build
     runs-on: ubuntu-latest
     steps:
@@ -154,5 +154,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run test suite
-        run: make pytest
+      - name: Run unit test suite
+        run: make pytest-unit
+
+      - name: Run integration test suite
+        run: make pytest-integration
