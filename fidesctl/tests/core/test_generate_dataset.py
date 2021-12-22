@@ -15,11 +15,13 @@ def test_generate_dataset_collections():
         Dataset(
             name="ds",
             fides_key="ds",
+            data_categories=[],
             description="Fides Generated Description for Schema: ds",
             collections=[
                 DatasetCollection(
                     name="foo",
                     description="Fides Generated Description for Table: foo",
+                    data_categories=[],
                     fields=[
                         DatasetField(
                             name=1,
@@ -36,6 +38,7 @@ def test_generate_dataset_collections():
                 DatasetCollection(
                     name="bar",
                     description="Fides Generated Description for Table: bar",
+                    data_categories=[],
                     fields=[
                         DatasetField(
                             name=4,
@@ -56,34 +59,127 @@ def test_generate_dataset_collections():
     assert actual_result == expected_result
 
 
-# Integration
-@pytest.mark.integration
-def test_generate_dataset_info():
-    test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
-    test_engine = sqlalchemy.create_engine(test_url)
-    expected_collection = [
-        DatasetCollection(
-            name="bar",
-            description="Fides Generated Description for Table: bar",
-            fields=[
-                DatasetField(
-                    name=4,
-                    description="Fides Generated Description for Column: 4",
-                    data_categories=[],
-                ),
-            ],
-        )
-    ]
-    expected_result = Dataset(
-        fides_key="fidesdb",
-        name="fidesdb",
-        description="Fides Generated Description for Dataset: fidesdb",
-        collections=expected_collection,
+@pytest.mark.unit
+def test_find_missing_dataset_fields_none_missing():
+    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="foo",
+                fields=[
+                    DatasetField(
+                        name=1,
+                    ),
+                    DatasetField(
+                        name=2,
+                    ),
+                ],
+            ),
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                    ),
+                    DatasetField(
+                        name=5,
+                    ),
+                ],
+            ),
+        ],
     )
-    actual_result = generate_dataset.create_dataset(test_engine, expected_collection)
-    assert actual_result == expected_result
+    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+        dataset=dataset, db_collections=test_resource
+    )
+    assert not missing_keys
+    assert coverage_rate == 1
 
 
+@pytest.mark.unit
+def test_find_missing_dataset_fields_missing_fields():
+    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="foo",
+                fields=[
+                    DatasetField(
+                        name=1,
+                    ),
+                ],
+            ),
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                    ),
+                ],
+            ),
+        ],
+    )
+    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+        dataset=dataset, db_collections=test_resource
+    )
+    assert set(missing_keys) == {"ds.foo.2", "ds.bar.5"}
+    assert coverage_rate == 0.5
+
+
+@pytest.mark.unit
+def test_find_missing_dataset_fields_missing_collection():
+    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                    ),
+                    DatasetField(
+                        name=5,
+                    ),
+                ],
+            ),
+        ],
+    )
+    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+        dataset=dataset, db_collections=test_resource
+    )
+    assert set(missing_keys) == {"ds.foo.1", "ds.foo.2"}
+    assert coverage_rate == 0.5
+
+
+@pytest.mark.unit
+def test_find_missing_dataset_fields_db_collections_missing_dataset():
+    test_resource = {"otherds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                    ),
+                ],
+            ),
+        ],
+    )
+    with pytest.raises(SystemExit):
+        generate_dataset.find_missing_dataset_fields(
+            dataset=dataset, db_collections=test_resource
+        )
+
+
+# Integration
 @pytest.mark.integration
 def test_get_db_tables():
     # Test Setup
