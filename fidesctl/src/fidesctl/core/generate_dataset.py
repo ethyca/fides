@@ -75,11 +75,11 @@ def create_dataset_collections(
     return table_manifests
 
 
-def find_missing_dataset_fields(
+def find_uncategorized_dataset_fields(
     dataset: Dataset, db_collections: Dict[str, Dict[str, List[str]]]
 ) -> Tuple[List[str], float]:
     """
-    Given an object that represents a database definition, finds missing
+    Given an object that represents a database definition, finds uncategorized
     keys and coverage ratio.
     """
     missing_keys = []
@@ -105,7 +105,7 @@ def find_missing_dataset_fields(
             total_field_count += 1
             field_found = (
                 any(
-                    field.name == db_dataset_field
+                    field.name == db_dataset_field and field.data_categories
                     for field in dataset_collection.fields
                 )
                 if dataset_collection
@@ -137,7 +137,7 @@ def database_coverage(
     and fields and compares them to an existing dataset with a
     provided key
 
-    Prints missing fields and raises exception if coverage
+    Prints uncategorized fields and raises exception if coverage
     is lower than provided threshold.
     """
     db_engine = get_db_engine(connection_string)
@@ -150,13 +150,13 @@ def database_coverage(
         echo_red(f"Dataset ({dataset_key}) does not exist in existing taxonomy")
         raise SystemExit(1)
 
-    missing_keys, coverage_rate = find_missing_dataset_fields(
+    uncategorized_keys, coverage_rate = find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=db_collections
     )
     output = f"`{dataset_key}` annotation coverage: {int(coverage_rate * 100)}% \n"
-    if missing_keys:
+    if uncategorized_keys:
         output += "The following fields do not have any data category annotations: \n"
-        output += "\n".join(missing_keys)
+        output += "\n".join(uncategorized_keys)
 
     if coverage_rate < coverage_threshold:
         echo_red(output)

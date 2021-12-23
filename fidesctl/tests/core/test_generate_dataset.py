@@ -60,7 +60,7 @@ def test_generate_dataset_collections():
 
 
 @pytest.mark.unit
-def test_find_missing_dataset_fields_none_missing():
+def test_find_uncategorized_dataset_fields_all_categorized():
     test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
     dataset = Dataset(
         name="ds",
@@ -71,9 +71,11 @@ def test_find_missing_dataset_fields_none_missing():
                 fields=[
                     DatasetField(
                         name=1,
+                        data_categories=["category_1"],
                     ),
                     DatasetField(
                         name=2,
+                        data_categories=["category_1"],
                     ),
                 ],
             ),
@@ -82,15 +84,14 @@ def test_find_missing_dataset_fields_none_missing():
                 fields=[
                     DatasetField(
                         name=4,
+                        data_categories=["category_1"],
                     ),
-                    DatasetField(
-                        name=5,
-                    ),
+                    DatasetField(name=5, data_categories=["category_1"]),
                 ],
             ),
         ],
     )
-    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+    missing_keys, coverage_rate = generate_dataset.find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=test_resource
     )
     assert not missing_keys
@@ -98,34 +99,55 @@ def test_find_missing_dataset_fields_none_missing():
 
 
 @pytest.mark.unit
-def test_find_missing_dataset_fields_missing_fields():
-    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+def test_find_uncategorized_dataset_fields_uncategorized_fields():
+    test_resource = {"ds": {"foo": ["1", "2"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        data_categories=["category_1"],
+        collections=[
+            DatasetCollection(
+                name="foo",
+                data_categories=["category_1"],
+                fields=[
+                    DatasetField(
+                        name=1,
+                        data_categories=["category_1"],
+                    ),
+                    DatasetField(name=2),
+                ],
+            )
+        ],
+    )
+    missing_keys, coverage_rate = generate_dataset.find_uncategorized_dataset_fields(
+        dataset=dataset, db_collections=test_resource
+    )
+    assert set(missing_keys) == {"ds.foo.2"}
+    assert coverage_rate == 0.5
+
+
+@pytest.mark.unit
+def test_find_missing_dataset_fields_missing_field():
+    test_resource = {"ds": {"bar": ["4", "5"]}}
     dataset = Dataset(
         name="ds",
         fides_key="ds",
         collections=[
             DatasetCollection(
-                name="foo",
-                fields=[
-                    DatasetField(
-                        name=1,
-                    ),
-                ],
-            ),
-            DatasetCollection(
                 name="bar",
                 fields=[
                     DatasetField(
                         name=4,
-                    ),
+                        data_categories=["category_1"],
+                    )
                 ],
             ),
         ],
     )
-    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+    missing_keys, coverage_rate = generate_dataset.find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=test_resource
     )
-    assert set(missing_keys) == {"ds.foo.2", "ds.bar.5"}
+    assert set(missing_keys) == {"ds.bar.5"}
     assert coverage_rate == 0.5
 
 
@@ -141,15 +163,17 @@ def test_find_missing_dataset_fields_missing_collection():
                 fields=[
                     DatasetField(
                         name=4,
+                        data_categories=["category_1"],
                     ),
                     DatasetField(
                         name=5,
+                        data_categories=["category_1"],
                     ),
                 ],
             ),
         ],
     )
-    missing_keys, coverage_rate = generate_dataset.find_missing_dataset_fields(
+    missing_keys, coverage_rate = generate_dataset.find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=test_resource
     )
     assert set(missing_keys) == {"ds.foo.1", "ds.foo.2"}
@@ -174,7 +198,7 @@ def test_find_missing_dataset_fields_db_collections_missing_dataset():
         ],
     )
     with pytest.raises(SystemExit):
-        generate_dataset.find_missing_dataset_fields(
+        generate_dataset.find_uncategorized_dataset_fields(
             dataset=dataset, db_collections=test_resource
         )
 
