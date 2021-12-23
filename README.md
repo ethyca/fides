@@ -16,7 +16,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ## :rocket: Quick Start
 
-1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands: 
+1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands:
 
     <details>
 
@@ -113,7 +113,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
       ```
 
     </details>
-    
+
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
 
 3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system that uses contact information for marketing purposes.
@@ -130,19 +130,18 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
               name: Reject Direct Marketing
               description: Disallow collecting any user contact info to use for marketing.
               data_categories:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - user.provided.identifiable.contact
               data_uses:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - advertising
               data_subjects:
-                inclusion: ANY
+                matches: ANY
                 values:
                   - customer
               data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-              action: REJECT
       ```
 
       </details>
@@ -170,8 +169,8 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     <details>
 
       <summary>Run <code>fidesctl evaluate</code> again</summary>
-      
-        Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes. 
+
+        Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes.
 
      ```bash
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
@@ -198,7 +197,7 @@ We are committed to fostering a safe and collaborative environment, such that al
 
 ### Documentation
 
-For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects: 
+For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
 - Documentation: https://ethyca.github.io/fides/
 - Tutorial: https://ethyca.github.io/fides/tutorial/

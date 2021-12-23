@@ -124,11 +124,10 @@ def resources_dict():
         ),
         "policy_rule": models.PolicyRule(
             name="Test Policy",
-            data_categories=models.PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=models.PrivacyRule(inclusion="NONE", values=["provide.system"]),
-            data_subjects=models.PrivacyRule(inclusion="ANY", values=[]),
+            data_categories=models.PrivacyRule(matches="NONE", values=[]),
+            data_uses=models.PrivacyRule(matches="NONE", values=["provide.system"]),
+            data_subjects=models.PrivacyRule(matches="ANY", values=[]),
             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-            action="REJECT",
         ),
         "registry": models.Registry(
             organization_fides_key=1,

@@ -6,16 +6,15 @@ policy:
       - name: reject_non_system_data
         description: Disallow any non-system data or uses.
         data_categories:
-          inclusion: NONE
+          matches: OTHER
           values:
             - system.operations
         data_uses:
-          inclusion: NONE
+          matches: OTHER
           values:
             - provide
         data_subjects:
-          inclusion: NONE
+          matches: OTHER
           values:
             - anonymous_user
         data_qualifier: aggregated
-        action: REJECT

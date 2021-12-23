@@ -1,25 +1,22 @@
-from unittest.mock import patch, MagicMock
+from typing import List
+from unittest.mock import MagicMock, patch
+
 import pytest
 
-from typing import List
-
-from fidesctl.core import evaluate, api as _api
-
+from fidesctl.core import evaluate
 from fideslang.models import (
     DataCategory,
     DataQualifier,
-    DataSubject,
-    DataUse,
     Dataset,
     DatasetCollection,
+    DataSubject,
+    DataUse,
+    MatchesEnum,
     Policy,
-    PrivacyRule,
-    PrivacyDeclaration,
-    Taxonomy,
     PolicyRule,
-    InclusionEnum,
-    ActionEnum,
+    PrivacyDeclaration,
     System,
+    Taxonomy,
 )
 
 
@@ -62,27 +59,6 @@ def evaluation_hierarchical_key_basic_taxonomy():
     )
 
 
-def create_policy_rule_with_action(
-    policy_rule_key: str, action: ActionEnum
-) -> PolicyRule:
-    return PolicyRule(
-        name=policy_rule_key,
-        action=action,
-        data_categories={
-            "values": ["data_category_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-        data_uses={
-            "values": ["data_use_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-        data_subjects={
-            "values": ["data_subject_1"],
-            "inclusion": InclusionEnum.ANY,
-        },
-    )
-
-
 def create_policy_rule_with_keys(
     data_categories: List[str],
     data_uses: List[str],
@@ -93,18 +69,17 @@ def create_policy_rule_with_keys(
         name="policy_rule_1",
         data_categories={
             "values": data_categories,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_uses={
             "values": data_uses,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_subjects={
             "values": data_subjects,
-            "inclusion": InclusionEnum.ANY,
+            "matches": MatchesEnum.ANY,
         },
         data_qualifier=data_qualifier,
-        action=ActionEnum.REJECT,
     )
 
 
@@ -294,7 +269,7 @@ def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert {"key_1"} == result
 
@@ -304,7 +279,7 @@ def test_compare_rule_to_declaration_any_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert {"key_1"} == result
 
@@ -314,7 +289,7 @@ def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert not result
 
@@ -324,7 +299,7 @@ def test_compare_rule_to_declaration_any_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
-        rule_inclusion="ANY",
+        rule_match="ANY",
     )
     assert not result
 
@@ -334,7 +309,7 @@ def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_3"], ["key_1"]],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert {"key_3", "key_1"} == result
 
@@ -347,7 +322,7 @@ def test_compare_rule_to_declaration_all_true_hierarchical():
             ["key_3", "key_3_parent"],
             ["key_1", "key_1_parent"],
         ],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert {"key_3", "key_1"} == result
 
@@ -357,7 +332,7 @@ def test_compare_rule_to_declaration_all_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
-        rule_inclusion="ALL",
+        rule_match="ALL",
     )
     assert not result
 
@@ -366,8 +341,8 @@ def test_compare_rule_to_declaration_all_false():
 def test_compare_rule_to_declaration_all_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_1_parent", "key_3"],
-        declaration_type_hierarchies=[["key_2"], ["key_1" "key_1_parent"]],
-        rule_inclusion="ALL",
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
+        rule_match="ALL",
     )
     assert not result
 
@@ -377,7 +352,7 @@ def test_compare_rule_to_declaration_none_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert {"key_2", "key_3"} == result
 
@@ -387,7 +362,7 @@ def test_compare_rule_to_declaration_none_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert {"key_2", "key_3"} == result
 
@@ -397,7 +372,7 @@ def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
     )
     assert not result
 
@@ -407,7 +382,47 @@ def test_compare_rule_to_declaration_none_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1", "key_1_parent"]],
-        rule_inclusion="NONE",
+        rule_match="NONE",
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_true():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1"],
+        declaration_type_hierarchies=[["key_2"], ["key_1"]],
+        rule_match="OTHER",
+    )
+    assert {"key_2"} == result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_true_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1_parent"],
+        declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
+        rule_match="OTHER",
+    )
+    assert {"key_2"} == result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_false():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1", "key_3"],
+        declaration_type_hierarchies=[["key_1"], ["key_3"]],
+        rule_match="OTHER",
+    )
+    assert not result
+
+
+@pytest.mark.unit
+def test_compare_rule_to_declaration_other_false_hierarchical():
+    result = evaluate.compare_rule_to_declaration(
+        rule_types=["key_1", "key_3_parent"],
+        declaration_type_hierarchies=[["key_1"], ["key_3", "key_3_parent"]],
+        rule_match="OTHER",
     )
     assert not result
 
@@ -438,45 +453,6 @@ def test_get_dataset_by_fides_key_does_not_exist():
         taxonomy=Taxonomy(dataset=[dataset1, dataset_2]), fides_key="dataset_3"
     )
     assert not result
-
-
-@pytest.mark.unit
-def test_validate_supported_policy_rules_throws_with_unsupported_action():
-    with pytest.raises(SystemExit):
-        evaluate.validate_supported_policy_rules(
-            policies=[
-                Policy(
-                    fides_key="policy_1",
-                    rules=[
-                        create_policy_rule_with_action(
-                            policy_rule_key="policy_rule_1", action=ActionEnum.ACCEPT
-                        ),
-                        create_policy_rule_with_action(
-                            policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
-                        ),
-                    ],
-                )
-            ],
-        )
-
-
-@pytest.mark.unit
-def test_validate_supported_policy_rules_passes():
-    evaluate.validate_supported_policy_rules(
-        policies=[
-            Policy(
-                fides_key="policy_1",
-                rules=[
-                    create_policy_rule_with_action(
-                        policy_rule_key="policy_rule_1", action=ActionEnum.REJECT
-                    ),
-                    create_policy_rule_with_action(
-                        policy_rule_key="policy_rule_2", action=ActionEnum.REJECT
-                    ),
-                ],
-            )
-        ],
-    )
 
 
 @pytest.mark.unit

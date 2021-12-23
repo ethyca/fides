@@ -1,6 +1,6 @@
 # Policy
 
-A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (`data_category`, `data_use`, `data_subject`, and `data_qualifier`). The purpose of the policy is to state what types of data are allowed for certain usages. 
+A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (`data_category`, `data_use`, `data_subject`, and `data_qualifier`). The purpose of the policy is to state what types of data are allowed for certain usages.
   ```
   organization
     |-> ** policy **
@@ -11,7 +11,7 @@ A Policy is your privacy policy as code, it lists a set of acceptable and non-ac
 
 **fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
-A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`).
 
 **name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
@@ -35,23 +35,16 @@ The [Data Subjects](/fides/language/taxonomy/data_subjects/) privacy attribute d
 
 **data_qualifier**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
-The [Data Qualifier](/fides/language/taxonomy/data_qualifiers/) privacy attribute describes the acceptable or non-acceptable level of deidentification for this data. 
+The [Data Qualifier](/fides/language/taxonomy/data_qualifiers/) privacy attribute describes the acceptable or non-acceptable level of deidentification for this data.
 
-**inclusion**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**matches**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 * `ANY`
 * `ALL`
 * `NONE`
+* `OTHER`
 
-The inclusion criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), or only included if at least 1 item in the array matches (`ANY`).
-
-**action**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-* `ACCEPT`
-* `REJECT`
-* `REQUIRE`
-
-The action describes how the policy should be enforced. These basic actions determine how the rule will be enforced. At the moment, `REJECT` is the only supported action, but ACCEPT and REQUIRE will be supported in version 1.0+.
+The matches criteria describes how you would like this rule to be evaluated. These basic logic gates determine whether the array of privacy attributes will be fully included (`ALL`), not included at all (`NONE`), only included if at least 1 item in the array matches (`ANY`), or excluded with any additional attributes included (`OTHER`).
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
@@ -72,19 +65,18 @@ policy:
         name: Reject Direct Marketing
         description: Disallow collecting any user contact info to use for marketing.
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.contact
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - advertising
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        action: REJECT
 ```
 
 **Demo manifest file:** `/fides/fidesctl/demo_resources/demo_policy.yml`
@@ -105,25 +97,24 @@ POST /policy
       "name": "Reject Direct Marketing",
       "description": "Disallow collecting any user contact info to use for marketing.",
       "data_categories": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "user.provided.identifiable.contact"
         ]
       },
       "data_uses": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "advertising"
         ]
       },
       "data_subjects": {
-        "inclusion": "ANY",
+        "matches": "ANY",
         "values": [
           "customer"
         ]
       },
-      "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-      "action": "REJECT"
+      "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
     }
   ]
 }

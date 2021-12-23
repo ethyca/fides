@@ -14,12 +14,12 @@ policy:
         name: Minimize User Identifiable Data
         description: Reject collecting any user identifiable data for uses other than system operations
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable
             - user.derived.identifiable
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - improve
             - personalize
@@ -28,17 +28,16 @@ policy:
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        action: REJECT
 
       - fides_key: reject_sensitive_data
         name: Reject Sensitive Data
         description: Reject collecting sensitive user data for any use
         data_categories:
-          inclusion: ANY
+          matches: ANY
           values:
             - user.provided.identifiable.biometric
             - user.provided.identifiable.childrens
@@ -49,7 +48,7 @@ policy:
             - user.provided.identifiable.religious_belief
             - user.provided.identifiable.sexual_orientation
         data_uses:
-          inclusion: ANY
+          matches: ANY
           values:
             - provide
             - improve
@@ -59,11 +58,10 @@ policy:
             - collect
             - train_ai_system
         data_subjects:
-          inclusion: ANY
+          matches: ANY
           values:
             - customer
         data_qualifier: aggregated
-        action: REJECT
 ```
 
 This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:
@@ -84,7 +82,6 @@ Policies use the following attributes:
 | data_uses | List[DataRule] | The various categories of data processing and operations within your organization |
 | data_subjects | List[DataRule] | The individual persons to whom you data rule pertains |
 | data_qualifier | String | The acceptable or non-acceptable level of deidentification |
-| action | Choice | A string, either `ACCEPT` or `REJECT` |
 
 > For more detail on Policy resources, see the full [Policy resource documentation](../language/resources/policy.md).
 

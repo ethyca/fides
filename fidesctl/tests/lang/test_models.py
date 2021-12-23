@@ -143,57 +143,37 @@ def test_fides_model_fides_key_invalid():
 
 @pytest.mark.unit
 def test_valid_privacy_rule():
-    privacy_rule = PrivacyRule(inclusion="ANY", values=["foo_bar"])
+    privacy_rule = PrivacyRule(matches="ANY", values=["foo_bar"])
     assert privacy_rule
 
 
 @pytest.mark.unit
 def test_invalid_fides_key_privacy_rule():
     with pytest.raises(FidesValidationError):
-        PrivacyRule(inclusion="ANY", values=["foo-bar"])
+        PrivacyRule(matches="ANY", values=["foo-bar"])
     assert True
 
 
 @pytest.mark.unit
-def test_invalid_inclusion_privacy_rule():
+def test_invalid_matches_privacy_rule():
     with pytest.raises(ValidationError):
-        PrivacyRule(inclusion="AN", values=["foo_bar"])
+        PrivacyRule(matches="AN", values=["foo_bar"])
     assert True
 
 
 @pytest.mark.unit
 def test_valid_policy_rule():
-    PolicyRule(
+    assert PolicyRule(
         organization_fides_key=1,
         policyId=1,
         fides_key="test_policy",
         name="Test Policy",
         description="Test Policy",
-        data_categories=PrivacyRule(inclusion="NONE", values=[]),
-        data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
-        data_subjects=PrivacyRule(inclusion="ANY", values=[]),
+        data_categories=PrivacyRule(matches="NONE", values=[]),
+        data_uses=PrivacyRule(matches="NONE", values=["provide.system"]),
+        data_subjects=PrivacyRule(matches="ANY", values=[]),
         data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-        action="REJECT",
-    ),
-    assert True
-
-
-@pytest.mark.unit
-def test_invalid_action_enum_policy_rule():
-    with pytest.raises(ValidationError):
-        PolicyRule(
-            organization_fides_key=1,
-            policyId=1,
-            fides_key="test_policy",
-            name="Test Policy",
-            description="Test Policy",
-            data_categories=PrivacyRule(inclusion="NONE", values=[]),
-            data_uses=PrivacyRule(inclusion="NONE", values=["provide.system"]),
-            data_subjects=PrivacyRule(inclusion="ANY", values=[]),
-            data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
-            action="REJT",
-        ),
-    assert True
+    )
 
 
 @pytest.mark.unit
