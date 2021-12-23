@@ -142,11 +142,13 @@ def generate_dataset(
 
 @click.command()
 @click.pass_context
+@click.argument("source_type", type=click.Choice(["database"]))
 @click.argument("connection_string", type=str)
 @click.argument("dataset_key", type=str)
 @click.option("-c", "--coverage-threshold", type=click.FloatRange(0, 1), default=1.0)
-def database_coverage(
+def scan(
     ctx: click.Context,
+    source_type: str,
     connection_string: str,
     dataset_key: str,
     coverage_threshold: float,
