@@ -84,6 +84,19 @@ def get_mssql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List
     return db_tables
 
 
+def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Returns a db collections and fields, delegating to a specific engine dialect function
+    """
+    database_ingestion_functions = {
+        "postgresql": get_postgres_collections_and_fields,
+        "mysql": get_mysql_collections_and_fields,
+        "mssql": get_mssql_collections_and_fields,
+    }
+    collections_and_fields = database_ingestion_functions[engine.dialect.name](engine)
+    return collections_and_fields
+
+
 def create_dataset_collections(
     db_tables: Dict[str, Dict[str, List[str]]]
 ) -> List[Dataset]:
@@ -129,12 +142,7 @@ def find_uncategorized_dataset_fields(
     """
     missing_keys = []
     total_field_count = 0
-    db_dataset = db_collections.get(dataset.name)
-    if not db_dataset:
-        echo_red(
-            f"Dataset ({dataset.name}) could not be found in database. Found datasets ({db_collections.keys()})"
-        )
-        raise SystemExit(1)
+    db_dataset = db_collections.get(dataset.name, {})
 
     for db_dataset_collection in db_dataset.keys():
         dataset_collection = next(
@@ -194,6 +202,11 @@ def database_coverage(
     if not dataset:
         echo_red(f"Dataset ({dataset_key}) does not exist in existing taxonomy")
         raise SystemExit(1)
+    if not db_collections.get(dataset_key):
+        echo_red(
+            f"Dataset ({dataset_key}) could not be found in database. Found datasets ({db_collections.keys()})"
+        )
+        raise SystemExit(1)
 
     uncategorized_keys, coverage_rate = find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=db_collections
@@ -214,14 +227,8 @@ def generate_dataset(connection_string: str, file_name: str) -> str:
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest.
     """
-    database_ingestion_functions = {
-        "postgresql": get_postgres_collections_and_fields,
-        "mysql": get_mysql_collections_and_fields,
-        "mssql": get_mssql_collections_and_fields,
-    }
-
     db_engine = get_db_engine(connection_string)
-    db_collections = database_ingestion_functions[db_engine.dialect.name](db_engine)
+    db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
     manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
     echo_green(f"Generated dataset manifest written to {file_name}")

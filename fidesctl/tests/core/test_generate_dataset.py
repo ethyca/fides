@@ -240,30 +240,6 @@ def test_find_missing_dataset_fields_missing_collection():
     assert set(missing_keys) == {"ds.foo.1", "ds.foo.2"}
     assert coverage_rate == 0.5
 
-
-@pytest.mark.unit
-def test_find_missing_dataset_fields_db_collections_missing_dataset():
-    test_resource = {"otherds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
-    dataset = Dataset(
-        name="ds",
-        fides_key="ds",
-        collections=[
-            DatasetCollection(
-                name="bar",
-                fields=[
-                    DatasetField(
-                        name=4,
-                    ),
-                ],
-            ),
-        ],
-    )
-    with pytest.raises(SystemExit):
-        generate_dataset.find_uncategorized_dataset_fields(
-            dataset=dataset, db_collections=test_resource
-        )
-
-
 @pytest.mark.unit
 def test_unsupported_dialect_error():
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
@@ -295,8 +271,8 @@ class TestPostgres:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    def test_generate_dataset_postgres(self):
-        actual_result = generate_dataset.generate_dataset(POSTGRES_URL, "test_file.yml")
+    def test_generate_dataset_postgres(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(POSTGRES_URL, f"{tmpdir}/test_file.yml")
         assert actual_result
 
 
@@ -330,8 +306,8 @@ class TestMySQL:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    def test_generate_dataset_mysql(self):
-        actual_result = generate_dataset.generate_dataset(MYSQL_URL, "test_file.yml")
+    def test_generate_dataset_mysql(self,tmpdir):
+        actual_result = generate_dataset.generate_dataset(MYSQL_URL, f"{tmpdir}test_file.yml")
         assert actual_result
 
 
@@ -366,6 +342,6 @@ class TestSQLServer:
         assert actual_result == expected_result
 
     @pytest.mark.integration
-    def test_generate_dataset_mssql(self):
-        actual_result = generate_dataset.generate_dataset(MSSQL_URL, "test_file.yml")
+    def test_generate_dataset_mssql(self,tmpdir):
+        actual_result = generate_dataset.generate_dataset(MSSQL_URL, f"{tmpdir}/test_file.yml")
         assert actual_result
