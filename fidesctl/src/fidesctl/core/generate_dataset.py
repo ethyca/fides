@@ -135,7 +135,7 @@ def create_dataset_collections(
 
 
 def find_uncategorized_dataset_fields(
-    dataset_key: str, dataset: Dataset, db_dataset: Dict[str, List[str]]
+    dataset_key: str, dataset: Optional[Dataset], db_dataset: Dict[str, List[str]]
 ) -> Tuple[List[str], int]:
     """
     Given an object that represents a database dataset definition, finds
@@ -145,13 +145,17 @@ def find_uncategorized_dataset_fields(
     total_field_count = 0
 
     for db_dataset_collection in db_dataset.keys():
-        dataset_collection = next(
-            (
-                colection
-                for colection in dataset.collections
-                if colection.name == db_dataset_collection
-            ),
-            None,
+        dataset_collection = (
+            next(
+                (
+                    colection
+                    for colection in dataset.collections
+                    if colection.name == db_dataset_collection
+                ),
+                None,
+            )
+            if dataset
+            else None
         )
 
         for db_dataset_field in db_dataset.get(db_dataset_collection, []):
@@ -173,11 +177,15 @@ def find_uncategorized_dataset_fields(
 
 
 def find_all_uncategorized_dataset_fields(
-    manifest_taxonomy: Taxonomy,
+    manifest_taxonomy: Optional[Taxonomy],
     db_collections: Dict[str, Dict[str, List[str]]],
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> Tuple[List[str], int]:
+    """
+    Finds all uncategorized fields given an database modeled object. Datasets
+    are pulled from the server unless a manifest taxonomy is supplied.
+    """
     uncategorized_fields = []
     total_field_count = 0
     for db_dataset_key in db_collections.keys():
@@ -209,11 +217,6 @@ def find_all_uncategorized_dataset_fields(
         uncategorized_fields += current_uncategorized_keys
 
     return uncategorized_fields, total_field_count
-    coverage_percent = (
-        int(((total_field_count - len(uncategorized_fields)) / total_field_count) * 100)
-        if total_field_count > 0
-        else 100
-    )
 
 
 def database_coverage(
