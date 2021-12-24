@@ -1,8 +1,8 @@
 import sqlalchemy
 import pytest
+from typing import List, Dict
 
-
-from fidesctl.core import generate_dataset
+from fidesctl.core import generate_dataset, api
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
@@ -17,6 +17,26 @@ MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
+def create_server_datasets(test_config, datasets: List[Dataset]):
+    for dataset in datasets:   
+        api.delete(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            resource_id=dataset.fides_key,
+            headers=test_config.user.request_headers,
+        )
+        api.create(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            json_resource=dataset.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+
+def set_field_data_categories(datasets: List[Dataset], category: str):
+    for dataset in datasets: 
+        for collection in dataset.collections:
+            for field in collection.fields:
+                field.data_categories.append(category)
 
 @pytest.fixture()
 def test_dataset():
@@ -249,6 +269,13 @@ def test_unsupported_dialect_error():
 
 @pytest.mark.postgres
 class TestPostgres:
+    EXPECTED_COLLECTION = {
+        "public": {
+            "public.visit": ["email", "last_visit"],
+            "public.login": ["id", "customer_id", "time"],
+        }
+    }
+
     @pytest.fixture(scope="class", autouse=True)
     def postgres_setup(self):
         "Set up the Postgres Database for testing."
@@ -261,23 +288,48 @@ class TestPostgres:
     @pytest.mark.integration
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
-        expected_result = {
-            "public": {
-                "public.visit": ["email", "last_visit"],
-                "public.login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestPostgres.EXPECTED_COLLECTION
 
     @pytest.mark.integration
     def test_generate_dataset_postgres(self, tmpdir):
         actual_result = generate_dataset.generate_dataset(POSTGRES_URL, f"{tmpdir}/test_file.yml")
         assert actual_result
 
+    @pytest.mark.integration
+    def test_generate_dataset_passes_postgres(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestPostgres.EXPECTED_COLLECTION)
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+                connection_string = POSTGRES_URL, 
+                dataset_key = "public", 
+                coverage_threshold = 1.0,
+                url = test_config.cli.server_url,
+                headers= test_config.user.request_headers,
+        )
 
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_postgres(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestPostgres.EXPECTED_COLLECTION)
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                    connection_string = POSTGRES_URL, 
+                    dataset_key = "public", 
+                    coverage_threshold = 1.0,
+                    url = test_config.cli.server_url,
+                    headers= test_config.user.request_headers,
+            )
 @pytest.mark.mysql
 class TestMySQL:
+    EXPECTED_COLLECTION = {
+        "mysql_example": {
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
+        }
+    }
+
     @pytest.fixture(scope="class", autouse=True)
     def mysql_setup(self):
         """
@@ -296,23 +348,48 @@ class TestMySQL:
     @pytest.mark.integration
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
-        expected_result = {
-            "mysql_example": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestMySQL.EXPECTED_COLLECTION
 
     @pytest.mark.integration
     def test_generate_dataset_mysql(self,tmpdir):
         actual_result = generate_dataset.generate_dataset(MYSQL_URL, f"{tmpdir}test_file.yml")
         assert actual_result
 
+    @pytest.mark.integration
+    def test_generate_dataset_passes_mysql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestMySQL.EXPECTED_COLLECTION)
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+                connection_string = MYSQL_URL, 
+                dataset_key = "mysql_example", 
+                coverage_threshold = 1.0,
+                url = test_config.cli.server_url,
+                headers= test_config.user.request_headers,
+        )
 
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_mysql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestMySQL.EXPECTED_COLLECTION)
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                    connection_string = MYSQL_URL, 
+                    dataset_key = "mysql_example", 
+                    coverage_threshold = 1.0,
+                    url = test_config.cli.server_url,
+                    headers= test_config.user.request_headers,
+            )
 @pytest.mark.mssql
 class TestSQLServer:
+    EXPECTED_COLLECTION = {
+        "dbo": {
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
+        }
+    }
+    
     @pytest.fixture(scope="class", autouse=True)
     def mssql_setup(self):
         """
@@ -332,16 +409,36 @@ class TestSQLServer:
     @pytest.mark.integration
     def test_get_db_tables_mssql(self):
         engine = sqlalchemy.create_engine(MSSQL_URL)
-        expected_result = {
-            "dbo": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestSQLServer.EXPECTED_COLLECTION
 
     @pytest.mark.integration
     def test_generate_dataset_mssql(self,tmpdir):
         actual_result = generate_dataset.generate_dataset(MSSQL_URL, f"{tmpdir}/test_file.yml")
         assert actual_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_passes_mssql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestSQLServer.EXPECTED_COLLECTION)
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+                connection_string = MSSQL_URL, 
+                dataset_key = "dbo", 
+                coverage_threshold = 1.0,
+                url = test_config.cli.server_url,
+                headers= test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_mssql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(TestSQLServer.EXPECTED_COLLECTION)
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                    connection_string = MSSQL_URL, 
+                    dataset_key = "dbo", 
+                    coverage_threshold = 1.0,
+                    url = test_config.cli.server_url,
+                    headers= test_config.user.request_headers,
+            )
