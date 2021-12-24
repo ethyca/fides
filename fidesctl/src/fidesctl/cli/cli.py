@@ -144,13 +144,13 @@ def generate_dataset(
 @click.pass_context
 @click.argument("source_type", type=click.Choice(["database"]))
 @click.argument("connection_string", type=str)
-@click.argument("dataset_key", type=str)
+@click.option("-m", "--manifest-dir", type=str, default="")
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan(
     ctx: click.Context,
     source_type: str,
     connection_string: str,
-    dataset_key: str,
+    manifest_dir: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -161,7 +161,7 @@ def scan(
     config = ctx.obj["CONFIG"]
     _generate_dataset.database_coverage(
         connection_string=connection_string,
-        dataset_key=dataset_key,
+        manifest_dir=manifest_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,
