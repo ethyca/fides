@@ -176,7 +176,7 @@ def test_find_uncategorized_dataset_fields_all_categorized():
         dataset=dataset, db_collections=test_resource
     )
     assert not missing_keys
-    assert coverage_rate == 1
+    assert coverage_rate == 100
 
 
 @pytest.mark.unit
@@ -204,7 +204,7 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
         dataset=dataset, db_collections=test_resource
     )
     assert set(missing_keys) == {"ds.foo.2"}
-    assert coverage_rate == 0.5
+    assert coverage_rate == 50
 
 
 @pytest.mark.unit
@@ -229,7 +229,7 @@ def test_find_missing_dataset_fields_missing_field():
         dataset=dataset, db_collections=test_resource
     )
     assert set(missing_keys) == {"ds.bar.5"}
-    assert coverage_rate == 0.5
+    assert coverage_rate == 50
 
 
 @pytest.mark.unit
@@ -258,7 +258,7 @@ def test_find_missing_dataset_fields_missing_collection():
         dataset=dataset, db_collections=test_resource
     )
     assert set(missing_keys) == {"ds.foo.1", "ds.foo.2"}
-    assert coverage_rate == 0.5
+    assert coverage_rate == 50
 
 @pytest.mark.unit
 def test_unsupported_dialect_error():

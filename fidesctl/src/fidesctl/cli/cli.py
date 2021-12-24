@@ -145,13 +145,13 @@ def generate_dataset(
 @click.argument("source_type", type=click.Choice(["database"]))
 @click.argument("connection_string", type=str)
 @click.argument("dataset_key", type=str)
-@click.option("-c", "--coverage-threshold", type=click.FloatRange(0, 1), default=1.0)
+@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan(
     ctx: click.Context,
     source_type: str,
     connection_string: str,
     dataset_key: str,
-    coverage_threshold: float,
+    coverage_threshold: int,
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-stlye connection string and

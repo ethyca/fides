@@ -142,7 +142,7 @@ def find_uncategorized_dataset_fields(
     """
     missing_keys = []
     total_field_count = 0
-    db_dataset = db_collections.get(dataset.name, {})
+    db_dataset = db_collections.get(dataset.fides_key, {})
 
     for db_dataset_collection in db_dataset.keys():
         dataset_collection = next(
@@ -167,13 +167,13 @@ def find_uncategorized_dataset_fields(
 
             if not field_found:
                 missing_keys.append(
-                    f"{dataset.name}.{db_dataset_collection}.{db_dataset_field}"
+                    f"{dataset.fides_key}.{db_dataset_collection}.{db_dataset_field}"
                 )
 
     coverage_rate = (
-        (total_field_count - len(missing_keys)) / total_field_count
+        int(((total_field_count - len(missing_keys)) / total_field_count) * 100)
         if total_field_count > 0
-        else 1
+        else 100
     )
     return missing_keys, coverage_rate
 
@@ -181,7 +181,7 @@ def find_uncategorized_dataset_fields(
 def database_coverage(
     connection_string: str,
     dataset_key: str,
-    coverage_threshold: float,
+    coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> None:
@@ -208,15 +208,15 @@ def database_coverage(
         )
         raise SystemExit(1)
 
-    uncategorized_keys, coverage_rate = find_uncategorized_dataset_fields(
+    uncategorized_keys, coverage_percent = find_uncategorized_dataset_fields(
         dataset=dataset, db_collections=db_collections
     )
-    output = f"`{dataset_key}` annotation coverage: {int(coverage_rate * 100)}% \n"
+    output = f"`{dataset_key}` annotation coverage: {coverage_percent}% \n"
     if uncategorized_keys:
         output += "The following fields do not have any data category annotations: \n"
         output += "\n".join(uncategorized_keys)
 
-    if coverage_rate < coverage_threshold:
+    if coverage_percent < coverage_threshold:
         echo_red(output)
         raise SystemExit(1)
     echo_green(output)
