@@ -7,7 +7,7 @@ from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination.bases import AbstractPage
 
-from fidesops.models.connectionconfig import TestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from requests import RequestException
@@ -212,7 +212,10 @@ def put_config_secrets(
             )
 
         return TestStatusMessage(
-            msg=msg, test_status=TestStatus.succeeded if status else TestStatus.failed
+            msg=msg,
+            test_status=ConnectionTestStatus.succeeded
+            if status
+            else ConnectionTestStatus.failed,
         )
 
     return TestStatusMessage(msg=msg, test_status=None)

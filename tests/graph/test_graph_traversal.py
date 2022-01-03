@@ -189,25 +189,27 @@ def test_tree_1() -> None:
     t1 = Collection(
         name="t1",
         fields=[
-            Field(name="f1"),
-            Field(name="f2", identity="email"),
-            Field(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "to")]),
+            ScalarField(name="f1"),
+            ScalarField(name="f2", identity="email"),
+            ScalarField(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "to")]),
         ],
     )
     t2 = Collection(
         name="t2",
         fields=[
-            Field(name="f1"),
-            Field(name="f2"),
-            Field(name="f3"),
+            ScalarField(name="f1"),
+            ScalarField(name="f2"),
+            ScalarField(name="f3"),
         ],
     )
     t3 = Collection(
         name="t3",
         fields=[
-            Field(name="f1"),
-            Field(name="f2"),
-            Field(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "from")]),
+            ScalarField(name="f1"),
+            ScalarField(name="f2"),
+            ScalarField(
+                name="f3", references=[(FieldAddress("s1", "t2", "f1"), "from")]
+            ),
         ],
     )
     seed = {"email": "foo@bar.com"}
@@ -253,10 +255,10 @@ def test_traversal_ordering() -> None:
     customers = Collection(
         name="Customer",
         fields=[
-            Field(name="customer_id"),
-            Field(name="name"),
-            Field(name="email", identity="email"),
-            Field(
+            ScalarField(name="customer_id"),
+            ScalarField(name="name"),
+            ScalarField(name="email", identity="email"),
+            ScalarField(
                 name="contact_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
@@ -265,26 +267,26 @@ def test_traversal_ordering() -> None:
     addresses = Collection(
         name="Address",
         fields=[
-            Field(name="id"),
-            Field(name="street"),
-            Field(name="city"),
-            Field(name="state"),
-            Field(name="zip"),
+            ScalarField(name="id"),
+            ScalarField(name="street"),
+            ScalarField(name="city"),
+            ScalarField(name="state"),
+            ScalarField(name="zip"),
         ],
     )
     orders = Collection(
         name="Order",
         fields=[
-            Field(name="order_id"),
-            Field(
+            ScalarField(name="order_id"),
+            ScalarField(
                 name="customer_id",
                 references=[(FieldAddress("mysql", "Customer", "customer_id"), None)],
             ),
-            Field(
+            ScalarField(
                 name="shipping_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
-            Field(
+            ScalarField(
                 name="billing_address_id",
                 references=[(FieldAddress("mysql", "Address", "id"), "to")],
             ),
@@ -485,9 +487,9 @@ def test_variant_traversals() -> None:
     customers = Collection(
         name="customer",
         fields=[
-            Field(name="id"),
-            Field(name="email", identity="email"),
-            Field(
+            ScalarField(name="id"),
+            ScalarField(name="email", identity="email"),
+            ScalarField(
                 name="user_id",
                 references=[(FieldAddress("mysql", "user", "id"), "to")],
             ),
@@ -495,7 +497,7 @@ def test_variant_traversals() -> None:
     )
     users = Collection(
         name="user",
-        fields=[Field(name="id"), Field(name="ssn", identity="ssn")],
+        fields=[ScalarField(name="id"), ScalarField(name="ssn", identity="ssn")],
     )
 
     graph = DatasetGraph(

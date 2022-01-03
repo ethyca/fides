@@ -101,6 +101,12 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         data stored on the object
     """
 
+    __mapper_args__ = {"confirm_deleted_rows": False}
+    # This line hides sql alchemy warnings of the form:
+    # Sqlalchemy/orm/persistence.py:1461: SAWarning: DELETE statement on table 'storageconfig'
+    # expected to delete 1 row(s); 0 were matched.  Please set confirm_deleted_rows=False within
+    # the mapper configuration to prevent this warning.
+
     @classmethod
     def get_optional_field_names(cls) -> List[str]:
         """Returns the names of all nullable fields on the wrapped model"""

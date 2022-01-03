@@ -14,7 +14,10 @@ from fidesops.api.v1.urn_registry import (
 )
 from fidesops.core.config import config
 from fidesops.util.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
-from fidesops.util.encryption.aes_gcm_encryption_scheme import decrypt, encrypt_verify_secret_length
+from fidesops.util.encryption.aes_gcm_encryption_scheme import (
+    decrypt,
+    encrypt_verify_secret_length,
+)
 
 
 class TestGetEncryptionKey:
@@ -150,7 +153,9 @@ class TestAESDecrypt:
         key = "zfkslapqlwodaqld"
         nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
-        encrypted_data = encrypt_verify_secret_length(orig_data, key.encode(config.security.ENCODING), nonce)
+        encrypted_data = encrypt_verify_secret_length(
+            orig_data, key.encode(config.security.ENCODING), nonce
+        )
 
         request = {
             "value": encrypted_data,

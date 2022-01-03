@@ -10,7 +10,7 @@ def cache_secret(masking_secret_cache: MaskingSecretCache, request_id: str) -> N
             masking_strategy=masking_secret_cache.masking_strategy,
             secret_type=masking_secret_cache.secret_type,
         ),
-        FidesopsRedis.encode_obj(masking_secret_cache.secret)
+        FidesopsRedis.encode_obj(masking_secret_cache.secret),
     )
 
 

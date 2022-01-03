@@ -265,12 +265,12 @@ def test_create_and_process_erasure_request_generic_category(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_aes_generic_category(
-        postgres_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy_aes,
-        connection_config,
+    postgres_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy_aes,
+    connection_config,
 ):
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level

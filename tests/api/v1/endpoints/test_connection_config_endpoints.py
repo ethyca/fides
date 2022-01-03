@@ -597,7 +597,7 @@ class TestPutConnectionConfigSecrets:
             "database": "dev",
             "user": "awsuser",
             "password": "test_password",
-            "db_schema": "test"
+            "db_schema": "test",
         }
         resp = api_client.put(
             url + "?verify=False",

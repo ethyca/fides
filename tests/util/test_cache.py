@@ -33,7 +33,7 @@ def test_cache_set(cache: FidesopsRedis) -> None:
     assert res
 
 
-class TestCacheObject:
+class CacheTestObject:
     def __init__(self, *values: Any):
         self.values = values
 
@@ -46,7 +46,7 @@ class TestCacheObject:
 
 def test_encode_decode() -> None:
     for i in range(10):
-        test_obj = TestCacheObject(
+        test_obj = CacheTestObject(
             random.random(), random.randint(0, 1000), faker.name()
         )
         assert FidesopsRedis.decode_obj(FidesopsRedis.encode_obj(test_obj)) == test_obj
@@ -58,7 +58,7 @@ def test_scan(cache: FidesopsRedis) -> List:
     prefix = f"redis_key_{test_key}_"
 
     test_data = {
-        f"{prefix}{i}": TestCacheObject(f"{prefix}{i}", random.random())
+        f"{prefix}{i}": CacheTestObject(f"{prefix}{i}", random.random())
         for i in range(100)
     }
     for k, v in test_data.items():

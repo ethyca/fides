@@ -326,5 +326,5 @@ class Traversal:
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
         if environment:
-            logger.info(f"Found {len(end_nodes)} end nodes: {end_nodes}")
+            logger.debug(f"Found {len(end_nodes)} end nodes: {end_nodes}")
         return end_nodes

@@ -15,7 +15,7 @@ from snowflake.sqlalchemy import URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import TestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import (
@@ -58,7 +58,7 @@ class SQLConnector(BaseConnector[Engine]):
         """Query wrapper corresponding to the input traversal_node."""
         return SQLQueryConfig(node)
 
-    def test_connection(self) -> Optional[TestStatus]:
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
         logger.info(f"Starting test connection to {self.configuration.key}")
 
@@ -77,7 +77,7 @@ class SQLConnector(BaseConnector[Engine]):
         except Exception:
             raise ConnectionException("Connection error.")
 
-        return TestStatus.succeeded
+        return ConnectionTestStatus.succeeded
 
     def retrieve_data(
         self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]

@@ -3,7 +3,9 @@ import json
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
-from fidesops.schemas.masking.masking_configuration import AesEncryptionMaskingConfiguration
+from fidesops.schemas.masking.masking_configuration import (
+    AesEncryptionMaskingConfiguration,
+)
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
@@ -97,9 +99,7 @@ class TestMaskValues:
         value = "last name"
         masking_strategy = {
             "strategy": AES_ENCRYPT,
-            "configuration": {
-                "mode": AesEncryptionMaskingConfiguration.Mode.GCM.value
-            },
+            "configuration": {"mode": AesEncryptionMaskingConfiguration.Mode.GCM.value},
         }
         response = api_client.put(
             f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy

@@ -113,12 +113,12 @@ def generate_collection(collection: Collection) -> Dict[str, Any]:
     return {f.name: value_for_name(f.name) for f in collection.fields}
 
 
-def generate_field_list(num_fields: int) -> List[Field]:
-    return [Field(name=f"f{i}") for i in range(1, num_fields + 1)]
+def generate_field_list(num_fields: int) -> List[ScalarField]:
+    return [ScalarField(name=f"f{i}") for i in range(1, num_fields + 1)]
 
 
 def generate_node(dr_name: str, ds_name: str, *field_names: str) -> Node:
-    ds = Collection(name=ds_name, fields=[Field(name=s) for s in field_names])
+    ds = Collection(name=ds_name, fields=[ScalarField(name=s) for s in field_names])
     dr = Dataset(
         name=dr_name,
         collections=[ds],
@@ -127,10 +127,11 @@ def generate_node(dr_name: str, ds_name: str, *field_names: str) -> Node:
     return Node(dr, ds)
 
 
-def field(dataresources: List[Dataset], address: Tuple[str, str, str]) -> Field:
+def field(dataresources: List[Dataset], address: Tuple[str, str, str]) -> ScalarField:
+
     dr: Dataset = next(dr for dr in dataresources if dr.name == address[0])
     ds: Collection = next(ds for ds in dr.collections if ds.name == address[1])
-    df: Field = next(df for df in ds.fields if df.name == address[2])
+    df: ScalarField = next(df for df in ds.fields if df.name == address[2])
     return df
 
 

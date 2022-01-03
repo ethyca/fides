@@ -25,7 +25,7 @@ from fidesops.db.base_class import (
 )
 
 
-class TestStatus(enum.Enum):
+class ConnectionTestStatus(enum.Enum):
     """Enum for supplying statuses of validating credentials for a Connection Config to the user"""
 
     succeeded = "succeeded"
@@ -81,16 +81,18 @@ class ConnectionConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
 
-    def update_test_status(self, test_status: TestStatus, db: Session) -> None:
+    def update_test_status(
+        self, test_status: ConnectionTestStatus, db: Session
+    ) -> None:
         """Updates last_test_timestamp and last_test_succeeded after an attempt to make a test connection.
 
         If the test was skipped, for example, on an HTTP Connector, don't update these fields.
         """
-        if test_status == TestStatus.skipped:
+        if test_status == ConnectionTestStatus.skipped:
             return
 
         self.last_test_timestamp = datetime.now()
-        self.last_test_succeeded = test_status == TestStatus.succeeded
+        self.last_test_succeeded = test_status == ConnectionTestStatus.succeeded
         self.save(db)
 
     def delete(self, db: Session) -> Optional[Base]:
