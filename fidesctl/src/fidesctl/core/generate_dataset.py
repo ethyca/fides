@@ -228,13 +228,15 @@ def database_coverage(
 ) -> None:
     """
     Given a database connection string, fetches collections
-    and fields and compares them to existing datasets or in a
-    manifest(if one is provided).
+    and fields and compares them to existing datasets or datasets in a
+    local manifest (if one is provided).
 
-    Prints uncategorized fields and raises exception if coverage
+    Prints uncategorized fields and raises an exception if coverage
     is lower than provided threshold.
     """
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
+
+    # Generate the collections and fields for the target database
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
 

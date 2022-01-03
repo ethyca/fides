@@ -155,8 +155,13 @@ def scan(
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-stlye connection string and
-    compare the database definition to an existing dataset. Outputs missing fields
-    and exits in error if coverage is under threshold
+    compare the database objects to existing datasets.
+
+    If there are fields within the database that aren't listed and categorized
+    within one of the datasets, this counts as lacking coverage.
+
+    Outputs missing fields and has a non-zero exit if coverage is
+    under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
     _generate_dataset.database_coverage(
