@@ -3,6 +3,7 @@ import pytest
 from typing import List, Dict
 
 from fidesctl.core import generate_dataset, api
+from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
@@ -312,7 +313,7 @@ class TestPostgres:
         generate_dataset.database_coverage(
             connection_string=POSTGRES_URL,
             manifest_dir="",
-            coverage_threshold=1.0,
+            coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
@@ -327,10 +328,29 @@ class TestPostgres:
             generate_dataset.database_coverage(
                 connection_string=POSTGRES_URL,
                 manifest_dir="",
-                coverage_threshold=1.0,
+                coverage_threshold=100,
                 url=test_config.cli.server_url,
                 headers=test_config.user.request_headers,
             )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_postgres(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestPostgres.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=POSTGRES_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
 
 
 @pytest.mark.mysql
@@ -380,7 +400,7 @@ class TestMySQL:
         generate_dataset.database_coverage(
             connection_string=MYSQL_URL,
             manifest_dir="",
-            coverage_threshold=1.0,
+            coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
@@ -395,11 +415,29 @@ class TestMySQL:
             generate_dataset.database_coverage(
                 connection_string=MYSQL_URL,
                 manifest_dir="",
-                coverage_threshold=1.0,
+                coverage_threshold=100,
                 url=test_config.cli.server_url,
                 headers=test_config.user.request_headers,
             )
 
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_mysql(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestMySQL.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MYSQL_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
 
 @pytest.mark.mssql
 class TestSQLServer:
@@ -449,7 +487,7 @@ class TestSQLServer:
         generate_dataset.database_coverage(
             connection_string=MSSQL_URL,
             manifest_dir="",
-            coverage_threshold=1.0,
+            coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
@@ -464,7 +502,26 @@ class TestSQLServer:
             generate_dataset.database_coverage(
                 connection_string=MSSQL_URL,
                 manifest_dir="",
-                coverage_threshold=1.0,
+                coverage_threshold=100,
                 url=test_config.cli.server_url,
                 headers=test_config.user.request_headers,
             )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_mssql(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSQLServer.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MSSQL_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
