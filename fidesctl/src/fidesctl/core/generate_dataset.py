@@ -251,10 +251,12 @@ def database_coverage(
         if db_field_count > 0
         else 100
     )
-    output = f"Datasets ({list(db_collections.keys())}) annotation coverage: {coverage_percent}% \n"
+
+    output: str = ""
     if uncategorized_fields:
         output += "The following fields do not have any data category annotations: \n"
-        output += "\n".join(uncategorized_fields)
+        output += "\n".join(uncategorized_fields) + "\n\n"
+    output += f"Datasets ({list(db_collections.keys())}) annotation coverage: {coverage_percent}%"
 
     if coverage_percent < coverage_threshold:
         echo_red(output)
