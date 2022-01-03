@@ -3,8 +3,10 @@ from typing import Dict, List, Optional
 from unittest import mock
 from unittest.mock import Mock
 
+import pydash
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from pydash import filter_
 from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
 import pytest
@@ -107,8 +109,6 @@ class TestValidateDataset:
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        """Ensure we defensively throw an error if validating a nested collection"""
-
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         invalid_dataset = example_datasets[0]
         invalid_dataset["collections"][0]["fields"].append(
@@ -126,11 +126,21 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
-        assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
-        assert ["body", "collections", 0, "fields", 6, "__root__"] in [
-            e["loc"] for e in details
-        ]
+        json_response = json.loads(response.text)
+
+        # if we extract the details field from the response it will contain
+        # the nested fields "phone" and "count"
+        details_field = filter_(
+            pydash.get(json_response, "dataset.collections.0.fields"),
+            {"name": "details"},
+        )[0]
+
+        assert set(map(lambda f: f["name"], details_field["fields"])) == {
+            "phone",
+            "count",
+        }
+
+        assert response.status_code == 200
 
     def test_put_validate_dataset_invalid_length(
         self,

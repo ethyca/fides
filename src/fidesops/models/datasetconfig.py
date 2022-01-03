@@ -18,8 +18,9 @@ from fidesops.graph.config import (
     FieldAddress,
     Dataset,
     CollectionAddress,
+    generate_field,
 )
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import parse_data_type_string
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -80,18 +81,21 @@ class DatasetConfig(Base):
         )
 
 
-def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
+def to_graph_field(field: FidesopsDatasetField) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
     # NOTE: on the dataset field, annotations like identity & references are
     # declared on the meta object, whereas in our graph representation these are
     # top-level attributes for convenience
+
     identity = None
     is_pk = False
+    is_array = False
     references = []
     meta_section = field.fidesops_meta
-    data_type = None
+    sub_fields = []
     length = None
+    data_type_name = None
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
@@ -122,7 +126,6 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
                     reference.dataset, ref_collection, ".".join(ref_fields)
                 )
                 references.append((address, reference.direction))
-
         if meta_section.length is not None:
             # 'if meta_section.length' will not suffice here, we will want to pass through
             # length for any valid integer if it has been set in the config, including 0.
@@ -131,15 +134,21 @@ def _convert_dataset_field_to_graph(field: FidesopsDatasetField) -> Field:
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
-        data_type = meta_section.data_type
-    return Field(
+        (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
+
+    if field.fields:
+        sub_fields = [to_graph_field(fld) for fld in field.fields]
+
+    return generate_field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
-        data_type=DataType[data_type] if data_type else None,
+        data_type_name=data_type_name,
         references=references,
-        primary_key=is_pk,
+        is_pk=is_pk,
         length=length,
+        is_array=is_array,
+        sub_fields=sub_fields,
     )
 
 
@@ -158,9 +167,7 @@ def convert_dataset_to_graph(
     logger.debug(f"Parsing dataset '{dataset_name}' into graph representation")
     graph_collections = []
     for collection in dataset.collections:
-        graph_fields = [
-            _convert_dataset_field_to_graph(field) for field in collection.fields
-        ]
+        graph_fields = [to_graph_field(field) for field in collection.fields]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
             NotPii(dataset_name),

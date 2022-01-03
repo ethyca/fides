@@ -9,8 +9,8 @@ import dask
 import pytest
 
 from fidesops.core.config import config
-from fidesops.graph.config import FieldAddress, Collection, Field, Dataset
-from fidesops.graph.data_type import DataType
+from fidesops.graph.config import FieldAddress, Collection, ScalarField, Dataset
+from fidesops.graph.data_type import DataType, StringTypeConverter
 from fidesops.graph.graph import DatasetGraph, Edge, Node
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -123,28 +123,36 @@ def test_composite_key_erasure(
     customer = Collection(
         name="customer",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(name="email", identity="email", data_type=DataType.string),
+            ScalarField(name="id", primary_key=True),
+            ScalarField(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
         ],
     )
 
     composite_pk_test = Collection(
         name="composite_pk_test",
         fields=[
-            Field(
+            ScalarField(
                 name="id_a",
                 primary_key=True,
-                data_type=DataType.integer,
+                data_type_converter=DataType.integer.value,
             ),
-            Field(
+            ScalarField(
                 name="id_b",
                 primary_key=True,
-                data_type=DataType.integer,
+                data_type_converter=DataType.integer.value,
             ),
-            Field(name="description", data_type=DataType.string, data_categories=["A"]),
-            Field(
+            ScalarField(
+                name="description",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
+            ScalarField(
                 name="customer_id",
-                data_type=DataType.integer,
+                data_type_converter=DataType.integer.value,
                 references=[
                     (FieldAddress("postgres_example", "customer", "id"), "from")
                 ],
@@ -471,24 +479,32 @@ def test_access_erasure_type_conversion(
     employee = Collection(
         name="employee",
         fields=[
-            Field(name="id", primary_key=True),
-            Field(name="name", data_type=DataType.string),
-            Field(name="email", identity="email", data_type=DataType.string),
+            ScalarField(name="id", primary_key=True),
+            ScalarField(name="name", data_type_converter=StringTypeConverter()),
+            ScalarField(
+                name="email",
+                identity="email",
+                data_type_converter=StringTypeConverter(),
+            ),
         ],
     )
 
     type_link = Collection(
         name="type_link_test",
         fields=[
-            Field(
+            ScalarField(
                 name="id",
                 primary_key=True,
-                data_type=DataType.string,
+                data_type_converter=StringTypeConverter(),
                 references=[
                     (FieldAddress("postgres_example", "employee", "id"), "from")
                 ],
             ),
-            Field(name="name", data_type=DataType.string, data_categories=["A"]),
+            ScalarField(
+                name="name",
+                data_type_converter=StringTypeConverter(),
+                data_categories=["A"],
+            ),
         ],
     )
 

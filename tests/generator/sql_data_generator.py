@@ -6,7 +6,13 @@ from sqlalchemy import Column, String, Integer, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 from fidesops.db.session import ENGINE
-from fidesops.graph.config import Collection, CollectionAddress, Field, FieldAddress
+from fidesops.graph.config import (
+    Collection,
+    CollectionAddress,
+    Field,
+    FieldAddress,
+    ScalarField,
+)
 from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import Edge, BidirectionalEdge, DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode, Row
@@ -64,7 +70,10 @@ def create_sample_value(field: Field):
         }
         if field.name in names:
             return field.name
-        if field.data_type == DataType.integer:
+        if (
+            isinstance(field, ScalarField)
+            and field.data_type_converter == DataType.integer.value
+        ):
             return "integer"
         return "string"
 

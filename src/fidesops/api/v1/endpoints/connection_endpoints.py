@@ -19,7 +19,7 @@ from fidesops.schemas.connection_configuration import (
 from fidesops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
     ConnectionConfigSecretsSchema,
-    TestStatus,
+    ConnectionTestStatus,
 )
 
 from fidesops.service.connectors import get_connector
@@ -192,15 +192,17 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: TestStatus = connector.test_connection()
+        status: ConnectionTestStatus = connector.test_connection()
     except ConnectionException as exc:
         logger.warning(
             "Connection test failed on %s: %s", NotPii(connection_config.key), str(exc)
         )
-        connection_config.update_test_status(test_status=TestStatus.failed, db=db)
+        connection_config.update_test_status(
+            test_status=ConnectionTestStatus.failed, db=db
+        )
         return TestStatusMessage(
             msg=msg,
-            test_status=TestStatus.failed,
+            test_status=ConnectionTestStatus.failed,
             failure_reason=str(exc),
         )
 

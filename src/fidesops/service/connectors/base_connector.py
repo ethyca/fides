@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, TypeVar, Generic
 
 from fidesops.core.config import config
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig, TestStatus
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.query_config import QueryConfig
@@ -43,7 +43,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         """Return the query config that corresponds to this connector type"""
 
     @abstractmethod
-    def test_connection(self) -> Optional[TestStatus]:
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Used to make a trivial query with the client to ensure secrets are correct.
 
         If no issues are encountered, this should run without error, otherwise a ConnectionException

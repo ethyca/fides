@@ -1,6 +1,13 @@
 from bson import ObjectId
 
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import (
+    DataType,
+    NoOpTypeConverter,
+    get_data_type_converter,
+    StringTypeConverter,
+    parse_data_type_string,
+    is_valid_data_type,
+)
 
 
 def test_int_convert():
@@ -49,3 +56,21 @@ def test_safe_none_conversion():
     for data_type in DataType:
         converter = data_type.value
         assert converter.to_value(None) is None
+
+
+def test_get_data_type_converter():
+    assert isinstance(get_data_type_converter(None), NoOpTypeConverter)
+    assert isinstance(get_data_type_converter(""), NoOpTypeConverter)
+    assert isinstance(get_data_type_converter("string"), StringTypeConverter)
+
+
+def test_parse_data_type_string():
+    assert parse_data_type_string("string") == ("string", False)
+    assert parse_data_type_string("string[]") == ("string", True)
+
+
+def test_valid():
+    for s in ["string", "integer", "float", "boolean", "object_id", "object", None]:
+        assert is_valid_data_type(s)
+
+    assert not is_valid_data_type("unknown")

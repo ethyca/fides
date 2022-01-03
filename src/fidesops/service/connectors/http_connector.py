@@ -6,7 +6,7 @@ import requests
 
 from fidesops.common_exceptions import ClientUnsuccessfulException
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import TestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import HttpsSchema
@@ -59,11 +59,11 @@ class HTTPSConnector(BaseConnector[None]):
             raise ClientUnsuccessfulException(status_code=response.status_code)
         return json.loads(response.text)
 
-    def test_connection(self) -> Optional[TestStatus]:
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
         Override to skip connection test
         """
-        return TestStatus.skipped
+        return ConnectionTestStatus.skipped
 
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""

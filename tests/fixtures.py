@@ -37,7 +37,8 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
 from fidesops.schemas.connection_configuration import (
-    SnowflakeSchema, RedshiftSchema,
+    SnowflakeSchema,
+    RedshiftSchema,
 )
 from fidesops.schemas.storage.storage import (
     FileNaming,
@@ -56,6 +57,7 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
+
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -243,9 +245,9 @@ def redshift_connection_config(db: Session) -> Generator:
     uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
         "REDSHIFT_TEST_URI"
     )
-    db_schema = integration_config.get("redshift", {}).get("db_schema") or os.environ.get(
-        "REDSHIFT_TEST_DB_SCHEMA"
-    )
+    db_schema = integration_config.get("redshift", {}).get(
+        "db_schema"
+    ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
     if uri and db_schema:
         schema = RedshiftSchema(url=uri, db_schema=db_schema)
         connection_config.secrets = schema.dict()
@@ -446,8 +448,8 @@ def erasure_policy(
 
 @pytest.fixture(scope="function")
 def erasure_policy_aes(
-        db: Session,
-        oauth_client: ClientDetail,
+    db: Session,
+    oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1000,6 +1002,7 @@ def redshift_example_test_dataset_config(
     )
     yield dataset_config
     dataset_config.delete(db=db)
+
 
 @pytest.fixture
 def postgres_example_test_dataset_config(

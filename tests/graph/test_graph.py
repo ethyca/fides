@@ -8,25 +8,25 @@ from tests.task.traversal_data import integration_db_graph
 t1 = Collection(
     name="t1",
     fields=[
-        Field(name="f1", primary_key="True"),
-        Field(name="f2", identity="email"),
-        Field(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "to")]),
+        ScalarField(name="f1", primary_key="True"),
+        ScalarField(name="f2", identity="email"),
+        ScalarField(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "to")]),
     ],
 )
 t2 = Collection(
     name="t2",
     fields=[
-        Field(name="f1"),
-        Field(name="f2"),
-        Field(name="f3"),
+        ScalarField(name="f1"),
+        ScalarField(name="f2"),
+        ScalarField(name="f3"),
     ],
 )
 t3 = Collection(
     name="t3",
     fields=[
-        Field(name="f1"),
-        Field(name="f2"),
-        Field(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "from")]),
+        ScalarField(name="f1"),
+        ScalarField(name="f2"),
+        ScalarField(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "from")]),
     ],
 )
 graph = DatasetGraph(

@@ -33,9 +33,9 @@ def redshift_test_engine() -> Generator:
     uri = integration_config.get("redshift", {}).get("external_uri") or os.environ.get(
         "REDSHIFT_TEST_URI"
     )
-    db_schema = integration_config.get("redshift", {}).get("db_schema") or os.environ.get(
-        "REDSHIFT_TEST_DB_SCHEMA"
-    )
+    db_schema = integration_config.get("redshift", {}).get(
+        "db_schema"
+    ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
     if uri and db_schema:
         schema = RedshiftSchema(url=uri, db_schema=db_schema)
         connection_config.secrets = schema.dict()

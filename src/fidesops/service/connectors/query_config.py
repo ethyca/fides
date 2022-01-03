@@ -12,7 +12,6 @@ from fidesops.graph.config import (
     Field,
     MaskingOverride,
 )
-from fidesops.graph.data_type import DataTypeConverter
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
@@ -149,7 +148,7 @@ class QueryConfig(Generic[T], ABC):
 
             for field_name in field_names:
                 masking_override: MaskingOverride = [
-                    MaskingOverride(field.data_type, field.length)
+                    MaskingOverride(field.data_type_converter, field.length)
                     for field in self.node.node.collection.fields
                     if field.name == field_name
                 ][0]
@@ -158,7 +157,7 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type}"
+                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
                 val: Any = row[field_name]
@@ -180,9 +179,11 @@ class QueryConfig(Generic[T], ABC):
         """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
         if null_masking:
             return True
-        if not masking_override.data_type:
+        if not masking_override.data_type_converter:
             return False
-        if not strategy.data_type_supported(data_type=masking_override.data_type.name):
+        if not strategy.data_type_supported(
+            data_type=masking_override.data_type_converter.name
+        ):
             return False
         return True
 
@@ -206,8 +207,7 @@ class QueryConfig(Generic[T], ABC):
                 f"Because a length has been specified for field {field_name}, we will truncate length of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
-            data_type_convertor: DataTypeConverter = masking_override.data_type.value
-            masked_val = data_type_convertor.truncate(
+            masked_val = masking_override.data_type_converter.truncate(
                 masking_override.length, masked_val
             )
         return masked_val

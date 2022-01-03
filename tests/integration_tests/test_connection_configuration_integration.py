@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import TestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import MongoDBConnector
 from fidesops.service.connectors.sql_connector import MySQLConnector
 from fidesops.common_exceptions import ConnectionException
@@ -266,7 +266,7 @@ class TestPostgresConnector:
 
         client = connector.client()
         assert client.__class__ == Engine
-        assert connector.test_connection() == TestStatus.succeeded
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config.secrets = {"host": "bad_host"}
         connection_config.save(db)
@@ -519,7 +519,7 @@ class TestMySQLConnector:
 
         client = connector.client()
         assert client.__class__ == Engine
-        assert connector.test_connection() == TestStatus.succeeded
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         connection_config_mysql.secrets = {"host": "bad_host"}
         connection_config_mysql.save(db)
@@ -542,7 +542,7 @@ class TestMongoConnector:
 
         client = connector.client()
         assert client.__class__ == MongoClient
-        assert connector.test_connection() == TestStatus.succeeded
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         mongo_connection_config.secrets = {"host": "bad_host"}
         mongo_connection_config.save(db)

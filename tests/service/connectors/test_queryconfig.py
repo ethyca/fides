@@ -1,5 +1,6 @@
 from typing import Dict, Any, Set
 
+
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
@@ -7,17 +8,23 @@ from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import DataCategory
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
+
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+
 from fidesops.service.connectors.query_config import (
     QueryConfig,
     SQLQueryConfig,
     MongoQueryConfig,
 )
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy, HASH
+
+from fidesops.service.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+    HASH,
+)
+
 from ...task.traversal_data import integration_db_graph
 from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
-
 
 # customers -> address, order
 # orders -> address, payment card
@@ -33,9 +40,7 @@ payment_card_node = traversal_nodes[
     CollectionAddress("postgres_example", "payment_card")
 ]
 user_node = traversal_nodes[CollectionAddress("postgres_example", "payment_card")]
-privacy_request = PrivacyRequest(
-    id="234544"
-)
+privacy_request = PrivacyRequest(id="234544")
 
 
 class TestSQLQueryConfig:
@@ -253,14 +258,17 @@ class TestSQLQueryConfig:
 
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert (
-                text_clause.text
-                == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
+            text_clause.text
+            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
         )
         assert text_clause._bindparams["name"].key == "name"
         # since length is set to 40 in dataset.yml, we expect only first 40 chars of masked val
-        assert text_clause._bindparams["name"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("John Customer", privacy_request_id=privacy_request.id)[0:40]
+        assert (
+            text_clause._bindparams["name"].value
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                "John Customer", privacy_request_id=privacy_request.id
+            )[0:40]
+        )
         assert text_clause._bindparams["email"].value == HashMaskingStrategy(
             HashMaskingConfiguration(algorithm="SHA-512")
         ).mask("customer-1@example.com", privacy_request_id=privacy_request.id)
@@ -286,7 +294,9 @@ class TestSQLQueryConfig:
 
         config = SQLQueryConfig(customer_node)
 
-        text_clause = config.generate_update_stmt(row, erasure_policy_two_rules, privacy_request)
+        text_clause = config.generate_update_stmt(
+            row, erasure_policy_two_rules, privacy_request
+        )
 
         assert (
             text_clause.text
@@ -336,7 +346,9 @@ class TestMongoQueryConfig:
         target = rule.targets[0]
         target.data_category = DataCategory("user.provided.identifiable").value
 
-        mongo_statement = config.generate_update_stmt(row, erasure_policy, privacy_request)
+        mongo_statement = config.generate_update_stmt(
+            row, erasure_policy, privacy_request
+        )
         assert mongo_statement[0] == {"_id": 1}
         assert mongo_statement[1] == {"$set": {"birthday": None, "gender": None}}
 
@@ -389,7 +401,9 @@ class TestMongoQueryConfig:
         target = rule_two.targets[0]
         target.data_category = DataCategory("user.provided.identifiable.gender").value
 
-        mongo_statement = config.generate_update_stmt(row, erasure_policy_two_rules, privacy_request)
+        mongo_statement = config.generate_update_stmt(
+            row, erasure_policy_two_rules, privacy_request
+        )
         print(mongo_statement)
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
