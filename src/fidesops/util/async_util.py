@@ -1,10 +1,15 @@
 import asyncio
 from asyncio import AbstractEventLoop
+from concurrent.futures import ThreadPoolExecutor
 from typing import TypeVar, Callable, Any, Awaitable, Optional
 import logging
 
+
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
+
+
+executor = ThreadPoolExecutor(max_workers=2)
 
 
 def _loop() -> AbstractEventLoop:
@@ -17,8 +22,7 @@ def run_async(task: Callable[[Any], T], *args: Any) -> Awaitable[T]:
     """Run a callable async"""
     if not callable(task):
         raise TypeError("Task must be a callable")
-
-    return _loop().run_in_executor(None, task, *args)
+    return _loop().run_in_executor(executor, task, *args)
 
 
 def wait_for(t: Awaitable[T]) -> Optional[T]:
