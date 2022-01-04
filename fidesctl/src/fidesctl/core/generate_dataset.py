@@ -87,7 +87,7 @@ def get_mssql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List
 
 def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
     """
-    Returns a db collections and fields, delegating to a specific engine dialect function
+    Returns database collections and fields, delegating to a specific engine dialect function
     """
     database_ingestion_functions = {
         "postgresql": get_postgres_collections_and_fields,
