@@ -1,5 +1,5 @@
 """Module that generates valid dataset manifest files from various data sources."""
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Callable
 
 import sqlalchemy
 from sqlalchemy.engine import Engine
@@ -87,9 +87,11 @@ def get_mssql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List
 
 def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
     """
-    Returns database collections and fields, delegating to a specific engine dialect function
+    Returns a database collections and fields, delegating to a specific engine dialect function
     """
-    database_ingestion_functions = {
+    database_ingestion_functions: Dict[
+        str, Callable[[Engine], Dict[str, Dict[str, List[str]]]]
+    ] = {
         "postgresql": get_postgres_collections_and_fields,
         "mysql": get_mysql_collections_and_fields,
         "mssql": get_mssql_collections_and_fields,
@@ -148,9 +150,9 @@ def find_uncategorized_dataset_fields(
         dataset_collection = (
             next(
                 (
-                    colection
-                    for colection in dataset.collections
-                    if colection.name == db_dataset_collection
+                    collection
+                    for collection in dataset.collections
+                    if collection.name == db_dataset_collection
                 ),
                 None,
             )
@@ -160,16 +162,16 @@ def find_uncategorized_dataset_fields(
 
         for db_dataset_field in db_dataset.get(db_dataset_collection, []):
             total_field_count += 1
-            field_found = (
-                any(
-                    field.name == db_dataset_field and field.data_categories
+            field_uncategorized = (
+                all(
+                    field.name != db_dataset_field or not field.data_categories
                     for field in dataset_collection.fields
                 )
                 if dataset_collection
-                else False
+                else True
             )
 
-            if not field_found:
+            if field_uncategorized:
                 uncategorized_fields.append(
                     f"{dataset_key}.{db_dataset_collection}.{db_dataset_field}"
                 )
@@ -183,7 +185,7 @@ def find_all_uncategorized_dataset_fields(
     headers: Dict[str, str],
 ) -> Tuple[List[str], int]:
     """
-    Finds all uncategorized fields given an database modeled object. Datasets
+    Finds all uncategorized fields given a database modeled object. Datasets
     are pulled from the server unless a manifest taxonomy is supplied.
     """
     uncategorized_fields = []
@@ -219,6 +221,33 @@ def find_all_uncategorized_dataset_fields(
     return uncategorized_fields, total_field_count
 
 
+def print_database_coverage_result(
+    datasets: List[str],
+    uncategorized_fields: List[str],
+    coverage_percent: int,
+    coverage_threshold: int,
+) -> None:
+    """
+    Prints uncategorized fields and raises an exception if coverage
+    is lower than provided threshold.
+    """
+    output: str = "Successfully scanned the following datasets:\n"
+    output += "\t{}\n".format("\n\t".join(datasets))
+    print(output)
+
+    if uncategorized_fields:
+        uncategorized_output = (
+            "The following fields are missing data category annotations:\n"
+        )
+        uncategorized_output += "\t{}\n".format({"\n\t".join(uncategorized_fields)})
+        print(uncategorized_output)
+    annotation_output = "Annotation coverage: {}%\n\n".format(coverage_percent)
+    if coverage_percent < coverage_threshold:
+        echo_red(annotation_output)
+        raise SystemExit(1)
+    echo_green(annotation_output)
+
+
 def database_coverage(
     connection_string: str,
     manifest_dir: Optional[str],
@@ -230,9 +259,6 @@ def database_coverage(
     Given a database connection string, fetches collections
     and fields and compares them to existing datasets or datasets in a
     local manifest (if one is provided).
-
-    Prints uncategorized fields and raises an exception if coverage
-    is lower than provided threshold.
     """
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
 
@@ -246,22 +272,19 @@ def database_coverage(
         url=url,
         headers=headers,
     )
-    coverage_percent = (
-        int(((db_field_count - len(uncategorized_fields)) / db_field_count) * 100)
-        if db_field_count > 0
-        else 100
-    )
-
-    output: str = ""
-    if uncategorized_fields:
-        output += "The following fields do not have any data category annotations: \n"
-        output += "\n".join(uncategorized_fields) + "\n\n"
-    output += f"Datasets ({list(db_collections.keys())}) annotation coverage: {coverage_percent}%"
-
-    if coverage_percent < coverage_threshold:
-        echo_red(output)
+    if db_field_count < 1:
+        echo_red("Database did not contain any dataset fields to evaluate coverage")
         raise SystemExit(1)
-    echo_green(output)
+
+    coverage_percent = int(
+        ((db_field_count - len(uncategorized_fields)) / db_field_count) * 100
+    )
+    print_database_coverage_result(
+        datasets=list(db_collections.keys()),
+        uncategorized_fields=uncategorized_fields,
+        coverage_percent=coverage_percent,
+        coverage_threshold=coverage_threshold,
+    )
 
 
 def generate_dataset(connection_string: str, file_name: str) -> str:
