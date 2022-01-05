@@ -9,7 +9,7 @@ By default, Google Analytics disables "IP Anonymization" (see [the documentation
 There are two options to remedy this situation, and to get the `make fidesctl-evaluate` command to pass. Which option is best?
 
 1. Modify the "Minimize User Identifiable Data" policy resource to accept data collection of this nature
-1. Modify the Google Analyitcs implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy
+1. Modify the Google Analytics implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy
 
 <details>
   <summary>Click to see the correct answer</summary><br/>
