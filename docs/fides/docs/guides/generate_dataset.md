@@ -25,7 +25,7 @@ We can invoke the `generate-dataset` by simply providing a connection url for th
 ```
 
 The result is a resource file with a dataset with collections and fields to represent our schema:
-```
+```yaml
 dataset:
 - fides_key: public
   organization_fides_key: default_organization
