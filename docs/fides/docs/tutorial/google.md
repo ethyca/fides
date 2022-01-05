@@ -73,9 +73,11 @@ system:
         data_use: improve
         data_subjects:
           - customer
-        # With "IP Anonymization" enabled, IP addresses will be pseudonymized in Google Analytics
+        # With "IP Anonymization" enabled, IP addresses will be pseudonymized in Google Analytics.
         # See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+        # data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+        # With "IP Anonymization" disabled, IP Addresses will remain identifiable.
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
 There are two `privacy_declaration`s defined:
