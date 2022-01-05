@@ -92,6 +92,7 @@ class DatasetField(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    fields: Optional[List["DatasetField"]]
 
 
 class DatasetCollection(BaseModel):
@@ -131,7 +132,7 @@ class Dataset(FidesModel):
 
 # Evaluation
 class ViolationAttributes(BaseModel):
-    "The model for "
+    "The model for"
 
     data_categories: List[str]
     data_subjects: List[str]
