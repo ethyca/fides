@@ -21,7 +21,7 @@ def get_resource_type(router: APIRouter) -> str:
     "Extracts the name of the resource type from the prefix."
     return router.prefix[1:]
 
-
+# Update these to use the async sqlalchemy API
 # CRUD Functions
 def create_resource(sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase) -> Dict:
     """Create a resource in the database."""
