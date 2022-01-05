@@ -233,15 +233,15 @@ def print_database_coverage_result(
     """
     output: str = "Successfully scanned the following datasets:\n"
     output += "\t{}\n".format("\n\t".join(datasets))
-    print(output)
+    echo_green(output)
 
     if uncategorized_fields:
         uncategorized_output = (
             "The following fields are missing data category annotations:\n"
         )
         uncategorized_output += "\t{}\n".format("\n\t".join(uncategorized_fields))
-        print(uncategorized_output)
-    annotation_output = "Annotation coverage: {}%\n\n".format(coverage_percent)
+        echo_red(uncategorized_output)
+    annotation_output = "Annotation coverage: {}%".format(coverage_percent)
     if coverage_percent < coverage_threshold:
         echo_red(annotation_output)
         raise SystemExit(1)
