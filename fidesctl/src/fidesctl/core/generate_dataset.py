@@ -239,7 +239,7 @@ def print_database_coverage_result(
         uncategorized_output = (
             "The following fields are missing data category annotations:\n"
         )
-        uncategorized_output += "\t{}\n".format({"\n\t".join(uncategorized_fields)})
+        uncategorized_output += "\t{}\n".format("\n\t".join(uncategorized_fields))
         print(uncategorized_output)
     annotation_output = "Annotation coverage: {}%\n\n".format(coverage_percent)
     if coverage_percent < coverage_threshold:
