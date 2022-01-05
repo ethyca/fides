@@ -18,7 +18,7 @@ flaskr=# SELECT * FROM users;
 ```
 
 We have fully annotated this schema before with the following dataset resource file:
-```
+```yaml
 dataset:
 - fides_key: public
   organization_fides_key: default_organization
