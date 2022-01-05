@@ -116,7 +116,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
 
-3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system that uses contact information for marketing purposes.
+3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
     <details>
       <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
 
