@@ -12,8 +12,7 @@ There are two options to remedy this situation, and to get the `make fidesctl-ev
 1. Modify the Google Analytics implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy
 
 <details>
-  <summary>Click to see the correct answer</summary><br/>
-
+  <summary>Click to see the correct answer</summary>
   <strong>Option 2</strong> is the best path forward: the Google Analytics implementation should be modified, not the "Minimize User Identifiable Data" policy resource. The policy resource's configuration is dictated by the app's Privacy Policy, and changes could lead to larger compliance issues throughout the system.
 </details>
 
