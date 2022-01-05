@@ -42,7 +42,7 @@ To ensure that the app's policies can account for the data collected by Google A
 
 For this System resource, the file should contain the following configuration:
 
-```yml
+```yaml
 system:
   - fides_key: google_analytics_system
     name: Google Analytics
