@@ -1,8 +1,9 @@
 import sqlalchemy
 import pytest
+from typing import List, Dict
 
-
-from fidesctl.core import generate_dataset
+from fidesctl.core import generate_dataset, api
+from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
@@ -16,6 +17,29 @@ MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
+
+
+def create_server_datasets(test_config, datasets: List[Dataset]):
+    for dataset in datasets:
+        api.delete(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            resource_id=dataset.fides_key,
+            headers=test_config.user.request_headers,
+        )
+        api.create(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            json_resource=dataset.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+
+
+def set_field_data_categories(datasets: List[Dataset], category: str):
+    for dataset in datasets:
+        for collection in dataset.collections:
+            for field in collection.fields:
+                field.data_categories.append(category)
 
 
 @pytest.fixture()
@@ -76,11 +100,13 @@ def test_generate_dataset_collections():
         Dataset(
             name="ds",
             fides_key="ds",
+            data_categories=[],
             description="Fides Generated Description for Schema: ds",
             collections=[
                 DatasetCollection(
                     name="foo",
                     description="Fides Generated Description for Table: foo",
+                    data_categories=[],
                     fields=[
                         DatasetField(
                             name=1,
@@ -97,6 +123,7 @@ def test_generate_dataset_collections():
                 DatasetCollection(
                     name="bar",
                     description="Fides Generated Description for Table: bar",
+                    data_categories=[],
                     fields=[
                         DatasetField(
                             name=4,
@@ -118,13 +145,124 @@ def test_generate_dataset_collections():
 
 
 @pytest.mark.unit
-def test_generate_dataset_info(test_dataset):
-    test_url = "postgresql+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
-    test_engine = sqlalchemy.create_engine(test_url)
-    actual_result = generate_dataset.create_dataset(
-        test_engine, test_dataset.collections
+def test_find_uncategorized_dataset_fields_all_categorized():
+    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="foo",
+                fields=[
+                    DatasetField(
+                        name=1,
+                        data_categories=["category_1"],
+                    ),
+                    DatasetField(
+                        name=2,
+                        data_categories=["category_1"],
+                    ),
+                ],
+            ),
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                        data_categories=["category_1"],
+                    ),
+                    DatasetField(name=5, data_categories=["category_1"]),
+                ],
+            ),
+        ],
     )
-    assert actual_result == test_dataset
+    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    )
+    assert not uncategorized_keys
+    assert total_field_count == 4
+
+
+@pytest.mark.unit
+def test_find_uncategorized_dataset_fields_uncategorized_fields():
+    test_resource = {"ds": {"foo": ["1", "2"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        data_categories=["category_1"],
+        collections=[
+            DatasetCollection(
+                name="foo",
+                data_categories=["category_1"],
+                fields=[
+                    DatasetField(
+                        name=1,
+                        data_categories=["category_1"],
+                    ),
+                    DatasetField(name=2),
+                ],
+            )
+        ],
+    )
+    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    )
+    assert set(uncategorized_keys) == {"ds.foo.2"}
+    assert total_field_count == 2
+
+
+@pytest.mark.unit
+def test_find_uncategorized_dataset_fields_missing_field():
+    test_resource = {"ds": {"bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                        data_categories=["category_1"],
+                    )
+                ],
+            ),
+        ],
+    )
+    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    )
+    assert set(uncategorized_keys) == {"ds.bar.5"}
+    assert total_field_count == 2
+
+
+@pytest.mark.unit
+def test_find_uncategorized_dataset_fields_missing_collection():
+    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    dataset = Dataset(
+        name="ds",
+        fides_key="ds",
+        collections=[
+            DatasetCollection(
+                name="bar",
+                fields=[
+                    DatasetField(
+                        name=4,
+                        data_categories=["category_1"],
+                    ),
+                    DatasetField(
+                        name=5,
+                        data_categories=["category_1"],
+                    ),
+                ],
+            ),
+        ],
+    )
+    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    )
+    assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
+    assert total_field_count == 4
 
 
 @pytest.mark.unit
@@ -136,6 +274,13 @@ def test_unsupported_dialect_error():
 
 @pytest.mark.postgres
 class TestPostgres:
+    EXPECTED_COLLECTION = {
+        "public": {
+            "public.visit": ["email", "last_visit"],
+            "public.login": ["id", "customer_id", "time"],
+        }
+    }
+
     @pytest.fixture(scope="class", autouse=True)
     def postgres_setup(self):
         "Set up the Postgres Database for testing."
@@ -148,23 +293,75 @@ class TestPostgres:
     @pytest.mark.integration
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
-        expected_result = {
-            "public": {
-                "public.visit": ["email", "last_visit"],
-                "public.login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestPostgres.EXPECTED_COLLECTION
 
     @pytest.mark.integration
-    def test_generate_dataset_postgres(self):
-        actual_result = generate_dataset.generate_dataset(POSTGRES_URL, "test_file.yml")
+    def test_generate_dataset_postgres(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(
+            POSTGRES_URL, f"{tmpdir}/test_file.yml"
+        )
         assert actual_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_passes_postgres(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestPostgres.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=POSTGRES_URL,
+            manifest_dir="",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_postgres(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestPostgres.EXPECTED_COLLECTION
+        )
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                connection_string=POSTGRES_URL,
+                manifest_dir="",
+                coverage_threshold=100,
+                url=test_config.cli.server_url,
+                headers=test_config.user.request_headers,
+            )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_postgres(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestPostgres.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=POSTGRES_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
 
 
 @pytest.mark.mysql
 class TestMySQL:
+    EXPECTED_COLLECTION = {
+        "mysql_example": {
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
+        }
+    }
+
     @pytest.fixture(scope="class", autouse=True)
     def mysql_setup(self):
         """
@@ -183,23 +380,74 @@ class TestMySQL:
     @pytest.mark.integration
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
-        expected_result = {
-            "mysql_example": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestMySQL.EXPECTED_COLLECTION
 
     @pytest.mark.integration
-    def test_generate_dataset_mysql(self):
-        actual_result = generate_dataset.generate_dataset(MYSQL_URL, "test_file.yml")
+    def test_generate_dataset_mysql(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(
+            MYSQL_URL, f"{tmpdir}test_file.yml"
+        )
         assert actual_result
 
+    @pytest.mark.integration
+    def test_generate_dataset_passes_mysql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestMySQL.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MYSQL_URL,
+            manifest_dir="",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_mysql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestMySQL.EXPECTED_COLLECTION
+        )
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                connection_string=MYSQL_URL,
+                manifest_dir="",
+                coverage_threshold=100,
+                url=test_config.cli.server_url,
+                headers=test_config.user.request_headers,
+            )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_mysql(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestMySQL.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MYSQL_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
 
 @pytest.mark.mssql
 class TestSQLServer:
+    EXPECTED_COLLECTION = {
+        "dbo": {
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
+        }
+    }
+
     @pytest.fixture(scope="class", autouse=True)
     def mssql_setup(self):
         """
@@ -219,16 +467,61 @@ class TestSQLServer:
     @pytest.mark.integration
     def test_get_db_tables_mssql(self):
         engine = sqlalchemy.create_engine(MSSQL_URL)
-        expected_result = {
-            "dbo": {
-                "visit": ["email", "last_visit"],
-                "login": ["id", "customer_id", "time"],
-            }
-        }
         actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
-        assert actual_result == expected_result
+        assert actual_result == TestSQLServer.EXPECTED_COLLECTION
 
     @pytest.mark.integration
-    def test_generate_dataset_mssql(self):
-        actual_result = generate_dataset.generate_dataset(MSSQL_URL, "test_file.yml")
+    def test_generate_dataset_mssql(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(
+            MSSQL_URL, f"{tmpdir}/test_file.yml"
+        )
         assert actual_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_passes_mssql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSQLServer.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MSSQL_URL,
+            manifest_dir="",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_mssql(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSQLServer.EXPECTED_COLLECTION
+        )
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                connection_string=MSSQL_URL,
+                manifest_dir="",
+                coverage_threshold=100,
+                url=test_config.cli.server_url,
+                headers=test_config.user.request_headers,
+            )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_mssql(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSQLServer.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=MSSQL_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
