@@ -1319,39 +1319,39 @@
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>system:
-  - fides_key: google_analytics_system
-    name: Google Analytics
-    description: Hosted third party analytics to track and analyze user behaviour
-    system_type: Third Party
-    privacy_declarations:
-      # See the Google Analytics documentation for a description of the possible
-      # fields collected by the tracker, including page URL, referrer, cookie ID, etc.
-      # https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference
-      - name: Track &amp; report on page views
-        data_categories:
-          - user.derived.identifiable.browsing_history
-          - user.derived.identifiable.device.cookie_id
-          - user.derived.identifiable.telemetry
-          - user.derived.identifiable.location
-          - user.derived.nonidentifiable
-        data_use: improve
-        data_subjects:
-          - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
-      # Google Analytics collects the user&#39;s IP address and derives geographic dimensions server-side.
-      # See https://developers.google.com/analytics/devguides/reporting/realtime/dimsmets/geonetwork
-      - name: Derive user geographic location
-        data_categories:
-          - user.derived.identifiable.device.ip_address
-          - user.derived.identifiable.location
-          - user.derived.identifiable
-        data_use: improve
-        data_subjects:
-          - customer
-        # With &quot;IP Anonymization&quot; enabled, IP addresses will be pseudonymized in Google Analytics
-        # See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google_analytics_system</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Google Analytics</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hosted third party analytics to track and analyze user behaviour</span><span class="w"></span>
+<span class="w">    </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Third Party</span><span class="w"></span>
+<span class="w">    </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="c1"># See the Google Analytics documentation for a description of the possible</span><span class="w"></span>
+<span class="w">      </span><span class="c1"># fields collected by the tracker, including page URL, referrer, cookie ID, etc.</span><span class="w"></span>
+<span class="w">      </span><span class="c1"># https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Track &amp; report on page views</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.browsing_history</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.device.cookie_id</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.telemetry</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.location</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.nonidentifiable</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_use</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
+<span class="w">      </span><span class="c1"># Google Analytics collects the user&#39;s IP address and derives geographic dimensions server-side.</span><span class="w"></span>
+<span class="w">      </span><span class="c1"># See https://developers.google.com/analytics/devguides/reporting/realtime/dimsmets/geonetwork</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Derive user geographic location</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.device.ip_address</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.location</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_use</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="c1"># With &quot;IP Anonymization&quot; disabled, IP Addresses will remain identifiable.</span><span class="w"></span>
+<span class="w">        </span><span class="c1"># See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <p>There are two <code>privacy_declaration</code>s defined:</p>

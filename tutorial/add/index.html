@@ -1303,17 +1303,17 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl:
-  image: ethyca/fidesctl:latest
-  depends_on:
-    - db
-  command: fidesctl webserver
-  expose:
-    - 8080
-  ports:
-    - &quot;8080:8080&quot;
-  environment:
-    - FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">fidesctl</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span><span class="w"></span>
+<span class="w">  </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span><span class="w"></span>
+<span class="w">  </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl webserver</span><span class="w"></span>
+<span class="w">  </span><span class="nt">expose</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8080:8080&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <blockquote>

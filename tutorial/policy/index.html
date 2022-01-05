@@ -1303,63 +1303,63 @@
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>policy:
-  - fides_key: flaskr_policy
-    name: Flaskr Privacy Policy
-    description: A privacy policy for the example Flask app
-    rules:
-      - fides_key: minimize_user_identifiable_data
-        name: Minimize User Identifiable Data
-        description: Reject collecting any user identifiable data for uses other than system operations
-        data_categories:
-          matches: ANY
-          values:
-            - user.provided.identifiable
-            - user.derived.identifiable
-        data_uses:
-          matches: ANY
-          values:
-            - improve
-            - personalize
-            - advertising
-            - third_party_sharing
-            - collect
-            - train_ai_system
-        data_subjects:
-          matches: ANY
-          values:
-            - customer
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+<span class="normal">57</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_policy</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Privacy Policy</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A privacy policy for the example Flask app</span><span class="w"></span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minimize_user_identifiable_data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Minimize User Identifiable Data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting any user identifiable data for uses other than system operations</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 
-      - fides_key: reject_sensitive_data
-        name: Reject Sensitive Data
-        description: Reject collecting sensitive user data for any use
-        data_categories:
-          matches: ANY
-          values:
-            - user.provided.identifiable.biometric
-            - user.provided.identifiable.childrens
-            - user.provided.identifiable.genetic
-            - user.provided.identifiable.health_and_medical
-            - user.provided.identifiable.political_opinion
-            - user.provided.identifiable.race
-            - user.provided.identifiable.religious_belief
-            - user.provided.identifiable.sexual_orientation
-        data_uses:
-          matches: ANY
-          values:
-            - provide
-            - improve
-            - personalize
-            - advertising
-            - third_party_sharing
-            - collect
-            - train_ai_system
-        data_subjects:
-          matches: ANY
-          values:
-            - customer
-        data_qualifier: aggregated
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reject_sensitive_data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject Sensitive Data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting sensitive user data for any use</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.childrens</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.genetic</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.health_and_medical</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.political_opinion</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.race</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.religious_belief</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.sexual_orientation</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <p>This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:</p>

@@ -1256,9 +1256,8 @@
 <li>Modify the Google Analytics implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy</li>
 </ol>
 <details>
-  <summary>Click to see the correct answer</summary><br/>
-
-  **Option 2** is the best path forward: the Google Analytics implementation should be modified, not the "Minimize User Identifiable Data" policy resource. The policy resource's configuration is dictated by the app's Privacy Policy, and changes could lead to larger compliance issues throughout the system.
+  <summary>Click to see the correct answer</summary>
+  <strong>Option 2</strong> is the best path forward: the Google Analytics implementation should be modified, not the "Minimize User Identifiable Data" policy resource. The policy resource's configuration is dictated by the app's Privacy Policy, and changes could lead to larger compliance issues throughout the system.
 </details>
 
 <hr />
@@ -1289,7 +1288,7 @@
 </td></tr></table>
 <h2 id="update-the-google-analytics-system-resource">Update the Google Analytics System Resource</h2>
 <p>Now that the data collection practices in the Google Analytics script have changed, the associated fidesctl System resource should be updated accordingly. Open the <code>fides_resources/google_analytics_system.yml</code> file in your favorite editor, and modify the last line (the <code>data_qualifier</code> configuration) so that it reads:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <p>By removing the final <code>identified</code> key of the Fides taxonomy, the updated nature of the data collection practices used in this System resource now aligns with the actual behavior of the updated Google Analytics script.</p>

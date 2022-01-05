@@ -1306,60 +1306,60 @@
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
-<span class="normal">54</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>dataset:
-- fides_key: flaskr_postgres_dataset
-  name: Flaskr Example PostgreSQL Database
-  description: Application database for Flaskr example app
-  collections:
-  - name: products
-    fields:
-    - name: created_at
-      data_categories: [system.operations]
-    - name: description
-      data_categories: [user.provided.identifiable]
-    - name: id
-      data_categories: [system.operations]
-    - name: name
-      data_categories: [user.provided.identifiable]
-    - name: price
-      data_categories: [user.provided.identifiable]
-    - name: seller_id
-      data_categories: [user.derived.identifiable.unique_id]
-  - name: purchases
-    fields:
-    - name: buyer_id
-      data_categories: [user.derived.identifiable.unique_id]
-    - name: city
-      data_categories: [user.provided.identifiable.contact.city]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: id
-      data_categories: [system.operations]
-    - name: product_id
-      data_categories: [system.operations]
-    - name: state
-      data_categories: [user.provided.identifiable.contact.state]
-    - name: street_1
-      data_categories: [user.provided.identifiable.contact.street]
-    - name: street_2
-      data_categories: [user.provided.identifiable.contact.street]
-    - name: zip
-      data_categories: [user.provided.identifiable.contact.postal_code]
-  - name: users
-    fields:
-    - name: created_at
-      data_categories: [system.operations]
-    - name: email
-      data_categories: [user.provided.identifiable.contact.email]
-    - name: first_name
-      data_categories: [user.provided.identifiable.name]
-    - name: id
-      data_categories: [user.derived.identifiable.unique_id]
-    - name: last_name
-      data_categories: [user.provided.identifiable.name]
-    - name: password
-      data_categories: [user.provided.identifiable.credentials.password]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+<span class="normal">54</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_postgres_dataset</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Example PostgreSQL Database</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Application database for Flaskr example app</span><span class="w"></span>
+<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products</span><span class="w"></span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">description</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">price</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seller_id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.derived.identifiable.unique_id</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">purchases</span><span class="w"></span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">buyer_id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.derived.identifiable.unique_id</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">city</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.city</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">product_id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.state</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">street_1</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.street</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">street_2</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.street</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zip</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.postal_code</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">users</span><span class="w"></span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.email</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">first_name</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.name</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.derived.identifiable.unique_id</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">last_name</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.name</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.credentials.password</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <!-- TODO: Link to the `generate-dataset` usage documentation below, when it exists. -->
