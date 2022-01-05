@@ -12,7 +12,7 @@ This app contains a single PostgreSQL dataset. Create a `dataset` resource to an
 
 For this project, the file should contain the following configuration:
 
-```yml
+```yaml
 dataset:
 - fides_key: flaskr_postgres_dataset
   name: Flaskr Example PostgreSQL Database

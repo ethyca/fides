@@ -40,7 +40,7 @@ Open the `flaskr/templates/base.html` file in your favorite editor, and add the 
 
 Now that the data collection practices in the Google Analytics script have changed, the associated fidesctl System resource should be updated accordingly. Open the `fides_resources/google_analytics_system.yml` file in your favorite editor, and modify the last line (the `data_qualifier` configuration) so that it reads:
 
-```yml
+```yaml
 data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 ```
 

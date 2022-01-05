@@ -4,7 +4,7 @@ Fidesctl's privacy declarations provide rich metadata about systems, the data ca
 
 Define a single Policy by creating a `flaskr_policy.yml` file in the `fides_resources` directory. For this project, the file should contain the following configuration:
 
-```yml
+```yaml
 policy:
   - fides_key: flaskr_policy
     name: Flaskr Privacy Policy

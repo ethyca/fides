@@ -37,7 +37,7 @@ test_database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl_test
 
 Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses `docker-compose` to orchestrate resources, so include `fidesctl` as a service by adding the following configuration after the database service:
 
-```yml
+```yqml
 fidesctl:
   image: ethyca/fidesctl:latest
   depends_on:
