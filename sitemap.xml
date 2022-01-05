@@ -2,237 +2,247 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://ethyca.github.io/fides/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/ci_reference/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/cli/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/ethyca/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/license/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/api/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/community/code_of_conduct/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/community/hints_tips/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/community/overview/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/code_style/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/database_migration/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/documentation/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/overview/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/pull_requests/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/releases/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/development/testing/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/guides/generate_dataset/</loc>
+         <lastmod>2022-01-05</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/guides/scan_resource/</loc>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/conda/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/configuration/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/database/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/docker/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/installation/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/prerequisites_dependencies/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/installation/pypi/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/overview/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/syntax/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/resources/dataset/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/resources/organization/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/resources/policy/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/resources/registry/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/resources/system/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/data_categories/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/data_qualifiers/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/data_subjects/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/data_uses/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/explorer/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/language/taxonomy/overview/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/quickstart/docker/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/quickstart/local_full/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/quickstart/local_standalone/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/quickstart/overview/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/add/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/dataset/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/google/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/pass/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/policy/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/tutorial/system/</loc>
-         <lastmod>2021-12-22</lastmod>
+         <lastmod>2022-01-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
