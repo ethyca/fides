@@ -216,3 +216,20 @@ def test_evaluate_with_dataset_collection_failed(
     )
     print(result.output)
     assert result.exit_code == 1
+
+
+@pytest.mark.integration
+def test_nested_field_fails_evaluation(
+    test_config_path: str, test_cli_runner: CliRunner
+):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "evaluate",
+            "tests/data/failing_nested_dataset.yml",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 1
