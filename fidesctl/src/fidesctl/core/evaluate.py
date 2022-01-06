@@ -12,6 +12,7 @@ from fidesctl.core.utils import echo_green, echo_red
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
     Dataset,
+    DatasetField,
     Evaluation,
     MatchesEnum,
     Policy,
@@ -325,7 +326,7 @@ def evaluate_dataset_reference(
 
             evaluation_violation_list += dataset_collection_result_violations
 
-        for field in collection.fields:
+        for field in get_all_level_fields(collection.fields):
 
             field_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset field ({})".format(
                 privacy_declaration.name,
@@ -349,6 +350,18 @@ def evaluate_dataset_reference(
                 evaluation_violation_list += field_result_violations
 
     return evaluation_violation_list
+
+
+def get_all_level_fields(fields: list) -> DatasetField:
+    """
+    Traverses all levels of fields that exist in a dataset
+    returning them for individual evaluation.
+    """
+    for field in fields:
+        yield field
+        if field.fields:
+            for nested_field in get_all_level_fields(field.fields):
+                yield nested_field
 
 
 def evaluate_privacy_declaration(
