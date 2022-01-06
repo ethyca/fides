@@ -9,11 +9,12 @@ from typing import Dict, List
 from fastapi import APIRouter, status
 from loguru import logger as log
 from sqlalchemy import update as _update
+from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
 
 from fidesapi import errors
-from fidesapi.database import database
+from fidesapi.database.session import async_session
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
 from fideslang import model_map
 
@@ -42,7 +43,7 @@ async def create_resource(
             log.bind(error=error.detail["error"]).error("Failed to insert resource")
             raise error
 
-    session = database.get_db()
+    session = async_session
 
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=sql_resource.fides_key
@@ -66,59 +67,65 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """
     Get a resource from the databse by its FidesKey.
     """
-    session = database.get_db()
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
-        try:
-            log.debug("Fetching resource")
-            sql_resource = (
-                await session.query(sql_model)
-                .filter(sql_model.fides_key == fides_key)
-                .limit(1)
-                .first()
-            )
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to fetch resource")
-            raise error
-        finally:
-            await session.close()
+        async with async_session() as session:
+            try:
+                log.debug("Fetching resource")
+                query = select(sql_model).where(sql_model.fides_key == fides_key)
+                print(query)
+                sql_resource = await session.execute(query)
+                print(sql_resource.scalars().first())
+            except SQLAlchemyError:
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error("Failed to fetch resource")
+                raise error
+            except Exception as e:
+                print(e)
+            else:
+                await session.commit()
+            finally:
+                await session.close()
 
-        if sql_resource is None:
-            error = errors.NotFoundError(sql_model.__name__, fides_key)
-            log.bind(error=error.detail["error"]).error("Resource not found")
-            raise error
+            if sql_resource is None:
+                error = errors.NotFoundError(sql_model.__name__, fides_key)
+                log.bind(error=error.detail["error"]).error("Resource not found")
+                raise error
 
-        return sql_resource
+            return sql_resource
 
 
 async def list_resource(sql_model: SqlAlchemyBase) -> List:
     """
     Get a list of all of the resources of this type from the database.
     """
-    session = database.get_db()
-
     with log.contextualize(sql_model=sql_model.__name__):
-        try:
-            log.debug("Fetching resources")
-            sql_resource = await session.query(sql_model).all()
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to fetch resources")
-            raise error
-        finally:
-            await session.close()
+        async with async_session() as session:
+            try:
+                log.debug("Fetching resources")
+                query = select(sql_model)
+                sql_resource = await session.execute(query)
+                print(sql_resource.scalars().first())
+            except SQLAlchemyError:
+                await session.rollback()
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error("Failed to fetch resources")
+                raise error
+            except Exception as e:
+                log.bind(error=e)
+            else:
+                await session.commit()
+            finally:
+                await session.close()
 
-        return sql_resource
+            return sql_resource
 
 
 async def update_resource(
     sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
-    session = database.get_db()
+    session = async_session
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         await get_resource(sql_model, fides_key)
@@ -148,7 +155,7 @@ async def upsert_resources(
     Insert new resources into the database. If a resource already exists,
     update it by it's fides_key.
     """
-    session = database.get_db()
+    session = async_session
 
     with log.contextualize(
         sql_model=sql_model.__name__,
@@ -175,7 +182,7 @@ async def upsert_resources(
 
 async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
     """Delete a resource by its fides_key."""
-    session = database.get_db()
+    session = async_session
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = await get_resource(sql_model, fides_key)
@@ -229,7 +236,8 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        return await get_resource(sql_model, fides_key)
+        resource = await get_resource(sql_model, fides_key)
+        return resource
 
     @router.post("/{fides_key}", response_model=resource_model)
     async def update(

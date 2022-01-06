@@ -18,15 +18,6 @@ from fideslang import DEFAULT_TAXONOMY
 from fidesctl.core.utils import get_db_engine
 
 
-async def get_db() -> AsyncSession:
-    """
-    Yields async sessions and awaits the commit.
-    """
-    async with async_session() as session:
-        yield session
-        await session.commit()
-
-
 def get_alembic_config(database_url: str) -> Config:
     """
     Do lots of magic to make alembic work programmatically from the CLI.
