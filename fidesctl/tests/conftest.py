@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 from fideslang import models
-from fidesctl.core.config.config import get_config
+from fidesctl.core.config import get_config
 from fidesctl.core import api
 
 TEST_CONFIG_PATH = "tests/test_config.toml"

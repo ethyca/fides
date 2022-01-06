@@ -38,13 +38,13 @@ class APISettings(FidesSettings):
     @validator("sync_database_url", pre=True, always=True)
     def create_sync_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
         "Create the sync database url."
-        url = "postgres+psygopg2" + values["database_url"]
+        url = "postgresql+psycopg2://" + values["database_url"]
         return url
 
     @validator("async_database_url", pre=True, always=True)
     def create_async_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
         "Create the async database url."
-        url = "postgres+asyncpg" + values["database_url"]
+        url = "postgresql+asyncpg://" + values["database_url"]
         return url
 
     log_destination: str = ""

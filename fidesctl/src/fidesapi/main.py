@@ -14,7 +14,7 @@ from uvicorn import Config, Server
 
 from fidesapi import crud, view, visualize
 from fidesapi.logger import setup as setup_logging
-from fidesctl.core.config.config import FidesctlConfig, get_config
+from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -45,7 +45,7 @@ def setup_server() -> None:
         desination=CONFIG.api.log_destination,
     )
     configure_routes()
-    configure_db(CONFIG.api.database_url)
+    configure_db(CONFIG.api.sync_database_url)
 
 
 @app.middleware("http")
@@ -82,9 +82,9 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(CONFIG.api.database_url)
+        database.reset_db(CONFIG.api.sync_database_url)
         action_text = DBActions.reset
-    configure_db(CONFIG.api.database_url)
+    configure_db(CONFIG.api.sync_database_url)
     return {"data": {"message": f"Fidesctl database {action_text}"}}
 
 
