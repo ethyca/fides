@@ -132,7 +132,7 @@ class Dataset(FidesModel):
 
 # Evaluation
 class ViolationAttributes(BaseModel):
-    "The model for"
+    "The model for attributes which led to an evaluation violation"
 
     data_categories: List[str]
     data_subjects: List[str]
