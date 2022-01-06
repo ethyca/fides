@@ -1,8 +1,10 @@
 import os
 
+from fidesctl.core.config import config
+
 import pytest
 
-from fidesctl.core import utils, config
+from fidesctl.core import utils
 
 
 @pytest.mark.unit

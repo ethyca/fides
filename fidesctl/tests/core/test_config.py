@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from fidesctl.core.config import get_config, FidesctlConfig, APISettings
+from fidesctl.core.config.config import get_config, FidesctlConfig, APISettings
 
 
 # Unit

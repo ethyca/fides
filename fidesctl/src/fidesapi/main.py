@@ -8,12 +8,13 @@ from logging import WARNING
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response
+from fidesapi.database import database
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fidesapi import crud, database, db_session, view, visualize
+from fidesapi import crud, view, visualize
 from fidesapi.logger import setup as setup_logging
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.core.config.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -32,7 +33,6 @@ def configure_routes() -> None:
 def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     database.create_db_if_not_exists(database_url)
-    db_session.global_init(database_url)
     database.init_db(database_url)
 
 

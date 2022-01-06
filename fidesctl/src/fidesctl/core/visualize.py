@@ -7,7 +7,7 @@ from typing import Generator, List, Dict
 import plotly
 import plotly.graph_objects as go
 
-from fidesctl.core import config
+from fidesctl.core.config import config
 
 FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"

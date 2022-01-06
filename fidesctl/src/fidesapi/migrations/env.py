@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from fidesapi.logger import setup as setup_fidesapi_logger
-from fidesctl.core.config import get_config
+from fidesctl.core.config.config import get_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -46,7 +46,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = fidesctl_config.api.database_url
+    url = fidesctl_config.api.database_url.replace("asyncpg", "psycopg2")
     context.configure(
         url=url,
         target_metadata=target_metadata,
