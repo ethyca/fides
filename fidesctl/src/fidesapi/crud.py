@@ -230,7 +230,7 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         return await get_resource(sql_model, fides_key)
 
-    @router.post("/{fides_key}", response_model=resource_model)
+    @router.put("/", response_model=resource_model)
     async def update(
         resource: resource_model,
         resource_type: str = get_resource_type(router),
