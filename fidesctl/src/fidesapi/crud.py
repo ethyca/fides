@@ -77,8 +77,6 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyB
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resource")
                 raise error
-            except Exception as e:
-                print(e)
 
         sql_resource = result.scalars().first()
         if sql_resource is None:
@@ -108,8 +106,6 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resources")
                 raise error
-            except Exception as e:
-                log.bind(error=e)
 
         return sql_resources
 
@@ -188,8 +184,6 @@ async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> FidesMod
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to delete resource")
                 raise error
-            except Exception as e:
-                print(e)
 
         return sql_resource
 

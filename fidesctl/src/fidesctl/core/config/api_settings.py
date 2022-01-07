@@ -1,4 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
+
+# pylint: disable=C0115,C0116, E0213
+
 import os
 from logging import DEBUG, INFO, getLevelName
 from typing import Dict, Union

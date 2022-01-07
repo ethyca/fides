@@ -1,4 +1,7 @@
 """This module defines the base settings for the other settings to inherit from."""
+
+# pylint: disable=C0115,C0116, E0213
+
 from typing import Tuple
 
 from pydantic import BaseSettings

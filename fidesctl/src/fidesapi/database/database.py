@@ -5,13 +5,11 @@ import os
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.ext.asyncio.session import AsyncSession
 from alembic.migration import MigrationContext
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.errors import QueryError
-from fidesapi.database.session import async_session
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
 from fidesapi.crud import upsert_resources
 from fideslang import DEFAULT_TAXONOMY

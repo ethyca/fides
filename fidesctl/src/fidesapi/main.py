@@ -8,11 +8,11 @@ from logging import WARNING
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response
-from fidesapi.database import database
 from loguru import logger as log
 from uvicorn import Config, Server
 
 from fidesapi import crud, view, visualize
+from fidesapi.database import database
 from fidesapi.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 

@@ -205,7 +205,7 @@ def get_visualize_url(resource_type: str, visualize_type: str) -> str:
     Returns:
         url string to the visualization
     """
-    settings = config.get_config()
+    settings = get_config()
     visualize_url = "{}/{}/visualize/{}".format(
         settings.cli.server_url, resource_type, visualize_type
     )
