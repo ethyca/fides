@@ -115,13 +115,10 @@ def test_sent_is_received(test_config, resources_dict, endpoint):
 def test_api_update(test_config, resources_dict, endpoint):
 
     manifest = resources_dict[endpoint]
-
-    update_id = get_existing_key(test_config, endpoint)
     result = _api.update(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         resource_type=endpoint,
-        resource_id=update_id,
         json_resource=manifest.json(exclude_none=True),
     )
     print(result.text)

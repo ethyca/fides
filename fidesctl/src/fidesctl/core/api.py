@@ -63,14 +63,13 @@ def ls(  # pylint: disable=invalid-name
 def update(
     url: str,
     resource_type: str,
-    resource_id: str,
     json_resource: Dict,
     headers: Dict[str, str],
 ) -> requests.Response:
     """
     Update an existing resource.
     """
-    resource_url = generate_resource_url(url, resource_type, resource_id)
+    resource_url = generate_resource_url(url, resource_type)
     return requests.post(resource_url, headers=headers, data=json_resource)
 
 
