@@ -86,31 +86,6 @@ def test_nested_fields():
                                 data_categories=[],
                                 fields=None,
                             ),
-                            DatasetField(
-                                name="last_name",
-                                description="User last name",
-                                data_categories=[],
-                                fields=None,
-                            ),
-                            DatasetField(
-                                name="other_info",
-                                description="Other nested information",
-                                data_categories=[],
-                                fields=[
-                                    DatasetField(
-                                        name="other_nested_field",
-                                        description="another nested field",
-                                        data_categories=[],
-                                        fields=None,
-                                    ),
-                                    DatasetField(
-                                        name="another_other_nested_field",
-                                        description="anoth other nested field",
-                                        data_categories=[],
-                                        fields=None,
-                                    ),
-                                ],
-                            ),
                         ],
                     ),
                 ],
@@ -234,7 +209,7 @@ def test_returns_nested_fields(test_unnested_fields, test_nested_fields):
     nested_field_count = 0
     nested_collection = update_result[0].collections
     for field in nested_collection[0].fields:
-        if field.fields is not None:
+        if field.fields is not None and len(field.fields) > 0:
             nested_field_count += 1
 
     assert nested_field_count == 1

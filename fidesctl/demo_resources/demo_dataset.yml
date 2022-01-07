@@ -33,22 +33,6 @@ dataset:
       description: User's favorite food
       data_categories: []
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      fields:
-      - name: breakfast_preference
-        description: "Users favorite breakfast"
-      - name: lunch_preference
-        description: "Users favorite lunch"
-      - name: dinner_preference
-        description: "Users favorite dinner"
-        fields:
-        - name: temperature
-          description: "Whether the food is best hot, cold, etc."
-        - name: color
-          description: "The dominant color of the meal"
-    - name: drink_preferences
-      description: User's favorite drink
-      data_categories: []
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: state
       description: User's State
       data_categories:
