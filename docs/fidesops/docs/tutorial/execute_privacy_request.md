@@ -88,7 +88,8 @@ INFO:__main__:Executing a Privacy Request. Status 200
 INFO:__main__:Check fidesdemo/fidesuploads for upload package.
 ```
 
-Check your `fidesdemo/fides_uploads` directory for your data package:
+Check your `fidesdemo/fides_uploads` directory for your data package (you may have to wait a few 
+moments for the file to appear):
 
 ```json
 {

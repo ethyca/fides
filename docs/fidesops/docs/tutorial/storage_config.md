@@ -28,7 +28,7 @@ def create_local_storage(key, format, access_token):
             },
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/storage/config",
         headers=oauth_headers(access_token=access_token),
         json=storage_create_data,

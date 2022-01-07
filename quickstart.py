@@ -3,6 +3,8 @@ A five-step fidesops quickstart
 """
 import json
 import logging
+import os
+import time
 from datetime import datetime
 from os.path import exists
 from time import sleep
@@ -451,11 +453,19 @@ def print_results(request_id: str) -> None:
     print it to the console if so.
     """
     results_path = f"fides_uploads/{request_id}.json"
+
+    count = 0
+    max_allowed_waiting = 10
+    while not os.path.exists(results_path) or count > max_allowed_waiting:
+        logger.info("Waiting for privacy request results...")
+        time.sleep(5)
+        count += 1  # Only loop through a reasonable number of times
+
     if exists(results_path):
         logger.info(
             f"Successfully read fidesops privacy request results from {results_path}:"
         )
-        with open(f"fides_uploads/{request_id}.json", "r") as file:
+        with open(results_path, "r") as file:
             results_json = json.loads(file.read())
             print(json.dumps(results_json, indent=4))
     else:
@@ -586,7 +596,9 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print("Press [enter] to define the data categories and relationships in your Postgres tables...")
+    print(
+        "Press [enter] to define the data categories and relationships in your Postgres tables..."
+    )
     input()
 
     validate_dataset(
@@ -602,7 +614,9 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print("Press [enter] to define the data categories and relationships in your Mongo collections...")
+    print(
+        "Press [enter] to define the data categories and relationships in your Mongo collections..."
+    )
     input()
 
     mongo_dataset = create_dataset(
@@ -628,15 +642,17 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print("""
+    print(
+        """
     ┌─┐┌┬┐┌─┐┌─┐  ┌┬┐┬ ┬┌─┐
     └─┐ │ ├┤ ├─┘   │ ││││ │  ...  Create an access policy rule
     └─┘ ┴ └─┘┴     ┴ └┴┘└─┘
-    """)
+    """
+    )
     print(
         "-------------------------------------------------------------------------------------"
     )
-    data_category = 'user.provided.identifiable'
+    data_category = "user.provided.identifiable"
     print(
         f"Press [enter] to create a Policy Rule that accesses information with the data category '{data_category}':"
     )
@@ -665,18 +681,22 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print("""
+    print(
+        """
     ┌─┐┌┬┐┌─┐┌─┐  ┌┬┐┬ ┬┬─┐┌─┐┌─┐
     └─┐ │ ├┤ ├─┘   │ ├─┤├┬┘├┤ ├┤    ...  Run an access privacy request
     └─┘ ┴ └─┘┴     ┴ ┴ ┴┴└─└─┘└─┘
-    """)
+    """
+    )
 
     # Execute a privacy request
     print(
         "-------------------------------------------------------------------------------------"
     )
     email = "jane@example.com"
-    print(f"Press [enter] to run an access request for {email} with Policy `example_request_policy`:")
+    print(
+        f"Press [enter] to run an access request for {email} with Policy `example_request_policy`:"
+    )
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
@@ -692,7 +712,7 @@ if __name__ == "__main__":
         "-------------------------------------------------------------------------------------"
     )
     print(
-    """
+        """
     ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌─┐┬ ┬┬─┐
     └─┐ │ ├┤ ├─┘  ├┤ │ ││ │├┬┘   ...  Create an erasure policy rule
     └─┘ ┴ └─┘┴    └  └─┘└─┘┴└─    
@@ -743,7 +763,9 @@ if __name__ == "__main__":
 
     # Execute a privacy request for jane@example.com
     email = "jane@example.com"
-    print(f"Press [enter] to issue an erasure request for email {email}: with policy `example_erasure_policy`")
+    print(
+        f"Press [enter] to issue an erasure request for email {email}: with policy `example_erasure_policy`"
+    )
     input()
     print("Please wait...")
     privacy_requests = create_privacy_request(
