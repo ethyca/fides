@@ -8,7 +8,7 @@ from typing import Dict, List
 
 from fastapi import APIRouter, status
 from loguru import logger as log
-from sqlalchemy import update as _update
+from sqlalchemy import update as _update, delete as _delete
 from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -26,48 +26,42 @@ def get_resource_type(router: APIRouter) -> str:
 
 # CRUD Functions
 async def create_resource(
-    sql_model: SqlAlchemyBase, sql_resource: SqlAlchemyBase
+    sql_model: SqlAlchemyBase,
+    resource: Dict,
 ) -> Dict:
     """Create a resource in the database."""
     with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=sql_resource.fides_key
+        sql_model=sql_model.__name__, fides_key=resource["fides_key"]
     ):
         try:
-            await get_resource(sql_model, sql_resource.fides_key)
+            await get_resource(sql_model, resource["fides_key"])
         except errors.NotFoundError:
             log.debug("Resource not found. Inserting.")
         else:
-            error = errors.AlreadyExistsError(
-                sql_model.__name__, sql_resource.fides_key
-            )
+            error = errors.AlreadyExistsError(sql_model.__name__, resource["fides_key"])
             log.bind(error=error.detail["error"]).error("Failed to insert resource")
             raise error
 
-    session = async_session
+        async with async_session() as session:
+            try:
+                log.debug("Creating resource")
+                query = _insert(sql_model).values(resource)
+                await session.execute(query)
+                await session.commit()
+            except SQLAlchemyError:
+                await session.rollback()
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error("Failed to create resource")
+                raise error
 
-    with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=sql_resource.fides_key
-    ):
-        try:
-            log.debug("Creating resource")
-            await session.add(sql_resource)
-            await session.commit()
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to create resource")
-            raise error
-        finally:
-            session.close()
-
-        return await get_resource(sql_model, sql_resource.fides_key)
+        return await get_resource(sql_model, resource["fides_key"])
 
 
-async def get_resource(
-    sql_model: SqlAlchemyBase, resource_model: FidesModelType, fides_key: str
-) -> Dict:
+async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
     """
     Get a resource from the databse by its FidesKey.
+
+    Returns a SQLAlchemy model of that resource.
     """
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
@@ -76,32 +70,28 @@ async def get_resource(
                 log.debug("Fetching resource")
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
                 result = await session.execute(query)
-                raw_sql_resource = result.scalar_one()
-                sql_resource = resource_model.from_orm(raw_sql_resource)
+                await session.commit()
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resource")
                 raise error
             except Exception as e:
                 print(e)
-            else:
-                await session.commit()
-            finally:
-                await session.close()
 
-            if sql_resource is None:
-                error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=error.detail["error"]).error("Resource not found")
-                raise error
+        sql_resource = result.scalars().first()
+        if sql_resource is None:
+            error = errors.NotFoundError(sql_model.__name__, fides_key)
+            log.bind(error=error.detail["error"]).error("Resource not found")
+            raise error
 
-            return sql_resource
+        return sql_resource
 
 
-async def list_resource(
-    sql_model: SqlAlchemyBase, resource_model: FidesModelType
-) -> List[Dict]:
+async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
     """
     Get a list of all of the resources of this type from the database.
+
+    Returns a list of SQLAlchemy models of that resource type.
     """
     with log.contextualize(sql_model=sql_model.__name__):
         async with async_session() as session:
@@ -109,10 +99,8 @@ async def list_resource(
                 log.debug("Fetching resources")
                 query = select(sql_model)
                 result = await session.execute(query)
-                raw_sql_resources = result.scalars().all()
-                sql_resources = [
-                    resource_model.from_orm(resource) for resource in raw_sql_resources
-                ]
+                sql_resources = result.scalars().all()
+                await session.commit()
             except SQLAlchemyError:
                 await session.rollback()
                 error = errors.QueryError()
@@ -120,12 +108,8 @@ async def list_resource(
                 raise error
             except Exception as e:
                 log.bind(error=e)
-            else:
-                await session.commit()
-            finally:
-                await session.close()
 
-            return sql_resources
+        return sql_resources
 
 
 async def update_resource(
@@ -185,27 +169,27 @@ async def upsert_resources(
                     "Failed to upsert resources"
                 )
                 raise error
-            finally:
-                session.close()
 
 
-async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
+async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> FidesModelType:
     """Delete a resource by its fides_key."""
-    session = async_session
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = await get_resource(sql_model, fides_key)
-        try:
-            log.debug("Deleting resource")
-            await session.delete(sql_resource)
-            await session.commit()
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to delete resource")
-            raise error
-        finally:
-            session.close()
+        async with async_session() as session:
+            try:
+                log.debug("Deleting resource")
+                query = _delete(sql_model).where(sql_model.fides_key == fides_key)
+                print(query)
+                await session.execute(query)
+                await session.commit()
+            except SQLAlchemyError:
+                await session.rollback()
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error("Failed to delete resource")
+                raise error
+            except Exception as e:
+                print(e)
 
         return sql_resource
 
@@ -228,8 +212,8 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Create a resource."""
         sql_model = sql_model_map[resource_type]
-        sql_resource = sql_model(**resource.dict())
-        return await create_resource(sql_model, sql_resource)
+        resource = await create_resource(sql_model, resource.dict())
+        return resource
 
     @router.get("/", response_model=List[resource_model], name="List")
     async def ls(  # pylint: disable=invalid-name
@@ -237,8 +221,7 @@ for resource_type, resource_model in model_map.items():
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[resource_type]
-        resource_model = model_map[resource_type]
-        resources = await list_resource(sql_model, resource_model)
+        resources = await list_resource(sql_model)
         return resources
 
     @router.get("/{fides_key}", response_model=resource_model)
@@ -247,8 +230,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        resource_model = model_map[resource_type]
-        resource = await get_resource(sql_model, resource_model, fides_key)
+        resource = await get_resource(sql_model, fides_key)
         return resource
 
     @router.post("/{fides_key}", response_model=resource_model)
@@ -268,10 +250,15 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Delete a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        query_result = await delete_resource(sql_model, fides_key)
+        deleted_resource = await delete_resource(sql_model, fides_key)
+        # Convert the resource to a dict explicitly for the response
+        deleted_resource_dict = (
+            model_map[resource_type].from_orm(deleted_resource).dict()
+        )
+        print(deleted_resource_dict)
         return {
             "message": "resource deleted",
-            "resource": query_result,
+            "resource": deleted_resource_dict,
         }
 
     routers += [router]
