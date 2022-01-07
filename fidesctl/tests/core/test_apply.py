@@ -218,7 +218,10 @@ def test_execute_create_update_unchanged_empty():
 
 @pytest.mark.unit
 def test_returns_nested_fields(test_unnested_fields, test_nested_fields):
-
+    """
+    Tests comparing nested fields to unnested, asserting the nested field
+    would be correctly discovered and applied to the server.
+    """
     expected_update_result = [test_nested_fields]
     manifest_resource_list = [test_nested_fields]
     server_resource_list = [test_unnested_fields]

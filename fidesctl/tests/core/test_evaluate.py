@@ -549,6 +549,10 @@ def test_get_fides_key_parent_hierarchy_missing_parent():
 
 @pytest.mark.unit
 def test_nested_fields_unpacked(test_nested_collection_fields):
+    """
+    Tests unpacking fields from a data collection results in the
+    correct number of fields being returned to be evaluated.
+    """
     collection = test_nested_collection_fields
     collected_field_names = []
     for field in evaluate.get_all_level_fields(collection.fields):

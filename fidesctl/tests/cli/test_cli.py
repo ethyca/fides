@@ -222,6 +222,11 @@ def test_evaluate_with_dataset_collection_failed(
 def test_nested_field_fails_evaluation(
     test_config_path: str, test_cli_runner: CliRunner
 ):
+    """
+    Tests a taxonomy that is rigged to fail only due to
+    one of the nested fields violating the policy. Test
+    will fail if the nested field is not discovered.
+    """
     result = test_cli_runner.invoke(
         cli,
         [
