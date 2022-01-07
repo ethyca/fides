@@ -27,25 +27,27 @@ def get_resource_type(router: APIRouter) -> str:
 # CRUD Functions
 async def create_resource(
     sql_model: SqlAlchemyBase,
-    resource: Dict,
+    resource_dict: Dict,
 ) -> Dict:
     """Create a resource in the database."""
     with log.contextualize(
-        sql_model=sql_model.__name__, fides_key=resource["fides_key"]
+        sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
         try:
-            await get_resource(sql_model, resource["fides_key"])
+            await get_resource(sql_model, resource_dict["fides_key"])
         except errors.NotFoundError:
             log.debug("Resource not found. Inserting.")
         else:
-            error = errors.AlreadyExistsError(sql_model.__name__, resource["fides_key"])
+            error = errors.AlreadyExistsError(
+                sql_model.__name__, resource_dict["fides_key"]
+            )
             log.bind(error=error.detail["error"]).error("Failed to insert resource")
             raise error
 
         async with async_session() as session:
             try:
                 log.debug("Creating resource")
-                query = _insert(sql_model).values(resource)
+                query = _insert(sql_model).values(resource_dict)
                 await session.execute(query)
                 await session.commit()
             except SQLAlchemyError:
@@ -54,7 +56,7 @@ async def create_resource(
                 log.bind(error=error.detail["error"]).error("Failed to create resource")
                 raise error
 
-        return await get_resource(sql_model, resource["fides_key"])
+        return await get_resource(sql_model, resource_dict["fides_key"])
 
 
 async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
@@ -112,31 +114,29 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
         return sql_resources
 
 
-async def update_resource(
-    sql_model: SqlAlchemyBase, resource_dict: Dict, fides_key: str
-) -> Dict:
+async def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict) -> Dict:
     """Update a resource in the database by its fides_key."""
-    session = async_session
 
-    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
-        await get_resource(sql_model, fides_key)
-        try:
-            log.debug("Updating resource")
-            await session.execute(
-                _update(sql_model)
-                .where(sql_model.fides_key == fides_key)
-                .values(resource_dict)
-            )
-            await session.commit()
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to update resource")
-            raise error
-        finally:
-            session.close()
+    with log.contextualize(
+        sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
+    ):
+        await get_resource(sql_model, resource_dict["fides_key"])
+        async with async_session() as session:
+            try:
+                log.debug("Updating resource")
+                await session.execute(
+                    _update(sql_model)
+                    .where(sql_model.fides_key == resource_dict["fides_key"])
+                    .values(resource_dict)
+                )
+                await session.commit()
+            except SQLAlchemyError:
+                await session.rollback()
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error("Failed to update resource")
+                raise error
 
-        return await get_resource(sql_model, resource_dict.get("fides_key"))
+        return await get_resource(sql_model, resource_dict["fides_key"])
 
 
 async def upsert_resources(
@@ -212,8 +212,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Create a resource."""
         sql_model = sql_model_map[resource_type]
-        resource = await create_resource(sql_model, resource.dict())
-        return resource
+        return await create_resource(sql_model, resource.dict())
 
     @router.get("/", response_model=List[resource_model], name="List")
     async def ls(  # pylint: disable=invalid-name
@@ -221,8 +220,7 @@ for resource_type, resource_model in model_map.items():
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[resource_type]
-        resources = await list_resource(sql_model)
-        return resources
+        return await list_resource(sql_model)
 
     @router.get("/{fides_key}", response_model=resource_model)
     async def get(
@@ -230,19 +228,16 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        resource = await get_resource(sql_model, fides_key)
-        return resource
+        return await get_resource(sql_model, fides_key)
 
     @router.post("/{fides_key}", response_model=resource_model)
     async def update(
-        fides_key: str,
         resource: resource_model,
         resource_type: str = get_resource_type(router),
     ) -> Dict:
         """Update a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        resource_dict = resource.dict()
-        return await update_resource(sql_model, resource_dict, fides_key)
+        return await update_resource(sql_model, resource.dict())
 
     @router.delete("/{fides_key}")
     async def delete(
@@ -255,7 +250,6 @@ for resource_type, resource_model in model_map.items():
         deleted_resource_dict = (
             model_map[resource_type].from_orm(deleted_resource).dict()
         )
-        print(deleted_resource_dict)
         return {
             "message": "resource deleted",
             "resource": deleted_resource_dict,
