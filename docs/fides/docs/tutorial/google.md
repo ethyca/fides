@@ -42,7 +42,7 @@ To ensure that the app's policies can account for the data collected by Google A
 
 For this System resource, the file should contain the following configuration:
 
-```yml
+```yaml
 system:
   - fides_key: google_analytics_system
     name: Google Analytics
@@ -73,9 +73,9 @@ system:
         data_use: improve
         data_subjects:
           - customer
-        # With "IP Anonymization" enabled, IP addresses will be pseudonymized in Google Analytics
+        # With "IP Anonymization" disabled, IP Addresses will remain identifiable.
         # See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
 There are two `privacy_declaration`s defined:

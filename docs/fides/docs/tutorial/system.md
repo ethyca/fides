@@ -8,7 +8,7 @@ Writing a Fides privacy declaration requires answering the questions: _"What dat
 
 For this project, the file should contain the following configuration:
 
-```yml
+```yaml
 system:
   - fides_key: flaskr_system
     name: Flaskr Web Application
