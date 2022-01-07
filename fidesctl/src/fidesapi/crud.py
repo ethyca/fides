@@ -8,7 +8,7 @@ from typing import Dict, List
 
 from fastapi import APIRouter, status
 from loguru import logger as log
-from sqlalchemy import update as _update, text
+from sqlalchemy import update as _update
 from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -16,7 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fidesapi import errors
 from fidesapi.database.session import async_session
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
-from fideslang import model_map
+from fideslang import model_map, FidesModelType
 
 
 def get_resource_type(router: APIRouter) -> str:
@@ -63,7 +63,9 @@ async def create_resource(
         return await get_resource(sql_model, sql_resource.fides_key)
 
 
-async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
+async def get_resource(
+    sql_model: SqlAlchemyBase, resource_model: FidesModelType, fides_key: str
+) -> Dict:
     """
     Get a resource from the databse by its FidesKey.
     """
@@ -74,7 +76,8 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
                 log.debug("Fetching resource")
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
                 result = await session.execute(query)
-                sql_resource = result.fetchone()
+                raw_sql_resource = result.scalar_one()
+                sql_resource = resource_model.from_orm(raw_sql_resource)
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resource")
@@ -94,7 +97,9 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
             return sql_resource
 
 
-async def list_resource(sql_model: SqlAlchemyBase) -> List:
+async def list_resource(
+    sql_model: SqlAlchemyBase, resource_model: FidesModelType
+) -> List[Dict]:
     """
     Get a list of all of the resources of this type from the database.
     """
@@ -103,8 +108,11 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List:
             try:
                 log.debug("Fetching resources")
                 query = select(sql_model)
-                sql_resource = await session.execute(query)
-                print(sql_resource.scalars().first())
+                result = await session.execute(query)
+                raw_sql_resources = result.scalars().all()
+                sql_resources = [
+                    resource_model.from_orm(resource) for resource in raw_sql_resources
+                ]
             except SQLAlchemyError:
                 await session.rollback()
                 error = errors.QueryError()
@@ -117,7 +125,7 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List:
             finally:
                 await session.close()
 
-            return sql_resource
+            return sql_resources
 
 
 async def update_resource(
@@ -229,7 +237,9 @@ for resource_type, resource_model in model_map.items():
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[resource_type]
-        return await list_resource(sql_model)
+        resource_model = model_map[resource_type]
+        resources = await list_resource(sql_model, resource_model)
+        return resources
 
     @router.get("/{fides_key}", response_model=resource_model)
     async def get(
@@ -237,7 +247,8 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        resource = await get_resource(sql_model, fides_key)
+        resource_model = model_map[resource_type]
+        resource = await get_resource(sql_model, resource_model, fides_key)
         return resource
 
     @router.post("/{fides_key}", response_model=resource_model)

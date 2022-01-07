@@ -25,8 +25,8 @@ from .models import (
 )
 from .default_taxonomy import DEFAULT_TAXONOMY
 
-ModelTypeUnion = Union[Type[FidesModel], Type[Evaluation]]
-model_map: Dict[str, ModelTypeUnion] = {
+FidesModelType = Union[Type[FidesModel], Type[Evaluation]]
+model_map: Dict[str, FidesModelType] = {
     "data_category": DataCategory,
     "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
