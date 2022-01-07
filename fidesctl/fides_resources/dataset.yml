@@ -1,6 +1,6 @@
 dataset:
   - fides_key: fidesctl
-    organization_fides_key: default_org
+    organization_fides_key: default_organization
     name: fidesctl
     description: "The dataset responsible for storing all of the data related to a fidesctl instance."
     meta: {}
