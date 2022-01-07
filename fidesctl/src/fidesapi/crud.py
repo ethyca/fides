@@ -16,7 +16,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from fidesapi import errors
 from fidesapi.database.session import async_session
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
-from fideslang import model_map, FidesModelType
 
 
 def get_resource_type(router: APIRouter) -> str:
@@ -28,7 +27,7 @@ def get_resource_type(router: APIRouter) -> str:
 async def create_resource(
     sql_model: SqlAlchemyBase,
     resource_dict: Dict,
-) -> Dict:
+) -> SqlAlchemyBase:
     """Create a resource in the database."""
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
@@ -167,7 +166,7 @@ async def upsert_resources(
                 raise error
 
 
-async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> FidesModelType:
+async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
     """Delete a resource by its fides_key."""
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):

@@ -14,19 +14,10 @@ from .fides_settings import FidesSettings
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    # This has to be defined before database_url for validation
-    test_database_url: str = (
-        "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
-    )
-    database_url: str = (
-        "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    )
-    sync_database_url: str = (
-        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    )
-    async_database_url: str = (
-        "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    )
+    test_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+    database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    sync_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    async_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
     @validator("database_url", pre=True, always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
