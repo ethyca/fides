@@ -26,7 +26,7 @@ def create_postgres_connection(key, access_token):
             "access": "write",
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/connection",
         headers=oauth_headers(access_token=access_token),
         json=connection_create_data,

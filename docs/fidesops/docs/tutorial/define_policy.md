@@ -29,7 +29,7 @@ def create_policy(key, access_token):
             "key": key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy",
         headers=oauth_headers(access_token=access_token),
         json=policy_create_data,
@@ -56,7 +56,7 @@ def create_policy_rule(
             "storage_destination_key": storage_destination_key,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule",
         headers=oauth_headers(access_token=access_token),
         json=rule_create_data,
@@ -80,7 +80,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
             "data_category": data_category,
         },
     ]
-    response = requests.put(
+    response = requests.patch(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{rule_key}/target",
         headers=oauth_headers(access_token=access_token),
         json=target_create_data,
