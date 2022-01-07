@@ -37,14 +37,14 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-def init_db(database_url: str) -> None:
+async def init_db(database_url: str) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
-    load_default_taxonomy()
+    await load_default_taxonomy()
 
 
 def create_db_if_not_exists(database_url: str) -> None:
@@ -55,7 +55,7 @@ def create_db_if_not_exists(database_url: str) -> None:
         create_database(database_url)
 
 
-def load_default_taxonomy() -> None:
+async def load_default_taxonomy() -> None:
     "Upserts the default taxonomy into the database."
     log.info("UPSERTING the default fideslang taxonomy")
     for resource_type in list(DEFAULT_TAXONOMY.__fields_set__):
@@ -63,7 +63,7 @@ def load_default_taxonomy() -> None:
         resources = list(map(dict, dict(DEFAULT_TAXONOMY)[resource_type]))
 
         try:
-            upsert_resources(sql_model_map[resource_type], resources)
+            await upsert_resources(sql_model_map[resource_type], resources)
         except QueryError:
             pass  # The upsert_resources function will log the error
         else:

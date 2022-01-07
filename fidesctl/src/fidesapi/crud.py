@@ -8,7 +8,7 @@ from typing import Dict, List
 
 from fastapi import APIRouter, status
 from loguru import logger as log
-from sqlalchemy import update as _update
+from sqlalchemy import update as _update, text
 from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -73,9 +73,8 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:
             try:
                 log.debug("Fetching resource")
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
-                print(query)
-                sql_resource = await session.execute(query)
-                print(sql_resource.scalars().first())
+                result = await session.execute(query)
+                sql_resource = result.fetchone()
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resource")
@@ -155,29 +154,31 @@ async def upsert_resources(
     Insert new resources into the database. If a resource already exists,
     update it by it's fides_key.
     """
-    session = async_session
 
     with log.contextualize(
         sql_model=sql_model.__name__,
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
-        try:
-            log.debug("Upserting resources")
-            insert_stmt = _insert(sql_model).values(resource_dicts)
-            await session.execute(
-                insert_stmt.on_conflict_do_update(
-                    index_elements=["fides_key"],
-                    set_=insert_stmt.excluded,
+        async with async_session() as session:
+            try:
+                log.debug("Upserting resources")
+                insert_stmt = _insert(sql_model).values(resource_dicts)
+                await session.execute(
+                    insert_stmt.on_conflict_do_update(
+                        index_elements=["fides_key"],
+                        set_=insert_stmt.excluded,
+                    )
                 )
-            )
-            await session.commit()
-        except SQLAlchemyError:
-            await session.rollback()
-            error = errors.QueryError()
-            log.bind(error=error.detail["error"]).error("Failed to upsert resources")
-            raise error
-        finally:
-            session.close()
+                await session.commit()
+            except SQLAlchemyError:
+                await session.rollback()
+                error = errors.QueryError()
+                log.bind(error=error.detail["error"]).error(
+                    "Failed to upsert resources"
+                )
+                raise error
+            finally:
+                session.close()
 
 
 async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> Dict:

@@ -30,14 +30,14 @@ def configure_routes() -> None:
     app.include_router(view.router)
 
 
-def configure_db(database_url: str) -> None:
+async def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     database.create_db_if_not_exists(database_url)
-    database.init_db(database_url)
+    await database.init_db(database_url)
 
 
 @app.on_event("startup")
-def setup_server() -> None:
+async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     setup_logging(
         CONFIG.api.log_level,
@@ -45,7 +45,7 @@ def setup_server() -> None:
         desination=CONFIG.api.log_destination,
     )
     configure_routes()
-    configure_db(CONFIG.api.sync_database_url)
+    await configure_db(CONFIG.api.sync_database_url)
 
 
 @app.middleware("http")
