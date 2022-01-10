@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Column, text
 from sqlalchemy.engine import (
+    URL,
     Engine,
     create_engine,
     CursorResult,
@@ -11,7 +12,7 @@ from sqlalchemy.engine import (
     Connection,
 )
 from sqlalchemy.exc import OperationalError, InternalError
-from snowflake.sqlalchemy import URL
+from snowflake.sqlalchemy import URL as Snowflake_URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -22,6 +23,7 @@ from fidesops.schemas.connection_configuration import (
     PostgreSQLSchema,
     RedshiftSchema,
     SnowflakeSchema,
+    MicrosoftSQLServerSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
@@ -290,7 +292,7 @@ class SnowflakeConnector(SQLConnector):
         if config.role_name:
             kwargs["role"] = config.role_name
 
-        url: str = URL(**kwargs)
+        url: str = Snowflake_URL(**kwargs)
         return url
 
     def create_client(self) -> Engine:
@@ -306,3 +308,40 @@ class SnowflakeConnector(SQLConnector):
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return SnowflakeQueryConfig(node)
+
+
+class MicrosoftSQLServerConnector(SQLConnector):
+    """
+    Connector specific to Microsoft SQL Server
+    """
+
+    def build_uri(self) -> URL:
+        """
+        Build URI of format
+        mssql+pyodbc://[username]:[password]@[host]:[port]/[dbname]?driver=ODBC+Driver+17+for+SQL+Server
+        Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
+        """
+
+        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
+
+        url = URL.create(
+            "mssql+pyodbc",
+            username=config.username,
+            password=config.password,
+            host=config.host,
+            port=config.port,
+            database=config.dbname,
+            query={"driver": "ODBC Driver 17 for SQL Server"},
+        )
+
+        return url
+
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a MicrosoftSQLServer database"""
+        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )

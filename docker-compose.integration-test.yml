@@ -4,6 +4,7 @@ services:
       - postgres_example
       - mongodb_example
       - mysql_example
+      - mssql_example
 
   postgres_example:
     image: postgres:12
@@ -50,3 +51,13 @@ services:
       - "3306:3306"
     volumes:
       - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
+
+  mssql_example:
+    image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
+    ports:
+      - 1433:1433
+    environment:
+      - SA_PASSWORD=Mssql_pw1
+      - ACCEPT_EULA="Y"
+
+

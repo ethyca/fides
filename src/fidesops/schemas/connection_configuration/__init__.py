@@ -7,6 +7,10 @@ from fidesops.schemas.connection_configuration.connection_secrets_mongodb import
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_mssql import (
+    MicrosoftSQLServerSchema,
+    MSSQLDocsSchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
     MySQLDocsSchema,
@@ -35,6 +39,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
+    ConnectionType.mssql.value: MicrosoftSQLServerSchema,
 }
 
 
@@ -61,4 +66,5 @@ connection_secrets_schemas = Union[
     MySQLDocsSchema,
     RedshiftDocsSchema,
     SnowflakeDocsSchema,
+    MSSQLDocsSchema,
 ]
