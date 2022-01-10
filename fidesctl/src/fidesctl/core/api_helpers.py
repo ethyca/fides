@@ -67,3 +67,29 @@ def get_server_resource(
     )
 
     return server_resource
+
+
+def list_server_resource(
+    url: str,
+    resource_type: str,
+    headers: Dict[str, str],
+) -> List[FidesModel]:
+    """
+    Get a given resource from the server
+
+    Returns None if the object does not exist on the server
+    """
+    raw_server_response: Response = api.ls(
+        url=url, resource_type=resource_type, headers=headers
+    )
+
+    server_resource: List[FidesModel] = [
+        parse_dict(
+            resource_type=resource_type,
+            resource=resource,
+            from_server=True,
+        )
+        for resource in raw_server_response.json()
+    ]
+
+    return server_resource
