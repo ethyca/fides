@@ -16,6 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fidesapi import errors
 from fidesapi.database.session import async_session
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
+from fideslang import model_map
 
 
 def get_resource_type(router: APIRouter) -> str:
