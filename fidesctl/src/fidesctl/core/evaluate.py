@@ -1,6 +1,6 @@
 """Module for evaluating policies."""
 import uuid
-from typing import Callable, Dict, List, Optional, Set, cast
+from typing import Callable, Dict, List, Optional, Set, cast, Iterator
 
 from pydantic import AnyHttpUrl
 
@@ -352,7 +352,7 @@ def evaluate_dataset_reference(
     return evaluation_violation_list
 
 
-def get_all_level_fields(fields: list) -> DatasetField:
+def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
     """
     Traverses all levels of fields that exist in a dataset
     returning them for individual evaluation.
