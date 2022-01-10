@@ -2,6 +2,7 @@
 
 In this section we'll cover:
 
+
 - What is a Privacy Request?
 - How does a Privacy Request work in conjunction with a policy?
 - How can I execute a Privacy Request?
@@ -13,19 +14,20 @@ In this section we'll cover:
 Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 ## What is a Privacy Request?
-A Privacy Request in its simplest form describes a request by a user, to process data pertaining to their identity. Privacy Requests are currently supported in two forms, `access` and `erasure`. For more information on action types, please see [How-To: Configure Request Policies](policies.md#rule-attributes).
+
+A Privacy Request represents a request to perform an action on a user's identity data. The Request object itself identifies the user by email address, phone number, social security number, or other identifiable information. The data that will be affected and how it's affected is described in a Policy object that's associated with the Request.
+
+For more information on Policies, see [How-To: Configure Policies](policies.md#rule-attributes).
 
 
-#### How does a Privacy Request work in conjunction with a Policy?
-A Privacy Request must always be associated with a pre-configured `Policy`. While a Privacy Request describes _whose_ data to process, a `Policy` describes _how_ to process that data.
+## How do I submit a Privacy Request?
 
-
-## How can I execute a Privacy Request?
-Privacy Requests can be executed by submitting them to Fidesops via the Privacy Request API as follows:
+You submit a Privacy Request by calling the  **Submit a Privacy Request** operation. Here, 
+we submit  a request to apply the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` and the phone number `+1 (123) 456 7891`.
 
 `POST /api/v1/privacy-request`
 
-```
+```json
 [
   {
     "external_id": "a-user-defined-id",
@@ -39,12 +41,21 @@ Privacy Requests can be executed by submitting them to Fidesops via the Privacy 
 ]
 ```
 
-#### Note:
+* `external_id` is an optional  identifier of your own invention that lets you track the Privacy Request. See [How-To: Report on Privacy Requests](reporting.md) for more information.
+
+* `requested_at` is an ISO8601 timestamp that specifies the moment that the request was submitted.
+
+* `policy_key` identifies the Policy object to which this request will be applied. See [How-To: Configure Request Policies](policies.md) for more information.
+
+* `identities` is an array of objects that contain data that identify the users whose data will be affected by the Policy. Each object identifies a single user by AND'ing the object's properties. 
+
 
 - This request will submit a Privacy Request for execution that applies the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` or the phone number `+1 (123) 456 7891`.
 - Specifying a `external_id` enables us to track this Privacy Request with that `external_id` later on. See [How-To: Report on Privacy Requests](reporting.md) for more information.
 - `policy_key` should correspond to a previously configured `Policy` object. See [How-To: Configure Request Policies](policies.md) for more information.
-- A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+
+A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+
 
 
 ## How do I monitor Privacy Requests as they execute?
@@ -58,7 +69,12 @@ For more detailed examples and further Privacy Request filtering in Fidesops ple
 
 
 ## How can I integrate the Privacy Request flow into my existing support tools?
-Alongside generic API interopoerability, Fidesops provides a direct integration with the OneTrust's DSAR automation flow.
+
+Alongside generic API interoperability, Fidesops provides a direct integration with the OneTrust's DSAR automation flow.
+
+* Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [How-To: Authenticate with OAuth](oauth.md) for more information.
+
+* OneTrust: Fidesops can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
 
 - Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. Pleae see [How-To: Authenticate with OAuth](oauth.md) for more information.
 - OneTrust: Fidesops can be configured to act as (or as part of) the fulfilment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
