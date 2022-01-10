@@ -82,6 +82,13 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mysql_example.USER"),
         "password": pydash.get(integration_config, "mysql_example.PASSWORD"),
     },
+    "mssql_example": {
+        "host": pydash.get(integration_config, "mssql_example.SERVER"),
+        "port": pydash.get(integration_config, "mssql_example.PORT"),
+        "dbname": pydash.get(integration_config, "mssql_example.DB"),
+        "username": pydash.get(integration_config, "mssql_example.USER"),
+        "password": pydash.get(integration_config, "mssql_example.PASSWORD"),
+    },
 }
 
 
@@ -193,6 +200,22 @@ def connection_config_mysql(db: Session) -> Generator:
             "connection_type": ConnectionType.mysql,
             "access": AccessLevel.write,
             "secrets": integration_secrets["mysql_example"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_mssql(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mssql_db_1",
+            "connection_type": ConnectionType.mssql,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["mssql_example"],
         },
     )
     yield connection_config

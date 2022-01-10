@@ -35,7 +35,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fides-ops.
+    Supported types to which we can connect fidesops.
     """
 
     postgres = "postgres"
@@ -44,11 +44,12 @@ class ConnectionType(enum.Enum):
     https = "https"
     redshift = "redshift"
     snowflake = "snowflake"
+    mssql = "mssql"
 
 
 class AccessLevel(enum.Enum):
     """
-    Perms given to the ConnectionConfig.  For example, with "read" permissions, fides-ops promises
+    Perms given to the ConnectionConfig.  For example, with "read" permissions, fidesops promises
     to not modify the data on a connected application database in any way.
 
     "Write" perms mean we can update/delete items in the connected database.
@@ -60,7 +61,7 @@ class AccessLevel(enum.Enum):
 
 class ConnectionConfig(Base):
     """
-    Stores credentials to connect fides-ops to an engineer's application databases.
+    Stores credentials to connect fidesops to an engineer's application databases.
     """
 
     name = Column(String, index=True, unique=True, nullable=False)

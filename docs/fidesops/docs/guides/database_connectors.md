@@ -24,6 +24,7 @@ Fidesops supports connections to the following databases:
 * PostgreSQL
 * MongoDB
 * MySQL
+* Microsoft SQLServer
 * Amazon Redshift
 * Snowflake
 
@@ -33,7 +34,7 @@ Other platforms will be added in future releases.
 
 The connection between Fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
 
-* `name`  is a  a human-readable name for your database.
+* `name`  is a human-readable name for your database.
 
 * `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to snake-case, is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application_postgresql_db`.
 
@@ -90,10 +91,24 @@ PATCH api/v1/connection
 ]
 ``` 
 
+#### Example 4: MsSQL ConnectionConfig
+
+```
+PATCH api/v1/connection 
+[
+  { 
+    "name": "My MsSQL DB",
+    "key": "my_mssql_db",
+    "connection_type": "mssql",
+    "access": "write"
+  }
+]
+``` 
+
 
 ### Set the ConnectionConfig's Secrets
 
-After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password. You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
+After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password (note that the secrets used are specific to the DB connector). You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
 
 If you set the `verify` query parameter to `true`, the operation  will  test the connection by issuing a trivial request to the database. The `test_status` response property announces the success of the connection attempt as `succeeded` or `failed`. If the attempt has failed, the `failure_reason` property gives further details about the failure.
 

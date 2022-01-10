@@ -17,10 +17,18 @@ SERVER="mysql_example"
 USER="mysql_user"
 PASSWORD="mysql_pw"
 DB="mysql_example"
-PORT= 3306
+PORT=3306
 
 [redshift]
 external_uri=""
 
 [snowflake]
 external_uri=""
+
+[mssql_example]
+SERVER="mssql_example"
+USER="sa"
+PASSWORD="Mssql_pw1"
+DB="mssql_example"
+PORT=1433
+

@@ -337,6 +337,43 @@
 					"response": []
 				},
 				{
+					"name": "Create/Update Connection Configs: MsSQL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Application MsSQL DB\",\n    \"key\": \"{{mssql_key}}\",\n    \"connection_type\": \"mssql\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create/Update Connection Configs: Mongo",
 					"request": {
 						"auth": {
@@ -405,6 +442,44 @@
 							"path": [
 								"connection",
 								"{{postgres_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secrets: MsSQL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"mssql_example\",\n    \"port\": 1433,\n    \"dbname\": \"mssql_example\",\n    \"username\": \"sa\",\n    \"password\": \"Ms_sql1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{mssql_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{mssql_key}}",
 								"secret"
 							]
 						}
@@ -1869,6 +1944,10 @@
 		{
 			"key": "postgres_key",
 			"value": "app_postgres_db"
+		},
+		{
+			"key": "mssql_key",
+			"value": "app_mssql_db"
 		},
 		{
 			"key": "mongo_key",
