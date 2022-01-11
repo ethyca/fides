@@ -23,7 +23,7 @@ async def evaluation_view() -> HTMLResponse:
     html += "<h2>Evaluations</h2>"
     html += '<table class="table table-striped" style="text-align: left;">'
     html += "<tr><th>Id</th><th>Status</th><th>Violations</th><th>Message</th></tr>"
-    for evaluation in list_resource(Evaluation):
+    for evaluation in await list_resource(Evaluation):
         html += "<tr>"
         html += f"<td>{evaluation.fides_key}</td>"
         html += f"<td>{evaluation.status}</td>"
