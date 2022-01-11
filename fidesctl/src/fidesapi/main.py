@@ -29,6 +29,10 @@ def configure_routes() -> None:
     app.include_router(view.router)
 
 
+# Configure the routes here so we can generate the openapi json file
+configure_routes()
+
+
 def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     database.create_db_if_not_exists(database_url)
@@ -44,7 +48,6 @@ def setup_server() -> None:
         serialize=CONFIG.api.log_serialization,
         desination=CONFIG.api.log_destination,
     )
-    configure_routes()
     configure_db(CONFIG.api.database_url)
 
 
