@@ -1219,12 +1219,14 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
 <span class="n">server_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="w"></span>
 
 <span class="k">[api]</span><span class="w"></span>
-<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl&quot;</span><span class="w"></span>
-<span class="n">test_database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl_test&quot;</span><span class="w"></span>
+<span class="c1"># Note that no driver should be specified here</span><span class="w"></span>
+<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:postgres@localhost:5432/fidesctl&quot;</span><span class="w"></span>
+<span class="n">test_database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:postgres@localhost:5432/fidesctl_test&quot;</span><span class="w"></span>
 
 <span class="c1"># The following are set to their current default values</span><span class="w"></span>
 <span class="n">log_destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">    </span><span class="c1"># Also accepts: Any valid file path</span><span class="w"></span>

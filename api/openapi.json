@@ -52,6 +52,58 @@
           }
         }
       },
+      "put": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_category__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataCategory"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "DataCategory"
@@ -157,67 +209,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "DataCategory"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_category__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_category"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataCategory"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataCategory"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "DataCategory"
@@ -299,6 +290,58 @@
                   "items": {
                     "$ref": "#/components/schemas/DataQualifier"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_qualifier__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQualifier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
                 }
               }
             }
@@ -420,67 +463,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "DataQualifier"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_qualifier__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_qualifier"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataQualifier"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataQualifier"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "DataQualifier"
@@ -562,6 +544,58 @@
                   "items": {
                     "$ref": "#/components/schemas/DataSubject"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_subject__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSubject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSubject"
                 }
               }
             }
@@ -683,67 +717,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "DataSubject"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_subject__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_subject"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataSubject"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataSubject"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "DataSubject"
@@ -825,6 +798,58 @@
                   "items": {
                     "$ref": "#/components/schemas/DataUse"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_use__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataUse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataUse"
                 }
               }
             }
@@ -946,67 +971,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "DataUse"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_use__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "data_use"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataUse"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataUse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "DataUse"
@@ -1088,6 +1052,58 @@
                   "items": {
                     "$ref": "#/components/schemas/Dataset"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_dataset__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dataset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
                 }
               }
             }
@@ -1209,67 +1225,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_dataset__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "dataset"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Dataset"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Dataset"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Dataset"
@@ -1351,6 +1306,58 @@
                   "items": {
                     "$ref": "#/components/schemas/Organization"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_organization__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }
@@ -1472,67 +1479,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_organization__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "organization"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Organization"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Organization"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Organization"
@@ -1614,6 +1560,58 @@
                   "items": {
                     "$ref": "#/components/schemas/Policy"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_policy__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
                 }
               }
             }
@@ -1735,67 +1733,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "Policy"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_policy__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "policy"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Policy"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Policy"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Policy"
@@ -1877,6 +1814,58 @@
                   "items": {
                     "$ref": "#/components/schemas/Registry"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_registry__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
                 }
               }
             }
@@ -1998,67 +1987,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "Registry"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_registry__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "registry"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registry"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registry"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Registry"
@@ -2140,6 +2068,58 @@
                   "items": {
                     "$ref": "#/components/schemas/System"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_system__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
                 }
               }
             }
@@ -2261,67 +2241,6 @@
           }
         }
       },
-      "post": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_system__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "System"
@@ -2403,6 +2322,58 @@
                   "items": {
                     "$ref": "#/components/schemas/Evaluation"
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_evaluation__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Evaluation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
                 }
               }
             }
@@ -2501,67 +2472,6 @@
             "in": "query"
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Evaluation"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Evaluation"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.",
-        "operationId": "update_evaluation__fides_key__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Fides Key",
-              "type": "string"
-            },
-            "name": "fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "evaluation"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Evaluation"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
