@@ -1,8 +1,10 @@
+# type: ignore
+# pylint: disable=redefined-outer-name,cell-var-from-loop
+
 """
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
-# pylint: disable=redefined-outer-name,cell-var-from-loop
 
 from typing import Dict, List
 
