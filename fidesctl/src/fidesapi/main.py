@@ -8,12 +8,13 @@ from logging import WARNING
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response
+from fidesapi.routes import crud, visualize
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fidesapi import crud, view, visualize
+from fidesapi import view
 from fidesapi.database import database
-from fidesapi.logger import setup as setup_logging
+from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
@@ -82,7 +83,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(CONFIG.api.sync_database_url)
+        await database.reset_db(CONFIG.api.sync_database_url)
         action_text = DBActions.reset
     await configure_db(CONFIG.api.sync_database_url)
     return {"data": {"message": f"Fidesctl database {action_text}"}}

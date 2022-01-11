@@ -9,11 +9,12 @@ from alembic.migration import MigrationContext
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fidesapi.errors import QueryError
+from fidesapi.utils.errors import QueryError
 from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
-from fidesapi.crud import upsert_resources
 from fideslang import DEFAULT_TAXONOMY
 from fidesctl.core.utils import get_db_engine
+
+from .crud import upsert_resources
 
 
 def get_alembic_config(database_url: str) -> Config:

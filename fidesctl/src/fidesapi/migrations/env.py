@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from fidesapi.logger import setup as setup_fidesapi_logger
+from fidesapi.utils.logger import setup as setup_fidesapi_logger
 from fidesctl.core.config import get_config
 
 # this is the Alembic Config object, which provides
