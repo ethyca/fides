@@ -9,7 +9,6 @@ from fideslang.models import (
     DataQualifier,
     Dataset,
     DatasetCollection,
-    DatasetField,
     DataSubject,
     DataUse,
     MatchesEnum,
