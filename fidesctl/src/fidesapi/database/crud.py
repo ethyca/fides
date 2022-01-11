@@ -36,16 +36,17 @@ async def create_resource(
             raise error
 
         async with async_session() as session:
-            try:
-                log.debug("Creating resource")
-                query = _insert(sql_model).values(resource_dict)
-                await session.execute(query)
-                await session.commit()
-            except SQLAlchemyError:
-                await session.rollback()
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error("Failed to create resource")
-                raise error
+            async with session.begin():
+                try:
+                    log.debug("Creating resource")
+                    query = _insert(sql_model).values(resource_dict)
+                    await session.execute(query)
+                except SQLAlchemyError:
+                    error = errors.QueryError()
+                    log.bind(error=error.detail["error"]).error(
+                        "Failed to create resource"
+                    )
+                    raise error
 
         return await get_resource(sql_model, resource_dict["fides_key"])
 
@@ -63,7 +64,6 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyB
                 log.debug("Fetching resource")
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
                 result = await session.execute(query)
-                await session.commit()
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error("Failed to fetch resource")
@@ -86,17 +86,18 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
     """
     with log.contextualize(sql_model=sql_model.__name__):
         async with async_session() as session:
-            try:
-                log.debug("Fetching resources")
-                query = select(sql_model)
-                result = await session.execute(query)
-                sql_resources = result.scalars().all()
-                await session.commit()
-            except SQLAlchemyError:
-                await session.rollback()
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error("Failed to fetch resources")
-                raise error
+            async with session.begin():
+                try:
+                    log.debug("Fetching resources")
+                    query = select(sql_model)
+                    result = await session.execute(query)
+                    sql_resources = result.scalars().all()
+                except SQLAlchemyError:
+                    error = errors.QueryError()
+                    log.bind(error=error.detail["error"]).error(
+                        "Failed to fetch resources"
+                    )
+                    raise error
 
         return sql_resources
 
@@ -109,19 +110,20 @@ async def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict) -> Dic
     ):
         await get_resource(sql_model, resource_dict["fides_key"])
         async with async_session() as session:
-            try:
-                log.debug("Updating resource")
-                await session.execute(
-                    _update(sql_model)
-                    .where(sql_model.fides_key == resource_dict["fides_key"])
-                    .values(resource_dict)
-                )
-                await session.commit()
-            except SQLAlchemyError:
-                await session.rollback()
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error("Failed to update resource")
-                raise error
+            async with session.begin():
+                try:
+                    log.debug("Updating resource")
+                    await session.execute(
+                        _update(sql_model)
+                        .where(sql_model.fides_key == resource_dict["fides_key"])
+                        .values(resource_dict)
+                    )
+                except SQLAlchemyError:
+                    error = errors.QueryError()
+                    log.bind(error=error.detail["error"]).error(
+                        "Failed to update resource"
+                    )
+                    raise error
 
         return await get_resource(sql_model, resource_dict["fides_key"])
 
@@ -139,23 +141,22 @@ async def upsert_resources(
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
         async with async_session() as session:
-            try:
-                log.debug("Upserting resources")
-                insert_stmt = _insert(sql_model).values(resource_dicts)
-                await session.execute(
-                    insert_stmt.on_conflict_do_update(
-                        index_elements=["fides_key"],
-                        set_=insert_stmt.excluded,
+            async with session.begin():
+                try:
+                    log.debug("Upserting resources")
+                    insert_stmt = _insert(sql_model).values(resource_dicts)
+                    await session.execute(
+                        insert_stmt.on_conflict_do_update(
+                            index_elements=["fides_key"],
+                            set_=insert_stmt.excluded,
+                        )
                     )
-                )
-                await session.commit()
-            except SQLAlchemyError:
-                await session.rollback()
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(
-                    "Failed to upsert resources"
-                )
-                raise error
+                except SQLAlchemyError:
+                    error = errors.QueryError()
+                    log.bind(error=error.detail["error"]).error(
+                        "Failed to upsert resources"
+                    )
+                    raise error
 
 
 async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
@@ -164,16 +165,17 @@ async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlche
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = await get_resource(sql_model, fides_key)
         async with async_session() as session:
-            try:
-                log.debug("Deleting resource")
-                query = _delete(sql_model).where(sql_model.fides_key == fides_key)
-                print(query)
-                await session.execute(query)
-                await session.commit()
-            except SQLAlchemyError:
-                await session.rollback()
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error("Failed to delete resource")
-                raise error
+            async with session.begin():
+                try:
+                    log.debug("Deleting resource")
+                    query = _delete(sql_model).where(sql_model.fides_key == fides_key)
+                    print(query)
+                    await session.execute(query)
+                except SQLAlchemyError:
+                    error = errors.QueryError()
+                    log.bind(error=error.detail["error"]).error(
+                        "Failed to delete resource"
+                    )
+                    raise error
 
         return sql_resource

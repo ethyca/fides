@@ -8,12 +8,12 @@ from logging import WARNING
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response
-from fidesapi.routes import crud, visualize
 from loguru import logger as log
 from uvicorn import Config, Server
 
 from fidesapi import view
 from fidesapi.database import database
+from fidesapi.routes import crud, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
