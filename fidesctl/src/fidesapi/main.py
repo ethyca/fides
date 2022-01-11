@@ -86,7 +86,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        await database.reset_db(CONFIG.api.sync_database_url)
+        database.reset_db(CONFIG.api.sync_database_url)
         action_text = DBActions.reset
     await configure_db(CONFIG.api.sync_database_url)
     return {"data": {"message": f"Fidesctl database {action_text}"}}
