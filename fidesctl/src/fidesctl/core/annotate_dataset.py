@@ -7,7 +7,7 @@ from typing import Union, List
 import click
 
 ## TODO: decouple this from fidesapi, it should be using API calls
-from fidesapi.crud import list_resource
+from fidesapi.routes.crud import list_resource
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core import parse as core_parse
 from fidesctl.core import visualize

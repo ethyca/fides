@@ -12,17 +12,18 @@ install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
 # Human-Readable/Reusable Extras
-postgres_connector = "psycopg2-binary==2.9.0"
+psycopg_connector = "psycopg2-binary==2.9.1"
+asyncpg = "asyncpg==0.25.0"
 mysql_connector = "pymysql==1.0.0"
 mssql_connector = "pyodbc==4.0.32"
 fastapi = "fastapi==0.68"
 uvicorn = "uvicorn==0.15"
 
 extras = {
-    "postgres": [postgres_connector],
+    "postgres": [psycopg_connector],
     "mysql": [mysql_connector],
     "mssql": [mssql_connector],
-    "webserver": [fastapi, uvicorn, postgres_connector],
+    "webserver": [fastapi, uvicorn, psycopg_connector, asyncpg],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(

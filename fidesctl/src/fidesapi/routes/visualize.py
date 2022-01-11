@@ -7,7 +7,7 @@ from typing import Union
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 
-from fidesapi.crud import list_resource
+from fidesapi.routes.crud import list_resource
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core import visualize
 from fideslang import model_map
@@ -61,7 +61,7 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
             Html for the requested figure. Response with status code 400 when invalid figure type is provided
         """
         sql_model = sql_model_map[resource_type]
-        resource_object_list = list_resource(sql_model)
+        resource_object_list = await list_resource(sql_model)
         resource_list = [resource.__dict__ for resource in resource_object_list]
         if figure_type == "text":
             figure = visualize.nested_categories_to_html_list(

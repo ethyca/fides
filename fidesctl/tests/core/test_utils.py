@@ -1,8 +1,10 @@
 import os
 
+from fidesctl.core.config import get_config
+
 import pytest
 
-from fidesctl.core import utils, config
+from fidesctl.core import utils
 
 from fideslang.models import DatasetCollection, DatasetField
 
@@ -37,7 +39,7 @@ def test_nested_collection_fields():
 
 @pytest.mark.unit
 def test_get_db_engine():
-    conn_str = config.get_config().api.database_url
+    conn_str = get_config().api.sync_database_url
     engine = utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 

@@ -136,7 +136,7 @@ clean:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans
 	@echo "Teardown complete"
 
 .PHONY: docs-build

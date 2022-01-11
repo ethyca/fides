@@ -7,7 +7,7 @@ from typing import Generator, List, Dict
 import plotly
 import plotly.graph_objects as go
 
-from fidesctl.core import config
+from fidesctl.core.config import get_config
 
 FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"
@@ -205,7 +205,7 @@ def get_visualize_url(resource_type: str, visualize_type: str) -> str:
     Returns:
         url string to the visualization
     """
-    settings = config.get_config()
+    settings = get_config()
     visualize_url = "{}/{}/visualize/{}".format(
         settings.cli.server_url, resource_type, visualize_type
     )
