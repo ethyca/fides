@@ -1,6 +1,8 @@
 """
 Contains all of the Fides resources modeled as Pydantic models.
 """
+from __future__ import annotations
+
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -92,6 +94,7 @@ class DatasetField(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    fields: Optional[List[DatasetField]]
 
 
 class DatasetCollection(BaseModel):

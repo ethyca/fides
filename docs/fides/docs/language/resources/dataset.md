@@ -87,6 +87,10 @@ Arrays of Data Categories, identified by `fides_key`, that applies to this field
 
 A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.
 
+**collections.fields.fields**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
+
+An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases)
+
 ## Examples
 
 ### **Manifest File**
@@ -109,6 +113,19 @@ dataset:
             description: User's Email
             data_categories:
               - user.provided.identifiable.contact.email
+          - name: phone
+            description: User's phone numbers
+            data_categories:
+              - user.provided.identifiable.contact.phone_number
+            fields:
+              - name: mobile
+                description: User's mobile phone number
+                data_categories:
+                  - user.provided.identifiable.contact.phone_number
+              - name: home
+                description: User's home phone number
+                data_categories:
+                  - user.provided.identifiable.contact.phone_number
 ```
 
 ### **API Payload**
@@ -134,6 +151,29 @@ dataset:
             "description": "User's Email",
             "data_categories": [
               "user.provided.identifiable.contact.email"
+            ]
+          },
+          {
+            "name": "phone",
+            "description": "User's phone numbers",
+            "data_categories": [
+              "user.provided.identifiable.contact.phone_number"
+            ],
+            "fields": [
+              {
+                "name": "mobile",
+                "description": "User's mobile phone number",
+                "data_categories": [
+                  "user.provided.identifiable.contact.phone_number"
+                ],
+              },
+              {
+                "name": "home",
+                "description": "User's home phone number",
+                "data_categories": [
+                  "user.provided.identifiable.contact.phone_number"
+                ]
+              }
             ]
           }
         ]

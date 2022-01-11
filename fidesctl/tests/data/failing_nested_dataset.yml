@@ -1,0 +1,57 @@
+dataset:
+  - fides_key: test_failing_nested_dataset_field
+    name: Sample Nested Dataset
+    description: Nested fields dataset with failure to be captured in evaluation
+    collections:
+      - name: organization
+        description: Organization information
+        fields:
+          - name: organization_name
+          - name: organization_address
+            fields:
+              - name: street
+                data_categories:
+                  - account.contact.street
+              - name: city
+                data_categories:
+                  - account.contact.city
+              - name: state
+                data_categories:
+                  - account.contact.state
+
+system:
+  - fides_key: client_analytics
+    name: Client Usage Analytics
+    description: Use aggregated and anonymous data to measure usage
+    system_type: Service
+    privacy_declarations:
+      - name: Mesaure usage of users
+        data_categories:
+          - user.derived
+        data_use: improve.system
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - test_failing_nested_dataset_field
+
+policy:
+  - fides_key: primary_privacy_policy
+    name: Primary Privacy Policy
+    description: The main privacy policy for the organization.
+    rules:
+      - name: exclude_location_information
+        description: Do not allow any contact information
+        data_categories:
+          matches: OTHER
+          values:
+            - user.derived
+        data_uses:
+          matches: OTHER
+          values:
+            - provide
+        data_subjects:
+          matches: OTHER
+          values:
+            - anonymous_user
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
