@@ -11,6 +11,7 @@ from fidesapi.crud import list_resource
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core import parse as core_parse
 from fidesctl.core import visualize
+from fidesctl.core.utils import get_all_level_fields
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
@@ -148,7 +149,7 @@ def annotate_dataset(
                 except AnnotationAbortError:
                     break
 
-            for field in table.fields:
+            for field in get_all_level_fields(table.fields):
                 if not field.data_categories:
                     click.secho(
                         f"Field [{table.name}.{field.name}] has no data categories\n"

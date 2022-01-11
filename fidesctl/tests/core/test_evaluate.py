@@ -84,34 +84,6 @@ def create_policy_rule_with_keys(
     )
 
 
-@pytest.fixture()
-def test_nested_collection_fields():
-    nested_collection_fields = DatasetCollection(
-        name="test_collection",
-        fields=[
-            DatasetField(
-                name="top_level_field_1",
-            ),
-            DatasetField(
-                name="top_level_field_2",
-                fields=[
-                    DatasetField(
-                        name="first_nested_level",
-                        fields=[
-                            DatasetField(
-                                name="second_nested_level",
-                                fields=[DatasetField(name="third_nested_level")],
-                            )
-                        ],
-                    )
-                ],
-            ),
-        ],
-    )
-
-    yield nested_collection_fields
-
-
 @pytest.mark.integration
 def test_get_all_server_policies(test_config):
     result = evaluate.get_all_server_policies(
@@ -545,16 +517,3 @@ def test_get_fides_key_parent_hierarchy_missing_parent():
             ),
             fides_key="data_category.parent",
         )
-
-
-@pytest.mark.unit
-def test_nested_fields_unpacked(test_nested_collection_fields):
-    """
-    Tests unpacking fields from a data collection results in the
-    correct number of fields being returned to be evaluated.
-    """
-    collection = test_nested_collection_fields
-    collected_field_names = []
-    for field in evaluate.get_all_level_fields(collection.fields):
-        collected_field_names.append(field.name)
-    assert len(collected_field_names) == 5

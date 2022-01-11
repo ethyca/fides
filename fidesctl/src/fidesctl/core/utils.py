@@ -2,13 +2,15 @@
 import logging
 from functools import partial
 from json.decoder import JSONDecodeError
-from typing import Dict
+from typing import Dict, Iterator
 
 import click
 import jwt
 import requests
 import sqlalchemy
 from sqlalchemy.engine import Engine
+
+from fideslang.models import DatasetField
 
 logger = logging.getLogger("server_api")
 
@@ -66,3 +68,15 @@ def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
         "user-id": str(user_id),
         "Authorization": "Bearer {}".format(jwt_encode(1, api_key)),
     }
+
+
+def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
+    """
+    Traverses all levels of fields that exist in a dataset
+    returning them for individual evaluation.
+    """
+    for field in fields:
+        yield field
+        if field.fields:
+            for nested_field in get_all_level_fields(field.fields):
+                yield nested_field

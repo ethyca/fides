@@ -1,6 +1,6 @@
 """Module for evaluating policies."""
 import uuid
-from typing import Callable, Dict, List, Optional, Set, cast, Iterator
+from typing import Callable, Dict, List, Optional, Set, cast
 
 from pydantic import AnyHttpUrl
 
@@ -8,11 +8,10 @@ from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.parse import parse
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.core.utils import echo_green, echo_red, get_all_level_fields
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
     Dataset,
-    DatasetField,
     Evaluation,
     MatchesEnum,
     Policy,
@@ -350,18 +349,6 @@ def evaluate_dataset_reference(
                 evaluation_violation_list += field_result_violations
 
     return evaluation_violation_list
-
-
-def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
-    """
-    Traverses all levels of fields that exist in a dataset
-    returning them for individual evaluation.
-    """
-    for field in fields:
-        yield field
-        if field.fields:
-            for nested_field in get_all_level_fields(field.fields):
-                yield nested_field
 
 
 def evaluate_privacy_declaration(
