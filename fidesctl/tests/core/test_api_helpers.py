@@ -116,3 +116,31 @@ def test_get_server_resources_missing_resources(test_config, resource_type):
         headers=test_config.user.request_headers,
     )
     assert result == []
+
+
+@pytest.mark.integration
+def test_list_server_resources(test_config):
+    """
+    Tests that a missing resource returns an empty list
+    """
+    resource_type = "data_category"
+    result: List[FidesModel] = _api_helpers.list_server_resources(
+        url=test_config.cli.server_url,
+        resource_type=resource_type,
+        headers=test_config.user.request_headers,
+    )
+    assert len(result) > 1
+
+
+@pytest.mark.integration
+def test_list_server_resources_none(test_config):
+    """
+    Tests that a missing resource returns an empty list
+    """
+    resource_type = "invalid"
+    result: List[FidesModel] = _api_helpers.list_server_resources(
+        url=test_config.cli.server_url,
+        resource_type=resource_type,
+        headers=test_config.user.request_headers,
+    )
+    assert result == []

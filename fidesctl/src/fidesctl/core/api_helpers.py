@@ -69,7 +69,7 @@ def get_server_resource(
     return server_resource
 
 
-def list_server_resource(
+def list_server_resources(
     url: str,
     resource_type: str,
     headers: Dict[str, str],
