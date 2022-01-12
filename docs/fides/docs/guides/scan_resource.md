@@ -59,9 +59,6 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
-fidesctl scan --manifest-dir dataset.yml database postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/postgres 
-
-
 We can invoke the `scan` by simply providing a connection url for this database:
 ```sh
 ./venv/bin/fidesctl scan \
