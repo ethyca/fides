@@ -162,6 +162,7 @@ def annotate_dataset(
                             fg="green",
                         )
                         field.data_categories = user_categories
+            output_dataset.append(current_dataset.dict())
         except AnnotationAbortError:
             output_dataset.append(current_dataset.dict())
             break
