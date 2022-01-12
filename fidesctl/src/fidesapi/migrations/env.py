@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from fidesapi.logger import setup as setup_fidesapi_logger
+from fidesapi.utils.logger import setup as setup_fidesapi_logger
 from fidesctl.core.config import get_config
 
 # this is the Alembic Config object, which provides
@@ -46,7 +46,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = fidesctl_config.api.database_url
+    url = fidesctl_config.api.sync_database_url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -66,7 +66,7 @@ def run_migrations_online():
 
     """
     configuration = alembic_config.get_section(alembic_config.config_ini_section)
-    configuration["sqlalchemy.url"] = fidesctl_config.api.database_url
+    configuration["sqlalchemy.url"] = fidesctl_config.api.sync_database_url
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

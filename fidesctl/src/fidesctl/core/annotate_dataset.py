@@ -6,8 +6,9 @@ from typing import Union, List
 
 import click
 
-from fidesctl.core.config import FidesctlConfig
 from fidesctl.core import parse as core_parse, api_helpers
+from fidesctl.core.config import FidesctlConfig
+from fidesctl.core.utils import get_all_level_fields
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
@@ -145,7 +146,7 @@ def annotate_dataset(
                     )
 
                 # Check for data_categories at the field level
-                for field in table.fields:
+                for field in get_all_level_fields(table.fields):
                     if not field.data_categories:
                         click.secho(
                             f"Field [{table.name}.{field.name}] has no data categories\n",

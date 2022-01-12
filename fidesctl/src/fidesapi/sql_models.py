@@ -1,3 +1,5 @@
+# type: ignore
+
 """
 Contains all of the SqlAlchemy models for the Fides resources.
 """

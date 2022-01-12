@@ -8,7 +8,7 @@ from fidesctl.cli.utils import handle_cli_response, pretty_echo
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.parse import parse
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.core.utils import echo_green, echo_red, get_all_level_fields
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
     Dataset,
@@ -325,7 +325,7 @@ def evaluate_dataset_reference(
 
             evaluation_violation_list += dataset_collection_result_violations
 
-        for field in collection.fields:
+        for field in get_all_level_fields(collection.fields):
 
             field_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset field ({})".format(
                 privacy_declaration.name,

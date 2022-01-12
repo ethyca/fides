@@ -11,8 +11,10 @@ from fastapi import FastAPI, Request, Response
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fidesapi import crud, database, db_session, view, visualize
-from fidesapi.logger import setup as setup_logging
+from fidesapi import view
+from fidesapi.database import database
+from fidesapi.routes import crud, visualize
+from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
@@ -29,23 +31,25 @@ def configure_routes() -> None:
     app.include_router(view.router)
 
 
-def configure_db(database_url: str) -> None:
+# Configure the routes here so we can generate the openapi json file
+configure_routes()
+
+
+async def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     database.create_db_if_not_exists(database_url)
-    db_session.global_init(database_url)
-    database.init_db(database_url)
+    await database.init_db(database_url)
 
 
 @app.on_event("startup")
-def setup_server() -> None:
+async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     setup_logging(
         CONFIG.api.log_level,
         serialize=CONFIG.api.log_serialization,
         desination=CONFIG.api.log_destination,
     )
-    configure_routes()
-    configure_db(CONFIG.api.database_url)
+    await configure_db(CONFIG.api.sync_database_url)
 
 
 @app.middleware("http")
@@ -82,9 +86,9 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(CONFIG.api.database_url)
+        database.reset_db(CONFIG.api.sync_database_url)
         action_text = DBActions.reset
-    configure_db(CONFIG.api.database_url)
+    await configure_db(CONFIG.api.sync_database_url)
     return {"data": {"message": f"Fidesctl database {action_text}"}}
 
 

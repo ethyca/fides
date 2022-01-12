@@ -3,7 +3,7 @@ Contains api endpoints for fides web pages
 """
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
-from fidesapi.crud import list_resource
+from fidesapi.routes.crud import list_resource
 from fidesapi.sql_models import Evaluation
 
 router = APIRouter(
@@ -23,7 +23,7 @@ async def evaluation_view() -> HTMLResponse:
     html += "<h2>Evaluations</h2>"
     html += '<table class="table table-striped" style="text-align: left;">'
     html += "<tr><th>Id</th><th>Status</th><th>Violations</th><th>Message</th></tr>"
-    for evaluation in list_resource(Evaluation):
+    for evaluation in await list_resource(Evaluation):
         html += "<tr>"
         html += f"<td>{evaluation.fides_key}</td>"
         html += f"<td>{evaluation.status}</td>"

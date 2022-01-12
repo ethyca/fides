@@ -112,7 +112,7 @@ pytest-unit:
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-	@$(RUN) pytest -x -m integration
+	@docker compose run -e SNOWFLAKE_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) pytest -x -m integration
 	@make teardown
 
 xenon:
@@ -136,7 +136,7 @@ clean:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans
 	@echo "Teardown complete"
 
 .PHONY: docs-build

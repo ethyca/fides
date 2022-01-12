@@ -13,8 +13,9 @@ Here's an example of a fidesctl configuration file:
 server_url = "http://localhost:8080"
 
 [api]
-database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
-test_database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl_test"
+# Note that no driver should be specified here
+database_url = "postgres:postgres@localhost:5432/fidesctl"
+test_database_url = "postgres:postgres@localhost:5432/fidesctl_test"
 
 # The following are set to their current default values
 log_destination = ""    # Also accepts: Any valid file path
