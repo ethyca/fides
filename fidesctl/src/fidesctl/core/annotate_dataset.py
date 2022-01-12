@@ -106,7 +106,7 @@ def annotate_dataset(
 
     # Make the user aware of the data_categories visualizer
     click.secho(
-        "For reference, you can use the Taxonomy explorer at the '/<resource_type>/visalize/graphs/' endpoint on a running fidesctl webserver.",
+        "For reference, you can use the Taxonomy explorer at the '/<resource_type>/visualize/graphs/' endpoint on a running fidesctl webserver.",
         fg="green",
     )
 

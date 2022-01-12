@@ -75,9 +75,9 @@ def list_server_resource(
     headers: Dict[str, str],
 ) -> List[FidesModel]:
     """
-    Get a given resource from the server
+    Get a list of resources from the server and return them as parsed objects.
 
-    Returns None if the object does not exist on the server
+    Throws an error if the response is empty.
     """
     raw_server_response: Response = api.ls(
         url=url, resource_type=resource_type, headers=headers
