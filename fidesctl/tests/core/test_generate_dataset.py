@@ -21,7 +21,7 @@ MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 # External databases require credentials passed through environment variables
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
-SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.environ["SNOWFLAKE_FIDESCTL_PASSWORD"], "")
+SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
 
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
