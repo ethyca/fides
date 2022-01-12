@@ -24,6 +24,8 @@ from fidesctl.core import (
 from fidesctl.core.utils import echo_green, echo_red
 
 
+# Add an init command
+
 @click.command()
 @click.pass_context
 @dry_flag
