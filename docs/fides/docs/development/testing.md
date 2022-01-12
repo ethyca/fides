@@ -74,6 +74,14 @@ The `--sw` flag will exit `pytest` the first time it encounters an error; subseq
 
 For more information on available Pytest invocation options, see the documentation [here](https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations).
 
+### Excluding external tests
+
+Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the `external` mark. 
+
+```bash
+# run all tests except those marked as external
+pytest -m "not external"
+```
 ## CI Workflows
 
 CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors and is generally an inefficient usage of your time!
