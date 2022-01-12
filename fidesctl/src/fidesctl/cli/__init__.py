@@ -13,7 +13,7 @@ from .commands.core_commands import (
     parse,
 )
 from .commands.crud_commands import delete, get, ls
-from .commands.util_comands import init_db, reset_db, ping, webserver, view_config
+from .commands.util_comands import init, init_db, reset_db, ping, webserver, view_config
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view_config]
@@ -24,6 +24,7 @@ API_COMMANDS = [
     generate_dataset,
     scan,
     get,
+    init,
     init_db,
     ls,
     ping,

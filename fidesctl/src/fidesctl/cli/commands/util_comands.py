@@ -13,6 +13,36 @@ from fidesctl.core.utils import echo_green, echo_red
 
 @click.command()
 @click.pass_context
+def init(ctx: click.Context) -> None:
+    """
+    Initialize a Fides instance.
+    """
+    config = ctx.obj["CONFIG"]
+
+    echo_green("Initializing Fides...\n")
+
+    # create the .fidesctl dir if it doesn't exist
+    echo_green("Created a '.fides' directory at the repository root.\n")
+
+    # create a config file if it doesn't exist
+    config_url = "https://ethyca.github.io/fides/installation/configuration/"
+    config_message = """Created a '.fides/config.toml' file. To learn more, see:
+        {}\n""".format(
+        config_url
+    )
+    echo_green(config_message)
+
+    # Write out the default taxonomy
+
+    # Leave a note about generating manifests
+    echo_green(
+        """To learn more about automated manifest file generation, run:
+        fidesctl generate -h\n"""
+    )
+
+
+@click.command()
+@click.pass_context
 def init_db(ctx: click.Context) -> None:
     """
     Initialize the Fidesctl database.
