@@ -1,4 +1,4 @@
-"""Contains all of the CLI commands for Fides."""
+"""Contains all of the core CLI commands for Fidesctl."""
 import click
 import requests
 
@@ -24,8 +24,6 @@ from fidesctl.core import (
 from fidesctl.core.utils import echo_green, echo_red
 
 
-# Add an init command
-
 @click.command()
 @click.pass_context
 @dry_flag
@@ -47,25 +45,6 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
-    )
-
-
-@click.command()
-@click.pass_context
-@resource_type_argument
-@fides_key_argument
-def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
-    """
-    Delete a resource on the server.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.delete(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_id=fides_key,
-            headers=config.user.request_headers,
-        )
     )
 
 
@@ -210,52 +189,6 @@ def annotate_dataset(
 
 @click.command()
 @click.pass_context
-@resource_type_argument
-@fides_key_argument
-def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
-    """
-    View a resource from the server as a JSON object.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.get(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            resource_id=fides_key,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
-def init_db(ctx: click.Context) -> None:
-    """
-    Initialize the Fidesctl database.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(_api.db_action(config.cli.server_url, "init"))
-
-
-@click.command()
-@click.pass_context
-@resource_type_argument
-def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
-    """
-    Get a list of all resources of this type from the server and display them as JSON.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(
-        _api.ls(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            headers=config.user.request_headers,
-        )
-    )
-
-
-@click.command()
-@click.pass_context
 @manifests_dir_argument
 @verbose_flag
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
@@ -268,65 +201,3 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     taxonomy = _parse.parse(manifests_dir)
     if verbose:
         pretty_echo(taxonomy.dict(), color="green")
-
-
-@click.command()
-@click.pass_context
-def ping(ctx: click.Context, config_path: str = "") -> None:
-    """
-    Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
-    """
-    config = ctx.obj["CONFIG"]
-    healthcheck_url = config.cli.server_url + "/health"
-    echo_green(f"Pinging {healthcheck_url}...")
-    try:
-        handle_cli_response(_api.ping(healthcheck_url))
-    except requests.exceptions.ConnectionError:
-        echo_red("Connection failed, webserver is unreachable.")
-
-
-@click.command()
-@click.pass_context
-@yes_flag
-def reset_db(ctx: click.Context, yes: bool) -> None:
-    """
-    Wipes all user-created data and resets the database back to its freshly initialized state.
-    """
-    config = ctx.obj["CONFIG"]
-    if yes:
-        are_you_sure = "y"
-    else:
-        echo_red(
-            "This will drop all data from the Fides database and reload the default taxonomy!"
-        )
-        are_you_sure = input("Are you sure [y/n]? ")
-
-    if are_you_sure.lower() == "y":
-        handle_cli_response(_api.db_action(config.cli.server_url, "reset"))
-    else:
-        print("Aborting!")
-
-
-@click.command()
-@click.pass_context
-def view_config(ctx: click.Context) -> None:
-    """
-    Prints the current fidesctl configuration values.
-    """
-    config = ctx.obj["CONFIG"]
-    pretty_echo(config.dict(), color="green")
-
-
-@click.command()
-@click.pass_context
-def webserver(ctx: click.Context) -> None:
-    """
-    Starts the fidesctl API server using Uvicorn on port 8080.
-    """
-    try:
-        from fidesapi.main import start_webserver
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
-        raise SystemExit
-
-    start_webserver()
