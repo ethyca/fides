@@ -115,7 +115,7 @@ def annotate_dataset(
 
     existing_categories = [
         resource.fides_key
-        for resource in api_helpers.list_server_resource(
+        for resource in api_helpers.list_server_resources(
             url=url, resource_type=resource_type, headers=headers
         )
     ]

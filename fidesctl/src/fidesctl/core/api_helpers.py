@@ -79,17 +79,18 @@ def list_server_resources(
 
     Throws an error if the response is empty.
     """
-    raw_server_response: Response = api.ls(
-        url=url, resource_type=resource_type, headers=headers
-    )
+    response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
 
-    server_resource: List[FidesModel] = [
-        parse_dict(
-            resource_type=resource_type,
-            resource=resource,
-            from_server=True,
-        )
-        for resource in raw_server_response.json()
-    ]
+    if response.status_code >= 200 and response.status_code <= 299:
+        server_resource: List[FidesModel] = [
+            parse_dict(
+                resource_type=resource_type,
+                resource=resource,
+                from_server=True,
+            )
+            for resource in response.json()
+        ]
+    else:
+        server_resource = []
 
     return server_resource
