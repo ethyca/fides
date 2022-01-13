@@ -89,7 +89,7 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl black pylint mypy xenon pytest-unit pytest-integration
+check-all: build-local check-install fidesctl black pylint mypy xenon pytest-unit pytest-integration pytest-external
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
@@ -108,11 +108,19 @@ pylint:
 
 pytest-unit:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN_NO_DEPS) pytest -x -m unit
+	@$(RUN_NO_DEPS) \
+	pytest -x -m unit
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-	@docker compose run -e SNOWFLAKE_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) pytest -x -m integration
+	@docker compose run --rm $(IMAGE_NAME) \
+	pytest -x -m integration
+	@make teardown
+
+pytest-external:
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@docker compose run -e SNOWFLAKE_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) \
+	pytest -x -m external
 	@make teardown
 
 xenon:

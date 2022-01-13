@@ -21,7 +21,10 @@ MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 # External databases require credentials passed through environment variables
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
-SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
+SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(
+    os.getenv("SNOWFLAKE_FIDESCTL_PASSWORD", "")
+)
+
 
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
@@ -180,7 +183,10 @@ def test_find_uncategorized_dataset_fields_all_categorized():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert not uncategorized_keys
@@ -208,7 +214,10 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
             )
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.2"}
@@ -233,7 +242,10 @@ def test_find_uncategorized_dataset_fields_missing_field():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.bar.5"}
@@ -262,7 +274,10 @@ def test_find_uncategorized_dataset_fields_missing_collection():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
@@ -277,6 +292,7 @@ def test_unsupported_dialect_error():
 
 
 @pytest.mark.postgres
+@pytest.mark.integration
 class TestPostgres:
     EXPECTED_COLLECTION = {
         "public": {
@@ -294,20 +310,17 @@ class TestPostgres:
         engine.execute(query)
         yield
 
-    @pytest.mark.integration
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
         actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
         assert actual_result == TestPostgres.EXPECTED_COLLECTION
 
-    @pytest.mark.integration
     def test_generate_dataset_postgres(self, tmpdir):
         actual_result = generate_dataset.generate_dataset(
             POSTGRES_URL, f"{tmpdir}/test_file.yml"
         )
         assert actual_result
 
-    @pytest.mark.integration
     def test_generate_dataset_passes_postgres(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestPostgres.EXPECTED_COLLECTION
@@ -322,7 +335,6 @@ class TestPostgres:
             headers=test_config.user.request_headers,
         )
 
-    @pytest.mark.integration
     def test_generate_dataset_coverage_failure_postgres(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestPostgres.EXPECTED_COLLECTION
@@ -337,7 +349,6 @@ class TestPostgres:
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
     def test_dataset_coverage_manifest_passes_postgres(self, test_config, tmpdir):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestPostgres.EXPECTED_COLLECTION
@@ -358,6 +369,7 @@ class TestPostgres:
 
 
 @pytest.mark.mysql
+@pytest.mark.integration
 class TestMySQL:
     EXPECTED_COLLECTION = {
         "mysql_example": {
@@ -381,20 +393,17 @@ class TestMySQL:
             engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    @pytest.mark.integration
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
         actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
         assert actual_result == TestMySQL.EXPECTED_COLLECTION
 
-    @pytest.mark.integration
     def test_generate_dataset_mysql(self, tmpdir):
         actual_result = generate_dataset.generate_dataset(
             MYSQL_URL, f"{tmpdir}test_file.yml"
         )
         assert actual_result
 
-    @pytest.mark.integration
     def test_generate_dataset_passes_mysql(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestMySQL.EXPECTED_COLLECTION
@@ -409,7 +418,6 @@ class TestMySQL:
             headers=test_config.user.request_headers,
         )
 
-    @pytest.mark.integration
     def test_generate_dataset_coverage_failure_mysql(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestMySQL.EXPECTED_COLLECTION
@@ -424,7 +432,6 @@ class TestMySQL:
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
     def test_dataset_coverage_manifest_passes_mysql(self, test_config, tmpdir):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestMySQL.EXPECTED_COLLECTION
@@ -443,7 +450,9 @@ class TestMySQL:
             headers=test_config.user.request_headers,
         )
 
+
 @pytest.mark.mssql
+@pytest.mark.integration
 class TestSQLServer:
     EXPECTED_COLLECTION = {
         "dbo": {
@@ -468,7 +477,6 @@ class TestSQLServer:
             engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    @pytest.mark.integration
     def test_get_db_tables_mssql(self):
         engine = sqlalchemy.create_engine(MSSQL_URL)
         actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
@@ -481,7 +489,6 @@ class TestSQLServer:
         )
         assert actual_result
 
-    @pytest.mark.integration
     def test_generate_dataset_passes_mssql(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSQLServer.EXPECTED_COLLECTION
@@ -495,8 +502,6 @@ class TestSQLServer:
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
-
-    @pytest.mark.integration
     def test_generate_dataset_coverage_failure_mssql(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSQLServer.EXPECTED_COLLECTION
@@ -511,7 +516,6 @@ class TestSQLServer:
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
     def test_dataset_coverage_manifest_passes_mssql(self, test_config, tmpdir):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSQLServer.EXPECTED_COLLECTION
@@ -529,6 +533,7 @@ class TestSQLServer:
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
+
 
 @pytest.mark.snowflake
 @pytest.mark.external
@@ -556,20 +561,17 @@ class TestSnowflake:
             engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    @pytest.mark.integration
     def test_get_db_tables_snowflake(self):
         engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
         actual_result = generate_dataset.get_snowfake_collections_and_fields(engine)
         assert actual_result == TestSnowflake.EXPECTED_COLLECTION
 
-    @pytest.mark.integration
     def test_generate_dataset_snowflake(self, tmpdir):
         actual_result = generate_dataset.generate_dataset(
             SNOWFLAKE_URL, f"{tmpdir}/test_file.yml"
         )
         assert actual_result
 
-    @pytest.mark.integration
     def test_generate_dataset_passes_snowflake(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSnowflake.EXPECTED_COLLECTION
@@ -584,7 +586,6 @@ class TestSnowflake:
             headers=test_config.user.request_headers,
         )
 
-    @pytest.mark.integration
     def test_generate_dataset_coverage_failure_snowflake(self, test_config):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSnowflake.EXPECTED_COLLECTION
@@ -599,7 +600,6 @@ class TestSnowflake:
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
     def test_dataset_coverage_manifest_passes_snowflake(self, test_config, tmpdir):
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
             TestSnowflake.EXPECTED_COLLECTION
