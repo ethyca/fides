@@ -1,6 +1,9 @@
 """Contains all of the Utility-type CLI commands for Fidesctl."""
+import os
+
 import click
 import requests
+import toml
 
 from fidesctl.cli.options import yes_flag
 from fidesctl.cli.utils import (
@@ -15,30 +18,47 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.pass_context
 def init(ctx: click.Context) -> None:
     """
-    Initialize a Fides instance.
+    Initialize a Fidesctl instance.
     """
+
+    # Constants
+    dir_name = ".fides"
+    config_path = f"{dir_name}/fidesctl.toml"
     config = ctx.obj["CONFIG"]
 
-    echo_green("Initializing Fides...\n")
+    # List the values we want to exclude from the user-facing config
+    # These are values that are generated at config load time
+    excluded_values = {
+        "user": {"request_headers"},
+        "api": {"async_database_url", "sync_database_url"},
+    }
 
-    # create the .fidesctl dir if it doesn't exist
-    echo_green("Created a '.fides' directory at the repository root.\n")
+    echo_green("Initializing Fidesctl...\n")
+
+    # create the .fides dir if it doesn't exist
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+        echo_green(f"Created a '{dir_name}' directory.\n")
+    else:
+        echo_green(f"Directory '{dir_name}' already exists. Skipping...\n")
 
     # create a config file if it doesn't exist
-    config_url = "https://ethyca.github.io/fides/installation/configuration/"
-    config_message = """Created a '.fides/config.toml' file. To learn more, see:
-        {}\n""".format(
-        config_url
-    )
-    echo_green(config_message)
+    if not os.path.isfile(config_path):
+        config_url = "https://ethyca.github.io/fides/installation/configuration/"
+        config_message = f"""Created a config file at '{config_path}'. To learn more, see:
+            {config_url}\n"""
+        with open(config_path, "w") as config_file:
+            config_dict = config.dict(exclude=excluded_values)
+            print(config_dict)
+            toml.dump(config_dict, config_file)
+        echo_green(config_message)
 
-    # Write out the default taxonomy
+    else:
+        echo_green(
+            f"Configuration file already exists at '{config_path}'. Skipping...\n"
+        )
 
-    # Leave a note about generating manifests
-    echo_green(
-        """To learn more about automated manifest file generation, run:
-        fidesctl generate -h\n"""
-    )
+    echo_green("Fidesctl initialization complete.")
 
 
 @click.command()

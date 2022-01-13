@@ -1,0 +1,14 @@
+[api]
+test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+log_destination = ""
+log_level = "DEBUG"
+log_serialization = ""
+
+[cli]
+local_mode = false
+server_url = "http://localhost:8080"
+
+[user]
+user_id = "1"
+api_key = "test_api_key"
