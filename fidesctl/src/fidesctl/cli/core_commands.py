@@ -1,27 +1,19 @@
 """Contains all of the core CLI commands for Fidesctl."""
 import click
-import requests
 
 from fidesctl.cli.options import (
     dry_flag,
-    fides_key_argument,
     manifests_dir_argument,
-    resource_type_argument,
-    yes_flag,
     verbose_flag,
 )
-from fidesctl.cli.utils import (
-    handle_cli_response,
-    pretty_echo,
-)
+from fidesctl.cli.utils import pretty_echo
 from fidesctl.core import (
-    api as _api,
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.core.utils import echo_red
 
 
 @click.command()
