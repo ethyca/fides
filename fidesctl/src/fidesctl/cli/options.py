@@ -19,10 +19,21 @@ def resource_type_argument(command: Callable) -> Callable:
 
 
 def fides_key_argument(command: Callable) -> Callable:
-    "Add the id argument."
+    "Add the fides_key argument."
     command = click.argument(
         "fides_key",
         type=str,
+    )(command)
+    return command
+
+
+def fides_key_option(command: Callable) -> Callable:
+    "Add the fides_key option."
+    command = click.option(
+        "-k",
+        "--fides-key",
+        default="",
+        help="The fides_key of the single policy that you wish to evaluate.",
     )(command)
     return command
 
@@ -31,7 +42,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
     "Add the id argument."
     command = click.argument(
         "manifests_dir",
-        type=click.Path(),
+        type=click.Path(exists=True),
     )(command)
     return command
 

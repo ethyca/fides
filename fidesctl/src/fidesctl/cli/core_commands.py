@@ -3,6 +3,7 @@ import click
 
 from fidesctl.cli.options import (
     dry_flag,
+    fides_key_option,
     manifests_dir_argument,
     verbose_flag,
 )
@@ -14,7 +15,6 @@ from fidesctl.core import (
     annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
-from fidesctl.core.utils import echo_red
 
 
 @click.command()
@@ -44,12 +44,7 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 @click.command()
 @click.pass_context
 @manifests_dir_argument
-@click.option(
-    "-k",
-    "--fides-key",
-    default="",
-    help="The fides_key of the single policy that you wish to evaluate.",
-)
+@fides_key_option
 @click.option(
     "-m",
     "--message",
@@ -99,7 +94,7 @@ def evaluate(
 @click.command()
 @click.pass_context
 @click.argument("connection_string", type=str)
-@click.argument("output_filename", type=str)
+@click.argument("output_filename", type=click.Path())
 def generate_dataset(
     ctx: click.Context, connection_string: str, output_filename: str
 ) -> None:
