@@ -23,6 +23,9 @@ MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
 SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
 
+REDSHIFT_URL_TEMPLATE = "redshift+psycopg2://fidesctl:{}@redshift-cluster-1.cohs2e5eq2e4.us-east-1.redshift.amazonaws.com:5439/fidesctl_test"
+REDSHIFT_URL = REDSHIFT_URL_TEMPLATE.format(os.getenv('REDSHIFT_FIDESCTL_PASSWORD', ""))
+
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
         api.delete(
@@ -535,8 +538,8 @@ class TestSQLServer:
 class TestSnowflake:
     EXPECTED_COLLECTION = {
         "public": {
-            "visit": ["email", "last_visit"],
-            "login": ["id", "customer_id", "time"],
+            "public.visit": ["email", "last_visit"],
+            "public.login": ["id", "customer_id", "time"],
         }
     }
 
@@ -612,6 +615,95 @@ class TestSnowflake:
         create_server_datasets(test_config, datasets)
         generate_dataset.database_coverage(
             connection_string=SNOWFLAKE_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+@pytest.mark.redshift
+@pytest.mark.external
+class TestRedshift:
+    EXPECTED_COLLECTION = {
+        "public": {
+            "public.visit": ["email", "last_visit"],
+            "public.login": ["id", "customer_id", "time"],
+        }
+    }
+
+    @pytest.fixture(scope="class", autouse=True)
+    def redshift_setup(self):
+        """
+        Set up the Redshift Database for testing.
+
+        The query file must have each query on a separate line.
+        Initial connection must be done to the master database.
+        """
+        print(REDSHIFT_URL)
+        engine = sqlalchemy.create_engine(REDSHIFT_URL)
+        with open("tests/data/example_sql/redshift_example.sql", "r") as query_file:
+            queries = [query for query in query_file.read().splitlines() if query != ""]
+        print(queries)
+        for query in queries:
+            engine.execute(sqlalchemy.sql.text(query))
+        yield
+
+    @pytest.mark.integration
+    def test_get_db_tables_redshift(self):
+        engine = sqlalchemy.create_engine(REDSHIFT_URL)
+        actual_result = generate_dataset.get_redshift_collections_and_fields(engine)
+        assert actual_result == TestRedshift.EXPECTED_COLLECTION
+
+    @pytest.mark.integration
+    def test_generate_dataset_redshift(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(
+            REDSHIFT_URL, f"{tmpdir}/test_file.yml"
+        )
+        assert actual_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_passes_redshift(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestRedshift.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=REDSHIFT_URL,
+            manifest_dir="",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_redshift(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestRedshift.EXPECTED_COLLECTION
+        )
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                connection_string=REDSHIFT_URL,
+                manifest_dir="",
+                coverage_threshold=100,
+                url=test_config.cli.server_url,
+                headers=test_config.user.request_headers,
+            )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_redshift(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestRedshift.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=REDSHIFT_URL,
             manifest_dir=f"{tmpdir}",
             coverage_threshold=100,
             url=test_config.cli.server_url,
