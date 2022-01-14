@@ -50,5 +50,5 @@ def get_config(config_path: str = "") -> FidesctlConfig:
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
     fidesctl_config = FidesctlConfig()
-    echo_red("No config file found, using default values!")
+    print("No config file found. Using default configuration values.")
     return fidesctl_config

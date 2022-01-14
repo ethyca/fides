@@ -23,7 +23,8 @@ def init(ctx: click.Context) -> None:
 
     # Constants
     dir_name = ".fides"
-    config_path = f"{dir_name}/fidesctl.toml"
+    config_file_name = "fidesctl.toml"
+    config_path = f"{dir_name}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
     # List the values we want to exclude from the user-facing config
@@ -33,30 +34,27 @@ def init(ctx: click.Context) -> None:
         "api": {"async_database_url", "sync_database_url"},
     }
 
-    echo_green("Initializing Fidesctl...\n")
+    print("Initializing Fidesctl...\n")
 
     # create the .fides dir if it doesn't exist
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
         echo_green(f"Created a '{dir_name}' directory.\n")
     else:
-        echo_green(f"Directory '{dir_name}' already exists. Skipping...\n")
+        print(f"Directory '{dir_name}' already exists. Skipping...\n")
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
-        config_url = "https://ethyca.github.io/fides/installation/configuration/"
+        config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
-            {config_url}\n"""
+            {config_docs_url}\n"""
         with open(config_path, "w") as config_file:
             config_dict = config.dict(exclude=excluded_values)
-            print(config_dict)
             toml.dump(config_dict, config_file)
         echo_green(config_message)
 
     else:
-        echo_green(
-            f"Configuration file already exists at '{config_path}'. Skipping...\n"
-        )
+        print(f"Configuration file already exists at '{config_path}'. Skipping...\n")
 
     echo_green("Fidesctl initialization complete.")
 
