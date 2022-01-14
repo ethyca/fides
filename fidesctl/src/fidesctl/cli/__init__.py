@@ -4,7 +4,7 @@ import click
 import fidesctl
 from fidesctl.core.config import get_config
 
-from .commands.core_commands import (
+from .core_commands import (
     annotate_dataset,
     apply,
     generate_dataset,
@@ -12,8 +12,8 @@ from .commands.core_commands import (
     evaluate,
     parse,
 )
-from .commands.crud_commands import delete, get, ls
-from .commands.util_comands import init, init_db, reset_db, ping, webserver, view_config
+from .crud_commands import delete, get, ls
+from .util_comands import init, init_db, reset_db, ping, webserver, view_config
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view_config]

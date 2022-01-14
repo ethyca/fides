@@ -10,8 +10,6 @@ from fidesctl.cli.utils import (
 )
 from fidesctl.core import api as _api
 
-# Add an init command
-
 
 @click.command()
 @click.pass_context
