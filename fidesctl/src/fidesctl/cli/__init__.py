@@ -6,6 +6,7 @@ from fidesctl.cli.cli import (
     apply,
     delete,
     evaluate,
+    export,
     generate_dataset,
     scan,
     annotate_dataset,
@@ -26,6 +27,7 @@ API_COMMANDS = [
     annotate_dataset,
     apply,
     delete,
+    export,
     generate_dataset,
     scan,
     get,
@@ -40,7 +42,6 @@ API_COMMANDS = [
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
-    chain=True,
     name="fidesctl",
 )
 @click.version_option(version=fidesctl.__version__)

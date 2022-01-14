@@ -18,6 +18,7 @@ from fidesctl.core import (
     api as _api,
     apply as _apply,
     evaluate as _evaluate,
+    export as _export,
     generate_dataset as _generate_dataset,
     parse as _parse,
 )
@@ -119,6 +120,32 @@ def evaluate(
         message=message,
         local=config.cli.local_mode,
         dry=dry,
+    )
+
+
+@click.group()
+@click.pass_context
+def export(ctx: click.Context) -> None:
+    """
+    Parent export command to handle exporting of various datasets
+    """
+    pass
+
+
+@export.command(name="system")
+@click.pass_context
+@manifests_dir_argument
+def export_system(ctx: click.Context, manifests_dir: str) -> None:
+    """
+    Simple export of a system to get the data map project started
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_system(
+        url=config.cli.server_url,
+        system_list=taxonomy.system,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
     )
 
 
