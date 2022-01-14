@@ -7,8 +7,6 @@ from typing import Generator, List, Dict
 import plotly
 import plotly.graph_objects as go
 
-from fidesctl.core.config import get_config
-
 FIDES_KEY_NAME = "fides_key"
 FIDES_PARENT_NAME = "parent_key"
 
@@ -193,20 +191,3 @@ def nested_categories_to_html_list(
     header = f'<h2>Fides {resource_type.replace("_", " ").title()} Hierarchy</h2>'
     categories_tree = "\n".join(nest_to_html(nested_categories, indent))
     return f"{header}\n{categories_tree}"
-
-
-def get_visualize_url(resource_type: str, visualize_type: str) -> str:
-    """
-    Get the url to the resource visualization web page
-    Args:
-        resource_type: Type of data fides resource ["data_category", "data_qualifier", "data_use"]
-        visualize_type: type of UI to get a link to ["sankey", "sunburst", "text"]
-
-    Returns:
-        url string to the visualization
-    """
-    settings = get_config()
-    visualize_url = "{}/{}/visualize/{}".format(
-        settings.cli.server_url, resource_type, visualize_type
-    )
-    return visualize_url

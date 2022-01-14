@@ -11,6 +11,7 @@ from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
     generate_dataset as _generate_dataset,
+    annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
 from fidesctl.core.utils import echo_red
@@ -168,14 +169,12 @@ def annotate_dataset(
     """
     Guided flow for annotating datasets. The dataset file will be edited in-place.
     """
-    try:
-        from fidesctl.core import annotate_dataset as _annotate_dataset
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
-        raise SystemExit
-
+    config = ctx.obj["CONFIG"]
     _annotate_dataset.annotate_dataset(
-        input_filename, annotate_all=all_members, validate=validate
+        config=config,
+        dataset_file=input_filename,
+        annotate_all=all_members,
+        validate=validate,
     )
 
 
