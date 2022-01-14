@@ -47,9 +47,13 @@ def get_server_resource(
     headers: Dict[str, str],
 ) -> Optional[FidesModel]:
     """
-    Get a given resource from the server
+    Attempt to get a given resource from the server.
 
-    Returns None if the object does not exist on the server
+    Returns None if the object does not exist on the server.
+
+    As we don't always have a way to attribute fides_keys to the
+    right resource, this function helps check what resource
+    a fides_key belongs to by allowing us to check without errors.
     """
     raw_server_response: Response = api.get(
         url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
@@ -77,20 +81,17 @@ def list_server_resources(
     """
     Get a list of resources from the server and return them as parsed objects.
 
-    Throws an error if the response is empty.
+    Returns an empty list if the given endpoint is valid but has no resources.
     """
     response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
 
-    if response.status_code >= 200 and response.status_code <= 299:
-        server_resource: List[FidesModel] = [
-            parse_dict(
-                resource_type=resource_type,
-                resource=resource,
-                from_server=True,
-            )
-            for resource in response.json()
-        ]
-    else:
-        server_resource = []
+    server_resource: List[FidesModel] = [
+        parse_dict(
+            resource_type=resource_type,
+            resource=resource,
+            from_server=True,
+        )
+        for resource in response.json()
+    ]
 
     return server_resource
