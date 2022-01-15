@@ -1,5 +1,6 @@
 import sqlalchemy
 import pytest
+import os
 from typing import List, Dict
 
 from fidesctl.core import generate_dataset, api
@@ -18,6 +19,9 @@ MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
+# External databases require credentials passed through environment variables
+SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
+SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
 
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
@@ -520,6 +524,94 @@ class TestSQLServer:
         create_server_datasets(test_config, datasets)
         generate_dataset.database_coverage(
             connection_string=MSSQL_URL,
+            manifest_dir=f"{tmpdir}",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+@pytest.mark.snowflake
+@pytest.mark.external
+class TestSnowflake:
+    EXPECTED_COLLECTION = {
+        "public": {
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
+        }
+    }
+
+    @pytest.fixture(scope="class", autouse=True)
+    def snowflake_setup(self):
+        """
+        Set up the Snowflake Database for testing.
+
+        The query file must have each query on a separate line.
+        Initial connection must be done to the master database.
+        """
+        engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
+        with open("tests/data/example_sql/snowflake_example.sql", "r") as query_file:
+            queries = [query for query in query_file.read().splitlines() if query != ""]
+        print(queries)
+        for query in queries:
+            engine.execute(sqlalchemy.sql.text(query))
+        yield
+
+    @pytest.mark.integration
+    def test_get_db_tables_snowflake(self):
+        engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
+        actual_result = generate_dataset.get_snowfake_collections_and_fields(engine)
+        assert actual_result == TestSnowflake.EXPECTED_COLLECTION
+
+    @pytest.mark.integration
+    def test_generate_dataset_snowflake(self, tmpdir):
+        actual_result = generate_dataset.generate_dataset(
+            SNOWFLAKE_URL, f"{tmpdir}/test_file.yml"
+        )
+        assert actual_result
+
+    @pytest.mark.integration
+    def test_generate_dataset_passes_snowflake(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSnowflake.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=SNOWFLAKE_URL,
+            manifest_dir="",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.integration
+    def test_generate_dataset_coverage_failure_snowflake(self, test_config):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSnowflake.EXPECTED_COLLECTION
+        )
+        create_server_datasets(test_config, datasets)
+        with pytest.raises(SystemExit):
+            generate_dataset.database_coverage(
+                connection_string=SNOWFLAKE_URL,
+                manifest_dir="",
+                coverage_threshold=100,
+                url=test_config.cli.server_url,
+                headers=test_config.user.request_headers,
+            )
+
+    @pytest.mark.integration
+    def test_dataset_coverage_manifest_passes_snowflake(self, test_config, tmpdir):
+        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+            TestSnowflake.EXPECTED_COLLECTION
+        )
+        set_field_data_categories(datasets, "system.operations")
+
+        file_name = tmpdir.join("dataset.yml")
+        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+
+        create_server_datasets(test_config, datasets)
+        generate_dataset.database_coverage(
+            connection_string=SNOWFLAKE_URL,
             manifest_dir=f"{tmpdir}",
             coverage_threshold=100,
             url=test_config.cli.server_url,

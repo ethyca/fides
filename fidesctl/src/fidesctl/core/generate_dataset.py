@@ -85,6 +85,30 @@ def get_mssql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List
     return db_tables
 
 
+def get_snowfake_collections_and_fields(
+    engine: Engine,
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Snowflake-specific implementation that to ingest all of the
+    schemas and tables from a database.
+
+    Returns a mapping of schemas to its tables and all of the table's fields.
+    """
+    inspector = sqlalchemy.inspect(engine)
+    schema_exclusion_list = ["information_schema"]
+
+    db_tables: Dict[str, Dict[str, List]] = {}
+    for schema in inspector.get_schema_names():
+        if schema not in schema_exclusion_list:
+            db_tables[schema] = {}
+            for table in inspector.get_table_names(schema=schema):
+                db_tables[schema][table] = [
+                    column["name"]
+                    for column in inspector.get_columns(table, schema=schema)
+                ]
+    return db_tables
+
+
 def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
     """
     Returns a database collections and fields, delegating to a specific engine dialect function
@@ -95,6 +119,7 @@ def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[st
         "postgresql": get_postgres_collections_and_fields,
         "mysql": get_mysql_collections_and_fields,
         "mssql": get_mssql_collections_and_fields,
+        "snowflake": get_snowfake_collections_and_fields,
     }
     collections_and_fields = database_ingestion_functions[engine.dialect.name](engine)
     return collections_and_fields
