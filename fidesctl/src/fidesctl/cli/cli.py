@@ -123,13 +123,12 @@ def evaluate(
     )
 
 
-@click.group()
+@click.group(name="export")
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
     Parent export command to handle exporting of various datasets
     """
-    pass
 
 
 @export.command(name="system")
@@ -144,6 +143,23 @@ def export_system(ctx: click.Context, manifests_dir: str) -> None:
     _export.export_system(
         url=config.cli.server_url,
         system_list=taxonomy.system,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+    )
+
+
+@export.command(name="dataset")
+@click.pass_context
+@manifests_dir_argument
+def export_dataset(ctx: click.Context, manifests_dir: str) -> None:
+    """
+    Simple export of datasets to get the data map project started
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_dataset(
+        url=config.cli.server_url,
+        dataset_list=taxonomy.dataset,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
     )
