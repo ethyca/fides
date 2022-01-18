@@ -237,7 +237,3 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [mypy-url]: http://mypy-lang.org/
 [twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
 [twitter-url]: https://twitter.com/ethyca
-[docker-image]: https://img.shields.io/docker/pulls/ethyca/fidesctl.svg
-[docker-url]: https://hub.docker.com/r/ethyca/fidesctl
-[pypi-image]: https://static.pepy.tech/badge/fidesctl/month
-[pypi-url]: https://pypi.org/project/fidesctl/
