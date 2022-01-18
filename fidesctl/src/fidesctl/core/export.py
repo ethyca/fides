@@ -16,48 +16,57 @@ def list_fides_keys(resources: List) -> List:
     return existing_keys
 
 
-def export_to_csv(list_to_export: List, output_type: str, manifests_dir: str) -> None:
+def export_to_csv(
+    list_to_export: List, resource_exported: str, manifests_dir: str
+) -> str:
     """
     Exports a list of Tuples of any length back to the manifest
     directory as a csv.
     """
     utc_datetime = datetime.utcnow().strftime("%Y-%m-%d-T%H%M%S")
-    filename = "".join([utc_datetime, "_", output_type, ".csv"])
+    filename = "".join([utc_datetime, "_", resource_exported, ".csv"])
     filepath = "/".join([manifests_dir, filename])
     with open(filepath, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(list_to_export)
 
-    echo_green(filename + " successfully exported.")
+    return filename
 
 
-# def export(
-#     url: str,
-#     taxonomy: Taxonomy,
-#     headers: Dict[str, str],
-# ) -> None:
-#     """
-#     Planned to use this as a potential router for v1
-#     """
-
-#     export_list = export_system(url, taxonomy.system, headers)
-#     export_to_csv(export_list)
-
-
-def export_dataset(
-    url: str, dataset_list: List, headers: Dict[str, str], manifests_dir: str
-) -> None:
+def generate_data_category_rows(
+    dataset_name: str,
+    dataset_description: str,
+    data_qualifier: str,
+    data_categories: List,
+) -> Set[Tuple[str, str, str, str]]:
     """
-    Exports the required fields from a dataset resource to csv
-    The resource is extracted from the server prior to being
-    flattened as needed for exporting
+    Set comprehension to capture categories from any
+    of the possible levels in a dataset resource.
+
+    Returns a set of tuples to be unioned with the
+    overall set to be exported.
     """
-    resource_type = "dataset"
-    existing_keys = list_fides_keys(dataset_list)
-    server_resource_list = get_server_resources(
-        url, resource_type, existing_keys, headers
-    )
-    # load the output list with expected headers for the csv
+    dataset_rows = {
+        (
+            dataset_name,
+            dataset_description,
+            category,
+            data_qualifier,
+        )
+        for category in data_categories
+    }
+
+    return dataset_rows
+
+
+def generate_dataset_records(
+    server_dataset_list: List,
+) -> List[Tuple[str, str, str, str]]:
+    """
+    Returns a list of tuples as records (with expected headers)
+    to be exported as csv
+    """
+
     output_list = [
         (
             "dataset.name",
@@ -71,7 +80,7 @@ def export_dataset(
     # using a set here to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
 
-    for dataset in server_resource_list:
+    for dataset in server_dataset_list:
         dataset_name = dataset.name
         dataset_description = dataset.description
         if dataset.data_categories:
@@ -101,51 +110,49 @@ def export_dataset(
                     )
                     unique_data_categories = unique_data_categories.union(dataset_rows)
 
+    # combine found records from the set as a list of tuples/records to be exported
     output_list += list(unique_data_categories)
-    export_to_csv(output_list, resource_type, manifests_dir)
+
+    return output_list
 
 
-def generate_data_category_rows(
-    dataset_name: str,
-    dataset_description: str,
-    data_qualifier: str,
-    data_categories: List,
-) -> Set[Tuple[str, str, str, str]]:
-    """
-    Set comprehension to capture categories from any
-    of the possible levels in a dataset resource.
-
-    Returns a set of tuples to be unioned with the
-    overall set to be exported.
-    """
-    dataset_rows = {
-        (
-            dataset_name,
-            dataset_description,
-            category,
-            data_qualifier,
-        )
-        for category in data_categories
-    }
-
-    return dataset_rows
-
-
-def export_system(
-    url: str, system_list: List, headers: Dict[str, str], manifests_dir: str
+def export_dataset(
+    url: str, dataset_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
 ) -> None:
     """
-    Exports the required fields from a system resource to csv
+    Exports the required fields from a dataset resource to csv
     The resource is extracted from the server prior to being
     flattened as needed for exporting
     """
-    resource_type = "system"
-    existing_keys = list_fides_keys(system_list)
+    resource_type = "dataset"
+    existing_keys = list_fides_keys(dataset_list)
+
     server_resource_list = get_server_resources(
         url, resource_type, existing_keys, headers
     )
 
-    # load the output list with expected headers for the csv
+    output_list = generate_dataset_records(server_resource_list)
+
+    exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
+
+    if not dry:
+        exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
+
+        echo_green(exported_filename + " successfully exported.")
+    else:
+        echo_green("Output would contain:")
+        for record in output_list:
+            print(record)
+
+
+def generate_system_records(
+    server_system_list: List,
+) -> List[Tuple[str, str, str, str, str, str, str, str]]:
+    """
+    Takes a list of systems from the server, creating a list of tuples
+    to be used as records to be exported. The headers of the csv are
+    currently added here as well.
+    """
     output_list = [
         (
             "system.name",
@@ -159,7 +166,7 @@ def export_system(
         )
     ]
 
-    for system in server_resource_list:
+    for system in server_system_list:
 
         for declaration in system.privacy_declarations:
             data_categories = declaration.data_categories or []
@@ -182,39 +189,31 @@ def export_system(
             ]
             output_list += cartesian_product_of_declaration
 
-    export_to_csv(output_list, resource_type, manifests_dir)
+    return output_list
 
-    ### Other method I was testing using pandas,
-    ### it seems overly complicated at this point but keeping for PR conversation
 
-    # system_list_of_dicts = []
-    # for system in server_resource_list:
-    #     system_list_of_dicts.append(system)
+def export_system(
+    url: str, system_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
+) -> None:
+    """
+    Exports the required fields from a system resource to csv
+    The resource is extracted from the server prior to being
+    flattened as needed for exporting
+    """
+    resource_type = "system"
 
-    # system_df = pd.merge(
-    #     pd.json_normalize(
-    #         system_list_of_dicts,
-    #         ["privacy_declarations", "dataset_references"],
-    #         meta=[
-    #             "fides_key",
-    #             "name",
-    #             "description",
-    #             ["privacy_declarations", "data_use"],
-    #             ["privacy_declarations", "name"],
-    #             ["privacy_declaration", "data_qualifier"],
-    #         ],
-    #     ),
-    #     pd.json_normalize(
-    #         system_list_of_dicts,
-    #         ["privacy_declarations", "data_categories"],
-    #         meta="fides_key",
-    #     ),
-    #     on="fides_key",
-    # ).merge(
-    #     pd.json_normalize(
-    #         system_list_of_dicts,
-    #         ["privacy_declarations", "data_subjects"],
-    #         meta="fides_key",
-    #     ),
-    #     on="fides_key",
-    # )
+    existing_keys = list_fides_keys(system_list)
+    server_resource_list = get_server_resources(
+        url, resource_type, existing_keys, headers
+    )
+
+    output_list = generate_system_records(server_resource_list)
+
+    if not dry:
+        exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
+
+        echo_green(exported_filename + " successfully exported.")
+    else:
+        echo_green("Output would contain:")
+        for record in output_list:
+            print(record)

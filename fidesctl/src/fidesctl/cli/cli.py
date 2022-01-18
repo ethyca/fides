@@ -135,7 +135,12 @@ def export(ctx: click.Context) -> None:
 @export.command(name="system")
 @click.pass_context
 @manifests_dir_argument
-def export_system(ctx: click.Context, manifests_dir: str) -> None:
+@dry_flag
+def export_system(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
     """
     Simple export of a system to get the data map project started
     """
@@ -146,13 +151,19 @@ def export_system(ctx: click.Context, manifests_dir: str) -> None:
         system_list=taxonomy.system,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
+        dry=dry,
     )
 
 
 @export.command(name="dataset")
 @click.pass_context
 @manifests_dir_argument
-def export_dataset(ctx: click.Context, manifests_dir: str) -> None:
+@dry_flag
+def export_dataset(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
     """
     Simple export of datasets to get the data map project started
     """
@@ -163,6 +174,7 @@ def export_dataset(ctx: click.Context, manifests_dir: str) -> None:
         dataset_list=taxonomy.dataset,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
+        dry=dry,
     )
 
 
