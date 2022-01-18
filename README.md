@@ -6,7 +6,10 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
+
 ![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
+
+ _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_ 
 
 ## :zap: Overview
 
@@ -14,7 +17,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
-## :rocket: Quick Start
+## :rocket: Quick Start 
 
 1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands:
 
@@ -191,9 +194,7 @@ At this point, you've seen some of the core concepts in place: declaring systems
 
 ## :book: Learn More
 
-Fides provides a variety of docs to help guide you to a successful outcome.
-
-We are committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fidesctl.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
@@ -202,7 +203,7 @@ For more information on getting started with Fides, how to configure and set up 
 - Documentation: https://ethyca.github.io/fides/
 - Tutorial: https://ethyca.github.io/fides/tutorial/
 - Deployment: https://ethyca.github.io/fides/deployment/
-- Roadmap: https://github.com/ethyca/fides/milestones
+- Roadmap: https://github.com/ethyca/fides/projects
 - Website: www.ethyca.com/fides
 
 ### Support
@@ -236,3 +237,7 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [mypy-url]: http://mypy-lang.org/
 [twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
 [twitter-url]: https://twitter.com/ethyca
+[docker-image]: https://img.shields.io/docker/pulls/ethyca/fidesctl.svg
+[docker-url]: https://hub.docker.com/r/ethyca/fidesctl
+[pypi-image]: https://static.pepy.tech/badge/fidesctl/month
+[pypi-url]: https://pypi.org/project/fidesctl/
