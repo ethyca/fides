@@ -24,7 +24,7 @@ def include_dataset_schema(schema: str, database_type: str) -> bool:
     """
     Returns whether a schema should be included based on database type and schema name
     """
-    schema_exclusion_list = SCHEMA_EXCLUSION.get(database_type)
+    schema_exclusion_list = SCHEMA_EXCLUSION.get(database_type, [])
     if database_type == "mssql":
         return schema not in schema_exclusion_list and not schema.startswith("db_")
     return schema not in schema_exclusion_list
