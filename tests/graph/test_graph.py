@@ -11,6 +11,7 @@ t1 = Collection(
         ScalarField(name="f1", primary_key="True"),
         ScalarField(name="f2", identity="email"),
         ScalarField(name="f3", references=[(FieldAddress("s1", "t2", "f1"), "to")]),
+        ObjectField(name="f4", fields={"f5": ScalarField(name="f5", identity="ssn")}),
     ],
 )
 t2 = Collection(
@@ -36,20 +37,23 @@ graph = DatasetGraph(
 )
 
 
-def test_node_eq() -> None:
-    """two nodes are equal if they have the same collection address"""
-    assert graph.nodes[CollectionAddress("s1", "t1")] == Node(
-        Dataset(name="s1", collections=[], connection_key="mock_connection_config_key"),
-        Collection(name="t1", fields=[]),
-    )
-    assert graph.nodes[CollectionAddress("s1", "t1")] != 1
+class TestNode:
+    def test_node_eq(self) -> None:
+        """two nodes are equal if they have the same collection address"""
+        assert graph.nodes[CollectionAddress("s1", "t1")] == Node(
+            Dataset(
+                name="s1", collections=[], connection_key="mock_connection_config_key"
+            ),
+            Collection(name="t1", fields=[]),
+        )
+        assert graph.nodes[CollectionAddress("s1", "t1")] != 1
 
-
-def test_node_contains() -> None:
-    node = graph.nodes[CollectionAddress("s1", "t1")]
-    assert node.contains_field(lambda f: f.name == "f3")
-    assert node.contains_field(lambda f: f.name == "f4") is False
-    assert node.contains_field(lambda f: f.primary_key)
+    def test_node_contains_field(self) -> None:
+        node = graph.nodes[CollectionAddress("s1", "t1")]
+        assert node.contains_field(lambda f: f.name == "f3")
+        assert node.contains_field(lambda f: f.name == "f6") is False
+        assert node.contains_field(lambda f: f.primary_key)
+        assert node.contains_field(lambda f: f.identity == "ssn")
 
 
 def test_retry_decorator():

@@ -12,6 +12,7 @@ from fidesops.graph.config import (
     Dataset,
     Collection,
     ROOT_COLLECTION_ADDRESS,
+    FieldPath,
 )
 from fidesops.graph.graph import Node, Edge, DatasetGraph
 from fidesops.util.logger import NotPii
@@ -36,47 +37,53 @@ class TraversalNode:
         # address to a child that holds both a traversal_node and all possible paths
         # from this traversal_node to it: {address -> [(traversal_node, from_field, to_field)}
         self.children: Dict[
-            CollectionAddress, List[Tuple[TraversalNode, str, str]]
+            CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]
         ] = {}
-        self.parents: Dict[CollectionAddress, List[Tuple[TraversalNode, str, str]]] = {}
+        self.parents: Dict[
+            CollectionAddress, List[Tuple[TraversalNode, FieldPath, FieldPath]]
+        ] = {}
         self.is_terminal_node = False
 
     def add_child(self, child_node: TraversalNode, edge: Edge) -> None:
         """Add other as a child to this traversal_node along the provided edge."""
         addresses = edge.split_by_address(self.address)  # (traversal_node -> other)
         if addresses:
-            self_address, other_address = addresses
+            self_field_address, other_field_address = addresses
             append(
                 self.children,
-                other_address.collection_address(),
-                (child_node, self_address.field, other_address.field),
+                other_field_address.collection_address(),
+                (
+                    child_node,
+                    self_field_address.field_path,
+                    other_field_address.field_path,
+                ),
             )
             append(
                 child_node.parents,
-                self_address.collection_address(),
-                (self, self_address.field, other_address.field),
+                self_field_address.collection_address(),
+                (self, self_field_address.field_path, other_field_address.field_path),
             )
 
     def incoming_edges(self) -> Set[Edge]:
         """Return the incoming edges to this traversal_node,in (other.address -> self.address) order."""
         return {
             Edge(
-                p_address.field_address(parent_field),
-                self.address.field_address(self_field),
+                p_collection_address.field_address(parent_field_path),
+                self.address.field_address(self_field_path),
             )
-            for p_address, tuples in self.parents.items()
-            for _, parent_field, self_field in tuples
+            for p_collection_address, tuples in self.parents.items()
+            for _, parent_field_path, self_field_path in tuples
         }
 
     def outgoing_edges(self) -> Set[Edge]:
         """Return the outgoing edges to this traversal_node,in (self.address -> other.address) order."""
         return {
             Edge(
-                self.address.field_address(self_field),
-                c_address.field_address(child_field),
+                self.address.field_address(self_field_path),
+                c_collection_address.field_address(child_field_path),
             )
-            for c_address, tuples in self.children.items()
-            for _, self_field, child_field in tuples
+            for c_collection_address, tuples in self.children.items()
+            for _, self_field_path, child_field_path in tuples
         }
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
@@ -107,14 +114,14 @@ class TraversalNode:
             if foreign.collection_address() == self.address:
                 foreign, local = local, foreign
             key = str(foreign.collection_address())
-            val = f"{foreign.field} -> {local.field}"
+            val = f"{foreign.field_path.string_path} -> {local.field_path.string_path}"
             if key in _from:
                 _from[key].add(val)
             else:
                 _from[key] = {val}
         to: Dict[str, Set[str]] = {}
         for k, v in self.children.items():
-            to[str(k)] = {f"{f[1]} -> {f[2]}" for f in v}
+            to[str(k)] = {f"{f[1].string_path} -> {f[2].string_path}" for f in v}
         return {
             "from": {k: set(v) for k, v in _from.items()},
             "to": {k: set(v) for k, v in to.items()},
@@ -147,13 +154,12 @@ class Traversal:
             if seed_key in self.seed_data
         }
 
-    def __init__(self, graph: DatasetGraph, data: dict[str, Any]):
+    def __init__(self, graph: DatasetGraph, data: Dict[str, Any]):
         self.graph = graph
         self.seed_data = data
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
-
         for (
             start_field_address,
             seed_key,

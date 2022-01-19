@@ -15,12 +15,20 @@ db.customer_details.insert([
     {
         "customer_id": 1,
         "gender": "male",
-        "birthday": new ISODate("1988-01-10")
+        "birthday": new ISODate("1988-01-10"),
+        "backup_identities": {
+            "ssn": "111-111-1111",
+            "phone": "333-333-3333"
+        }
     },
      {
         "customer_id": 2,
         "gender": "female",
-        "birthday": new ISODate("1985-03-05")
+        "birthday": new ISODate("1985-03-05"),
+        "backup_identities": {
+            "ssn": "222-222-2222",
+            "phone": "444-444-4444"
+        }
     },
     {
         "customer_id": 3,

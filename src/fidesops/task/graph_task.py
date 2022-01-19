@@ -3,9 +3,9 @@ import logging
 import traceback
 from abc import ABC
 from collections import defaultdict
+from functools import wraps
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
-from functools import wraps
 
 import dask
 from dask.threaded import get
@@ -15,6 +15,7 @@ from fidesops.graph.config import (
     CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
+    FieldPath,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Row, Traversal
@@ -89,22 +90,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.traversal_node.node.dataset.connection_key  # ConnectionConfig.key
         )
 
-        # # [(foreign address, local address)]
-        # self._incoming_edge_tuples: List[Tuple[FieldAddress, FieldAddress]] = [
-        #     (e.f1, e.f2) for e in self.traversal_node.incoming_edges()
-        # ]
-
         # build incoming edges to the form : [dataset address: [(foreign field, local field)]
         b: Dict[CollectionAddress, List[Edge]] = partition(
             self.traversal_node.incoming_edges(), lambda e: e.f1.collection_address()
         )
-        self.incoming_field_map: Dict[CollectionAddress, List[Tuple[str, str]]] = {
-            k: [(e.f1.field, e.f2.field) for e in t] for k, t in b.items()
+
+        self.incoming_field_path_map: Dict[
+            CollectionAddress, List[Tuple[FieldPath, FieldPath]]
+        ] = {
+            col_addr: [(edge.f1.field_path, edge.f2.field_path) for edge in edge_list]
+            for col_addr, edge_list in b.items()
         }
-        # fields that point to child nodes
-        self.outgoing_field_map: List[str] = sorted(
-            {e.f1.field for e in self.traversal_node.outgoing_edges()}
-        )
 
         # the input keys this task will read from.These will build the dask graph
         self.input_keys: List[CollectionAddress] = sorted(b.keys())
@@ -150,12 +146,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         output: Dict[str, List[Any]] = {}
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
-            field_mappings = self.incoming_field_map[collection_address]
+            field_mappings: List[
+                Tuple[FieldPath, FieldPath]
+            ] = self.incoming_field_path_map[collection_address]
 
             for row in rowset:
-                for foreign_field, local_field in field_mappings:
-                    append(output, local_field, row.get(foreign_field))
-
+                for foreign_field_path, local_field_path in field_mappings:
+                    new_value = (
+                        row[foreign_field_path.string_path]
+                        if foreign_field_path.string_path in row
+                        else None
+                    )
+                    if new_value:
+                        append(output, local_field_path.string_path, new_value)
         return output
 
     def update_status(
@@ -204,11 +207,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "success",
                 [
                     {
-                        "field_name": f.name,
-                        "path": f"{self.traversal_node.node.address}:{f.name}",
-                        "data_categories": f.data_categories,
+                        "field_name": field.name,
+                        "path": f"{self.traversal_node.node.address}:{field.name}",
+                        "data_categories": field.data_categories,
                     }
-                    for f in self.traversal_node.node.collection.fields
+                    for field in self.traversal_node.node.collection.field_dict.values()
                 ],
                 action_type,
                 ExecutionLogStatus.complete,
@@ -387,18 +390,21 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    data_category_fields: Dict[str, Dict[str, List]] = graph.data_category_field_mapping
+    data_category_fields: Dict[
+        str, Dict[str, List[FieldPath]]
+    ] = graph.data_category_field_mapping
 
     for node_address, results in access_request_results.items():
         if not results:
             continue
 
-        # Gets all fields on this traversal_node associated with the requested data categories and sub data categories
-        target_fields = set(
+        # Gets all FieldPaths on this traversal_node associated with the requested data
+        # categories and sub data categories
+        target_fields: Set[FieldPath] = set(
             itertools.chain(
                 *[
-                    fields
-                    for cat, fields in data_category_fields[node_address].items()
+                    field_paths
+                    for cat, field_paths in data_category_fields[node_address].items()
                     if any([cat.startswith(tar) for tar in target_categories])
                 ]
             )
@@ -412,7 +418,7 @@ def filter_data_categories(
                 {
                     field: result
                     for field, result in row.items()
-                    if field in target_fields
+                    if field in {target.string_path for target in target_fields}
                 }
             )
 

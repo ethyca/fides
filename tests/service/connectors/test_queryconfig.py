@@ -1,7 +1,7 @@
 from typing import Dict, Any, Set
+import pytest
 
-
-from fidesops.graph.config import CollectionAddress
+from fidesops.graph.config import CollectionAddress, FieldPath, ObjectField, ScalarField, Collection, FieldAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
@@ -23,7 +23,8 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
     HASH,
 )
 
-from ...task.traversal_data import integration_db_graph
+from ...task.traversal_data import integration_db_graph, combined_mongo_posgresql_graph, str_converter, obj_converter, \
+    customer_details_collection
 from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
 
 # customers -> address, order
@@ -49,36 +50,69 @@ class TestSQLQueryConfig:
             return set(qconfig.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
-        assert config.fields == [
-            "id",
-            "name",
-            "ccn",
-            "customer_id",
-            "billing_address_id",
-        ]
-        assert config.query_keys == {"id", "customer_id"}
+        assert config.field_map().keys() == {
+            FieldPath(s)
+            for s in [
+                "id",
+                "name",
+                "ccn",
+                "customer_id",
+                "billing_address_id",
+            ]
+        }
+        assert config.query_field_paths == {FieldPath("id"), FieldPath("customer_id")}
 
         # values exist for all query keys
-        assert found_query_keys(
-            config, {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-        ) == {"id", "customer_id"}
+        assert (
+            found_query_keys(
+                config,
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id", "customer_id"}
+        )
         # with no values OR an empty set, these are omitted
-        assert found_query_keys(
-            config, {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-        ) == {"id"}
+        assert (
+            found_query_keys(
+                config,
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id"}
+        )
         assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
         assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
         assert found_query_keys(config, {}) == set()
 
     def test_typed_filtered_values(self):
         config = SQLQueryConfig(payment_card_node)
-        assert config.typed_filtered_values(
-            {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
-        ) == {"id": ["A"], "customer_id": ["V"]}
+        assert (
+            config.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"], "customer_id": ["V"]}
+        )
 
-        assert config.typed_filtered_values(
-            {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
-        ) == {"id": ["A"]}
+        assert (
+            config.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"]}
+        )
 
         assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
             "id": ["A"]
@@ -96,7 +130,11 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": ["A"], "customer_id": ["V"], "ignore_me": ["X"]}
+                    {
+                        "id": ["A"],
+                        "customer_id": ["V"],
+                        "ignore_me": ["X"],
+                    }
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
@@ -105,7 +143,11 @@ class TestSQLQueryConfig:
         assert (
             str(
                 SQLQueryConfig(payment_card_node).generate_query(
-                    {"id": ["A"], "customer_id": [], "ignore_me": ["X"]}
+                    {
+                        "id": ["A"],
+                        "customer_id": [],
+                        "ignore_me": ["X"],
+                    }
                 )
             )
             == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
@@ -143,13 +185,15 @@ class TestSQLQueryConfig:
 
         rule = erasure_policy.rules[0]
         config = SQLQueryConfig(customer_node)
-        assert config.build_rule_target_fields(erasure_policy) == {rule: ["name"]}
+        assert config.build_rule_target_field_paths(erasure_policy) == {
+            rule: [FieldPath("name")]
+        }
 
         # Make target more broad
         target = rule.targets[0]
         target.data_category = DataCategory("user.provided.identifiable").value
-        assert config.build_rule_target_fields(erasure_policy) == {
-            rule: ["email", "name"]
+        assert config.build_rule_target_field_paths(erasure_policy) == {
+            rule: [FieldPath("email"), FieldPath("name")]
         }
 
         # Check different collection
@@ -157,8 +201,8 @@ class TestSQLQueryConfig:
             CollectionAddress("postgres_example_test_dataset", "address")
         ]
         config = SQLQueryConfig(address_node)
-        assert config.build_rule_target_fields(erasure_policy) == {
-            rule: ["city", "house", "street", "state", "zip"]
+        assert config.build_rule_target_field_paths(erasure_policy) == {
+            rule: [FieldPath(x) for x in ["city", "house", "street", "state", "zip"]]
         }
 
     def test_generate_update_stmt_one_field(
@@ -180,7 +224,6 @@ class TestSQLQueryConfig:
             "address_id": 1,
             "id": 1,
         }
-
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
         assert text_clause._bindparams["name"].key == "name"
@@ -300,7 +343,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET name = :name,email = :email WHERE id = :id"
+            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
@@ -310,6 +353,42 @@ class TestSQLQueryConfig:
 
 
 class TestMongoQueryConfig:
+    @pytest.fixture(scope="function")
+    def customer_details_node(self, integration_postgres_config, integration_mongodb_config):
+        mongo_dataset, postgres_dataset = combined_mongo_posgresql_graph(
+            integration_postgres_config, integration_mongodb_config
+        )
+        mongo_dataset.collections.append(customer_details_collection)
+        combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
+        combined_traversal = Traversal(combined_dataset_graph, {"ssn": "111-111-1111", "email": "customer-1@examplecom"})
+        return combined_traversal.traversal_node_dict[CollectionAddress("mongo_test", "customer_details")]
+
+    def test_field_map_nested(self, customer_details_node):
+        config = MongoQueryConfig(customer_details_node)
+
+        field_map = config.field_map()
+        assert isinstance(field_map[FieldPath("backup_identities")], ObjectField)
+        assert isinstance(field_map[FieldPath("backup_identities", "ssn")], ScalarField)
+
+    def test_primary_key_field_paths(self, customer_details_node):
+        config = MongoQueryConfig(customer_details_node)
+        assert list(config.primary_key_field_paths.keys()) == [FieldPath("_id")]
+        assert isinstance(config.primary_key_field_paths[FieldPath('_id')], ScalarField)
+
+    def test_nested_query_field_paths(self, customer_details_node):
+        # Two potential identities
+        config = SQLQueryConfig(customer_details_node)
+        assert config.query_field_paths == {FieldPath('backup_identities', 'ssn'), FieldPath('customer_id')}
+
+    def test_nested_typed_filtered_values(self, customer_details_node):
+        """Identity data is located on a nested object"""
+        config = SQLQueryConfig(customer_details_node)
+        input_data = {
+            "backup_identities.ssn": ["111-111-1111"],
+            "ignore": ["abcde"]
+        }
+        assert config.typed_filtered_values(input_data) == {'backup_identities.ssn': ['111-111-1111']}
+
     def test_generate_update_stmt_multiple_fields(
         self,
         erasure_policy,
