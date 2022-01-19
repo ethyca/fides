@@ -80,7 +80,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set, Dict, Literal, Any
+from typing import List, Optional, Tuple, Set, Dict, Literal, Any, Callable
 
 from pydantic import BaseModel
 
@@ -91,6 +91,7 @@ from fidesops.graph.data_type import (
     DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.collection_util import merge_dicts
 from fidesops.util.querytoken import QueryToken
 
 DatasetAddress = str
@@ -132,9 +133,12 @@ class CollectionAddress:
                 f"'{address_str}' is not a valid collection address"
             )
 
-    def field_address(self, field: str) -> FieldAddress:
-        """Create a field address appended to this collection address."""
-        return FieldAddress(self.dataset, self.collection, field)
+    def field_address(self, field_path: FieldPath) -> FieldAddress:
+        """Create a field address appended to this collection address.
+
+        collection_address.field_address(FieldPath('a', 'b', 'c', 'd')) = dataset_name:collection_name:a.b.c.d
+        """
+        return FieldAddress(self.dataset, self.collection, *field_path.levels)
 
 
 ROOT_COLLECTION_ADDRESS: CollectionAddress = CollectionAddress("__ROOT__", "__ROOT__")
@@ -143,15 +147,62 @@ TERMINATOR_ADDRESS = CollectionAddress("__TERMINATE__", "__TERMINATE__")
 """An address that corresponds to traversal termination"""
 
 
+class FieldPath:
+    """Fields are addressable by a (possibly) nested name. This key
+    represents a field name held as a tuple of possibly descending levels.
+    A scalar field is represented as a single-element tuple.
+
+    Examples:
+    FieldPath('a', 'b', 'c', 'd').levels = ('a', 'b', 'c', 'd')
+    FieldPath('a', 'b', 'c', 'd').string_path = 'a.b.c.d'
+
+    FieldPath('a').levels = ('a',)
+    FieldPath('a').string_path = 'a'
+    """
+
+    def __init__(self, *names: str):
+        self.levels: Tuple[str, ...] = tuple(names)
+        self.string_path: str = ".".join(self.levels)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FieldPath):
+            return False
+        return other.levels == self.levels
+
+    def __hash__(self) -> int:
+        return hash(self.string_path)
+
+    def __repr__(self) -> str:
+        return f"FieldPath{self.levels}"
+
+    def __lt__(self, other: "FieldPath") -> bool:
+        return self.string_path < other.string_path
+
+    def prepend(self, prefix: str) -> "FieldPath":
+        """Return a new FieldPath with the prefix prepended."""
+        return FieldPath(*((prefix,) + self.levels))
+
+    @staticmethod
+    def parse(path_str: str) -> FieldPath:
+        """Create a FieldPath from a dot-separated input string"""
+        return FieldPath(*path_str.split("."))
+
+
 class FieldAddress:
     """The representation of a field location in the graph, specified by
-    (data dataset name, collection name, field name)"""
+    (data dataset name, collection name, field name, subfield name, ... )
 
-    def __init__(self, dataset: str, collection: str, field: str):
+    All values after the second are grouped to provide a FieldPath object.
+    Additional values are understood to refer to nested field values.
+    e.g. ("dataset", "collection", "a", "b", "c") creates a reference to
+    dataset:collection:a.b.c
+    """
+
+    def __init__(self, dataset: str, collection: str, *fields: str):
         self.dataset = dataset
         self.collection = collection
-        self.field = field
-        self.value: str = ":".join((dataset, collection, field))
+        self.field_path: FieldPath = FieldPath(*fields)
+        self.value: str = ":".join((dataset, collection, self.field_path.string_path))
 
     def is_member_of(self, collection_address: CollectionAddress) -> bool:
         """True if this field represents a field in the given collection address."""
@@ -177,15 +228,6 @@ class FieldAddress:
 
     def __lt__(self, other: FieldAddress) -> bool:
         return self.value < other.value
-
-    def display_name(self) -> str:
-        """Displayable name"""
-        if (
-            self.dataset == ROOT_COLLECTION_ADDRESS.dataset
-            and self.collection == ROOT_COLLECTION_ADDRESS.collection
-        ):
-            return f"identity:{self.field}"
-        return self.__repr__()
 
 
 class Field(BaseModel, ABC):
@@ -219,6 +261,13 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+        """Find fields or subfields satisfying the input function"""
+
+    def __repr__(self) -> str:
+        """Overrides print method to be more succinct"""
+        return f"{self.__class__.__name__}(name='{self.name}', data_type='{self.data_type()}', is_array={self.is_array})"
+
 
 class ScalarField(Field):
     """A field that represents a simple value. Most fields will be scalar fields."""
@@ -233,6 +282,12 @@ class ScalarField(Field):
 
         return value
 
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+        """Returns the field if it satisfies the input function"""
+        if func(self):
+            return {FieldPath(self.name): self}  # pylint: disable=no-member
+        return {}
+
 
 class ObjectField(Field):
     """A field that represents a json dict structure."""
@@ -243,10 +298,32 @@ class ObjectField(Field):
         """Cast the input value into the form represented by data_type."""
 
         return {
-            field.name: field.cast(value[field.name])
+            field.name: field.cast(value[field.name])  # pylint: disable=no-member
             for field in self.fields.values()
             if field.name in value
         }
+
+    def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
+        """Find fields or subfields satisfying the input function
+
+        Object fields will continue to call collect_matching until we get to the base case,
+        which is a ScalarField.
+        """
+        base = (
+            {FieldPath(self.name): self}  # pylint: disable=no-member
+            if func(self)
+            else {}
+        )
+        child_dicts = merge_dicts(
+            *[field.collect_matching(func) for field in self.fields.values()]
+        )
+        return merge_dicts(
+            base,
+            {
+                field_path.prepend(self.name): field  # pylint: disable=no-member
+                for field_path, field in child_dicts.items()
+            },
+        )
 
 
 # pylint: disable=too-many-arguments
@@ -298,46 +375,66 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
-    field_dict: Dict[str, Field] = {}
 
-    def __init__(self, **kwargs: Dict[str, Any]) -> None:
-        super().__init__(**kwargs)
-        self.field_dict = {f.name: f for f in self.fields}
+    @property
+    def field_dict(self) -> Dict[FieldPath, Field]:
+        """Maps FieldPaths to Fields
+
+        Flattens all the Fields so they are on one level: all nested fields are brought to the top.
+        """
+        return self.recursively_collect_matches(lambda f: True)
+
+    def recursively_collect_matches(
+        self, func: Callable[[Field], bool]
+    ) -> Dict[FieldPath, Field]:
+        """Recurse through fields and subfields, creating a flattened dictionary
+        of field paths mapped to fields where the function is satisfied"""
+        matches = [field.collect_matching(func) for field in self.fields]
+        return merge_dicts(*matches)
 
     def references(
         self,
-    ) -> Dict[str, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
-        """return references from fields in this collection to fields in any other"""
-        flds_w_ref = filter(lambda f: f.references, self.fields)
-        return {f.name: f.references for f in flds_w_ref}
+    ) -> Dict[FieldPath, List[Tuple[FieldAddress, Optional[EdgeDirection]]]]:
+        """return references from fields in this collection to fields in any other collection
 
-    def identities(self) -> Dict[str, Tuple[str, ...]]:
+        A nested field can be a reference.
+        """
+        return {
+            field_path: field.references
+            for field_path, field in self.field_dict.items()
+            if field.references
+        }
+
+    def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
         """return identity pointers included in the table"""
-        flds_w_ident = filter(lambda f: f.identity, self.fields)
-        return {f.name: f.identity for f in flds_w_ident}
+        return {
+            field_path: field.identity
+            for field_path, field in self.field_dict.items()
+            if field.identity
+        }
 
-    def field(self, name: str) -> Optional[Field]:
-        """return field by name, or None if not found"""
-        return self.field_dict[name] if name in self.field_dict else None
+    def field(self, field_path: FieldPath) -> Optional[Field]:
+        """Return Field (looked up by FieldPath) if on Collection or None if not found"""
+        return self.field_dict[field_path] if field_path in self.field_dict else None
 
     @property
-    def fields_by_category(self) -> Dict[str, List]:
-        """Returns mapping of data categories to fields, flips fields -> categories
-        to be categories -> fields.
+    def field_paths_by_category(self) -> Dict[str, List[FieldPath]]:
+        """Returns mapping of data categories to a list of FieldPaths, flips FieldPaths -> categories
+        to be categories -> FieldPaths.
 
         Example:
             {
-                "user.provided.identifiable.contact.city": ["city"],
-                "user.provided.identifiable.contact.street": ["house", "street"],
+                "user.provided.identifiable.contact.city": [FieldPath("city")],
+                "user.provided.identifiable.contact.street": [FieldPath("house"), FieldPath("street")],
                 "system.operations": ["id"],
-                "user.provided.identifiable.contact.state": ["state"],
+                "user.provided.identifiable.contact.state": [FieldPath("state", "code"),FieldPath("state", "full_name"), ],
                 "user.provided.identifiable.contact.postal_code": ["zip"]
             }
         """
         categories = defaultdict(list)
-        for field in self.fields:
+        for field_path, field in self.field_dict.items():
             for category in field.data_categories or []:
-                categories[category].append(field.name)
+                categories[category].append(field_path)
         return categories
 
     class Config:

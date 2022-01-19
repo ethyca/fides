@@ -11,69 +11,78 @@ from fidesops.graph.config import (
     CollectionAddress,
     Field,
     MaskingOverride,
+    FieldPath,
 )
 from fidesops.graph.traversal import TraversalNode, Row
 from fidesops.models.policy import Policy, ActionType, Rule
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-from fidesops.util.querytoken import QueryToken
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
 )
+from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.collection_util import append, filter_nonempty_values
+from fidesops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
 class QueryConfig(Generic[T], ABC):
-    """A wrapper around a resource-type dependant query object that can generate runnable queries and string representations."""
+    """A wrapper around a resource-type dependent query object that can generate runnable queries
+    and string representations."""
 
     def __init__(self, node: TraversalNode):
         self.node = node
 
-    @property
-    def fields(self) -> List[str]:
-        """Fields of interest from this traversal traversal_node."""
-        return [f.name for f in self.node.node.collection.fields]
+    def field_map(self) -> Dict[FieldPath, Field]:
+        """Flattened FieldPaths of interest from this traversal_node."""
+        return self.node.node.collection.field_dict
 
-    def build_rule_target_fields(self, policy: Policy) -> Dict[Rule, List[str]]:
+    def build_rule_target_field_paths(
+        self, policy: Policy
+    ) -> Dict[Rule, List[FieldPath]]:
         """
-        Return dictionary of rules mapped to update-able field names on a given collection
+        Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
-        {<fidesops.models.policy.Rule object at 0xffff9160e190>: ['name', 'code', 'ccn']}
+        {<fidesops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
-        rule_updates: Dict[Rule, List[str]] = {}
+        rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:
             if rule.action_type != ActionType.erasure:
                 continue
-            rule_categories = rule.get_target_data_categories()
+            rule_categories: List[str] = rule.get_target_data_categories()
             if not rule_categories:
                 continue
 
-            targeted_fields = []
-            collection_categories = self.node.node.collection.fields_by_category
+            targeted_field_paths = []
+            collection_categories: Dict[
+                str, List[FieldPath]
+            ] = self.node.node.collection.field_paths_by_category
             for rule_cat in rule_categories:
-                for collection_cat, fields in collection_categories.items():
+                for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
-                        targeted_fields.extend(fields)
-            rule_updates[rule] = targeted_fields
+                        targeted_field_paths.extend(field_paths)
+            rule_updates[rule] = targeted_field_paths
 
         return rule_updates
 
     @property
-    def primary_key_fields(self) -> List[Field]:
-        """List of fields marked as primary keys"""
-        return [f for f in self.node.node.collection.fields if f.primary_key]
+    def primary_key_field_paths(self) -> Dict[FieldPath, Field]:
+        """Mapping of FieldPaths to Fields that are marked as PK's"""
+        return {
+            field_path: field
+            for field_path, field in self.field_map().items()
+            if field.primary_key
+        }
 
     @property
-    def query_keys(self) -> Set[str]:
+    def query_field_paths(self) -> Set[FieldPath]:
         """
-        All of the possible keys that we can query for possible filter values.
-        These are keys that are the ends of incoming edges.
+        All of the possible field paths that we can query for possible filter values.
+        These are field paths that are the ends of incoming edges.
         """
-        return set(map(lambda edge: edge.f2.field, self.node.incoming_edges()))
+        return {edge.f2.field_path for edge in self.node.incoming_edges()}
 
     def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
         """
@@ -82,11 +91,11 @@ class QueryConfig(Generic[T], ABC):
 
         The values are cast based on field types, if those types are specified.
         """
-
         out = {}
         for key, values in input_data.items():
-            field = self.node.node.collection.field(key)
-            if field and key in self.query_keys and isinstance(values, list):
+            path: FieldPath = FieldPath.parse(key)
+            field: Field = self.node.node.collection.field(path)
+            if field and path in self.query_field_paths and isinstance(values, list):
                 cast_values = [field.cast(v) for v in values]
                 filtered = list(filter(lambda x: x is not None, cast_values))
                 if filtered:
@@ -94,11 +103,15 @@ class QueryConfig(Generic[T], ABC):
         return out
 
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
-        """Display the input sources for each query key"""
+        """Display the input collection(s) for each query key for display purposes.
+
+        {'user_info.user_id': [postgres_db:users]}
+
+        Translate keys from field paths to string values
+        """
         data: Dict[str, List[CollectionAddress]] = {}
         for edge in self.node.incoming_edges():
-            append(data, edge.f2.field, edge.f1.collection_address())
-
+            append(data, edge.f2.field_path.string_path, edge.f1.collection_address())
         return data
 
     def display_query_data(self) -> Dict[str, Any]:
@@ -110,12 +123,15 @@ class QueryConfig(Generic[T], ABC):
         data = {}
         t = QueryToken()
 
-        for k, v in self.query_sources().items():
+        for field_str, input_collection_address in self.query_sources().items():
 
-            if len(v) == 1 and v[0] == ROOT_COLLECTION_ADDRESS:
-                data[k] = [t]
+            if (
+                len(input_collection_address) == 1
+                and input_collection_address[0] == ROOT_COLLECTION_ADDRESS
+            ):
+                data[field_str] = [t]
             else:
-                data[k] = [
+                data[field_str] = [
                     t,
                     QueryToken(),
                 ]  # intentionally want a second instance so that set does not collapse into 1 value
@@ -125,20 +141,22 @@ class QueryConfig(Generic[T], ABC):
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
-        """Map the relevant fields to be updated on the row with their masked values from Policy Rules
+        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'backup_identities.ssn': None}
 
-        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields
-        for a given customer_id will be replaced with null values.
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
+        backup_identities.ssn fields for a given customer_id will be replaced with null values.
+
+        FieldPaths are mapped to their dotted string path representation.
 
         """
-        rule_to_collection_fields: Dict[
-            Rule, List[str]
-        ] = self.build_rule_target_fields(policy)
+        rule_to_collection_field_paths: Dict[
+            Rule, List[FieldPath]
+        ] = self.build_rule_target_field_paths(policy)
 
         value_map: Dict[str, Any] = {}
-        for rule, field_names in rule_to_collection_fields.items():
+        for rule, field_paths in rule_to_collection_field_paths.items():
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
@@ -146,30 +164,30 @@ class QueryConfig(Generic[T], ABC):
                 strategy_config["strategy"], strategy_config["configuration"]
             )
 
-            for field_name in field_names:
+            for rule_field_path in field_paths:
                 masking_override: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
-                    for field in self.node.node.collection.fields
-                    if field.name == field_name
+                    for field_path, field in self.field_map().items()
+                    if field_path == rule_field_path
                 ][0]
                 null_masking: bool = strategy_config.get("strategy") == NULL_REWRITE
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {field_name}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = row[field_name]
+                val: Any = row[rule_field_path.string_path]
                 masked_val = self._generate_masked_value(
                     request.id,
                     strategy,
                     val,
                     masking_override,
                     null_masking,
-                    field_name,
+                    rule_field_path,
                 )
-                value_map[field_name] = masked_val
+                value_map[rule_field_path.string_path] = masked_val
         return value_map
 
     @staticmethod
@@ -194,17 +212,18 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_name: str,
+        field_path: FieldPath,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
-            f"Generated the following masked val for field {field_name}: {masked_val}"
+            f"Generated the following masked val for field {field_path.string_path}: {masked_val}"
         )
         if null_masking:
             return masked_val
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {field_name}, we will truncate length of masked value to match, regardless of masking strategy"
+                f"Because a length has been specified for field {field_path.string_path}, we will truncate length "
+                f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
             masked_val = masking_override.data_type_converter.truncate(
@@ -242,10 +261,15 @@ class SQLQueryConfig(QueryConfig[TextClause]):
 
     def format_fields_for_query(
         self,
-        fields: List[str],
+        field_paths: List[FieldPath],
     ) -> List[str]:
-        """Returns fields in a format they can be added into SQL queries."""
-        return fields
+        """Returns field paths in a format they can be added into SQL queries.
+
+        This currently takes no nesting into account and only returns the
+        last value from each key. It will need to be updated to support
+        nested values.
+        """
+        return [fk.levels[-1] for fk in field_paths]
 
     def format_clause_for_query(
         self,
@@ -277,22 +301,23 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
-
-        filtered_data = self.typed_filtered_values(input_data)
+        filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
             query_data: Dict[str, Tuple[Any, ...]] = {}
-            formatted_fields = self.format_fields_for_query(self.fields)
+            formatted_fields: List[str] = self.format_fields_for_query(
+                list(self.field_map().keys())
+            )
             field_list = ",".join(formatted_fields)
-            for field_name, data in filtered_data.items():
+            for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(field_name, "="))
-                    query_data[field_name] = (data.pop(),)
+                    clauses.append(self.format_clause_for_query(string_path, "="))
+                    query_data[string_path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(field_name, "IN"))
-                    query_data[field_name] = tuple(data)
+                    clauses.append(self.format_clause_for_query(string_path, "IN"))
+                    query_data[string_path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
                     pass
@@ -305,24 +330,29 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f"{k} = :{k}" for k in key_map]
+        fields.sort()
+        return [f"{k} = :{k}" for k in fields]
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Optional[TextClause]:
         """Returns an update statement in generic SQL dialect."""
-        update_value_map = self.update_value_map(row, policy, request)
-        update_clauses = self.format_key_map_for_update_stmt(update_value_map)
-        non_empty_primary_keys = filter_nonempty_values(
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        update_clauses: list[str] = self.format_key_map_for_update_stmt(
+            list(update_value_map.keys())
+        )
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
-                f.name: f.cast(row[f.name])
-                for f in self.primary_key_fields
-                if f.name in row
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
             }
         )
-        pk_clauses = self.format_key_map_for_update_stmt(non_empty_primary_keys)
+        pk_clauses: list[str] = self.format_key_map_for_update_stmt(
+            list(non_empty_primary_keys.keys())
+        )
 
         for k, v in non_empty_primary_keys.items():
             update_value_map[k] = v
@@ -371,10 +401,13 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def format_fields_for_query(
         self,
-        fields: List[str],
+        field_paths: List[FieldPath],
     ) -> List[str]:
-        """Returns fields surrounded by quotation marks as required by Snowflake syntax."""
-        return [f'"{field}"' for field in fields]
+        """Returns fields surrounded by quotation marks as required by Snowflake syntax.
+
+        Does not take nesting into account yet.
+        """
+        return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
 
     def format_clause_for_query(
         self,
@@ -392,9 +425,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
-    def format_key_map_for_update_stmt(self, key_map: Dict[str, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f'"{k}" = :{k}' for k in key_map]
+        fields.sort()
+        return [f'"{k}" = :{k}' for k in fields]
 
     def get_formatted_update_stmt(
         self,
@@ -447,17 +481,20 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
-            filtered_data = self.typed_filtered_values(input_data)
+            filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
             if filtered_data:
-                field_list = {field_name: 1 for field_name in self.fields}
+                field_list = {
+                    field_path.string_path: 1
+                    for field_path, field in self.field_map().items()
+                }
                 query_pairs = {}
-                for field_name, data in filtered_data.items():
+                for string_field_path, data in filtered_data.items():
 
                     if len(data) == 1:
-                        query_pairs[field_name] = data[0]
+                        query_pairs[string_field_path] = data[0]
 
                     elif len(data) > 1:
-                        query_pairs[field_name] = {"$in": data}
+                        query_pairs[string_field_path] = {"$in": data}
 
                     else:
                         #  if there's no data, create no clause
@@ -479,8 +516,11 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy, request)
 
-        pk_clauses = filter_nonempty_values(
-            {k.name: k.cast(row[k.name]) for k in self.primary_key_fields}
+        pk_clauses: Dict[str, Any] = filter_nonempty_values(
+            {
+                field_path.string_path: field.cast(row[field_path.string_path])
+                for field_path, field in self.primary_key_field_paths.items()
+            }
         )
 
         valid = len(pk_clauses) > 0 and len(update_clauses) > 0

@@ -8,14 +8,13 @@ from pymongo import MongoClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
     AccessLevel,
 )
 from fidesops.service.connectors import PostgreSQLConnector, MongoDBConnector
-from .fixtures import faker, integration_config, integration_secrets
+from .fixtures import faker, integration_secrets
 
 logger = logging.getLogger(__name__)
 

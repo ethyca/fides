@@ -5,7 +5,7 @@ from fidesops.graph.config import (
     ScalarField,
     FieldAddress,
     CollectionAddress,
-    Dataset,
+    Dataset, ObjectField,
 )
 from fidesops.graph.data_type import DataType
 from fidesops.graph.graph import DatasetGraph
@@ -14,7 +14,8 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 str_converter = DataType.string.value
-
+bool_converter = DataType.boolean.value
+obj_converter = DataType.object.value
 
 def integration_db_mongo_graph(
     db_name: str, connection_key: FidesOpsKey
@@ -32,6 +33,27 @@ def integration_db_mongo_graph(
         )
     return dataset, DatasetGraph(dataset)
 
+
+# TODO will add to combined_mongo_posgresql_graph below when more
+# nested handling has been added
+customer_details_collection = Collection(
+    name="customer_details",
+    fields=[
+        ScalarField(name="_id", primary_key=True),
+        ScalarField(
+            name="customer_id",
+            references=[
+                (FieldAddress("postgres_example", "customer", "id"), "from")
+            ],
+        ),
+        ScalarField(name="gender", data_type_converter=str_converter),
+        ScalarField(name="birthday", data_type_converter=str_converter),
+        ObjectField(name="backup_identities", data_type_converter=obj_converter, fields={
+            "ssn": ScalarField(name="ssn", data_type_converter=str_converter, identity="ssn"),
+            "phone": ScalarField(name="phone", data_type_converter=str_converter, identity="phone_number")
+        }),
+    ]
+)
 
 def combined_mongo_posgresql_graph(
     postgres_config: ConnectionConfig, mongo_config: ConnectionConfig

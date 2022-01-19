@@ -13,6 +13,7 @@ from fidesops.graph.config import (
     Dataset,
     EdgeDirection,
     Field,
+    FieldPath,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class Node:
         self.collection = collection
 
     def __repr__(self) -> str:
-        return f"Node[{self.address}]"
+        return f"Node({self.address})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Node):
@@ -44,9 +45,13 @@ class Node:
     def __hash__(self) -> int:
         return hash(self.address)
 
-    def contains_field(self, f: Callable[[Field], bool]) -> bool:
-        """True if any field in this collection matches the condition of the callable"""
-        return any(map(f, self.collection.fields))
+    def contains_field(self, func: Callable[[Field], bool]) -> bool:
+        """True if any field in this collection matches the condition of the callable
+
+        Currently used to assert at least one field in the collection contains a primary
+        key before erasing
+        """
+        return any(self.collection.recursively_collect_matches(func))
 
 
 class Edge:
@@ -93,25 +98,25 @@ class Edge:
             return self.f1, self.f2
         return None
 
-    def reverse(self) -> Edge:
-        """Convenience method to return the reversed edge."""
-        return Edge(self.f2, self.f1)
-
     def ends_with_collection(self, addr: CollectionAddress) -> bool:
         """The far end of this edge points to the provided collection address"""
         return self.f2.collection_address() == addr
 
-    @staticmethod
+    @classmethod
     def delete_edges(
-        edges: Set[Edge], from_address: CollectionAddress, to_address: CollectionAddress
+        cls,
+        edges: Set[Edge],
+        from_address: CollectionAddress,
+        to_address: CollectionAddress,
     ) -> Set[Edge]:
         """Delete all edges between traversal_node address 1 and traversal_node address 2 and return the deleted edges."""
         to_delete = set(filter(lambda e: e.spans(from_address, to_address), edges))
         edges.difference_update(to_delete)
         return to_delete
 
-    @staticmethod
+    @classmethod
     def create_edge(
+        cls,
         addr_1: FieldAddress,
         addr_2: FieldAddress,
         direction: [Optional[EdgeDirection]] = None,
@@ -145,13 +150,6 @@ class BidirectionalEdge(Edge):
     def __hash__(self) -> int:
         return hash((self.f1, self.f2, True))
 
-    def contains(self, node_address: CollectionAddress) -> bool:
-        """The collection address is a prefix to either one of the endpoints."""
-        return (
-            self.f1.collection_address() == node_address
-            or self.f2.collection_address() == node_address
-        )
-
     def spans(self, addr_1: CollectionAddress, addr_2: CollectionAddress) -> bool:
         """True if the 2 provided addresses span the edge endpoints"""
         ds1 = self.f1.collection_address()
@@ -169,10 +167,6 @@ class BidirectionalEdge(Edge):
         if self.f2.collection_address() == node_address:
             return self.f2, self.f1
         return None
-
-    def reverse(self) -> Edge:
-        """Convenience method to return the reversed edge."""
-        return self
 
     def ends_with_collection(self, addr: CollectionAddress) -> bool:
         """The far end of this edge points to the provided collection address"""
@@ -203,10 +197,10 @@ class DatasetGraph:
         self.edges: Set[Edge] = set()
 
         for node_address, node in self.nodes.items():
-            for field_name, ref_list in node.collection.references().items():
+            for field_path, ref_list in node.collection.references().items():
 
-                source_field_address = FieldAddress(
-                    node_address.dataset, node_address.collection, field_name
+                source_field_address: FieldAddress = FieldAddress(
+                    node_address.dataset, node_address.collection, *field_path.levels
                 )
                 for (dest_field_address, direction) in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
@@ -224,32 +218,36 @@ class DatasetGraph:
 
         # collect all seed references
         self.identity_keys: Dict[FieldAddress, SeedAddress] = {
-            FieldAddress(node.address.dataset, node.address.collection, k): v
+            FieldAddress(
+                node.address.dataset, node.address.collection, *field_path.levels
+            ): seed_address
             for node in nodes
-            for k, v in node.collection.identities().items()
+            for field_path, seed_address in node.collection.identities().items()
         }
 
     @property
-    def data_category_field_mapping(self) -> Dict[str, Dict[str, List]]:
+    def data_category_field_mapping(self) -> Dict[str, Dict[str, List[FieldPath]]]:
         """
-        Maps the data_categories for each traversal_node to a list of fields that have that
+        Maps the data_categories for each traversal_node to a list of field paths that have that
         same data category.
 
         For example:
         {
             "postgres_example_test_dataset:address": {
-                "user.provided.identifiable.contact.city": ["city"],
-                "user.provided.identifiable.contact.street": ["house", "street"],
-                "system.operations": ["id"],
-                "user.provided.identifiable.contact.state": ["state"],
-                "user.provided.identifiable.contact.postal_code": ["zip"]
+                "user.provided.identifiable.contact.city": [FieldPath("city")],
+                "user.provided.identifiable.contact.street": [FieldPath("house"), FieldPath("street")],
+                "system.operations": [FieldPath("id")],
+                "user.provided.identifiable.contact.state": [FieldPath("state"]),
+                "user.provided.identifiable.contact.postal_code": [FieldPath("zip")]
             }
         }
 
         """
-        mapping: Dict[str, Dict[str, List]] = defaultdict(lambda: defaultdict(list))
+        mapping: Dict[str, Dict[str, List[FieldPath]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         for node_address, node in self.nodes.items():
-            mapping[str(node_address)] = node.collection.fields_by_category
+            mapping[str(node_address)] = node.collection.field_paths_by_category
         return mapping
 
     def __repr__(self) -> str:

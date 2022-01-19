@@ -110,7 +110,7 @@ def generate_collection(collection: Collection) -> Dict[str, Any]:
             return faker.email()
         return faker.name()
 
-    return {f.name: value_for_name(f.name) for f in collection.fields}
+    return {f.name: value_for_name(f.name) for f in collection.field_dict.values()}
 
 
 def generate_field_list(num_fields: int) -> List[ScalarField]:
@@ -131,7 +131,7 @@ def field(dataresources: List[Dataset], address: Tuple[str, str, str]) -> Scalar
 
     dr: Dataset = next(dr for dr in dataresources if dr.name == address[0])
     ds: Collection = next(ds for ds in dr.collections if ds.name == address[1])
-    df: ScalarField = next(df for df in ds.fields if df.name == address[2])
+    df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[2])
     return df
 
 
