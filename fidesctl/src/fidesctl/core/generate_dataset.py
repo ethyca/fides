@@ -1,5 +1,5 @@
 """Module that generates valid dataset manifest files from various data sources."""
-from typing import Dict, List, Tuple, Optional, Callable
+from typing import Dict, List, Tuple, Optional
 
 import sqlalchemy
 from sqlalchemy.engine import Engine
@@ -11,46 +11,37 @@ from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, Taxonomy
 from .utils import get_db_engine, echo_green, echo_red
 
+SCHEMA_EXCLUSION = {
+    "postgresql": ["information_schema"],
+    "mysql": ["mysql", "performance_schema", "sys", "information_schema"],
+    "mssql": ["INFORMATION_SCHEMA", "guest", "sys"],
+    "snowflake": ["information_schema"],
+    "redshift": ["information_schema"],
+}
 
-def get_postgres_collections_and_fields(
+
+def include_dataset_schema(schema: str, database_type: str) -> bool:
+    """
+    Returns whether a schema should be included based on database type and schema name
+    """
+    schema_exclusion_list = SCHEMA_EXCLUSION.get(database_type)
+    if database_type == "mssql":
+        return schema not in schema_exclusion_list and not schema.startswith("db_")
+    return schema not in schema_exclusion_list
+
+
+def get_db_collections_and_fields(
     engine: Engine,
 ) -> Dict[str, Dict[str, List[str]]]:
     """
-    Postgres-specific implementation that to ingest all of the
-    schemas and tables from a database.
+    Extract the table and column names from a database given a sqlalchemy engine
 
     Returns a mapping of schemas to its tables and all of the table's fields.
     """
     inspector = sqlalchemy.inspect(engine)
-    schema_exclusion_list = ["information_schema"]
-
     db_tables: Dict[str, Dict[str, List]] = {}
     for schema in inspector.get_schema_names():
-        if schema not in schema_exclusion_list:
-            db_tables[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_tables[schema][f"{schema}.{table}"] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
-    return db_tables
-
-
-def get_mysql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
-    """
-    Postgres-specific implementation that to ingest all of the
-    schemas and tables from a database.
-
-    Returns a mapping of schemas to its tables and all of the table's fields.
-
-    Because MySQL doesn't have schemas this is filled in by the database name.
-    """
-    inspector = sqlalchemy.inspect(engine)
-    schema_exclusion_list = ["mysql", "performance_schema", "sys", "information_schema"]
-
-    db_tables: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if schema not in schema_exclusion_list:
+        if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
             db_tables[schema] = {}
             for table in inspector.get_table_names(schema=schema):
                 db_tables[schema][table] = [
@@ -58,96 +49,6 @@ def get_mysql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List
                     for column in inspector.get_columns(table, schema=schema)
                 ]
     return db_tables
-
-
-def get_mssql_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
-    """
-    SQL Server-specific implementation that to ingest all of the
-    schemas and tables from a database.
-
-    Returns a mapping of schemas to its tables and all of the table's fields.
-
-    Because SQL Server doesn't have schemas this is filled in by the database name.
-    """
-    inspector = sqlalchemy.inspect(engine)
-    schema_exclusion_list = ["INFORMATION_SCHEMA", "guest", "sys"]
-    exclude_prefix = "db_"
-
-    db_tables: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if schema not in schema_exclusion_list and schema[:3] != exclude_prefix:
-            db_tables[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_tables[schema][table] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
-    return db_tables
-
-
-def get_snowfake_collections_and_fields(
-    engine: Engine,
-) -> Dict[str, Dict[str, List[str]]]:
-    """
-    Snowflake-specific implementation that to ingest all of the
-    schemas and tables from a database.
-
-    Returns a mapping of schemas to its tables and all of the table's fields.
-    """
-    inspector = sqlalchemy.inspect(engine)
-    schema_exclusion_list = ["information_schema"]
-
-    db_tables: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if schema not in schema_exclusion_list:
-            db_tables[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_tables[schema][f"{schema}.{table}"] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
-    return db_tables
-
-
-def get_redshift_collections_and_fields(
-    engine: Engine,
-) -> Dict[str, Dict[str, List[str]]]:
-    """
-    Redshift-specific implementation that to ingest all of the
-    schemas and tables from a database.
-
-    Returns a mapping of schemas to its tables and all of the table's fields.
-    """
-    inspector = sqlalchemy.inspect(engine)
-    schema_exclusion_list = ["information_schema"]
-
-    db_tables: Dict[str, Dict[str, List]] = {}
-    for schema in inspector.get_schema_names():
-        if schema not in schema_exclusion_list:
-            db_tables[schema] = {}
-            for table in inspector.get_table_names(schema=schema):
-                db_tables[schema][f"{schema}.{table}"] = [
-                    column["name"]
-                    for column in inspector.get_columns(table, schema=schema)
-                ]
-    return db_tables
-
-
-def get_db_collections_and_fields(engine: Engine) -> Dict[str, Dict[str, List[str]]]:
-    """
-    Returns a database collections and fields, delegating to a specific engine dialect function
-    """
-    database_ingestion_functions: Dict[
-        str, Callable[[Engine], Dict[str, Dict[str, List[str]]]]
-    ] = {
-        "postgresql": get_postgres_collections_and_fields,
-        "mysql": get_mysql_collections_and_fields,
-        "mssql": get_mssql_collections_and_fields,
-        "snowflake": get_snowfake_collections_and_fields,
-        "redshift": get_redshift_collections_and_fields,
-    }
-    collections_and_fields = database_ingestion_functions[engine.dialect.name](engine)
-    return collections_and_fields
 
 
 def create_dataset_collections(

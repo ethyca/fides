@@ -21,10 +21,13 @@ MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 # External databases require credentials passed through environment variables
 SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
-SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
+SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(
+    os.getenv("SNOWFLAKE_FIDESCTL_PASSWORD", "")
+)
 
 REDSHIFT_URL_TEMPLATE = "redshift+psycopg2://fidesctl:{}@redshift-cluster-1.cohs2e5eq2e4.us-east-1.redshift.amazonaws.com:5439/fidesctl_test"
-REDSHIFT_URL = REDSHIFT_URL_TEMPLATE.format(os.getenv('REDSHIFT_FIDESCTL_PASSWORD', ""))
+REDSHIFT_URL = REDSHIFT_URL_TEMPLATE.format(os.getenv("REDSHIFT_FIDESCTL_PASSWORD", ""))
+
 
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
@@ -183,7 +186,10 @@ def test_find_uncategorized_dataset_fields_all_categorized():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert not uncategorized_keys
@@ -211,7 +217,10 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
             )
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.2"}
@@ -236,7 +245,10 @@ def test_find_uncategorized_dataset_fields_missing_field():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.bar.5"}
@@ -265,7 +277,10 @@ def test_find_uncategorized_dataset_fields_missing_collection():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
@@ -283,8 +298,8 @@ def test_unsupported_dialect_error():
 class TestPostgres:
     EXPECTED_COLLECTION = {
         "public": {
-            "public.visit": ["email", "last_visit"],
-            "public.login": ["id", "customer_id", "time"],
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
         }
     }
 
@@ -300,7 +315,7 @@ class TestPostgres:
     @pytest.mark.integration
     def test_get_db_tables_postgres(self):
         engine = sqlalchemy.create_engine(POSTGRES_URL)
-        actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == TestPostgres.EXPECTED_COLLECTION
 
     @pytest.mark.integration
@@ -387,7 +402,7 @@ class TestMySQL:
     @pytest.mark.integration
     def test_get_db_tables_mysql(self):
         engine = sqlalchemy.create_engine(MYSQL_URL)
-        actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == TestMySQL.EXPECTED_COLLECTION
 
     @pytest.mark.integration
@@ -446,6 +461,7 @@ class TestMySQL:
             headers=test_config.user.request_headers,
         )
 
+
 @pytest.mark.mssql
 class TestSQLServer:
     EXPECTED_COLLECTION = {
@@ -474,7 +490,7 @@ class TestSQLServer:
     @pytest.mark.integration
     def test_get_db_tables_mssql(self):
         engine = sqlalchemy.create_engine(MSSQL_URL)
-        actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == TestSQLServer.EXPECTED_COLLECTION
 
     @pytest.mark.integration
@@ -533,13 +549,14 @@ class TestSQLServer:
             headers=test_config.user.request_headers,
         )
 
+
 @pytest.mark.snowflake
 @pytest.mark.external
 class TestSnowflake:
     EXPECTED_COLLECTION = {
         "public": {
-            "public.visit": ["email", "last_visit"],
-            "public.login": ["id", "customer_id", "time"],
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
         }
     }
 
@@ -562,7 +579,7 @@ class TestSnowflake:
     @pytest.mark.integration
     def test_get_db_tables_snowflake(self):
         engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
-        actual_result = generate_dataset.get_snowfake_collections_and_fields(engine)
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == TestSnowflake.EXPECTED_COLLECTION
 
     @pytest.mark.integration
@@ -621,13 +638,14 @@ class TestSnowflake:
             headers=test_config.user.request_headers,
         )
 
+
 @pytest.mark.redshift
 @pytest.mark.external
 class TestRedshift:
     EXPECTED_COLLECTION = {
         "public": {
-            "public.visit": ["email", "last_visit"],
-            "public.login": ["id", "customer_id", "time"],
+            "visit": ["email", "last_visit"],
+            "login": ["id", "customer_id", "time"],
         }
     }
 
@@ -651,7 +669,7 @@ class TestRedshift:
     @pytest.mark.integration
     def test_get_db_tables_redshift(self):
         engine = sqlalchemy.create_engine(REDSHIFT_URL)
-        actual_result = generate_dataset.get_redshift_collections_and_fields(engine)
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == TestRedshift.EXPECTED_COLLECTION
 
     @pytest.mark.integration
