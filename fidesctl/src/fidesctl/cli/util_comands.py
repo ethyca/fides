@@ -41,7 +41,7 @@ def init(ctx: click.Context) -> None:
         os.mkdir(dir_name)
         echo_green(f"Created a '{dir_name}' directory.\n")
     else:
-        print(f"Directory '{dir_name}' already exists. Skipping...\n")
+        print(f"Directory '{dir_name}' already exists.\n")
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
@@ -54,7 +54,7 @@ def init(ctx: click.Context) -> None:
         echo_green(config_message)
 
     else:
-        print(f"Configuration file already exists at '{config_path}'. Skipping...\n")
+        print(f"Configuration file already exists at '{config_path}'.\n")
 
     echo_green("Fidesctl initialization complete.")
 
