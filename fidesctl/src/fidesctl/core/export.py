@@ -8,14 +8,6 @@ from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_green, get_all_level_fields
 
 
-def list_fides_keys(resources: List) -> List:
-    """
-    Returns a list of fides_keys found in the manifest dir
-    """
-    existing_keys = [resource.fides_key for resource in resources]
-    return existing_keys
-
-
 def export_to_csv(
     list_to_export: List, resource_exported: str, manifests_dir: str
 ) -> str:
@@ -64,20 +56,20 @@ def generate_dataset_records(
 ) -> List[Tuple[str, str, str, str]]:
     """
     Returns a list of tuples as records (with expected headers)
-    to be exported as csv
+    to be exported as csv. The ouput rows consist of unique combinations
+    of data categories, data qualifiers, and data uses for the entire dataset
     """
 
     output_list = [
         (
             "dataset.name",
             "dataset.description",
-            "dataset.data_categories",  # from Kelly - unique data categories per data qualifier, per data use per for the entire dataset, per row.
-            # "dataset.data_uses",
-            # "dataset.data_subjects",
+            "dataset.data_categories",
             "dataset.data_qualifier",
         )
     ]
-    # using a set here to preserve uniqueness of categories and qualifiers across fields
+
+    # using a set to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
 
     for dataset in server_dataset_list:
@@ -125,7 +117,7 @@ def export_dataset(
     flattened as needed for exporting
     """
     resource_type = "dataset"
-    existing_keys = list_fides_keys(dataset_list)
+    existing_keys = [resource.fides_key for resource in dataset_list]
 
     server_resource_list = get_server_resources(
         url, resource_type, existing_keys, headers
@@ -202,7 +194,7 @@ def export_system(
     """
     resource_type = "system"
 
-    existing_keys = list_fides_keys(system_list)
+    existing_keys = [resource.fides_key for resource in system_list]
     server_resource_list = get_server_resources(
         url, resource_type, existing_keys, headers
     )
