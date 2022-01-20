@@ -230,7 +230,7 @@ def test_export_system(test_config_path: str, test_cli_runner: CliRunner):
             "-f",
             test_config_path,
             "export",
-            "system",
+            "systems",
             "demo_resources/",
             "--dry",
         ],
