@@ -77,7 +77,8 @@ def test_sample_dataset_taxonomy():
 @pytest.mark.unit
 def test_system_records_to_export(test_sample_system_taxonomy):
     """
-    Asserts the correct number of system rows is returned, alon
+    Asserts that unique records are returned properly (including
+    the header row)
     """
     output_list = export.generate_system_records(test_sample_system_taxonomy)
 

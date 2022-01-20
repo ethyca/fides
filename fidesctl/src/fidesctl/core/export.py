@@ -1,8 +1,10 @@
-"""This module handles the logic required for applying manifest files to the server."""
+"""
+Exports various resources as data maps.
+"""
+import csv
 from datetime import datetime
 from typing import Dict, List, Tuple, Set
 
-import csv
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_green, get_all_level_fields
@@ -16,8 +18,8 @@ def export_to_csv(
     directory as a csv.
     """
     utc_datetime = datetime.utcnow().strftime("%Y-%m-%d-T%H%M%S")
-    filename = "".join([utc_datetime, "_", resource_exported, ".csv"])
-    filepath = "/".join([manifests_dir, filename])
+    filename = f"{utc_datetime}_{resource_exported}.csv"
+    filepath = f"{manifests_dir}/{filename}"
     with open(filepath, "w") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(list_to_export)
@@ -112,9 +114,10 @@ def export_dataset(
     url: str, dataset_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
 ) -> None:
     """
-    Exports the required fields from a dataset resource to csv
-    The resource is extracted from the server prior to being
-    flattened as needed for exporting
+    Exports the required fields from a dataset resource to a csv file.
+
+    The resource is flattened from the server prior to being
+    flattened as needed for exporting.
     """
     resource_type = "dataset"
     existing_keys = [resource.fides_key for resource in dataset_list]
@@ -188,9 +191,10 @@ def export_system(
     url: str, system_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
 ) -> None:
     """
-    Exports the required fields from a system resource to csv
-    The resource is extracted from the server prior to being
-    flattened as needed for exporting
+    Exports the required fields from a system resource to a csv file.
+
+    The resource is fetched from the server prior to being
+    flattened as needed for exporting.
     """
     resource_type = "system"
 

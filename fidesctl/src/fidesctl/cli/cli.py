@@ -128,11 +128,11 @@ def evaluate(
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
-    Parent export command to handle exporting of various datasets
+    Parent export command.
     """
 
 
-@export.command(name="system")
+@export.command(name="systems")
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
@@ -142,7 +142,7 @@ def export_system(
     dry: bool,
 ) -> None:
     """
-    Simple export of a system to get the data map project started
+    Export a system in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -155,7 +155,7 @@ def export_system(
     )
 
 
-@export.command(name="dataset")
+@export.command(name="datasets")
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
@@ -165,7 +165,7 @@ def export_dataset(
     dry: bool,
 ) -> None:
     """
-    Simple export of datasets to get the data map project started
+    Export a dataset in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
