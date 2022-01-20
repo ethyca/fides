@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "342846b3-2e5f-4ea2-89af-4cafc6a962c9",
+		"_postman_id": "695c6d80-2cca-4b75-ac2e-933d3f68a03a",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -337,43 +337,6 @@
 					"response": []
 				},
 				{
-					"name": "Create/Update Connection Configs: MsSQL",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Application MsSQL DB\",\n    \"key\": \"{{mssql_key}}\",\n    \"connection_type\": \"mssql\",\n    \"access\": \"read\"\n}]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Create/Update Connection Configs: Mongo",
 					"request": {
 						"auth": {
@@ -442,44 +405,6 @@
 							"path": [
 								"connection",
 								"{{postgres_key}}",
-								"secret"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Connection Secrets: MsSQL",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"host\": \"mssql_example\",\n    \"port\": 1433,\n    \"dbname\": \"mssql_example\",\n    \"username\": \"sa\",\n    \"password\": \"Ms_sql1234\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/{{mssql_key}}/secret",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{mssql_key}}",
 								"secret"
 							]
 						}
@@ -1872,6 +1797,86 @@
 								"webhook",
 								"post_execution",
 								"{{post_webhook_two}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MsSQL",
+			"item": [
+				{
+					"name": "Create/Update Connection Configs: MsSQL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Application MsSQL DB\",\n    \"key\": \"{{mssql_key}}\",\n    \"connection_type\": \"mssql\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secrets: MsSQL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"mssql_example\",\n    \"port\": 1433,\n    \"dbname\": \"mssql_example\",\n    \"username\": \"sa\",\n    \"password\": \"Ms_sql1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{mssql_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{mssql_key}}",
+								"secret"
 							]
 						}
 					},
