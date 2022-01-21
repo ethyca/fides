@@ -1,11 +1,9 @@
 [api]
 database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
-log_destination = ""
-log_level = 20
-log_serialization = ""
+test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 [cli]
-server_url = "http://localhost:8080"
+server_url = "http://fidesctl:8080"
 
 [user]
-analytics = true
+analytics = false

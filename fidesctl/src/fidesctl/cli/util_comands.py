@@ -79,7 +79,7 @@ def init_db(ctx: click.Context) -> None:
 
 @click.command()
 @click.pass_context
-def ping(ctx: click.Context, config_path: str = "") -> None:
+def ping(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
     """

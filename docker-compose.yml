@@ -19,8 +19,8 @@ services:
         source: .
         target: /fides
         read_only: False
-    env_file:
-      - env_files/fidesctl.env
+    environment:
+      - FIDESCTL_TEST_MODE="True"
 
   fidesctl-db:
     image: postgres:12
@@ -35,8 +35,10 @@ services:
       - 5432
     ports:
       - "5432:5432"
-    env_file:
-      - env_files/db.env
+    environment:
+      - POSTGRES_USER="postgres"
+      - POSTGRES_PASSWORD="fidesctl"
+      - POSTGRES_DB="fidesctl"
 
   docs:
     build:
