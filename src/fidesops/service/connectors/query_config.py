@@ -272,12 +272,10 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return [fk.levels[-1] for fk in field_paths]
 
     def format_clause_for_query(
-        self,
-        field_name: str,
-        operator: str,
+        self, string_path: str, operator: str, operand: str
     ) -> str:
         """Returns clauses in a format they can be added into SQL queries."""
-        return f"{field_name} {operator} :{field_name}"
+        return f"{string_path} {operator} :{operand}"
 
     def get_formatted_query_string(
         self,
@@ -313,10 +311,14 @@ class SQLQueryConfig(QueryConfig[TextClause]):
             for string_path, data in filtered_data.items():
                 data = set(data)
                 if len(data) == 1:
-                    clauses.append(self.format_clause_for_query(string_path, "="))
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "=", string_path)
+                    )
                     query_data[string_path] = (data.pop(),)
                 elif len(data) > 1:
-                    clauses.append(self.format_clause_for_query(string_path, "IN"))
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "IN", string_path)
+                    )
                     query_data[string_path] = tuple(data)
                 else:
                     #  if there's no data, create no clause
@@ -396,6 +398,73 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return None
 
 
+class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
+    """
+    Generates SQL valid for SQLServer. This way of building queries should also work for every other connector,
+    but SQLServer is separated due to increased code complexity for building queries
+    """
+
+    def format_clause_for_query(
+        self, string_path: str, operator: str, operand: str
+    ) -> str:
+        """Returns clauses in a format they can be added into SQL queries."""
+        if operator == "IN":
+            return f"{string_path} IN ({operand})"
+        return super().format_clause_for_query(string_path, operator, operand)
+
+    def generate_query(  # pylint: disable=R0914
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy] = None,
+    ) -> Optional[TextClause]:
+        """Generate a retrieval query"""
+
+        filtered_data = self.typed_filtered_values(input_data)
+
+        if filtered_data:
+            clauses = []
+            query_data: Dict[str, Tuple[Any, ...]] = {}
+            formatted_fields = self.format_fields_for_query(
+                list(self.field_map().keys())
+            )
+            field_list = ",".join(formatted_fields)
+
+            for string_path, data in filtered_data.items():
+                data = set(data)
+                if len(data) == 1:
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "=", string_path)
+                    )
+                    query_data[string_path] = data.pop()
+                elif len(data) > 1:
+                    data_vals = list(data)
+                    query_data_keys: List[str] = []
+                    for val in data_vals:
+                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                        query_data_name = (
+                            string_path
+                            + "_in_stmt_generated_"
+                            + str(data_vals.index(val))
+                        )
+                        query_data[query_data_name] = val
+                        query_data_keys.append(":" + query_data_name)
+                    operand = ", ".join(query_data_keys)
+                    clauses.append(
+                        self.format_clause_for_query(string_path, "IN", operand)
+                    )
+                else:
+                    #  if there's no data, create no clause
+                    pass
+            if len(clauses) > 0:
+                query_str = self.get_formatted_query_string(field_list, clauses)
+                return text(query_str).params(query_data)
+
+        logger.warning(
+            f"There is not enough data to generate a valid query for {self.node.address}"
+        )
+        return None
+
+
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
 
@@ -411,11 +480,12 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def format_clause_for_query(
         self,
-        field_name: str,
+        string_path: str,
         operator: str,
+        operand: str,
     ) -> str:
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
-        return f'"{field_name}" {operator} (:{field_name})'
+        return f'"{string_path}" {operator} (:{operand})'
 
     def get_formatted_query_string(
         self,

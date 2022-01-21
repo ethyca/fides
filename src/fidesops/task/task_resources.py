@@ -19,6 +19,7 @@ from fidesops.service.connectors import (
     PostgreSQLConnector,
     SnowflakeConnector,
     RedshiftConnector,
+    MicrosoftSQLServerConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -53,6 +54,8 @@ class Connections:
             return SnowflakeConnector(connection_config)
         if connection_config.connection_type == ConnectionType.redshift:
             return RedshiftConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.mssql:
+            return MicrosoftSQLServerConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
