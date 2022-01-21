@@ -10,6 +10,27 @@ Docker and Docker-Compose are the only requirements here.
 
 1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation). The minimum verified Docker version is `20.10.8`
 1. If your `docker` installation did not include `docker-compose`, make sure to get at least version `1.29.0`. Installation instructions can be found [here](https://docs.docker.com/compose/install/).
+1. In the directory from where you will run the docker compose file, create a `.fides` directory to then mount in the `fidesctl` container.
+
+## Initializing Fidesctl
+
+Even though we're running fidesctl in Docker, we still need to initialize fidesctl locally to then mount those files into the Docker container.
+
+```sh title="Initialize Fidesctl"
+fidesctl init
+```
+
+```txt title="Expected Output"
+No config file found. Using default configuration values.
+Initializing Fidesctl...
+
+Created a '.fides' directory.
+
+Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
+            https://ethyca.github.io/fides/installation/configuration/
+
+Fidesctl initialization complete.
+```
 
 ## Docker Setup
 
@@ -18,7 +39,7 @@ This is a reference file that you can copy/paste into a local `docker-compose.ym
 ```docker-compose title="docker-compose.yml"
 services:
   fidesctl:
-    image: ethyca/fidesctl:1.0.0
+    image: ethyca/fidesctl:1.2.0
     command: fidesctl webserver
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health"]
@@ -34,11 +55,11 @@ services:
       - "8080:8080"
     environment:
       - FIDESCTL__CLI__SERVER_URL=http://fidesctl:8080
-      - FIDESCTL__API__DATABASE_URL=postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl
+      - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
     volumes:
       - type: bind
-        source: ./fides_resources/ # Update this to be the path of your fides_resource folder
-        target: /fides/fides_resources/
+        source: ./.fides/ # Update this to be the path of your fides_resource folder
+        target: /fides/.fides/
         read_only: False
 
   fidesctl-db:

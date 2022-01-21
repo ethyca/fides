@@ -32,6 +32,7 @@ def init(ctx: click.Context, fides_directory: str) -> None:
     included_values = {
         "api": {"database_url", "log_level", "log_destination", "log_serialization"},
         "cli": {"server_url"},
+        "user": {"analytics"},
     }
 
     print("Initializing Fidesctl...\n")

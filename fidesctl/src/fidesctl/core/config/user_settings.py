@@ -16,6 +16,7 @@ class UserSettings(FidesSettings):
     user_id: str = "1"
     api_key: str = "test_api_key"
     request_headers: Dict[str, str] = dict()
+    analytics: bool = True
 
     # Automatically generate the request_headers on object creation
     @validator("request_headers", pre=True, always=True)
