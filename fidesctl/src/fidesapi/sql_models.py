@@ -91,6 +91,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
+    joint_controller = Column(JSON, nullable=True)
 
 
 # Evaluation
@@ -117,6 +118,9 @@ class Organization(SqlAlchemyBase, FidesBase):
     __tablename__ = "organizations"
 
     organization_parent_key = Column(String, nullable=True)
+    representative = Column(JSON, nullable=True)
+    data_protection_officer = Column(JSON, nullable=True)
+    controller = Column(JSON, nullable=True)
 
 
 # Policy
@@ -151,6 +155,7 @@ class System(SqlAlchemyBase, FidesBase):
     meta = Column(JSON)
     system_type = Column(String)
     system_dependencies = Column(ARRAY(String))
+    joint_controller = Column(JSON, nullable=True)
     privacy_declarations = Column(JSON)
 
 
