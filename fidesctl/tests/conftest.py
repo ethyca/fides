@@ -12,7 +12,10 @@ from fidesctl.core import api
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
-
+def pytest_addoption(parser):
+    parser.addoption(
+        "--ignore-external", action="store_true", default=False, help="skip external database tests"
+    )
 @pytest.fixture(scope="session")
 def test_config_path():
     yield TEST_CONFIG_PATH
