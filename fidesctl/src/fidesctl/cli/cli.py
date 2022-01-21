@@ -18,6 +18,7 @@ from fidesctl.core import (
     api as _api,
     apply as _apply,
     evaluate as _evaluate,
+    export as _export,
     generate_dataset as _generate_dataset,
     annotate_dataset as _annotate_dataset,
     parse as _parse,
@@ -119,6 +120,60 @@ def evaluate(
         policy_fides_key=fides_key,
         message=message,
         local=config.cli.local_mode,
+        dry=dry,
+    )
+
+
+@click.group(name="export")
+@click.pass_context
+def export(ctx: click.Context) -> None:
+    """
+    Parent export command.
+    """
+
+
+@export.command(name="systems")
+@click.pass_context
+@manifests_dir_argument
+@dry_flag
+def export_system(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Export a system in a data map format.
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_system(
+        url=config.cli.server_url,
+        system_list=taxonomy.system,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
+    )
+
+
+@export.command(name="datasets")
+@click.pass_context
+@manifests_dir_argument
+@dry_flag
+def export_dataset(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Export a dataset in a data map format.
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_dataset(
+        url=config.cli.server_url,
+        dataset_list=taxonomy.dataset,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
         dry=dry,
     )
 

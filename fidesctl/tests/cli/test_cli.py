@@ -219,6 +219,26 @@ def test_evaluate_with_dataset_collection_failed(
 
 
 @pytest.mark.integration
+def test_export_system(test_config_path: str, test_cli_runner: CliRunner):
+    """
+    Tests that a system is properly exported
+    """
+
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "export",
+            "systems",
+            "demo_resources/",
+            "--dry",
+        ],
+    )
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_nested_field_fails_evaluation(
     test_config_path: str, test_cli_runner: CliRunner
 ):
