@@ -193,7 +193,8 @@ def sample_traversal() -> Traversal:
             ScalarField(name="email", identity="email"),
             ScalarField(
                 name="contact_address_id",
-                references=[(FieldAddress("mysql", "Address", "id"), "to")],
+                references=[(FieldAddress("mysql", "Address", "id"), "to"),
+                            (FieldAddress("mssql", "Address", "id"), "to")],
             ),
         ],
     )
@@ -241,7 +242,8 @@ def sample_traversal() -> Traversal:
         name="mysql", collections=[customers, addresses, users], connection_key="mysql"
     )
     postgres = Dataset(name="postgres", collections=[orders], connection_key="postgres")
+    mssql = Dataset(name="mssql", collections=[addresses], connection_key="mssql")
 
-    graph = DatasetGraph(mysql, postgres)
+    graph = DatasetGraph(mysql, postgres, mssql)
     identity = {"email": "email@gmail.com", "user_id": "1"}
     return Traversal(graph, identity)

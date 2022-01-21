@@ -45,6 +45,13 @@ server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
 integration-shell: compose-build
+	# note- does not bring up external connectors such as redshift or snowflake
+	@echo "Bringing up main image and images for integration testing"
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
+	@echo "Waiting 15s for integration containers to be ready..."
+	@sleep 15
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
 
 integration-env: compose-build
@@ -113,8 +120,8 @@ pytest-integration-access: compose-build
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
 	@echo "Bringing up the integration environment..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
+	@echo "Waiting 20s for integration containers to be ready..."
+	@sleep 20
 	@echo "Running additional setup for mssql integration tests"
 	@docker exec fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
@@ -126,6 +133,12 @@ pytest-integration-access: compose-build
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
+	@echo "Bringing up the integration environment..."
+	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
+	@echo "Waiting 20s for integration containers to be ready..."
+	@sleep 20
+	@echo "Running additional setup for mssql integration tests"
+	@docker exec fidesops python tests/integration_tests/mssql_setup.py
 	@echo "Running pytest integration tests..."
 	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
 		run $(IMAGE_NAME) \

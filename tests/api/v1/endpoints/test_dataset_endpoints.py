@@ -40,6 +40,12 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
     assert len(example_datasets[1]["collections"]) == 1
+    assert example_datasets[2]["fides_key"] == "snowflake_example_test_dataset"
+    assert len(example_datasets[2]["collections"]) == 11
+    assert example_datasets[3]["fides_key"] == "redshift_example_test_dataset"
+    assert len(example_datasets[3]["collections"]) == 11
+    assert example_datasets[4]["fides_key"] == "mssql_example_test_dataset"
+    assert len(example_datasets[4]["collections"]) == 11
 
 
 class TestValidateDataset:
@@ -434,10 +440,10 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 4
+        assert len(response_body["succeeded"]) == 5
         assert len(response_body["failed"]) == 0
 
-        # Confirm that the created dataset matches the values we provided
+        # Confirm that postgres dataset matches the values we provided
         postgres_dataset = response_body["succeeded"][0]
         postgres_config = DatasetConfig.get_by(
             db=db, field="fides_key", value="postgres_example_test_dataset"
@@ -448,7 +454,7 @@ class TestPutDatasets:
         assert "Example of a Postgres dataset" in postgres_dataset["description"]
         assert len(postgres_dataset["collections"]) == 11
 
-        # Check the second dataset was created as well
+        # Check the mongo dataset was created as well
         mongo_dataset = response_body["succeeded"][1]
         mongo_config = DatasetConfig.get_by(
             db=db, field="fides_key", value="mongo_test"
@@ -459,8 +465,20 @@ class TestPutDatasets:
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
         assert len(mongo_dataset["collections"]) == 1
 
+        # Check the mssql dataset
+        mssql_dataset = response_body["succeeded"][4]
+        mssql_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="mssql_example_test_dataset"
+        )
+        assert mssql_config is not None
+        assert mssql_dataset["fides_key"] == "mssql_example_test_dataset"
+        assert mssql_dataset["name"] == "Microsoft SQLServer Example Test Dataset"
+        assert "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
+        assert len(mssql_dataset["collections"]) == 11
+
         postgres_config.delete(db)
         mongo_config.delete(db)
+        mssql_config.delete(db)
 
     def test_patch_datasets_bulk_update(
         self,
@@ -491,15 +509,28 @@ class TestPutDatasets:
             for f in updated_datasets[1]["collections"][0]["fields"]
             if f["name"] != "birthday"
         ]
+        # Remove city field from snowflake example
+        updated_datasets[2]["collections"][0]["fields"] = [
+            f
+            for f in updated_datasets[1]["collections"][0]["fields"]
+            if f["name"] != "city"
+        ]
+        # Remove city field from mssql example
+        updated_datasets[4]["collections"][0]["fields"] = [
+            f
+            for f in updated_datasets[1]["collections"][0]["fields"]
+            if f["name"] != "city"
+        ]
         response = api_client.patch(
             datasets_url, headers=auth_header, json=updated_datasets
         )
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 4
+        assert len(response_body["succeeded"]) == 5
         assert len(response_body["failed"]) == 0
 
+        # test postgres
         postgres_dataset = response_body["succeeded"][0]
         assert postgres_dataset["fides_key"] == "postgres_example_test_dataset"
         assert (
@@ -511,6 +542,7 @@ class TestPutDatasets:
         assert postgres_config is not None
         assert postgres_config.updated_at is not None
 
+        # test mongo
         mongo_dataset = response_body["succeeded"][1]
         assert mongo_dataset["fides_key"] == "mongo_test"
         assert "birthday" not in [
@@ -522,9 +554,10 @@ class TestPutDatasets:
         assert mongo_config is not None
         assert mongo_config.updated_at is not None
 
+        # test snowflake
         snowflake_dataset = response_body["succeeded"][2]
         assert snowflake_dataset["fides_key"] == "snowflake_example_test_dataset"
-        assert "birthday" not in [
+        assert "city" not in [
             f["name"] for f in snowflake_dataset["collections"][0]["fields"]
         ]
         snowflake_config = DatasetConfig.get_by(
@@ -533,9 +566,22 @@ class TestPutDatasets:
         assert snowflake_config is not None
         assert snowflake_config.updated_at is not None
 
+        # test mssql
+        mssql_dataset = response_body["succeeded"][4]
+        assert mssql_dataset["fides_key"] == "mssql_example_test_dataset"
+        assert "city" not in [
+            f["name"] for f in mssql_dataset["collections"][0]["fields"]
+        ]
+        mssql_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="mssql_example_test_dataset"
+        )
+        assert mssql_config is not None
+        assert mssql_config.updated_at is not None
+
         postgres_config.delete(db)
         mongo_config.delete(db)
         snowflake_config.delete(db)
+        mssql_config.delete(db)
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
@@ -554,7 +600,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 4
+        assert len(response_body["failed"]) == 5
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
