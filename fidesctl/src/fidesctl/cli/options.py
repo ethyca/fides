@@ -42,6 +42,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
     "Add the id argument."
     command = click.argument(
         "manifests_dir",
+        default=".fides/",
         type=click.Path(exists=True),
     )(command)
     return command

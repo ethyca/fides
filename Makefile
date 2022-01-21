@@ -98,7 +98,7 @@ check-install:
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_NO_DEPS) fidesctl --local evaluate fides_resources/
+	@$(RUN_NO_DEPS) fidesctl --local evaluate 
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
