@@ -46,11 +46,18 @@ def init(ctx: click.Context, fides_directory: str) -> None:
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
+        # Analytics Opt-Out
+        if click.confirm("Would you like to opt in to anonymous usage analytics?"):
+            analytics = True
+        else:
+            analytics = False
+
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}\n"""
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
+            config_dict["user"]["analytics"] = analytics
             toml.dump(config_dict, config_file)
         echo_green(config_message)
 

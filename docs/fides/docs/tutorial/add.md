@@ -16,22 +16,17 @@ Then, install the dependencies by running:
 pip install -r requirements.txt
 ```
 
-## Configure Fidesctl
+## Initializing Fidesctl
 
-Fidesctl needs some configuration to work for your environment; this is handled by looking for a TOML file in the current working directory. Create a `fidesctl.toml` file at the root level of the repository. It should contain the following configuration:
+With fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration. Run the following command and follow the prompts to get your local fidesctl instance initialized.
 
-```toml
-[cli]
-server_url = "http://localhost:8080"
-
-[api]
-database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl"
-test_database_url = "postgresql://postgres:postgres@localhost:5432/fidesctl_test"
+```sh title="Initialize Fidesctl"
+fidesctl init
 ```
 
-- The `[cli]`-scoped `server_url` option specifies the address that the fidesctl CLI will use when connecting to the fidesctl server.
-- The `[api]`-scoped `database_url` option specifies the connection string that the fidesctl API will use to connect to the PostgreSQL database created in the previous step.
-- The `[api]`-scoped `test_database_url` option that will override `database_url` when the fidesctl server is started with the environment variable `FIDESCTL_TEST_MODE` set to `True`
+## Configuring Fidesctl
+
+See our [Configuration](../installation/configuration.md) guide for more information on how to configure fidesctl.
 
 ## Run Fidesctl via Docker
 
@@ -48,7 +43,7 @@ fidesctl:
   ports:
     - "8080:8080"
   environment:
-    - FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl
+    - FIDESCTL__API__DATABASE_URL=postgres:postgres@db:5432/fidesctl
 ```
 
 > See [the fidesctl installation guide](../installation/installation.md) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
