@@ -1,0 +1,8 @@
+[api]
+database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+log_destination = ""
+log_level = 20
+log_serialization = ""
+
+[cli]
+server_url = "http://localhost:8080"

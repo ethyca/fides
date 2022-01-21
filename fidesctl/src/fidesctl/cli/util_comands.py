@@ -5,7 +5,7 @@ import click
 import requests
 import toml
 
-from fidesctl.cli.options import yes_flag
+from fidesctl.cli.options import yes_flag, manifests_dir_argument
 from fidesctl.cli.utils import (
     handle_cli_response,
     pretty_echo,
@@ -16,27 +16,27 @@ from fidesctl.core.utils import echo_green, echo_red
 
 @click.command()
 @click.pass_context
-def init(ctx: click.Context) -> None:
+@click.argument("fides_directory", default=".fides", type=click.Path())
+def init(ctx: click.Context, fides_directory: str) -> None:
     """
     Initialize a Fidesctl instance.
     """
 
     # Constants
-    dir_name = ".fides"
+    dir_name = fides_directory
     config_file_name = "fidesctl.toml"
     config_path = f"{dir_name}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
-    # List the values we want to exclude from the user-facing config
-    # These are values that are generated at config load time
-    excluded_values = {
-        "user": {"request_headers"},
-        "api": {"async_database_url", "sync_database_url"},
+    # List the values we want to include in the user-facing config
+    included_values = {
+        "api": {"database_url", "log_level", "log_destination", "log_serialization"},
+        "cli": {"server_url"},
     }
 
     print("Initializing Fidesctl...\n")
 
-    # create the .fides dir if it doesn't exist
+    # create the dir if it doesn't exist
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
         echo_green(f"Created a '{dir_name}' directory.\n")
@@ -49,7 +49,7 @@ def init(ctx: click.Context) -> None:
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}\n"""
         with open(config_path, "w") as config_file:
-            config_dict = config.dict(exclude=excluded_values)
+            config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
         echo_green(config_message)
 

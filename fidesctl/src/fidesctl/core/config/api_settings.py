@@ -14,10 +14,16 @@ from .fides_settings import FidesSettings
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
+    # Database
     test_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
     sync_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
     async_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+
+    # Logging
+    log_destination: str = ""
+    log_level: Union[int, str] = INFO
+    log_serialization: str = ""
 
     @validator("database_url", pre=True, always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
@@ -40,10 +46,6 @@ class APISettings(FidesSettings):
         "Create the async database url."
         url = "postgresql+asyncpg://" + values["database_url"]
         return url
-
-    log_destination: str = ""
-    log_level: Union[int, str] = INFO
-    log_serialization: str = ""
 
     @validator("log_destination", pre=True)
     def get_log_destination(cls: FidesSettings, value: str) -> str:
