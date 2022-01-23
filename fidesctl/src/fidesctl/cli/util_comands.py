@@ -17,15 +17,16 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.command()
 @click.pass_context
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
-def init(ctx: click.Context, fides_directory: str) -> None:
+def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
     Initialize a Fidesctl instance.
     """
 
     # Constants
-    dir_name = ".fides"
+    fides_dir_name = ".fides"
+    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fidesctl.toml"
-    config_path = f"{dir_name}/{config_file_name}"
+    config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
     # List the values we want to include in the user-facing config
@@ -37,11 +38,11 @@ def init(ctx: click.Context, fides_directory: str) -> None:
     print("Initializing Fidesctl...\n")
 
     # create the dir if it doesn't exist
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
-        echo_green(f"Created a '{dir_name}' directory.\n")
+    if not os.path.exists(fides_dir_path):
+        os.mkdir(fides_dir_path)
+        echo_green(f"Created a '{fides_dir_path}' directory.\n")
     else:
-        print(f"Directory '{dir_name}' already exists.\n")
+        print(f"Directory '{fides_dir_path}' already exists.\n")
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
