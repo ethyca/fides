@@ -24,7 +24,7 @@ analytics = true
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
-1. The config file argument passed through the CLI
+1. At the path specified using the config file argument passed through the CLI
 1. At the path specified by the `FIDESCTL_CONFIG_PATH` environment variable
 1. In a `.fides` directory within the current working directory
 1. In a `.fides` directory within the user's home directory
