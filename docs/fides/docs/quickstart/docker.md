@@ -58,7 +58,7 @@ services:
       - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
     volumes:
       - type: bind
-        source: ./.fides/ # Update this to be the path of your fides_resource folder
+        source: ./.fides/ # Update this to be the path of your .fides/ folder
         target: /fides/.fides/
         read_only: False
 
