@@ -39,7 +39,7 @@ def fides_key_option(command: Callable) -> Callable:
 
 
 def manifests_dir_argument(command: Callable) -> Callable:
-    "Add the id argument."
+    "Add the manifests_dir argument."
     command = click.argument(
         "manifests_dir",
         default=".fides/",

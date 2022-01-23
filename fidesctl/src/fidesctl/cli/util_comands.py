@@ -16,7 +16,7 @@ from fidesctl.core.utils import echo_green, echo_red
 
 @click.command()
 @click.pass_context
-@click.argument("fides_directory", default=".fides", type=click.Path())
+@click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
 def init(ctx: click.Context, fides_directory: str) -> None:
     """
     Initialize a Fidesctl instance.
