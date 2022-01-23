@@ -21,8 +21,6 @@ def handle_cli_response(
         if verbose:
             pretty_echo(response.json(), "green")
     else:
-        print(response.text)
-        print("lol")
         try:
             pretty_echo(response.json(), "red")
         except json.JSONDecodeError:

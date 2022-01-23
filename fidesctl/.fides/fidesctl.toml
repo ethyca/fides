@@ -4,6 +4,3 @@ test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 [cli]
 server_url = "http://fidesctl:8080"
-
-[user]
-analytics = false

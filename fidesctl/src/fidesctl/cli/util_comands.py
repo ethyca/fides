@@ -23,7 +23,7 @@ def init(ctx: click.Context, fides_directory: str) -> None:
     """
 
     # Constants
-    dir_name = fides_directory
+    dir_name = ".fides"
     config_file_name = "fidesctl.toml"
     config_path = f"{dir_name}/{config_file_name}"
     config = ctx.obj["CONFIG"]
@@ -32,7 +32,6 @@ def init(ctx: click.Context, fides_directory: str) -> None:
     included_values = {
         "api": {"database_url", "log_level", "log_destination", "log_serialization"},
         "cli": {"server_url"},
-        "user": {"analytics"},
     }
 
     print("Initializing Fidesctl...\n")
@@ -46,18 +45,11 @@ def init(ctx: click.Context, fides_directory: str) -> None:
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
-
-        # Analytics Opt-Out
-        analytics = click.confirm(
-            "Would you like to opt in to anonymous usage analytics?"
-        )
-
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}\n"""
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
-            config_dict["user"]["analytics"] = analytics
             toml.dump(config_dict, config_file)
         echo_green(config_message)
 
