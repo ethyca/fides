@@ -164,3 +164,4 @@ jobs:
         run: make pytest-external
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
+          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}

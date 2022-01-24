@@ -17,6 +17,7 @@ asyncpg = "asyncpg==0.25.0"
 mysql_connector = "pymysql==1.0.0"
 mssql_connector = "pyodbc==4.0.32"
 snowflake_connector = "snowflake-sqlalchemy==1.3.3"
+redshift_connector = "sqlalchemy-redshift==0.8.8"
 fastapi = "fastapi==0.68"
 uvicorn = "uvicorn==0.15"
 
@@ -25,6 +26,7 @@ extras = {
     "mysql": [mysql_connector],
     "mssql": [mssql_connector],
     "snowflake": [snowflake_connector],
+    "redshift" : [redshift_connector],
     "webserver": [fastapi, uvicorn, psycopg_connector, asyncpg],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
