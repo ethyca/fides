@@ -47,7 +47,7 @@ An optional object that provides additional information about the Dataset. You c
 
 **joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
 
-An optional array of contact information if a Joint Controller exists. This information can also be more stored at the [system](/fides/language/resources/system/) level (`name`, `address`, `email`, `phone`).
+An optional array of contact information if a Joint Controller exists. This information can also be stored at the [system](/fides/language/resources/system/) level (`name`, `address`, `email`, `phone`).
 
 **data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 **data_qualifiers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>

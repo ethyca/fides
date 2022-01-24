@@ -31,7 +31,7 @@ An array of contact information for the Data Protection Officer (DPO) within the
 
 **representative**<span class="required"/>&nbsp;&nbsp;[array]
 
-An array of contact information for an optional representative for the the organization on behalf of the controller and/or DPO  (`name`, `address`, `email`, `phone`).
+An array of contact information for an optional representative for the organization on behalf of the controller and/or DPO (`name`, `address`, `email`, `phone`).
 
 ## Examples
 
