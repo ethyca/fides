@@ -112,7 +112,7 @@ pytest-unit:
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-	@docker compose run -e SNOWFLAKE_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) pytest -x -m integration
+	@docker compose run -e SNOWFLAKE_FIDESCTL_PASSWORD -e REDSHIFT_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) pytest -x -m integration
 	@make teardown
 
 xenon:

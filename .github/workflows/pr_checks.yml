@@ -161,3 +161,4 @@ jobs:
         run: make pytest-integration
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
+          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
