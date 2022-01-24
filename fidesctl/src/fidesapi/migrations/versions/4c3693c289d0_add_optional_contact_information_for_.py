@@ -21,13 +21,13 @@ def upgrade():
     op.add_column("datasets", sa.Column("joint_controller", sa.JSON(), nullable=True))
     op.drop_column("evaluations", "updated_at")
     op.drop_column("evaluations", "created_at")
-    op.add_column(
-        "organizations", sa.Column("representative", sa.JSON(), nullable=True)
-    )
+    op.add_column("organizations", sa.Column("controller", sa.JSON(), nullable=True))
     op.add_column(
         "organizations", sa.Column("data_protection_officer", sa.JSON(), nullable=True)
     )
-    op.add_column("organizations", sa.Column("controller", sa.JSON(), nullable=True))
+    op.add_column(
+        "organizations", sa.Column("representative", sa.JSON(), nullable=True)
+    )
     op.add_column("systems", sa.Column("joint_controller", sa.JSON(), nullable=True))
     # ### end Alembic commands ###
 

@@ -201,9 +201,9 @@ class Organization(FidesModel):
 
     # It inherits this from FidesModel but Organizations don't have this field
     organization_parent_key: None = None
-    representative: Optional[ContactDetails]
-    data_protection_officer: Optional[ContactDetails]
     controller: Optional[ContactDetails]
+    data_protection_officer: Optional[ContactDetails]
+    representative: Optional[ContactDetails]
 
 
 # Policy

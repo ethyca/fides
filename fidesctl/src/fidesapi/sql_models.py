@@ -118,9 +118,9 @@ class Organization(SqlAlchemyBase, FidesBase):
     __tablename__ = "organizations"
 
     organization_parent_key = Column(String, nullable=True)
-    representative = Column(JSON, nullable=True)
-    data_protection_officer = Column(JSON, nullable=True)
     controller = Column(JSON, nullable=True)
+    data_protection_officer = Column(JSON, nullable=True)
+    representative = Column(JSON, nullable=True)
 
 
 # Policy

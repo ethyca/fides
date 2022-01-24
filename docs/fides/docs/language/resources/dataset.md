@@ -45,6 +45,10 @@ The fides key of the [Organization](/fides/language/resources/organization/) to 
 
 An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it.
 
+**joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
+
+An optional array of contact information if a Joint Controller exists. This information can also be more stored at the [system](/fides/language/resources/system/) level (`name`, `address`, `email`, `phone`).
+
 **data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 **data_qualifiers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 
@@ -99,6 +103,11 @@ dataset:
   - fides_key: demo_users_dataset
     name: Demo Users Dataset
     description: Data collected about users for our analytics system.
+    joint_controller:
+      name: Dave L. Epper
+      address: 1 Acme Pl. New York, NY
+      email: controller@acmeinc.com
+      phone: +1 555 555 5555
     collections:
       - name: users
         description: User information
@@ -134,6 +143,12 @@ dataset:
     "fides_key": "demo_users_dataset",
     "name": "Demo Users Dataset",
     "description": "Data collected about users for our analytics system.",
+    "joint_controller": {
+      "name": "Dave L. Epper",
+      "address": "1 Acme Pl. New York, NY",
+      "email": "controller@acmeinc.com",
+      "phone": "+1 555 555 5555"
+    },
     "collections": [
       {
         "name": "users",
