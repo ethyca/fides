@@ -35,14 +35,14 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         "cli": {"server_url"},
     }
 
-    print("Initializing Fidesctl...\n")
+    click.echo("Initializing Fidesctl...\n")
 
     # create the dir if it doesn't exist
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
         echo_green(f"Created a '{fides_dir_path}' directory.\n")
     else:
-        print(f"Directory '{fides_dir_path}' already exists.\n")
+        click.echo(f"Directory '{fides_dir_path}' already exists.\n")
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
@@ -55,7 +55,11 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         echo_green(config_message)
 
     else:
-        print(f"Configuration file already exists at '{config_path}'.\n")
+        click.echo(f"Configuration file already exists at '{config_path}'.\n")
+
+    click.echo(
+        "For example policies to help get started, see: ethyca.github.io/fides/guides/policies/\n"
+    )
 
     echo_green("Fidesctl initialization complete.")
 
