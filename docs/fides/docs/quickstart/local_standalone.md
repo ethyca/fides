@@ -29,7 +29,7 @@ pip install fidesctl
 
 For more information on installing fidesctl with pip, as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
 
-## Using the CLI
+## Verifying the Installation
 
 Now that we have fidesctl installed, let's verify the installation:
 
@@ -39,6 +39,28 @@ fidesctl --version
 
 ```txt title="Expected Output"
 fidesctl, version 1.0.0
+```
+
+## Initializing Fidesctl
+
+With Fidesctl installed, it's time to initialize fidesctl for a project, so we have some place to start adding resource manifests and tweaking our configuration.
+
+Switch to your project's root directory, and initialize fidesctl:
+
+```sh title="Initialize Fidesctl"
+fidesctl init
+```
+
+```txt title="Expected Output"
+No config file found. Using default configuration values.
+Initializing Fidesctl...
+
+Created a '.fides' directory.
+
+Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
+            https://ethyca.github.io/fides/installation/configuration/
+
+Fidesctl initialization complete.
 ```
 
 That's it! Your local standalone installation of fidesctl is up and running.

@@ -6,28 +6,28 @@ By default the fidesctl CLI doesn't require a config file and will instead lever
 
 ## Configuration file
 
-Here's an example of a fidesctl configuration file:
+After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
 
-```toml
+```toml title="fidesctl.toml"
+[api]
+database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+log_destination = ""
+log_level = 20
+log_serialization = ""
+
 [cli]
 server_url = "http://localhost:8080"
 
-[api]
-# Note that no driver should be specified here
-database_url = "postgres:postgres@localhost:5432/fidesctl"
-test_database_url = "postgres:postgres@localhost:5432/fidesctl_test"
-
-# The following are set to their current default values
-log_destination = ""    # Also accepts: Any valid file path
-log_level = "INFO"      # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL (Not case sensitive)
-log_serialization = ""  # Also accepts: JSON (Not case sensitive)
+[user]
+analytics = true
 ```
 
-By default fidesctl will look for a configuration file in the following three places:
+By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
+1. At the path specified using the config file argument passed through the CLI
 1. At the path specified by the `FIDESCTL_CONFIG_PATH` environment variable
-1. In the current working directory
-1. In the user's home directory
+1. In a `.fides` directory within the current working directory
+1. In a `.fides` directory within the user's home directory
 
 ## Environment Variables
 
