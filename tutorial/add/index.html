@@ -519,8 +519,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configure-fidesctl" class="md-nav__link">
-    Configure Fidesctl
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-fidesctl" class="md-nav__link">
+    Configuring Fidesctl
   </a>
   
 </li>
@@ -1209,8 +1216,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configure-fidesctl" class="md-nav__link">
-    Configure Fidesctl
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-fidesctl" class="md-nav__link">
+    Configuring Fidesctl
   </a>
   
 </li>
@@ -1271,26 +1285,13 @@
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -r requirements.txt
 </code></pre></div>
 </td></tr></table>
-<h2 id="configure-fidesctl">Configure Fidesctl</h2>
-<p>Fidesctl needs some configuration to work for your environment; this is handled by looking for a TOML file in the current working directory. Create a <code>fidesctl.toml</code> file at the root level of the repository. It should contain the following configuration:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
-<span class="n">server_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="w"></span>
-
-<span class="k">[api]</span><span class="w"></span>
-<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl&quot;</span><span class="w"></span>
-<span class="n">test_database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgresql://postgres:postgres@localhost:5432/fidesctl_test&quot;</span><span class="w"></span>
+<h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
+<p>With fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration. Run the following command and follow the prompts to get your local fidesctl instance initialized.</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
 </code></pre></div>
 </td></tr></table>
-<ul>
-<li>The <code>[cli]</code>-scoped <code>server_url</code> option specifies the address that the fidesctl CLI will use when connecting to the fidesctl server.</li>
-<li>The <code>[api]</code>-scoped <code>database_url</code> option specifies the connection string that the fidesctl API will use to connect to the PostgreSQL database created in the previous step.</li>
-<li>The <code>[api]</code>-scoped <code>test_database_url</code> option that will override <code>database_url</code> when the fidesctl server is started with the environment variable <code>FIDESCTL_TEST_MODE</code> set to <code>True</code></li>
-</ul>
+<h2 id="configuring-fidesctl">Configuring Fidesctl</h2>
+<p>See our <a href="../../installation/configuration/">Configuration</a> guide for more information on how to configure fidesctl.</p>
 <h2 id="run-fidesctl-via-docker">Run Fidesctl via Docker</h2>
 <p>Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses <code>docker-compose</code> to orchestrate resources, so include <code>fidesctl</code> as a service by adding the following configuration after the database service:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1313,7 +1314,7 @@
 <span class="w">  </span><span class="nt">ports</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8080:8080&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="nt">environment</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESCTL__API__DATABASE_URL=postgresql://postgres:postgres@db:5432/fidesctl</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESCTL__API__DATABASE_URL=postgres:postgres@db:5432/fidesctl</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <blockquote>

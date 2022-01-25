@@ -1208,8 +1208,8 @@
 <p>Fidesctl supports two methods of configuration. The first is via a toml file, and the second is via environment variables. They can also be used in tandem, with the environment variables overriding the toml configuration values.</p>
 <p>By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.</p>
 <h2 id="configuration-file">Configuration file</h2>
-<p>Here's an example of a fidesctl configuration file:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<p>After initializing fidesctl, a default configuration file will be generated and placed within the <code>.fides</code> directory. Here's an example of a fidesctl configuration file:</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">fidesctl.toml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1219,26 +1219,25 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
+<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:fidesctl@fidesctl-db:5432/fidesctl&quot;</span><span class="w"></span>
+<span class="n">log_destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
+<span class="n">log_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">20</span><span class="w"></span>
+<span class="n">log_serialization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
+
+<span class="k">[cli]</span><span class="w"></span>
 <span class="n">server_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="w"></span>
 
-<span class="k">[api]</span><span class="w"></span>
-<span class="c1"># Note that no driver should be specified here</span><span class="w"></span>
-<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:postgres@localhost:5432/fidesctl&quot;</span><span class="w"></span>
-<span class="n">test_database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:postgres@localhost:5432/fidesctl_test&quot;</span><span class="w"></span>
-
-<span class="c1"># The following are set to their current default values</span><span class="w"></span>
-<span class="n">log_destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">    </span><span class="c1"># Also accepts: Any valid file path</span><span class="w"></span>
-<span class="n">log_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INFO&quot;</span><span class="w">      </span><span class="c1"># Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL (Not case sensitive)</span><span class="w"></span>
-<span class="n">log_serialization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1"># Also accepts: JSON (Not case sensitive)</span><span class="w"></span>
+<span class="k">[user]</span><span class="w"></span>
+<span class="n">analytics</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
-<p>By default fidesctl will look for a configuration file in the following three places:</p>
+<p>By default fidesctl will look for a <code>fidesctl.toml</code> configuration file in the following places:</p>
 <ol>
+<li>At the path specified using the config file argument passed through the CLI</li>
 <li>At the path specified by the <code>FIDESCTL_CONFIG_PATH</code> environment variable</li>
-<li>In the current working directory</li>
-<li>In the user's home directory</li>
+<li>In a <code>.fides</code> directory within the current working directory</li>
+<li>In a <code>.fides</code> directory within the user's home directory</li>
 </ol>
 <h2 id="environment-variables">Environment Variables</h2>
 <p>To configure environment variables for fidesctl, the following pattern is used:</p>

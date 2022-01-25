@@ -353,6 +353,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuring-fidesctl" class="md-nav__link">
     Configuring Fidesctl
   </a>
@@ -1230,6 +1237,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuring-fidesctl" class="md-nav__link">
     Configuring Fidesctl
   </a>
@@ -1288,6 +1302,30 @@
 <h2 id="database-installation">Database installation</h2>
 <p>Due to environmental differences, there is no specific guide on running/configuring your own Postgres database outside of the version constraints mentioned in the <code>System Requirements</code> section above.</p>
 <p>Make sure to note your database credentials and use them to generate a <a href="https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql">SQLAlchemy Connection String</a>. This will be used in the <code>database_url</code> configuration value mentioned below.</p>
+<h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
+<p>With Fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration.</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
+</code></pre></div>
+</td></tr></table>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>No config file found. Using default configuration values.
+Initializing Fidesctl...
+
+Created a &#39;.fides&#39; directory.
+
+Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:  
+            https://ethyca.github.io/fides/installation/configuration/
+
+Fidesctl initialization complete.
+</code></pre></div>
+</td></tr></table>
 <h2 id="configuring-fidesctl">Configuring Fidesctl</h2>
 <p>See our <a href="../../installation/configuration/">Configuration</a> guide for more information on how to configure fidesctl.</p>
 <h2 id="running-the-webserver">Running the webserver</h2>

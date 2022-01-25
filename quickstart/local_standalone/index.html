@@ -334,8 +334,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-cli" class="md-nav__link">
-    Using the CLI
+  <a href="#verifying-the-installation" class="md-nav__link">
+    Verifying the Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
   </a>
   
 </li>
@@ -1202,8 +1209,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-cli" class="md-nav__link">
-    Using the CLI
+  <a href="#verifying-the-installation" class="md-nav__link">
+    Verifying the Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-fidesctl" class="md-nav__link">
+    Initializing Fidesctl
   </a>
   
 </li>
@@ -1252,12 +1266,37 @@
 </code></pre></div>
 </td></tr></table>
 <p>For more information on installing fidesctl with pip, as well as the other potential extras, see the <a href="../../installation/pypi/">Installation from PyPI</a> guide.</p>
-<h2 id="using-the-cli">Using the CLI</h2>
+<h2 id="verifying-the-installation">Verifying the Installation</h2>
 <p>Now that we have fidesctl installed, let's verify the installation:</p>
 <table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Command</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl --version
 </code></pre></div>
 </td></tr></table>
 <table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl, version 1.0.0
+</code></pre></div>
+</td></tr></table>
+<h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
+<p>With Fidesctl installed, it's time to initialize fidesctl for a project, so we have some place to start adding resource manifests and tweaking our configuration.</p>
+<p>Switch to your project's root directory, and initialize fidesctl:</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
+</code></pre></div>
+</td></tr></table>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>No config file found. Using default configuration values.
+Initializing Fidesctl...
+
+Created a &#39;.fides&#39; directory.
+
+Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:  
+            https://ethyca.github.io/fides/installation/configuration/
+
+Fidesctl initialization complete.
 </code></pre></div>
 </td></tr></table>
 <p>That's it! Your local standalone installation of fidesctl is up and running.</p>
