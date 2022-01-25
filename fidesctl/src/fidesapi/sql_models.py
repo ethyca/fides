@@ -77,6 +77,9 @@ class DataUse(SqlAlchemyBase, FidesBase):
     __tablename__ = "data_uses"
 
     parent_key = Column(Text)
+    legal_basis = Column(Text)
+    purpose_of_processing = Column(Text)
+    recipient = Column(Text)
 
 
 # Dataset

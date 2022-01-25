@@ -75,6 +75,9 @@ class DataUse(FidesModel):
     """The DataUse resource model."""
 
     parent_key: Optional[FidesKey]
+    legal_basis: Optional[str]
+    purpose_of_processing: Optional[str]
+    recipient: Optional[str]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator

@@ -1,0 +1,15 @@
+data_use:
+  - fides_key: third_party_sharing.legal_obligation.hmrc
+    name: HMRC Tax Compliance
+    description: Payment information as required by HMRC
+    recipient: HMRC
+    purpose_of_processing: Payroll
+    legal_basis: Legal Obligation
+    parent_key: third_party_sharing.legal_obligation
+  - fides_key: third_party_sharing.personalized_advertising.marketing_co
+    name: Direct Marketing for marketing company
+    description: Consented user information for direct marketing purposes
+    recipient: Processor - marketing co.
+    purpose_of_processing: Direct Marketing
+    legal_basis: Consent
+    parent_key: third_party_sharing.personalized_advertising
