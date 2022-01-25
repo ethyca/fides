@@ -11,8 +11,8 @@ from sqlalchemy.engine import (
     LegacyCursorResult,
     Connection,
 )
-from sqlalchemy.sql.elements import TextClause
 from sqlalchemy.exc import OperationalError, InternalError
+from sqlalchemy.sql.elements import TextClause
 from snowflake.sqlalchemy import URL as Snowflake_URL
 
 from fidesops.common_exceptions import ConnectionException
@@ -48,10 +48,11 @@ class SQLConnector(BaseConnector[Engine]):
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
         columns: List[Column] = results.cursor.description
-        l = len(columns)
         rows = []
         for row_tuple in results:
-            rows.append({columns[i].name: row_tuple[i] for i in range(l)})
+            rows.append(
+                {col.name: row_tuple[count] for count, col in enumerate(columns)}
+            )
         return rows
 
     @abstractmethod
@@ -95,7 +96,7 @@ class SQLConnector(BaseConnector[Engine]):
         logger.info(f"Starting data retrieval for {node.address}")
         with client.connect() as connection:
             results = connection.execute(stmt)
-            return SQLConnector.cursor_result_to_rows(results)
+            return self.cursor_result_to_rows(results)
 
     def mask_data(
         self,
@@ -182,6 +183,19 @@ class MySQLConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    # Overrides BaseConnector.cursor_result_to_rows
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """
+        Convert SQLAlchemy results to a list of dictionaries
+        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MySQL
+        """
+        columns: List[Column] = results.cursor.description
+        rows = []
+        for row_tuple in results:
+            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
+        return rows
 
 
 class RedshiftConnector(SQLConnector):
@@ -355,25 +369,13 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
     # Overrides BaseConnector.cursor_result_to_rows
     @staticmethod
-    def cursor_result_to_rows(results: CursorResult) -> List[Row]:
-        """Convert SQLAlchemy results to a list of dictionaries"""
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """
+        Convert SQLAlchemy results to a list of dictionaries
+        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MsSQL
+        """
         columns: List[Column] = results.cursor.description
-        l = len(columns)
         rows = []
         for row_tuple in results:
-            rows.append({columns[i][0]: row_tuple[i] for i in range(l)})
+            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
         return rows
-
-    def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
-    ) -> List[Row]:
-        """Retrieve sql data"""
-        query_config = self.query_config(node)
-        client = self.client()
-        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
-        if stmt is None:
-            return []
-        logger.info(f"Starting data retrieval for {node.address}")
-        with client.connect() as connection:
-            results: CursorResult = connection.execute(stmt)
-            return MicrosoftSQLServerConnector.cursor_result_to_rows(results)

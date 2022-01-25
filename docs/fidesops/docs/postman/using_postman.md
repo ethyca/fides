@@ -70,6 +70,8 @@ Inspect the `Body` of each request to see what we're sending to fidesops:
    1. SEND `Create/Update Postgres Dataset`
    2. SEND `Create/Update Dataset Mongo`
 
+Note: API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. 
+
 
 ## Run a privacy request
 Now, we should have all the basic pieces needed to create an Access request.
