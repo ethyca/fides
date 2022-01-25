@@ -981,7 +981,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mongo_example_test_dataset.yml",
         "data/dataset/snowflake_example_test_dataset.yml",
         "data/dataset/redshift_example_test_dataset.yml",
-        "data/dataset/mssql_example_test_dataset.yml"
+        "data/dataset/mssql_example_test_dataset.yml",
+        "data/dataset/mysql_example_test_dataset.yml"
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -1100,8 +1101,7 @@ def mysql_example_test_dataset_config(
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-    # todo: this references the incorrect dataset
-    mysql_dataset = example_datasets[0]
+    mysql_dataset = example_datasets[5]
     fides_key = mysql_dataset["fides_key"]
     connection_config_mysql.name = fides_key
     connection_config_mysql.key = fides_key
