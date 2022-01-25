@@ -43,7 +43,9 @@ fidesctl, version 1.0.0
 
 ## Initializing Fidesctl
 
-With Fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration.
+With Fidesctl installed, it's time to initialize fidesctl for a project, so we have some place to start adding resource manifests and tweaking our configuration.
+
+Switch to your project's root directory, and initialize fidesctl:
 
 ```sh title="Initialize Fidesctl"
 fidesctl init
