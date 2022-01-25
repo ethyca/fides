@@ -1,4 +1,7 @@
-"""This module combines"""
+"""
+This module is responsible for combining all of the different
+config sections into a single config.
+"""
 import os
 
 import toml
@@ -29,7 +32,7 @@ def get_config(config_path: str = "") -> FidesctlConfig:
 
     This will fail on the first encountered bad conf file.
     """
-    default_file_name = "fidesctl.toml"
+    default_file_name = ".fides/fidesctl.toml"
 
     possible_config_locations = [
         config_path,
@@ -47,4 +50,5 @@ def get_config(config_path: str = "") -> FidesctlConfig:
             except IOError:
                 echo_red(f"Error reading config file from {file_location}")
     fidesctl_config = FidesctlConfig()
+    print("No config file found. Using default configuration values.")
     return fidesctl_config
