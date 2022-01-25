@@ -72,7 +72,7 @@ policy:
             - user.derived.identifiable.biometric_health
             - user.provided.identifiable.biometric
         data_uses:
-          matches: ANY # And the use of the data is something other than...
+          matches: ANY # And the use of the data is for any of the following...
           values:
             - advertising
             - train_ai_system
@@ -101,7 +101,7 @@ policy:
           values:
             - user.derived.identifiable.biometric_health
         data_uses:
-          matches: ANY # And for any data use
+          matches: NONE # And for any data use
           values: []
         data_subjects:
           matches: ANY # And the data subject is a customer
