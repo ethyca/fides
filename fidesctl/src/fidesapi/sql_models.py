@@ -6,7 +6,17 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
-from sqlalchemy import ARRAY, JSON, Column, Integer, String, Text
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Column,
+    Integer,
+    String,
+    Text,
+    type_coerce,
+    TypeDecorator,
+)
+from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
@@ -108,6 +118,28 @@ class Evaluation(SqlAlchemyBase):
     message = Column(String)
 
 
+class PGEncryptedString(TypeDecorator):
+    impl = BYTEA
+
+    cache_ok = True
+
+    def __init__(self):
+        super(PGEncryptedString, self).__init__()
+
+        self.passphrase = "test_api_key"  # to be replaced by an actual key when working
+
+    def bind_expression(self, bindvalue):
+        # Needs to be a string for the encryption, it feels like something here can change for sure
+        # https://docs.sqlalchemy.org/en/14/core/custom_types.html#:~:text=Another%20example%20is%20we%20decorate%20BYTEA%20to%20provide%20a%20PGPString%2C%20which%20will%20make%20use%20of%20the%20PostgreSQL%20pgcrypto%20extension%20to%20encrypt/decrypt%20values%20transparently%3A
+        bindvalue_json = type_coerce(bindvalue, JSON)
+        bindvalue_text = type_coerce(bindvalue_json, Text)
+
+        return func.pgp_sym_encrypt(bindvalue_text, self.passphrase)
+
+    def column_expression(self, col):
+        return func.pgp_sym_decrypt(col, self.passphrase)
+
+
 # Organization
 class Organization(SqlAlchemyBase, FidesBase):
     """
@@ -118,7 +150,7 @@ class Organization(SqlAlchemyBase, FidesBase):
     __tablename__ = "organizations"
 
     organization_parent_key = Column(String, nullable=True)
-    controller = Column(JSON, nullable=True)
+    controller = Column(PGEncryptedString, nullable=True)
     data_protection_officer = Column(JSON, nullable=True)
     representative = Column(JSON, nullable=True)
 
