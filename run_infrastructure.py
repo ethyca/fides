@@ -91,11 +91,15 @@ def seed_initial_data(
     """
     Seed the datastores with initial data as defined in the file at `setup_path`
     """
+    os.system('echo "Seeding initial data for all datastores..."')
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
             setup_path = f"tests/integration_tests/{datastore}_setup.py"
             os.system(
-                f'docker-compose {path} run {base_image} python {setup_path} || echo "no custom setup logic found for {datastore}"'
+                f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
+            )
+            os.system(
+                f'docker-compose {path} run {base_image} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
             )
 
 
