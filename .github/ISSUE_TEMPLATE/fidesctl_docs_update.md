@@ -8,6 +8,7 @@ labels: documentation
 
 ### Docs Update Description
 
+ _Link to documentation, if applicable_
 _A description of what the bug is._
 
 ### Additional context
