@@ -1,0 +1,22 @@
+services:
+  fidesops:
+    depends_on:
+      - mysql_example
+
+  mysql_example:
+    image: mysql
+    platform: linux/amd64
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_HOST=mysql_example
+      - MYSQL_DATABASE=mysql_example
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_USER=mysql_user
+      - MYSQL_PASSWORD=mysql_pw
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql

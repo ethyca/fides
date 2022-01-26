@@ -20,6 +20,7 @@ def mongo_example_db() -> Generator:
     client.close()
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_mongo_example_data(mongo_example_db):
     """Confirm that the example database is populated with simulated data"""

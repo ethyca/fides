@@ -26,6 +26,7 @@ def mssql_example_db() -> Generator:
     engine.dispose()
 
 
+@pytest.mark.integration_mssql
 @pytest.mark.integration
 def test_mssql_example_data(mssql_example_db):
     """Confirm that the example database is populated with simulated data"""
@@ -41,7 +42,7 @@ def test_mssql_example_data(mssql_example_db):
         "login": 8,
         "service_request": 4,
         "report": 4,
-        "type_link_test": 2
+        "type_link_test": 2,
     }
 
     for table_name, expected_count in expected_counts.items():
