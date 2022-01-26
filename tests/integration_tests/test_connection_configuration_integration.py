@@ -9,7 +9,10 @@ from starlette.testclient import TestClient
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import MongoDBConnector
-from fidesops.service.connectors.sql_connector import MySQLConnector, MicrosoftSQLServerConnector
+from fidesops.service.connectors.sql_connector import (
+    MySQLConnector,
+    MicrosoftSQLServerConnector,
+)
 from fidesops.common_exceptions import ConnectionException
 from fidesops.service.connectors import PostgreSQLConnector
 from fidesops.service.connectors import get_connector
@@ -22,12 +25,13 @@ from fidesops.api.v1.scope_registry import (
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
 
-    @pytest.mark.integration
     def test_postgres_db_connection_incorrect_secrets(
         self,
         api_client: TestClient,
@@ -64,7 +68,6 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_postgres_db_connection_connect_with_components(
         self,
         url,
@@ -107,7 +110,6 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_postgres_db_connection_connect_with_url(
         self,
         url,
@@ -148,12 +150,13 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_succeeded is True
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/test"
 
-    @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
@@ -170,7 +173,6 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
         self,
         url,
@@ -191,7 +193,6 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
         self,
         url,
@@ -222,7 +223,6 @@ class TestPostgresConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config.key}."
         )
 
-    @pytest.mark.integration
     def test_connection_configuration_test(
         self,
         url,
@@ -252,8 +252,9 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_succeeded is True
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
 class TestPostgresConnector:
-    @pytest.mark.integration
     def test_postgres_db_connector(
         self,
         api_client: TestClient,
@@ -275,12 +276,13 @@ class TestPostgresConnector:
             connector.test_connection()
 
 
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client, policy, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
-    @pytest.mark.integration
     def test_mysql_db_connection_incorrect_secrets(
         self,
         api_client: TestClient,
@@ -317,7 +319,6 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_mysql_db_connection_connect_with_components(
         self,
         url,
@@ -360,7 +361,6 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mysql_db_connection_connect_with_url(
         self,
         url,
@@ -401,12 +401,13 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_succeeded is True
 
 
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client, policy, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
-    @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
@@ -423,7 +424,6 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
         self,
         url,
@@ -444,7 +444,6 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
         self,
         url,
@@ -475,7 +474,6 @@ class TestMySQLConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config_mysql.key}."
         )
 
-    @pytest.mark.integration
     def test_connection_configuration_test(
         self,
         url,
@@ -505,8 +503,9 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_succeeded is True
 
 
+@pytest.mark.integration_mysql
+@pytest.mark.integration
 class TestMySQLConnector:
-    @pytest.mark.integration
     def test_mysql_db_connector(
         self,
         api_client: TestClient,
@@ -528,20 +527,20 @@ class TestMySQLConnector:
             connector.test_connection()
 
 
+@pytest.mark.integration_mssql
+@pytest.mark.integration
 class TestMicrosoftSQLServerConnection:
-
     @pytest.fixture(scope="function")
     def url_put_secret(self, oauth_client, policy, connection_config_mssql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/secret"
 
-    @pytest.mark.integration
     def test_mssql_db_connection_incorrect_secrets(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
-            url_put_secret,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
+        url_put_secret,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
@@ -550,7 +549,7 @@ class TestMicrosoftSQLServerConnection:
             "host": "mssql_example",
             "port": 1433,
             "dbname": "mssql_example",
-            "url": None
+            "url": None,
         }
         resp = api_client.put(
             url_put_secret,
@@ -560,8 +559,8 @@ class TestMicrosoftSQLServerConnection:
         assert resp.status_code == 200
         body = json.loads(resp.text)
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["test_status"] == "failed"
         assert "Connection error." == body["failure_reason"]
@@ -578,21 +577,20 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_mssql_db_connection_connect_with_components(
-            self,
-            url_put_secret,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_put_secret,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         payload = {
             "username": "sa",
             "password": "Mssql_pw1",
             "host": "mssql_example",
             "port": 1433,
-            "dbname": "mssql_example"
+            "dbname": "mssql_example",
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -605,8 +603,8 @@ class TestMicrosoftSQLServerConnection:
         body = resp.json()
 
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["test_status"] == "succeeded"
         assert body["failure_reason"] is None
@@ -617,19 +615,18 @@ class TestMicrosoftSQLServerConnection:
             "host": "mssql_example",
             "port": 1433,
             "dbname": "mssql_example",
-            "url": None
+            "url": None,
         }
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mssql_db_connection_connect_with_url(
-            self,
-            url_put_secret,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_put_secret,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         payload = {
             "url": "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
@@ -645,8 +642,8 @@ class TestMicrosoftSQLServerConnection:
         body = json.loads(resp.text)
 
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["failure_reason"] is None
         assert body["test_status"] == "succeeded"
@@ -666,14 +663,13 @@ class TestMicrosoftSQLServerConnection:
     def url_test_secrets(self, oauth_client, policy, connection_config_mssql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/test"
 
-    @pytest.mark.integration
     def test_connection_configuration_test_not_authenticated(
-            self,
-            url_test_secrets,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_test_secrets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         assert connection_config_mssql.last_test_timestamp is None
 
@@ -683,14 +679,13 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is None
         assert connection_config_mssql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_incorrect_scopes(
-            self,
-            url_test_secrets,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_test_secrets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         assert connection_config_mssql.last_test_timestamp is None
 
@@ -704,14 +699,13 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is None
         assert connection_config_mssql.last_test_succeeded is None
 
-    @pytest.mark.integration
     def test_connection_configuration_test_failed_response(
-            self,
-            url_test_secrets,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_test_secrets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         assert connection_config_mssql.last_test_timestamp is None
         connection_config_mssql.secrets = {"host": "invalid_host"}
@@ -731,18 +725,17 @@ class TestMicrosoftSQLServerConnection:
         assert body["test_status"] == "failed"
         assert "Connection error." == body["failure_reason"]
         assert (
-                body["msg"]
-                == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
         )
 
-    @pytest.mark.integration
     def test_connection_configuration_test(
-            self,
-            url_test_secrets,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        url_test_secrets,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         assert connection_config_mssql.last_test_timestamp is None
 
@@ -755,8 +748,8 @@ class TestMicrosoftSQLServerConnection:
         body = json.loads(resp.text)
 
         assert (
-                body["msg"]
-                == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
         )
         assert body["failure_reason"] is None
         assert body["test_status"] == "succeeded"
@@ -764,13 +757,12 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mssql_db_connector(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mssql,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mssql,
     ) -> None:
         connector = get_connector(connection_config_mssql)
         assert connector.__class__ == MicrosoftSQLServerConnector
@@ -786,8 +778,9 @@ class TestMicrosoftSQLServerConnection:
             connector.test_connection()
 
 
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
 class TestMongoConnector:
-    @pytest.mark.integration
     def test_mongo_db_connector(
         self,
         api_client: TestClient,
@@ -809,12 +802,13 @@ class TestMongoConnector:
             connector.test_connection()
 
 
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
 class TestMongoConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, mongo_connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{mongo_connection_config.key}/secret"
 
-    @pytest.mark.integration
     def test_mongo_db_connection_incorrect_secrets(
         self,
         url,
@@ -854,7 +848,6 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is False
 
-    @pytest.mark.integration
     def test_mongo_db_connection_connect_with_components(
         self,
         url,
@@ -897,7 +890,6 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
 
-    @pytest.mark.integration
     def test_mongo_db_connection_connect_with_url(
         self,
         url,

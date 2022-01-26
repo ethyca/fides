@@ -11,6 +11,8 @@ IMAGE_NAME := fidesops
 IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
+DOCKERFILE_ENVIRONMENTS := postgres mysql mongodb mssql
+
 
 ####################
 # Defaults
@@ -45,27 +47,19 @@ server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 
 integration-shell: compose-build
-	# note- does not bring up external connectors such as redshift or snowflake
-	@echo "Bringing up main image and images for integration testing"
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml run $(IMAGE_NAME) /bin/bash
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env: compose-build
-	@echo "Bringing up main image and images for integration testing"
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 15s for integration containers to be ready..."
-	@sleep 15
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec -it fidesops python tests/integration_tests/mssql_setup.py
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml logs -f -t
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@docker exec -it fidesops python quickstart.py
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
 
 ####################
 # Docker
@@ -114,35 +108,28 @@ pytest: compose-build
 	@docker-compose run $(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
 
-# Run the pytest integration tests.
-pytest-integration-access: compose-build
-	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
-	@echo "Bringing up the integration environment..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 20s for integration containers to be ready..."
-	@sleep 20
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec fidesops python tests/integration_tests/mssql_setup.py
-	@echo "Running pytest integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m integration
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml down --remove-orphans
+pytest-integration: compose-build
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --run_tests --datastores $(datastores)
+
 
 pytest-integration-erasure: compose-build
 	@echo "Building additional Docker images for integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml build
-	@echo "Bringing up the integration environment..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml up -d
-	@echo "Waiting 20s for integration containers to be ready..."
-	@sleep 20
-	@echo "Running additional setup for mssql integration tests"
-	@docker exec fidesops python tests/integration_tests/mssql_setup.py
-	@echo "Running pytest integration tests..."
-	@docker-compose -f docker-compose.yml -f docker-compose.integration-test.yml \
-		run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "integration_erasure"
+	@path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		path="$$path -f docker-compose.integration-$$word.yml"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path build; \
+	docker-compose -f docker-compose.yml $$path up -d; \
+	sleep 5; \
+	setup_path=""; \
+	for word in $(DOCKERFILE_ENVIRONMENTS); do \
+		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
+		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
+	done; \
+	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m "integration_erasure"; \
+	docker-compose -f docker-compose.yml $$path down --remove-orphans
 
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build

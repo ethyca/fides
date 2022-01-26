@@ -98,6 +98,7 @@ def test_combined_erasure_task(
     }
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
@@ -138,6 +139,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     }
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
@@ -170,6 +172,7 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
     assert v["mongo_test:customer"][0]["email"] == "customer-1@example.com"
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_composite_key_erasure(
     db,
@@ -261,6 +264,7 @@ def test_composite_key_erasure(
     assert access_request_data["mongo_test:composite_pk_test"][0]["description"] == None
 
 
+@pytest.mark.integration_mongodb
 @pytest.mark.integration
 def test_access_erasure_type_conversion(
     db,
@@ -382,6 +386,8 @@ def test_filter_on_data_categories_mongo(
     }
 
 
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
 class TestRetrievingDataMongo:
     @pytest.fixture
     def connector(self, integration_mongodb_config):
@@ -395,7 +401,6 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
@@ -417,7 +422,6 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
@@ -449,7 +453,6 @@ class TestRetrievingDataMongo:
         results = connector.retrieve_data(traversal_node, Policy(), {"email": None})
         assert results == []
 
-    @pytest.mark.integration
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,

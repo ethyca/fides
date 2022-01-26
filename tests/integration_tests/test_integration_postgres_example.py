@@ -26,6 +26,7 @@ def postgres_example_db() -> Generator:
     engine.dispose()
 
 
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_postgres_example_data(postgres_example_db):
     """Confirm that the example database is populated with simulated data"""
