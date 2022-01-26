@@ -8,7 +8,8 @@ labels: documentation
 
 ### Docs Update Description
 
- _Link to documentation, if applicable_
+ _Link page where documentation is lacking, if applicable_
+ _Describe what you'd like to see documented_
 
 ### Additional context
 
