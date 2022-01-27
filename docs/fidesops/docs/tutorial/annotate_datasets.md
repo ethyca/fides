@@ -48,15 +48,6 @@ the user by `email`, and from there, travel through other tables linked to `user
     identity: email
 ```
 
-Optional `fidesops_meta` fields:
-- `data_type`: only required for processing erasure requests, however, whenever specified, Fidesops will attempt to coerce the field's value to the type. For erasure requests in particular, Fidesops requires `data_type` to ensure that the configured masking strategy can process the value. Supported data types:
-  - `string`
-  - `integer`
-  - `float`
-  - `boolean`
-  - `object_id`
-- `length`: if `length` is specified, in an erasure request, Fidesops will truncate the end of the masked value to the specified `length`. This should be used if your database column has a length restriction. E.g. if a specific row has `email` of `jerry@mail.com`, and the masked value is `23982r3n8rupq8ewurnw`, and `length` is set to `10`, then the resulting update query will use the value `23982r3n8r`.
-
 ## Upload this Dataset to Fidesops
 
 For more detailed information, [see the Datasets Guide](../guides/datasets.md).
