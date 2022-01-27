@@ -15,6 +15,7 @@ class UserSettings(FidesSettings):
 
     user_id: str = "1"
     api_key: str = "test_api_key"
+    encryption_key: str = "test_encryption_key"
     request_headers: Dict[str, str] = dict()
 
     # Automatically generate the request_headers on object creation

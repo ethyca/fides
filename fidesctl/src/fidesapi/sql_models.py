@@ -15,11 +15,16 @@ from sqlalchemy import (
     Text,
     type_coerce,
     TypeDecorator,
+    cast,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
+
+from fidesctl.core.config import FidesctlConfig, get_config
+
+CONFIG: FidesctlConfig = get_config()
 
 
 class SqlModelBase:
@@ -48,6 +53,27 @@ class FidesBase(SqlModelBase):
 
 
 SqlAlchemyBase = declarative_base(cls=SqlModelBase)
+
+
+class PGEncryptedString(TypeDecorator):
+    impl = BYTEA
+
+    cache_ok = True
+
+    def __init__(self):
+        super(PGEncryptedString, self).__init__()
+
+        self.passphrase = CONFIG.user.encryption_key
+
+    def bind_expression(self, bindvalue):
+        # Needs to be a string for the encryption, however it also needs to be treated as JSON first
+
+        bindvalue = type_coerce(bindvalue, JSON)
+
+        return func.pgp_sym_encrypt(cast(bindvalue, Text), self.passphrase)
+
+    def column_expression(self, col):
+        return cast(func.pgp_sym_decrypt(col, self.passphrase), JSON)
 
 
 # Privacy Types
@@ -101,7 +127,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
-    joint_controller = Column(JSON, nullable=True)
+    joint_controller = Column(PGEncryptedString, nullable=True)
 
 
 # Evaluation
@@ -118,28 +144,6 @@ class Evaluation(SqlAlchemyBase):
     message = Column(String)
 
 
-class PGEncryptedString(TypeDecorator):
-    impl = BYTEA
-
-    cache_ok = True
-
-    def __init__(self):
-        super(PGEncryptedString, self).__init__()
-
-        self.passphrase = "test_api_key"  # to be replaced by an actual key when working
-
-    def bind_expression(self, bindvalue):
-        # Needs to be a string for the encryption, it feels like something here can change for sure
-        # https://docs.sqlalchemy.org/en/14/core/custom_types.html#:~:text=Another%20example%20is%20we%20decorate%20BYTEA%20to%20provide%20a%20PGPString%2C%20which%20will%20make%20use%20of%20the%20PostgreSQL%20pgcrypto%20extension%20to%20encrypt/decrypt%20values%20transparently%3A
-        bindvalue_json = type_coerce(bindvalue, JSON)
-        bindvalue_text = type_coerce(bindvalue_json, Text)
-
-        return func.pgp_sym_encrypt(bindvalue_text, self.passphrase)
-
-    def column_expression(self, col):
-        return func.pgp_sym_decrypt(col, self.passphrase)
-
-
 # Organization
 class Organization(SqlAlchemyBase, FidesBase):
     """
@@ -151,8 +155,8 @@ class Organization(SqlAlchemyBase, FidesBase):
 
     organization_parent_key = Column(String, nullable=True)
     controller = Column(PGEncryptedString, nullable=True)
-    data_protection_officer = Column(JSON, nullable=True)
-    representative = Column(JSON, nullable=True)
+    data_protection_officer = Column(PGEncryptedString, nullable=True)
+    representative = Column(PGEncryptedString, nullable=True)
 
 
 # Policy
@@ -187,7 +191,7 @@ class System(SqlAlchemyBase, FidesBase):
     meta = Column(JSON)
     system_type = Column(String)
     system_dependencies = Column(ARRAY(String))
-    joint_controller = Column(JSON, nullable=True)
+    joint_controller = Column(PGEncryptedString, nullable=True)
     privacy_declarations = Column(JSON)
 
 
