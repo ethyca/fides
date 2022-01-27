@@ -196,13 +196,13 @@ execution while you take care of additional processing on your end.
 ```
  To resume, you should send a request back to the `reply-to` URL with the `reply-to-token`.  The `reply-to-token` will
 expire when your redis cache expires: `config.redis.DEFAULT_TTL_SECONDS` (Fidesops uses the redis cache to temporarily
- store identity data).  At this point, your PrivacyRequest will be given an `error` status and you would have to resubmit
+ store identity data).  At this point, your PrivacyRequest will be given an `error` status, and you would have to resubmit
 the PrivacyRequest.
 
 ## Expected Webhook Response Format
 
 Your webhook should respond immediately. If more processing time is needed, either make sure it is configured as a 
-`one-way` webhook, or reply back with `halt=True` if you want to pause execution and wait for your processing to finish.
+`one-way` webhook, or reply with `halt=True` if you want to pause execution and wait for your processing to finish.
 Note that only `PolicyPreWebhooks` can pause execution. 
 
 We don't expect a response from `one-way` webhooks, but `two-way` webhooks should respond with the following: 

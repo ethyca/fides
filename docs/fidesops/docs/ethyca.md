@@ -20,4 +20,4 @@ We'd love you to contribute to Fides and you can do this directly as part of the
 
 ## Your Participation
 
-Fides' success is predicated on your participation -- Privacy as Code can only become a reality if we ensure it's easy to understand, implement and an interopable standard for wide adoption. Your feedback, contributions and improvements are encouraged as we work towards building a community with the sole objective of building more repsectful software for everyone on the internet.
+Fides' success is predicated on your participation -- Privacy as Code can only become a reality if we ensure it's easy to understand, implement and an interoperable standard for wide adoption. Your feedback, contributions and improvements are encouraged as we work towards building a community with the sole objective of building more respectful software for everyone on the internet.

@@ -84,7 +84,7 @@ def create_oauth_client(access_token):
 ### Call helper methods to create Oauth token
 
 Update our script to call our new functions to create a token for the `root` client, and then use that token to create a *new* client 
-with all of the scopes.  Finally, we create another token for the new client, and that's what we'll use to 
+with all the scopes.  Finally, we create another token for the new client, and that's what we'll use to 
 authenticate subsequent requests.
 
 Do not use the root client for anything other than creating other clients. 

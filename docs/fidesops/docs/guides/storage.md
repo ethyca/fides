@@ -12,7 +12,7 @@ Take me directly to [API docs](/fidesops/api#operations-Storage-upload_data_api_
 
 ## Overview
 
-Access requests requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
+Access requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
 
 Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process Access requests.
 

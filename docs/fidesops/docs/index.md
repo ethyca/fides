@@ -25,11 +25,11 @@ In a software organization, the team that writes and delivers software is normal
 
 Your policies and database annotations are written in [**Fideslang**](https://github.com/ethyca/privacy-taxonomy): the syntax that describes the attributes of your data and its allowed purposes of use. 
 
-But after identifying what types of data are in your databases using Fideslang, how will your organization know what data is deemed sensitive? And how will your orgnaization prevent inappropriate uses of that data? That's where [**Fidesctl**](https://github.com/ethyca/fides) comes in. Fidesctl is a CLI tool that continuously verifies Fideslang database annotations against acceptable use privacy policies.
+But after identifying what types of data are in your databases using Fideslang, how will your organization know what data is deemed sensitive? And how will your organization prevent inappropriate uses of that data? That's where [**Fidesctl**](https://github.com/ethyca/fides) comes in. Fidesctl is a CLI tool that continuously verifies Fideslang database annotations against acceptable use privacy policies.
 
 ![Fides ecosystem](img/fides-ecosystem.png "Fides ecosystem")
 
 
 ## Next Steps
 
-To start automating requests with Fidesops, visit the [Tutorial](tutorial/index.md) for a step-by-step walkthrough!
+To start automating requests with Fidesops, visit the [Tutorial](tutorial/index.md) for a step-by-step walk through!

@@ -141,4 +141,4 @@ Note that there's no need for a persistent volume mount for the web server, it's
 
 To test that your server is running, visit `http://{server_url}/health` in your browser (e.g. http://0.0.0.0:8080/health) and you should see `{ "healthy": true }`.
 
-You now have a functional `fidesops` server running! Now you can use the API to setup your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the [How-To Guides](guides/oauth.md) for details.
+You now have a functional `fidesops` server running! Now you can use the API to set up your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the [How-To Guides](guides/oauth.md) for details.

@@ -42,12 +42,20 @@ dataset:
               primary_key: True
           - name: street
             data_categories: [user.provided.identifiable.contact.street]
+            fidesops_meta:
+              data_type: string
           - name: city
             data_categories: [user.provided.identifiable.contact.city]
+            fidesops_meta:
+              data_type: string
           - name: state
             data_categories: [user.provided.identifiable.contact.state]
+            fidesops_meta:
+              data_type: string
           - name: zip
             data_categories: [user.provided.identifiable.contact.postal_code]
+            fidesops_meta:
+              data_type: string
 
       - name: customer
         after: mydatabase.address
@@ -65,12 +73,15 @@ dataset:
             data_categories: [user.provided.identifiable.contact.email]
             fidesops_meta:
               identity: email
+              data_type: string
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
               primary_key: True
           - name: name
             data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
 ```
 
 #### Dataset members
@@ -83,7 +94,7 @@ dataset:
 
 - `name`: The name of the collection in your configuration must correspond to the name used for it in your datastore, since it will be used to generate query and update statements.
 - `fields`: A list of addressable fields in the collection. Specifying the fields in the collection tells fidesOps what data to address in the collection.
-- `after`: An optional list of  collections (in the form `[dataset name].[collection name]` ) that must be fully traversed before this collection is queried.
+- `after`: An optional list of collections (in the form `[dataset name].[collection name]` ) that must be fully traversed before this collection is queried.
 
 #### Field members
 
@@ -95,6 +106,84 @@ dataset:
 	- `identity`: Signifies that this field is an identity value that can be used as the root for a traversal [See graph traversal](query_execution.md)
 	- `direction`(_Optional_): Accepted values are `from` or `to`. This determines how Fidesops uses the relationships to discover data. If the direction is `to`, Fidesops will only use data in the _source_ collection to discover data in the _referenced_ collection. If the direction is `from`, Fidesops will only use data in the _referenced_ collection to discover data in the _source_ collection. If the direction is omitted, Fidesops will traverse the relation in whatever direction works to discover all related data.
 	- `primary_key` (_Optional_): A boolean value that means that Fidesops will treat this field as a unique row identifier for generating update statements. If multiple fields are marked as primary keys the combination of their values will be treated as a combined key. In SQL terms, we'd issue a query that looked like `SELECT ... FROM TABLE WHERE primary_key_name_1 = value1 AND primary_key_name_2 = value2`. If no primary key is specified for any field on a collection, no updates will be generated against that collection.
-	- `data_type` (_Optional_): An indication of type of data held by this field. Data types are used to convert values to the appropriate type when those values are used in queries. Data types are also used to generate the appropriate masked value when runnint erasures, since Fidesops needs to know the type of data exxpected by the field in order to generate an appropriate masked value. Available datatypes are `string`, `integer`, `float`, `boolean`, and `object_id`.
+	- `data_type` (_Optional_): An indication of type of data held by this field. Data types are used to convert values to the appropriate type when those values are used in queries. Data types are also used to generate the appropriate masked value when running erasures, since Fidesops needs to know the type of data expected by the field in order to generate an appropriate masked value. Available datatypes are `string`, `integer`, `float`, `boolean`, `object_id`. `object` types are also supported for MongoDB.
 	- `length` (_Optional_): An indicator of field length.
  
+#### Object fields
+
+To declare an `object` field, you should define nested fields underneath that field. You can optionally
+add the `data_type: object` annotation, but the object type will be inferred by the presence of the nested fields. In the example below, 
+`workplace_info` is an object field with two nested fields: `employer` and `position`.
+
+Data categories cannot be specified at the `object` level due to potential conflicts with nested fields. Instead,
+annotate the scalar fields within the object field.  Here, the `workplace_info.position` field has `data_category`
+`user.provided.identifiable.job_title`.
+
+
+```yaml
+dataset:
+  - fides_key: mongo_nested_object_example
+    name: Mongo Example with Nested Objects
+    description: Example of a Mongo dataset that contains 'details' about customers defined in the 'postgres_example_test_dataset'
+    collections:
+      - name: customer_details
+        fields:
+          - name: _id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+          - name: customer_id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: workplace_info
+            fidesops_meta:
+                data_type: object
+            fields:
+              - name: employer
+                fidesops_meta:
+                  data_type: string
+              - name: position
+                data_categories: [ user.provided.identifiable.job_title ]
+                fidesops_meta:
+                  data_type: string
+              - name: id
+```
+
+##### Referencing a nested field
+
+To define a relationship between a field on one collection and a nested field on another collection, use dot notation
+in the `fidesops_meta` references for as many levels are necessary.
+
+In the example below, we might add another column to our `customer` collection that references
+the nested field `workplace_info.id` field in the `customer_details` collection. 
+Under references, this field is denoted by `<collection_name>.<field_name>.<sub_field>` name, or
+`customer_details.workplace_info.id`.
+
+If we preferred, we could instead define this relationship on the `customer_details.workplace_info.id` field itself,
+with a direction of `from`, with field `mydatabase.customer.workplace_id`, and dataset `mydatabase`.
+
+```
+dataset:
+  - fides_key: mydatabase
+    name: internal database
+    description: our internal database of customer data
+    collections:
+      - name: customer
+        fields:
+          - name: workplace_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              references:
+                - dataset: mongo_nested_object_example
+                  field: customer_details.workplace_info.id
+                  direction: to
+          ...
+
+```
+
+Note that we currently support access requests on object fields in MongoDB only.  Support for 
+nested erasures, as well as support for array fields is underway.

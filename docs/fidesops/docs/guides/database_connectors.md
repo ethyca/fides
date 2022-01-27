@@ -14,7 +14,7 @@ Take me directly to the [ConnectionConfig API documentation](/fidesops/api#opera
 
 ## What is a connection?
 
-A _connection_ links your databases to Fidesops so you can gather and update selected PII 
+A _connection_ links your databases to Fidesops, so you can gather and update selected PII 
 categories.
 
 ## Supported databases
@@ -150,7 +150,7 @@ PUT api/v1/connection/my_mongo_db/secret?verify=false`
 
 This Amazon Redshift example sets the database secrets as a `url` property and a `db_schema` property.  Redshift
 databases have one or more schemas, with the default being named `public`.  If you need to set a different schema,
-specify `db_schema` for Redshift and it will be set as the `search_path` when querying.
+specify `db_schema` for Redshift, and it will be set as the `search_path` when querying.
 
 
 ```
