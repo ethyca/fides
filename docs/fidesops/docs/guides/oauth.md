@@ -7,13 +7,13 @@ In this section we'll cover:
 - Authorizing your client with scopes
 - Creating OAuth tokens
 
-When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must included a _scope_ that gives you permission to do take an action on the API. For example, let's say you want to create a new Policy by calling `PATCH /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
+When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must include a _scope_ that gives you permission to take an action on the API. For example, let's say you want to create a new Policy by calling `PATCH /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
 
 This document explains how to craft a properly-scoped access token.
 
 ## Getting Started
 
-First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes so it can call any of the Fidesops APIs.
+First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes, so it can call any of the Fidesops APIs.
 
 To create the root token, you pass the `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` environment variables (which are automatically defined in your system) to the `POST /api/v1/oauth/token` endpoint. You also set the `grant_type` parameter to `client_credentials`:
 
@@ -74,7 +74,7 @@ Content-Type: application/json
   "client_secret" : "<new_client_secret>",
 }
 ```
-## Create an Access Token
+## Create Access Token
 You then create a new access token by calling [`POST /api/v1/oauth/token`](/fidesops/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
 
 In the above example, your new access token only lets the client read policies and rules -- the client nor create other clients, nor write policies, nor perform other operations using Fidesops APIs.

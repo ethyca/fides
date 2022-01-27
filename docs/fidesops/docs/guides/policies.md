@@ -90,9 +90,8 @@ PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
 ## Add an Erasure Rule to your Policy
 The simple access policy we've created above, will simply pull all data of category `user.provided.identifiable.contact.email`, but in the event of an erasure request, we might also want to mask this information. 
 
-
-```json
 PATCH /api/v1/policy/{policy_key}/rule
+```json
 [
   {
     "name": "Mask Provided Emails",
@@ -107,10 +106,10 @@ PATCH /api/v1/policy/{policy_key}/rule
   },
 ]
 ```
-This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to creat a target for this rule:
+This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to create a target for this rule:
 
-```json
 PATCH api/v1/policy/{policy_key}/rule/{rule_key}
+```json
   [
     {
       "data_category": "user.provided.identifiable.contact.email",

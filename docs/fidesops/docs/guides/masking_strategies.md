@@ -259,4 +259,4 @@ def get_strategy(
 
 The `SupportedMaskingStrategy` enum maps the strategy name to the masking strategy implementation class. 
 
-After creating a new masking strategy and configuration, just register it in this enum and it will be ready for use by the system.
+After creating a new masking strategy and configuration, just register it in this enum, and it will be ready for use by the system.

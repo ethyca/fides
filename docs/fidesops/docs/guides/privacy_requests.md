@@ -35,8 +35,8 @@ we submit  a request to apply the `a-demo-policy` Policy to all target data in t
     "policy_key": "a-demo-policy",
     "identity": {
       "email": "identity@example.com",
-      "phone_number: "+1 (123) 456 7891"
-    },
+      "phone_number": "+1 (123) 456 7891"
+    }
   }
 ]
 ```
@@ -76,7 +76,7 @@ Alongside generic API interoperability, Fidesops provides a direct integration w
 
 * OneTrust: Fidesops can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
 
-- Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. Pleae see [How-To: Authenticate with OAuth](oauth.md) for more information.
+- Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. Please see [How-To: Authenticate with OAuth](oauth.md) for more information.
 - OneTrust: Fidesops can be configured to act as (or as part of) the fulfilment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
 
 
@@ -138,5 +138,5 @@ json.loads(decrypted_str)
 >>> {"street": "test street", "state": "NY"}
 ```
 
-If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce so you'll need to follow
+If CSV data was uploaded, each CSV in the zipfile was encrypted using a different nonce, so you'll need to follow
 a similar process for each csv file.

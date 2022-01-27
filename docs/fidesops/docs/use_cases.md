@@ -13,7 +13,7 @@ Under various data privacy laws, like the General Data Protection Regulations (G
 * Request to Know
 * Request to Opt-In or Opt-Out
 
-It's possible you may not know what these are until you're expected to fulfill a request like this. However, your customer support team and your legal and privacy team are probably very familiar with these requests because they generally come in through support channels via email. Generally, the team responsible for fulfilling these requests is a combination of product engineering, marketing, legal, and sales because your organization has customer data stored in so many different locations. 
+It's possible you may not know what these are until you're expected to fulfill a request like this. However, your customer support team and your legal and privacy team are probably very familiar with these requests because they generally come in through support channels via email. Generally, the team responsible for fulfilling these requests is a combination of product engineering, marketing, legal, and sales because your organization has customer data stored in so many locations. 
 
 Fidesops helps to automate the execution of these privacy requests by 1) accepting and responding to privacy requests from an application of your choosing, 2) connecting directly to your datasets and 3) retrieving and/or updating data in those datasets.
 

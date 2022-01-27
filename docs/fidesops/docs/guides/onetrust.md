@@ -43,7 +43,7 @@ Read more about how to do this [here](./storage.md)
 
 ### OneTrust
 
-When the Fidesops scheduled task runs, it looks for subtasks with a exact string name of "fides task".  So, you'll need to be sure tasks you wish to pass through the Fides ecosystem are correctly labeled in the OneTrust interface.
+When the Fidesops scheduled task runs, it looks for subtasks with an exact string name of "fides task".  So, you'll need to be sure tasks you wish to pass through the Fides ecosystem are correctly labeled in the OneTrust interface.
 
 ## Testing
 
