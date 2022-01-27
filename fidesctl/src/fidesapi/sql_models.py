@@ -56,24 +56,42 @@ SqlAlchemyBase = declarative_base(cls=SqlModelBase)
 
 
 class PGEncryptedString(TypeDecorator):
+    """
+    This TypeDecorator handles encrypting and decrypting values at rest
+    on the database that would normally be stored as json.
+
+    The values are explicitly cast as json then text to take advantage of
+    the pgcrypto extension.
+    """
+
     impl = BYTEA
+    python_type = String
 
     cache_ok = True
 
     def __init__(self):
-        super(PGEncryptedString, self).__init__()
+        super().__init__()
 
         self.passphrase = CONFIG.user.encryption_key
 
-    def bind_expression(self, bindvalue):
+    def bind_expression(self, bindparam):
         # Needs to be a string for the encryption, however it also needs to be treated as JSON first
 
-        bindvalue = type_coerce(bindvalue, JSON)
+        bindparam = type_coerce(bindparam, JSON)
 
-        return func.pgp_sym_encrypt(cast(bindvalue, Text), self.passphrase)
+        return func.pgp_sym_encrypt(cast(bindparam, Text), self.passphrase)
 
-    def column_expression(self, col):
-        return cast(func.pgp_sym_decrypt(col, self.passphrase), JSON)
+    def column_expression(self, column):
+        return cast(func.pgp_sym_decrypt(column, self.passphrase), JSON)
+
+    def process_bind_param(self, value, dialect):
+        pass
+
+    def process_literal_param(self, value, dialect):
+        pass
+
+    def process_result_value(self, value, dialect):
+        pass
 
 
 # Privacy Types
