@@ -4,10 +4,10 @@ This page gives a few examples of different policies one might want to use in th
 
 ## No Third-Party Data Sharing
 
-```yaml title="policy.yml"
+```yaml title="data_sharing_policy.yml"
 policy:
   - fides_key: data_sharing_policy
-    name: Data Sharing Policy
+    name: Data Sharing
     description: The privacy policy that governs sharing of data with third parties.
     rules:
       - name: Disallow Third-Party Marketing
@@ -31,11 +31,11 @@ policy:
 
 ## Respecting Employee Data Privacy
 
-```yaml title="policy.yml"
+```yaml title="employee_data_processing_policy.yml"
 policy:
   - fides_key: employee_data_processing
     name: Employee Data Processing
-    description: Restrict Employee Data Processing to only what is required for systematic business functions.
+    description: Restrict employee data processing only to that which is required for systematic business functions.
     rules:
       - name: Disallow Non-System Use of Employee Data
         data_categories:
