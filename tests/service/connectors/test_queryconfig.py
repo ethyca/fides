@@ -1,8 +1,14 @@
 from typing import Dict, Any, Set
 import pytest
 
-from fidesops.graph.config import CollectionAddress, FieldPath, ObjectField, ScalarField, Collection, FieldAddress
-from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.config import (
+    CollectionAddress,
+    FieldPath,
+    ObjectField,
+    ScalarField,
+    FieldAddress,
+)
+from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import DataCategory
@@ -23,8 +29,10 @@ from fidesops.service.masking.strategy.masking_strategy_hash import (
     HASH,
 )
 
-from ...task.traversal_data import integration_db_graph, combined_mongo_posgresql_graph, str_converter, obj_converter, \
-    customer_details_collection
+from ...task.traversal_data import (
+    integration_db_graph,
+    combined_mongo_postgresql_graph,
+)
 from ...test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
 
 # customers -> address, order
@@ -354,40 +362,127 @@ class TestSQLQueryConfig:
 
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
-    def customer_details_node(self, integration_postgres_config, integration_mongodb_config):
-        mongo_dataset, postgres_dataset = combined_mongo_posgresql_graph(
+    def combined_traversal(
+        self, integration_postgres_config, integration_mongodb_config
+    ):
+        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
             integration_postgres_config, integration_mongodb_config
         )
-        mongo_dataset.collections.append(customer_details_collection)
         combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
-        combined_traversal = Traversal(combined_dataset_graph, {"ssn": "111-111-1111", "email": "customer-1@examplecom"})
-        return combined_traversal.traversal_node_dict[CollectionAddress("mongo_test", "customer_details")]
+        combined_traversal = Traversal(
+            combined_dataset_graph,
+            {"email": "customer-1@examplecom"},
+        )
+        return combined_traversal
+
+    @pytest.fixture(scope="function")
+    def customer_details_node(self, combined_traversal):
+        return combined_traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
+
+    @pytest.fixture(scope="function")
+    def customer_feedback_node(self, combined_traversal):
+        return combined_traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_feedback")
+        ]
 
     def test_field_map_nested(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
 
         field_map = config.field_map()
-        assert isinstance(field_map[FieldPath("backup_identities")], ObjectField)
-        assert isinstance(field_map[FieldPath("backup_identities", "ssn")], ScalarField)
+        assert isinstance(field_map[FieldPath("workplace_info")], ObjectField)
+        assert isinstance(
+            field_map[FieldPath("workplace_info", "employer")], ScalarField
+        )
 
     def test_primary_key_field_paths(self, customer_details_node):
         config = MongoQueryConfig(customer_details_node)
         assert list(config.primary_key_field_paths.keys()) == [FieldPath("_id")]
-        assert isinstance(config.primary_key_field_paths[FieldPath('_id')], ScalarField)
+        assert isinstance(config.primary_key_field_paths[FieldPath("_id")], ScalarField)
 
-    def test_nested_query_field_paths(self, customer_details_node):
-        # Two potential identities
+    def test_nested_query_field_paths(
+        self, customer_details_node, customer_feedback_node
+    ):
         config = SQLQueryConfig(customer_details_node)
-        assert config.query_field_paths == {FieldPath('backup_identities', 'ssn'), FieldPath('customer_id')}
-
-    def test_nested_typed_filtered_values(self, customer_details_node):
-        """Identity data is located on a nested object"""
-        config = SQLQueryConfig(customer_details_node)
-        input_data = {
-            "backup_identities.ssn": ["111-111-1111"],
-            "ignore": ["abcde"]
+        assert config.query_field_paths == {
+            FieldPath("customer_id"),
         }
-        assert config.typed_filtered_values(input_data) == {'backup_identities.ssn': ['111-111-1111']}
+
+        other_config = SQLQueryConfig(customer_feedback_node)
+        assert other_config.query_field_paths == {
+            FieldPath("customer_information", "email")
+        }
+
+    def test_nested_typed_filtered_values(self, customer_feedback_node):
+        """Identity data is located on a nested object"""
+        config = SQLQueryConfig(customer_feedback_node)
+        input_data = {
+            "customer_information.email": ["test@example.com"],
+            "ignore": ["abcde"],
+        }
+        assert config.typed_filtered_values(input_data) == {
+            "customer_information.email": ["test@example.com"]
+        }
+
+    def test_generate_query(
+        self,
+        policy,
+        example_datasets,
+        integration_mongodb_config,
+        integration_postgres_config,
+    ):
+        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(
+            dataset_postgres, integration_postgres_config.key
+        )
+        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        mongo_graph = convert_dataset_to_graph(
+            dataset_mongo, integration_mongodb_config.key
+        )
+        dataset_graph = DatasetGraph(*[graph, mongo_graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+        # Edge created from Root to nested customer_information.email field
+        assert (
+            Edge(
+                FieldAddress("__ROOT__", "__ROOT__", "email"),
+                FieldAddress(
+                    "mongo_test", "customer_feedback", "customer_information", "email"
+                ),
+            )
+            in traversal.edges
+        )
+
+        # Test query on nested field
+        customer_feedback = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_feedback")
+        ]
+        config = MongoQueryConfig(customer_feedback)
+        input_data = {"customer_information.email": ["customer-1@example.com"]}
+        # Tuple of query, projection - Searching for documents with nested
+        # customer_information.email = customer-1@example.com
+        assert config.generate_query(input_data, policy) == (
+            {"customer_information.email": "customer-1@example.com"},
+            {"_id": 1, "customer_information": 1, "date": 1, "message": 1, "rating": 1},
+        )
+
+        # Test query nested data
+        customer_details = traversal.traversal_node_dict[
+            CollectionAddress("mongo_test", "customer_details")
+        ]
+        config = MongoQueryConfig(customer_details)
+        input_data = {"customer_id": [1]}
+        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will be filtered later.
+        assert config.generate_query(input_data, policy) == (
+            {"customer_id": 1},
+            {
+                "_id": 1,
+                "birthday": 1,
+                "customer_id": 1,
+                "gender": 1,
+                "workplace_info": 1,
+            },
+        )
 
     def test_generate_update_stmt_multiple_fields(
         self,
@@ -418,6 +513,7 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
+            "workplace_info": {"position": "Chief Strategist"},
         }
 
         # Make target more broad
@@ -429,7 +525,9 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
-        assert mongo_statement[1] == {"$set": {"birthday": None, "gender": None}}
+        assert mongo_statement[1] == {
+            "$set": {"workplace_info.position": None, "birthday": None, "gender": None}
+        }
 
     def test_generate_update_stmt_multiple_rules(
         self,

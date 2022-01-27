@@ -34,7 +34,7 @@ commands to give you different functionality.
 - `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments.
 - `make pytest-integration-erasure` - runs erasure integration tests.
 - `make reset-db` - tears down the Fideops postgres db, then recreates and re-runs migrations.
-- `make quickstart` - runs a quick, five second quickstart that talks to the Fidesops API to execute privacy requests
+- `make quickstart` - runs a quick, five minute quickstart that talks to the Fidesops API to execute privacy requests
 - `make check-migrations` - verifies there are no un-run migrations 
 - `make docs-serve` - spins up just the docs
 

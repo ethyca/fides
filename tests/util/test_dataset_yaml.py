@@ -168,10 +168,10 @@ def test_nested_dataset_format():
     ds = FidesopsDataset.parse_obj(dataset)
     graph = convert_dataset_to_graph(ds, "ignore")
 
-    comments_field = field([graph], ("mongo_nested_test", "photos", "comments"))
-    tags_field = field([graph], ("mongo_nested_test", "photos", "tags"))
-    _id_field = field([graph], ("mongo_nested_test", "photos", "_id"))
-    thumbnail_field = field([graph], ("mongo_nested_test", "photos", "thumbnail"))
+    comments_field = field([graph], "mongo_nested_test", "photos", "comments")
+    tags_field = field([graph], "mongo_nested_test", "photos", "tags")
+    _id_field = field([graph], "mongo_nested_test", "photos", "_id")
+    thumbnail_field = field([graph], "mongo_nested_test", "photos", "thumbnail")
 
     assert isinstance(comments_field, ObjectField)
     assert comments_field.is_array
@@ -285,6 +285,31 @@ def test_dataset_graph_connected_by_nested_fields():
     assert [
         field_path.string_path
         for field_path in dataset_graph.data_category_field_mapping[
-            "mongo_nested_test:photos"
+           CollectionAddress("mongo_nested_test", "photos")
         ]["system.operations"]
     ] == ["_id", "thumbnail.camera_used"]
+
+
+example_object_with_data_categories_nested_yaml = """dataset:
+  - fides_key: mongo_nested_test 
+    name: Mongo Example Nested Test Dataset
+    description: Example of a Mongo dataset that has a data_category incorrectly declared at the object level
+    collections:
+      - name: photos
+        fields:
+          - name: thumbnail
+            data_categories: [user.derived]    
+            fidesops_meta:
+                data_type: object
+            fields:
+              - name: photo_id
+                data_type: integer
+              - name: name
+                data_categories: [user.provided.identifiable]    
+"""
+
+
+def test_object_data_category_validation():
+    """Test trying to validate object with data category specified"""
+    with pytest.raises(ValidationError):
+        FidesopsDataset.parse_obj(__to_dataset__(example_object_with_data_categories_nested_yaml))

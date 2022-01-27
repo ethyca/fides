@@ -59,13 +59,13 @@ def test_sql_erasure_ignores_collections_without_pk(
     )  # makes an erasure policy with two data categories to match against
     dataset = integration_db_dataset("postgres_example", "postgres_example")
 
-    field([dataset], ("postgres_example", "address", "id")).primary_key = False
+    field([dataset], "postgres_example", "address", "id").primary_key = False
 
     # set categories: A,B will be marked erasable, C will not
-    field([dataset], ("postgres_example", "address", "city")).data_categories = ["A"]
-    field([dataset], ("postgres_example", "address", "state")).data_categories = ["B"]
-    field([dataset], ("postgres_example", "address", "zip")).data_categories = ["C"]
-    field([dataset], ("postgres_example", "customer", "name")).data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
+    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
+    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
 
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(
@@ -221,12 +221,12 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 
     policy = erasure_policy("A", "B")
     dataset = integration_db_dataset("postgres_example", "postgres_example")
-    field([dataset], ("postgres_example", "address", "id")).primary_key = True
+    field([dataset], "postgres_example", "address", "id").primary_key = True
     # set categories: A,B will be marked erasable, C will not
-    field([dataset], ("postgres_example", "address", "city")).data_categories = ["A"]
-    field([dataset], ("postgres_example", "address", "state")).data_categories = ["B"]
-    field([dataset], ("postgres_example", "address", "zip")).data_categories = ["C"]
-    field([dataset], ("postgres_example", "customer", "name")).data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "city").data_categories = ["A"]
+    field([dataset], "postgres_example", "address", "state").data_categories = ["B"]
+    field([dataset], "postgres_example", "address", "zip").data_categories = ["C"]
+    field([dataset], "postgres_example", "customer", "name").data_categories = ["A"]
     graph = DatasetGraph(dataset)
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
@@ -549,7 +549,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -563,7 +563,7 @@ def test_filter_on_data_categories(
     # Specify the target category:
     target_categories = {"user.provided.identifiable.contact"}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
 
     assert filtered_results == {
@@ -615,7 +615,7 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph
+        access_request_results, target_categories, dataset_graph.data_category_field_mapping
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [

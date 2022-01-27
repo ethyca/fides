@@ -163,7 +163,9 @@ class PrivacyRequestRunner:
                         target.data_category for target in rule.targets
                     }
                     filtered_results = filter_data_categories(
-                        access_result, target_categories, dataset_graph
+                        access_result,
+                        target_categories,
+                        dataset_graph.data_category_field_mapping,
                     )
                     logging.info(
                         f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"

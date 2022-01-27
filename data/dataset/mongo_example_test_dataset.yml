@@ -24,3 +24,60 @@ dataset:
             data_categories: [user.provided.identifiable.date_of_birth]
             fidesops_meta:
               data_type: string
+          - name: workplace_info
+            fields:
+              - name: employer
+                fidesops_meta:
+                  data_type: string
+              - name: position
+                data_categories: [ user.provided.identifiable.job_title ]
+                fidesops_meta:
+                  data_type: string
+      - name: internal_customer_profile
+        fields:
+          - name: customer_identifiers
+            fields:
+              - name: internal_id
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: customer_feedback.customer_information.internal_customer_id
+                      direction: from
+          - name: derived_interests
+            data_categories: [ user.derived ]
+            fidesops_meta:
+              data_type: string[]
+      - name: customer_feedback
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: customer_information
+            fields:
+              - name: email
+                fidesops_meta:
+                  identity: email
+                  data_type: string
+              - name: phone
+                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string
+              - name: internal_customer_id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+          - name: rating
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: integer
+          - name: date
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: message
+            data_categories: [ user.provided.nonidentifiable ]
+            fidesops_meta:
+              data_type: string

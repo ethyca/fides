@@ -4,9 +4,11 @@ import traceback
 from abc import ABC
 from collections import defaultdict
 from functools import wraps
+
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
+import pandas as pd
 import dask
 from dask.threaded import get
 
@@ -22,10 +24,12 @@ from fidesops.graph.traversal import TraversalNode, Row, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
+from fidesops.util.nested_utils import unflatten_dict
 
 logger = logging.getLogger(__name__)
 
@@ -125,16 +129,22 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return connection_config.access == AccessLevel.write
 
     def to_dask_input_data(self, *data: List[Row]) -> Dict[str, List[Any]]:
-        """Each dict in the input list represents the output of a dependent task.
-        These outputs should correspond to the input key order.
-        {table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}],
+        """
+        Consolidates the outputs of queries from potentially multiple collections whose
+        data is needed as input into the current collection.
+
+        Each dict in the input list represents the output of a dependent task.
+        These outputs should correspond to the input key order.  Any nested fields are
+        converted into dot-separated paths in the return.
+
+         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}}]
            where table1.x => self.id,
            table1.y=> self.name,
            table2.x=>self.id
+           table3.z.a => self.contact.address
          becomes
-         {id:[1,2,3,4], name:["A","B"]}
+         {id:[1,2,3,4], name:["A","B"], contact.address:["C"]}
         """
-
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
@@ -152,11 +162,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
-                    new_value = (
-                        row[foreign_field_path.string_path]
-                        if foreign_field_path.string_path in row
-                        else None
-                    )
+                    new_value = foreign_field_path.retrieve_from(row)
                     if new_value:
                         append(output, local_field_path.string_path, new_value)
         return output
@@ -377,8 +383,8 @@ def run_erasure(  # pylint: disable = too-many-arguments
 def filter_data_categories(
     access_request_results: Dict[str, Optional[Any]],
     target_categories: Set[str],
-    graph: DatasetGraph,
-) -> Dict[str, List[Dict[str, Any]]]:
+    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
+) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories
 
@@ -390,36 +396,39 @@ def filter_data_categories(
         "Filtering Access Request results to return fields associated with data categories"
     )
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    data_category_fields: Dict[
-        str, Dict[str, List[FieldPath]]
-    ] = graph.data_category_field_mapping
-
     for node_address, results in access_request_results.items():
         if not results:
             continue
 
         # Gets all FieldPaths on this traversal_node associated with the requested data
         # categories and sub data categories
-        target_fields: Set[FieldPath] = set(
+        target_field_paths: Set[FieldPath] = set(
             itertools.chain(
                 *[
                     field_paths
-                    for cat, field_paths in data_category_fields[node_address].items()
+                    for cat, field_paths in data_category_fields[
+                        CollectionAddress.from_string(node_address)
+                    ].items()
                     if any([cat.startswith(tar) for tar in target_categories])
                 ]
             )
         )
 
-        if not target_fields:
+        if not target_field_paths:
             continue
 
-        for row in results:
-            filtered_access_results[node_address].append(
-                {
-                    field: result
-                    for field, result in row.items()
-                    if field in {target.string_path for target in target_fields}
-                }
-            )
+        # Normalize nested data into a flat dataframe
+        df: pd.DataFrame = pd.json_normalize(results, sep=".")
+        # Only keep intersection of dataframe columns and target field paths
+        df = df[
+            df.columns & [field_path.string_path for field_path in target_field_paths]
+        ]
+        # Turn the filtered results back into a list of dictionaries
+        filtered_flattened_results: List[Dict[str, Optional[Any]]] = df.to_dict(
+            orient="records"
+        )
+        for row in filtered_flattened_results:
+            # For each row, unflatten the dictionary
+            filtered_access_results[node_address].append(unflatten_dict(row))
 
     return filtered_access_results

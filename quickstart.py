@@ -456,7 +456,7 @@ def print_results(request_id: str) -> None:
 
     count = 0
     max_allowed_waiting = 10
-    while not os.path.exists(results_path) or count > max_allowed_waiting:
+    while not os.path.exists(results_path) and count < max_allowed_waiting:
         logger.info("Waiting for privacy request results...")
         time.sleep(5)
         count += 1  # Only loop through a reasonable number of times

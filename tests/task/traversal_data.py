@@ -16,6 +16,8 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value
 obj_converter = DataType.object.value
+int_converter = DataType.integer.value
+
 
 def integration_db_mongo_graph(
     db_name: str, connection_key: FidesOpsKey
@@ -34,28 +36,7 @@ def integration_db_mongo_graph(
     return dataset, DatasetGraph(dataset)
 
 
-# TODO will add to combined_mongo_posgresql_graph below when more
-# nested handling has been added
-customer_details_collection = Collection(
-    name="customer_details",
-    fields=[
-        ScalarField(name="_id", primary_key=True),
-        ScalarField(
-            name="customer_id",
-            references=[
-                (FieldAddress("postgres_example", "customer", "id"), "from")
-            ],
-        ),
-        ScalarField(name="gender", data_type_converter=str_converter),
-        ScalarField(name="birthday", data_type_converter=str_converter),
-        ObjectField(name="backup_identities", data_type_converter=obj_converter, fields={
-            "ssn": ScalarField(name="ssn", data_type_converter=str_converter, identity="ssn"),
-            "phone": ScalarField(name="phone", data_type_converter=str_converter, identity="phone_number")
-        }),
-    ]
-)
-
-def combined_mongo_posgresql_graph(
+def combined_mongo_postgresql_graph(
     postgres_config: ConnectionConfig, mongo_config: ConnectionConfig
 ) -> Tuple[Dataset, Dataset]:
     postgres_dataset = integration_db_dataset("postgres_example", postgres_config.key)
@@ -92,9 +73,57 @@ def combined_mongo_posgresql_graph(
             ),
         ],
     )
+
+    mongo_customer_details = Collection(
+        name="customer_details",
+        fields=[
+            ScalarField(name="_id", primary_key=True),
+            ScalarField(
+                name="customer_id",
+                references=[
+                    (FieldAddress("postgres_example", "customer", "id"), "from")
+                ],
+            ),
+            ScalarField(name="gender", data_type_converter=str_converter),
+            ScalarField(name="birthday", data_type_converter=str_converter),
+            ObjectField(name="workplace_info", data_type_converter=obj_converter, fields={
+                "employer": ScalarField(name="employer", data_type_converter=str_converter),
+                "position": ScalarField(name="position", data_type_converter=str_converter)
+            }),
+        ]
+    )
+
+    mongo_customer_feedback = Collection(
+        name="customer_feedback",
+        fields=[
+            ScalarField(name="_id", primary_key=True),
+            ObjectField(name="customer_information", data_type_converter=obj_converter, fields={
+                "email": ScalarField(name="email", data_type_converter=str_converter, identity="email"),
+                "phone": ScalarField(name="phone", data_type_converter=str_converter),
+                "internal_customer_id": ScalarField(name="internal_customer_id", data_type_converter=str_converter)
+            }),
+            ScalarField(name="rating", data_type_converter=int_converter),
+            ScalarField(name="date", data_type_converter=str_converter),
+            ScalarField(name="message", data_type_converter=str_converter),
+        ]
+    )
+
+    mongo_internal_customer_profile = Collection(
+        name="internal_customer_profile",
+        fields=[
+            ScalarField(name="_id", primary_key=True),
+            ObjectField(name="customer_identifiers", data_type_converter=obj_converter, fields={
+                "internal_id": ScalarField(name="internal_id", data_type_converter=str_converter, references=[
+                    (FieldAddress("mongo_test", "customer_feedback", "customer_information", "internal_customer_id"), "from")
+                ],),
+            }),
+            ScalarField(name="derived_interests", data_type_converter=str_converter),
+    ]
+    )
+
     mongo_dataset = Dataset(
         name="mongo_test",
-        collections=[mongo_addresses, mongo_orders],
+        collections=[mongo_addresses, mongo_orders, mongo_customer_details, mongo_customer_feedback, mongo_internal_customer_profile],
         connection_key=mongo_config.key,
     )
 

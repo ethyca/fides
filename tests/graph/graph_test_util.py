@@ -13,7 +13,7 @@ from fidesops.graph.traversal import Traversal, Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.service.connectors import BaseConnector
+from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -27,11 +27,6 @@ class MockResources(TaskResources):
     def __init__(self, request: PrivacyRequest):
         super().__init__(request, Policy(), [])
 
-    # def cache_store_object(self, *values: Any) -> None:
-    #     print(f"caching values = {values}")
-    #
-    # def db_store(self, value: str) -> None:
-    #     print(f"db store {value}")
     def get_connector(self, key: FidesOpsKey) -> Any:
         return MockSqlConnector()
 
@@ -58,6 +53,10 @@ class MockSqlTask(GraphTask):
     def connector(self) -> BaseConnector:
         return MockSqlConnector(ConnectionConfig())
 
+
+class MockMongoTask(GraphTask):
+    def connector(self) -> BaseConnector:
+        return MongoDBConnector(ConnectionConfig())
 
 #  -------------------------------------------
 #   test utility functions
@@ -127,11 +126,16 @@ def generate_node(dr_name: str, ds_name: str, *field_names: str) -> Node:
     return Node(dr, ds)
 
 
-def field(dataresources: List[Dataset], address: Tuple[str, str, str]) -> ScalarField:
-
+def field(dataresources: List[Dataset], *address: str) -> ScalarField:
+    """Test util to access a particular field - can access a nested field one level deep"""
     dr: Dataset = next(dr for dr in dataresources if dr.name == address[0])
     ds: Collection = next(ds for ds in dr.collections if ds.name == address[1])
-    df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[2])
+
+    try:
+        # Assuming object field with at most one level - get ScalarField out of object field
+        df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[3])
+    except:
+        df: ScalarField = next(df for df in ds.field_dict.values() if df.name == address[2])
     return df
 
 
@@ -205,7 +209,7 @@ def generate_binary_tree_resources(
 
     queue = [root]
     resources = [root]
-    field(resources, ("root", "ds", "f1")).identity = "email"
+    field(resources, "root", "ds", "f1").identity = "email"
     level = 1
     while queue:
         next_node = queue.pop()
@@ -222,7 +226,7 @@ def generate_binary_tree_resources(
             resources.append(next_child)
             if level < num_levels:
                 queue.insert(0, next_child)
-            field(resources, (next_dr_name, next_ds_name, "f1")).references.append(
+            field(resources, next_dr_name, next_ds_name, "f1").references.append(
                 (FieldAddress(*next_child_key), None)
             )
         level += 1
@@ -234,7 +238,7 @@ def generate_fully_connected_resources(size: int) -> List[Dataset]:
 
     def connect(r1: Dataset, r2: Dataset) -> None:
         field(
-            [r1], (r1.name, r1.collections[0].name, random.choice(["f1", "f2", "f3"]))
+            [r1], r1.name, r1.collections[0].name, random.choice(["f1", "f2", "f3"])
         ).references.append(
             (
                 FieldAddress(

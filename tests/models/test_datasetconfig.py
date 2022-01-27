@@ -103,18 +103,18 @@ def test_convert_dataset_to_graph(example_datasets):
 
     # check that primary key member has been set
     assert (
-        field([graph], ("postgres_example_test_dataset", "address", "id")).primary_key
+        field([graph], "postgres_example_test_dataset", "address", "id").primary_key
         is True
     )
     assert (
-        field([graph], ("postgres_example_test_dataset", "customer", "id")).primary_key
+        field([graph], "postgres_example_test_dataset", "customer", "id").primary_key
         is True
     )
     assert (
-        field([graph], ("postgres_example_test_dataset", "employee", "id")).primary_key
+        field([graph], "postgres_example_test_dataset", "employee", "id").primary_key
         is True
     )
     assert (
-        field([graph], ("postgres_example_test_dataset", "visit", "email")).primary_key
+        field([graph], "postgres_example_test_dataset", "visit", "email").primary_key
         is False
     )
