@@ -58,14 +58,14 @@ policy:
 
 ## Respecting Biometric PII
 
-```yaml title="policy.yml"
+```yaml title="biometric_data_policy.yml"
 policy:
   - fides_key: biometric_data_policy
-    name: Biometric Data Policy
+    name: Biometric Data
     description: Policy that describes valid uses of biometric and health data.
     rules:
       - name: Disallow Biometrics for Profit.
-        description: Disallow biometric data being used for profit-related use-cases.
+        description: Disallow the use of biometric data for profit-related purposes.
         data_categories:
           matches: ANY # If any of these data categories are being used
           values:
@@ -88,7 +88,7 @@ policy:
 
 ## Anonymous Derived User Contact Data
 
-```yaml title="policy.yml"
+```yaml title="protect_derived_user_data_policy.yml"
 policy:
   - fides_key: protect_derived_user_data
     name: Protect Derived User Data
@@ -107,6 +107,6 @@ policy:
           matches: ANY # And the data subject is a customer
           values:
             - customer
-        # And the data is either unlinked_pseudonymized or more identifiable, trigger a violation
+        # And the data is either unlinked_pseudonymized or more identifiable
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized
 ```
