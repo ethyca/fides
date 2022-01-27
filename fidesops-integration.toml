@@ -21,6 +21,7 @@ PORT=3306
 
 [redshift]
 external_uri=""
+db_schema=""
 
 [snowflake]
 external_uri=""

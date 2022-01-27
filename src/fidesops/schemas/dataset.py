@@ -132,21 +132,32 @@ class FidesopsDatasetField(DatasetField):
         return _valid_data_categories(v)
 
     @validator("fields")
-    def validate_field_with_subfields_is_properly_typed(
+    def validate_object_fields(
         cls,
         fields: Optional[List["FidesopsDatasetField"]],
         values: Dict[str, Any],
     ) -> Optional[List["FidesopsDatasetField"]]:
-        """If there are sub-fields specified, type should be either empty or 'object'"""
-        data_type_str = None
+        """Two validation checks for object fields:
+        - If there are sub-fields specified, type should be either empty or 'object'
+        - Additionally object fields cannot have data_categories.
+        """
+        declared_data_type = None
+
         if values["fidesops_meta"]:
-            data_type_str = values["fidesops_meta"].data_type
-        if fields and data_type_str:
-            data_type, _ = parse_data_type_string(data_type_str)
+            declared_data_type = values["fidesops_meta"].data_type
+
+        if fields and declared_data_type:
+            data_type, _ = parse_data_type_string(declared_data_type)
             if data_type != "object":
                 raise InvalidDataTypeValidationError(
                     f"The data type {data_type} is not compatible with specified sub-fields."
                 )
+
+        if (fields or declared_data_type == "object") and values.get("data_categories"):
+            raise ValueError(
+                "Object fields cannot have specified data_categories. Specify category on sub-field instead"
+            )
+
         return fields
 
 

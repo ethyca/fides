@@ -1,10 +1,14 @@
+import pydantic
 import pytest
 
+from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import *
 from fidesops.graph.data_type import (
     IntTypeConverter,
     StringTypeConverter,
-    BooleanTypeConverter, NoOpTypeConverter, ObjectTypeConverter,
+    BooleanTypeConverter,
+    NoOpTypeConverter,
+    ObjectTypeConverter,
 )
 
 
@@ -88,9 +92,7 @@ class TestCollection:
                     name="f2", references=[(FieldAddress("d", "e", "f"), None)]
                 ),
                 ScalarField(name="f3"),
-                ObjectField(name="f4", fields={
-                    "f5": ScalarField(name="f5")
-                })
+                ObjectField(name="f4", fields={"f5": ScalarField(name="f5")}),
             ],
         )
 
@@ -100,6 +102,13 @@ class TestCollection:
             FieldPath("f3"): ds.fields[2],
             FieldPath("f4"): ds.fields[3],
             FieldPath("f4", "f5"): ds.fields[3].fields["f5"],
+        }
+
+        assert ds.top_level_field_dict == {
+            FieldPath("f1"): ds.fields[0],
+            FieldPath("f2"): ds.fields[1],
+            FieldPath("f3"): ds.fields[2],
+            FieldPath("f4"): ds.fields[3],
         }
 
     def test_collection_field(self):
@@ -117,12 +126,16 @@ class TestCollection:
                 ScalarField(name="f1", identity="email"),
                 ScalarField(name="f2", identity="id"),
                 ScalarField(name="f3"),
-                ObjectField(name="f4", fields={
-                    "f5": ScalarField(name="f5", identity="ssn")
-                })
+                ObjectField(
+                    name="f4", fields={"f5": ScalarField(name="f5", identity="ssn")}
+                ),
             ],
         )
-        assert ds.identities() == {FieldPath("f1"): "email", FieldPath("f2"): "id", FieldPath("f4", "f5"): "ssn"}
+        assert ds.identities() == {
+            FieldPath("f1"): "email",
+            FieldPath("f2"): "id",
+            FieldPath("f4", "f5"): "ssn",
+        }
 
     def test_collection_references(self) -> None:
         ds = Collection(
@@ -139,11 +152,17 @@ class TestCollection:
                     name="f2", references=[(FieldAddress("d", "e", "f"), None)]
                 ),
                 ScalarField(name="f3"),
-                ObjectField(name="f4", fields={
-                    "f5": ScalarField(name="f5", references=[
-                        (FieldAddress("g", "h", "i", "j"), None),
-                    ])
-                })
+                ObjectField(
+                    name="f4",
+                    fields={
+                        "f5": ScalarField(
+                            name="f5",
+                            references=[
+                                (FieldAddress("g", "h", "i", "j"), None),
+                            ],
+                        )
+                    },
+                ),
             ],
         )
         assert ds.references() == {
@@ -152,7 +171,7 @@ class TestCollection:
                 (FieldAddress("a", "b", "d"), None),
             ],
             FieldPath("f2"): [(FieldAddress("d", "e", "f"), None)],
-            FieldPath("f4", "f5"): [(FieldAddress("g", "h", "i", "j"), None)]
+            FieldPath("f4", "f5"): [(FieldAddress("g", "h", "i", "j"), None)],
         }
 
     def test_directional_references(self) -> None:
@@ -246,7 +265,7 @@ class TestField:
         )
         object_field = generate_field(
             name="obj",
-            data_categories=["category"],
+            data_categories=[],
             identity="identity",
             data_type_name="object",
             references=[],
@@ -257,7 +276,7 @@ class TestField:
         )
         object_array_field = generate_field(
             name="obj_a",
-            data_categories=["category"],
+            data_categories=[],
             identity="identity",
             data_type_name="string",
             references=[],
@@ -283,16 +302,22 @@ class TestField:
         assert object_array_field.fields["obj"] == object_field
 
     def test_field_data_type(self):
-        field = ScalarField(name="string test", data_type_converter=StringTypeConverter())
+        field = ScalarField(
+            name="string test", data_type_converter=StringTypeConverter()
+        )
         assert field.data_type() == "string"
 
         field = ScalarField(name="integer test", data_type_converter=IntTypeConverter())
         assert field.data_type() == "integer"
 
-        field = ScalarField(name="integer test", data_type_converter=NoOpTypeConverter())
-        assert field.data_type() == 'None'
+        field = ScalarField(
+            name="integer test", data_type_converter=NoOpTypeConverter()
+        )
+        assert field.data_type() == "None"
 
-        field = ObjectField(name="integer test", data_type_converter=ObjectTypeConverter(), fields=[])
+        field = ObjectField(
+            name="integer test", data_type_converter=ObjectTypeConverter(), fields=[]
+        )
         assert field.data_type() == "object"
 
     def test_field_collect_matching(self):
@@ -320,8 +345,8 @@ class TestField:
 
         street_field = ObjectField(
             name="street",
+            data_categories=[],
             primary_key=False,
-            data_categories=["user.provided.identifiable.contact.street"],
             fields={
                 "street_address": street_address_sub_field,
                 "apt_no": apt_no_sub_field,
@@ -331,7 +356,7 @@ class TestField:
 
         contact_info_field = ObjectField(
             name="contact",
-            data_categories=["user.provided.identifiable.contact.street"],
+            data_categories=[],
             fields={"address": street_field},
         )
 
@@ -340,13 +365,11 @@ class TestField:
                 field.data_categories or []
             )
 
-        # ObjectField collect_matching
+        # ObjectField collect_matching - nested fields selected.
         results = contact_info_field.collect_matching(is_street_category)
         assert results == {
             FieldPath("contact", "street", "street_address"): street_address_sub_field,
             FieldPath("contact", "street", "apartment_no"): apt_no_sub_field,
-            FieldPath("contact", "street"): street_field,
-            FieldPath("contact"): contact_info_field,
         }
 
         # ScalarField collect_matching
@@ -354,6 +377,27 @@ class TestField:
         assert apt_no_sub_field.collect_matching(is_street_category) == {
             FieldPath("apartment_no"): apt_no_sub_field
         }
+
+    def test_generate_object_field_with_data_categories(self):
+        apt_no_sub_field = ScalarField(
+            name="apartment_no",
+            primary_key=False,
+            data_type_converter=IntTypeConverter(),
+            data_categories=["user.provided.identifiable.contact.street"],
+        )
+
+        with pytest.raises(pydantic.error_wrappers.ValidationError):
+            generate_field(
+                name="obj",
+                data_categories=["A.B.C"],
+                identity="identity",
+                data_type_name="object",
+                references=[],
+                is_pk=False,
+                length=0,
+                is_array=False,
+                sub_fields=[apt_no_sub_field],
+            )
 
 
 class TestFieldPath:
@@ -381,3 +425,17 @@ class TestFieldPath:
     def test_parse(self):
         assert FieldPath.parse("a") == FieldPath("a")
         assert FieldPath.parse("a.b.c.d.e") == FieldPath("a", "b", "c", "d", "e")
+
+    def test_retrieve_from(self):
+        input_data = {"A": {"B": {"C": 2}}}
+
+        assert FieldPath("A").retrieve_from(input_data) == {"B": {"C": 2}}
+
+        assert FieldPath("A", "B").retrieve_from(input_data) == {"C": 2}
+        assert FieldPath("A", "B", "C").retrieve_from(input_data) == 2
+
+        assert (
+            FieldPath("D").retrieve_from(input_data) is None
+        )  # FieldPath not in input data
+
+        assert FieldPath().retrieve_from(input_data) is None  # No levels specified

@@ -16,18 +16,18 @@ db.customer_details.insert([
         "customer_id": 1,
         "gender": "male",
         "birthday": new ISODate("1988-01-10"),
-        "backup_identities": {
-            "ssn": "111-111-1111",
-            "phone": "333-333-3333"
+        "workplace_info": {
+            "employer": "Mountain Baking Company",
+            "position": "Chief Strategist"
         }
     },
      {
         "customer_id": 2,
         "gender": "female",
         "birthday": new ISODate("1985-03-05"),
-        "backup_identities": {
-            "ssn": "222-222-2222",
-            "phone": "444-444-4444"
+        "workplace_info": {
+            "employer": "Incline Software Company",
+            "position": "Software Engineer"
         }
     },
     {
@@ -37,6 +37,43 @@ db.customer_details.insert([
     }
 ]);
 
+db.customer_feedback.insert([
+    {
+        "customer_information": {
+            "email": "customer-1@example.com",
+            "phone": "333-333-3333",
+            "internal_customer_id": "cust_001"
+        },
+        "rating": 3,
+        "date": new ISODate("2022-01-05"),
+        "message": "Customer service wait times have increased to over an hour."
+    },
+    {
+        "customer_information": {
+            "email": "customer-2@example.com",
+            "phone": "111-111-1111",
+            "internal_customer_id": "cust_002"
+        },
+        "rating": 5,
+        "date": new ISODate("2022-01-10"),
+        "message": "Customer service rep was very helpful and answered all my questions."
+    }
+])
+
+db.internal_customer_profile.insert([
+    {
+        "customer_identifiers": {
+            "internal_id": "cust_001"
+        },
+        "derived_interests": ["marketing", "food"]
+    },
+    {
+         "customer_identifiers": {
+            "internal_id": "cust_002"
+        },
+        "derived_interests": ["programming", "hiking", "skateboarding"]
+    }
+])
 
 db.employee.insert([
     {

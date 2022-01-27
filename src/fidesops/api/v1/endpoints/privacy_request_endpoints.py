@@ -23,7 +23,11 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
 )
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
-from fidesops.common_exceptions import TraversalError, NoSuchStrategyException
+from fidesops.common_exceptions import (
+    TraversalError,
+    NoSuchStrategyException,
+    ValidationError,
+)
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
@@ -358,7 +362,8 @@ def get_request_preview_queries(
     db: Session = Depends(deps.get_db),
     dataset_keys: Optional[List[str]] = Body(None),
 ) -> List[DryRunDatasetResponse]:
-    """Returns dry run queries given a list of dataset ids"""
+    """Returns dry run queries given a list of dataset ids.  If a dataset references another dataset, both dataset
+    keys must be in the request body."""
     dataset_configs: List[DatasetConfig] = []
     if not dataset_keys:
         dataset_configs = DatasetConfig.all(db=db)
@@ -384,9 +389,15 @@ def get_request_preview_queries(
             for dataset in dataset_configs
         ]
 
-        dataset_graph: DatasetGraph = DatasetGraph(
-            *[dataset.get_graph() for dataset in dataset_configs]
-        )
+        try:
+            dataset_graph: DatasetGraph = DatasetGraph(
+                *[dataset.get_graph() for dataset in dataset_configs]
+            )
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"{exc}. Make sure all referenced datasets are included in the request body.",
+            )
 
         identity_seed: Dict[str, str] = {
             k: "something" for k in dataset_graph.identity_keys.values()

@@ -15,6 +15,7 @@ from fidesops.graph.config import (
     Field,
     FieldPath,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +227,9 @@ class DatasetGraph:
         }
 
     @property
-    def data_category_field_mapping(self) -> Dict[str, Dict[str, List[FieldPath]]]:
+    def data_category_field_mapping(
+        self,
+    ) -> Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]]:
         """
         Maps the data_categories for each traversal_node to a list of field paths that have that
         same data category.
@@ -243,11 +246,11 @@ class DatasetGraph:
         }
 
         """
-        mapping: Dict[str, Dict[str, List[FieldPath]]] = defaultdict(
-            lambda: defaultdict(list)
-        )
+        mapping: Dict[
+            CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]
+        ] = defaultdict(lambda: defaultdict(list))
         for node_address, node in self.nodes.items():
-            mapping[str(node_address)] = node.collection.field_paths_by_category
+            mapping[node_address] = node.collection.field_paths_by_category
         return mapping
 
     def __repr__(self) -> str:

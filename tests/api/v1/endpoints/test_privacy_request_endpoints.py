@@ -15,12 +15,14 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     REQUEST_PREVIEW,
     PRIVACY_REQUEST_RESUME,
+    DATASETS,
 )
 from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    DATASET_CREATE_OR_UPDATE,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.models.privacy_request import (
@@ -817,6 +819,58 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
+
+    def test_request_preview_incorrect_body(
+        self,
+        dataset_config_preview,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        example_datasets,
+        mongo_connection_config,
+        connection_config,
+    ) -> None:
+        path = V1_URL_PREFIX + DATASETS
+        path_params = {"connection_key": mongo_connection_config.key}
+        datasets_url = path.format(**path_params)
+
+        # Use the dataset endpoint to create the Mongo DatasetConfig
+        api_client.patch(
+            datasets_url,
+            headers=generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE]),
+            json=[example_datasets[1]],
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        data = [
+            example_datasets[1]["fides_key"]
+        ]  # Mongo dataset that references a postgres dataset
+        response = api_client.put(url, headers=auth_header, json=data)
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"]
+            == "Referred to object postgres_example_test_dataset:customer:id does not "
+            "exist. Make sure all referenced datasets are included in the request body."
+        )
+
+        # Use the dataset endpoint to create the Postgres DatasetConfig
+        api_client.patch(
+            datasets_url,
+            headers=generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE]),
+            json=[example_datasets[0]],
+        )
+
+        # Preview still 400's, because both dataset fideskeys aren't included in the response
+        response = api_client.put(url, headers=auth_header, json=data)
+        assert response.status_code == 400
+
+        # Preview returns a 200, because both dataset keys are in the request body
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json=[example_datasets[0]["fides_key"], example_datasets[1]["fides_key"]],
+        )
+        assert response.status_code == 200
 
     def test_request_preview_all(
         self,

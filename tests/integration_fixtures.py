@@ -1,5 +1,6 @@
 import logging
 import random
+from datetime import datetime
 from typing import Dict, Any, List
 from uuid import uuid4
 
@@ -24,19 +25,19 @@ def generate_integration_records():
         "customer": [
             {
                 "id": 10000,
-                "email": faker.email(),
+                "email": "test_one@example.com",
                 "name": faker.name(),
                 "address_id": 1000,
             },
             {
                 "id": 10001,
-                "email": faker.email(),
+                "email": "test_two@example.com",
                 "name": faker.name(),
                 "address_id": 1001,
             },
             {
                 "id": 10002,
-                "email": faker.email(),
+                "email": "test_three@example.com",
                 "name": faker.name(),
                 "address_id": 1002,
             },
@@ -188,9 +189,80 @@ def mongo_delete(
     return collection.delete_many({"id": {"$in": [record["id"] for record in records]}})
 
 
+def generate_mongo_specific_records():
+    """These records are generated for mongo erasure tests where we mask some of the data as part of the test"""
+    return {
+        "customer_details": [
+            {
+                "id": "001",
+                "customer_id": 10000,
+                "gender": "male",
+                "birthday": datetime(1988, 1, 10),
+                "workplace_info": {
+                    "employer": "Mountain Baking Company",
+                    "position": "Chief Strategist",
+                },
+            },
+            {
+                "id": "002",
+                "customer_id": 10001,
+                "gender": "female",
+                "birthday": datetime(1985, 3, 5),
+                "workplace_info": {
+                    "employer": "Incline Software Company",
+                    "position": "Software Engineer",
+                },
+            },
+            {
+                "id": "003",
+                "customer_id": 10002,
+                "gender": "female",
+                "birthday": datetime(1990, 2, 28),
+            },
+        ],
+        "customer_feedback": [
+            {
+                "id": "feed_1",
+                "customer_information": {
+                    "email": "test_one@example.com",
+                    "phone": "333-333-3333",
+                    "internal_customer_id": "cust_004",
+                },
+                "rating": 3,
+                "date": datetime(2022, 1, 5),
+                "message": "Customer service wait times have increased to over an hour.",
+            },
+            {
+                "id": "feed_2",
+                "customer_information": {
+                    "email": "test_two@example.com",
+                    "phone": "111-111-1111",
+                    "internal_customer_id": "cust_005",
+                },
+                "rating": 5,
+                "date": datetime(2022, 1, 10),
+                "message": "Customer service rep was very helpful and answered all my questions.",
+            },
+        ],
+        "internal_customer_profile": [
+            {
+                "id": "prof_1",
+                "customer_identifiers": {"internal_id": "cust_004"},
+                "derived_interests": ["marketing", "food"],
+            },
+            {
+                "id": "prof_2",
+                "customer_identifiers": {"internal_id": "cust_005"},
+                "derived_interests": ["programming", "hiking", "skateboarding"],
+            },
+        ],
+    }
+
+
 @pytest.fixture(scope="function")
 def mongo_inserts(integration_mongodb_connector):
     records = generate_integration_records()
+    records.update(generate_mongo_specific_records())
     for table_name, record_list in records.items():
         mongo_delete(
             integration_mongodb_connector, "mongo_test", table_name, record_list

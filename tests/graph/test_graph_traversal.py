@@ -10,13 +10,13 @@ from .graph_test_util import *
 
 def test_graph_creation() -> None:
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), "to")
     )
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "x"
+    field(t, "dr_1", "ds_1", "f1").identity = "x"
     graph = DatasetGraph(*t)
     assert set(graph.nodes.keys()) == {
         CollectionAddress("dr_1", "ds_1"),
@@ -33,13 +33,13 @@ def test_graph_creation() -> None:
 def test_extract_seed_nodes() -> None:
     # TEST INIT:
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "x"
+    field(t, "dr_1", "ds_1", "f1").identity = "x"
     graph: DatasetGraph = DatasetGraph(*t)
 
     assert set(graph.nodes.keys()) == {
@@ -72,11 +72,11 @@ def test_extract_seed_nodes() -> None:
 def test_catch_unreachable_node_collection_before() -> None:
     # test with before collection
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
     collection(t, CollectionAddress("dr_1", "ds_1")).after.add(
@@ -96,11 +96,11 @@ def test_catch_unreachable_node_collection_before() -> None:
 def test_catch_unreachable_node_dataresource_before() -> None:
     # test with before data dataset
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
 
@@ -115,11 +115,11 @@ def test_catch_unreachable_node_dataresource_before() -> None:
 def test_catch_unreachable_node_mixed_before() -> None:
     # test with before data dataset
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
 
@@ -137,14 +137,14 @@ def test_catch_unreachable_node_mixed_before() -> None:
 
 def test_catch_unreachable_node_no_link() -> None:
     t = generate_graph_resources(5)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
     # no links to traversal_node 4, 5
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
 
     with pytest.raises(TraversalError):
         generate_traversal({"email": "a"}, *t)
@@ -152,10 +152,10 @@ def test_catch_unreachable_node_no_link() -> None:
 
 def test_catch_invalid_reference_error() -> None:
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("I_dont_exist", "x", "y"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
 
     with pytest.raises(ValidationError):
         generate_traversal({"email": "a"}, *t)
@@ -163,10 +163,10 @@ def test_catch_invalid_reference_error() -> None:
 
 def test_self_reference_error() -> None:
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_1", "ds_1", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
 
     with pytest.raises(ValidationError):
         generate_traversal({"email": "a"}, *t)
@@ -180,7 +180,7 @@ def test_self_reference_error() -> None:
 def test_fully_connected() -> None:
     """generate some fully connected graphs and assure that we generate a valid traversal"""
     t = generate_fully_connected_resources(25)
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
     generate_traversal({"email": "X"}, *t)  # should generate exception on unreachable
 
 
@@ -212,18 +212,34 @@ def test_tree_1() -> None:
             ),
         ],
     )
+    t4 = Collection(
+        name="t4",
+        fields=[
+            ObjectField(
+                name="f4",
+                fields={
+                    "f5": ScalarField(name="f5", identity="email"),
+                    "f6": ScalarField(name="f6"),
+                },
+            )
+        ],
+    )
     seed = {"email": "foo@bar.com"}
     traversal_map, terminators = generate_traversal(
         seed,
         Dataset(
             name="s1",
-            collections=[t1, t2, t3],
+            collections=[t1, t2, t3, t4],
             connection_key="mock_connection_config_key",
         ),
     )
 
     assert traversal_map == {
-        "__ROOT__:__ROOT__": {"from": {}, "to": {"s1:t1": {"email -> f2"}}},
+        "__ROOT__:__ROOT__": {
+            "from": {},
+            "to": {"s1:t4": {"email -> f4.f5"}, "s1:t1": {"email -> f2"}},
+        },
+        "s1:t4": {"from": {"__ROOT__:__ROOT__": {"email -> f4.f5"}}, "to": {}},
         "s1:t1": {
             "from": {"__ROOT__:__ROOT__": {"email -> f2"}},
             "to": {"s1:t2": {"f3 -> f1"}},
@@ -231,21 +247,25 @@ def test_tree_1() -> None:
         "s1:t2": {"from": {"s1:t1": {"f3 -> f1"}}, "to": {"s1:t3": {"f1 -> f3"}}},
         "s1:t3": {"from": {"s1:t2": {"f1 -> f3"}}, "to": {}},
     }
-    assert terminators == [CollectionAddress("s1", "t3")]
+
+    assert set(terminators) == {
+        CollectionAddress("s1", "t3"),
+        CollectionAddress("s1", "t4"),
+    }
 
 
 def test_traversal_ordering() -> None:
 
     # connect 1 -> 2, 2 <- 3,directional,  -> 3 is unreachable
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), "to")
     )
 
-    field(t, ("dr_3", "ds_3", "f3")).references.append(
+    field(t, "dr_3", "ds_3", "f3").references.append(
         (FieldAddress("dr_2", "ds_2", "f3"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
     with pytest.raises(TraversalError):
         _ = Traversal(DatasetGraph(*t), {"email": "X"})
 
@@ -340,16 +360,16 @@ def test_circular_reference() -> None:
     """Create a graph A->B-C-A"""
 
     t = generate_graph_resources(3)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), "to")
     )
-    field(t, ("dr_2", "ds_2", "f2")).references.append(
+    field(t, "dr_2", "ds_2", "f2").references.append(
         (FieldAddress("dr_3", "ds_3", "f2"), "to")
     )
-    field(t, ("dr_3", "ds_3", "f3")).references.append(
+    field(t, "dr_3", "ds_3", "f3").references.append(
         (FieldAddress("dr_1", "ds_1", "f3"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f2")).identity = "email"
+    field(t, "dr_1", "ds_1", "f2").identity = "email"
     traversal = Traversal(DatasetGraph(*t), {"email": "X"})
     traversal_map, terminators = traversal.traversal_map()
     assert traversal_map == {
@@ -380,16 +400,16 @@ def test_circular_reference() -> None:
 
 def test_multiple_field_links() -> None:
     t = generate_graph_resources(2)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f2")).references.append(
+    field(t, "dr_1", "ds_1", "f2").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f3")).references.append(
+    field(t, "dr_1", "ds_1", "f3").references.append(
         (FieldAddress("dr_2", "ds_2", "f3"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
     traversal = Traversal(DatasetGraph(*t), {"email": "X"})
 
     assert incoming_edges(traversal, CollectionAddress("dr_1", "ds_1")) == {
@@ -415,19 +435,19 @@ def test_multiple_field_links() -> None:
 def test_tree_splay() -> None:
     """test of tree with one root traversal_node pointing to all end nodes"""
     t = generate_graph_resources(5)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_4", "ds_4", "f1"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_5", "ds_5", "f1"), "to")
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
     traversal = Traversal(DatasetGraph(*t), {"email": "X"})
 
     assert incoming_edges(traversal, CollectionAddress("dr_1", "ds_1")) == {
@@ -556,19 +576,19 @@ def test_variant_traversals() -> None:
 def test_tree_linear() -> None:
     """test of tree with all nodes in a chain"""
     t = generate_graph_resources(5)
-    field(t, ("dr_1", "ds_1", "f1")).references.append(
+    field(t, "dr_1", "ds_1", "f1").references.append(
         (FieldAddress("dr_2", "ds_2", "f1"), None)
     )
-    field(t, ("dr_2", "ds_2", "f1")).references.append(
+    field(t, "dr_2", "ds_2", "f1").references.append(
         (FieldAddress("dr_3", "ds_3", "f1"), None)
     )
-    field(t, ("dr_3", "ds_3", "f1")).references.append(
+    field(t, "dr_3", "ds_3", "f1").references.append(
         (FieldAddress("dr_4", "ds_4", "f1"), None)
     )
-    field(t, ("dr_4", "ds_4", "f1")).references.append(
+    field(t, "dr_4", "ds_4", "f1").references.append(
         (FieldAddress("dr_5", "ds_5", "f1"), None)
     )
-    field(t, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
     traversal = Traversal(DatasetGraph(*t), {"email": "X"})
 
     assert set(incoming_edges(traversal, CollectionAddress("dr_1", "ds_1"))) == {
@@ -612,9 +632,9 @@ def test_tree_linear() -> None:
 def test_tree_binary_tree() -> None:
     """test of tree with all nodes in a chain"""
     t = generate_binary_tree_resources(4, 3)
-    field(t, ("root", "ds", "f1")).identity = "email"
-    field(t, ("root.0.1.0", "ds.0.1.0", "f1")).identity = "ssn"
-    field(t, ("root.1.1", "ds.1.1", "f1")).identity = "user_id"
+    field(t, "root", "ds", "f1").identity = "email"
+    field(t, "root.0.1.0", "ds.0.1.0", "f1").identity = "ssn"
+    field(t, "root.1.1", "ds.1.1", "f1").identity = "user_id"
     assert generate_traversal({"email": "X"}, *t)
     assert generate_traversal({"ssn": "X"}, *t)
     assert generate_traversal({"user_id": "X"}, *t)
@@ -622,14 +642,14 @@ def test_tree_binary_tree() -> None:
 
 def test_after_collection() -> None:
     t1 = generate_fully_connected_resources(5)
-    field(t1, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t1, "dr_1", "ds_1", "f1").identity = "email"
     collection(t1, CollectionAddress("dr_2", "ds_2")).after.add(
         CollectionAddress("dr_5", "ds_5")
     )
     j1 = generate_traversal({"email": "1"}, *t1)
 
     t2 = generate_fully_connected_resources(5)
-    field(t2, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t2, "dr_1", "ds_1", "f1").identity = "email"
     collection(t2, CollectionAddress("dr_5", "ds_5")).after.add(
         CollectionAddress("dr_2", "ds_2")
     )
@@ -640,12 +660,12 @@ def test_after_collection() -> None:
 
 def test_after_dataresource() -> None:
     t1 = generate_fully_connected_resources(5)
-    field(t1, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t1, "dr_1", "ds_1", "f1").identity = "email"
     dataresource(t1, "dr_2").after.add("dr_5")
     j1 = generate_traversal({"email": "1"}, *t1)
 
     t2 = generate_fully_connected_resources(5)
-    field(t2, ("dr_1", "ds_1", "f1")).identity = "email"
+    field(t2, "dr_1", "ds_1", "f1").identity = "email"
     dataresource(t2, "dr_5").after.add("dr_2")
     j2 = generate_traversal({"email": "1"}, *t2)
 
@@ -654,10 +674,10 @@ def test_after_dataresource() -> None:
 
 def test_different_seed_alters_traversal() -> None:
     t1 = generate_fully_connected_resources(5)
-    field(t1, ("dr_1", "ds_1", "f1")).identity = "email"
-    field(t1, ("dr_2", "ds_2", "f1")).identity = "user_id"
-    field(t1, ("dr_3", "ds_3", "f1")).identity = "ssn"
-    field(t1, ("dr_4", "ds_4", "f1")).identity = "email"
+    field(t1, "dr_1", "ds_1", "f1").identity = "email"
+    field(t1, "dr_2", "ds_2", "f1").identity = "user_id"
+    field(t1, "dr_3", "ds_3", "f1").identity = "ssn"
+    field(t1, "dr_4", "ds_4", "f1").identity = "email"
     graph = DatasetGraph(*t1)
     # the number of the start nodes (that is, the children of the virtul
     # root traversal_node) in a traversal will = the # of nodes whose identities
