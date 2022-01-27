@@ -46,8 +46,9 @@ policy:
         data_uses:
           matches: OTHER # And the use of the data is something other than...
           values:
-            - provide.system
+            - provide.system.operations
             - improve.system
+            - collect
         data_subjects:
           matches: ANY # And the data subject is an employee
           values:
@@ -69,7 +70,8 @@ policy:
         data_categories:
           matches: ANY # If any of these data categories are being used
           values:
-            - user.derived.identifiable.biometric_health
+            - user.derived
+            - user.provided.identifiable.credentials.biometric_credentials
             - user.provided.identifiable.biometric
         data_uses:
           matches: ANY # And the use of the data is for any of the following...
@@ -99,7 +101,8 @@ policy:
         data_categories:
           matches: ANY # If any of these data categories are being used
           values:
-            - user.derived.identifiable.biometric_health
+            - user
+            - account
         data_uses:
           matches: NONE # And for any data use
           values: []
@@ -108,5 +111,5 @@ policy:
           values:
             - customer
         # And the data is either unlinked_pseudonymized or more identifiable
-        data_qualifier: aggregated.anonymized.unlinked_pseudonymized
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 ```

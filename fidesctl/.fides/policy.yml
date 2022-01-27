@@ -19,7 +19,7 @@ policy:
             - anonymous_user
         data_qualifier: aggregated
   - fides_key: data_sharing_policy
-    name: Data Sharing Policy
+    name: Data Sharing
     description: The privacy policy that governs sharing of data with third parties.
     rules:
       - name: Disallow Third-Party Marketing
@@ -28,14 +28,13 @@ policy:
           matches: ANY # If any of these data categories are being used
           values:
             - account
-            - user.derived.identifiable
-            - user.provided.identifiable
-        data_uses: # And the use of the data is for third-party sharing
-          matches: ANY
+            - user
+        data_uses:
+          matches: ANY # And the use of the data is for third-party sharing
           values:
             - third_party_sharing
         data_subjects:
-          matches: ANY # And the data subject is customer data
+          matches: ANY # And the data subject is a customer
           values:
             - customer
         # And the data is identifiable, trigger a violation
