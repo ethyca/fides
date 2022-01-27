@@ -8,21 +8,6 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 
-# These URLs are for the databases in the docker-compose.integration-tests.yml file
-POSTGRES_URL = (
-    "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
-)
-
-MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
-
-MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
-MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
-MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
-
-# External databases require credentials passed through environment variables
-SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
-SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(os.getenv('SNOWFLAKE_FIDESCTL_PASSWORD', ""))
-
 def create_server_datasets(test_config, datasets: List[Dataset]):
     for dataset in datasets:
         api.delete(
@@ -180,7 +165,10 @@ def test_find_uncategorized_dataset_fields_all_categorized():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert not uncategorized_keys
@@ -208,7 +196,10 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
             )
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.2"}
@@ -233,7 +224,10 @@ def test_find_uncategorized_dataset_fields_missing_field():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.bar.5"}
@@ -262,7 +256,10 @@ def test_find_uncategorized_dataset_fields_missing_collection():
             ),
         ],
     )
-    uncategorized_keys, total_field_count = generate_dataset.find_uncategorized_dataset_fields(
+    (
+        uncategorized_keys,
+        total_field_count,
+    ) = generate_dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
@@ -276,333 +273,161 @@ def test_unsupported_dialect_error():
         generate_dataset.generate_dataset(test_url, "test_file.yml")
 
 
-@pytest.mark.postgres
-class TestPostgres:
-    EXPECTED_COLLECTION = {
-        "public": {
-            "public.visit": ["email", "last_visit"],
-            "public.login": ["id", "customer_id", "time"],
-        }
-    }
+# Generate Dataset Database Integration Tests
 
-    @pytest.fixture(scope="class", autouse=True)
-    def postgres_setup(self):
-        "Set up the Postgres Database for testing."
-        engine = sqlalchemy.create_engine(POSTGRES_URL)
-        with open("tests/data/example_sql/postgres_example.sql", "r") as query_file:
-            query = sqlalchemy.sql.text(query_file.read())
-        engine.execute(query)
-        yield
+# These URLs are for the databases in the docker-compose.integration-tests.yml file
+POSTGRES_URL = (
+    "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
+)
 
-    @pytest.mark.integration
-    def test_get_db_tables_postgres(self):
-        engine = sqlalchemy.create_engine(POSTGRES_URL)
-        actual_result = generate_dataset.get_postgres_collections_and_fields(engine)
-        assert actual_result == TestPostgres.EXPECTED_COLLECTION
+MYSQL_URL = "mysql+pymysql://mysql_user:mysql_pw@mysql-test:3306/mysql_example"
 
-    @pytest.mark.integration
-    def test_generate_dataset_postgres(self, tmpdir):
-        actual_result = generate_dataset.generate_dataset(
-            POSTGRES_URL, f"{tmpdir}/test_file.yml"
-        )
-        assert actual_result
+MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:SQLserver1@sqlserver-test:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
+MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
+MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
-    @pytest.mark.integration
-    def test_generate_dataset_passes_postgres(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestPostgres.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=POSTGRES_URL,
-            manifest_dir="",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
+# External databases require credentials passed through environment variables
+SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
+SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(
+    os.getenv("SNOWFLAKE_FIDESCTL_PASSWORD", "")
+)
 
-    @pytest.mark.integration
-    def test_generate_dataset_coverage_failure_postgres(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestPostgres.EXPECTED_COLLECTION
-        )
-        create_server_datasets(test_config, datasets)
-        with pytest.raises(SystemExit):
-            generate_dataset.database_coverage(
-                connection_string=POSTGRES_URL,
-                manifest_dir="",
-                coverage_threshold=100,
-                url=test_config.cli.server_url,
-                headers=test_config.user.request_headers,
-            )
-
-    @pytest.mark.integration
-    def test_dataset_coverage_manifest_passes_postgres(self, test_config, tmpdir):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestPostgres.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-
-        file_name = tmpdir.join("dataset.yml")
-        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
-
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=POSTGRES_URL,
-            manifest_dir=f"{tmpdir}",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
+REDSHIFT_URL_TEMPLATE = "redshift+psycopg2://fidesctl:{}@redshift-cluster-1.cohs2e5eq2e4.us-east-1.redshift.amazonaws.com:5439/fidesctl_test"
+REDSHIFT_URL = REDSHIFT_URL_TEMPLATE.format(os.getenv("REDSHIFT_FIDESCTL_PASSWORD", ""))
 
 
-@pytest.mark.mysql
-class TestMySQL:
-    EXPECTED_COLLECTION = {
-        "mysql_example": {
-            "visit": ["email", "last_visit"],
-            "login": ["id", "customer_id", "time"],
-        }
-    }
+TEST_DATABASE_PARAMETERS = {
+    "postgresql": {
+        "url": POSTGRES_URL,
+        "setup_url": POSTGRES_URL,
+        "init_script_path": "tests/data/example_sql/postgres_example.sql",
+        "is_external": False,
+        "expected_collection": {
+            "public": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
+    "mysql": {
+        "url": MYSQL_URL,
+        "setup_url": MYSQL_URL,
+        "init_script_path": "tests/data/example_sql/mysql_example.sql",
+        "is_external": False,
+        "expected_collection": {
+            "mysql_example": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
+    "mssql": {
+        "url": MSSQL_URL,
+        "setup_url": MASTER_MSSQL_URL,
+        "init_script_path": "tests/data/example_sql/sqlserver_example.sql",
+        "is_external": False,
+        "expected_collection": {
+            "dbo": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
+    "snowflake": {
+        "url": SNOWFLAKE_URL,
+        "setup_url": SNOWFLAKE_URL,
+        "init_script_path": "tests/data/example_sql/snowflake_example.sql",
+        "is_external": True,
+        "expected_collection": {
+            "public": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
+    "redshift": {
+        "url": REDSHIFT_URL,
+        "setup_url": REDSHIFT_URL,
+        "init_script_path": "tests/data/example_sql/redshift_example.sql",
+        "is_external": True,
+        "expected_collection": {
+            "public": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
+}
 
-    @pytest.fixture(scope="class", autouse=True)
-    def mysql_setup(self):
-        """
-        Set up the MySQL Database for testing.
 
-        The query file must have each query on a separate line.
-        """
-        engine = sqlalchemy.create_engine(MYSQL_URL)
-        with open("tests/data/example_sql/mysql_example.sql", "r") as query_file:
-            queries = [query for query in query_file.read().splitlines() if query != ""]
-        print(queries)
-        for query in queries:
-            engine.execute(sqlalchemy.sql.text(query))
-        yield
-
-    @pytest.mark.integration
-    def test_get_db_tables_mysql(self):
-        engine = sqlalchemy.create_engine(MYSQL_URL)
-        actual_result = generate_dataset.get_mysql_collections_and_fields(engine)
-        assert actual_result == TestMySQL.EXPECTED_COLLECTION
-
-    @pytest.mark.integration
-    def test_generate_dataset_mysql(self, tmpdir):
-        actual_result = generate_dataset.generate_dataset(
-            MYSQL_URL, f"{tmpdir}test_file.yml"
-        )
-        assert actual_result
-
-    @pytest.mark.integration
-    def test_generate_dataset_passes_mysql(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestMySQL.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=MYSQL_URL,
-            manifest_dir="",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
-
-    @pytest.mark.integration
-    def test_generate_dataset_coverage_failure_mysql(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestMySQL.EXPECTED_COLLECTION
-        )
-        create_server_datasets(test_config, datasets)
-        with pytest.raises(SystemExit):
-            generate_dataset.database_coverage(
-                connection_string=MYSQL_URL,
-                manifest_dir="",
-                coverage_threshold=100,
-                url=test_config.cli.server_url,
-                headers=test_config.user.request_headers,
-            )
-
-    @pytest.mark.integration
-    def test_dataset_coverage_manifest_passes_mysql(self, test_config, tmpdir):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestMySQL.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-
-        file_name = tmpdir.join("dataset.yml")
-        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
-
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=MYSQL_URL,
-            manifest_dir=f"{tmpdir}",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
-
-@pytest.mark.mssql
-class TestSQLServer:
-    EXPECTED_COLLECTION = {
-        "dbo": {
-            "visit": ["email", "last_visit"],
-            "login": ["id", "customer_id", "time"],
-        }
-    }
-
-    @pytest.fixture(scope="class", autouse=True)
-    def mssql_setup(self):
-        """
-        Set up the SQL Server Database for testing.
-
-        The query file must have each query on a separate line.
-        Initial connection must be done to the master database.
-        """
-        engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
-        with open("tests/data/example_sql/sqlserver_example.sql", "r") as query_file:
-            queries = [query for query in query_file.read().splitlines() if query != ""]
-        print(queries)
-        for query in queries:
-            engine.execute(sqlalchemy.sql.text(query))
-        yield
-
-    @pytest.mark.integration
-    def test_get_db_tables_mssql(self):
-        engine = sqlalchemy.create_engine(MSSQL_URL)
-        actual_result = generate_dataset.get_mssql_collections_and_fields(engine)
-        assert actual_result == TestSQLServer.EXPECTED_COLLECTION
-
-    @pytest.mark.integration
-    def test_generate_dataset_mssql(self, tmpdir):
-        actual_result = generate_dataset.generate_dataset(
-            MSSQL_URL, f"{tmpdir}/test_file.yml"
-        )
-        assert actual_result
-
-    @pytest.mark.integration
-    def test_generate_dataset_passes_mssql(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSQLServer.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=MSSQL_URL,
-            manifest_dir="",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
-
-    @pytest.mark.integration
-    def test_generate_dataset_coverage_failure_mssql(self, test_config):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSQLServer.EXPECTED_COLLECTION
-        )
-        create_server_datasets(test_config, datasets)
-        with pytest.raises(SystemExit):
-            generate_dataset.database_coverage(
-                connection_string=MSSQL_URL,
-                manifest_dir="",
-                coverage_threshold=100,
-                url=test_config.cli.server_url,
-                headers=test_config.user.request_headers,
-            )
-
-    @pytest.mark.integration
-    def test_dataset_coverage_manifest_passes_mssql(self, test_config, tmpdir):
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSQLServer.EXPECTED_COLLECTION
-        )
-        set_field_data_categories(datasets, "system.operations")
-
-        file_name = tmpdir.join("dataset.yml")
-        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
-
-        create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
-            connection_string=MSSQL_URL,
-            manifest_dir=f"{tmpdir}",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
-
-@pytest.mark.snowflake
 @pytest.mark.external
-class TestSnowflake:
-    EXPECTED_COLLECTION = {
-        "public": {
-            "visit": ["email", "last_visit"],
-            "login": ["id", "customer_id", "time"],
-        }
-    }
-
-    @pytest.fixture(scope="class", autouse=True)
-    def snowflake_setup(self):
+@pytest.mark.parametrize("database_type", TEST_DATABASE_PARAMETERS.keys())
+class TestDatabase:
+    @pytest.fixture(scope="function", autouse=True)
+    def database_setup(self, database_type):
         """
-        Set up the Snowflake Database for testing.
+        Set up the Database for testing.
 
         The query file must have each query on a separate line.
-        Initial connection must be done to the master database.
         """
-        engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
-        with open("tests/data/example_sql/snowflake_example.sql", "r") as query_file:
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
+        with open(database_parameters.get("init_script_path"), "r") as query_file:
             queries = [query for query in query_file.read().splitlines() if query != ""]
         print(queries)
         for query in queries:
             engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    @pytest.mark.integration
-    def test_get_db_tables_snowflake(self):
-        engine = sqlalchemy.create_engine(SNOWFLAKE_URL)
-        actual_result = generate_dataset.get_snowfake_collections_and_fields(engine)
-        assert actual_result == TestSnowflake.EXPECTED_COLLECTION
+    def test_get_db_tables(self, request, database_type):
+        print(request.node.get_closest_marker("external"))
+        print(request.keywords)
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        engine = sqlalchemy.create_engine(database_parameters.get("url"))
+        actual_result = generate_dataset.get_db_collections_and_fields(engine)
+        assert actual_result == database_parameters.get("expected_collection")
 
-    @pytest.mark.integration
-    def test_generate_dataset_snowflake(self, tmpdir):
+    def test_generate_dataset(self, tmpdir, database_type):
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         actual_result = generate_dataset.generate_dataset(
-            SNOWFLAKE_URL, f"{tmpdir}/test_file.yml"
+            database_parameters.get("url"), f"{tmpdir}/test_file.yml"
         )
         assert actual_result
 
-    @pytest.mark.integration
-    def test_generate_dataset_passes_snowflake(self, test_config):
+    def test_generate_dataset_passes_(self, test_config, database_type):
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSnowflake.EXPECTED_COLLECTION
+            database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
         create_server_datasets(test_config, datasets)
         generate_dataset.database_coverage(
-            connection_string=SNOWFLAKE_URL,
+            connection_string=database_parameters.get("url"),
             manifest_dir="",
             coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
 
-    @pytest.mark.integration
-    def test_generate_dataset_coverage_failure_snowflake(self, test_config):
+    def test_generate_dataset_coverage_failure(self, test_config, database_type):
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSnowflake.EXPECTED_COLLECTION
+            database_parameters.get("expected_collection")
         )
         create_server_datasets(test_config, datasets)
         with pytest.raises(SystemExit):
             generate_dataset.database_coverage(
-                connection_string=SNOWFLAKE_URL,
+                connection_string=database_parameters.get("url"),
                 manifest_dir="",
                 coverage_threshold=100,
                 url=test_config.cli.server_url,
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
-    def test_dataset_coverage_manifest_passes_snowflake(self, test_config, tmpdir):
+    def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
+        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
-            TestSnowflake.EXPECTED_COLLECTION
+            database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
 
@@ -611,7 +436,7 @@ class TestSnowflake:
 
         create_server_datasets(test_config, datasets)
         generate_dataset.database_coverage(
-            connection_string=SNOWFLAKE_URL,
+            connection_string=database_parameters.get("url"),
             manifest_dir=f"{tmpdir}",
             coverage_threshold=100,
             url=test_config.cli.server_url,

@@ -159,5 +159,9 @@ jobs:
 
       - name: Run integration test suite
         run: make pytest-integration
+
+      - name: Run external test suite
+        run: make pytest-external
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
+          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}

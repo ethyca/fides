@@ -1,6 +1,6 @@
-[cli]
-server_url = "http://fidesctl:8080"
-
 [api]
 database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+
+[cli]
+server_url = "http://fidesctl:8080"
