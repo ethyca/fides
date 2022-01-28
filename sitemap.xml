@@ -86,6 +86,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://ethyca.github.io/fides/guides/policies/</loc>
+         <lastmod>2022-01-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://ethyca.github.io/fides/guides/scan_resource/</loc>
          <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
