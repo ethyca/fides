@@ -90,7 +90,7 @@ policy:
 
 ## Anonymous Derived User Contact Data
 
-```yaml title="protect_derived_user_data_policy.yml"
+```yaml title="derived_user_data_policy.yml"
 policy:
   - fides_key: protect_derived_user_data
     name: Protect Derived User Data
@@ -110,6 +110,31 @@ policy:
           matches: ANY # And the data subject is a customer
           values:
             - customer
-        # And the data is either unlinked_pseudonymized or more identifiable
+        # And the data is either pseudonymized or more identifiable, trigger a violation
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
+```
+
+## Phone Numbers for Transactional Messaging
+
+```yaml title="transactional_messaging_policy.yaml"
+policy:
+  - fides_key: transactional_messaging_policy
+    rules:
+      - name: Transactional Messaging only for phone numbers.
+        description: Allows use of phone numbers for transactional messaging only.
+        data_categories:
+          matches: ANY # If any of these data categories are being used
+          values:
+            - user.provided.identifiable.contact.phone_number
+        data_uses:
+          matches: OTHER # And a data use other than these have been declared
+          values:
+            - provide.system.operations
+            - provide.system.operations.support
+        data_subjects:
+          matches: ANY # And the data subject is a customer
+          values:
+            - customer
+        # And the data is identifiable, trigger a violation
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```

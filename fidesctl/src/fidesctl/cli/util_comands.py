@@ -23,7 +23,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
 
     # Constants
-    separate = lambda: print("-" * 15)
+    separate = lambda: print("-" * 10)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fidesctl.toml"
