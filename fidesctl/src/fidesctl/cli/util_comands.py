@@ -23,6 +23,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
 
     # Constants
+    separate = lambda: print("-" * 10)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fidesctl.toml"
@@ -35,27 +36,35 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         "cli": {"server_url"},
     }
 
-    print("Initializing Fidesctl...\n")
+    click.echo("Initializing Fidesctl...")
+    separate()
 
     # create the dir if it doesn't exist
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
-        echo_green(f"Created a '{fides_dir_path}' directory.\n")
+        echo_green(f"Created a '{fides_dir_path}' directory.")
     else:
-        print(f"Directory '{fides_dir_path}' already exists.\n")
+        click.echo(f"Directory '{fides_dir_path}' already exists.")
+    separate()
 
     # create a config file if it doesn't exist
     if not os.path.isfile(config_path):
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
-            {config_docs_url}\n"""
+            {config_docs_url}"""
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
         echo_green(config_message)
 
     else:
-        print(f"Configuration file already exists at '{config_path}'.\n")
+        click.echo(f"Configuration file already exists at '{config_path}'.")
+    separate()
+
+    click.echo(
+        "For example policies to help get started, see: ethyca.github.io/fides/guides/policies/"
+    )
+    separate()
 
     echo_green("Fidesctl initialization complete.")
 
