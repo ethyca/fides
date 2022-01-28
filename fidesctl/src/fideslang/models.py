@@ -95,6 +95,7 @@ class DatasetField(BaseModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     fields: Optional[List[DatasetField]]
+    retention: Optional[str]
 
 
 class DatasetCollection(BaseModel):
@@ -111,6 +112,7 @@ class DatasetCollection(BaseModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     fields: List[DatasetField]
+    retention: Optional[str]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
         sort_list_objects_by_name
@@ -147,6 +149,7 @@ class Dataset(FidesModel):
         sort_list_objects_by_name
     )
     joint_controller: Optional[ContactDetails]
+    retention: Optional[str]
 
 
 # Evaluation
@@ -204,6 +207,7 @@ class Organization(FidesModel):
     controller: Optional[ContactDetails]
     data_protection_officer: Optional[ContactDetails]
     representative: Optional[ContactDetails]
+    security_policy: Optional[str]
 
 
 # Policy
