@@ -47,9 +47,15 @@ organization:
     email: controller@acmeinc.com
     phone: +1 555 555 5555
   data_protection_officer:
-    ...
+    name: Preet Ector
+    address: 1 Acme Pl. New York, NY
+    email: dpo@acmeinc.com
+    phone: +1 555 555 5555
   representative:
-    ...
+    name: Ann Othername
+    address: 1 Acme Pl. New York, NY
+    email: representative@acmeinc.com
+    phone: +1 555 555 5555
 ```
 
 ### **API Payload**
@@ -65,10 +71,16 @@ organization:
     "phone": "+1 555 555 5555"
   },
   "data_protection_officer": {
-    ...
+    "name": "Preet Ector",
+    "address": "1 Acme Pl. New York, NY",
+    "email": "dpo@acmeinc.com",
+    "phone": "+1 555 555 5555"
   },
   "representative": {
-    ...
+    "name": "Ann Othername",
+    "address": "1 Acme Pl. New York, NY",
+    "email": "representative@acmeinc.com",
+    "phone": "+1 555 555 5555"
   }
 }
 ```
