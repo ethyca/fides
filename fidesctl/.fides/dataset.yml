@@ -123,6 +123,9 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
+          
+          - name: joint_controller
+            description: "Encrypted contact information for a joint controller (name, address, email, phone)"
 
       - name: public.evaluations
         description: "Fides Generated Description for Table: public.evaluations"
@@ -162,6 +165,15 @@ dataset:
 
           - name: organiztion_parent_key
             description: "Fides Generated Description for Column: organiztion_parent_key"
+
+          - name: controller
+            description: "Encrypted contact information for the controller (name, address, email, phone)"
+
+          - name: data_protection_officer
+            description: "Encrypted contact information for the Data Protection Officer (name, address, email, phone)"
+
+          - name: representative
+            description: "Encrypted contact information for the representative (name, address, email, phone)"
 
       - name: public.policies
         description: "Fides Generated Description for Table: public.policies"
@@ -237,3 +249,6 @@ dataset:
 
           - name: system_type
             description: "Fides Generated Description for Column: system_type"
+
+          - name: joint_controller
+            description: "Encrypted contact information for a joint controller (name, address, email, phone)"
