@@ -41,3 +41,15 @@ system:
         data_subjects:
           - employee
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: Handle tax compliane with Her Majoesty's Revenue and Customs (HMRC)
+        data_categories:
+          - user.provided.identifiable.financial
+        data_use: third_party_sharing.legal_obligation
+        data_subjects:
+          - employee
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_recipients:
+          - name: HMRC
+            description: Tax authority for the UK Government
+            purpose_of_processing: Legal Obligation
+            legal_basis: Consent

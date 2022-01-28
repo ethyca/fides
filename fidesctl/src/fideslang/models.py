@@ -254,6 +254,22 @@ class Registry(FidesModel):
     """
 
 
+class Recipient(BaseModel):
+    """
+    A resource to model attributes around the recipient of data.
+
+    This is an alternative approach to extending the data use model.
+
+    This may be better using the FidesModel and being able to define
+    these separate and call via a fides_key (child objects as well).
+    """
+
+    name: str
+    description: str
+    purpose_of_processing: str
+    legal_basis: str
+
+
 # System
 class PrivacyDeclaration(BaseModel):
     """
@@ -271,6 +287,7 @@ class PrivacyDeclaration(BaseModel):
     )
     data_subjects: List[FidesKey]
     dataset_references: Optional[List[FidesKey]]
+    data_recipients: Optional[List[Recipient]]
 
 
 class System(FidesModel):
