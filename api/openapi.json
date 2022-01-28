@@ -2781,6 +2781,33 @@
   },
   "components": {
     "schemas": {
+      "ContactDetails": {
+        "title": "ContactDetails",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "default": ""
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "default": ""
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "default": ""
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
+      },
       "DBActions": {
         "title": "DBActions",
         "enum": [
@@ -2995,6 +3022,9 @@
             "items": {
               "$ref": "#/components/schemas/DatasetCollection"
             }
+          },
+          "joint_controller": {
+            "$ref": "#/components/schemas/ContactDetails"
           }
         },
         "description": "The Dataset resource model."
@@ -3176,6 +3206,15 @@
           "organization_parent_key": {
             "title": "Organization Parent Key",
             "type": "null"
+          },
+          "controller": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "data_protection_officer": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "representative": {
+            "$ref": "#/components/schemas/ContactDetails"
           }
         },
         "description": "The Organization resource model.\n\nThis resource is used as a way to organize all other resources."
@@ -3430,6 +3469,9 @@
               "pattern": "^[a-zA-Z0-9_.]+$",
               "type": "string"
             }
+          },
+          "joint_controller": {
+            "$ref": "#/components/schemas/ContactDetails"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
