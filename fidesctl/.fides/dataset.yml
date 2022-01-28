@@ -126,6 +126,8 @@ dataset:
           
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
 
       - name: public.evaluations
         description: "Fides Generated Description for Table: public.evaluations"
@@ -168,12 +170,18 @@ dataset:
 
           - name: controller
             description: "Encrypted contact information for the controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
 
           - name: data_protection_officer
             description: "Encrypted contact information for the Data Protection Officer (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
 
           - name: representative
             description: "Encrypted contact information for the representative (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
 
       - name: public.policies
         description: "Fides Generated Description for Table: public.policies"
@@ -252,3 +260,5 @@ dataset:
 
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
