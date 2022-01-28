@@ -21,7 +21,17 @@ A UI-friendly label for the Organization.
 
 A human-readable description of the Organization.
 
+**controller**<span class="required"/>&nbsp;&nbsp;[array]
 
+An array of contact information for the controller over personal data usage within the organization (`name`, `address`, `email`, `phone`).
+
+**data_protection_officer**<span class="required"/>&nbsp;&nbsp;[array]
+
+An array of contact information for the Data Protection Officer (DPO) within the organization (`name`, `address`, `email`, `phone`).
+
+**representative**<span class="required"/>&nbsp;&nbsp;[array]
+
+An array of contact information for an optional representative for the organization on behalf of the controller and/or DPO (`name`, `address`, `email`, `phone`).
 
 ## Examples
 
@@ -31,6 +41,21 @@ organization:
   fides_key: default_organization
   name: Acme Incorporated
   description: An Organization that represents all of Acme Inc.
+  controller:
+    name: Dave L. Epper
+    address: 1 Acme Pl. New York, NY
+    email: controller@acmeinc.com
+    phone: +1 555 555 5555
+  data_protection_officer:
+    name: Preet Ector
+    address: 1 Acme Pl. New York, NY
+    email: dpo@acmeinc.com
+    phone: +1 555 555 5555
+  representative:
+    name: Ann Othername
+    address: 1 Acme Pl. New York, NY
+    email: representative@acmeinc.com
+    phone: +1 555 555 5555
 ```
 
 ### **API Payload**
@@ -38,6 +63,24 @@ organization:
 {
   "fides_key": "default_organization",
   "name": "Acme Incorporated",
-  "description": "An Organization that represents all of Acme Inc."
+  "description": "An Organization that represents all of Acme Inc.",
+  "controller": {
+    "name": "Dave L. Epper",
+    "address": "1 Acme Pl. New York, NY",
+    "email": "controller@acmeinc.com",
+    "phone": "+1 555 555 5555"
+  },
+  "data_protection_officer": {
+    "name": "Preet Ector",
+    "address": "1 Acme Pl. New York, NY",
+    "email": "dpo@acmeinc.com",
+    "phone": "+1 555 555 5555"
+  },
+  "representative": {
+    "name": "Ann Othername",
+    "address": "1 Acme Pl. New York, NY",
+    "email": "representative@acmeinc.com",
+    "phone": "+1 555 555 5555"
+  }
 }
 ```

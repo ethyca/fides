@@ -117,6 +117,23 @@ class DatasetCollection(BaseModel):
     )
 
 
+class ContactDetails(BaseModel):
+    """
+    The contact details information model.
+
+    Used to capture contact information for controllers, used
+    as part of exporting a data map / ROPA.
+
+    This model is nested under an Organization and
+    potentially under a system/dataset.
+    """
+
+    name: str = ""
+    address: str = ""
+    email: str = ""
+    phone: str = ""
+
+
 class Dataset(FidesModel):
     "The Dataset resource model."
 
@@ -126,10 +143,10 @@ class Dataset(FidesModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     collections: List[DatasetCollection]
-
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
+    joint_controller: Optional[ContactDetails]
 
 
 # Evaluation
@@ -184,6 +201,9 @@ class Organization(FidesModel):
 
     # It inherits this from FidesModel but Organizations don't have this field
     organization_parent_key: None = None
+    controller: Optional[ContactDetails]
+    data_protection_officer: Optional[ContactDetails]
+    representative: Optional[ContactDetails]
 
 
 # Policy
@@ -282,6 +302,7 @@ class System(FidesModel):
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
+    joint_controller: Optional[ContactDetails]
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True
