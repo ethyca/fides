@@ -49,6 +49,10 @@ An optional object that provides additional information about the Dataset. You c
 
 An optional array of contact information if a Joint Controller exists. This information can also be stored at the [system](/fides/language/resources/system/) level (`name`, `address`, `email`, `phone`).
 
+**retention**<span class="required"/>&nbsp;&nbsp;_string_
+
+An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset
+
 **data_categories**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 **data_qualifiers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_string_]<br/>
 
@@ -71,6 +75,10 @@ A human-readable description of the collection.
 
 Arrays of Data Category and Data Qualifier resources, identified by `fides_key`, that apply to all fields in the collection.
 
+**collections.retention**<span class="required"/>&nbsp;&nbsp;_string_
+
+An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset.
+
 **collections.fields**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
 An array of objects that describe the collection's fields. 
@@ -91,6 +99,10 @@ Arrays of Data Categories, identified by `fides_key`, that applies to this field
 
 A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.
 
+**collections.fields.retention**<span class="required"/>&nbsp;&nbsp;_string_
+
+An optional string to describe the retention policy for a field within a Dataset collection.
+
 **collections.fields.fields**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
 An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases)
@@ -108,6 +120,7 @@ dataset:
       address: 1 Acme Pl. New York, NY
       email: controller@acmeinc.com
       phone: +1 555 555 5555
+    retention: 
     collections:
       - name: users
         description: User information

@@ -94,8 +94,8 @@ class DatasetField(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
-    fields: Optional[List[DatasetField]]
     retention: Optional[str]
+    fields: Optional[List[DatasetField]]
 
 
 class DatasetCollection(BaseModel):
@@ -111,8 +111,8 @@ class DatasetCollection(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
-    fields: List[DatasetField]
     retention: Optional[str]
+    fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
         sort_list_objects_by_name
@@ -144,12 +144,12 @@ class Dataset(FidesModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    joint_controller: Optional[ContactDetails]
+    retention: Optional[str]
     collections: List[DatasetCollection]
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
-    joint_controller: Optional[ContactDetails]
-    retention: Optional[str]
 
 
 # Evaluation

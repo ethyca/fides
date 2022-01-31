@@ -33,6 +33,10 @@ An array of contact information for the Data Protection Officer (DPO) within the
 
 An array of contact information for an optional representative for the organization on behalf of the controller and/or DPO (`name`, `address`, `email`, `phone`).
 
+**security_policy**<span class="required"/>&nbsp;&nbsp;_string_
+
+A url to the organization security policy, (i.e. https://ethyca.com/privacy-policy/)
+
 ## Examples
 
 ### **Manifest File** 
@@ -41,6 +45,7 @@ organization:
   fides_key: default_organization
   name: Acme Incorporated
   description: An Organization that represents all of Acme Inc.
+  security_policy: https://example.org/privacy
   controller:
     name: Dave L. Epper
     address: 1 Acme Pl. New York, NY
@@ -64,6 +69,7 @@ organization:
   "fides_key": "default_organization",
   "name": "Acme Incorporated",
   "description": "An Organization that represents all of Acme Inc.",
+  "security_policy": "https://example.org/privacy",
   "controller": {
     "name": "Dave L. Epper",
     "address": "1 Acme Pl. New York, NY",
