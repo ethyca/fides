@@ -120,12 +120,13 @@ dataset:
       address: 1 Acme Pl. New York, NY
       email: controller@acmeinc.com
       phone: +1 555 555 5555
-    retention: 
+    retention: 1 year post account deletion
     collections:
       - name: users
         description: User information
         data_categories:
           - user.derived
+        retention: 30 days post account deletion
         fields:
           - name: first_name
             description: User's first name
@@ -139,6 +140,7 @@ dataset:
             description: User's phone numbers
             data_categories:
               - user.provided.identifiable.contact.phone_number
+            retention: end of user relationship
             fields:
               - name: mobile
                 description: User's mobile phone number
@@ -162,10 +164,12 @@ dataset:
       "email": "controller@acmeinc.com",
       "phone": "+1 555 555 5555"
     },
+    "retention": "1 year post account deletion",
     "collections": [
       {
         "name": "users",
         "description": "User information",
+        "retention": "30 days post account deletion",
         "fields": [
           {
             "name": "first_name",
@@ -187,6 +191,7 @@ dataset:
             "data_categories": [
               "user.provided.identifiable.contact.phone_number"
             ],
+            "retention": "end of user relationship",
             "fields": [
               {
                 "name": "mobile",
