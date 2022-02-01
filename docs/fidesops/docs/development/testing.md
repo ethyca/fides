@@ -49,7 +49,7 @@ Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture
 
 ## Running tests
 
-Fidesops uses `pytest` for unit testing. To run tests, invoke `pytest` from the root Fidesops directory:
+Fidesops uses `pytest` for unit testing. Once in the Fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root Fidesops directory:
 
 ```bash
 cd fidesops
