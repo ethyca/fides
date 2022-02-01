@@ -123,9 +123,6 @@ def test_fides_model_valid():
 def test_fides_model_fides_key_invalid():
     "Check for a bunch of different possible bad characters here."
     with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="foo-bar")
-
-    with pytest.raises(FidesValidationError):
         FidesModel(fides_key="foo/bar")
 
     with pytest.raises(FidesValidationError):
@@ -150,7 +147,7 @@ def test_valid_privacy_rule():
 @pytest.mark.unit
 def test_invalid_fides_key_privacy_rule():
     with pytest.raises(FidesValidationError):
-        PrivacyRule(matches="ANY", values=["foo-bar"])
+        PrivacyRule(matches="ANY", values=["foo^bar"])
     assert True
 
 
