@@ -6,7 +6,7 @@ A Data Subject is a label that describes a segment of  individuals whose data yo
 
 **fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value should only contain alphanumeric characters and underscores (`[A-Za-z0-9_.-]`).
+A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value can only contain alphanumeric characters, hyphens, periods and underscores (`[A-Za-z0-9_.-]`).
 
 **name**<span class="spacer"/>_string_
 
