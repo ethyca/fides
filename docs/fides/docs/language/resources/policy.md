@@ -1,6 +1,7 @@
 # Policy
 
 A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (`data_category`, `data_use`, `data_subject`, and `data_qualifier`). The purpose of the policy is to state what types of data are allowed for certain usages.
+
   ```
   organization
     |-> ** policy **
@@ -9,9 +10,9 @@ A Policy is your privacy policy as code, it lists a set of acceptable and non-ac
 
 ## Object Structure
 
-**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`).
+A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters, underscores, and hyphens. (`[A-Za-z0-9_.-]`).
 
 **name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
@@ -49,7 +50,6 @@ The matches criteria describes how you would like this rule to be evaluated. The
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
 The fides key of the [Organization](/fides/language/resources/organization/) to which this Policy belongs.
-
 
 ## Examples
 
