@@ -17,7 +17,7 @@ class FidesKey(ConstrainedStr):
     A FidesKey should only contain alphanumeric characters, '.' or '_'
     """
 
-    regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_.]+$")
+    regex: Pattern[str] = re.compile(r"^[a-zA-Z0-9_.-]+$")
 
     @classmethod  # This overrides the default method to throw the custom FidesValidationError
     def validate(cls, value: str) -> str:
