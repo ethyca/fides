@@ -241,11 +241,13 @@ def database_coverage(
 def generate_dataset(connection_string: str, file_name: str) -> str:
     """
     Given a database connection string, extract all tables/fields from it
-    and write out a boilerplate dataset manifest.
+    and write out a boilerplate dataset manifest, excluding optional null attributes.
     """
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
-    manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
+    manifests.write_manifest(
+        file_name, [i.dict(exclude_none=True) for i in collections], "dataset"
+    )
     echo_green(f"Generated dataset manifest written to {file_name}")
     return file_name

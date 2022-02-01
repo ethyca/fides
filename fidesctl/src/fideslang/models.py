@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field
+from pydantic import validator, BaseModel, Field, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -207,7 +207,7 @@ class Organization(FidesModel):
     controller: Optional[ContactDetails]
     data_protection_officer: Optional[ContactDetails]
     representative: Optional[ContactDetails]
-    security_policy: Optional[str]
+    security_policy: Optional[HttpUrl]
 
 
 # Policy
