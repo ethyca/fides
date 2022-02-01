@@ -2826,13 +2826,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -2849,7 +2849,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           }
         },
@@ -2864,13 +2864,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -2887,7 +2887,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           }
         },
@@ -2902,13 +2902,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -2935,13 +2935,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -2958,7 +2958,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           }
         },
@@ -2974,13 +2974,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -3006,13 +3006,13 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
@@ -3049,13 +3049,13 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
@@ -3088,13 +3088,13 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
@@ -3118,7 +3118,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "status": {
@@ -3182,13 +3182,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -3229,13 +3229,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -3285,7 +3285,7 @@
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           }
@@ -3310,18 +3310,18 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },
           "data_use": {
             "title": "Data Use",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
@@ -3329,7 +3329,7 @@
             "title": "Data Subjects",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },
@@ -3337,7 +3337,7 @@
             "title": "Dataset References",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           }
@@ -3359,7 +3359,7 @@
             "title": "Values",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           }
@@ -3375,13 +3375,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -3419,13 +3419,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.]+$",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -3466,7 +3466,7 @@
             "title": "System Dependencies",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.]+$",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
             }
           },

@@ -1259,17 +1259,17 @@
                 
                 
                 <h1 id="policy">Policy</h1>
-<p>A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>). The purpose of the policy is to state what types of data are allowed for certain usages.
-  <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p>A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>). The purpose of the policy is to state what types of data are allowed for certain usages.</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>organization
   |-&gt; ** policy **
       |-&gt; rules
 </code></pre></div>
-</td></tr></table></p>
+</td></tr></table>
 <h2 id="object-structure">Object Structure</h2>
-<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
-<p>A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters and underbars (<code>[A-Za-z0-9_]</code>).</p>
+<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
+<p>A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters, underscores, and hyphens. (<code>[A-Za-z0-9_.-]</code>).</p>
 <p><strong>name</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A UI-friendly label for the Policy.</p>
 <p><strong>description</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>

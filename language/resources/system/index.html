@@ -1270,8 +1270,8 @@
 </code></pre></div>
 </td></tr></table>
 <h2 id="object-structure">Object Structure</h2>
-<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
-<p>A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters and underbars (<code>[A-Za-z0-9_]</code>). </p>
+<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
+<p>A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. (<code>[A-Za-z0-9_.-]</code>).</p>
 <p><strong>name</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A UI-friendly label for the System.</p>
 <p><strong>description</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>

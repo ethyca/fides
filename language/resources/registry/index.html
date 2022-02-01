@@ -1259,14 +1259,14 @@
                 
                 
                 <h1 id="registry">Registry</h1>
-<p>A Registry is a collection of System resources. You add a system to a Registry by setting the System's <code>registry_id</code> field. 
-  <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p>A Registry is a collection of System resources. You may add a System to a Registry by setting the System's <code>registry_id</code> field.</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>organization
   |-&gt; ** registry ** (optional)
       |-&gt; system
 </code></pre></div>
-</td></tr></table></p>
+</td></tr></table>
 <ul>
 <li>
 <p>A System may belong to only one Registry.</p>
@@ -1274,11 +1274,11 @@
 <li>
 <p>All Registries are siblings: You cannot create a hierarchy of Registries.</p>
 </li>
-<li>Collecting your systems into Registries is optional. </li>
+<li>Collecting your systems into Registries is optional.</li>
 </ul>
 <h2 id="object-structure">Object Structure</h2>
-<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
-<p>A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (<code>[A-Za-z0-9_]</code>). </p>
+<p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
+<p>A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters, underscores, and hyphens. (<code>[A-Za-z0-9_.-]</code>).</p>
 <p><strong>name</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A UI-friendly label for the Registry.</p>
 <p><strong>description</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
