@@ -1,6 +1,6 @@
 # Dataset
 
-A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. This is a database-agnostic way to annotate privacy declarations. 
+A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. This is a database-agnostic way to annotate privacy declarations.
 
   ```
   organization
@@ -11,23 +11,21 @@ A Dataset takes a database schema (tables and columns) and adds Fides privacy ca
                     |-> fields
   ```
 
-
 * The schema is represented as a set of "collections" (tables) that contain "fields" (columns).
 
-* At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category `user.derived`, and a field with category `user.provided.identifiable.name`, your dataset will contain both user-derived and user-provided name data. 
+* At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category `user.derived`, and a field with category `user.provided.identifiable.name`, your dataset will contain both user-derived and user-provided name data.
 
-While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest. 
+While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.
 
-You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems. 
+You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems.
 
 Datasets cannot contain other Datasets.
 
-
 ## Object Structure
 
-**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-A string token of your own invention that uniquely identifies this Dataset. It's your responsibility to ensure that the value is unique across all of your Dataset objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Dataset. It's your responsibility to ensure that the value is unique across all of your Dataset objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`).
 
 **name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
@@ -56,7 +54,7 @@ Arrays of Data Category and Data Qualifier resources, identified by `fides_key`,
 
 **collections**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
-An array of objects that describe the Dataset's collections. 
+An array of objects that describe the Dataset's collections.
 
 **collections.name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string<br/>
 
@@ -73,7 +71,7 @@ Arrays of Data Category and Data Qualifier resources, identified by `fides_key`,
 
 **collections.fields**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_object_]<br/>
 
-An array of objects that describe the collection's fields. 
+An array of objects that describe the collection's fields.
 
 **collections.fields.name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string<br/>
 
@@ -98,6 +96,7 @@ An optional array of objects that describe hierarchical/nested fields (typically
 ## Examples
 
 ### **Manifest File**
+
 ```yaml
 dataset:
   - fides_key: demo_users_dataset
@@ -138,6 +137,7 @@ dataset:
 ```
 
 ### **API Payload**
+
 ```json
   {
     "fides_key": "demo_users_dataset",

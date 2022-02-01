@@ -1,7 +1,7 @@
 # Registry
 
+A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field.
 
-A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field. 
   ```
   organization
     |-> ** registry ** (optional)
@@ -11,14 +11,13 @@ A Registry is a collection of System resources. You add a system to a Registry b
 * A System may belong to only one Registry.
 
 * All Registries are siblings: You cannot create a hierarchy of Registries.
-* Collecting your systems into Registries is optional. 
-
+* Collecting your systems into Registries is optional.
 
 ## Object Structure
 
-**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Registry. It's your responsibility to ensure that the value is unique across all of your Registry objects. The value may only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`).
 
 **name**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
@@ -32,10 +31,10 @@ A human-readable description of the Registry.
 
 The fides key of the [Organization](/fides/language/resources/organization/) to which this Registry belongs.
 
-
 ## Examples
 
 ### **Manifest File**
+
 ```yaml
 registry:
   - fides_key: user_systems_registry
@@ -44,6 +43,7 @@ registry:
 ```
 
 ### **API Payload**
+
 ```json
 {
   "fides_key": "user_systems_registry",

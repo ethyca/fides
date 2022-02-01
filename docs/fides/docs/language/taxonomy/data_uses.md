@@ -2,22 +2,21 @@
 
 A Data Use is a label that denotes the way data is used in your system: "Advertising, Marketing or Promotion", "First Party Advertising", and "Sharing for Legal Obligation", as examples.
 
-Data Use objects form a hierarchy: A Data Use can contain any number of children, but a given Data Use may only have one parent. You assign a child Data Use to a parent by setting the child's `parent_key` property. For example, the `third_party_sharing.personalized_advertising` Data Use type is data used for personalized advertising when shared with third parties. 
+Data Use objects form a hierarchy: A Data Use can contain any number of children, but a given Data Use may only have one parent. You assign a child Data Use to a parent by setting the child's `parent_key` property. For example, the `third_party_sharing.personalized_advertising` Data Use type is data used for personalized advertising when shared with third parties.
 
 ## Object Structure
 
-**fides_key**<span class="required"/>_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
 A string token that uniquely identifies this Data Use. The value is a dot-separated concatenation of the `fides_key` values of the resource's ancestors plus a final element for this resource:
 
 `grandparent.parent.this_data_use`
 
-The final element (`this_data_use`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). The dot character is reserved as a separator.
-
+The final element (`this_data_use`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
 
 **name**<span class="spacer"/>_string_
 
-A UI-friendly label for the Data Use. 
+A UI-friendly label for the Data Use.
 
 **description**<span class="spacer"/>_string_
 
@@ -31,14 +30,12 @@ The fides key of the the Data Use's parent.
 
 The fides key of the organization to which this Data Use belongs.
 
-
 !!! Note "Extensibility and Interopability"
-    Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
-    
+    Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
+
     You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
-
 
 ## Top Level Data Uses
 
@@ -53,7 +50,6 @@ There are seven top-level Data Use classes:
 |`third_party_sharing`                           |`-`                         |The transfer of specified data categories to third parties outside of the system/application's scope.                                                                              |
 |`collect`                                       |`-`                         |Collecting and storing data in order to use it for another purpose such as data training for ML.                                                                                   |
 |`train_ai_system`                               |`-`                         |Training an AI system. Please note when this data use is specified, the method and degree to which a user may be directly identified in the resulting AI system should be appended.|
-
 
 For each top level classification there are multiple subclasses that provide richer context.
 Below is a reference for all subclasses of `account`, `system` and `user` to assist with describing all data across systems.
@@ -74,13 +70,11 @@ Below is a reference for all subclasses of `account`, `system` and `user` to ass
 | ---       | ---         | ---                                                               |
 |`system`   | `improve`   |The source system, product, service or application being improved. |
 
-
 ### Personalize Data Uses
 
 | Label    | Parent Key    | Description                                                             |
 | ---      | ---           | ---                                                                     |
 |`system`  | `personalize` | The source system, product, service or application being personalized.  |
-
 
 ### Advertising Data Uses
 
@@ -91,7 +85,6 @@ Below is a reference for all subclasses of `account`, `system` and `user` to ass
 |`personalized` | `advertising.first_party`         | The targeting and changing of promotional content based on processing of specific data categories from the user.                              |
 |`third_party`  | `advertising`                     | The promotion of products or services targeting users based on processing of specific categories of data acquired from third party sources.   |
 |`personalized` | `advertising.third_party`         | The targeting and changing of promotional content based on processing of specific categories of user data acquired from third party sources.  |
-
 
 ### Third Party Sharing Data Uses
 
@@ -104,7 +97,7 @@ Below is a reference for all subclasses of `account`, `system` and `user` to ass
 
 ### Collection & AI Training Data Uses
 
-In the case of `collection` and `train_ai_system`, you will see these have no subclasses at present however define very specific data use cases that should be captured in data processes if they occur. 
+In the case of `collection` and `train_ai_system`, you will see these have no subclasses at present however define very specific data use cases that should be captured in data processes if they occur.
 
 | Label                | Parent Key  | Description                                                                                                                                                                          |
 | ---                  | ---         | ---                                                                                                                                                                                  |

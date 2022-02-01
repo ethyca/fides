@@ -11,7 +11,7 @@ The fides key for the default Organization is `default_organization`
 
 **fides_key**<span class="required"/>&nbsp;&nbsp;_string_
 
-A string token of your own invention that uniquely identifies this Organization. It's your responsibility to ensure that the value is unique across all of your Organization objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Organization. It's your responsibility to ensure that the value is unique across all of your Organization objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`). 
 
 **name**<span class="required"/>&nbsp;&nbsp;_string_
 

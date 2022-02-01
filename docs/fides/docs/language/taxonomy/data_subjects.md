@@ -4,13 +4,13 @@ A Data Subject is a label that describes a segment of  individuals whose data yo
 
 ## Object Structure
 
-**fides_key**<span class="required"/>_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). 
+A string token of your own invention that uniquely identifies this Data Subject. It's your responsibility to ensure that the value is unique across all of your Data Subject objects. The value should only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`).
 
 **name**<span class="spacer"/>_string_
 
-A UI-friendly label for the Data Subject. 
+A UI-friendly label for the Data Subject.
 
 **description**<span class="spacer"/>_string_
 
@@ -21,8 +21,8 @@ A human-readable description of the Data Subject.
 The fides key of the organization to which this Data Subject belongs.
 
 !!! Note "Extensibility and Interopability"
-    Data Subjects in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
-    
+    Data Subjects in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
+
     You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
