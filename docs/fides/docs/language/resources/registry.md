@@ -1,6 +1,6 @@
 # Registry
 
-A Registry is a collection of System resources. You add a system to a Registry by setting the System's `registry_id` field.
+A Registry is a collection of System resources. You may add a System to a Registry by setting the System's `registry_id` field.
 
   ```
   organization
