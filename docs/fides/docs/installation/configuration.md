@@ -9,6 +9,7 @@ By default the fidesctl CLI doesn't require a config file and will instead lever
 After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
 
 ```toml title="fidesctl.toml"
+# Need to include other variables here
 [api]
 database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 log_destination = ""
