@@ -12,7 +12,7 @@ A string token that uniquely identifies this Data Category. The value is a dot-s
 
 `grandparent.parent.this_data_category`
 
-The final element (`this_data_category`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
+The final element (`this_data_category`) may only contain alphanumeric characters and underscores (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
 
 **name**<span class="spacer"/>_string_
 

@@ -12,7 +12,7 @@ A string token that uniquely identifies this Data Use. The value is a dot-separa
 
 `grandparent.parent.this_data_use`
 
-The final element (`this_data_use`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
+The final element (`this_data_use`) may only contain alphanumeric characters and underscores (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
 
 **name**<span class="spacer"/>_string_
 
