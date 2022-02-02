@@ -163,8 +163,8 @@ def annotate_dataset(
                             fg="green",
                         )
                         field.data_categories = user_categories
-            output_dataset.append(current_dataset.dict())
+            output_dataset.append(current_dataset.dict(exclude_none=True))
         except AnnotationAbortError:
-            output_dataset.append(current_dataset.dict())
+            output_dataset.append(current_dataset.dict(exclude_none=True))
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")

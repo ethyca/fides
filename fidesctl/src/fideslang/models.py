@@ -111,7 +111,7 @@ class DatasetCollection(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
-    retention: Optional[str]
+    retention: Optional[str] = "No retention or erasure policy"
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
@@ -145,7 +145,7 @@ class Dataset(FidesModel):
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
     joint_controller: Optional[ContactDetails]
-    retention: Optional[str]
+    retention: Optional[str] = "No retention or erasure policy"
     collections: List[DatasetCollection]
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name

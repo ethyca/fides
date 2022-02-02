@@ -150,8 +150,16 @@ def export_dataset(
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=click.Path())
+@click.option(
+    "--include-null",
+    is_flag=True,
+    help="Includes attributes that would otherwise be null.",
+)
 def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str
+    ctx: click.Context,
+    connection_string: str,
+    output_filename: str,
+    include_null: bool,
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-stlye connection string and
@@ -161,7 +169,7 @@ def generate_dataset(
     It will need to be run again if the database schema changes.
     """
 
-    _generate_dataset.generate_dataset(connection_string, output_filename)
+    _generate_dataset.generate_dataset(connection_string, output_filename, include_null)
 
 
 @click.command()
