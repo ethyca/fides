@@ -104,8 +104,6 @@ def annotate_dataset(
         Write the amended dataset file in place
     """
     output_dataset = []
-    url = config.cli.server_url
-    headers = config.user.request_headers
 
     # Make the user aware of the data_categories visualizer
     click.secho(
@@ -118,7 +116,9 @@ def annotate_dataset(
     existing_categories = [
         resource.fides_key
         for resource in api_helpers.list_server_resources(
-            url=url, resource_type=resource_type, headers=headers
+            url=config.cli.server_url,
+            resource_type=resource_type,
+            headers=config.user.request_headers,
         )
     ]
 
