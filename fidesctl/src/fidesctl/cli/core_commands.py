@@ -221,8 +221,17 @@ def scan(
     default=False,
     help="Strictly validate annotation inputs.",
 )
+@click.option(
+    "--include-null",
+    is_flag=True,
+    help="Includes attributes that would otherwise be null.",
+)
 def annotate_dataset(
-    ctx: click.Context, input_filename: str, all_members: bool, validate: bool
+    ctx: click.Context,
+    input_filename: str,
+    all_members: bool,
+    validate: bool,
+    include_null: bool,
 ) -> None:
     """
     Guided flow for annotating datasets. The dataset file will be edited in-place.
@@ -233,6 +242,7 @@ def annotate_dataset(
         dataset_file=input_filename,
         annotate_all=all_members,
         validate=validate,
+        include_null=include_null,
     )
 
 

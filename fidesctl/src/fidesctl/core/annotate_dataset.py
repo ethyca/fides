@@ -88,6 +88,7 @@ def annotate_dataset(
     resource_type: str = "data_category",
     annotate_all: bool = False,
     validate: bool = True,
+    include_null: bool = False,
 ) -> None:
     """
     Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
@@ -97,6 +98,7 @@ def annotate_dataset(
         resource_type: the type of data resource to point to for assistance (via visualization web page)
         annotate_all: flag to annotate all members of a dataset (default False: only annotate fields)
         validate: flag to check user inputs for formatting and data category presence
+        include_null: flag to write out all empty attributes with null (default False: only write populated attributes)
 
     Returns:
         Write the amended dataset file in place
@@ -163,8 +165,14 @@ def annotate_dataset(
                             fg="green",
                         )
                         field.data_categories = user_categories
-            output_dataset.append(current_dataset.dict(exclude_none=True))
+            if include_null:
+                output_dataset.append(current_dataset.dict())
+            else:
+                output_dataset.append(current_dataset.dict(exclude_none=True))
         except AnnotationAbortError:
-            output_dataset.append(current_dataset.dict(exclude_none=True))
+            if include_null:
+                output_dataset.append(current_dataset.dict())
+            else:
+                output_dataset.append(current_dataset.dict(exclude_none=True))
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")

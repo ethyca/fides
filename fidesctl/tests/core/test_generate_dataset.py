@@ -390,7 +390,7 @@ class TestDatabase:
     def test_generate_dataset(self, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         actual_result = generate_dataset.generate_dataset(
-            database_parameters.get("url"), f"{tmpdir}/test_file.yml"
+            database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 
