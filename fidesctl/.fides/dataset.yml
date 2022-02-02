@@ -35,10 +35,10 @@ dataset:
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
 
-          - name: &created_at created_at
+          - name: created_at
             description: "The timestamp of when the row was created"
 
-          - name: &updated_at updated_at
+          - name: updated_at
             description: "The timestamp of when the row was last updated"
 
       - name: public.data_qualifiers
@@ -62,9 +62,11 @@ dataset:
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.data_subjects
         description: "Fides Generated Description for Table: public.data_subjects"
@@ -84,9 +86,11 @@ dataset:
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.data_uses
         description: "Fides Generated Description for Table: public.data_uses"
@@ -109,9 +113,11 @@ dataset:
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.datasets
         description: "Fides Generated Description for Table: public.datasets"
@@ -154,9 +160,11 @@ dataset:
             data_categories:
             - system.operations
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.evaluations
         description: "Fides Generated Description for Table: public.evaluations"
@@ -176,9 +184,11 @@ dataset:
           - name: status
             description: "Fides Generated Description for Column: status"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.organizations
         description: "Fides Generated Description for Table: public.organizations"
@@ -222,9 +232,11 @@ dataset:
           - name: security_policy
             description: "A link to the Ethyca security policy"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.policies
         description: "Fides Generated Description for Table: public.policies"
@@ -247,9 +259,11 @@ dataset:
           - name: rules
             description: "Fides Generated Description for Column: rules"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.registries
         description: "Fides Generated Description for Table: public.registries"
@@ -269,9 +283,11 @@ dataset:
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.systems
         description: "Fides Generated Description for Table: public.systems"
@@ -315,6 +331,8 @@ dataset:
             - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
 
-          - name: *created_at
+          - name: created_at
+            description: "The timestamp of when the row was created"
 
-          - name: *updated_at
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
