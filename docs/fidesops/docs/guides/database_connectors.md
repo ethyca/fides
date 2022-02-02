@@ -24,6 +24,7 @@ Fidesops supports connections to the following databases:
 * PostgreSQL
 * MongoDB
 * MySQL
+* MariaDB
 * Microsoft SQLServer
 * Amazon Redshift
 * Snowflake
@@ -38,7 +39,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to snake-case, is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application_postgresql_db`.
 
-* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `redshift`, and `snowflake`.
+* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, and `snowflake`.
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
@@ -91,7 +92,21 @@ PATCH api/v1/connection
 ]
 ``` 
 
-#### Example 4: MsSQL ConnectionConfig
+#### Example 4: MariaDB ConnectionConfig
+
+```
+PATCH api/v1/connection 
+[
+  { 
+    "name": "My Maria DB",
+    "key": "my_maria_db",
+    "connection_type": "mariadb",
+    "access": "write"
+  }
+]
+``` 
+
+#### Example 5: MsSQL ConnectionConfig
 
 ```
 PATCH api/v1/connection 

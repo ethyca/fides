@@ -24,11 +24,13 @@ commands to give you different functionality.
 - `make server` - this spins up the Fastapi server and supporting resources (a Postgres database and a Redis cache), which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
 - `make integration-env` - spins up everything in make server, plus additional postgres, mongo, and mysql databases for you to execute privacy requests against.
     - Try this out locally with our [Fidesops Postman Collection](../postman/Fidesops.postman_collection.json)
+    - `make integration-env datastores="mysql mariadb"`- brings up only mysql and mariadb datastores, use 
 - `make integration-shell` - spins up everything in make server, plus all Docker Compose specified datastores (Postgres, MySQL, MSSQL, Mongodb) and opens a server shell. This is most useful for running `pytest -k ...` commands within the integration shell to test connected datastores.
 - `make black`, `make mypy`, and `make pylint` - auto-formats code
 - `make check-all` - runs the CI checks locally and verifies that your code meets project standards
 - `make server-shell`-  opens a shell on the Docker container, from here you can run useful commands like:
   - `ipython` - open a Python shell
+  - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
 - `make pytest` - runs all unit tests except those that talk to integration databases
 - `make pytest-integration` - runs access integration tests.
 - `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments.

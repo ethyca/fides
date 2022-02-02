@@ -45,6 +45,7 @@ class ConnectionType(enum.Enum):
     redshift = "redshift"
     snowflake = "snowflake"
     mssql = "mssql"
+    mariadb = "mariadb"
 
 
 class AccessLevel(enum.Enum):

@@ -1,0 +1,22 @@
+services:
+  fidesops:
+    depends_on:
+      - mariadb_example
+
+  mariadb_example:
+    image: mariadb
+    platform: linux/amd64
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MARIADB_HOST=mariadb_example
+      - MARIADB_DATABASE=mariadb_example
+      - MARIADB_ROOT_PASSWORD=example
+      - MARIADB_USER=mariadb_user
+      - MARIADB_PASSWORD=mariadb_pw
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/sql/mariadb_example.sql:/docker-entrypoint-initdb.d/mariadb_example.sql
