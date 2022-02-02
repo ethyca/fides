@@ -6,6 +6,7 @@ from fidesctl.cli.options import (
     fides_key_option,
     manifests_dir_argument,
     verbose_flag,
+    include_null_flag,
 )
 from fidesctl.cli.utils import pretty_echo
 from fidesctl.core import (
@@ -150,11 +151,7 @@ def export_dataset(
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=click.Path())
-@click.option(
-    "--include-null",
-    is_flag=True,
-    help="Includes attributes that would otherwise be null.",
-)
+@include_null_flag
 def generate_dataset(
     ctx: click.Context,
     connection_string: str,
@@ -221,11 +218,7 @@ def scan(
     default=False,
     help="Strictly validate annotation inputs.",
 )
-@click.option(
-    "--include-null",
-    is_flag=True,
-    help="Includes attributes that would otherwise be null.",
-)
+@include_null_flag
 def annotate_dataset(
     ctx: click.Context,
     input_filename: str,
