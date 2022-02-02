@@ -23,8 +23,9 @@ from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import get_cache
 from fidesops.util.oauth_util import generate_jwe
-from .fixtures import *
-from .integration_fixtures import *
+from .fixtures.application_fixtures import *
+from .fixtures.integration_fixtures import *
+from .fixtures.mariadb_fixtures import *
 
 logger = logging.getLogger(__name__)
 

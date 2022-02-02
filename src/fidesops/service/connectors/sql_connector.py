@@ -26,6 +26,9 @@ from fidesops.schemas.connection_configuration import (
     SnowflakeSchema,
     MicrosoftSQLServerSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBSchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -190,6 +193,49 @@ class MySQLConnector(SQLConnector):
         """
         Convert SQLAlchemy results to a list of dictionaries
         Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MySQL
+        """
+        columns: List[Column] = results.cursor.description
+        rows = []
+        for row_tuple in results:
+            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
+        return rows
+
+
+class MariaDBConnector(SQLConnector):
+    """Connector specific to MariaDB"""
+
+    def build_uri(self) -> str:
+        """Build URI of format mariadb+pymysql://[user[:password]@][netloc][:port][/dbname]"""
+        config = MariaDBSchema(**self.configuration.secrets or {})
+
+        user_password = ""
+        if config.username:
+            user = config.username
+            password = f":{config.password}" if config.password else ""
+            user_password = f"{user}{password}@"
+
+        netloc = config.host
+        port = f":{config.port}" if config.port else ""
+        dbname = f"/{config.dbname}" if config.dbname else ""
+        url = f"mariadb+pymysql://{user_password}{netloc}{port}{dbname}"
+        return url
+
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a MariaDB database"""
+        config = MariaDBSchema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
+
+    # Overrides BaseConnector.cursor_result_to_rows
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """
+        Convert SQLAlchemy results to a list of dictionaries
+        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MariaDB
         """
         columns: List[Column] = results.cursor.description
         rows = []

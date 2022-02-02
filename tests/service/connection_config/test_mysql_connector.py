@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-import json
 from fidesops.service.connectors.sql_connector import MySQLConnector
 
 

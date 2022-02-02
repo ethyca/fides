@@ -442,7 +442,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 6
+        assert len(response_body["succeeded"]) == 7
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -489,9 +489,22 @@ class TestPutDatasets:
         assert "Example of a MySQL dataset" in mysql_dataset["description"]
         assert len(mysql_dataset["collections"]) == 11
 
+        # check the mariadb dataset
+        mariadb_dataset = response_body["succeeded"][6]
+        mariadb_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="mariadb_example_test_dataset"
+        )
+        assert mariadb_config is not None
+        assert mariadb_dataset["fides_key"] == "mariadb_example_test_dataset"
+        assert mariadb_dataset["name"] == "MariaDB Example Test Dataset"
+        assert "Example of a MariaDB dataset" in mariadb_dataset["description"]
+        assert len(mariadb_dataset["collections"]) == 11
+
         postgres_config.delete(db)
         mongo_config.delete(db)
         mssql_config.delete(db)
+        mysql_config.delete(db)
+        mariadb_config.delete(db)
 
     def test_patch_datasets_bulk_update(
         self,
@@ -540,7 +553,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 6
+        assert len(response_body["succeeded"]) == 7
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -613,7 +626,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 6
+        assert len(response_body["failed"]) == 7
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

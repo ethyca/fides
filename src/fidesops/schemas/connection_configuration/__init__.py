@@ -1,5 +1,8 @@
 from typing import Dict, Any, Union
 
+from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBSchema,
+)
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
     MongoDBDocsSchema,
@@ -40,6 +43,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
+    ConnectionType.mariadb.value: MariaDBSchema,
 }
 
 

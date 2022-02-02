@@ -20,7 +20,7 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import (
 )
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
-from ..fixtures import faker
+from ..fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):

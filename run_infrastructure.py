@@ -15,6 +15,7 @@ DOCKERFILE_DATASTORES = [
     "mysql",
     "mongodb",
     "mssql",
+    "mariadb",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": ["SNOWFLAKE_TEST_URI"],

@@ -89,6 +89,13 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mssql_example.USER"),
         "password": pydash.get(integration_config, "mssql_example.PASSWORD"),
     },
+    "mariadb_example": {
+        "host": pydash.get(integration_config, "mariadb_example.SERVER"),
+        "port": pydash.get(integration_config, "mariadb_example.PORT"),
+        "dbname": pydash.get(integration_config, "mariadb_example.DB"),
+        "username": pydash.get(integration_config, "mariadb_example.USER"),
+        "password": pydash.get(integration_config, "mariadb_example.PASSWORD"),
+    },
 }
 
 
@@ -982,7 +989,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/snowflake_example_test_dataset.yml",
         "data/dataset/redshift_example_test_dataset.yml",
         "data/dataset/mssql_example_test_dataset.yml",
-        "data/dataset/mysql_example_test_dataset.yml"
+        "data/dataset/mysql_example_test_dataset.yml",
+        "data/dataset/mariadb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

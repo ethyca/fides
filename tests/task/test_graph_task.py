@@ -23,7 +23,6 @@ from fidesops.task.graph_task import (
     GraphTask,
 )
 from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
-from ..fixtures import example_datasets
 from ..graph.graph_test_util import (
     MockSqlTask,
     MockMongoTask,

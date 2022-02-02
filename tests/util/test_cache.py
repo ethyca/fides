@@ -3,7 +3,7 @@ from typing import List, Any
 
 from fidesops.core.config import config
 from fidesops.util.cache import FidesopsRedis
-from ..fixtures import faker
+from ..fixtures.application_fixtures import faker
 
 
 def test_get_cache(cache: FidesopsRedis) -> None:
