@@ -213,3 +213,72 @@ def export_system(
         echo_green("Output would contain:")
         for record in output_list:
             print(record)
+
+
+def generate_contact_records(server_organization_list: List) -> List:
+
+    output_list = [
+        (
+            "Organization Name and Contact Detail",
+            "Data Protection Officer (if applicable)",
+            "Representative (if applicable)",
+        )
+    ]
+
+    # currently the output file will only truly support a single organization
+    # need to better understand the use case for multiple and how to handle
+    for organization in server_organization_list:
+        fields = tuple(organization.controller.dict().keys())
+        controller = tuple(organization.controller.dict().values())
+        data_protection_officer = tuple(
+            organization.data_protection_officer.dict().values()
+        )
+        representative = tuple(organization.representative.dict().values())
+
+        contact_details = list(
+            zip(
+                fields,
+                controller,
+                fields,
+                data_protection_officer,
+                fields,
+                representative,
+            )
+        )
+
+        output_list += contact_details
+
+    return output_list
+
+
+def export_organization(
+    url: str,
+    organization_list: List,
+    headers: Dict[str, str],
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Exports the required fields from a system resource to a csv file.
+
+    The resource is fetched from the server prior to being
+    flattened as needed for exporting.
+    """
+    resource_type = "organization"
+
+    existing_keys = [resource.fides_key for resource in organization_list]
+
+    server_resource_list = get_server_resources(
+        url, resource_type, existing_keys, headers
+    )
+
+    output_list = generate_contact_records(server_resource_list)
+
+    if not dry:
+        exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
+
+        echo_green(exported_filename + " successfully exported.")
+    else:
+        echo_green("Output would contain:")
+        for record in output_list:
+            print(record)

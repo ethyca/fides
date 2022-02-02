@@ -146,6 +146,29 @@ def export_dataset(
     )
 
 
+@export.command(name="organization")
+@click.pass_context
+@manifests_dir_argument
+@dry_flag
+def export_organization(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Export an organization in a data map format.
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_organization(
+        url=config.cli.server_url,
+        organization_list=taxonomy.organization,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
+    )
+
+
 @click.command()
 @click.pass_context
 @click.argument("connection_string", type=str)
