@@ -49,7 +49,11 @@ def find_referenced_fides_keys(resource: object) -> Set[FidesKey]:
             referenced_fides_keys.add(parameter_value)
         elif parameter.annotation == List[FidesKey] and parameter_value:
             referenced_fides_keys.update(resource.__getattribute__(parameter.name))
-        elif parameter_value and isinstance(parameter_value, list):
+        elif (
+            parameter_value
+            and isinstance(parameter_value, list)
+            and parameter.annotation != List[str]
+        ):
             nested_keys = find_nested_keys_in_list(parameter_value)
             referenced_fides_keys.update(nested_keys)
         elif parameter_value and hasattr(parameter_value, "__dict__"):
