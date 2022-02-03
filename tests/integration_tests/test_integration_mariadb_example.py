@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.integration
 @pytest.mark.integration_mariadb
-def test_mariadb_example_data(mariadb_example_db):
+def test_mariadb_example_data(mariadb_integration_db):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {
         "product": 3,
@@ -29,4 +29,4 @@ def test_mariadb_example_data(mariadb_example_db):
         # templating as much as possible. instead, use the table() helper to
         # dynamically generate the FROM clause for each table_name
         count_sql = select(func.count()).select_from(table(table_name))
-        assert mariadb_example_db.execute(count_sql).scalar() == expected_count
+        assert mariadb_integration_db.execute(count_sql).scalar() == expected_count
