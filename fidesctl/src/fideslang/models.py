@@ -294,7 +294,6 @@ class PrivacyDeclaration(BaseModel):
     )
     data_subjects: List[FidesKey]
     dataset_references: Optional[List[FidesKey]]
-    data_recipients: Optional[List[Recipient]]
 
 
 class System(FidesModel):
