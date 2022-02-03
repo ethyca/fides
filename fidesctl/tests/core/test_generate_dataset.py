@@ -270,7 +270,7 @@ def test_find_uncategorized_dataset_fields_missing_collection():
 def test_unsupported_dialect_error():
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     with pytest.raises(SystemExit):
-        generate_dataset.generate_dataset(test_url, "test_file.yml")
+        generate_dataset.generate_dataset(test_url, "test_file.yml", False)
 
 
 # Generate Dataset Database Integration Tests
@@ -390,7 +390,7 @@ class TestDatabase:
     def test_generate_dataset(self, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         actual_result = generate_dataset.generate_dataset(
-            database_parameters.get("url"), f"{tmpdir}/test_file.yml"
+            database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 

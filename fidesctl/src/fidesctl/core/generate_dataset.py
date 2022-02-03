@@ -238,14 +238,22 @@ def database_coverage(
     )
 
 
-def generate_dataset(connection_string: str, file_name: str) -> str:
+def generate_dataset(connection_string: str, file_name: str, include_null: bool) -> str:
     """
     Given a database connection string, extract all tables/fields from it
-    and write out a boilerplate dataset manifest.
+    and write out a boilerplate dataset manifest, excluding optional null attributes.
+
+    An optional flag can be passed to include null fields, such as retention and
+    nested fields.
     """
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
-    manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
+    if include_null:
+        manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
+    else:
+        manifests.write_manifest(
+            file_name, [i.dict(exclude_none=True) for i in collections], "dataset"
+        )
     echo_green(f"Generated dataset manifest written to {file_name}")
     return file_name
