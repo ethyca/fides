@@ -6,6 +6,7 @@ dataset:
     meta: {}
     data_categories:
       - system.operations
+    retention: "1 year post employment"
     collections:
       - name: public.alembic_version
         description: "Fides Generated Description for Table: public.alembic_version"
@@ -34,6 +35,12 @@ dataset:
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
 
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
+
       - name: public.data_qualifiers
         description: "Fides Generated Description for Table: public.data_qualifiers"
         fields:
@@ -55,6 +62,12 @@ dataset:
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
 
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
+
       - name: public.data_subjects
         description: "Fides Generated Description for Table: public.data_subjects"
         fields:
@@ -72,6 +85,12 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.data_uses
         description: "Fides Generated Description for Table: public.data_uses"
@@ -93,6 +112,12 @@ dataset:
 
           - name: parent_key
             description: "Fides Generated Description for Column: parent_key"
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.datasets
         description: "Fides Generated Description for Table: public.datasets"
@@ -123,6 +148,23 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
+          
+          - name: joint_controller
+            description: "Encrypted contact information for a joint controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
+            retention: "End of joint controller agreement."
+
+          - name: retention
+            description: "A string representing how long the dataset is retained for. Can also be found and applied as a property within Collections and Fields."
+            data_categories:
+            - system.operations
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.evaluations
         description: "Fides Generated Description for Table: public.evaluations"
@@ -141,6 +183,12 @@ dataset:
 
           - name: status
             description: "Fides Generated Description for Column: status"
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.organizations
         description: "Fides Generated Description for Table: public.organizations"
@@ -163,6 +211,33 @@ dataset:
           - name: organiztion_parent_key
             description: "Fides Generated Description for Column: organiztion_parent_key"
 
+          - name: controller
+            description: "Encrypted contact information for the controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
+            retention: "1 Year post-employment"
+
+          - name: data_protection_officer
+            description: "Encrypted contact information for the Data Protection Officer (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
+            retention: "1 Year post-employment"
+
+          - name: representative
+            description: "Encrypted contact information for the representative (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
+            retention: "1 Year post-employment"
+
+          - name: security_policy
+            description: "A link to the Ethyca security policy"
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
+
       - name: public.policies
         description: "Fides Generated Description for Table: public.policies"
         fields:
@@ -184,6 +259,12 @@ dataset:
           - name: rules
             description: "Fides Generated Description for Column: rules"
 
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
+
       - name: public.registries
         description: "Fides Generated Description for Table: public.registries"
         fields:
@@ -201,6 +282,12 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"
 
       - name: public.systems
         description: "Fides Generated Description for Table: public.systems"
@@ -237,3 +324,15 @@ dataset:
 
           - name: system_type
             description: "Fides Generated Description for Column: system_type"
+
+          - name: joint_controller
+            description: "Encrypted contact information for a joint controller (name, address, email, phone)"
+            data_categories:
+            - user.provided.identifiable.contact
+            retention: "End of joint controller agreement."
+
+          - name: created_at
+            description: "The timestamp of when the row was created"
+
+          - name: updated_at
+            description: "The timestamp of when the row was last updated"

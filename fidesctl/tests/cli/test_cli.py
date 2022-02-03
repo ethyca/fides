@@ -17,6 +17,13 @@ def test_ping(test_config_path: str, test_cli_runner: CliRunner):
     assert result.exit_code == 0
 
 
+@pytest.mark.integration
+def test_init(test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(cli, ["init"])
+    print(result.output)
+    assert result.exit_code == 0
+
+
 @pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(

@@ -78,8 +78,9 @@ addopts = ["--cov=fidesctl.core",
             "--no-cov-on-fail",
             "--disable-pytest-warnings"]
 markers = [
-    "unit: only runs tests that don't require external dependencies (i.e. a database)",
-    "integration: only runs tests that require external dependencies (i.e. a database)",
+    "unit: only runs tests that don't require non-python dependencies (i.e. a database)",
+    "integration: only runs tests that require application dependencies (i.e. a database)",
+    "external: only runs tests that require access to non-docker, external services (i.e. Snowflake)",
     "postgres: only runs the integration tests for postgres",
     "mssql: only runs the integration tests for sqlserver/mssql",
     "mysql: only runs the integration tests for mysql"

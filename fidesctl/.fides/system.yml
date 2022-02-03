@@ -7,6 +7,7 @@ system:
       - name: Store system data.
         data_categories:
           - system.operations
+          - user.provided.identifiable.contact
         data_use: improve.system
         data_subjects:
           - anonymous_user

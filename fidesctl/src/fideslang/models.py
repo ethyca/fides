@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field
+from pydantic import validator, BaseModel, Field, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -96,6 +96,7 @@ class DatasetField(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    retention: Optional[str]
     fields: Optional[List[DatasetField]]
 
 
@@ -112,11 +113,29 @@ class DatasetCollection(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    retention: Optional[str] = "No retention or erasure policy"
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
         sort_list_objects_by_name
     )
+
+
+class ContactDetails(BaseModel):
+    """
+    The contact details information model.
+
+    Used to capture contact information for controllers, used
+    as part of exporting a data map / ROPA.
+
+    This model is nested under an Organization and
+    potentially under a system/dataset.
+    """
+
+    name: str = ""
+    address: str = ""
+    email: str = ""
+    phone: str = ""
 
 
 class Dataset(FidesModel):
@@ -127,8 +146,9 @@ class Dataset(FidesModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    joint_controller: Optional[ContactDetails]
+    retention: Optional[str] = "No retention or erasure policy"
     collections: List[DatasetCollection]
-
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
@@ -186,6 +206,10 @@ class Organization(FidesModel):
 
     # It inherits this from FidesModel but Organizations don't have this field
     organization_parent_key: None = None
+    controller: Optional[ContactDetails]
+    data_protection_officer: Optional[ContactDetails]
+    representative: Optional[ContactDetails]
+    security_policy: Optional[HttpUrl]
 
 
 # Policy
@@ -285,6 +309,7 @@ class System(FidesModel):
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
+    joint_controller: Optional[ContactDetails]
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True

@@ -1,0 +1,22 @@
+organization:
+  - fides_key: default_organization
+    name: Demo Organization
+    description: An e-commerce organization
+    security_policy: https://ethyca.com/privacy-policy/
+    controller: 
+      name: Con Troller
+      address: 123 demo street, New York, NY, USA
+      email: controller@demo_company.com
+      phone: +1 555 555 5555
+    data_protection_officer:
+      name: DataPro Tection
+      address: 123 demo street, New York, NY, USA
+      email: dpo@demo_company.com
+      phone: +1 555 555 5555
+    representative:
+      name: Rep Resentative
+      address: 123 demo street, New York, NY, USA
+      email: representative@demo_company.com
+      phone: +1 555 555 5555
+
+

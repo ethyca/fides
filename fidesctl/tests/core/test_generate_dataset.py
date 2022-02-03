@@ -270,7 +270,7 @@ def test_find_uncategorized_dataset_fields_missing_collection():
 def test_unsupported_dialect_error():
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     with pytest.raises(SystemExit):
-        generate_dataset.generate_dataset(test_url, "test_file.yml")
+        generate_dataset.generate_dataset(test_url, "test_file.yml", False)
 
 
 # Generate Dataset Database Integration Tests
@@ -360,21 +360,9 @@ TEST_DATABASE_PARAMETERS = {
 }
 
 
-@pytest.mark.generate_database_test
+@pytest.mark.external
 @pytest.mark.parametrize("database_type", TEST_DATABASE_PARAMETERS.keys())
 class TestDatabase:
-    @pytest.fixture(scope="function", autouse=True)
-    def ignore_if_external(self, request, database_type):
-        """
-        Fixture got skipping tests if --ignore-external flag is set and
-        a test is for an external database.
-        """
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        if request.config.getoption("--ignore-external") and database_parameters.get(
-            "is_external"
-        ):
-            pytest.skip("Ignoring external database test as --ignore-external is set")
-
     @pytest.fixture(scope="function", autouse=True)
     def database_setup(self, database_type):
         """
@@ -391,7 +379,6 @@ class TestDatabase:
             engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    @pytest.mark.integration
     def test_get_db_tables(self, request, database_type):
         print(request.node.get_closest_marker("external"))
         print(request.keywords)
@@ -400,15 +387,13 @@ class TestDatabase:
         actual_result = generate_dataset.get_db_collections_and_fields(engine)
         assert actual_result == database_parameters.get("expected_collection")
 
-    @pytest.mark.integration
     def test_generate_dataset(self, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         actual_result = generate_dataset.generate_dataset(
-            database_parameters.get("url"), f"{tmpdir}/test_file.yml"
+            database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 
-    @pytest.mark.integration
     def test_generate_dataset_passes_(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
@@ -424,7 +409,6 @@ class TestDatabase:
             headers=test_config.user.request_headers,
         )
 
-    @pytest.mark.integration
     def test_generate_dataset_coverage_failure(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(
@@ -440,7 +424,6 @@ class TestDatabase:
                 headers=test_config.user.request_headers,
             )
 
-    @pytest.mark.integration
     def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         datasets: List[Dataset] = generate_dataset.create_dataset_collections(

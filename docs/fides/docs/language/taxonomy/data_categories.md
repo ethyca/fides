@@ -6,18 +6,17 @@ Data Categories are hierarchical labels used to describe the type of data proces
 
 ## Object Structure
 
-**fides_key**<span class="required"/>_string_
+**fides_key**<span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
 A string token that uniquely identifies this Data Category. The value is a dot-separated concatenation of the `fides_key` values of the resource's ancestors plus a final element for this resource:
 
 `grandparent.parent.this_data_category`
 
-The final element (`this_data_category`) may only contain alphanumeric characters and underbars (`[A-Za-z0-9_]`). The dot character is reserved as a separator.
-
+The final element (`this_data_category`) may only contain alphanumeric characters and underscores (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
 
 **name**<span class="spacer"/>_string_
 
-A UI-friendly label for the Data Category. 
+A UI-friendly label for the Data Category.
 
 **description**<span class="spacer"/>_string_
 
@@ -31,10 +30,9 @@ The fides key of the the Data Category's parent.
 
 The fides key of the organization to which this Data Category belongs.
 
-
 !!! Note "Extensibility and Interopability"
-    Data Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
-    
+    Data Categories in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
+
     You can extend the taxonomy to support your system needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
@@ -42,7 +40,6 @@ The fides key of the organization to which this Data Category belongs.
 ## Top Level Data Categories
 
 There are three top-level categories:
-
 
 | Label     | Parent Key    | Description                                           |
 | ---       | ---           | ---                                                   |
@@ -60,20 +57,20 @@ Below is a reference for all subcategories of `account`, `system` and `user` to 
 
 | Label             | Parent Key        | Description                               |
 | ---               | ---               | ---                                       |
-| `contact`         | `account`	        | Contact data related to a system account. |
-| `city`            | `account.contact`	| Account's city level address data.        |
-| `country`         | `account.contact`	| Account's country level address data.     |
-| `email`           | `account.contact`	| Account's email address.                  |
-| `phone_number`    | `account.contact`	| Account's phone number.                   |
-| `postal_code`     | `account.contact`	| Account's postal code.                    |
-| `state`           | `account.contact`	| Account's state level address data.       |
-| `street`          | `account.contact`	| Account's street level address.           |
+| `contact`         | `account`         | Contact data related to a system account. |
+| `city`            | `account.contact` | Account's city level address data.        |
+| `country`         | `account.contact` | Account's country level address data.     |
+| `email`           | `account.contact` | Account's email address.                  |
+| `phone_number`    | `account.contact` | Account's phone number.                   |
+| `postal_code`     | `account.contact` | Account's postal code.                    |
+| `state`           | `account.contact` | Account's state level address data.       |
+| `street`          | `account.contact` | Account's street level address.           |
 
 ### Account Payment Data
 
 | Label                         | Parent Key        | Description                               |
 | ---                           | ---               | ---                                       |
-| `payment`                     | `account`    	    | Payment data related to system account.   |
+| `payment`                     | `account`         | Payment data related to system account.   |
 | `financial_account_number`    | `account.payment` | Payment data related to system account.   |
 
 ## System Data Categories
@@ -81,15 +78,16 @@ Below is a reference for all subcategories of `account`, `system` and `user` to 
 | Label             | Parent Key    | Description                               |
 | ---               | ---           | ---                                       |
 | `authentication`  | `system`      | Data used to manage access to the system. |
-| `operations`      | `system` 	    | Data used for system operations.          |
+| `operations`      | `system`      | Data used for system operations.          |
 
 ## User Data Categories
 
-The "User" data category has two important subcategories for `derived` and `provided` data. 
+The "User" data category has two important subcategories for `derived` and `provided` data.
 
 In turn, `derived` and `provided` both have subcategories for `identifiable` and `nonidentifiable` data, to make it clear what data is considered identifiable in your systems.
 
 ### User Derived Data
+
 Data derived from user provided data or as a result of user actions in the system.
 
 | Label                             | Parent Key                                | Description                                                                                   |
@@ -123,6 +121,7 @@ Data derived from user provided data or as a result of user actions in the syste
 | `nonsensor`                       | `user.derived.nonidentifiable`            |Non-user identifiable measurement data derived from sensors and monitoring systems.            |
 
 ### User Provided Data
+
 Data provided or created directly by a user of the system.
 
 | Label                             | Parent Key                                | Description                                                                                   |

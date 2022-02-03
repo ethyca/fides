@@ -24,6 +24,26 @@ Due to environmental differences, there is no specific guide on running/configur
 
 Make sure to note your database credentials and use them to generate a [SQLAlchemy Connection String](https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql). This will be used in the `database_url` configuration value mentioned below.
 
+## Initializing Fidesctl
+
+With Fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration.
+
+```sh title="Initialize Fidesctl"
+fidesctl init
+```
+
+```txt title="Expected Output"
+No config file found. Using default configuration values.
+Initializing Fidesctl...
+
+Created a '.fides' directory.
+
+Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
+            https://ethyca.github.io/fides/installation/configuration/
+
+Fidesctl initialization complete.
+```
+
 ## Configuring Fidesctl
 
 See our [Configuration](../installation/configuration.md) guide for more information on how to configure fidesctl.
