@@ -78,8 +78,7 @@ class DataUse(SqlAlchemyBase, FidesBase):
 
     parent_key = Column(Text)
     legal_basis = Column(Text)
-    purpose_of_processing = Column(Text)
-    recipient = Column(Text)
+    recipients = Column(ARRAY(String))
 
 
 # Dataset

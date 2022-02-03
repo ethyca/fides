@@ -76,8 +76,7 @@ class DataUse(FidesModel):
 
     parent_key: Optional[FidesKey]
     legal_basis: Optional[str]
-    purpose_of_processing: Optional[str]
-    recipient: Optional[str]
+    recipients: Optional[List[str]]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
@@ -252,22 +251,6 @@ class Registry(FidesModel):
     Systems can be assigned to this resource, but it doesn't inherently
     point to any other resources.
     """
-
-
-class Recipient(BaseModel):
-    """
-    A resource to model attributes around the recipient of data.
-
-    This is an alternative approach to extending the data use model.
-
-    This may be better using the FidesModel and being able to define
-    these separate and call via a fides_key (child objects as well).
-    """
-
-    name: str
-    description: str
-    purpose_of_processing: str
-    legal_basis: str
 
 
 # System
