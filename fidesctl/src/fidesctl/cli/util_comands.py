@@ -121,9 +121,13 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 def view_config(ctx: click.Context) -> None:
     """
     Prints the current fidesctl configuration values.
+
+    This will print either all of the default values _or_
+    whatever values were set by the user.
     """
     config = ctx.obj["CONFIG"]
-    pretty_echo(config.dict(), color="green")
+    config_dict = config.dict(exclude_unset=True) or config.dict()
+    pretty_echo(config_dict, color="green")
 
 
 @click.command()
