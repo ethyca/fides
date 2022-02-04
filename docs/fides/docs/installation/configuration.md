@@ -9,18 +9,28 @@ By default the fidesctl CLI doesn't require a config file and will instead lever
 After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
 
 ```toml title="fidesctl.toml"
-# Need to include other variables here
 [api]
+
+# If FIDESCTL_TEST_MODE is set to True, the test_database_url
+# will be used instead of the database URL to avoid overwriting production data
+test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+
+# The SQLAlchemy connection string used to connect to the database
+# https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql
 database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
-log_destination = ""
-log_level = 20
-log_serialization = ""
+
+# Logging
+log_destination = "" # Also accepts: Any valid file path
+log_level = INFO # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL
+log_serialization = "" # Also accepts: JSON
 
 [cli]
-server_url = "http://localhost:8080"
+local_mode = False # Tells fidesctl whether it should connect to a webserver or not
+server_url = "http://localhost:8080" # The URL of the fidesctl webserver
 
 [user]
-analytics = true
+# The secure key used to encrypt sensitive information in the database
+encryption_key = "test_encryption_key"
 ```
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
