@@ -148,6 +148,7 @@ class Dataset(FidesModel):
     )
     joint_controller: Optional[ContactDetails]
     retention: Optional[str] = "No retention or erasure policy"
+    third_country_transfers: Optional[List[str]]
     collections: List[DatasetCollection]
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
@@ -309,6 +310,8 @@ class System(FidesModel):
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]
+    third_country_transfers: Optional[List[str]]
+    administrating_department: Optional[str] = "Not defined"
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True
