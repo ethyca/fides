@@ -26,9 +26,16 @@ A human-readable description of the Data Use.
 
 The fides key of the the Data Use's parent.
 
-**legal_basis**<span class="spacer"/>_string_<span class="spacer"/>
+**legal_basis**<span class="spacer"/>_enum_<span class="spacer"/>
 
-The legal basis category of which the data use falls under (e.g. Consent, Legal Obligation, etc.). This field is used as part of the creation of an exportable data map.
+The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:
+
+* `Consent`
+* `Contract`
+* `Legal Obligation`
+* `Vital Interest`
+* `Public Interest`
+* `Legitimate Interest`
 
 **recipent**<span class="spacer"/>_string_<span class="spacer"/>
 

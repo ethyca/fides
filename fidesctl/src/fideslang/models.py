@@ -48,6 +48,21 @@ class FidesModel(BaseModel):
         orm_mode = True
 
 
+class LegalBasisEnum(str, Enum):
+    """
+    The model for allowable legal basis categories
+
+    Based upon article 6 of the GDPR
+    """
+
+    CONSENT = "Consent"
+    CONTRACT = "Contract"
+    LEGAL_OBLIGATION = "Legal Obligation"
+    VITAL_INTEREST = "Vital Interest"
+    PUBLIC_INTEREST = "Public Interest"
+    LEGITIMATE_INTEREST = "Legitimate Interests"
+
+
 # Privacy Data Types
 class DataCategory(FidesModel):
     """The DataCategory resource model."""
@@ -75,7 +90,7 @@ class DataUse(FidesModel):
     """The DataUse resource model."""
 
     parent_key: Optional[FidesKey]
-    legal_basis: Optional[str]
+    legal_basis: Optional[LegalBasisEnum]
     recipients: Optional[List[str]]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
@@ -216,7 +231,7 @@ class Organization(FidesModel):
 # Policy
 class MatchesEnum(str, Enum):
     """
-    The MatchesEnum resouce model.
+    The MatchesEnum resource model.
 
     Determines how the listed resources are matched in the evaluation logic.
     """

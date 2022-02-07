@@ -3,7 +3,7 @@
 
 This page provides an overview of extending the [Data Use taxonomy](/fides/language/taxonomy/data_uses) for your organization. We recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
-One of the core reasons for doing this is adding attribution to be used when exporting data from Fides and adding context/clarity for legal teams to use.
+One of the core reasons for extending a Data Use is adding attribution to be used when exporting data from Fides and adding context/clarity for legal teams.
 
 If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
@@ -31,10 +31,10 @@ data_use:
 
 The above example uses the existing `demo_data_use.yml` from the Fides project. Further details for each field are below:
 
-* `fides_key`: ideally extended from the existing taxonomy using the dot (`.`) separator
+* `fides_key`: Ideally extended from the existing taxonomy using the dot (`.`) separator
 * `name`: The name used here will also be surfaced as the **purpose of processing** when exporting data from Fides
 * `description`: An optional description of the purpose of processing
 * `recipients`: A list of recipients of personal data for this data use, our Payroll example above has multiple recipients for tax purposes
-* `legal_basis`: The legal basis category for processing, used as part of exporting data from Fides
-* `parent_key`: the parent Data Use fides key extended from
+* `legal_basis`: The legal basis category for processing, used as part of exporting data from Fides. 
+* `parent_key`: The parent Data Use fides key extended from
 
