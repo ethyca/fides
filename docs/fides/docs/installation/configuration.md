@@ -11,7 +11,7 @@ After initializing fidesctl, a default configuration file will be generated and 
 ```toml title="fidesctl.toml"
 [api]
 
-# If FIDESCTL_TEST_MODE is set to True, the test_database_url
+# If FIDESCTL_TEST_MODE env var is set to True, the test_database_url
 # will be used instead of the database URL to avoid overwriting production data
 test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
@@ -25,7 +25,7 @@ log_level = INFO # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL
 log_serialization = "" # Also accepts: JSON
 
 [cli]
-local_mode = False # Tells fidesctl whether it should connect to a webserver or not
+local_mode = False # Tells fidesctl to run without calling a webserver
 server_url = "http://localhost:8080" # The URL of the fidesctl webserver
 
 [user]
