@@ -15,8 +15,8 @@ services:
       - MYSQL_USER=mysql_user
       - MYSQL_PASSWORD=mysql_pw
     expose:
-      - 3306
+      - 3307
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
