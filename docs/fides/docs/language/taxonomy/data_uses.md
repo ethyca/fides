@@ -26,6 +26,14 @@ A human-readable description of the Data Use.
 
 The fides key of the the Data Use's parent.
 
+**legal_basis**<span class="spacer"/>_string_<span class="spacer"/>
+
+The legal basis category of which the data use falls under (e.g. Consent, Legal Obligation, etc.). This field is used as part of the creation of an exportable data map.
+
+**recipent**<span class="spacer"/>_string_<span class="spacer"/>
+
+An array of recipients is applied here when sharing personal data outside of your organization (e.g. Internal Revenue Service, HMRC, etc.)
+
 **organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
 
 The fides key of the organization to which this Data Use belongs.
@@ -33,7 +41,7 @@ The fides key of the organization to which this Data Use belongs.
 !!! Note "Extensibility and Interopability"
     Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
 
-    You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
+    You can [extend the taxonomy](/fides/guides/extending_data_use) to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 
     If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
 
