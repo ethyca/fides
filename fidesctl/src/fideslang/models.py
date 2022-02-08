@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field
+from pydantic import validator, BaseModel, Field, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -94,6 +94,7 @@ class DatasetField(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    retention: Optional[str]
     fields: Optional[List[DatasetField]]
 
 
@@ -110,6 +111,7 @@ class DatasetCollection(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    retention: Optional[str] = "No retention or erasure policy"
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
@@ -142,11 +144,12 @@ class Dataset(FidesModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    joint_controller: Optional[ContactDetails]
+    retention: Optional[str] = "No retention or erasure policy"
     collections: List[DatasetCollection]
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
-    joint_controller: Optional[ContactDetails]
 
 
 # Evaluation
@@ -201,12 +204,10 @@ class Organization(FidesModel):
 
     # It inherits this from FidesModel but Organizations don't have this field
     organization_parent_key: None = None
-    controller: ContactDetails = ContactDetails()
-    data_protection_officer: ContactDetails = ContactDetails()
-    representative: ContactDetails = ContactDetails()
-    # controller: Optional[ContactDetails]
-    # data_protection_officer: Optional[ContactDetails]
-    # representative: Optional[ContactDetails]
+    controller: Optional[ContactDetails]
+    data_protection_officer: Optional[ContactDetails]
+    representative: Optional[ContactDetails]
+    security_policy: Optional[HttpUrl]
 
 
 # Policy

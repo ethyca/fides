@@ -76,3 +76,13 @@ def verbose_flag(command: Callable) -> Callable:
         help="Enable verbose output.",
     )(command)
     return command
+
+
+def include_null_flag(command: Callable) -> Callable:
+    "Include null attributes in resource output."
+    command = click.option(
+        "--include-null",
+        is_flag=True,
+        help="Includes attributes that would otherwise be null.",
+    )(command)
+    return command

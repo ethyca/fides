@@ -6,6 +6,7 @@ from fidesctl.cli.options import (
     fides_key_option,
     manifests_dir_argument,
     verbose_flag,
+    include_null_flag,
 )
 from fidesctl.cli.utils import pretty_echo
 from fidesctl.core import (
@@ -173,8 +174,12 @@ def export_organization(
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=click.Path())
+@include_null_flag
 def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str
+    ctx: click.Context,
+    connection_string: str,
+    output_filename: str,
+    include_null: bool,
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-stlye connection string and
@@ -184,7 +189,7 @@ def generate_dataset(
     It will need to be run again if the database schema changes.
     """
 
-    _generate_dataset.generate_dataset(connection_string, output_filename)
+    _generate_dataset.generate_dataset(connection_string, output_filename, include_null)
 
 
 @click.command()
@@ -236,8 +241,13 @@ def scan(
     default=False,
     help="Strictly validate annotation inputs.",
 )
+@include_null_flag
 def annotate_dataset(
-    ctx: click.Context, input_filename: str, all_members: bool, validate: bool
+    ctx: click.Context,
+    input_filename: str,
+    all_members: bool,
+    validate: bool,
+    include_null: bool,
 ) -> None:
     """
     Guided flow for annotating datasets. The dataset file will be edited in-place.
@@ -248,6 +258,7 @@ def annotate_dataset(
         dataset_file=input_filename,
         annotate_all=all_members,
         validate=validate,
+        include_null=include_null,
     )
 
 
