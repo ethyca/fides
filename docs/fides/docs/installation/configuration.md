@@ -4,38 +4,43 @@ Fidesctl supports two methods of configuration. The first is via a toml file, an
 
 By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.
 
-``` title="Config JSON Schema"
---8<-- "docs/installation/config_schema.json"
-```
 
 ## Configuration file
 
 After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
 
-```toml title="fidesctl.toml"
-[api]
+=== "fidesctl.toml"
 
-# If FIDESCTL_TEST_MODE env var is set to True, the test_database_url
-# will be used instead of the database URL to avoid overwriting production data
-test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+    ```toml
+    [api]
 
-# The SQLAlchemy connection string used to connect to the database
-# https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql
-database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    # If FIDESCTL_TEST_MODE env var is set to True, the test_database_url
+    # will be used instead of the database URL to avoid overwriting production data
+    test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
-# Logging
-log_destination = "" # Also accepts: Any valid file path
-log_level = INFO # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL
-log_serialization = "" # Also accepts: JSON
+    # The SQLAlchemy connection string used to connect to the database
+    # https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql
+    database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
-[cli]
-local_mode = False # Tells fidesctl to run without calling a webserver
-server_url = "http://localhost:8080" # The URL of the fidesctl webserver
+    # Logging
+    log_destination = "" # Also accepts: Any valid file path
+    log_level = INFO # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL
+    log_serialization = "" # Also accepts: JSON
 
-[user]
-# The secure key used to encrypt sensitive information in the database
-encryption_key = "test_encryption_key"
-```
+    [cli]
+    local_mode = False # Tells fidesctl to run without calling a webserver
+    server_url = "http://localhost:8080" # The URL of the fidesctl webserver
+
+    [user]
+    # The secure key used to encrypt sensitive information in the database
+    encryption_key = "test_encryption_key"
+    ```
+
+=== "Config JSON Schema"
+
+    ```json
+    --8<-- "docs/installation/config_schema.json"
+    ```
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
