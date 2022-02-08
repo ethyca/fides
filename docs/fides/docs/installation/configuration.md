@@ -4,6 +4,10 @@ Fidesctl supports two methods of configuration. The first is via a toml file, an
 
 By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.
 
+``` title="Config JSON Schema"
+--8<-- "docs/installation/config_schema.json"
+```
+
 ## Configuration file
 
 After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
