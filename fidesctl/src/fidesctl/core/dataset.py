@@ -1,4 +1,4 @@
-"""Module that generates valid dataset manifest files from various data sources."""
+"""Module that adds functionality for generating or scanning datasets."""
 from typing import Dict, List, Tuple, Optional
 
 import sqlalchemy

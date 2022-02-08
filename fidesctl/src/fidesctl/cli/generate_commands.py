@@ -5,6 +5,10 @@ from fidesctl.core import (
     dataset as _dataset,
 )
 
+from fidesctl.cli.options import (
+    include_null_flag,
+)
+
 
 @click.group(name="generate")
 @click.pass_context
@@ -18,8 +22,9 @@ def generate(ctx: click.Context) -> None:
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
+@include_null_flag
 def generate_dataset(
-    ctx: click.Context, connection_string: str, output_filename: str
+    ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-stlye connection string and
@@ -29,4 +34,4 @@ def generate_dataset(
     It will need to be run again if the database schema changes.
     """
 
-    _dataset.generate_dataset(connection_string, output_filename)
+    _dataset.generate_dataset(connection_string, output_filename, include_null)
