@@ -172,7 +172,7 @@ def find_all_uncategorized_dataset_fields(
     return uncategorized_fields, total_field_count
 
 
-def print_database_coverage_result(
+def print_dataset_scan_result(
     datasets: List[str],
     uncategorized_fields: List[str],
     coverage_percent: int,
@@ -199,7 +199,7 @@ def print_database_coverage_result(
     echo_green(annotation_output)
 
 
-def database_coverage(
+def scan_dataset(
     connection_string: str,
     manifest_dir: Optional[str],
     coverage_threshold: int,
@@ -230,7 +230,7 @@ def database_coverage(
     coverage_percent = int(
         ((db_field_count - len(uncategorized_fields)) / db_field_count) * 100
     )
-    print_database_coverage_result(
+    print_dataset_scan_result(
         datasets=list(db_collections.keys()),
         uncategorized_fields=uncategorized_fields,
         coverage_percent=coverage_percent,

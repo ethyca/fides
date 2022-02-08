@@ -5,25 +5,26 @@ import fidesctl
 from fidesctl.core.config import get_config
 
 from .core_commands import (
-    annotate_dataset,
     apply,
     evaluate,
-    export,
-    generate_dataset,
-    scan,
     parse,
 )
 from .crud_commands import delete, get, ls
 from .util_comands import init, init_db, reset_db, ping, webserver, view_config
+from fidesctl.cli.export_commands import export
+from fidesctl.cli.generate_commands import generate
+from fidesctl.cli.annotate_commands import annotate
+from fidesctl.cli.scan_commands import scan
+from fidesctl.core.config import get_config
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view_config]
 API_COMMANDS = [
-    annotate_dataset,
+    annotate,
     apply,
     delete,
     export,
-    generate_dataset,
+    generate,
     scan,
     get,
     init,

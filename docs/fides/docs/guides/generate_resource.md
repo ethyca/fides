@@ -1,12 +1,12 @@
-# Generating a Dataset
+# Generating Resources
 
-As an alternative to manually creating dataset resource files like in our [tutorial](../tutorial/dataset.md), it is possible to generate these files using the `generate-dataset` CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. 
+As an alternative to manually creating resource files like in our [tutorial](../tutorial/dataset.md), it is possible to generate these files using the `generate` CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.
 
 Not only is this the simplest way to begin annotating your resources, but it also follows the expected fidesctl format for these resources. This is important as some commands, like `scan`, expect resources to follow this format. 
 
 # Working With a Database
 
-The `generate-dataset` command can connect to a database and automatically generate resource YAML file. Given a database schema with a single `users` table as follows:
+The `generate dataset` command can connect to a database and automatically generate resource YAML file based on the database schema. Given a database schema with a single `users` table as follows:
 
 ```shell
 flaskr=# SELECT * FROM users;
@@ -17,9 +17,9 @@ flaskr=# SELECT * FROM users;
 (2 rows)
 ```
 
-We can invoke the `generate-dataset` by simply providing a connection url for this database:
+We can invoke the `generate dataset` by simply providing a connection url for this database:
 ```sh
-./venv/bin/fidesctl generate-dataset \
+./venv/bin/fidesctl generate dataset \
   postgresql://postgres:postgres@localhost:5432/flaskr \
   fides_resources/flaskr_postgres_dataset.yml
 ```
@@ -65,5 +65,5 @@ dataset:
       data_categories: []
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
-<!-- TODO: Link to the `annotate-dataset` usage documentation below, when it exists. -->
+<!-- TODO: Link to the `annotate dataset` usage documentation below, when it exists. -->
 The resulting file still requires annotating the dataset with data categories to represent what is stored. 

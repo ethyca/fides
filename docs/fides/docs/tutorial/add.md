@@ -65,7 +65,7 @@ fidesctl-evaluate: compose-up
 
 fidesctl-generate-dataset: compose-up
 	@echo "Generating dataset with fidesctl..."
-	./venv/bin/fidesctl generate-dataset postgresql://postgres:postgres@localhost:5432/flaskr example.yml
+	./venv/bin/fidesctl generate dataset postgresql://postgres:postgres@localhost:5432/flaskr example.yml
 ```
 
 > **Note:** There are additional `Makefile` changes included in the `fidesdemo` repository, but they are only intended to enable cleaner usage of this project for demonstration purposes.
