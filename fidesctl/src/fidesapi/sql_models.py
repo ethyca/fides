@@ -146,6 +146,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     data_qualifier = Column(String)
     collections = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
+    retention = Column(String)
 
 
 # Evaluation
@@ -175,6 +176,7 @@ class Organization(SqlAlchemyBase, FidesBase):
     controller = Column(PGEncryptedString, nullable=True)
     data_protection_officer = Column(PGEncryptedString, nullable=True)
     representative = Column(PGEncryptedString, nullable=True)
+    security_policy = Column(String, nullable=True)
 
 
 # Policy

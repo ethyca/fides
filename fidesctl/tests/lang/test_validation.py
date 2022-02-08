@@ -114,31 +114,18 @@ def test_circular_dependency_data_use():
 
 
 @pytest.mark.unit
-def test_fides_model_valid():
-    fides_key = FidesModel(fides_key="foo_bar", name="Foo Bar")
+@pytest.mark.parametrize("fides_key", ["foo_bar", "foo-bar", "foo.bar", "foo_bar_8"])
+def test_fides_model_valid(fides_key: str):
+    fides_key = FidesModel(fides_key=fides_key, name="Foo Bar")
     assert fides_key
 
 
 @pytest.mark.unit
-def test_fides_model_fides_key_invalid():
+@pytest.mark.parametrize("fides_key", ["foo/bar", "foo%bar", "foo^bar"])
+def test_fides_model_fides_key_invalid(fides_key):
     "Check for a bunch of different possible bad characters here."
     with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="foo-bar")
-
-    with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="foo/bar")
-
-    with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="foo=bar")
-
-    with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="foo^bar")
-
-    with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="_foo^bar")
-
-    with pytest.raises(FidesValidationError):
-        FidesModel(fides_key="")
+        FidesModel(fides_key=fides_key)
 
 
 @pytest.mark.unit
@@ -150,7 +137,7 @@ def test_valid_privacy_rule():
 @pytest.mark.unit
 def test_invalid_fides_key_privacy_rule():
     with pytest.raises(FidesValidationError):
-        PrivacyRule(matches="ANY", values=["foo-bar"])
+        PrivacyRule(matches="ANY", values=["foo^bar"])
     assert True
 
 

@@ -2,6 +2,7 @@ organization:
   - fides_key: default_organization
     name: Demo Organization
     description: An e-commerce organization
+    security_policy: https://ethyca.com/privacy-policy/
     controller: 
       name: Con Troller
       address: 123 demo street, New York, NY, USA
