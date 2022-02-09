@@ -11,7 +11,7 @@ from .core_commands import (
     parse,
 )
 from .crud_commands import delete, get, ls
-from .db_commands import db
+from .db_commands import database
 from .export_commands import export
 from .generate_commands import generate
 from .scan_commands import scan
@@ -29,7 +29,7 @@ API_COMMANDS = [
     scan,
     get,
     init,
-    db,
+    database,
     ls,
     ping,
     webserver,
