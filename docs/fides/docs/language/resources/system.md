@@ -59,8 +59,8 @@ system:
     system_type: Service
     administrating_department: Engineering
     third_country_transfers:
-    - United States
-    - Canada
+    - USA
+    - CAN
     joint_controller:
       name: Dave L. Epper
       address: 1 Acme Pl. New York, NY
@@ -92,7 +92,7 @@ POST /system
   "description": "A system used for analyzing customer behaviour.",
   "system_type": "Service",
   "administrating_department": "Engineering",
-  "third_country_transfers": ["United States", "Canada"],
+  "third_country_transfers": ["USA", "CAN"],
   "joint_controller": {
     "name": "Dave L. Epper",
     "address": "1 Acme Pl. New York, NY",

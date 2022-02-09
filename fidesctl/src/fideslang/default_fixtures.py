@@ -1,3 +1,15 @@
+"""
+This is a slowly changing dataset built from a public endpoint 
+and stored here as a constant to reduce non-value added api calls.
+
+https://restcountries.com/v2/all?fields=name,alpha3Code
+
+To update:
+1. Make a GET request to the above url
+2. Copy/Paste the JSON response below
+"""
+
+
 COUNTRY_CODES = [
     {"name": "Afghanistan", "alpha3Code": "AFG"},
     {"name": "Åland Islands", "alpha3Code": "ALA"},

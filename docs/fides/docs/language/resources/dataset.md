@@ -119,8 +119,8 @@ dataset:
     name: Demo Users Dataset
     description: Data collected about users for our analytics system.
     third_country_transfers:
-    - United States
-    - Canada
+    - USA
+    - CAN
     joint_controller:
       name: Dave L. Epper
       address: 1 Acme Pl. New York, NY
@@ -165,7 +165,7 @@ dataset:
     "fides_key": "demo_users_dataset",
     "name": "Demo Users Dataset",
     "description": "Data collected about users for our analytics system.",
-    "third_country_transfers": ["United States", "Canada"],
+    "third_country_transfers": ["USA", "CAN"],
     "joint_controller": {
       "name": "Dave L. Epper",
       "address": "1 Acme Pl. New York, NY",
