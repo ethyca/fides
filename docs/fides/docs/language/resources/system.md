@@ -31,9 +31,9 @@ A required value to describe the type of system being modeled, examples include:
 
 An optional value to identify the owning department or group of the system within your organization
 
-**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-An optional array to identify any third countries where data is transited to
+An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
 
 **joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
 

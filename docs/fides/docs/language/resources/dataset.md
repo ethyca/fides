@@ -43,9 +43,9 @@ The fides key of the [Organization](/fides/language/resources/organization/) to 
 
 An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it.
 
-**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
 
-An optional array to identify any third countries where data is transited to
+An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
 
 **joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
 

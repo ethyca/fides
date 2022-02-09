@@ -5,8 +5,8 @@ system:
     system_type: Service
     administrating_department: Engineering
     third_country_transfers:
-    - United States
-    - Canada
+    - USA
+    - CAN
     privacy_declarations:
       - name: Analyze customer behaviour for improvements.
         data_categories:
@@ -32,28 +32,3 @@ system:
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-
-  # - fides_key: demo_payroll_system
-  #   name: Demo Payroll System
-  #   description: Handle all required payroll data for the company
-  #   system_type: Service # is this documented somewhere currently?
-  #   privacy_declarations:
-  #     - name: Handle payroll activities
-  #       data_categories:
-  #         - user.provided.identifiable.financial
-  #       data_use: third_party_sharing.legal_obligation.hmrc
-  #       data_subjects:
-  #         - employee
-  #       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  #     - name: Handle tax compliane with Her Majoesty's Revenue and Customs (HMRC)
-  #       data_categories:
-  #         - user.provided.identifiable.financial
-  #       data_use: third_party_sharing.legal_obligation
-  #       data_subjects:
-  #         - employee
-  #       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  #       data_recipients:
-  #         - name: HMRC
-  #           description: Tax authority for the UK Government
-  #           purpose_of_processing: Legal Obligation
-  #           legal_basis: Consent
