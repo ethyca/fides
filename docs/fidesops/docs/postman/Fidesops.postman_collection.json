@@ -2059,7 +2059,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"host\": \"mariadb_example\",\n    \"port\": 3808,\n    \"dbname\": \"mariadb_example\",\n    \"username\": \"mariadb_user\",\n    \"password\": \"mariadb_pw\"\n}",
+							"raw": "{\n    \"host\": \"mariadb_example\",\n    \"port\": 3806,\n    \"dbname\": \"mariadb_example\",\n    \"username\": \"mariadb_user\",\n    \"password\": \"mariadb_pw\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
