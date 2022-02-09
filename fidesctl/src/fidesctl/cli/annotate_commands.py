@@ -1,4 +1,4 @@
-"""Contains the annotate group of CLI commands for Fides."""
+"""Contains the annotate group of CLI commands for Fidesctl."""
 import click
 
 from fidesctl.core import (

@@ -1,4 +1,4 @@
-"""Contains the generate group of CLI commands for Fides."""
+"""Contains the generate group of CLI commands for Fidesctl."""
 import click
 
 from fidesctl.core import (

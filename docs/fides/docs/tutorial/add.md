@@ -57,7 +57,7 @@ The above changes will enable fidesctl CLI commands to be run within the project
 ```makefile
 fidesctl-init-db: compose-up
 	@echo "Initializing fidesctl db.."
-	./venv/bin/fidesctl init-db
+	./venv/bin/fidesctl db init
 
 fidesctl-evaluate: compose-up
 	@echo "Evaluating policy with fidesctl..."

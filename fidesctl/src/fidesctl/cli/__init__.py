@@ -11,13 +11,15 @@ from .core_commands import (
     parse,
 )
 from .crud_commands import delete, get, ls
+from .db_commands import db
 from .export_commands import export
 from .generate_commands import generate
 from .scan_commands import scan
-from .util_comands import init, init_db, reset_db, ping, webserver, view_config
+from .util_comands import init, ping, webserver
+from .view_commands import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, parse, view_config]
+LOCAL_COMMANDS = [evaluate, parse, view]
 API_COMMANDS = [
     annotate,
     apply,
@@ -27,10 +29,9 @@ API_COMMANDS = [
     scan,
     get,
     init,
-    init_db,
+    db,
     ls,
     ping,
-    reset_db,
     webserver,
 ] + LOCAL_COMMANDS
 

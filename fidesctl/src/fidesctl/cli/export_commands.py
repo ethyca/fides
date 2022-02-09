@@ -1,4 +1,4 @@
-"""Contains the export group of CLI commands for Fides."""
+"""Contains the export group of CLI commands for Fidesctl."""
 import click
 
 from fidesctl.cli.options import (
@@ -19,7 +19,7 @@ def export(ctx: click.Context) -> None:
     """
 
 
-@export.command(name="systems")
+@export.command(name="system")
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
@@ -42,7 +42,7 @@ def export_system(
     )
 
 
-@export.command(name="datasets")
+@export.command(name="dataset")
 @click.pass_context
 @manifests_dir_argument
 @dry_flag

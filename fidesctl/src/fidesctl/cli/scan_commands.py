@@ -1,4 +1,4 @@
-"""Contains the scan group of the commands for Fides."""
+"""Contains the scan group of the commands for Fidesctl."""
 import click
 
 from fidesctl.core import (

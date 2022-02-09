@@ -17,7 +17,7 @@ flaskr=# SELECT * FROM users;
 (2 rows)
 ```
 
-We can invoke the `generate dataset` by simply providing a connection url for this database:
+We can invoke the `generate dataset` by providing a connection url for this database:
 ```sh
 ./venv/bin/fidesctl generate dataset \
   postgresql://postgres:postgres@localhost:5432/flaskr \
