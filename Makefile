@@ -66,6 +66,7 @@ cli-integration: build-local
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
+
 ####################
 # Docker
 ####################
@@ -134,6 +135,27 @@ xenon:
 	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
 
 ####################
+# Docs
+####################
+
+.PHONY: docs-build
+docs-build: build-local
+	@docker compose run --rm $(IMAGE_NAME) \
+	python generate_openapi.py ../docs/fides/docs/api/openapi.json
+
+.PHONY: docs-serve
+docs-serve: docs-build
+	@docker compose build docs
+	@docker compose run --rm --service-ports docs \
+	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"
+
+.PHONY: docs-deploy-stable
+docs-deploy-stable:
+	@mike deploy --push --update-aliases $(IMAGE_TAG) stable
+	@mike deploy --push --update-aliases $(IMAGE_TAG) latest
+	@mike set-default --push stable
+
+####################
 # Utils
 ####################
 
@@ -148,14 +170,3 @@ teardown:
 	@echo "Tearing down the dev environment..."
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans
 	@echo "Teardown complete"
-
-.PHONY: docs-build
-docs-build: build-local
-	@docker compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py ../docs/fides/docs/api/openapi.json
-
-.PHONY: docs-serve
-docs-serve: docs-build
-	@docker compose build docs
-	@docker compose run --rm --service-ports docs \
-	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"
