@@ -7,40 +7,51 @@ By default the fidesctl CLI doesn't require a config file and will instead lever
 
 ## Configuration file
 
-After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
+After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a default fidesctl configuration file and documentation for each section:
 
-=== "fidesctl.toml"
+=== "default fidesctl.toml"
 
     ```toml
     [api]
-
-    # If FIDESCTL_TEST_MODE env var is set to True, the test_database_url
-    # will be used instead of the database URL to avoid overwriting production data
     test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
-
-    # The SQLAlchemy connection string used to connect to the database
-    # https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql
     database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
     # Logging
-    log_destination = "" # Also accepts: Any valid file path
-    log_level = INFO # Also accepts: TRACE, DEBUG, WARNING, ERROR, CRITICAL
-    log_serialization = "" # Also accepts: JSON
+    log_destination = ""
+    log_level = INFO
+    log_serialization = ""
 
     [cli]
-    local_mode = False # Tells fidesctl to run without calling a webserver
-    server_url = "http://localhost:8080" # The URL of the fidesctl webserver
+    local_mode = False
+    server_url = "http://localhost:8080"
 
     [user]
-    # The secure key used to encrypt sensitive information in the database
     encryption_key = "test_encryption_key"
     ```
 
-=== "Config JSON Schema"
+=== "API Section"
 
-    ```json
-    --8<-- "docs/installation/config_schema.json"
-    ```
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | test_database_url | String | ""| If the `FIDESCTL_TEST_MODE` environment variable is set to `True`, the `test_database_url` is used instead of the `database_url` to avoid overwriting production data. |
+    | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. |
+    | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, no log files are produced. |
+    | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
+    | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
+
+=== "CLI Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | local_mode | Boolean | False | When to `True`, the CLI will never attempt to call out to a fidesctl webserver. |
+    | server_url | String | "" | The URL for the fidesctl webserver that the CLI should connect to. |
+
+=== "User Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | encryption_key | String | "" | The key used to encrypt the user's data stored in the database. |
+
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
