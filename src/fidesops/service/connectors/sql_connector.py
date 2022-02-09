@@ -58,6 +58,18 @@ class SQLConnector(BaseConnector[Engine]):
             )
         return rows
 
+    @staticmethod
+    def default_cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """
+        Convert SQLAlchemy results to a list of dictionaries
+        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MariaDB
+        """
+        columns: List[Column] = results.cursor.description
+        rows = []
+        for row_tuple in results:
+            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
+        return rows
+
     @abstractmethod
     def build_uri(self) -> str:
         """Build a database specific uri connection string"""
@@ -187,18 +199,12 @@ class MySQLConnector(SQLConnector):
             echo=not self.hide_parameters,
         )
 
-    # Overrides BaseConnector.cursor_result_to_rows
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
         Convert SQLAlchemy results to a list of dictionaries
-        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MySQL
         """
-        columns: List[Column] = results.cursor.description
-        rows = []
-        for row_tuple in results:
-            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
-        return rows
+        return SQLConnector.default_cursor_result_to_rows(results)
 
 
 class MariaDBConnector(SQLConnector):
@@ -230,18 +236,12 @@ class MariaDBConnector(SQLConnector):
             echo=not self.hide_parameters,
         )
 
-    # Overrides BaseConnector.cursor_result_to_rows
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
         Convert SQLAlchemy results to a list of dictionaries
-        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MariaDB
         """
-        columns: List[Column] = results.cursor.description
-        rows = []
-        for row_tuple in results:
-            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
-        return rows
+        return SQLConnector.default_cursor_result_to_rows(results)
 
 
 class RedshiftConnector(SQLConnector):
@@ -413,15 +413,9 @@ class MicrosoftSQLServerConnector(SQLConnector):
         """Query wrapper corresponding to the input traversal_node."""
         return MicrosoftSQLServerQueryConfig(node)
 
-    # Overrides BaseConnector.cursor_result_to_rows
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
         Convert SQLAlchemy results to a list of dictionaries
-        Overrides BaseConnector.cursor_result_to_rows since SQLAlchemy execute returns LegacyCursorResult for MsSQL
         """
-        columns: List[Column] = results.cursor.description
-        rows = []
-        for row_tuple in results:
-            rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
-        return rows
+        return SQLConnector.default_cursor_result_to_rows(results)
