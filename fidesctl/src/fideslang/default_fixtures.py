@@ -1,5 +1,5 @@
 """
-This is a slowly changing dataset built from a public endpoint 
+This is a slowly changing dataset built from a public endpoint
 and stored here as a constant to reduce non-value added api calls.
 
 https://restcountries.com/v2/all?fields=name,alpha3Code
