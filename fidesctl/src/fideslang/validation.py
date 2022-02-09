@@ -81,12 +81,15 @@ def matching_parent_key(value: FidesKey, values: Dict) -> FidesKey:
 
 
 def check_valid_country_code(country_code_list: List) -> List:
-    "Validate all inputs are valid country codes"
-    for country_code in country_code_list:
-        if country_code not in VALID_COUNTRY_CODES:
-            raise FidesValidationError(
-                "The country identified as {} is not a valid Alpha-3 code per ISO 3166.".format(
-                    country_code
+    """
+    Validate all listed countries (if present) are valid country codes.
+    """
+    if country_code_list is not None:
+        for country_code in country_code_list:
+            if country_code not in VALID_COUNTRY_CODES:
+                raise FidesValidationError(
+                    "The country identified as {} is not a valid Alpha-3 code per ISO 3166.".format(
+                        country_code
+                    )
                 )
-            )
     return country_code_list
