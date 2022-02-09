@@ -171,9 +171,9 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     <details>
 
-      <summary>Run <code>fidesctl evaluate</code> again</summary>
+      <summary>Run <code>fidesctl evaluate demo_resources/</code> </summary>
 
-        Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes.
+      Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes.
 
      ```bash
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
