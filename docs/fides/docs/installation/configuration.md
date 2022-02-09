@@ -13,7 +13,6 @@ After initializing fidesctl, a default configuration file will be generated and 
 
     ```toml
     [api]
-    test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
     # Logging
@@ -34,7 +33,7 @@ After initializing fidesctl, a default configuration file will be generated and 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
     | test_database_url | String | ""| If the `FIDESCTL_TEST_MODE` environment variable is set to `True`, the `test_database_url` is used instead of the `database_url` to avoid overwriting production data. |
-    | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. |
+    | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. __NOTE__: Do not include the driver here, fidesctl will do this for you. |
     | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, no log files are produced. |
     | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
     | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |

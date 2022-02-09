@@ -22,7 +22,7 @@ def generate_openapi(outfile_dir: str) -> None:
 def generate_config_docs(outfile_dir: str) -> None:
     "Write out a json schema for the fidesctl config."
 
-    outfile_name = "installation/config_schema.json"
+    outfile_name = "schemas/config_schema.json"
     outfile_path = f"{outfile_dir}/{outfile_name}"
     print(f"Generating Config JSON Schema and writing to '{outfile_path}'...")
     with open(outfile_path, "w") as outfile:
