@@ -6,15 +6,11 @@ from fidesctl.cli.options import (
     fides_key_option,
     manifests_dir_argument,
     verbose_flag,
-    include_null_flag,
 )
 from fidesctl.cli.utils import pretty_echo
 from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
-    export as _export,
-    generate_dataset as _generate_dataset,
-    annotate_dataset as _annotate_dataset,
     parse as _parse,
 )
 
@@ -90,152 +86,6 @@ def evaluate(
         message=message,
         local=config.cli.local_mode,
         dry=dry,
-    )
-
-
-@click.group(name="export")
-@click.pass_context
-def export(ctx: click.Context) -> None:
-    """
-    Parent export command.
-    """
-
-
-@export.command(name="systems")
-@click.pass_context
-@manifests_dir_argument
-@dry_flag
-def export_system(
-    ctx: click.Context,
-    manifests_dir: str,
-    dry: bool,
-) -> None:
-    """
-    Export a system in a data map format.
-    """
-    config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _export.export_system(
-        url=config.cli.server_url,
-        system_list=taxonomy.system,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
-    )
-
-
-@export.command(name="datasets")
-@click.pass_context
-@manifests_dir_argument
-@dry_flag
-def export_dataset(
-    ctx: click.Context,
-    manifests_dir: str,
-    dry: bool,
-) -> None:
-    """
-    Export a dataset in a data map format.
-    """
-    config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _export.export_dataset(
-        url=config.cli.server_url,
-        dataset_list=taxonomy.dataset,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
-    )
-
-
-@click.command()
-@click.pass_context
-@click.argument("connection_string", type=str)
-@click.argument("output_filename", type=click.Path())
-@include_null_flag
-def generate_dataset(
-    ctx: click.Context,
-    connection_string: str,
-    output_filename: str,
-    include_null: bool,
-) -> None:
-    """
-    Connect to a database directly via a SQLAlchemy-stlye connection string and
-    generate a dataset manifest file that consists of every schema/table/field.
-
-    This is a one-time operation that does not track the state of the database.
-    It will need to be run again if the database schema changes.
-    """
-
-    _generate_dataset.generate_dataset(connection_string, output_filename, include_null)
-
-
-@click.command()
-@click.pass_context
-@click.argument("source_type", type=click.Choice(["database"]))
-@click.argument("connection_string", type=str)
-@click.option("-m", "--manifest-dir", type=str, default="")
-@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
-def scan(
-    ctx: click.Context,
-    source_type: str,
-    connection_string: str,
-    manifest_dir: str,
-    coverage_threshold: int,
-) -> None:
-    """
-    Connect to a database directly via a SQLAlchemy-stlye connection string and
-    compare the database objects to existing datasets.
-
-    If there are fields within the database that aren't listed and categorized
-    within one of the datasets, this counts as lacking coverage.
-
-    Outputs missing fields and has a non-zero exit if coverage is
-    under the stated threshold.
-    """
-    config = ctx.obj["CONFIG"]
-    _generate_dataset.database_coverage(
-        connection_string=connection_string,
-        manifest_dir=manifest_dir,
-        coverage_threshold=coverage_threshold,
-        url=config.cli.server_url,
-        headers=config.user.request_headers,
-    )
-
-
-@click.command()
-@click.pass_context
-@click.argument("input_filename", type=str)
-@click.option(
-    "-a",
-    "--all-members",
-    is_flag=True,
-    help="Annotate all dataset members, not just fields",
-)
-@click.option(
-    "-v",
-    "--validate",
-    is_flag=True,
-    default=False,
-    help="Strictly validate annotation inputs.",
-)
-@include_null_flag
-def annotate_dataset(
-    ctx: click.Context,
-    input_filename: str,
-    all_members: bool,
-    validate: bool,
-    include_null: bool,
-) -> None:
-    """
-    Guided flow for annotating datasets. The dataset file will be edited in-place.
-    """
-    config = ctx.obj["CONFIG"]
-    _annotate_dataset.annotate_dataset(
-        config=config,
-        dataset_file=input_filename,
-        annotate_all=all_members,
-        validate=validate,
-        include_null=include_null,
     )
 
 

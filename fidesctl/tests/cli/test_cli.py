@@ -35,14 +35,14 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.integration
 def test_reset_db(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "reset-db", "-y"])
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "reset", "-y"])
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
 def test_init_db(test_config_path: str, test_cli_runner: CliRunner):
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "init-db"])
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "init"])
     print(result.output)
     assert result.exit_code == 0
 
@@ -237,7 +237,7 @@ def test_export_system(test_config_path: str, test_cli_runner: CliRunner):
             "-f",
             test_config_path,
             "export",
-            "systems",
+            "system",
             "demo_resources/",
             "--dry",
         ],

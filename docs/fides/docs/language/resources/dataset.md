@@ -15,7 +15,7 @@ A Dataset takes a database schema (tables and columns) and adds Fides privacy ca
 
 * At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category `user.derived`, and a field with category `user.provided.identifiable.name`, your dataset will contain both user-derived and user-provided name data.
 
-While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.
+While you can create Dataset objects by hand, you typically use the `fidesctl generate dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.
 
 You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems.
 
