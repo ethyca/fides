@@ -121,7 +121,7 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 @click.option(
     "--exclude-unset",
     is_flag=True,
-    help="Does not print configuration values that weren't set by the user.",
+    help="Only print configuration values explicitly set by the user.",
 )
 def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
