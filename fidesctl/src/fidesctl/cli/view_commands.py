@@ -10,15 +10,21 @@ from fidesctl.cli.utils import (
 @click.pass_context
 def view(ctx: click.Context) -> None:
     """
-    View configuration values within fidesctl
+    View various resources types.
     """
 
 
 @view.command(name="config")
 @click.pass_context
-def view_config(ctx: click.Context) -> None:
+@click.option(
+    "--exclude-unset",
+    is_flag=True,
+    help="Only print configuration values explicitly set by the user.",
+)
+def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
-    Prints the current fidesctl configuration values.
+    Prints the fidesctl configuration values.
     """
     config = ctx.obj["CONFIG"]
-    pretty_echo(config.dict(), color="green")
+    config_dict = config.dict(exclude_unset=exclude_unset)
+    pretty_echo(config_dict, color="green")

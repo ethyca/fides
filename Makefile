@@ -152,7 +152,7 @@ teardown:
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py ../docs/fides/docs/api/openapi.json
+	python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
