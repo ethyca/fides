@@ -7,34 +7,36 @@ By default the fidesctl CLI doesn't require a config file and will instead lever
 
 ## Configuration file
 
-After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a default fidesctl configuration file and documentation for each section:
+After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a default fidesctl configuration file:
 
-=== "default fidesctl.toml"
 
-    ```toml
-    [api]
-    database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
-    # Logging
-    log_destination = ""
-    log_level = INFO
-    log_serialization = ""
+```toml title="fidesctl.toml"
+[api]
+database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
 
-    [cli]
-    local_mode = False
-    server_url = "http://localhost:8080"
+# Logging
+log_destination = ""
+log_level = INFO
+log_serialization = ""
 
-    [user]
-    encryption_key = "test_encryption_key"
-    ```
+[cli]
+local_mode = False
+server_url = "http://localhost:8080"
+
+[user]
+encryption_key = "test_encryption_key"
+```
+
+To better describe the various configuration options, the following tables describe each available option, grouped by section:
 
 === "API Section"
 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
-    | test_database_url | String | ""| If the `FIDESCTL_TEST_MODE` environment variable is set to `True`, the `test_database_url` is used instead of the `database_url` to avoid overwriting production data. |
     | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. __NOTE__: Do not include the driver here, fidesctl will do this for you. |
-    | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, no log files are produced. |
+    | test_database_url | String | ""| If the `FIDESCTL_TEST_MODE` environment variable is set to `True`, the `test_database_url` is used instead of the `database_url` to avoid overwriting production data. |
+    | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
     | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
     | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
 
