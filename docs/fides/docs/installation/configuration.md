@@ -44,14 +44,14 @@ To better describe the various configuration options, the following tables descr
 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
-    | local_mode | Boolean | False | When to `True`, the CLI will never attempt to call out to a fidesctl webserver. |
-    | server_url | String | "" | The URL for the fidesctl webserver that the CLI should connect to. |
+    | local_mode | Boolean | False | When set to `True`, forbids the fidesctl CLI from making calls to the fidesctl webserver. |
+    | server_url | String | "" | The base URL of the fidesctl webserver endpoints, in `host:port` format. |
 
 === "User Section"
 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
-    | encryption_key | String | "" | The key used to encrypt the user's data stored in the database. |
+    | encryption_key | String | "" | An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP. |
 
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
