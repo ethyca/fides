@@ -118,15 +118,17 @@ def reset_db(ctx: click.Context, yes: bool) -> None:
 
 @click.command()
 @click.pass_context
-def view_config(ctx: click.Context) -> None:
+@click.option(
+    "--exclude-unset",
+    is_flag=True,
+    help="Does not print configuration values that weren't set by the user.",
+)
+def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
-    Prints the current fidesctl configuration values.
-
-    This will print either all of the default values _or_
-    whatever values were set by the user.
+    Prints the fidesctl configuration values.
     """
     config = ctx.obj["CONFIG"]
-    config_dict = config.dict(exclude_unset=True) or config.dict()
+    config_dict = config.dict(exclude_unset=exclude_unset)
     pretty_echo(config_dict, color="green")
 
 
