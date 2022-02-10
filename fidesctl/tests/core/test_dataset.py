@@ -3,7 +3,7 @@ import pytest
 import os
 from typing import List, Dict
 
-from fidesctl.core import generate_dataset, api
+from fidesctl.core import dataset as _dataset, api
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
@@ -129,7 +129,7 @@ def test_generate_dataset_collections():
             ],
         )
     ]
-    actual_result = generate_dataset.create_dataset_collections(test_resource)
+    actual_result = _dataset.create_dataset_collections(test_resource)
     assert actual_result == expected_result
 
 
@@ -168,7 +168,7 @@ def test_find_uncategorized_dataset_fields_all_categorized():
     (
         uncategorized_keys,
         total_field_count,
-    ) = generate_dataset.find_uncategorized_dataset_fields(
+    ) = _dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert not uncategorized_keys
@@ -199,7 +199,7 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
     (
         uncategorized_keys,
         total_field_count,
-    ) = generate_dataset.find_uncategorized_dataset_fields(
+    ) = _dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.2"}
@@ -227,7 +227,7 @@ def test_find_uncategorized_dataset_fields_missing_field():
     (
         uncategorized_keys,
         total_field_count,
-    ) = generate_dataset.find_uncategorized_dataset_fields(
+    ) = _dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.bar.5"}
@@ -259,7 +259,7 @@ def test_find_uncategorized_dataset_fields_missing_collection():
     (
         uncategorized_keys,
         total_field_count,
-    ) = generate_dataset.find_uncategorized_dataset_fields(
+    ) = _dataset.find_uncategorized_dataset_fields(
         dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
     )
     assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
@@ -270,7 +270,7 @@ def test_find_uncategorized_dataset_fields_missing_collection():
 def test_unsupported_dialect_error():
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     with pytest.raises(SystemExit):
-        generate_dataset.generate_dataset(test_url, "test_file.yml", False)
+        _dataset.generate_dataset(test_url, "test_file.yml", False)
 
 
 # Generate Dataset Database Integration Tests
@@ -384,24 +384,24 @@ class TestDatabase:
         print(request.keywords)
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         engine = sqlalchemy.create_engine(database_parameters.get("url"))
-        actual_result = generate_dataset.get_db_collections_and_fields(engine)
+        actual_result = _dataset.get_db_collections_and_fields(engine)
         assert actual_result == database_parameters.get("expected_collection")
 
     def test_generate_dataset(self, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        actual_result = generate_dataset.generate_dataset(
+        actual_result = _dataset.generate_dataset(
             database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 
     def test_generate_dataset_passes_(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+        datasets: List[Dataset] = _dataset.create_dataset_collections(
             database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
         create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
+        _dataset.scan_dataset(
             connection_string=database_parameters.get("url"),
             manifest_dir="",
             coverage_threshold=100,
@@ -411,12 +411,12 @@ class TestDatabase:
 
     def test_generate_dataset_coverage_failure(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+        datasets: List[Dataset] = _dataset.create_dataset_collections(
             database_parameters.get("expected_collection")
         )
         create_server_datasets(test_config, datasets)
         with pytest.raises(SystemExit):
-            generate_dataset.database_coverage(
+            _dataset.scan_dataset(
                 connection_string=database_parameters.get("url"),
                 manifest_dir="",
                 coverage_threshold=100,
@@ -426,7 +426,7 @@ class TestDatabase:
 
     def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = generate_dataset.create_dataset_collections(
+        datasets: List[Dataset] = _dataset.create_dataset_collections(
             database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
@@ -435,7 +435,7 @@ class TestDatabase:
         write_manifest(file_name, [i.dict() for i in datasets], "dataset")
 
         create_server_datasets(test_config, datasets)
-        generate_dataset.database_coverage(
+        _dataset.scan_dataset(
             connection_string=database_parameters.get("url"),
             manifest_dir=f"{tmpdir}",
             coverage_threshold=100,

@@ -69,12 +69,10 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 ```
 
-<!-- TODO: Link to the `generate-dataset` usage documentation below, when it exists. -->
-
-As an alternative to manually authoring the resource file, you can also use the `generate-dataset` CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
+As an alternative to manually authoring the resource file, you can also use the [generate](../language/resources/policy.md) CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
 
 ```sh
-./venv/bin/fidesctl generate-dataset \
+./venv/bin/fidesctl generate dataset \
   postgresql://postgres:postgres@localhost:5432/flaskr \
   fides_resources/flaskr_postgres_dataset.yml
 ```
