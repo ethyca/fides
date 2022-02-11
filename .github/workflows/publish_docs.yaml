@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
+      - earmenda-fix-docs-gh-action
     paths:
-      - "docs/**"
+      # - "docs/**"
+      - "*"
 
 jobs:
   publish_docs:
@@ -16,7 +18,7 @@ jobs:
       - run: pip install -r docs/fides/requirements.txt
       - name: Build docs
         run: make docs-build
-      - name: Publish docs
-        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
-        env:
-          PROD_PUBLISH: true
+      # - name: Publish docs
+      #   run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
+      #   env:
+      #     PROD_PUBLISH: true
