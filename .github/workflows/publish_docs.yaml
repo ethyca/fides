@@ -3,11 +3,10 @@ name: Publish updated docs to gh-pages
 on:
   push:
     branches:
-      - main
       - earmenda-fix-docs-gh-action
     paths:
       # - "docs/**"
-      - "*"
+      - "*/**"
 
 jobs:
   publish_docs:
