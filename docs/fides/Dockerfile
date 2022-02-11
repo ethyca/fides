@@ -1,6 +1,7 @@
 FROM python:3.8-slim-buster
 
 # Install auxiliary software
+#testing
 RUN apt-get update
 RUN apt-get install -y \
     git \
