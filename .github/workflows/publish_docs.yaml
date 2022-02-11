@@ -16,6 +16,7 @@ jobs:
         with:
           # Currently limited by pandas support for python 3.10, dependency from fidesctl
           # see  https://github.com/pandas-dev/pandas/pull/43729
+          # Remove once fidesctl 1.4.0 is released an pandas version is 1.3.4
           python-version: "3.9.0"
       - run: pip install -r docs/fides/requirements.txt
       - name: Build docs
