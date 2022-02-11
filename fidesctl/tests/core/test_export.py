@@ -90,6 +90,7 @@ def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
 
     dataset_name = test_sample_dataset_taxonomy[0].name
     dataset_description = test_sample_dataset_taxonomy[0].description
+    dataset_fides_key = test_sample_dataset_taxonomy[0].fides_key
     test_field = test_sample_dataset_taxonomy[0].collections[0].fields[1]
 
     dataset_rows = export.generate_data_category_rows(
@@ -97,6 +98,7 @@ def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
         dataset_description,
         test_field.data_qualifier,
         test_field.data_categories,
+        dataset_fides_key,
     )
 
     assert len(dataset_rows) == 2

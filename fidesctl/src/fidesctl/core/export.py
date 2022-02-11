@@ -3,11 +3,18 @@ Exports various resources as data maps.
 """
 import csv
 from datetime import datetime
+import shutil
 from typing import Dict, List, Tuple, Set
 
+import pandas as pd
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.utils import echo_green, get_all_level_fields
+
+from fideslang.models import Taxonomy, ContactDetails
+
+
+DATAMAP_TEMPLATE = "src/fidesctl/templates/fides_datamap_template.xlsx"
 
 
 def export_to_csv(
@@ -32,7 +39,8 @@ def generate_data_category_rows(
     dataset_description: str,
     data_qualifier: str,
     data_categories: List,
-) -> Set[Tuple[str, str, str, str]]:
+    dataset_fides_key: str,
+) -> Set[Tuple[str, str, str, str, str]]:
     """
     Set comprehension to capture categories from any
     of the possible levels in a dataset resource.
@@ -46,6 +54,7 @@ def generate_data_category_rows(
             dataset_description,
             category,
             data_qualifier,
+            dataset_fides_key,
         )
         for category in data_categories
     }
@@ -55,7 +64,7 @@ def generate_data_category_rows(
 
 def generate_dataset_records(
     server_dataset_list: List,
-) -> List[Tuple[str, str, str, str]]:
+) -> List[Tuple[str, str, str, str, str]]:
     """
     Returns a list of tuples as records (with expected headers)
     to be exported as csv. The ouput rows consist of unique combinations
@@ -68,6 +77,7 @@ def generate_dataset_records(
             "dataset.description",
             "dataset.data_categories",
             "dataset.data_qualifier",
+            "dataset.fides_key",
         )
     ]
 
@@ -77,12 +87,14 @@ def generate_dataset_records(
     for dataset in server_dataset_list:
         dataset_name = dataset.name
         dataset_description = dataset.description
+        dataset_fides_key = dataset.fides_key
         if dataset.data_categories:
             dataset_rows = generate_data_category_rows(
                 dataset_name,
                 dataset_description,
                 dataset.data_qualifier,
                 dataset.data_categories,
+                dataset_fides_key,
             )
             unique_data_categories = unique_data_categories.union(dataset_rows)
         for collection in dataset.collections:
@@ -92,6 +104,7 @@ def generate_dataset_records(
                     dataset_description,
                     collection.data_qualifier,
                     collection.data_categories,
+                    dataset_fides_key,
                 )
                 unique_data_categories = unique_data_categories.union(dataset_rows)
             for field in get_all_level_fields(collection.fields):
@@ -101,6 +114,7 @@ def generate_dataset_records(
                         dataset_description,
                         field.data_qualifier,
                         field.data_categories,
+                        dataset_fides_key,
                     )
                     unique_data_categories = unique_data_categories.union(dataset_rows)
 
@@ -157,7 +171,7 @@ def generate_system_records(
             "system.privacy_declaration.data_uses",
             "system.privacy_declaration.data_subjects",
             "system.privacy_declaration.data_qualifier",
-            "system.privacy_declaration.dataset_references",
+            "dataset.fides_key",
         )
     ]
 
@@ -216,24 +230,32 @@ def export_system(
 
 
 def generate_contact_records(server_organization_list: List) -> List:
-
+    """
+    Takes a list of organizations and breaks out the individual
+    fields to be returned.
+    """
     output_list = [
-        (
-            "Organization Name and Contact Detail",
-            "Data Protection Officer (if applicable)",
-            "Representative (if applicable)",
-        )
+        # (
+        #     "Organization Name and Contact Detail",
+        #     "Data Protection Officer (if applicable)",
+        #     "Representative (if applicable)",
+        # )
     ]
 
     # currently the output file will only truly support a single organization
     # need to better understand the use case for multiple and how to handle
     for organization in server_organization_list:
-        fields = tuple(organization.controller.dict().keys())
-        controller = tuple(organization.controller.dict().values())
-        data_protection_officer = tuple(
-            organization.data_protection_officer.dict().values()
+
+        fields = tuple(ContactDetails().dict().keys())
+
+        get_values = (
+            lambda x: tuple(x.dict().values())
+            if x
+            else tuple(ContactDetails().dict().values())
         )
-        representative = tuple(organization.representative.dict().values())
+        controller = get_values(organization.controller)
+        data_protection_officer = get_values(organization.data_protection_officer)
+        representative = get_values(organization.representative)
 
         contact_details = list(
             zip(
@@ -282,3 +304,144 @@ def export_organization(
         echo_green("Output would contain:")
         for record in output_list:
             print(record)
+
+
+def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
+    """
+    Gathers all fides keys for an organization, systems,
+    and datasets based on the resources found in the
+    provided taxonomy built from manifests.
+    """
+    taxonomy_keys_dict = {}
+    taxonomy_keys_dict["organization"] = [
+        resource.fides_key for resource in taxonomy.organization
+    ]
+    taxonomy_keys_dict["system"] = [resource.fides_key for resource in taxonomy.system]
+    taxonomy_keys_dict["dataset"] = [
+        resource.fides_key for resource in taxonomy.dataset
+    ]
+    return taxonomy_keys_dict
+
+
+def export_datamap_to_excel(
+    organization_df: pd.DataFrame, joined_df: pd.DataFrame, manifests_dir: str
+) -> None:
+    """
+    Creates a copy from the existing datamap template and generates
+    an exported datamap based on applied fides resources. Uses two
+    dataframes, one for the organization and one for the joined
+    system and dataset resources.
+    """
+    utc_datetime = datetime.utcnow().strftime("%Y-%m-%d-T%H%M%S")
+    filename = f"{utc_datetime}_datamap.xlsx"
+    filepath = f"{manifests_dir}/{filename}"
+
+    shutil.copy(DATAMAP_TEMPLATE, filepath)
+
+    # append data to the copied template
+    output_columns = [
+        "dataset.name",
+        "system.name",
+        "system.administrating_department",
+        "system.privacy_declaration.data_use.name",
+        "system.joint_controller",
+        "system.privacy_declaration.data_subjects",
+        "dataset.data_categories",
+        "system.privacy_declaration.data_use.recipients",
+        "system.link_to_processor_contract",
+        "system.third_country_transfers",
+        "dataset.retention",
+        "organization.link_to_security_policy",
+    ]
+    # pylint: disable=abstract-class-instantiated
+    with pd.ExcelWriter(
+        filepath, mode="a", if_sheet_exists="overlay"
+    ) as export_file:  # pylint: enable=abstract-class-instantiated
+        organization_df.to_excel(
+            export_file,
+            sheet_name="Art30 mock (WIP)",
+            index=False,
+            header=False,
+            startrow=2,
+            startcol=2,
+        )
+
+        joined_df.to_excel(
+            export_file,
+            sheet_name="Art30 mock (WIP)",
+            index=False,
+            header=False,
+            startrow=9,
+            columns=output_columns,
+        )
+
+
+def export_datamap(
+    url: str,
+    taxonomy: Taxonomy,
+    headers: Dict[str, str],
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Exports the required fields from a system resource to a csv file.
+
+    The resource is fetched from the server prior to being
+    flattened as needed for exporting.
+    """
+    fides_keys_dict = get_datamap_fides_keys(taxonomy)
+    # organizations
+    server_resource_dict = {}
+    server_resource_dict["organization"] = get_server_resources(
+        url,
+        "organization",
+        fides_keys_dict["organization"],
+        headers,
+    )
+
+    output_list = generate_contact_records(server_resource_dict["organization"])
+    organization_df = pd.DataFrame.from_records(output_list)
+
+    # systems
+    server_resource_dict["system"] = get_server_resources(
+        url,
+        "system",
+        fides_keys_dict["system"],
+        headers,
+    )
+
+    output_list = generate_system_records(server_resource_dict["system"])
+    system_headers = output_list.pop(0)
+    systems_df = pd.DataFrame.from_records(output_list, columns=system_headers)
+
+    # datasets
+    server_resource_dict["dataset"] = get_server_resources(
+        url,
+        "dataset",
+        fides_keys_dict["dataset"],
+        headers,
+    )
+
+    output_list = generate_dataset_records(server_resource_dict["dataset"])
+    dataset_headers = output_list.pop(0)
+    datasets_df = pd.DataFrame.from_records(output_list, columns=dataset_headers)
+
+    joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
+
+    joined_df["system.administrating_department"] = ""
+    joined_df["system.third_country_transfers"] = ""
+    joined_df["dataset.third_country_transfers"] = ""
+    joined_df["dataset.retention"] = ""
+    joined_df["system.privacy_declaration.data_use.legal_basis"] = ""
+    joined_df["system.privacy_declaration.data_use.recipients"] = ""
+    joined_df["system.privacy_declaration.data_use.name"] = ""
+    joined_df["system.joint_controller"] = ""
+    joined_df["system.link_to_processor_contract"] = ""
+    joined_df["organization.link_to_security_policy"] = ""
+
+    if not dry:
+        export_datamap_to_excel(organization_df, joined_df, manifests_dir)
+        echo_green("successfully exported your datamap!")
+    else:
+        echo_green("Output would contain:")
+        print(joined_df.head())

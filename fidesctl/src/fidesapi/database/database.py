@@ -60,7 +60,7 @@ async def load_default_taxonomy() -> None:
     for resource_type in list(DEFAULT_TAXONOMY.__fields_set__):
         log.info(f"Processing {resource_type} resources...")
         resources = list(map(dict, DEFAULT_TAXONOMY.dict()[resource_type]))
-        
+
         try:
             await upsert_resources(sql_model_map[resource_type], resources)
         except QueryError:
