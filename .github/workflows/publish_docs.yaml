@@ -3,10 +3,9 @@ name: Publish updated docs to gh-pages
 on:
   push:
     branches:
-      - earmenda-fix-docs-gh-action
+      - main
     paths:
-      # - "docs/**"
-      - "*/**"
+      - "docs/**"
 
 jobs:
   publish_docs:
@@ -15,11 +14,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
+          # Currently limited by pandas support for python 3.10, dependency from fidesctl
+          # see  https://github.com/pandas-dev/pandas/pull/43729
           python-version: "3.9.0"
       - run: pip install -r docs/fides/requirements.txt
       - name: Build docs
         run: make docs-build
-      # - name: Publish docs
-      #   run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
-      #   env:
-      #     PROD_PUBLISH: true
+      - name: Publish docs
+        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
+        env:
+          PROD_PUBLISH: true
