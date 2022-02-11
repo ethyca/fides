@@ -27,7 +27,7 @@ def generate_dataset(
     ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
 ) -> None:
     """
-    Connect to a database directly via a SQLAlchemy-stlye connection string and
+    Connect to a database directly via a SQLAlchemy-style connection string and
     generate a dataset manifest file that consists of every schema/table/field.
 
     This is a one-time operation that does not track the state of the database.
