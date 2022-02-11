@@ -26,7 +26,7 @@ def scan_dataset(
     coverage_threshold: int,
 ) -> None:
     """
-    Connect to a database directly via a SQLAlchemy-stlye connection string and
+    Connect to a database directly via a SQLAlchemy-style connection string and
     compare the database objects to existing datasets.
 
     If there are fields within the database that aren't listed and categorized
