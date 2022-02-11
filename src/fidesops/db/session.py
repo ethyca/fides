@@ -29,11 +29,15 @@ def get_db_engine(database_uri: Optional[str] = None) -> Engine:
 ENGINE = get_db_engine()
 
 
-def get_db_session(engine: Optional[Engine] = None) -> sessionmaker:
+def get_db_session(
+    autocommit: bool = False,
+    autoflush: bool = False,
+    engine: Optional[Engine] = None,
+) -> sessionmaker:
     """Return a database SessionLocal"""
     return sessionmaker(
-        autocommit=False,
-        autoflush=False,
+        autocommit=autocommit,
+        autoflush=autoflush,
         bind=engine or ENGINE,
         class_=ExtendedSession,
     )

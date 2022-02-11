@@ -3,7 +3,7 @@ This file invokes a command used to setup infrastructure for use in testing Fide
 and related workflows.
 """
 import argparse
-import os
+import subprocess
 import sys
 from typing import (
     List,
@@ -11,10 +11,10 @@ from typing import (
 
 DOCKER_WAIT = 15
 DOCKERFILE_DATASTORES = [
+    "mssql",
     "postgres",
     "mysql",
     "mongodb",
-    "mssql",
     "mariadb",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
@@ -42,12 +42,12 @@ def run_infrastructure(
     """
 
     if len(datastores) == 0:
-        os.system(
+        _run_cmd_or_err(
             f'echo "no datastores specified, configuring infrastructure for all datastores"'
         )
         datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
     else:
-        os.system(f'echo "datastores specified: {", ".join(datastores)}"')
+        _run_cmd_or_err(f'echo "datastores specified: {", ".join(datastores)}"')
 
     # De-duplicate datastores
     datastores = set(datastores)
@@ -55,10 +55,10 @@ def run_infrastructure(
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
-    os.system(f'echo "infrastructure path: {path}"')
-    os.system(f"docker-compose {path} build")
-    os.system(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
-    os.system(f"sleep {DOCKER_WAIT}")
+    _run_cmd_or_err(f'echo "infrastructure path: {path}"')
+    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
+    _run_cmd_or_err(f"sleep {DOCKER_WAIT}")
 
     seed_initial_data(
         datastores,
@@ -92,14 +92,14 @@ def seed_initial_data(
     """
     Seed the datastores with initial data as defined in the file at `setup_path`
     """
-    os.system('echo "Seeding initial data for all datastores..."')
+    _run_cmd_or_err('echo "Seeding initial data for all datastores..."')
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
             setup_path = f"tests/integration_tests/{datastore}_setup.py"
-            os.system(
+            _run_cmd_or_err(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
             )
-            os.system(
+            _run_cmd_or_err(
                 f'docker-compose {path} run {base_image} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
             )
 
@@ -110,15 +110,24 @@ def get_path_for_datastores(datastores: List[str]) -> str:
     """
     path: str = "-f docker-compose.yml"
     for datastore in datastores:
-        os.system(f'echo "configuring infrastructure for {datastore}"')
+        _run_cmd_or_err(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:
             # We only need to locate the docker-compose file if the datastore runs in Docker
             path += f" -f docker-compose.integration-{datastore}.yml"
         elif datastore not in EXTERNAL_DATASTORES:
             # If the specified datastore is not known to us
-            os.system(f'echo "Datastore {datastore} is currently not supported"')
+            _run_cmd_or_err(f'echo "Datastore {datastore} is currently not supported"')
 
     return path
+
+
+def _run_cmd_or_err(cmd: str) -> None:
+    """
+    Runs a command in the bash prompt and throws an error if the command was not successful
+    """
+    res = subprocess.Popen(cmd, shell=True).wait()
+    if res > 0:
+        raise Exception(f"Error executing command: {cmd}")
 
 
 def _run_quickstart(
@@ -128,9 +137,9 @@ def _run_quickstart(
     """
     Invokes the Fidesops command line quickstart
     """
-    os.system(f'echo "Running the quickstart..."')
-    os.system(f"docker-compose {path} up -d")
-    os.system(f"docker exec -it {image_name} python quickstart.py")
+    _run_cmd_or_err(f'echo "Running the quickstart..."')
+    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker exec -it {image_name} python quickstart.py")
 
 
 def _open_shell(
@@ -140,16 +149,16 @@ def _open_shell(
     """
     Opens a bash shell on the container at `image_name`
     """
-    os.system(f'echo "Opening bash shell on {image_name}"')
-    os.system(f"docker-compose {path} run {image_name} /bin/bash")
+    _run_cmd_or_err(f'echo "Opening bash shell on {image_name}"')
+    _run_cmd_or_err(f"docker-compose {path} run {image_name} /bin/bash")
 
 
 def _run_application(docker_compose_path: str) -> None:
     """
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
-    os.system(f'echo "Running application"')
-    os.system(f"docker-compose {docker_compose_path} up")
+    _run_cmd_or_err(f'echo "Running application"')
+    _run_cmd_or_err(f"docker-compose {docker_compose_path} up")
 
 
 def _run_tests(
@@ -186,16 +195,16 @@ def _run_tests(
 
     pytest_path += f' -m "{pytest_markers}"'
 
-    os.system(
+    _run_cmd_or_err(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
-    os.system(
+    _run_cmd_or_err(
         f"docker-compose {docker_compose_path} run {environment_variables} {IMAGE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
-    os.system(f"docker-compose {docker_compose_path} down --remove-orphans")
-    os.system(f'echo "fin."')
+    _run_cmd_or_err(f"docker-compose {docker_compose_path} down --remove-orphans")
+    _run_cmd_or_err(f'echo "fin."')
 
 
 if __name__ == "__main__":
