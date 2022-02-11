@@ -31,7 +31,8 @@ from fidesops.service.connectors.sql_connector import (
     SnowflakeConnector,
     RedshiftConnector,
     MicrosoftSQLServerConnector,
-    MySQLConnector, MariaDBConnector,
+    MySQLConnector,
+    MariaDBConnector,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
@@ -179,13 +180,13 @@ def test_create_and_process_access_request(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mssql(
-        trigger_webhook_mock,
-        mssql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mssql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -218,13 +219,13 @@ def test_create_and_process_access_request_mssql(
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mysql(
-        trigger_webhook_mock,
-        mysql_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mysql_example_test_dataset_config,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -254,16 +255,18 @@ def test_create_and_process_access_request_mysql(
     pr.delete(db=db)
 
 
+@pytest.mark.integration_mariadb
 @pytest.mark.integration
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_mariadb(
-        trigger_webhook_mock,
-        mariadb_example_test_dataset_config,
-        db,
-        cache,
-        policy,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
+    trigger_webhook_mock,
+    mariadb_example_test_dataset_config,
+    mariadb_integration_db,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
 ):
 
     customer_email = "customer-1@example.com"
@@ -334,12 +337,12 @@ def test_create_and_process_erasure_request_specific_category(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mssql(
-        mssql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mssql,
+    mssql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mssql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -373,12 +376,12 @@ def test_create_and_process_erasure_request_specific_category_mssql(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mysql(
-        mysql_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mysql,
+    mysql_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mysql,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1
@@ -412,12 +415,12 @@ def test_create_and_process_erasure_request_specific_category_mysql(
 
 @pytest.mark.integration_erasure
 def test_create_and_process_erasure_request_specific_category_mariadb(
-        mariadb_example_test_dataset_config,
-        cache,
-        db,
-        generate_auth_header,
-        erasure_policy,
-        connection_config_mariadb,
+    mariadb_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    connection_config_mariadb,
 ):
     customer_email = "customer-1@example.com"
     customer_id = 1

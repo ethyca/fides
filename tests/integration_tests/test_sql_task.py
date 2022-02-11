@@ -380,44 +380,44 @@ def test_mssql_access_request_task(db, policy, connection_config_mssql) -> None:
 
     logs = (
         ExecutionLog.query(db=db)
-            .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-            .all()
+        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        .all()
     )
 
     logs = [log.__dict__ for log in logs]
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mssql_db_1", collection_name="customer"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mssql_db_1", collection_name="customer"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mssql_db_1", collection_name="address"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mssql_db_1", collection_name="address"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mssql_db_1", collection_name="orders"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mssql_db_1", collection_name="orders"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs,
-                    dataset_name="my_mssql_db_1",
-                    collection_name="payment_card",
-                )
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name="my_mssql_db_1",
+                collection_name="payment_card",
             )
-            > 0
+        )
+        > 0
     )
 
 
@@ -462,50 +462,55 @@ def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
 
     logs = (
         ExecutionLog.query(db=db)
-            .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-            .all()
+        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        .all()
     )
 
     logs = [log.__dict__ for log in logs]
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mysql_db_1", collection_name="customer"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mysql_db_1", collection_name="customer"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mysql_db_1", collection_name="address"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mysql_db_1", collection_name="address"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_mysql_db_1", collection_name="orders"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_mysql_db_1", collection_name="orders"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs,
-                    dataset_name="my_mysql_db_1",
-                    collection_name="payment_card",
-                )
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name="my_mysql_db_1",
+                collection_name="payment_card",
             )
-            > 0
+        )
+        > 0
     )
 
 
+@pytest.mark.integration_mariadb
 @pytest.mark.integration
-def test_mariadb_access_request_task(db, policy, connection_config_mariadb) -> None:
-
+def test_mariadb_access_request_task(
+    db,
+    policy,
+    connection_config_mariadb,
+    mariadb_integration_db,
+) -> None:
     privacy_request = PrivacyRequest(
         id=f"test_mariadb_access_request_task_{random.randint(0, 1000)}"
     )
@@ -544,44 +549,44 @@ def test_mariadb_access_request_task(db, policy, connection_config_mariadb) -> N
 
     logs = (
         ExecutionLog.query(db=db)
-            .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-            .all()
+        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        .all()
     )
 
     logs = [log.__dict__ for log in logs]
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_maria_db_1", collection_name="customer"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_maria_db_1", collection_name="customer"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_maria_db_1", collection_name="address"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_maria_db_1", collection_name="address"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs, dataset_name="my_maria_db_1", collection_name="orders"
-                )
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_maria_db_1", collection_name="orders"
             )
-            > 0
+        )
+        > 0
     )
     assert (
-            len(
-                records_matching_fields(
-                    logs,
-                    dataset_name="my_maria_db_1",
-                    collection_name="payment_card",
-                )
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name="my_maria_db_1",
+                collection_name="payment_card",
             )
-            > 0
+        )
+        > 0
     )
 
 
@@ -631,7 +636,9 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph.data_category_field_mapping
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -645,7 +652,9 @@ def test_filter_on_data_categories(
     # Specify the target category:
     target_categories = {"user.provided.identifiable.contact"}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph.data_category_field_mapping
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
     )
 
     assert filtered_results == {
@@ -697,7 +706,9 @@ def test_filter_on_data_categories(
 
     target_categories = {target.data_category for target in rule.targets}
     filtered_results = filter_data_categories(
-        access_request_results, target_categories, dataset_graph.data_category_field_mapping
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [

@@ -79,7 +79,11 @@ def mariadb_example_test_dataset_config(
 def mariadb_integration_session(connection_config_mariadb):
     example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
     engine = get_db_engine(database_uri=example_mariadb_uri)
-    SessionLocal = get_db_session(engine=engine)
+    SessionLocal = get_db_session(
+        engine=engine,
+        autocommit=True,
+        autoflush=True,
+    )
     yield SessionLocal()
 
 
