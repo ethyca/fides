@@ -45,8 +45,6 @@ def generate_system_aws(file_name: str, include_null: bool) -> str:
         describe_clusters=describe_redshift_clusters
     )
 
-    print(describe_redshift_clusters)
-    print(redshift_systems)
     manifests.write_manifest(
         file_name,
         [i.dict(exclude_none=not include_null) for i in redshift_systems],
