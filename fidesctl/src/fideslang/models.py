@@ -304,6 +304,7 @@ class System(FidesModel):
     registry_id: Optional[int]
     meta: Optional[Dict[str, str]]
     system_type: str
+    system_resource_id: Optional[str]
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]

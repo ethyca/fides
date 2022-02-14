@@ -121,7 +121,11 @@ pytest-integration:
 pytest-external:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
 	@docker compose run \
-	-e SNOWFLAKE_FIDESCTL_PASSWORD -e REDSHIFT_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) \
+	-e SNOWFLAKE_FIDESCTL_PASSWORD \
+	-e REDSHIFT_FIDESCTL_PASSWORD \
+	-e AWS_FIDESCTL_ACCESS_KEY_ID \
+	-e AWS_FIDESCTL_ACCESS_KEY \
+	--rm $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
 
