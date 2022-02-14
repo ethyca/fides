@@ -50,5 +50,5 @@ def generate_system_aws(file_name: str, include_null: bool) -> str:
         [i.dict(exclude_none=not include_null) for i in redshift_systems],
         "system",
     )
-    echo_green(f"Generated dataset manifest written to {file_name}")
+    echo_green(f"Generated system manifest written to {file_name}")
     return file_name
