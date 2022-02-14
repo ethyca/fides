@@ -123,8 +123,9 @@ pytest-external:
 	@docker compose run \
 	-e SNOWFLAKE_FIDESCTL_PASSWORD \
 	-e REDSHIFT_FIDESCTL_PASSWORD \
-	-e AWS_FIDESCTL_ACCESS_KEY_ID \
-	-e AWS_FIDESCTL_ACCESS_KEY \
+	-e AWS_ACCESS_KEY_ID \
+	-e AWS_SECRET_ACCESS_KEY \
+	-e AWS_DEFAULT_REGION \
 	--rm $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
