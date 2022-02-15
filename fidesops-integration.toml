@@ -26,6 +26,11 @@ db_schema=""
 [snowflake]
 external_uri=""
 
+[bigquery]
+dataset=""
+
+[bigquery.keyfile_creds]
+
 [mssql_example]
 SERVER="mssql_example"
 USER="sa"

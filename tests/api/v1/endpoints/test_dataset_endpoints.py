@@ -48,6 +48,10 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[4]["collections"]) == 11
     assert example_datasets[5]["fides_key"] == "mysql_example_test_dataset"
     assert len(example_datasets[5]["collections"]) == 11
+    assert example_datasets[6]["fides_key"] == "mariadb_example_test_dataset"
+    assert len(example_datasets[6]["collections"]) == 11
+    assert example_datasets[7]["fides_key"] == "bigquery_example_test_dataset"
+    assert len(example_datasets[7]["collections"]) == 11
 
 
 class TestValidateDataset:
@@ -442,7 +446,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 7
+        assert len(response_body["succeeded"]) == 8
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -547,13 +551,19 @@ class TestPutDatasets:
             for f in updated_datasets[1]["collections"][0]["fields"]
             if f["name"] != "city"
         ]
+        # Remove city field from bigquery example
+        updated_datasets[7]["collections"][0]["fields"] = [
+            f
+            for f in updated_datasets[1]["collections"][0]["fields"]
+            if f["name"] != "city"
+        ]
         response = api_client.patch(
             datasets_url, headers=auth_header, json=updated_datasets
         )
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 7
+        assert len(response_body["succeeded"]) == 8
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -604,10 +614,23 @@ class TestPutDatasets:
         assert mssql_config is not None
         assert mssql_config.updated_at is not None
 
+        # test bigquery
+        bigquery_dataset = response_body["succeeded"][7]
+        assert bigquery_dataset["fides_key"] == "bigquery_example_test_dataset"
+        assert "city" not in [
+            f["name"] for f in bigquery_dataset["collections"][0]["fields"]
+        ]
+        bigquery_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="bigquery_example_test_dataset"
+        )
+        assert bigquery_config is not None
+        assert bigquery_config.updated_at is not None
+
         postgres_config.delete(db)
         mongo_config.delete(db)
         snowflake_config.delete(db)
         mssql_config.delete(db)
+        bigquery_config.delete(db)
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
@@ -626,7 +649,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 7
+        assert len(response_body["failed"]) == 8
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

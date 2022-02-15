@@ -21,6 +21,7 @@ from fidesops.service.connectors import (
     RedshiftConnector,
     MicrosoftSQLServerConnector,
     MariaDBConnector,
+    BigQueryConnector,
 )
 from fidesops.util.cache import get_cache
 
@@ -61,6 +62,8 @@ class Connections:
             return MicrosoftSQLServerConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mariadb:
             return MariaDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.bigquery:
+            return BigQueryConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

@@ -293,7 +293,7 @@ def snowflake_connection_config_without_secrets(
 ) -> Generator:
     """
     Returns a Snowflake ConnectionConfig without secrets
-    attached that is safe to usein any tests.
+    attached that is safe to use in any tests.
     """
     connection_config = ConnectionConfig.create(
         db=db,
@@ -315,7 +315,7 @@ def snowflake_connection_config(
     snowflake_connection_config_without_secrets: ConnectionConfig,
 ) -> Generator:
     """
-    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    Returns a Snowflake ConnectionConfig with secrets attached if secrets are present
     in the configuration.
     """
     snowflake_connection_config = snowflake_connection_config_without_secrets
@@ -991,6 +991,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mssql_example_test_dataset.yml",
         "data/dataset/mysql_example_test_dataset.yml",
         "data/dataset/mariadb_example_test_dataset.yml",
+        "data/dataset/bigquery_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

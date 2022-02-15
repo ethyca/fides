@@ -106,3 +106,22 @@ def test_snowflake_example_data(snowflake_test_engine):
         "service_request",
         "visit",
     ]
+
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+def test_bigquery_example_data(bigquery_test_engine):
+    """Confirm that we can connect to the bigquery test db and get table names"""
+    inspector = inspect(bigquery_test_engine)
+    assert inspector.get_table_names(schema="fidesopstest") == [
+        "address",
+        "customer",
+        "employee",
+        "login",
+        "order_item",
+        "orders",
+        "payment_card",
+        "product",
+        "report",
+        "service_request",
+        "visit",
+    ]

@@ -28,6 +28,7 @@ Fidesops supports connections to the following databases:
 * Microsoft SQLServer
 * Amazon Redshift
 * Snowflake
+* Google BigQuery
 
 Other platforms will be added in future releases.
 
@@ -39,7 +40,7 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to snake-case, is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application_postgresql_db`.
 
-* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, and `snowflake`.
+* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, `snowflake`, and `bigquery`.
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
@@ -174,6 +175,36 @@ PUT api/v1/connection/my_redshift_db/secret`
 {
     "url": "redshift+psycopg2://username@host.amazonaws.com:5439/database",
     "db_schema": "my_test_schema"
+}
+```
+
+#### Example 4: Google BigQuery
+
+For Google BigQuery, there are 2 items needed for secrets: 
+
+`dataset` - Name of your dataset. BigQuery datasets are top-level containers (within a project) that are used to organize and control access to your tables and views.
+
+`keyfile_creds` - Credentials from your service account JSON keyfile, accessible for download from the GCP console.  
+
+Here's an example of what this looks like:
+
+```
+PUT api/v1/connection/my_bigquery_db/secret`
+
+{
+    "dataset": "some-dataset",
+    "keyfile_creds": {
+        "type": "service_account",
+        "project_id": "project-12345",
+        "private_key_id": "qo28cy4nlwu",
+        "private_key": "-----BEGIN PRIVATE KEY-----\nqi2unhflhncflkjas\nkqiu34c\n-----END PRIVATE KEY-----\n",
+        "client_email": "something@project-12345.iam.gserviceaccount.com",
+        "client_id": "287345028734538",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
+    }
 }
 ```
 

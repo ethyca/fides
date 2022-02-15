@@ -18,5 +18,7 @@ jobs:
         env:
           REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
           REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
+          BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: make pytest-integration-external
