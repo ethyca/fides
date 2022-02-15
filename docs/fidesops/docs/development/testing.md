@@ -49,11 +49,19 @@ Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture
 
 ## Running tests
 
-Fidesops uses `pytest` for unit testing. Once in the Fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root Fidesops directory:
+Fidesops uses `pytest` for unit testing. As with other `make` commands, you have the option to run `pytest` in command-line or in application shell:
+
+1. In shell: Once in the Fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root Fidesops directory:
 
 ```bash
 cd fidesops
 pytest
+```
+
+2. From regular command-line: 
+
+```bash
+make pytest
 ```
 
 ### Running specific tests
@@ -64,6 +72,16 @@ To run a subset of tests, provide a filename or directory; to match a specific t
 # run all tests in the tests/integration directory that contain the word "api" in their title
 pytest tests/integration/ -k api
 ```
+
+Other commands you may need are listed below. The full documentation can be found at: https://docs.pytest.org/en/6.2.x/.
+
+- Run all tests in a directory: `make pytestpath=path/to/dir/ pytest`
+- Run all tests in a file: `make pytestpath=path/to/file.py pytest`
+- Run all tests within a class within a file: `make pytestpath=path/to/file.py::ClassName pytest`
+- Run a specific test within a class within a file: `make pytestpath=path/to/file.py::ClassName::method_name pytest`
+- Run a specific test within a file: `make pytestpath=path/to/file.py::method_name pytest`
+- Run integration tests (access): `make pytest-integration`
+- Run integration tests (erasure): `make pytest-integration-erasure`
 
 #### Debugging
 

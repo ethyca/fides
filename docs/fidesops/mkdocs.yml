@@ -31,6 +31,7 @@ nav:
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
+      - Contributing Details: development/contributing_details.md
       - Code Style: development/code_style.md
       - Documentation: development/documentation.md
       - Testing: development/testing.md

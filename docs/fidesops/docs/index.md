@@ -19,7 +19,7 @@ Fidesops is open & extensible, meaning it can easily be integrated into your exi
 Lots of databases? Tons of microservices? Connect as many databases and services as you'd like, and let Fidesops do the heavy lifting.
 
 ## How does Fidesops work with Fidesctl and Fideslang?
-In a software organization, the team that writes and delivers software is normally the same team responsible for executing a privacy request when it comes in from customer support or legal . When your organization receives a privacy request, Fideops will automatically fulfill it per the execution policies your legal and business owners have created by querying your databases directly. 
+In a software organization, the team that writes and delivers software is normally the same team responsible for executing a privacy request when it comes in from customer support or legal . When your organization receives a privacy request, Fidesops will automatically fulfill it per the execution policies your legal and business owners have created by querying your databases directly. 
 
 ![Fidesops business process](img/fides-ops-process.png "Fidesops biz process")
 

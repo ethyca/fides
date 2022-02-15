@@ -24,21 +24,21 @@ commands to give you different functionality.
 - `make server` - this spins up the Fastapi server and supporting resources (a Postgres database and a Redis cache), which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
 - `make integration-env` - spins up everything in make server, plus additional postgres, mongo, and mysql databases for you to execute privacy requests against.
     - Try this out locally with our [Fidesops Postman Collection](../postman/Fidesops.postman_collection.json)
-    - `make integration-env datastores="mysql mariadb"`- brings up only mysql and mariadb datastores, use 
+    - `make integration-env datastores="mysql mariadb"`- brings up only mysql and mariadb datastores 
 - `make integration-shell` - spins up everything in make server, plus all Docker Compose specified datastores (Postgres, MySQL, MSSQL, Mongodb) and opens a server shell. This is most useful for running `pytest -k ...` commands within the integration shell to test connected datastores.
 - `make black`, `make mypy`, and `make pylint` - auto-formats code
 - `make check-all` - runs the CI checks locally and verifies that your code meets project standards
 - `make server-shell`-  opens a shell on the Docker container, from here you can run useful commands like:
-  - `ipython` - open a Python shell
-  - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
+    - `ipython` - open a Python shell
+    - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
 - `make pytest` - runs all unit tests except those that talk to integration databases
 - `make pytest-integration` - runs access integration tests.
 - `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments.
 - `make pytest-integration-erasure` - runs erasure integration tests.
-- `make reset-db` - tears down the Fideops postgres db, then recreates and re-runs migrations.
+- `make reset-db` - tears down the Fidesops postgres db, then recreates and re-runs migrations.
 - `make quickstart` - runs a quick, five minute quickstart that talks to the Fidesops API to execute privacy requests
 - `make check-migrations` - verifies there are no un-run migrations 
-- `make docs-serve` - spins up just the docs
+- `make docs-serve` - spins up just the docs, which you can visit at `http://0.0.0.0:8000/fidesops/`
 
 See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more options. 
 
@@ -48,19 +48,22 @@ See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more o
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
 - Package not found: When running `make server`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `make server-shell`,
-and then run `pip install -e .`. Verify Fidesops is installed with `pip list`. 
+and then run `pip install -e .`. Verify Fidesops is installed with `pip list`.
 
 
-### Write your code
+## Write your code
 
-We have no doubt you can write amazing code! However, we want to help you ensure your code plays nicely with the rest of the Fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesops it's a CI-checked requirement.
+See the [contributing details](contributing_details.md) guide to get familiar with writing and testing API endpoints, database models, and more. 
+
+We want to help you ensure your code plays nicely with the rest of the Fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesops it's a CI-checked requirement.
 
 * To learn how to style your code, see the [style guide](code_style.md).
 * To learn how to document your code, see the [docs guide](documentation.md).
 * To learn how to test your code, see the [tests guide](testing.md).
 * To learn what format your PR should follow, make sure to follow the [pull request guidelines](pull_requests.md).
 
-### Submit your code
+
+## Submit your code
 
 In order to submit code to Fidesops, please:
 
@@ -79,10 +82,10 @@ In order to submit code to Fidesops, please:
     git push origin my-new-branch 
     ```
 * [Open a Pull Request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) once your work is ready for review
-  * Submit the pull request from *your* repo
+  * Submit the pull request from *your* repo. Pull requests should be submitted with a clear description of the issue being handled, including links to any external specifications or Github issues. PRs should not be merged by the person submitting them, except in rare and urgent circumstances.
   * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fidesops.
   
 
-### Congratulations
+## Congratulations
 
 You're a Fidesops contributor - welcome to the team! 🎉
