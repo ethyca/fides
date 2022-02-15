@@ -34,6 +34,7 @@ nav:
       - Generating Resources: guides/generate_resource.md
       - Scanning Resources: guides/scan_resource.md
       - Example Policies: guides/policies.md
+      - Extending Data Use: guides/extending_data_use.md
   - CI/CD Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
