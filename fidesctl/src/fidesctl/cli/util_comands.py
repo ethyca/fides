@@ -5,11 +5,7 @@ import click
 import requests
 import toml
 
-from fidesctl.cli.options import yes_flag
-from fidesctl.cli.utils import (
-    handle_cli_response,
-    pretty_echo,
-)
+from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_green, echo_red
 
@@ -71,16 +67,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
-def init_db(ctx: click.Context) -> None:
-    """
-    Initialize the Fidesctl database.
-    """
-    config = ctx.obj["CONFIG"]
-    handle_cli_response(_api.db_action(config.cli.server_url, "init"))
-
-
-@click.command()
-@click.pass_context
 def ping(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
@@ -92,38 +78,6 @@ def ping(ctx: click.Context) -> None:
         handle_cli_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
         echo_red("Connection failed, webserver is unreachable.")
-
-
-@click.command()
-@click.pass_context
-@yes_flag
-def reset_db(ctx: click.Context, yes: bool) -> None:
-    """
-    Wipes all user-created data and resets the database back to its freshly initialized state.
-    """
-    config = ctx.obj["CONFIG"]
-    if yes:
-        are_you_sure = "y"
-    else:
-        echo_red(
-            "This will drop all data from the Fides database and reload the default taxonomy!"
-        )
-        are_you_sure = input("Are you sure [y/n]? ")
-
-    if are_you_sure.lower() == "y":
-        handle_cli_response(_api.db_action(config.cli.server_url, "reset"))
-    else:
-        print("Aborting!")
-
-
-@click.command()
-@click.pass_context
-def view_config(ctx: click.Context) -> None:
-    """
-    Prints the current fidesctl configuration values.
-    """
-    config = ctx.obj["CONFIG"]
-    pretty_echo(config.dict(), color="green")
 
 
 @click.command()

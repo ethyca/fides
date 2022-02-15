@@ -4,23 +4,55 @@ Fidesctl supports two methods of configuration. The first is via a toml file, an
 
 By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.
 
+
 ## Configuration file
 
-After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a fidesctl configuration file:
+After initializing fidesctl, a default configuration file will be generated and placed within the `.fides` directory. Here's an example of a default fidesctl configuration file:
+
+
 
 ```toml title="fidesctl.toml"
 [api]
 database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+
+# Logging
 log_destination = ""
-log_level = 20
+log_level = INFO
 log_serialization = ""
 
 [cli]
+local_mode = False
 server_url = "http://localhost:8080"
 
 [user]
-analytics = true
+encryption_key = "test_encryption_key"
 ```
+
+To better describe the various configuration options, the following tables describe each available option, grouped by section:
+
+=== "API Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. __NOTE__: Do not include the driver here, fidesctl will do this for you. |
+    | test_database_url | String | ""| Used instead of the `database_url` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. |
+    | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
+    | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
+    | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
+
+=== "CLI Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | local_mode | Boolean | False | When set to `True`, forbids the fidesctl CLI from making calls to the fidesctl webserver. |
+    | server_url | String | "" | The base URL of the fidesctl webserver endpoints, in `host:port` format. |
+
+=== "User Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | encryption_key | String | "" | An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP. |
+
 
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 

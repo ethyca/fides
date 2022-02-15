@@ -15,7 +15,7 @@ A Dataset takes a database schema (tables and columns) and adds Fides privacy ca
 
 * At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category `user.derived`, and a field with category `user.provided.identifiable.name`, your dataset will contain both user-derived and user-provided name data.
 
-While you can create Dataset objects by hand, you typically use the `fidesctl generate-dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.
+While you can create Dataset objects by hand, you typically use the `fidesctl generate dataset`  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.
 
 You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems.
 
@@ -42,6 +42,10 @@ The fides key of the [Organization](/fides/language/resources/organization/) to 
 **meta**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_object_
 
 An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it.
+
+**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
+
+An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
 
 **joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
 
@@ -114,6 +118,9 @@ dataset:
   - fides_key: demo_users_dataset
     name: Demo Users Dataset
     description: Data collected about users for our analytics system.
+    third_country_transfers:
+    - USA
+    - CAN
     joint_controller:
       name: Dave L. Epper
       address: 1 Acme Pl. New York, NY
@@ -158,6 +165,7 @@ dataset:
     "fides_key": "demo_users_dataset",
     "name": "Demo Users Dataset",
     "description": "Data collected about users for our analytics system.",
+    "third_country_transfers": ["USA", "CAN"],
     "joint_controller": {
       "name": "Dave L. Epper",
       "address": "1 Acme Pl. New York, NY",
