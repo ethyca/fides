@@ -591,8 +591,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../../guides/generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -604,7 +604,7 @@
   
     <li class="md-nav__item">
       <a href="../../guides/scan_resource/" class="md-nav__link">
-        Scanning a Resource
+        Scanning Resources
       </a>
     </li>
   
@@ -617,6 +617,18 @@
     <li class="md-nav__item">
       <a href="../../guides/policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -1123,6 +1135,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1159,7 +1213,7 @@
                 
                 <h1 id="setting-up-the-database">Setting up the database</h1>
 <p>The fidesctl webserver is the only part of the application that touches the fidesctl database directly. It will automatically run migrations and seed the database with the default taxonomy on startup.</p>
-<p>If needed, you can also run <code>fidesctl init-db</code> or <code>fidesctl reset-db</code> via the CLI, which will tell the webserver to execute those actions, although these should not be needed under normal circumstances.</p>
+<p>If needed, you can also run <code>fidesctl db init</code> or <code>fidesctl db reset</code> via the CLI, which will tell the webserver to execute those actions, although these should not be needed under normal circumstances.</p>
                 
               
               

@@ -579,8 +579,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../guides/generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../guides/generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -592,7 +592,7 @@
   
     <li class="md-nav__item">
       <a href="../guides/scan_resource/" class="md-nav__link">
-        Scanning a Resource
+        Scanning Resources
       </a>
     </li>
   
@@ -605,6 +605,18 @@
     <li class="md-nav__item">
       <a href="../guides/policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -948,6 +960,33 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-export" class="md-nav__link">
+    export
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-export-datasets" class="md-nav__link">
+    datasets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-export-systems" class="md-nav__link">
+    systems
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-generate-dataset" class="md-nav__link">
     generate-dataset
   </a>
@@ -957,6 +996,13 @@
           <li class="md-nav__item">
   <a href="#fidesctl-get" class="md-nav__link">
     get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-init" class="md-nav__link">
+    init
   </a>
   
 </li>
@@ -992,6 +1038,13 @@
           <li class="md-nav__item">
   <a href="#fidesctl-reset-db" class="md-nav__link">
     reset-db
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan" class="md-nav__link">
+    scan
   </a>
   
 </li>
@@ -1248,6 +1301,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1310,6 +1405,33 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-export" class="md-nav__link">
+    export
+  </a>
+  
+    <nav class="md-nav" aria-label="export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-export-datasets" class="md-nav__link">
+    datasets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-export-systems" class="md-nav__link">
+    systems
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-generate-dataset" class="md-nav__link">
     generate-dataset
   </a>
@@ -1319,6 +1441,13 @@
           <li class="md-nav__item">
   <a href="#fidesctl-get" class="md-nav__link">
     get
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-init" class="md-nav__link">
+    init
   </a>
   
 </li>
@@ -1354,6 +1483,13 @@
           <li class="md-nav__item">
   <a href="#fidesctl-reset-db" class="md-nav__link">
     reset-db
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan" class="md-nav__link">
+    scan
   </a>
   
 </li>
@@ -1400,21 +1536,23 @@
 <h2 id="fidesctl">fidesctl</h2>
 <p>The parent group for the Fidesctl CLI.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl [OPTIONS] COMMAND1 [ARGS]... [COMMAND2 [ARGS]...]...
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl [OPTIONS] COMMAND [ARGS]...
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --version               Show the version and exit.
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --version               Show the version and exit.
   -f, --config-path TEXT  Path to a configuration file. Use &#39;fidesctl view-
-                          config&#39; to print the config.
+                          config&#39; to print the config. Not compatible with the
+                          &#39;fidesctl webserver&#39; subcommand.
 
   --local                 Run in &#39;local_mode&#39;. This mode doesn&#39;t make API
                           calls and can be used without the API
@@ -1440,7 +1578,7 @@
 <h3 id="fidesctl-apply">fidesctl apply</h3>
 <p>Validates local manifest files and then sends them to the server to be persisted.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl apply [OPTIONS] MANIFESTS_DIR
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl apply [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1475,7 +1613,7 @@
 <p>If your policy evaluation fails, it is expected that you will need to
 either adjust your Privacy Declarations, Datasets, or Policies before trying again.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate [OPTIONS] MANIFESTS_DIR
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl evaluate [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1494,6 +1632,40 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 
   --dry                 Does not send changes to the server.
   --help                Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h3 id="fidesctl-export">fidesctl export</h3>
+<p>Parent export command.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl export [OPTIONS] COMMAND [ARGS]...
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h4 id="fidesctl-export-datasets">fidesctl export datasets</h4>
+<p>Export a dataset in a data map format.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl export datasets [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+  --help  Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h4 id="fidesctl-export-systems">fidesctl export systems</h4>
+<p>Export a system in a data map format.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl export systems [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+  --help  Show this message and exit.
 </code></pre></div>
 </td></tr></table>
 <h3 id="fidesctl-generate-dataset">fidesctl generate-dataset</h3>
@@ -1515,6 +1687,16 @@ It will need to be run again if the database schema changes.</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl get [OPTIONS] [data_category|data_qualifier|data_subject|data_use|dat
              aset|organization|policy|registry|system|evaluation] FIDES_KEY
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h3 id="fidesctl-init">fidesctl init</h3>
+<p>Initialize a Fidesctl instance.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init [OPTIONS] [FIDES_DIRECTORY_LOCATION]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1548,7 +1730,7 @@ It will need to be run again if the database schema changes.</p>
 the validity of all manifest files.</p>
 <p>If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl parse [OPTIONS] MANIFESTS_DIR
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl parse [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1577,6 +1759,25 @@ the validity of all manifest files.</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -y, --yes  Automatically responds &#39;yes&#39; to any prompts.
   --help     Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h3 id="fidesctl-scan">fidesctl scan</h3>
+<p>Connect to a database directly via a SQLAlchemy-stlye connection string and
+compare the database objects to existing datasets.</p>
+<p>If there are fields within the database that aren't listed and categorized
+within one of the datasets, this counts as lacking coverage.</p>
+<p>Outputs missing fields and has a non-zero exit if coverage is
+under the stated threshold.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan [OPTIONS] [database] CONNECTION_STRING
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -m, --manifest-dir TEXT
+  -c, --coverage-threshold INTEGER RANGE
+  --help                          Show this message and exit.
 </code></pre></div>
 </td></tr></table>
 <h3 id="fidesctl-view-config">fidesctl view-config</h3>

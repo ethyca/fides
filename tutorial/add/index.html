@@ -663,8 +663,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../../guides/generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -676,7 +676,7 @@
   
     <li class="md-nav__item">
       <a href="../../guides/scan_resource/" class="md-nav__link">
-        Scanning a Resource
+        Scanning Resources
       </a>
     </li>
   
@@ -689,6 +689,18 @@
     <li class="md-nav__item">
       <a href="../../guides/policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -1195,6 +1207,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1349,7 +1403,7 @@
 <span class="normal">10</span>
 <span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nf">fidesctl-init-db</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
     @echo <span class="s2">&quot;Initializing fidesctl db..&quot;</span>
-    ./venv/bin/fidesctl init-db
+    ./venv/bin/fidesctl db init
 
 <span class="nf">fidesctl-evaluate</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
     @echo <span class="s2">&quot;Evaluating policy with fidesctl...&quot;</span>
@@ -1357,7 +1411,7 @@
 
 <span class="nf">fidesctl-generate-dataset</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
     @echo <span class="s2">&quot;Generating dataset with fidesctl...&quot;</span>
-    ./venv/bin/fidesctl generate-dataset postgresql://postgres:postgres@localhost:5432/flaskr example.yml
+    ./venv/bin/fidesctl generate dataset postgresql://postgres:postgres@localhost:5432/flaskr example.yml
 </code></pre></div>
 </td></tr></table>
 <blockquote>

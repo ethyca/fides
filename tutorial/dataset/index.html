@@ -648,8 +648,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../../guides/generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -661,7 +661,7 @@
   
     <li class="md-nav__item">
       <a href="../../guides/scan_resource/" class="md-nav__link">
-        Scanning a Resource
+        Scanning Resources
       </a>
     </li>
   
@@ -674,6 +674,18 @@
     <li class="md-nav__item">
       <a href="../../guides/policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -1180,6 +1192,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1374,12 +1428,10 @@
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
-<!-- TODO: Link to the `generate-dataset` usage documentation below, when it exists. -->
-
-<p>As an alternative to manually authoring the resource file, you can also use the <code>generate-dataset</code> CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:</p>
+<p>As an alternative to manually authoring the resource file, you can also use the <a href="../../language/resources/policy/">generate</a> CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate-dataset <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset <span class="se">\</span>
   postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
   fides_resources/flaskr_postgres_dataset.yml
 </code></pre></div>

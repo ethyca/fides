@@ -579,8 +579,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../../../guides/generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -592,7 +592,7 @@
   
     <li class="md-nav__item">
       <a href="../../../guides/scan_resource/" class="md-nav__link">
-        Scanning a Resource
+        Scanning Resources
       </a>
     </li>
   
@@ -605,6 +605,18 @@
     <li class="md-nav__item">
       <a href="../../../guides/policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -1182,6 +1194,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1275,6 +1329,8 @@
 <p>An array of contact information for the Data Protection Officer (DPO) within the organization (<code>name</code>, <code>address</code>, <code>email</code>, <code>phone</code>).</p>
 <p><strong>representative</strong><span class="required"/>&nbsp;&nbsp;[array]</p>
 <p>An array of contact information for an optional representative for the organization on behalf of the controller and/or DPO (<code>name</code>, <code>address</code>, <code>email</code>, <code>phone</code>).</p>
+<p><strong>security_policy</strong><span class="required"/>&nbsp;&nbsp;<em>string</em></p>
+<p>A url to the organization security policy, (i.e. https://ethyca.com/privacy-policy/)</p>
 <h2 id="examples">Examples</h2>
 <h3 id="manifest-file"><strong>Manifest File</strong></h3>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1295,10 +1351,12 @@
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Acme Incorporated</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">An Organization that represents all of Acme Inc.</span><span class="w"></span>
+<span class="w">  </span><span class="nt">security_policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/privacy</span><span class="w"></span>
 <span class="w">  </span><span class="nt">controller</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dave L. Epper</span><span class="w"></span>
 <span class="w">    </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1 Acme Pl. New York, NY</span><span class="w"></span>
@@ -1339,10 +1397,12 @@
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_organization&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Acme Incorporated&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;An Organization that represents all of Acme Inc.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;security_policy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.org/privacy&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;controller&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Dave L. Epper&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;address&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1 Acme Pl. New York, NY&quot;</span><span class="p">,</span><span class="w"></span>

@@ -16,7 +16,7 @@
     
     
       
-        <title>Scanning a Resource - Fides</title>
+        <title>Scanning Resources - Fides</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#scanning-a-resource" class="md-skip">
+        <a href="#scanning-resources" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Scanning a Resource
+              Scanning Resources
             
           </span>
         </div>
@@ -581,8 +581,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../generate_dataset/" class="md-nav__link">
-        Generating a Dataset
+      <a href="../generate_resource/" class="md-nav__link">
+        Generating Resources
       </a>
     </li>
   
@@ -603,7 +603,7 @@
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Scanning a Resource
+        Scanning Resources
       </a>
       
     </li>
@@ -617,6 +617,18 @@
     <li class="md-nav__item">
       <a href="../policies/" class="md-nav__link">
         Example Policies
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending_data_use/" class="md-nav__link">
+        Extending Data Use
       </a>
     </li>
   
@@ -1123,6 +1135,48 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      <label class="md-nav__link" for="__nav_14">
+        Schemas
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1157,11 +1211,11 @@
                   </a>
                 
                 
-                <h1 id="scanning-a-resource">Scanning a Resource</h1>
+                <h1 id="scanning-resources">Scanning Resources</h1>
 <p>As you annotate resources with fidesctl it is important to keep your fidesctl resources up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. It will output any part of the dataset which is not defined or categorized. The command will exit in error if a coverage threshold is not met. </p>
-<p>The <code>scan</code> command works best when used in tandem with the <code>generate-dataset</code> command as it creates resources in the expected format. The fidesctl format for datasets must be followed in order to be able to track coverage. </p>
-<h1 id="scanning-a-database">Scanning a Database</h1>
-<p>The <code>scan</code> command can connect to a database and compare its schema to your already defined resources. Given a database schema with a single <code>users</code> table as follows:</p>
+<p>The <code>scan</code> command works best when used in tandem with the <code>generate</code> command as it creates resources in the expected format. The fidesctl format for datasets must be followed in order to be able to track coverage. </p>
+<h1 id="working-with-a-database">Working With a Database</h1>
+<p>The <code>scan dataset</code> command can connect to a database and compare its schema to your already defined resources. Given a database schema with a single <code>users</code> table as follows:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1253,11 +1307,11 @@
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table></p>
-<p>We can invoke the <code>scan</code> by simply providing a connection url for this database:
+<p>We can invoke the <code>scan dataset</code> by simply providing a connection url for this database:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan <span class="se">\</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan dataset <span class="se">\</span>
   --manifest-dir dataset.yml <span class="se">\</span>
   database <span class="se">\</span>
   postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/postgres
@@ -1333,9 +1387,9 @@ Annotation coverage: <span class="m">100</span>%
       
         
         <a
-          href="../generate_dataset/"
+          href="../generate_resource/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Generating a Dataset"
+          aria-label="Previous: Generating Resources"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1346,7 +1400,7 @@ Annotation coverage: <span class="m">100</span>%
               <span class="md-footer__direction">
                 Previous
               </span>
-              Generating a Dataset
+              Generating Resources
             </div>
           </div>
         </a>
