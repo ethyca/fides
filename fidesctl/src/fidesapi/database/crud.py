@@ -146,9 +146,8 @@ async def upsert_resources(
                     log.debug("Upserting resources")
                     insert_stmt = _insert(sql_model).values(resource_dicts)
                     await session.execute(
-                        insert_stmt.on_conflict_do_update(
+                        insert_stmt.on_conflict_do_nothing(
                             index_elements=["fides_key"],
-                            set_=insert_stmt.excluded,
                         )
                     )
                 except SQLAlchemyError:

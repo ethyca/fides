@@ -51,6 +51,7 @@ def test_sample_dataset_taxonomy():
                             name="test_field_1",
                             data_categories=["test_category_1"],
                             data_qualifier="aggregated.anonymized",
+                            retention="No retention policy",
                         ),
                         DatasetField(
                             name="test_field_2",
@@ -75,13 +76,17 @@ def test_sample_dataset_taxonomy():
 
 
 @pytest.mark.unit
-def test_system_records_to_export(test_sample_system_taxonomy):
+def test_system_records_to_export(test_sample_system_taxonomy, test_config):
     """
     Asserts that unique records are returned properly (including
     the header row)
     """
-    output_list = export.generate_system_records(test_sample_system_taxonomy)
-
+    output_list = export.generate_system_records(
+        test_sample_system_taxonomy,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+    )
+    print(output_list)
     assert len(output_list) == 3
 
 
@@ -90,6 +95,9 @@ def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
 
     dataset_name = test_sample_dataset_taxonomy[0].name
     dataset_description = test_sample_dataset_taxonomy[0].description
+    dataset_third_country_transfers = test_sample_dataset_taxonomy[
+        0
+    ].third_country_transfers
     dataset_fides_key = test_sample_dataset_taxonomy[0].fides_key
     test_field = test_sample_dataset_taxonomy[0].collections[0].fields[1]
 
@@ -98,6 +106,8 @@ def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
         dataset_description,
         test_field.data_qualifier,
         test_field.data_categories,
+        test_field.retention,
+        dataset_third_country_transfers,
         dataset_fides_key,
     )
 

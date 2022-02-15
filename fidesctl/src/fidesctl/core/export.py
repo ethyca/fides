@@ -8,8 +8,8 @@ from typing import Dict, List, Tuple, Set
 
 import pandas as pd
 
-from fidesctl.core.api_helpers import get_server_resources
-from fidesctl.core.utils import echo_green, get_all_level_fields
+from fidesctl.core.api_helpers import get_server_resources, get_server_resource
+from fidesctl.core.utils import echo_green, echo_red, get_all_level_fields
 
 from fideslang.models import Taxonomy, ContactDetails
 
@@ -39,8 +39,10 @@ def generate_data_category_rows(
     dataset_description: str,
     data_qualifier: str,
     data_categories: List,
+    data_retention: str,
+    dataset_third_country_transfers: str,
     dataset_fides_key: str,
-) -> Set[Tuple[str, str, str, str, str]]:
+) -> Set[Tuple[str, str, str, str, str, str, str]]:
     """
     Set comprehension to capture categories from any
     of the possible levels in a dataset resource.
@@ -54,6 +56,8 @@ def generate_data_category_rows(
             dataset_description,
             category,
             data_qualifier,
+            data_retention,
+            dataset_third_country_transfers,
             dataset_fides_key,
         )
         for category in data_categories
@@ -64,7 +68,7 @@ def generate_data_category_rows(
 
 def generate_dataset_records(
     server_dataset_list: List,
-) -> List[Tuple[str, str, str, str, str]]:
+) -> List[Tuple[str, str, str, str, str, str, str]]:
     """
     Returns a list of tuples as records (with expected headers)
     to be exported as csv. The ouput rows consist of unique combinations
@@ -77,33 +81,43 @@ def generate_dataset_records(
             "dataset.description",
             "dataset.data_categories",
             "dataset.data_qualifier",
+            "dataset.retention",
+            "dataset.third_country_transfers",
             "dataset.fides_key",
         )
     ]
 
     # using a set to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
-
     for dataset in server_dataset_list:
         dataset_name = dataset.name
         dataset_description = dataset.description
         dataset_fides_key = dataset.fides_key
+        dataset_retention = dataset.retention
+        dataset_third_country_transfers = ", ".join(
+            dataset.third_country_transfers or []
+        )
         if dataset.data_categories:
             dataset_rows = generate_data_category_rows(
                 dataset_name,
                 dataset_description,
                 dataset.data_qualifier,
                 dataset.data_categories,
+                dataset_retention,
+                dataset_third_country_transfers,
                 dataset_fides_key,
             )
             unique_data_categories = unique_data_categories.union(dataset_rows)
         for collection in dataset.collections:
+            collection_retention = collection.retention or dataset_retention
             if collection.data_categories:
                 dataset_rows = generate_data_category_rows(
                     dataset_name,
                     dataset_description,
                     collection.data_qualifier,
                     collection.data_categories,
+                    collection_retention,
+                    dataset_third_country_transfers,
                     dataset_fides_key,
                 )
                 unique_data_categories = unique_data_categories.union(dataset_rows)
@@ -114,6 +128,8 @@ def generate_dataset_records(
                         dataset_description,
                         field.data_qualifier,
                         field.data_categories,
+                        field.retention or collection_retention,
+                        dataset_third_country_transfers,
                         dataset_fides_key,
                     )
                     unique_data_categories = unique_data_categories.union(dataset_rows)
@@ -156,7 +172,9 @@ def export_dataset(
 
 def generate_system_records(
     server_system_list: List,
-) -> List[Tuple[str, str, str, str, str, str, str, str]]:
+    url: str,
+    headers: Dict[str, str],
+) -> List[Tuple[str, str, str, str, str, str, str, str, str, str, str]]:
     """
     Takes a list of systems from the server, creating a list of tuples
     to be used as records to be exported. The headers of the csv are
@@ -166,9 +184,12 @@ def generate_system_records(
         (
             "system.name",
             "system.description",
+            "system.administrating_department",
             "system.privacy_declaration.name",
             "system.privacy_declaration.data_categories",
-            "system.privacy_declaration.data_uses",
+            "system.privacy_declaration.data_use.name",
+            "system.privacy_declaration.data_use.legal_basis",
+            "system.privacy_declaration.data_use.recipients",
             "system.privacy_declaration.data_subjects",
             "system.privacy_declaration.data_qualifier",
             "dataset.fides_key",
@@ -178,6 +199,7 @@ def generate_system_records(
     for system in server_system_list:
 
         for declaration in system.privacy_declarations:
+            data_use = get_formatted_data_use(url, headers, declaration.data_use)
             data_categories = declaration.data_categories or []
             data_subjects = declaration.data_subjects or []
             dataset_references = declaration.dataset_references or []
@@ -185,9 +207,12 @@ def generate_system_records(
                 (
                     system.name,
                     system.description,
+                    system.administrating_department,
                     declaration.name,
                     category,
-                    declaration.data_use,
+                    data_use["name"],
+                    data_use["legal_basis"],
+                    data_use["recipients"],
                     subject,
                     declaration.data_qualifier,
                     dataset_reference,
@@ -199,6 +224,36 @@ def generate_system_records(
             output_list += cartesian_product_of_declaration
 
     return output_list
+
+
+def get_formatted_data_use(
+    url: str, headers: Dict[str, str], data_use_fides_key: str
+) -> Dict[str, str]:
+    """
+    This function retrieves the data use from the server
+    and formats the results, returning the necessary values
+    as a dict
+    """
+
+    data_use = get_server_resource(url, "data_use", data_use_fides_key, headers)
+
+    formatted_data_use = {
+        "name": data_use.name,
+        "legal_basis": "N/A",
+        "recipients": "N/A",
+    }
+
+    try:
+        formatted_data_use["legal_basis"] = data_use.legal_basis.value
+    except AttributeError:
+        echo_red("Legal Basis undefined for specified Data Use, setting as N/A.")
+
+    try:
+        formatted_data_use["recipients"] = ",".join(data_use.recipients)
+    except TypeError:
+        echo_red("Recipients undefined for specified Data Use, setting as N/A")
+
+    return formatted_data_use
 
 
 def export_system(
@@ -217,7 +272,7 @@ def export_system(
         url, resource_type, existing_keys, headers
     )
 
-    output_list = generate_system_records(server_resource_list)
+    output_list = generate_system_records(server_resource_list, url, headers)
 
     if not dry:
         exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
@@ -245,7 +300,6 @@ def generate_contact_records(server_organization_list: List) -> List:
     # currently the output file will only truly support a single organization
     # need to better understand the use case for multiple and how to handle
     for organization in server_organization_list:
-
         fields = tuple(ContactDetails().dict().keys())
 
         get_values = (
@@ -350,6 +404,7 @@ def export_datamap_to_excel(
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
         "system.third_country_transfers",
+        "system.third_country_safeguards",
         "dataset.retention",
         "organization.link_to_security_policy",
     ]
@@ -410,7 +465,7 @@ def export_datamap(
         headers,
     )
 
-    output_list = generate_system_records(server_resource_dict["system"])
+    output_list = generate_system_records(server_resource_dict["system"], url, headers)
     system_headers = output_list.pop(0)
     systems_df = pd.DataFrame.from_records(output_list, columns=system_headers)
 
@@ -428,16 +483,23 @@ def export_datamap(
 
     joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
 
-    joined_df["system.administrating_department"] = ""
+    # joined_df["system.administrating_department"] = ""
+
+    # probably create a set of the below to combine as a single entity
     joined_df["system.third_country_transfers"] = ""
-    joined_df["dataset.third_country_transfers"] = ""
-    joined_df["dataset.retention"] = ""
-    joined_df["system.privacy_declaration.data_use.legal_basis"] = ""
-    joined_df["system.privacy_declaration.data_use.recipients"] = ""
-    joined_df["system.privacy_declaration.data_use.name"] = ""
+    # joined_df["dataset.third_country_transfers"] = ""
+
+    # likely unnecessary for walk
+    joined_df["system.third_country_safeguards"] = ""
+    # joined_df["dataset.retention"] = ""
+    # joined_df["system.privacy_declaration.data_use.legal_basis"] = ""
+    # joined_df["system.privacy_declaration.data_use.recipients"] = ""
+    # joined_df["system.privacy_declaration.data_use.name"] = ""
     joined_df["system.joint_controller"] = ""
     joined_df["system.link_to_processor_contract"] = ""
-    joined_df["organization.link_to_security_policy"] = ""
+    joined_df["organization.link_to_security_policy"] = (
+        server_resource_dict["organization"][0].security_policy or ""
+    )
 
     if not dry:
         export_datamap_to_excel(organization_df, joined_df, manifests_dir)

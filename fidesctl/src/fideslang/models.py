@@ -133,7 +133,7 @@ class DatasetCollection(BaseModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
-    retention: Optional[str] = "No retention or erasure policy"
+    retention: Optional[str]
     fields: List[DatasetField]
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
