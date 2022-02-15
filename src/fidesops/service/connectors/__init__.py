@@ -11,6 +11,7 @@ from fidesops.service.connectors.sql_connector import (
     SnowflakeConnector,
     MicrosoftSQLServerConnector,
     MariaDBConnector,
+    BigQueryConnector,
 )
 
 supported_connectors: Dict[str, Any] = {
@@ -22,6 +23,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
+    ConnectionType.bigquery.value: BigQueryConnector,
 }
 
 

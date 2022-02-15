@@ -203,6 +203,30 @@ class TestPatchConnections:
                 "access": "write",
             },
             {
+                "key": "my_mysql_db",
+                "name": "My MySQL DB",
+                "connection_type": "mysql",
+                "access": "read",
+            },
+            {
+                "key": "my_mssql_db",
+                "name": "My MsSQL DB",
+                "connection_type": "mssql",
+                "access": "write",
+            },
+            {
+                "key": "my_mariadb_db",
+                "name": "My MariaDB",
+                "connection_type": "mariadb",
+                "access": "write",
+            },
+            {
+                "key": "my_bigquery_db",
+                "name": "BigQuery Warehouse",
+                "connection_type": "bigquery",
+                "access": "write",
+            },
+            {
                 "key": "my_redshift_cluster",
                 "name": "My Amazon Redshift",
                 "connection_type": "redshift",
@@ -223,7 +247,7 @@ class TestPatchConnections:
         assert 200 == response.status_code
         response_body = json.loads(response.text)
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 4
+        assert len(response_body["succeeded"]) == 8
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -242,7 +266,43 @@ class TestPatchConnections:
         assert mongo_resource.access.value == "write"
         assert "secrets" not in mongo_connection
 
-        redshift_connection = response_body["succeeded"][2]
+        mysql_connection = response_body["succeeded"][2]
+        assert mysql_connection["access"] == "read"
+        assert mysql_connection["updated_at"] is not None
+        mysql_resource = (
+            db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
+        )
+        assert mysql_resource.access.value == "read"
+        assert "secrets" not in mysql_connection
+
+        mssql_connection = response_body["succeeded"][3]
+        assert mssql_connection["access"] == "write"
+        assert mssql_connection["updated_at"] is not None
+        mssql_resource = (
+            db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
+        )
+        assert mssql_resource.access.value == "write"
+        assert "secrets" not in mssql_connection
+
+        mariadb_connection = response_body["succeeded"][4]
+        assert mariadb_connection["access"] == "write"
+        assert mariadb_connection["updated_at"] is not None
+        mariadb_resource = (
+            db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
+        )
+        assert mariadb_resource.access.value == "write"
+        assert "secrets" not in mariadb_connection
+
+        bigquery_connection = response_body["succeeded"][5]
+        assert bigquery_connection["access"] == "write"
+        assert bigquery_connection["updated_at"] is not None
+        bigquery_resource = (
+            db.query(ConnectionConfig).filter_by(key="my_bigquery_db").first()
+        )
+        assert bigquery_resource.access.value == "write"
+        assert "secrets" not in bigquery_connection
+
+        redshift_connection = response_body["succeeded"][6]
         assert redshift_connection["access"] == "read"
         assert redshift_connection["updated_at"] is not None
         redshift_resource = (
@@ -251,7 +311,7 @@ class TestPatchConnections:
         assert redshift_resource.access.value == "read"
         assert "secrets" not in redshift_connection
 
-        snowflake_connection = response_body["succeeded"][3]
+        snowflake_connection = response_body["succeeded"][7]
         assert snowflake_connection["access"] == "write"
         assert snowflake_connection["updated_at"] is not None
         snowflake_resource = (
@@ -264,6 +324,10 @@ class TestPatchConnections:
         mongo_resource.delete(db)
         redshift_resource.delete(db)
         snowflake_resource.delete(db)
+        mariadb_resource.delete(db)
+        mysql_resource.delete(db)
+        mssql_resource.delete(db)
+        bigquery_resource.delete(db)
 
     @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
     def test_patch_connections_failed_response(
@@ -621,6 +685,61 @@ class TestPutConnectionConfigSecrets:
         }
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None
+
+    def test_put_connection_config_bigquery_secrets(
+            self,
+            api_client: TestClient,
+            db: Session,
+            generate_auth_header,
+            bigquery_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config.key}/secret"
+        payload = {
+            "dataset": "some-dataset",
+            "keyfile_creds": {
+                "type": "service_account",
+                "project_id": "project-12345",
+                "private_key_id": "qo28cy4nlwu",
+                "private_key": "-----BEGIN PRIVATE KEY-----\nqi2unhflhncflkjas\nkqiu34c\n-----END PRIVATE KEY-----\n",
+                "client_email": "something@project-12345.iam.gserviceaccount.com",
+                "client_id": "287345028734538",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
+            }
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+            )
+        assert resp.status_code == 200
+        assert (
+                json.loads(resp.text)["msg"]
+                == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config.key}."
+        )
+        db.refresh(bigquery_connection_config)
+        assert bigquery_connection_config.secrets == {
+            "url": None,
+            "dataset": "some-dataset",
+            "keyfile_creds": {
+                "type": "service_account",
+                "project_id": "project-12345",
+                "private_key_id": "qo28cy4nlwu",
+                "private_key": "-----BEGIN PRIVATE KEY-----\nqi2unhflhncflkjas\nkqiu34c\n-----END PRIVATE KEY-----\n",
+                "client_email": "something@project-12345.iam.gserviceaccount.com",
+                "client_id": "287345028734538",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
+            }
+        }
+        assert bigquery_connection_config.last_test_timestamp is None
+        assert bigquery_connection_config.last_test_succeeded is None
 
     def test_put_connection_config_snowflake_secrets(
         self,

@@ -46,6 +46,7 @@ class ConnectionType(enum.Enum):
     snowflake = "snowflake"
     mssql = "mssql"
     mariadb = "mariadb"
+    bigquery = "bigquery"
 
 
 class AccessLevel(enum.Enum):
