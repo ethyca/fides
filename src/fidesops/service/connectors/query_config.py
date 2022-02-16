@@ -1,7 +1,7 @@
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Set, Optional, Generic, TypeVar, Tuple
+from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
@@ -80,32 +80,6 @@ class QueryConfig(Generic[T], ABC):
             if field.primary_key
         }
 
-    @property
-    def query_field_paths(self) -> Set[FieldPath]:
-        """
-        All of the possible field paths that we can query for possible filter values.
-        These are field paths that are the ends of incoming edges.
-        """
-        return {edge.f2.field_path for edge in self.node.incoming_edges()}
-
-    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
-        """
-        Return a filtered list of key/value sets of data items that are both in
-        the list of incoming edge fields, and contain data in the input data set.
-
-        The values are cast based on field types, if those types are specified.
-        """
-        out = {}
-        for key, values in input_data.items():
-            path: FieldPath = FieldPath.parse(key)
-            field: Field = self.node.node.collection.field(path)
-            if field and path in self.query_field_paths and isinstance(values, list):
-                cast_values = [field.cast(v) for v in values]
-                filtered = list(filter(lambda x: x is not None, cast_values))
-                if filtered:
-                    out[key] = filtered
-        return out
-
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input collection(s) for each query key for display purposes.
 
@@ -179,7 +153,9 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not present on the field or not supported for the {strategy_config['strategy']} masking strategy. Received data type: {masking_override.data_type_converter.name}"
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
+                        f"present on the field or not supported for the {strategy_config['strategy']} masking "
+                        f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
                 val: Any = rule_field_path.retrieve_from(row)
@@ -303,7 +279,7 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
-        filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
+        filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -420,7 +396,7 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
     ) -> Optional[TextClause]:
         """Generate a retrieval query"""
 
-        filtered_data = self.typed_filtered_values(input_data)
+        filtered_data = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
             clauses = []
@@ -549,7 +525,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
             return {"$or": [dict([(k, v)]) for k, v in pairs.items()]}
 
         if input_data:
-            filtered_data: Dict[str, Any] = self.typed_filtered_values(input_data)
+            filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
             if filtered_data:
                 query_pairs = {}
                 for string_field_path, data in filtered_data.items():

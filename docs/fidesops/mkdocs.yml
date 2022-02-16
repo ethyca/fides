@@ -17,6 +17,7 @@ nav:
       - Authenticate with OAuth: guides/oauth.md  
       - Connect SQL and NoSQL Databases: guides/database_connectors.md
       - Configure Datasets: guides/datasets.md
+      - Annotate Complex Fields: guides/complex_fields.md
       - Preview Query Execution: guides/query_execution.md  
       - Create Request Policies: guides/policies.md  
       - Configure Data Masking Strategies: guides/masking_strategies.md  

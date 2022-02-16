@@ -55,35 +55,78 @@ information for Jane across tables in both the postgres and mongo databases.
 
 ```json
 {
-   "postgres_example_test_dataset:customer": [
-      {
-         "email": "jane@example.com",
-         "name": "Jane Customer"
-      }
-   ],
-   "postgres_example_test_dataset:address": [
-      {
-         "city": "Example Mountain",
-         "house": 1111,
-         "state": "TX",
-         "street": "Example Place",
-         "zip": "54321"
-      }
-   ],
-   "postgres_example_test_dataset:payment_card": [
-      {
-         "ccn": 373719391,
-         "code": 222,
-         "name": "Example Card 3"
-      }
-   ],
-   "mongo_test:customer_details": [
-      {
-         "gender": "female",
-         "birthday": "1990-02-28T00:00:00"
-      }
-   ]
+    "mongo_test:flights": [
+        {
+            "passenger_information": {
+                "full_name": "Jane Customer"
+            }
+        }
+    ],
+    "mongo_test:payment_card": [
+        {
+            "ccn": "987654321",
+            "name": "Example Card 2",
+            "code": "123"
+        }
+    ],
+    "postgres_example_test_dataset:address": [
+        {
+            "zip": "54321",
+            "street": "Example Place",
+            "state": "TX",
+            "city": "Example Mountain",
+            "house": 1111
+        }
+    ],
+    "mongo_test:customer_details": [
+        {
+            "birthday": "1990-02-28T00:00:00",
+            "gender": "female",
+            "children": [
+                "Erica Example"
+            ]
+        }
+    ],
+    "postgres_example_test_dataset:customer": [
+        {
+            "email": "jane@example.com",
+            "name": "Jane Customer"
+        }
+    ],
+    "postgres_example_test_dataset:payment_card": [
+        {
+            "ccn": 373719391,
+            "name": "Example Card 3",
+            "code": 222
+        }
+    ],
+    "mongo_test:employee": [
+        {
+            "email": "employee-2@example.com",
+            "name": "Jane Employee"
+        }
+    ],
+    "mongo_test:conversations": [
+        {
+            "thread": [
+                {
+                    "chat_name": "Jane C"
+                }
+            ]
+        },
+        {
+            "thread": [
+                {
+                    "chat_name": "Jane C"
+                },
+                {
+                    "chat_name": "Jane C"
+                }
+            ]
+        }
+    ]
 }
+
 ```
 
 ### Step Four: Create an Erasure Policy

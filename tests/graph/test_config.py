@@ -427,15 +427,18 @@ class TestFieldPath:
         assert FieldPath.parse("a.b.c.d.e") == FieldPath("a", "b", "c", "d", "e")
 
     def test_retrieve_from(self):
-        input_data = {"A": {"B": {"C": 2}}}
+        input_data = {"A": {"B": {"C": 2, "E": [1, 2, 3]}}}
 
-        assert FieldPath("A").retrieve_from(input_data) == {"B": {"C": 2}}
+        assert FieldPath("A").retrieve_from(input_data) == {"B": {"C": 2, "E": [1, 2, 3]}}
 
-        assert FieldPath("A", "B").retrieve_from(input_data) == {"C": 2}
+        assert FieldPath("A", "B").retrieve_from(input_data) == {"C": 2, "E": [1, 2, 3]}
         assert FieldPath("A", "B", "C").retrieve_from(input_data) == 2
 
         assert (
             FieldPath("D").retrieve_from(input_data) is None
         )  # FieldPath not in input data
 
+        assert FieldPath("A", "B", "E").retrieve_from(input_data) == [1, 2, 3]
+
         assert FieldPath().retrieve_from(input_data) is None  # No levels specified
+

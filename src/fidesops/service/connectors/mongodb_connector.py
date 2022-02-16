@@ -104,7 +104,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         logger.info(f"Starting data retrieval for {node.address}")
         for row in collection.find(query_data, fields):
             rows.append(row)
-        logger.info(f"Found {len(rows)} on {node.address}")
+        logger.info(f"Found {len(rows)} rows on {node.address}")
         return rows
 
     def mask_data(

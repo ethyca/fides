@@ -25,6 +25,8 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: workplace_info
+            fidesops_meta:
+              data_type: object
             fields:
               - name: employer
                 fidesops_meta:
@@ -33,8 +35,51 @@ dataset:
                 data_categories: [ user.provided.identifiable.job_title ]
                 fidesops_meta:
                   data_type: string
+              - name: direct_reports
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string[]
+          - name: emergency_contacts
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: name
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: relationship
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string
+          - name: children
+            data_categories: [ user.provided.identifiable.childrens ]
+            fidesops_meta:
+              data_type: string[]
+          - name: travel_identifiers
+            fidesops_meta:
+              data_type: string[]
+              data_categories: [system.operations]
+          - name: comments
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: comment_id
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: conversations.thread.comment
+                      direction: to
       - name: internal_customer_profile
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: customer_identifiers
             fields:
               - name: internal_id
@@ -44,6 +89,11 @@ dataset:
                     - dataset: mongo_test
                       field: customer_feedback.customer_information.internal_customer_id
                       direction: from
+              - name: derived_emails
+                data_categories: [user.derived]
+                fidesops_meta:
+                  data_type: string[]
+                  identity: email
           - name: derived_interests
             data_categories: [ user.derived ]
             fidesops_meta:
@@ -81,3 +131,110 @@ dataset:
             data_categories: [ user.provided.nonidentifiable ]
             fidesops_meta:
               data_type: string
+      - name: flights
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: passenger_information
+            fields:
+              - name: passenger_ids
+                fidesops_meta:
+                  data_type: string[]
+                  references:
+                    - dataset: mongo_test
+                      field: customer_details.travel_identifiers
+                      direction: from
+              - name: full_name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+          - name: flight_no
+          - name: date
+          - name: pilots
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+          - name: plane
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: integer
+      - name: conversations
+        fidesops_meta:
+          data_type: object[]
+        fields:
+          - name: thread
+            fields:
+              - name: comment
+                fidesops_meta:
+                  data_type: string
+              - name: message
+                fidesops_meta:
+                  data_type: string
+              - name: chat_name
+                data_categories: [ user.provided.identifiable.name ]
+                fidesops_meta:
+                  data_type: string
+      - name: employee
+        fields:
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
+            fidesops_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [ user.derived.identifiable.unique_id ]
+            fidesops_meta:
+              primary_key: True
+              references:
+                - dataset: mongo_test
+                  field: flights.pilots
+                  direction: from
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+      - name: aircraft
+        fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: planes
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string[]
+              references:
+                - dataset: mongo_test
+                  field: flights.plane
+                  direction: from
+          - name: model
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+      - name: payment_card
+        fields:
+          - name: billing_address_id
+            data_categories: [ system.operations ]
+          - name: ccn
+            data_categories: [ user.provided.identifiable.financial.account_number ]
+            fidesops_meta:
+              references:
+                - dataset: mongo_test
+                  field: conversations.thread.ccn
+                  direction: from
+          - name: code
+            data_categories: [ user.provided.identifiable.financial ]
+          - name: customer_id
+            data_categories: [ user.derived.identifiable.unique_id ]
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+          - name: name
+            data_categories: [ user.provided.identifiable.financial ]
+          - name: preferred
+            data_categories: [ user.provided.nonidentifiable ]

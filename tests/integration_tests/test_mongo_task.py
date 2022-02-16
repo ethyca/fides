@@ -8,7 +8,12 @@ import dask
 import pytest
 from bson import ObjectId
 
-from fidesops.graph.config import FieldAddress, ScalarField, Collection, Dataset
+from fidesops.graph.config import (
+    FieldAddress,
+    ScalarField,
+    Collection,
+    Dataset,
+)
 from fidesops.graph.data_type import (
     IntTypeConverter,
     StringTypeConverter,
@@ -26,6 +31,7 @@ from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
 from fidesops.task.graph_task import filter_data_categories
+
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
     integration_db_graph,
@@ -102,6 +108,7 @@ def test_combined_erasure_task(
         access_request_data,
     )
 
+    # TODO complex erasures not yet addressed
     assert x == {
         "postgres_example:customer": 1,
         "postgres_example:orders": 0,
@@ -112,6 +119,10 @@ def test_combined_erasure_task(
         "mongo_test:customer_feedback": 1,
         "mongo_test:customer_details": 1,
         "mongo_test:internal_customer_profile": 1,
+        "mongo_test:aircraft": 0,
+        "mongo_test:conversations": 0,
+        "mongo_test:employee": 0,
+        "mongo_test:flights": 0,
     }
 
     rerun_access = graph_task.run_access_request(
@@ -132,7 +143,7 @@ def test_combined_erasure_task(
         is not None
     )
 
-    # This will change when array handling is added - array was just set to None
+    # TODO This will change when array handling is added - array was just set to None
     assert (
         rerun_access["mongo_test:internal_customer_profile"][0]["derived_interests"]
         is None
@@ -268,7 +279,7 @@ def test_composite_key_erasure(
             ),
             ScalarField(
                 name="customer_id",
-                data_type_converter=StringTypeConverter(),
+                data_type_converter=IntTypeConverter(),
                 references=[(FieldAddress("mongo_test", "customer", "id"), "from")],
             ),
         ],
@@ -291,8 +302,8 @@ def test_composite_key_erasure(
     customer = access_request_data["mongo_test:customer"][0]
     composite_pk_test = access_request_data["mongo_test:composite_pk_test"][0]
 
-    assert customer["id"] == "1"
-    assert composite_pk_test["customer_id"] == "1"
+    assert customer["id"] == 1
+    assert composite_pk_test["customer_id"] == 1
 
     # erasure
     erasure = graph_task.run_erasure(
@@ -398,7 +409,7 @@ def test_access_erasure_type_conversion(
 
 
 @pytest.mark.integration
-def test_filter_on_data_categories_mongo(
+def test_object_querying_mongo(
     db,
     privacy_request,
     example_datasets,
@@ -461,10 +472,20 @@ def test_filter_on_data_categories_mongo(
         dataset_graph.data_category_field_mapping,
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
+
+    # Array of embedded emergency contacts returned, array of children, nested array of workplace_info.direct_reports
     assert filtered_results["mongo_test:customer_details"][0] == {
-        "birthday": datetime(1988, 1, 10),
+        "birthday": datetime(1988, 1, 10, 0, 0),
         "gender": "male",
-        "workplace_info": {"position": "Chief Strategist"},
+        "children": ["Christopher Customer", "Courtney Customer"],
+        "emergency_contacts": [
+            {"name": "June Customer", "phone": "444-444-4444"},
+            {"name": "Josh Customer", "phone": "111-111-111"},
+        ],
+        "workplace_info": {
+            "position": "Chief Strategist",
+            "direct_reports": ["Robbie Margo", "Sully Hunter"],
+        },
     }
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
@@ -474,9 +495,129 @@ def test_filter_on_data_categories_mongo(
         target_categories,
         dataset_graph.data_category_field_mapping,
     )
+
+    # Test for accessing array
     assert filtered_results["mongo_test:internal_customer_profile"][0] == {
         "derived_interests": ["marketing", "food"]
     }
+
+
+@pytest.mark.integration
+def test_array_querying_mongo(
+    db,
+    privacy_request,
+    example_datasets,
+    policy,
+    integration_mongodb_config,
+    integration_postgres_config,
+):
+
+    postgres_config = copy.copy(integration_postgres_config)
+
+    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
+    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(
+        dataset_mongo, integration_mongodb_config.key
+    )
+    dataset_graph = DatasetGraph(*[graph, mongo_graph])
+
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"email": "jane@example.com"},
+    )
+
+    target_categories = {"user.derived"}
+    filtered_results = filter_data_categories(
+        access_request_results,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+    # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
+    # Only matching identity returned
+    assert filtered_results["mongo_test:internal_customer_profile"][0][
+        "customer_identifiers"
+    ]["derived_emails"] == ["jane@example.com"]
+
+    # # Entire derived_interests array returned - this is not an identity or "to" reference field
+    assert filtered_results["mongo_test:internal_customer_profile"][0][
+        "derived_interests"
+    ] == ["interior design", "travel", "photography"]
+
+    filtered_identifiable = filter_data_categories(
+        access_request_results,
+        {"user.provided.identifiable"},
+        dataset_graph.data_category_field_mapping,
+    )
+
+    # Includes array field
+    assert filtered_identifiable["mongo_test:customer_details"] == [
+        {
+            "birthday": datetime(1990, 2, 28, 0, 0),
+            "gender": "female",
+            "children": ["Erica Example"],
+        }
+    ]
+
+    # items in array mongo_test:customer_details.travel_identifiers used to lookup matching array elements
+    # in mongo_test:flights:passenger_information.passenger_ids.  passenger_information.full_name has relevant
+    # data category.
+    assert len(filtered_identifiable["mongo_test:flights"]) == 1
+    assert filtered_identifiable["mongo_test:flights"][0] == {
+        "passenger_information": {"full_name": "Jane Customer"}
+    }
+
+    # Nested customer_details:comments.comment_id field used to find embedded objects conversations.thread.comment
+    # fields. Only matching embedded documents queried for relevant data categories
+    assert filtered_identifiable["mongo_test:conversations"] == [
+        {"thread": [{"chat_name": "Jane C"}]},
+        {"thread": [{"chat_name": "Jane C"}, {"chat_name": "Jane C"}]},
+    ]
+
+    # Integer field mongo_test:flights.plane used to locate only matching elem in mongo_test:aircraft:planes array field
+    assert access_request_results["mongo_test:aircraft"][0]["planes"] == ['30005']
+    # Filtered out, however, because there's no relevant matched data category
+    assert filtered_identifiable["mongo_test:aircraft"] == []
+
+    # Values in mongo_test:flights:pilots array field used to locate scalar field in mongo_test:employee.id
+    assert filtered_identifiable["mongo_test:employee"] == [
+        {"email": "employee-2@example.com", "name": "Jane Employee"}
+    ]
+
+    # No data for identity in this collection
+    assert access_request_results["mongo_test:customer_feedback"] == []
+
+    # Only matched embedded document in mongo_test:conversations.thread.ccn used to locate mongo_test:payment_card
+    assert filtered_identifiable["mongo_test:payment_card"] == [{'code': '123', 'name': 'Example Card 2', 'ccn': '987654321'}]
+
+    # Run again with different email
+    access_request_results = graph_task.run_access_request(
+        privacy_request,
+        policy,
+        dataset_graph,
+        [postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+    )
+    filtered_identifiable = filter_data_categories(
+        access_request_results,
+        {"user.provided.identifiable"},
+        dataset_graph.data_category_field_mapping,
+    )
+
+    # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids
+    assert filtered_identifiable["mongo_test:employee"] == [
+        {"name": "Jack Employee", "email": "employee-1@example.com"},
+        {"name": "Jane Employee", "email": "employee-2@example.com"},
+    ]
+
+    # Only embedded documents matching mongo_test:conversations.thread.comment returned
+    assert filtered_identifiable["mongo_test:conversations"] == [
+        {"thread": [{"chat_name": "John C"}]},
+        {"thread": [{"chat_name": "John C"}, {"chat_name": "John C"}]},
+    ]
 
 
 @pytest.mark.integration_mongodb
@@ -490,7 +631,12 @@ class TestRetrievingDataMongo:
     def traversal_node(self, example_datasets, integration_mongodb_config):
         dataset = FidesopsDataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
-        node = Node(graph, graph.collections[0])  # customer collection
+        customer_details_collection = None
+        for collection in graph.collections:
+            if collection.name == "customer_details":
+                customer_details_collection = collection
+                break
+        node = Node(graph, customer_details_collection)
         traversal_node = TraversalNode(node)
         return traversal_node
 

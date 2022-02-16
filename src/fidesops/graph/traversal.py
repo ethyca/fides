@@ -13,6 +13,7 @@ from fidesops.graph.config import (
     Collection,
     ROOT_COLLECTION_ADDRESS,
     FieldPath,
+    Field,
 )
 from fidesops.graph.graph import Node, Edge, DatasetGraph
 from fidesops.util.logger import NotPii
@@ -85,6 +86,32 @@ class TraversalNode:
             for c_collection_address, tuples in self.children.items()
             for _, self_field_path, child_field_path in tuples
         }
+
+    @property
+    def query_field_paths(self) -> Set[FieldPath]:
+        """
+        All of the possible field paths that we can query for possible filter values.
+        These are field paths that are the ends of incoming edges.
+        """
+        return {edge.f2.field_path for edge in self.incoming_edges()}
+
+    def typed_filtered_values(self, input_data: Dict[str, List[Any]]) -> Dict[str, Any]:
+        """
+        Return a filtered list of key/value sets of data items that are both in
+        the list of incoming edge fields, and contain data in the input data set.
+
+        The values are cast based on field types, if those types are specified.
+        """
+        out = {}
+        for key, values in input_data.items():
+            path: FieldPath = FieldPath.parse(key)
+            field: Field = self.node.collection.field(path)
+            if field and path in self.query_field_paths and isinstance(values, list):
+                cast_values = [field.cast(v) for v in values]
+                filtered = list(filter(lambda x: x is not None, cast_values))
+                if filtered:
+                    out[key] = filtered
+        return out
 
     def can_run_given(self, remaining_node_keys: Set[CollectionAddress]) -> bool:
         """True if finished_node_keys covers all the nodes that this traversal_node is waiting for.  If
