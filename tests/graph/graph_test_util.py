@@ -15,9 +15,7 @@ from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
+
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
 from ..fixtures.application_fixtures import faker

@@ -99,11 +99,11 @@ class TaskResources:
         self.connections = Connections()
 
     def __enter__(self) -> "TaskResources":
-        """Support 'with' useage for closing resources"""
+        """Support 'with' usage for closing resources"""
         return self
 
     def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
-        """Support 'with' useage for closing resources"""
+        """Support 'with' usage for closing resources"""
         self.close()
 
     def cache_object(self, key: str, value: Any) -> None:

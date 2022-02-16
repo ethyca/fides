@@ -5,9 +5,17 @@ from fidesops.graph.config import (
     ScalarField,
     FieldAddress,
     CollectionAddress,
-    Dataset, ObjectField,
+    Dataset,
+    ObjectField,
 )
-from fidesops.graph.data_type import DataType
+from fidesops.graph.data_type import (
+    DataType,
+    IntTypeConverter,
+    StringTypeConverter,
+    ObjectIdTypeConverter,
+    ObjectTypeConverter,
+    NoOpTypeConverter,
+)
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -74,56 +82,355 @@ def combined_mongo_postgresql_graph(
         ],
     )
 
-    mongo_customer_details = Collection(
+    aircraft = Collection(
+        name="aircraft",
+        fields=[
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ScalarField(
+                name="model",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="planes",
+                data_type_converter=IntTypeConverter(),
+                is_array=True,
+                references=[(FieldAddress("mongo_test", "flights", "plane"), "from")],
+            ),
+        ],
+        after=set(),
+    )
+
+    conversations = Collection(
+        name="conversations",
+        fields=[
+            ObjectField(
+                name="thread",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=False,
+                fields={
+                    "comment": ScalarField(
+                        name="comment",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "message": ScalarField(
+                        name="message",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "chat_name": ScalarField(
+                        name="chat_name",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                },
+            )
+        ],
+        after=set(),
+    )
+
+    customer_details = Collection(
         name="customer_details",
         fields=[
-            ScalarField(name="_id", primary_key=True),
+            ScalarField(
+                name="_id",
+                data_type_converter=NoOpTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ScalarField(
+                name="birthday",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="children",
+                data_type_converter=StringTypeConverter(),
+                is_array=True,
+            ),
+            ObjectField(
+                name="comments",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=True,
+                fields={
+                    "name": ScalarField(
+                        name="comment_id",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                        references=[
+                            (
+                                FieldAddress(
+                                    "mongo_test", "conversations", "thread", "comment"
+                                ),
+                                "to",
+                            )
+                        ],
+                    )
+                },
+            ),
             ScalarField(
                 name="customer_id",
+                data_type_converter=NoOpTypeConverter(),
+                is_array=False,
                 references=[
-                    (FieldAddress("postgres_example", "customer", "id"), "from")
+                    (
+                        FieldAddress("postgres_example", "customer", "id"),
+                        "from",
+                    )
                 ],
             ),
-            ScalarField(name="gender", data_type_converter=str_converter),
-            ScalarField(name="birthday", data_type_converter=str_converter),
-            ObjectField(name="workplace_info", data_type_converter=obj_converter, fields={
-                "employer": ScalarField(name="employer", data_type_converter=str_converter),
-                "position": ScalarField(name="position", data_type_converter=str_converter)
-            }),
-        ]
+            ObjectField(
+                name="emergency_contacts",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=True,
+                fields={
+                    "name": ScalarField(
+                        name="name",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "relationship": ScalarField(
+                        name="relationship",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "phone": ScalarField(
+                        name="phone",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                },
+            ),
+            ScalarField(
+                name="gender",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="travel_identifiers",
+                data_type_converter=StringTypeConverter(),
+                is_array=True,
+            ),
+            ObjectField(
+                name="workplace_info",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=False,
+                fields={
+                    "employer": ScalarField(
+                        name="employer",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "position": ScalarField(
+                        name="position",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "direct_reports": ScalarField(
+                        name="direct_reports",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=True,
+                    ),
+                },
+            ),
+        ],
+        after=set(),
     )
-
-    mongo_customer_feedback = Collection(
+    customer_feedback = Collection(
         name="customer_feedback",
         fields=[
-            ScalarField(name="_id", primary_key=True),
-            ObjectField(name="customer_information", data_type_converter=obj_converter, fields={
-                "email": ScalarField(name="email", data_type_converter=str_converter, identity="email"),
-                "phone": ScalarField(name="phone", data_type_converter=str_converter),
-                "internal_customer_id": ScalarField(name="internal_customer_id", data_type_converter=str_converter)
-            }),
-            ScalarField(name="rating", data_type_converter=int_converter),
-            ScalarField(name="date", data_type_converter=str_converter),
-            ScalarField(name="message", data_type_converter=str_converter),
-        ]
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ObjectField(
+                name="customer_information",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=False,
+                fields={
+                    "email": ScalarField(
+                        name="email",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                        identity="email",
+                    ),
+                    "phone": ScalarField(
+                        name="phone",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                    "internal_customer_id": ScalarField(
+                        name="internal_customer_id",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                },
+            ),
+            ScalarField(
+                name="date",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="message",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="rating",
+                data_type_converter=IntTypeConverter(),
+                is_array=False,
+            ),
+        ],
+        after=set(),
     )
-
-    mongo_internal_customer_profile = Collection(
+    employee = Collection(
+        name="employee",
+        fields=[
+            ScalarField(
+                name="email",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+                identity="email",
+            ),
+            ScalarField(
+                name="id",
+                data_type_converter=NoOpTypeConverter(),
+                is_array=False,
+                references=[(FieldAddress("mongo_test", "flights", "pilots"), "from")],
+                primary_key=True,
+            ),
+            ScalarField(
+                name="name",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+        ],
+        after=set(),
+    )
+    flights = Collection(
+        name="flights",
+        fields=[
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ScalarField(
+                name="date", data_type_converter=NoOpTypeConverter(), is_array=False
+            ),
+            ScalarField(
+                name="flight_no",
+                data_type_converter=NoOpTypeConverter(),
+                is_array=False,
+            ),
+            ObjectField(
+                name="passenger_information",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=False,
+                fields={
+                    "passenger_ids": ScalarField(
+                        name="passenger_ids",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=True,
+                        references=[
+                            (
+                                FieldAddress(
+                                    "mongo_test",
+                                    "customer_details",
+                                    "travel_identifiers",
+                                ),
+                                "from",
+                            )
+                        ],
+                    ),
+                    "full_name": ScalarField(
+                        name="full_name",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                    ),
+                },
+            ),
+            ScalarField(
+                name="pilots",
+                data_type_converter=StringTypeConverter(),
+                is_array=True,
+            ),
+            ScalarField(
+                name="plane", data_type_converter=IntTypeConverter(), is_array=False
+            ),
+        ],
+        after=set(),
+    )
+    internal_customer_profile = Collection(
         name="internal_customer_profile",
         fields=[
-            ScalarField(name="_id", primary_key=True),
-            ObjectField(name="customer_identifiers", data_type_converter=obj_converter, fields={
-                "internal_id": ScalarField(name="internal_id", data_type_converter=str_converter, references=[
-                    (FieldAddress("mongo_test", "customer_feedback", "customer_information", "internal_customer_id"), "from")
-                ],),
-            }),
-            ScalarField(name="derived_interests", data_type_converter=str_converter),
-    ]
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ObjectField(
+                name="customer_identifiers",
+                data_type_converter=ObjectTypeConverter(),
+                is_array=False,
+                fields={
+                    "internal_id": ScalarField(
+                        name="internal_id",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                        references=[
+                            (
+                                FieldAddress(
+                                    "mongo_test",
+                                    "customer_feedback",
+                                    "customer_information",
+                                    "internal_customer_id",
+                                ),
+                                "from",
+                            )
+                        ],
+                    ),
+                    "derived_emails": ScalarField(
+                        name="derived_emails",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=True,
+                        identity="email",
+                    ),
+                },
+            ),
+            ScalarField(
+                name="derived_interests",
+                data_type_converter=StringTypeConverter(),
+                is_array=True,
+            ),
+        ],
+        after=set(),
     )
 
     mongo_dataset = Dataset(
         name="mongo_test",
-        collections=[mongo_addresses, mongo_orders, mongo_customer_details, mongo_customer_feedback, mongo_internal_customer_profile],
+        collections=[
+            mongo_addresses,
+            mongo_orders,
+            aircraft,
+            conversations,
+            customer_details,
+            customer_feedback,
+            employee,
+            flights,
+            internal_customer_profile,
+        ],
         connection_key=mongo_config.key,
     )
 
@@ -135,7 +442,7 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
     customers = Collection(
         name="customer",
         fields=[
-            ScalarField(name="id", primary_key=True),
+            ScalarField(name="id", primary_key=True, data_type_converter=int_converter),
             ScalarField(name="name", data_type_converter=str_converter),
             ScalarField(
                 name="email", identity="email", data_type_converter=str_converter
@@ -222,8 +529,10 @@ def sample_traversal() -> Traversal:
             ScalarField(name="email", identity="email"),
             ScalarField(
                 name="contact_address_id",
-                references=[(FieldAddress("mysql", "Address", "id"), "to"),
-                            (FieldAddress("mssql", "Address", "id"), "to")],
+                references=[
+                    (FieldAddress("mysql", "Address", "id"), "to"),
+                    (FieldAddress("mssql", "Address", "id"), "to"),
+                ],
             ),
         ],
     )

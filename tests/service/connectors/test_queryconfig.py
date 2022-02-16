@@ -19,7 +19,6 @@ from fidesops.schemas.masking.masking_configuration import HashMaskingConfigurat
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 
 from fidesops.service.connectors.query_config import (
-    QueryConfig,
     SQLQueryConfig,
     MongoQueryConfig,
 )
@@ -54,8 +53,8 @@ privacy_request = PrivacyRequest(id="234544")
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
-        def found_query_keys(qconfig: QueryConfig, values: Dict[str, Any]) -> Set[str]:
-            return set(qconfig.typed_filtered_values(values).keys())
+        def found_query_keys(node: TraversalNode, values: Dict[str, Any]) -> Set[str]:
+            return set(node.typed_filtered_values(values).keys())
 
         config = SQLQueryConfig(payment_card_node)
         assert config.field_map().keys() == {
@@ -68,12 +67,15 @@ class TestSQLQueryConfig:
                 "billing_address_id",
             ]
         }
-        assert config.query_field_paths == {FieldPath("id"), FieldPath("customer_id")}
+        assert payment_card_node.query_field_paths == {
+            FieldPath("id"),
+            FieldPath("customer_id"),
+        }
 
         # values exist for all query keys
         assert (
             found_query_keys(
-                config,
+                payment_card_node,
                 {
                     "id": ["A"],
                     "customer_id": ["V"],
@@ -85,7 +87,7 @@ class TestSQLQueryConfig:
         # with no values OR an empty set, these are omitted
         assert (
             found_query_keys(
-                config,
+                payment_card_node,
                 {
                     "id": ["A"],
                     "customer_id": [],
@@ -94,14 +96,15 @@ class TestSQLQueryConfig:
             )
             == {"id"}
         )
-        assert found_query_keys(config, {"id": ["A"], "ignore_me": ["X"]}) == {"id"}
-        assert found_query_keys(config, {"ignore_me": ["X"]}) == set()
-        assert found_query_keys(config, {}) == set()
+        assert found_query_keys(
+            payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
+        ) == {"id"}
+        assert found_query_keys(payment_card_node, {"ignore_me": ["X"]}) == set()
+        assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        config = SQLQueryConfig(payment_card_node)
         assert (
-            config.typed_filtered_values(
+            payment_card_node.typed_filtered_values(
                 {
                     "id": ["A"],
                     "customer_id": ["V"],
@@ -112,7 +115,7 @@ class TestSQLQueryConfig:
         )
 
         assert (
-            config.typed_filtered_values(
+            payment_card_node.typed_filtered_values(
                 {
                     "id": ["A"],
                     "customer_id": [],
@@ -122,16 +125,18 @@ class TestSQLQueryConfig:
             == {"id": ["A"]}
         )
 
-        assert config.typed_filtered_values({"id": ["A"], "ignore_me": ["X"]}) == {
-            "id": ["A"]
-        }
+        assert payment_card_node.typed_filtered_values(
+            {"id": ["A"], "ignore_me": ["X"]}
+        ) == {"id": ["A"]}
 
-        assert config.typed_filtered_values({"id": [], "customer_id": ["V"]}) == {
-            "customer_id": ["V"]
-        }
+        assert payment_card_node.typed_filtered_values(
+            {"id": [], "customer_id": ["V"]}
+        ) == {"customer_id": ["V"]}
         # test for type casting: id has type "string":
-        assert config.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
-        assert config.typed_filtered_values({"id": [1, 2]}) == {"id": ["1", "2"]}
+        assert payment_card_node.typed_filtered_values({"id": [1]}) == {"id": ["1"]}
+        assert payment_card_node.typed_filtered_values({"id": [1, 2]}) == {
+            "id": ["1", "2"]
+        }
 
     def test_generated_sql_query(self):
         """Test that the generated query depends on the input set"""
@@ -404,24 +409,21 @@ class TestMongoQueryConfig:
     def test_nested_query_field_paths(
         self, customer_details_node, customer_feedback_node
     ):
-        config = SQLQueryConfig(customer_details_node)
-        assert config.query_field_paths == {
+        assert customer_details_node.query_field_paths == {
             FieldPath("customer_id"),
         }
 
-        other_config = SQLQueryConfig(customer_feedback_node)
-        assert other_config.query_field_paths == {
+        assert customer_feedback_node.query_field_paths == {
             FieldPath("customer_information", "email")
         }
 
     def test_nested_typed_filtered_values(self, customer_feedback_node):
         """Identity data is located on a nested object"""
-        config = SQLQueryConfig(customer_feedback_node)
         input_data = {
             "customer_information.email": ["test@example.com"],
             "ignore": ["abcde"],
         }
-        assert config.typed_filtered_values(input_data) == {
+        assert customer_feedback_node.typed_filtered_values(input_data) == {
             "customer_information.email": ["test@example.com"]
         }
 
@@ -472,14 +474,19 @@ class TestMongoQueryConfig:
         ]
         config = MongoQueryConfig(customer_details)
         input_data = {"customer_id": [1]}
-        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will be filtered later.
+        # Tuple of query, projection - Projection is specifying fields at the top-level. Nested data will
+        # be filtered later.
         assert config.generate_query(input_data, policy) == (
             {"customer_id": 1},
             {
                 "_id": 1,
                 "birthday": 1,
+                "comments": 1,
                 "customer_id": 1,
+                "emergency_contacts": 1,
+                "children": 1,
                 "gender": 1,
+                "travel_identifiers": 1,
                 "workplace_info": 1,
             },
         )
@@ -513,7 +520,12 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
-            "workplace_info": {"position": "Chief Strategist"},
+            "workplace_info": {
+                "position": "Chief Strategist",
+                "direct_reports": ["Robbie Margo", "Sully Hunter"],
+            },
+            "emergency_contacts": [{"name": "June Customer", "phone": "444-444-4444"}],
+            "children": ["Christopher Customer", "Courtney Customer"],
         }
 
         # Make target more broad
@@ -525,8 +537,17 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
+        # TODO lots of this update statmement is wrong
         assert mongo_statement[1] == {
-            "$set": {"workplace_info.position": None, "birthday": None, "gender": None}
+            "$set": {
+                "birthday": None,
+                "emergency_contacts.name": None,
+                "workplace_info.direct_reports": None,
+                "emergency_contacts.phone": None,
+                "gender": None,
+                "workplace_info.position": None,
+                "children": None,
+            }
         }
 
     def test_generate_update_stmt_multiple_rules(
@@ -558,6 +579,12 @@ class TestMongoQueryConfig:
             "gender": "male",
             "customer_id": 1,
             "_id": 1,
+            "workplace_info": {
+                "position": "Chief Strategist",
+                "direct_reports": ["Robbie Margo", "Sully Hunter"],
+            },
+            "emergency_contacts": [{"name": "June Customer", "phone": "444-444-4444"}],
+            "children": ["Christopher Customer", "Courtney Customer"],
         }
 
         rule = erasure_policy_two_rules.rules[0]
@@ -577,11 +604,15 @@ class TestMongoQueryConfig:
         }
         target = rule_two.targets[0]
         target.data_category = DataCategory("user.provided.identifiable.gender").value
+        # cache secrets for hash strategy
+        secret = MaskingSecretCache[str](
+            secret="adobo", masking_strategy=HASH, secret_type=SecretType.salt
+        )
+        cache_secret(secret, privacy_request.id)
 
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy_two_rules, privacy_request
         )
-        print(mongo_statement)
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
         assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(

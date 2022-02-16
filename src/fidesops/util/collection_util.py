@@ -17,17 +17,21 @@ def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
     return {}
 
 
-def append(d: Dict[T, List[U]], key: T, val: U) -> None:
+def append(d: Dict[T, List[U]], key: T, value: U) -> None:
     """Append to values stored under a dictionary key.
 
     append({},"A",1) sets dict to {"A":[1]}
     append({"A":[1],"A",2) sets dict to {"A":[1,2]}
+    append({"A":[1],"A",[2, 3, 4]) sets dict to {"A":[1, 2, 3, 4]}
     """
-    if val:
+    if value:
         if key in d:
-            d[key].append(val)
+            if isinstance(value, list):
+                d[key].extend(value)
+            else:
+                d[key].append(value)
         else:
-            d[key] = [val]
+            d[key] = value if isinstance(value, list) else [value]
 
 
 def partition(_iterable: Iterable[T], extractor: Callable[[T], U]) -> Dict[U, List[T]]:

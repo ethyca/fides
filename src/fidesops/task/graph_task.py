@@ -8,7 +8,6 @@ from functools import wraps
 from time import sleep
 from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
-import pandas as pd
 import dask
 from dask.threaded import get
 
@@ -26,10 +25,12 @@ from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import BaseConnector
+from fidesops.task.consolidate_query_matches import consolidate_query_matches
+from fidesops.task.filter_element_match import filter_element_match
+from fidesops.task.filter_results import select_and_save_field, remove_empty_containers
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.collection_util import partition, append
 from fidesops.util.logger import NotPii
-from fidesops.util.nested_utils import unflatten_dict
 
 logger = logging.getLogger(__name__)
 
@@ -137,13 +138,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         These outputs should correspond to the input key order.  Any nested fields are
         converted into dot-separated paths in the return.
 
-         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}}]
+         table1: [{x:1, y:A}, {x:2, y:B}], table2: [{x:3},{x:4}], table3: [{z: {a: C}, "y": [4, 5]}]
            where table1.x => self.id,
            table1.y=> self.name,
            table2.x=>self.id
            table3.z.a => self.contact.address
+           table3.y => self.contact.email
          becomes
-         {id:[1,2,3,4], name:["A","B"], contact.address:["C"]}
+         {id:[1,2,3,4], name:["A","B"], contact.address:["C"], "contact.email": [4, 5]}
         """
         if not len(data) == len(self.input_keys):
             logger.warning(
@@ -160,11 +162,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 Tuple[FieldPath, FieldPath]
             ] = self.incoming_field_path_map[collection_address]
 
+            logger.info(
+                f"Consolidating incoming data into {self.traversal_node.node.address} from {collection_address}."
+            )
             for row in rowset:
                 for foreign_field_path, local_field_path in field_mappings:
-                    new_value = foreign_field_path.retrieve_from(row)
-                    if new_value:
-                        append(output, local_field_path.string_path, new_value)
+                    new_values: List = consolidate_query_matches(
+                        row=row, target_path=foreign_field_path
+                    )
+                    if new_values:
+                        append(output, local_field_path.string_path, new_values)
         return output
 
     def update_status(
@@ -226,9 +233,26 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run access request"""
+        formatted_input_data = self.to_dask_input_data(*inputs)
         output = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, self.to_dask_input_data(*inputs)
+            self.traversal_node, self.resources.policy, formatted_input_data
         )
+
+        coerced_input_data = self.traversal_node.typed_filtered_values(
+            formatted_input_data  # Cast incoming values to correct type
+        )
+        for row in output:
+            # In code, filter out non-matching sub-documents and array elements
+            logger.info(
+                f"Filtering row in {self.traversal_node.node.address} for matching array elements."
+            )
+            filter_element_match(
+                row,
+                {
+                    FieldPath.parse(field): inputs
+                    for field, inputs in coerced_input_data.items()
+                },
+            )
         self.resources.cache_object(f"access_request__{self.key}", output)
         self.log_end(ActionType.access)
         return output
@@ -381,16 +405,23 @@ def run_erasure(  # pylint: disable = too-many-arguments
 
 
 def filter_data_categories(
-    access_request_results: Dict[str, Optional[Any]],
+    access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
-    and subcategories
+    and subcategories.
 
-    For example, if data category "user.provided.identifiable.contact" is specified on one of the rule targets,
-    all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
+    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
+    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
     "user.provided.identifiable.contact.street", ...], etc.
+
+    :param access_request_results: Dictionary of access request results for each of your collections
+    :param target_categories: A set of data categories that we'd like to extract from access_request_results
+    :param data_category_fields: Data categories mapped to applicable fields for each collection
+
+    :return: Filtered access request results that only contain fields matching the desired data categories.
+    TODO move to fidesops.task.filter_results.py, leaving for now to make the diff more clear
     """
     logger.info(
         "Filtering Access Request results to return fields associated with data categories"
@@ -417,18 +448,11 @@ def filter_data_categories(
         if not target_field_paths:
             continue
 
-        # Normalize nested data into a flat dataframe
-        df: pd.DataFrame = pd.json_normalize(results, sep=".")
-        # Only keep intersection of dataframe columns and target field paths
-        df = df[
-            df.columns & [field_path.string_path for field_path in target_field_paths]
-        ]
-        # Turn the filtered results back into a list of dictionaries
-        filtered_flattened_results: List[Dict[str, Optional[Any]]] = df.to_dict(
-            orient="records"
-        )
-        for row in filtered_flattened_results:
-            # For each row, unflatten the dictionary
-            filtered_access_results[node_address].append(unflatten_dict(row))
+        for row in results:
+            filtered_results: Dict[str, Any] = {}
+            for field_path in target_field_paths:
+                select_and_save_field(filtered_results, row, field_path)
+            remove_empty_containers(filtered_results)
+            filtered_access_results[node_address].append(filtered_results)
 
     return filtered_access_results
