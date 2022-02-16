@@ -290,11 +290,14 @@ def generate_contact_records(server_organization_list: List) -> List:
     fields to be returned.
     """
     output_list = [
-        # (
-        #     "Organization Name and Contact Detail",
-        #     "Data Protection Officer (if applicable)",
-        #     "Representative (if applicable)",
-        # )
+        (
+            "Organization Name and Contact Detail",
+            "",
+            "Data Protection Officer (if applicable)",
+            "",
+            "Representative (if applicable)",
+            "",
+        )
     ]
 
     # currently the output file will only truly support a single organization
@@ -455,6 +458,7 @@ def export_datamap(
     )
 
     output_list = generate_contact_records(server_resource_dict["organization"])
+    output_list.pop(0)
     organization_df = pd.DataFrame.from_records(output_list)
 
     # systems
@@ -483,19 +487,15 @@ def export_datamap(
 
     joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
 
-    # joined_df["system.administrating_department"] = ""
-
     # probably create a set of the below to combine as a single entity
     joined_df["system.third_country_transfers"] = ""
     # joined_df["dataset.third_country_transfers"] = ""
 
     # likely unnecessary for walk
     joined_df["system.third_country_safeguards"] = ""
-    # joined_df["dataset.retention"] = ""
-    # joined_df["system.privacy_declaration.data_use.legal_basis"] = ""
-    # joined_df["system.privacy_declaration.data_use.recipients"] = ""
-    # joined_df["system.privacy_declaration.data_use.name"] = ""
+
     joined_df["system.joint_controller"] = ""
+    # joined_df["dataset.joint_controller"] = ""
     joined_df["system.link_to_processor_contract"] = ""
     joined_df["organization.link_to_security_policy"] = (
         server_resource_dict["organization"][0].security_policy or ""
