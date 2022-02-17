@@ -161,7 +161,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build
+	@docker-compose build --build-arg REQUIRE_MSSQL="true"
 
 .PHONY: teardown
 teardown:
