@@ -2,11 +2,14 @@ from os import path
 
 import pytest
 
+import pandas as pd
+
 from fidesctl.core import export
 from fideslang.models import (
     Dataset,
     DatasetCollection,
     DatasetField,
+    Organization,
     PrivacyDeclaration,
     System,
 )
@@ -127,6 +130,18 @@ def test_dataset_records_to_export(test_sample_dataset_taxonomy):
 
 
 @pytest.mark.unit
+def test_organization_records_to_export():
+    """
+    Asserts the default organization is successfully exported
+    """
+
+    output_list = export.generate_contact_records(
+        [Organization(fides_key="default_organization")]
+    )
+    assert len(output_list) == 5
+
+
+@pytest.mark.unit
 def test_csv_export(tmpdir):
     """
     Asserts that the csv is successfully created
@@ -138,6 +153,41 @@ def test_csv_export(tmpdir):
     exported_filename = export.export_to_csv(
         list_to_export=output_list,
         resource_exported=resource_exported,
+        manifests_dir=f"{tmpdir}",
+    )
+
+    exported_file = tmpdir.join(exported_filename)
+
+    assert path.exists(exported_file)
+
+
+@pytest.mark.unit
+def test_xlsx_export(tmpdir):
+    """
+    Asserts that the xlsx template is successfully copied and appended to
+    """
+    output_columns = [
+        "dataset.name",
+        "system.name",
+        "system.administrating_department",
+        "system.privacy_declaration.data_use.name",
+        "system.joint_controller",
+        "system.privacy_declaration.data_subjects",
+        "dataset.data_categories",
+        "system.privacy_declaration.data_use.recipients",
+        "system.link_to_processor_contract",
+        "system.third_country_transfers",
+        "system.third_country_safeguards",
+        "dataset.retention",
+        "organization.link_to_security_policy",
+    ]
+
+    organization_df = pd.DataFrame()
+    joined_df = pd.DataFrame(columns=output_columns)
+
+    exported_filename = export.export_datamap_to_excel(
+        organization_df=organization_df,
+        joined_df=joined_df,
         manifests_dir=f"{tmpdir}",
     )
 

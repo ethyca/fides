@@ -226,9 +226,14 @@ def test_evaluate_with_dataset_collection_failed(
 
 
 @pytest.mark.integration
-def test_export_system(test_config_path: str, test_cli_runner: CliRunner):
+@pytest.mark.parametrize(
+    "export_resource", ["system", "dataset", "organization", "datamap"]
+)
+def test_export_resources(
+    test_config_path: str, test_cli_runner: CliRunner, export_resource: str
+):
     """
-    Tests that a system is properly exported
+    Tests that each resource is successfully exported
     """
 
     result = test_cli_runner.invoke(
@@ -237,7 +242,7 @@ def test_export_system(test_config_path: str, test_cli_runner: CliRunner):
             "-f",
             test_config_path,
             "export",
-            "system",
+            export_resource,
             "demo_resources/",
             "--dry",
         ],
