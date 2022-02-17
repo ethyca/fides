@@ -98,10 +98,10 @@ system:
   organization_fides_key: default_organization
   name: my_redshift_cluster
   description: 'Fides Generated Description for Cluster: my_redshift_cluster'
-  meta:
+  fidesctl_meta:
     endpoint_address: my_redshift_cluster.us-east-1.redshift.amazonaws.com
     endpoint_port: '5439'
+    resource_id: arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176
   system_type: redshift_cluster
-  system_resource_id: arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176
   privacy_declarations: []
 ```
