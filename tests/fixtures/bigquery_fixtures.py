@@ -1,3 +1,4 @@
+import ast
 import logging
 import os
 from typing import Generator, List, Dict
@@ -76,9 +77,9 @@ def bigquery_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or os.environ.get(
+    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or ast.literal_eval(os.environ.get(
         "BIGQUERY_KEYFILE_CREDS"
-    )
+    ))
     dataset = integration_config.get("bigquery", {}).get(
         "dataset"
     ) or os.environ.get("BIGQUERY_DATASET")
