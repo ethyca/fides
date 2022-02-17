@@ -1,11 +1,11 @@
 import pytest
 
 from fidesctl.core import system as _system
-from fideslang.models import System
+from fideslang.models import System, SystemMetadata
 
 
 @pytest.mark.unit
-def test_create_redshift_systems():
+def test_transform_redshift_systems():
     describe_clusters = {
         "Clusters": [
             {
@@ -24,16 +24,16 @@ def test_create_redshift_systems():
             organization_fides_key="default_organization",
             name="redshift-cluster-1",
             description="Fides Generated Description for Cluster: redshift-cluster-1",
-            meta={
-                "endpoint_address": "redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
-                "endpoint_port": "5439",
-            },
+            fidesctl_meta=SystemMetadata(
+                endpoint_address="redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
+                endpoint_port="5439",
+                resource_id="arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
+            ),
             system_type="redshift_cluster",
-            system_resource_id="arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
             privacy_declarations=[],
         )
     ]
-    actual_result = _system.create_redshift_systems(describe_clusters)
+    actual_result = _system.transform_redshift_systems(describe_clusters)
     assert actual_result == expected_result
 
 
