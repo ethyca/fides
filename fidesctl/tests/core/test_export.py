@@ -183,11 +183,11 @@ def test_xlsx_export(tmpdir):
     ]
 
     organization_df = pd.DataFrame()
-    joined_df = pd.DataFrame(columns=output_columns)
+    joined_system_dataset_df = pd.DataFrame(columns=output_columns)
 
     exported_filename = export.export_datamap_to_excel(
         organization_df=organization_df,
-        joined_df=joined_df,
+        joined_system_dataset_df=joined_system_dataset_df,
         manifests_dir=f"{tmpdir}",
     )
 

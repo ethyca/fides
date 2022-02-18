@@ -381,7 +381,9 @@ def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
 
 
 def export_datamap_to_excel(
-    organization_df: pd.DataFrame, joined_df: pd.DataFrame, manifests_dir: str
+    organization_df: pd.DataFrame,
+    joined_system_dataset_df: pd.DataFrame,
+    manifests_dir: str,
 ) -> str:
     """
     Creates a copy from the existing datamap template and generates
@@ -424,7 +426,7 @@ def export_datamap_to_excel(
             startcol=2,
         )
 
-        joined_df.to_excel(
+        joined_system_dataset_df.to_excel(
             export_file,
             sheet_name="Art30 mock (WIP)",
             index=False,
@@ -436,39 +438,16 @@ def export_datamap_to_excel(
     return filename
 
 
-def export_datamap(
-    url: str,
-    taxonomy: Taxonomy,
-    headers: Dict[str, str],
-    manifests_dir: str,
-    dry: bool,
-) -> None:
+def build_joined_dataframe(
+    server_resource_dict: Dict[str, List], url: str, headers: Dict[str, str]
+) -> pd.DataFrame:
     """
-    Exports the required fields from a system resource to a csv file.
+    Return joined dataframes for datamap export
 
-    The resource is fetched from the server prior to being
-    flattened as needed for exporting.
+    Currently we have a few unhandled columns that exist in the template
+    Including those here manually for now is required to use the append
+    function built in to pandas
     """
-
-    # load resources from server
-
-    fides_keys_dict = get_datamap_fides_keys(taxonomy)
-    server_resource_dict = {}
-    for resource_type in ["organization", "system", "dataset"]:
-
-        server_resource_dict[resource_type] = get_server_resources(
-            url,
-            resource_type,
-            fides_keys_dict[resource_type],
-            headers,
-        )
-
-    # organizations
-    organization_df = pd.DataFrame.from_records(
-        generate_contact_records(server_resource_dict["organization"])
-    )
-    organization_df.columns = organization_df.iloc[0]
-    organization_df = organization_df[1:]
 
     # systems
     system_output_list = generate_system_records(
@@ -488,25 +467,78 @@ def export_datamap(
     # merge systems and datasets
     joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
 
-    # probably create a set of the below to combine as a single entity
+    ## probably create a set of third_country and joint_controller attrs to combine as a single entity
     joined_df["system.third_country_transfers"] = ""
     # joined_df["dataset.third_country_transfers"] = ""
 
-    # likely unnecessary for walk
-    joined_df["system.third_country_safeguards"] = ""
-
     joined_df["system.joint_controller"] = ""
     # joined_df["dataset.joint_controller"] = ""
+
+    # likely unnecessary for walk, modeling here still for append in example
+    joined_df["system.third_country_safeguards"] = ""
     joined_df["system.link_to_processor_contract"] = ""
+
     joined_df["organization.link_to_security_policy"] = (
         server_resource_dict["organization"][0].security_policy or ""
     )
 
-    if not dry:
-        exported_filename = export_datamap_to_excel(
-            organization_df, joined_df, manifests_dir
+    return joined_df
+
+
+def export_datamap(
+    url: str,
+    taxonomy: Taxonomy,
+    headers: Dict[str, str],
+    manifests_dir: str,
+    dry: bool,
+    to_csv: bool,
+) -> None:
+    """
+    Exports the required fields from a system resource to a csv file.
+
+    The resource is fetched from the server prior to being
+    flattened as needed for exporting.
+    """
+
+    # load resources from server
+
+    fides_keys_dict = get_datamap_fides_keys(taxonomy)
+
+    server_resource_dict = {}
+    for resource_type in ["organization", "system", "dataset"]:
+
+        server_resource_dict[resource_type] = get_server_resources(
+            url,
+            resource_type,
+            fides_keys_dict[resource_type],
+            headers,
         )
-        echo_green(f"successfully exported {exported_filename}!")
+
+    joined_system_dataset_df = build_joined_dataframe(
+        server_resource_dict, url, headers
+    )
+
+    if not dry and not to_csv:
+
+        # build an organization dataframe if exporting to excel
+        organization_df = pd.DataFrame.from_records(
+            generate_contact_records(server_resource_dict["organization"])
+        )
+        organization_df.columns = organization_df.iloc[0]
+        organization_df = organization_df[1:]
+
+        exported_filename = export_datamap_to_excel(
+            organization_df, joined_system_dataset_df, manifests_dir
+        )
+        echo_green(exported_filename + " successfully exported.")
     else:
-        echo_green("Output would contain:")
-        print(joined_df.head())
+        output_list = [tuple(joined_system_dataset_df.columns)]
+        output_list += list(joined_system_dataset_df.itertuples(index=False, name=None))
+
+        if dry:
+            echo_green("Output would contain:")
+            for record in output_list:
+                print(record)
+        else:
+            exported_filename = export_to_csv(output_list, "datamap", manifests_dir)
+            echo_green(exported_filename + " successfully exported.")
