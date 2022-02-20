@@ -24,6 +24,7 @@ from .models import (
     Taxonomy,
 )
 from .default_taxonomy import DEFAULT_TAXONOMY
+from .default_fixtures import COUNTRY_CODES
 
 FidesModelType = Union[Type[FidesModel], Type[Evaluation]]
 model_map: Dict[str, FidesModelType] = {

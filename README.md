@@ -45,10 +45,10 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     <details>
     This builds the required images, spins up the database, and runs the initialization scripts.
 
-    <summary>Run <code>fidesctl init-db</code></summary>
+    <summary>Run <code>fidesctl db init</code></summary>
 
       ```bash
-      ~/git/fides% fidesctl init-db
+      ~/git/fides% fidesctl db init
       INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
       INFO  [alembic.runtime.migration] Will assume transactional DDL.
       ```

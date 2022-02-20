@@ -19,6 +19,8 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-python@v2
+        with:
+          python-version="3.9.0"
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
@@ -28,7 +30,7 @@ jobs:
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1
-
+        
       - name: Build docs
         run: make docs-build
 

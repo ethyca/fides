@@ -1,12 +1,12 @@
-# Scanning a Resource
+# Scanning Resources
 
 As you annotate resources with fidesctl it is important to keep your fidesctl resources up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. It will output any part of the dataset which is not defined or categorized. The command will exit in error if a coverage threshold is not met. 
 
-The `scan` command works best when used in tandem with the `generate-dataset` command as it creates resources in the expected format. The fidesctl format for datasets must be followed in order to be able to track coverage. 
+The `scan` command works best when used in tandem with the `generate` command as it creates resources in the expected format. The fidesctl format for datasets must be followed in order to be able to track coverage. 
 
-# Scanning a Database
+# Working With a Database
 
-The `scan` command can connect to a database and compare its schema to your already defined resources. Given a database schema with a single `users` table as follows:
+The `scan dataset` command can connect to a database and compare its schema to your already defined resources. Given a database schema with a single `users` table as follows:
 
 ```shell
 flaskr=# SELECT * FROM users;
@@ -59,9 +59,9 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
 
-We can invoke the `scan` by simply providing a connection url for this database:
+We can invoke the `scan dataset` by simply providing a connection url for this database:
 ```sh
-./venv/bin/fidesctl scan \
+./venv/bin/fidesctl scan dataset \
   --manifest-dir dataset.yml \
   database \
   postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/postgres

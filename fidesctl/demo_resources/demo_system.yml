@@ -3,6 +3,10 @@ system:
     name: Demo Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
+    administrating_department: Engineering
+    third_country_transfers:
+    - USA
+    - CAN
     privacy_declarations:
       - name: Analyze customer behaviour for improvements.
         data_categories:
@@ -24,7 +28,7 @@ system:
         data_categories:
           #- user.provided.identifiable.contact # uncomment to add this category to the system
           - user.derived.identifiable.device.cookie_id
-        data_use: advertising
+        data_use: third_party_sharing.personalized_advertising.direct_marketing
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

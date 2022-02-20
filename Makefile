@@ -23,17 +23,17 @@ help:
 	@echo ----
 	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc. This will wipe out everything!
 	@echo ----
-	@echo cli - Spins up the database, the api, and starts a shell within a Docker container with the local Fidesctl files mounted.
-	@echo ----
 	@echo build - Builds the Fidesctl Docker image.
 	@echo ----
 	@echo check-all - Run all of the available CI checks for Fidesctl locally.
 	@echo ----
-	@echo init-db - Run any available migrations.
+	@echo reset-db - Wipes all user-created data and resets the database back to its freshly initialized state.
 	@echo ----
 	@echo api - Spins up the database and API, reachable from the host machine at localhost.
 	@echo ----
 	@echo cli - Spins up the database, API, and starts a shell within the API container to run Fidesctl CLI commands.
+	@echo ----
+	@echo cli-integration - Spins up the cli with additional containers needed for integration testing.
 	@echo --------------------
 
 ####################
@@ -44,7 +44,7 @@ help:
 reset-db: build-local
 	@echo "Reset the database..."
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) fidesctl reset-db -y
+	@$(RUN) fidesctl db reset -y
 	@make teardown
 
 .PHONY: api
@@ -152,7 +152,7 @@ teardown:
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(IMAGE_NAME) \
-	python generate_openapi.py ../docs/fides/docs/api/openapi.json
+	python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
