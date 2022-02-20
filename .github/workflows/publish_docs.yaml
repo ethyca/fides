@@ -9,6 +9,7 @@ on:
 
 env:
   TAG: ${{ github.event.release.tag_name }}
+  PROD_PUBLISH: true
 
 jobs:
   publish_docs:
@@ -42,6 +43,7 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+
       - name: Deploy Stable Docs if a Release is Tagged
         if: ${{ env.TAG }}
         run: mike deploy --config-file docs/fidesctl/mkdocs.yml --push --update-aliases ${{ env.TAG }} stable
