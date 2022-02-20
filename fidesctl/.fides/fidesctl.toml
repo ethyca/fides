@@ -1,6 +1,11 @@
 [api]
-database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
-test_database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+database_user = "postgres"
+databse_password = "fidesctl"
+databse_host = "fidesctl-db"
+database_port = "5432"
+database_name = "fidesctl"
+
+test_database_name = "fidesctl_test"
 
 [cli]
 server_url = "http://fidesctl:8080"
