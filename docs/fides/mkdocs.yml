@@ -113,11 +113,10 @@ extra_css:
   - css/api.css
   - css/cli.css
   - css/taxonomy.css
-
-extra:
+  
+extras:
   version:
     provider: mike
-    default: stable
 
 plugins:
   # The "Last Update" footer only shows in production

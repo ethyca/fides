@@ -44,12 +44,8 @@ services:
     build:
       context: docs/fides/
     volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
+      - ./docs/fides:/docs
       - ./fidesctl:/fidesctl
-    working_dir: /fides/docs/fides
     expose:
       - 8000
     ports:
