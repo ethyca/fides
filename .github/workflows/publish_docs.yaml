@@ -1,27 +1,56 @@
-name: Publish updated docs to gh-pages
+name: Publish Docs
 
 on:
   push:
     branches:
       - main
-    paths:
-      - "docs/**"
+  release:
+    types: [published]
+
+env:
+  TAG: ${{ github.event.release.tag_name }}
+  PROD_PUBLISH: true
 
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-python@v2
         with:
           # Currently limited by pandas support for python 3.10, dependency from fidesctl
           # see  https://github.com/pandas-dev/pandas/pull/43729
           # Remove once fidesctl 1.4.0 is released an pandas version is 1.3.4
           python-version: "3.9.0"
-      - run: pip install -r docs/fides/requirements.txt
+
+      - name: Echo the Release Tag
+        run: echo ${{ env.TAG }}
+
+      - name: Install Docs Requirements
+        run: pip install -r docs/fidesctl/requirements.txt
+
+      - name: Checkout the gh-pages branches
+        run: git fetch origin gh-pages --depth=1
+
       - name: Build docs
         run: make docs-build
-      - name: Publish docs
-        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
-        env:
-          PROD_PUBLISH: true
+
+      # This is required by "mike"
+      - name: Set the Git Username & Email
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Deploy Stable Docs if a Release is Tagged
+        if: ${{ env.TAG }}
+        run: mike deploy --config-file docs/fidesctl/mkdocs.yml --push --update-aliases ${{ env.TAG }} stable
+
+      # This will match "stable" when a new release is cut
+      - name: Deploy Dev Docs
+        run: mike deploy --config-file docs/fidesctl/mkdocs.yml --push dev
+
+      - name: Set Default Version
+        run: mike set-default --config-file docs/fidesctl/mkdocs.yml --push stable
