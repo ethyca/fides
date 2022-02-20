@@ -2960,6 +2960,16 @@
             "title": "Parent Key",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
+          },
+          "legal_basis": {
+            "$ref": "#/components/schemas/LegalBasisEnum"
+          },
+          "recipients": {
+            "title": "Recipients",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "description": "The DataUse resource model."
@@ -3023,6 +3033,13 @@
             "title": "Retention",
             "type": "string",
             "default": "No retention or erasure policy"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "collections": {
             "title": "Collections",
@@ -3176,6 +3193,19 @@
           }
         }
       },
+      "LegalBasisEnum": {
+        "title": "LegalBasisEnum",
+        "enum": [
+          "Consent",
+          "Contract",
+          "Legal Obligation",
+          "Vital Interest",
+          "Public Interest",
+          "Legitimate Interests"
+        ],
+        "type": "string",
+        "description": "The model for allowable legal basis categories\n\nBased upon article 6 of the GDPR"
+      },
       "MatchesEnum": {
         "title": "MatchesEnum",
         "enum": [
@@ -3185,7 +3215,7 @@
           "OTHER"
         ],
         "type": "string",
-        "description": "The MatchesEnum resouce model.\n\nDetermines how the listed resources are matched in the evaluation logic."
+        "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
       "Organization": {
         "title": "Organization",
@@ -3493,6 +3523,18 @@
           },
           "joint_controller": {
             "$ref": "#/components/schemas/ContactDetails"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "administrating_department": {
+            "title": "Administrating Department",
+            "type": "string",
+            "default": "Not defined"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
