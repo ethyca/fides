@@ -53,12 +53,8 @@ body {
     height: auto;
 }
 
-.md-header__topic {
+.md-ellipsis {
     display: none;
-}
-
-.md-header__topic {
-  display: none;
 }
 
 .md-header__title {
