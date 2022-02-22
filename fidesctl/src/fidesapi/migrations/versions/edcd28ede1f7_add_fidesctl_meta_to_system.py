@@ -1,7 +1,7 @@
 """Add fidesctl_meta to System
 
 Revision ID: edcd28ede1f7
-Revises: 1739aa4a4ab7
+Revises: 50b3736634d2
 Create Date: 2022-02-17 00:41:41.595166
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "edcd28ede1f7"
-down_revision = "1739aa4a4ab7"
+down_revision = "50b3736634d2"
 branch_labels = None
 depends_on = None
 
