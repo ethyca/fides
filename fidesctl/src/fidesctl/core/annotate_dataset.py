@@ -1,4 +1,5 @@
 """
+TEST
 This script is a utility for interactively annotating data categories in the dataset manifest
 """
 
