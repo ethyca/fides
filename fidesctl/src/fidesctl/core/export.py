@@ -172,7 +172,7 @@ def generate_system_records(
     server_system_list: List,
     url: str,
     headers: Dict[str, str],
-) -> List[Tuple[str, str, str, str, str, str, str, str, str, str, str]]:
+) -> List[Tuple[str, str, str, str, str, str, str, str, str, str, str, str]]:
     """
     Takes a list of systems from the server, creating a list of tuples
     to be used as records to be exported. The headers of the csv are
@@ -183,6 +183,7 @@ def generate_system_records(
             "system.name",
             "system.description",
             "system.administrating_department",
+            "system.third_country_transfers",
             "system.privacy_declaration.name",
             "system.privacy_declaration.data_categories",
             "system.privacy_declaration.data_use.name",
@@ -201,11 +202,13 @@ def generate_system_records(
             data_categories = declaration.data_categories or []
             data_subjects = declaration.data_subjects or []
             dataset_references = declaration.dataset_references or []
+            third_country_list = ", ".join(system.third_country_transfers or [])
             cartesian_product_of_declaration = [
                 (
                     system.name,
                     system.description,
                     system.administrating_department,
+                    third_country_list,
                     declaration.name,
                     category,
                     data_use["name"],
@@ -247,7 +250,7 @@ def get_formatted_data_use(
         echo_red("Legal Basis undefined for specified Data Use, setting as N/A.")
 
     try:
-        formatted_data_use["recipients"] = ",".join(data_use.recipients)
+        formatted_data_use["recipients"] = ", ".join(data_use.recipients)
     except TypeError:
         echo_red("Recipients undefined for specified Data Use, setting as N/A")
 
@@ -408,7 +411,7 @@ def export_datamap_to_excel(
         "dataset.data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
-        "system.third_country_transfers",
+        "third_country_combined",
         "system.third_country_safeguards",
         "dataset.retention",
         "organization.link_to_security_policy",
@@ -419,7 +422,7 @@ def export_datamap_to_excel(
     ) as export_file:  # pylint: enable=abstract-class-instantiated
         organization_df.to_excel(
             export_file,
-            sheet_name="Art30 mock (WIP)",
+            sheet_name="sheet1",
             index=False,
             header=False,
             startrow=2,
@@ -428,7 +431,7 @@ def export_datamap_to_excel(
 
         joined_system_dataset_df.to_excel(
             export_file,
-            sheet_name="Art30 mock (WIP)",
+            sheet_name="sheet1",
             index=False,
             header=False,
             startrow=9,
@@ -468,7 +471,18 @@ def build_joined_dataframe(
     joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
 
     ## probably create a set of third_country and joint_controller attrs to combine as a single entity
-    joined_df["system.third_country_transfers"] = ""
+    joined_df["third_country_combined"] = (
+        # joined_df["system.third_country_transfers"]
+        # + joined_df["dataset.third_country_transfers"]
+        [
+            ", ".join(i)
+            for i in zip(
+                joined_df["system.third_country_transfers"].map(str),
+                joined_df["dataset.third_country_transfers"],
+            )
+        ]
+    )
+    # joined_df["system.third_country_transfers"] = ""
     # joined_df["dataset.third_country_transfers"] = ""
 
     joined_df["system.joint_controller"] = ""

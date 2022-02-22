@@ -176,7 +176,7 @@ def test_xlsx_export(tmpdir):
         "dataset.data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
-        "system.third_country_transfers",
+        "third_country_combined",
         "system.third_country_safeguards",
         "dataset.retention",
         "organization.link_to_security_policy",

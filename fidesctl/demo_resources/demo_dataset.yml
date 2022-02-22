@@ -9,8 +9,8 @@ dataset:
   - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   retention: "30 days after account deletion"
   third_country_transfers:
-    - USA
-    - CAN
+    - GBR
+    - DEU
   collections:
   - name: users
     description: User information
