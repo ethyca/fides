@@ -109,8 +109,7 @@ pylint:
 
 pytest-unit:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN_NO_DEPS) \
-	pytest -x -m unit
+	@$(RUN_NO_DEPS) pytest -x -m unit
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
