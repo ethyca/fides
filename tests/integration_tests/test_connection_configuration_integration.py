@@ -11,7 +11,8 @@ from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import MongoDBConnector
 from fidesops.service.connectors.sql_connector import (
     MySQLConnector,
-    MicrosoftSQLServerConnector, MariaDBConnector,
+    MicrosoftSQLServerConnector,
+    MariaDBConnector,
 )
 from fidesops.common_exceptions import ConnectionException
 from fidesops.service.connectors import PostgreSQLConnector
@@ -75,6 +76,7 @@ class TestPostgresConnectionPutSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         payload = {
             "host": "postgres_example",
@@ -117,6 +119,7 @@ class TestPostgresConnectionPutSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         payload = {
             "url": "postgresql://postgres:postgres@postgres_example/postgres_example"
@@ -230,6 +233,7 @@ class TestPostgresConnectionTestSecretsAPI:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         assert connection_config.last_test_timestamp is None
 
@@ -261,6 +265,7 @@ class TestPostgresConnector:
         db: Session,
         generate_auth_header,
         connection_config,
+        postgres_integration_db,
     ) -> None:
         connector = get_connector(connection_config)
         assert connector.__class__ == PostgreSQLConnector
@@ -535,12 +540,12 @@ class TestMariaDBConnectionPutSecretsAPI:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/secret"
 
     def test_mariadb_db_connection_incorrect_secrets(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
-            url,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
+        url,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {"host": "mariadb_example", "port": 1234, "dbname": "my_test_db"}
@@ -552,8 +557,8 @@ class TestMariaDBConnectionPutSecretsAPI:
         assert resp.status_code == 200
         body = json.loads(resp.text)
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
         assert body["test_status"] == "failed"
         assert "Operational Error connecting to mariadb db." == body["failure_reason"]
@@ -571,12 +576,12 @@ class TestMariaDBConnectionPutSecretsAPI:
         assert connection_config_mariadb.last_test_succeeded is False
 
     def test_mariadb_db_connection_connect_with_components(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         payload = {
             "host": "mariadb_example",
@@ -595,8 +600,8 @@ class TestMariaDBConnectionPutSecretsAPI:
         body = resp.json()
 
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
         assert body["test_status"] == "succeeded"
         assert body["failure_reason"] is None
@@ -613,12 +618,12 @@ class TestMariaDBConnectionPutSecretsAPI:
         assert connection_config_mariadb.last_test_succeeded is True
 
     def test_mariadb_db_connection_connect_with_url(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         payload = {
             "url": "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
@@ -634,8 +639,8 @@ class TestMariaDBConnectionPutSecretsAPI:
         body = json.loads(resp.text)
 
         assert (
-                body["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
         assert body["failure_reason"] is None
         assert body["test_status"] == "succeeded"
@@ -660,12 +665,12 @@ class TestMariaDBConnectionTestSecretsAPI:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         assert connection_config_mariadb.last_test_timestamp is None
 
@@ -676,12 +681,12 @@ class TestMariaDBConnectionTestSecretsAPI:
         assert connection_config_mariadb.last_test_succeeded is None
 
     def test_connection_configuration_test_incorrect_scopes(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         assert connection_config_mariadb.last_test_timestamp is None
 
@@ -696,12 +701,12 @@ class TestMariaDBConnectionTestSecretsAPI:
         assert connection_config_mariadb.last_test_succeeded is None
 
     def test_connection_configuration_test_failed_response(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         assert connection_config_mariadb.last_test_timestamp is None
         connection_config_mariadb.secrets = {"host": "invalid_host"}
@@ -721,17 +726,17 @@ class TestMariaDBConnectionTestSecretsAPI:
         assert body["test_status"] == "failed"
         assert "Operational Error connecting to mariadb db." == body["failure_reason"]
         assert (
-                body["msg"]
-                == f"Test completed for ConnectionConfig with key: {connection_config_mariadb.key}."
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
 
     def test_connection_configuration_test(
-            self,
-            url,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         assert connection_config_mariadb.last_test_timestamp is None
 
@@ -744,8 +749,8 @@ class TestMariaDBConnectionTestSecretsAPI:
         body = json.loads(resp.text)
 
         assert (
-                body["msg"]
-                == f"Test completed for ConnectionConfig with key: {connection_config_mariadb.key}."
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
         assert body["failure_reason"] is None
         assert body["test_status"] == "succeeded"
@@ -758,11 +763,11 @@ class TestMariaDBConnectionTestSecretsAPI:
 @pytest.mark.integration
 class TestMariaDBConnector:
     def test_mariadb_db_connector(
-            self,
-            api_client: TestClient,
-            db: Session,
-            generate_auth_header,
-            connection_config_mariadb,
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mariadb,
     ) -> None:
         connector = get_connector(connection_config_mariadb)
         assert connector.__class__ == MariaDBConnector

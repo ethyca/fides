@@ -257,7 +257,12 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_postgres_access_request_task(db, policy, integration_postgres_config) -> None:
+def test_postgres_access_request_task(
+    db,
+    policy,
+    integration_postgres_config,
+    postgres_integration_db,
+) -> None:
 
     privacy_request = PrivacyRequest(
         id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
@@ -338,9 +343,14 @@ def test_postgres_access_request_task(db, policy, integration_postgres_config) -
     )
 
 
-@pytest.mark.integration_postgres
+@pytest.mark.integration_mssql
 @pytest.mark.integration
-def test_mssql_access_request_task(db, policy, connection_config_mssql) -> None:
+def test_mssql_access_request_task(
+    db,
+    policy,
+    connection_config_mssql,
+    mssql_integration_db,
+) -> None:
 
     privacy_request = PrivacyRequest(
         id=f"test_mssql_access_request_task_{random.randint(0, 1000)}"
@@ -421,8 +431,14 @@ def test_mssql_access_request_task(db, policy, connection_config_mssql) -> None:
     )
 
 
+@pytest.mark.integration_mysql
 @pytest.mark.integration
-def test_mysql_access_request_task(db, policy, connection_config_mysql) -> None:
+def test_mysql_access_request_task(
+    db,
+    policy,
+    connection_config_mysql,
+    mysql_integration_db,
+) -> None:
 
     privacy_request = PrivacyRequest(
         id=f"test_mysql_access_request_task_{random.randint(0, 1000)}"
@@ -830,6 +846,7 @@ class TestRetrievingData:
         db,
         connector,
         traversal_node,
+        postgres_integration_db,
     ):
         mock_incoming_edges.return_value = {
             Edge(
@@ -891,6 +908,7 @@ class TestRetrievingData:
         example_datasets,
         connector,
         traversal_node,
+        postgres_integration_db,
     ):
         mock_incoming_edges.return_value = {
             Edge(

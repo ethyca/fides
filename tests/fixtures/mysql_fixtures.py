@@ -1,78 +1,85 @@
 import logging
-from collections import Generator
-from typing import List, Dict
+import pytest
+from typing import Dict, Generator, List
 from uuid import uuid4
 
-import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.db.session import get_db_session, get_db_engine
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
-    ConnectionType,
     AccessLevel,
+    ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.service.connectors import MariaDBConnector
+from fidesops.service.connectors import MySQLConnector
+
 from .application_fixtures import integration_secrets
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
-def connection_config_mariadb(db: Session) -> Generator:
-    connection_config = ConnectionConfig.create(
+def dataset_config_mysql(
+    connection_config: ConnectionConfig,
+    db: Session,
+) -> Generator:
+    dataset_config = DatasetConfig.create(
         db=db,
         data={
-            "name": str(uuid4()),
-            "key": "my_maria_db_1",
-            "connection_type": ConnectionType.mariadb,
-            "access": AccessLevel.write,
-            "secrets": integration_secrets["mariadb_example"],
+            "connection_config_id": connection_config.id,
+            "fides_key": "mysql_example_subscriptions_dataset",
+            "dataset": {
+                "fides_key": "mysql_example_subscriptions_dataset",
+                "name": "Mysql Example Subscribers Dataset",
+                "description": "Example Mysql dataset created in test fixtures",
+                "dataset_type": "MySQL",
+                "location": "mysql_example.test",
+                "collections": [
+                    {
+                        "name": "subscriptions",
+                        "fields": [
+                            {
+                                "name": "id",
+                                "data_categories": ["system.operations"],
+                            },
+                            {
+                                "name": "email",
+                                "data_categories": [
+                                    "user.provided.identifiable.contact.email"
+                                ],
+                                "fidesops_meta": {
+                                    "identity": "email",
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
         },
     )
-    yield connection_config
-    connection_config.delete(db)
+    yield dataset_config
+    dataset_config.delete(db)
 
 
-@pytest.fixture(scope="session")
-def mariadb_example_db() -> Generator:
-    """Return a connection to the MariaDB example DB"""
-    example_mariadb_uri = (
-        "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
-    )
-    engine = get_db_engine(database_uri=example_mariadb_uri)
-    logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
-    SessionLocal = get_db_session(
-        engine=engine,
-        autocommit=True,
-        autoflush=True,
-    )
-    the_session = SessionLocal()
-    # Setup above...
-    yield the_session
-    # Teardown below...
-    the_session.close()
-    engine.dispose()
-
-
+# TODO: Consolidate these
 @pytest.fixture
-def mariadb_example_test_dataset_config(
-    connection_config_mariadb: ConnectionConfig,
+def mysql_example_test_dataset_config(
+    connection_config_mysql: ConnectionConfig,
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-    mariadb_dataset = example_datasets[6]
-    fides_key = mariadb_dataset["fides_key"]
-    connection_config_mariadb.name = fides_key
-    connection_config_mariadb.key = fides_key
-    connection_config_mariadb.save(db=db)
+    mysql_dataset = example_datasets[5]
+    fides_key = mysql_dataset["fides_key"]
+    connection_config_mysql.name = fides_key
+    connection_config_mysql.key = fides_key
+    connection_config_mysql.save(db=db)
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config_mariadb.id,
+            "connection_config_id": connection_config_mysql.id,
             "fides_key": fides_key,
-            "dataset": mariadb_dataset,
+            "dataset": mysql_dataset,
         },
     )
     yield dataset
@@ -80,37 +87,60 @@ def mariadb_example_test_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def mariadb_integration_session(connection_config_mariadb):
-    example_mariadb_uri = MariaDBConnector(connection_config_mariadb).build_uri()
-    engine = get_db_engine(database_uri=example_mariadb_uri)
+def connection_config_mysql(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mysql_db_1",
+            "connection_type": ConnectionType.mysql,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["mysql_example"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def mysql_integration_session_cls(connection_config_mysql):
+    example_postgres_uri = MySQLConnector(connection_config_mysql).build_uri()
+    engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
         engine=engine,
         autocommit=True,
         autoflush=True,
     )
-    yield SessionLocal()
-
-
-def truncate_all_tables(db_session):
-    tables = [
-        "report",
-        "service_request",
-        "login",
-        "visit",
-        "order_item",
-        "orders",
-        "payment_card",
-        "employee",
-        "customer",
-        "address",
-        "product",
-    ]
-    [db_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
+    yield SessionLocal
 
 
 @pytest.fixture(scope="function")
-def mariadb_integration_db(mariadb_integration_session):
-    truncate_all_tables(mariadb_integration_session)
+def mysql_integration_session(mysql_integration_session_cls):
+    yield mysql_integration_session_cls()
+
+
+def truncate_all_tables(mysql_integration_session):
+    tables = [
+        "product",
+        "customer",
+        "employee",
+        "address",
+        "customer",
+        "employee",
+        "payment_card",
+        "orders",
+        "order_item",
+        "visit",
+        "login",
+        "service_request",
+        "report",
+    ]
+    [mysql_integration_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
+
+
+@pytest.fixture(scope="function")
+def mysql_integration_db(mysql_integration_session):
+    truncate_all_tables(mysql_integration_session)
     statements = [
         """
         INSERT INTO product VALUES
@@ -184,6 +214,6 @@ def mariadb_integration_db(mariadb_integration_session):
         (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
         """,
     ]
-    [mariadb_integration_session.execute(stmt) for stmt in statements]
-    yield mariadb_integration_session
-    truncate_all_tables(mariadb_integration_session)
+    [mysql_integration_session.execute(stmt) for stmt in statements]
+    yield mysql_integration_session
+    truncate_all_tables(mysql_integration_session)

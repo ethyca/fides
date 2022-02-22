@@ -33,10 +33,12 @@ connection_configs = [
 class TestToDaskInput:
     @pytest.fixture(scope="function")
     def combined_traversal_node_dict(
-        self, integration_mongodb_config, integration_postgres_config
+        self,
+        integration_mongodb_config,
+        connection_config,
     ):
         mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
+            connection_config, integration_mongodb_config
         )
         graph = DatasetGraph(mongo_dataset, postgres_dataset)
         identity = {"email": "customer-1@example.com"}
@@ -44,14 +46,21 @@ class TestToDaskInput:
         return combined_traversal.traversal_node_dict
 
     @pytest.fixture(scope="function")
-    def make_graph_task(self, integration_mongodb_config, integration_postgres_config):
+    def make_graph_task(
+        self,
+        integration_mongodb_config,
+        connection_config,
+    ):
         def task(node):
             return MockMongoTask(
                 node,
                 TaskResources(
                     EMPTY_REQUEST,
                     Policy(),
-                    [integration_postgres_config, integration_mongodb_config],
+                    [
+                        connection_config,
+                        integration_mongodb_config,
+                    ],
                 ),
             )
 

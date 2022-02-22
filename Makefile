@@ -77,7 +77,7 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy check-migrations pytest pytest-integration-access pytest-integration-erasure
+check-all: black-ci pylint mypy check-migrations pytest pytest-integration
 
 black-ci: compose-build
 	@echo "Running black checks..."
@@ -106,30 +106,12 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_erasure and not integration_external"
+		pytest $(pytestpath) -m "not integration and not integration_external"
 
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --run_tests --datastores $(datastores)
-
-
-pytest-integration-erasure: compose-build
-	@echo "Building additional Docker images for integration tests..."
-	@path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		path="$$path -f docker-compose.integration-$$word.yml"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path build; \
-	docker-compose -f docker-compose.yml $$path up -d; \
-	sleep 5; \
-	setup_path=""; \
-	for word in $(DOCKERFILE_ENVIRONMENTS); do \
-		setup_path="fidesops python tests/integration_tests/$$word-setup.py"; \
-		docker exec $$setup_path || echo "no custom setup logic found for $$word"; \
-	done; \
-	docker-compose -f docker-compose.yml $$path run $(IMAGE_NAME) pytest $(pytestpath) -m "integration_erasure"; \
-	docker-compose -f docker-compose.yml $$path down --remove-orphans
 
 # These tests connect to external third-party test databases
 pytest-integration-external: compose-build

@@ -12,23 +12,9 @@ MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=O
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")
 
 
-@pytest.fixture(scope="module")
-def mssql_example_db() -> Generator:
-    """Return a connection to the MsSQL example DB"""
-    engine = get_db_engine(database_uri=MSSQL_URL)
-    logger.debug(f"Connecting to MsSQL example database at: {engine.url}")
-    SessionLocal = get_db_session(engine=engine)
-    the_session = SessionLocal()
-    # Setup above...
-    yield the_session
-    # Teardown below...
-    the_session.close()
-    engine.dispose()
-
-
 @pytest.mark.integration_mssql
 @pytest.mark.integration
-def test_mssql_example_data(mssql_example_db):
+def test_mssql_example_data(mssql_integration_db):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {
         "product": 3,
@@ -50,4 +36,4 @@ def test_mssql_example_data(mssql_example_db):
         # templating as much as possible. instead, use the table() helper to
         # dynamically generate the FROM clause for each table_name
         count_sql = select(func.count()).select_from(table(table_name))
-        assert mssql_example_db.execute(count_sql).scalar() == expected_count
+        assert mssql_integration_db.execute(count_sql).scalar() == expected_count
