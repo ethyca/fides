@@ -249,11 +249,10 @@ def generate_dataset(connection_string: str, file_name: str, include_null: bool)
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
     collections = create_dataset_collections(db_collections)
-    if include_null:
-        manifests.write_manifest(file_name, [i.dict() for i in collections], "dataset")
-    else:
-        manifests.write_manifest(
-            file_name, [i.dict(exclude_none=True) for i in collections], "dataset"
-        )
+    manifests.write_manifest(
+        file_name,
+        [i.dict(exclude_none=not include_null) for i in collections],
+        "dataset",
+    )
     echo_green(f"Generated dataset manifest written to {file_name}")
     return file_name

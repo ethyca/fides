@@ -76,11 +76,11 @@ For more information on available Pytest invocation options, see the documentati
 
 ### Excluding external tests
 
-Integration tests also test integration with external services like Snowflake or Redshift which require internet access and authentication. It is possible to skip these tests by using the `--ignore-external` flag
+Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the `external` mark. 
 
 ```bash
 # run all tests except external ones
-pytest --ignore-external
+pytest -m "not external"
 ```
 ## CI Workflows
 

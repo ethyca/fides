@@ -20,8 +20,10 @@ snowflake_connector = "snowflake-sqlalchemy==1.3.3"
 redshift_connector = "sqlalchemy-redshift==0.8.8"
 fastapi = "fastapi==0.68"
 uvicorn = "uvicorn==0.15"
+aws_connector = "boto3==1.20.54"
 
 extras = {
+    "aws": [aws_connector],
     "postgres": [psycopg_connector],
     "mysql": [mysql_connector],
     "mssql": [mssql_connector],

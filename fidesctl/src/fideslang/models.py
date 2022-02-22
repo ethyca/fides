@@ -318,6 +318,18 @@ class PrivacyDeclaration(BaseModel):
     dataset_references: Optional[List[FidesKey]]
 
 
+class SystemMetadata(BaseModel):
+    """
+    The SystemMetadata resource model.
+
+    asdasdasas
+    """
+
+    resource_id: Optional[str]
+    endpoint_address: Optional[str]
+    endpoint_port: Optional[str]
+
+
 class System(FidesModel):
     """
     The System resource model.
@@ -327,6 +339,7 @@ class System(FidesModel):
 
     registry_id: Optional[int]
     meta: Optional[Dict[str, str]]
+    fidesctl_meta: Optional[SystemMetadata]
     system_type: str
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]

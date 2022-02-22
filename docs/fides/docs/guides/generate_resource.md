@@ -67,3 +67,41 @@ dataset:
 ```
 <!-- TODO: Link to the `annotate dataset` usage documentation below, when it exists. -->
 The resulting file still requires annotating the dataset with data categories to represent what is stored. 
+
+# Working With an AWS Account
+
+The `generate system aws` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources. Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
+
+We can define our credentials directly as environment variables:
+```sh
+export AWS_ACCESS_KEY_ID="<my_access_key_id>"
+export AWS_SECRET_ACCESS_KEY="<my_access_key>"
+export AWS_DEFAULT_REGION="us-east-1"
+```
+
+Or reference a profile through an environment variable:
+```sh
+export AWS_PROFILE="my_profile_1"
+export AWS_DEFAULT_REGION="us-east-1"
+```
+
+Then invoke the `generate system aws` command 
+```sh
+./venv/bin/fidesctl generate system aws \
+  fides_resources/aws_systems.yml
+```
+
+The result is a resource file with a system that represents a redshift cluster defined in our account:
+```yaml
+system:
+- fides_key: my_redshift_cluster
+  organization_fides_key: default_organization
+  name: my_redshift_cluster
+  description: 'Fides Generated Description for Cluster: my_redshift_cluster'
+  fidesctl_meta:
+    endpoint_address: my_redshift_cluster.us-east-1.redshift.amazonaws.com
+    endpoint_port: '5439'
+    resource_id: arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176
+  system_type: redshift_cluster
+  privacy_declarations: []
+```

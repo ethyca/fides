@@ -109,8 +109,7 @@ pylint:
 
 pytest-unit:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN_NO_DEPS) \
-	pytest -x -m unit
+	@$(RUN_NO_DEPS) pytest -x -m unit
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
@@ -121,7 +120,12 @@ pytest-integration:
 pytest-external:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
 	@docker compose run \
-	-e SNOWFLAKE_FIDESCTL_PASSWORD -e REDSHIFT_FIDESCTL_PASSWORD --rm $(IMAGE_NAME) \
+	-e SNOWFLAKE_FIDESCTL_PASSWORD \
+	-e REDSHIFT_FIDESCTL_PASSWORD \
+	-e AWS_ACCESS_KEY_ID \
+	-e AWS_SECRET_ACCESS_KEY \
+	-e AWS_DEFAULT_REGION \
+	--rm $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
 

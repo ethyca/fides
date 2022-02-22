@@ -212,6 +212,7 @@ class System(SqlAlchemyBase, FidesBase):
 
     registry_id = Column(String)
     meta = Column(JSON)
+    fidesctl_meta = Column(JSON)
     system_type = Column(String)
     system_dependencies = Column(ARRAY(String))
     joint_controller = Column(PGEncryptedString, nullable=True)
