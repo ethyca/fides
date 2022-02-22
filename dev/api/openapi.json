@@ -3502,6 +3502,9 @@
               "type": "string"
             }
           },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/SystemMetadata"
+          },
           "system_type": {
             "title": "System Type",
             "type": "string"
@@ -3538,6 +3541,25 @@
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
+      },
+      "SystemMetadata": {
+        "title": "SystemMetadata",
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "string"
+          },
+          "endpoint_address": {
+            "title": "Endpoint Address",
+            "type": "string"
+          },
+          "endpoint_port": {
+            "title": "Endpoint Port",
+            "type": "string"
+          }
+        },
+        "description": "The SystemMetadata resource model.\n\nasdasdasas"
       },
       "ValidationError": {
         "title": "ValidationError",

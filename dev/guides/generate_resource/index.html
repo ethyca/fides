@@ -1471,6 +1471,52 @@ You're not viewing the latest version.
 </td></tr></table></p>
 <!-- TODO: Link to the `annotate dataset` usage documentation below, when it exists. -->
 <p>The resulting file still requires annotating the dataset with data categories to represent what is stored. </p>
+<h1 id="working-with-an-aws-account">Working With an AWS Account</h1>
+<p>The <code>generate system aws</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources. Authentication is managed through environment variable configuration defined by <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html">boto3</a>. </p>
+<p>We can define our credentials directly as environment variables:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key&gt;&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+</code></pre></div>
+</td></tr></table></p>
+<p>Or reference a profile through an environment variable:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+</code></pre></div>
+</td></tr></table></p>
+<p>Then invoke the <code>generate system aws</code> command 
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate system aws <span class="se">\</span>
+  fides_resources/aws_systems.yml
+</code></pre></div>
+</td></tr></table></p>
+<p>The result is a resource file with a system that represents a redshift cluster defined in our account:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Cluster:</span><span class="nv"> </span><span class="s">my_redshift_cluster&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">endpoint_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster.us-east-1.redshift.amazonaws.com</span><span class="w"></span>
+<span class="w">    </span><span class="nt">endpoint_port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5439&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176</span><span class="w"></span>
+<span class="w">  </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table></p>
 
               
             </article>

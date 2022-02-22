@@ -1567,10 +1567,10 @@ pytest tests/integration/ -k api
 <p>The <code>--sw</code> flag will exit <code>pytest</code> the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.</p>
 <p>For more information on available Pytest invocation options, see the documentation <a href="https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations">here</a>.</p>
 <h3 id="excluding-external-tests">Excluding external tests</h3>
-<p>Integration tests also test integration with external services like Snowflake or Redshift which require internet access and authentication. It is possible to skip these tests by using the <code>--ignore-external</code> flag</p>
+<p>Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the <code>external</code> mark. </p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># run all tests except external ones</span>
-pytest --ignore-external
+pytest -m <span class="s2">&quot;not external&quot;</span>
 </code></pre></div>
 </td></tr></table>
 <h2 id="ci-workflows">CI Workflows</h2>
