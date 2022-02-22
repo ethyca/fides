@@ -32,8 +32,9 @@ commands to give you different functionality.
     - `ipython` - open a Python shell
     - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
 - `make pytest` - runs all unit tests except those that talk to integration databases
-- `make pytest-integration` - runs access integration tests.
-- `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments.
+- `make pytest-integration` - runs all integration tests, except those on external datastores.
+- `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments. NB. This can be used to run integration tests on external datastores if those datastores are explicitly specified.
+- `make pytest-integration-external` - runs only external integration tests.
 - `make pytest-integration-erasure` - runs erasure integration tests.
 - `make reset-db` - tears down the Fidesops postgres db, then recreates and re-runs migrations.
 - `make quickstart` - runs a quick, five minute quickstart that talks to the Fidesops API to execute privacy requests

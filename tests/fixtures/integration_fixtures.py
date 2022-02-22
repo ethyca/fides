@@ -105,8 +105,8 @@ def generate_integration_records():
 # ======================= postgres ==========================
 
 
-@pytest.fixture(autouse=True, scope="session")
-def integration_postgres_config() -> ConnectionConfig:
+@pytest.fixture(scope="function")
+def integration_postgres_config(postgres_inserts) -> ConnectionConfig:
     return ConnectionConfig(
         name="postgres_test",
         key="postgres_example",
@@ -114,11 +114,6 @@ def integration_postgres_config() -> ConnectionConfig:
         access=AccessLevel.write,
         secrets=integration_secrets["postgres_example"],
     )
-
-
-@pytest.fixture(scope="session")
-def integration_postgres_db_engine(integration_postgres_config) -> Engine:
-    return PostgreSQLConnector(integration_postgres_config).client()
 
 
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:
@@ -137,16 +132,17 @@ def sql_delete(engine: Engine, table_name: str, ids: List[Any]) -> None:
 
 
 @pytest.fixture(scope="function")
-def postgres_inserts(integration_postgres_db_engine):
+def postgres_inserts(postgres_integration_db):
+    integration_postgres_db_engine = postgres_integration_db.bind
     records = generate_integration_records()
-    for table_name, record_list in records.items():
-        sql_delete(
-            integration_postgres_db_engine, table_name, [r["id"] for r in record_list]
-        )
     for table_name, record_list in records.items():
         for record in record_list:
             sql_insert(integration_postgres_db_engine, table_name, record)
     yield records
+    for table_name, record_list in records.items():
+        sql_delete(
+            integration_postgres_db_engine, table_name, [r["id"] for r in record_list]
+        )
 
 
 # ======================= mongodb  ==========================
@@ -264,13 +260,12 @@ def mongo_inserts(integration_mongodb_connector):
     records = generate_integration_records()
     records.update(generate_mongo_specific_records())
     for table_name, record_list in records.items():
-        mongo_delete(
-            integration_mongodb_connector, "mongo_test", table_name, record_list
-        )
-
-    for table_name, record_list in records.items():
         for record in record_list:
             mongo_insert(
                 integration_mongodb_connector, "mongo_test", table_name, record
             )
     yield records
+    for table_name, record_list in records.items():
+        mongo_delete(
+            integration_mongodb_connector, "mongo_test", table_name, record_list
+        )

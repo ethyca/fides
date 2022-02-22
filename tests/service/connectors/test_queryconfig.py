@@ -73,29 +73,23 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id", "customer_id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            },
+        ) == {"id", "customer_id"}
         # with no values OR an empty set, these are omitted
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            },
+        ) == {"id"}
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -103,27 +97,21 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"], "customer_id": ["V"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"], "customer_id": ["V"]}
 
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"]}
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -185,10 +173,10 @@ class TestSQLQueryConfig:
         )
 
     def test_update_rule_target_fields(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -219,10 +207,10 @@ class TestSQLQueryConfig:
         }
 
     def test_generate_update_stmt_one_field(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -246,10 +234,10 @@ class TestSQLQueryConfig:
         self,
         erasure_policy_string_rewrite_long,
         example_datasets,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -277,10 +265,10 @@ class TestSQLQueryConfig:
         )
 
     def test_generate_update_stmt_multiple_fields_same_rule(
-        self, erasure_policy, example_datasets, integration_postgres_config
+        self, erasure_policy, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
@@ -331,10 +319,10 @@ class TestSQLQueryConfig:
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
-        self, erasure_policy_two_rules, example_datasets, integration_postgres_config
+        self, erasure_policy_two_rules, example_datasets, connection_config
     ):
         dataset = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
         row = {
@@ -367,11 +355,9 @@ class TestSQLQueryConfig:
 
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
-    def combined_traversal(
-        self, integration_postgres_config, integration_mongodb_config
-    ):
+    def combined_traversal(self, connection_config, integration_mongodb_config):
         mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
+            connection_config, integration_mongodb_config
         )
         combined_dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
         combined_traversal = Traversal(
@@ -432,12 +418,10 @@ class TestMongoQueryConfig:
         policy,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
@@ -496,12 +480,10 @@ class TestMongoQueryConfig:
         erasure_policy,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
@@ -555,12 +537,10 @@ class TestMongoQueryConfig:
         erasure_policy_two_rules,
         example_datasets,
         integration_mongodb_config,
-        integration_postgres_config,
+        connection_config,
     ):
         dataset_postgres = FidesopsDataset(**example_datasets[0])
-        graph = convert_dataset_to_graph(
-            dataset_postgres, integration_postgres_config.key
-        )
+        graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
         dataset_mongo = FidesopsDataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key

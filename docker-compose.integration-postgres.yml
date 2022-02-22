@@ -4,6 +4,16 @@ services:
       - postgres_example
 
   postgres_example:
+    command:
+      [
+        "postgres",
+        "-c",
+        "logging_collector=on",
+        "-c",
+        "log_statement=all",
+        "-c",
+        "log_destination=stderr"
+      ]
     image: postgres:12
     environment:
       - POSTGRES_USER=postgres
@@ -13,7 +23,3 @@ services:
       - 6432
     ports:
       - "0.0.0.0:6432:5432"
-    volumes:
-      # NOTE: consider running initialization SQL in Python instead of this
-      # (see "Initialization scripts" section at https://hub.docker.com/_/postgres)
-      - ./data/sql/postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql

@@ -1,4 +1,8 @@
 import json
+import logging
+import pytest
+
+from typing import Generator
 
 from fastapi.testclient import TestClient
 from sqlalchemy_utils.functions import (
@@ -11,7 +15,7 @@ from fidesops.core.config import (
     config,
 )
 from fidesops.db.database import init_db
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_session, get_db_engine, Session
 from fidesops.main import app
 from fidesops.models.privacy_request import generate_request_callback_jwe
 from fidesops.schemas.jwt import (
@@ -23,9 +27,16 @@ from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import get_cache
 from fidesops.util.oauth_util import generate_jwe
+
 from .fixtures.application_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.mariadb_fixtures import *
+from .fixtures.mongodb_fixtures import *
+from .fixtures.mysql_fixtures import *
+from .fixtures.mssql_fixtures import *
+from .fixtures.postgres_fixtures import *
+from .fixtures.redshift_fixtures import *
+from .fixtures.snowflake_fixtures import *
 from .fixtures.bigquery_fixtures import *
 
 logger = logging.getLogger(__name__)
