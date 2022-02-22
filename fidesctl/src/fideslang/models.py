@@ -13,9 +13,14 @@ from fideslang.validation import (
     sort_list_objects_by_name,
     no_self_reference,
     matching_parent_key,
+    check_valid_country_code,
 )
 
 # Reusable components
+country_code_validator = validator("third_country_transfers", allow_reuse=True)(
+    check_valid_country_code
+)
+
 matching_parent_key_validator = validator("parent_key", allow_reuse=True, always=True)(
     matching_parent_key
 )
@@ -48,6 +53,21 @@ class FidesModel(BaseModel):
         orm_mode = True
 
 
+class LegalBasisEnum(str, Enum):
+    """
+    The model for allowable legal basis categories
+
+    Based upon article 6 of the GDPR
+    """
+
+    CONSENT = "Consent"
+    CONTRACT = "Contract"
+    LEGAL_OBLIGATION = "Legal Obligation"
+    VITAL_INTEREST = "Vital Interest"
+    PUBLIC_INTEREST = "Public Interest"
+    LEGITIMATE_INTEREST = "Legitimate Interests"
+
+
 # Privacy Data Types
 class DataCategory(FidesModel):
     """The DataCategory resource model."""
@@ -75,6 +95,8 @@ class DataUse(FidesModel):
     """The DataUse resource model."""
 
     parent_key: Optional[FidesKey]
+    legal_basis: Optional[LegalBasisEnum]
+    recipients: Optional[List[str]]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
@@ -146,10 +168,12 @@ class Dataset(FidesModel):
     )
     joint_controller: Optional[ContactDetails]
     retention: Optional[str] = "No retention or erasure policy"
+    third_country_transfers: Optional[List[str]]
     collections: List[DatasetCollection]
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
+    _check_valid_country_code: classmethod = country_code_validator
 
 
 # Evaluation
@@ -213,7 +237,7 @@ class Organization(FidesModel):
 # Policy
 class MatchesEnum(str, Enum):
     """
-    The MatchesEnum resouce model.
+    The MatchesEnum resource model.
 
     Determines how the listed resources are matched in the evaluation logic.
     """
@@ -320,6 +344,8 @@ class System(FidesModel):
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]
+    third_country_transfers: Optional[List[str]]
+    administrating_department: Optional[str] = "Not defined"
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True
@@ -328,6 +354,8 @@ class System(FidesModel):
     _no_self_reference: classmethod = validator(
         "system_dependencies", allow_reuse=True, each_item=True
     )(no_self_reference)
+
+    _check_valid_country_code: classmethod = country_code_validator
 
 
 # Taxonomy

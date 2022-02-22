@@ -1,0 +1,17 @@
+data_use:
+  - fides_key: third_party_sharing.legal_obligation.payroll
+    name: Payroll
+    description: Legally obliged sharing of payroll information
+    recipients: 
+    - HMRC
+    - IRS
+    - NYDTF
+    legal_basis: Legal Obligation
+    parent_key: third_party_sharing.legal_obligation
+  - fides_key: third_party_sharing.personalized_advertising.direct_marketing
+    name: Direct Marketing
+    description: Consented user information for direct marketing purposes
+    recipients: 
+    - Processor - marketing co. 
+    legal_basis: Consent
+    parent_key: third_party_sharing.personalized_advertising

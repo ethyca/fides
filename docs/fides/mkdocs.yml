@@ -34,6 +34,7 @@ nav:
       - Generating Resources: guides/generate_resource.md
       - Scanning Resources: guides/scan_resource.md
       - Example Policies: guides/policies.md
+      - Extending Data Use: guides/extending_data_use.md
   - CI/CD Reference: ci_reference.md
   - Fides Language:
       - Overview: language/overview.md
@@ -115,6 +116,11 @@ extra_css:
   - css/api.css
   - css/cli.css
   - css/taxonomy.css
+
+extra:
+  version:
+    provider: mike
+    default: stable
 
 plugins:
   # The "Last Update" footer only shows in production

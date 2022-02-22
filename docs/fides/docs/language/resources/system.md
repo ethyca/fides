@@ -23,6 +23,18 @@ A UI-friendly label for the System.
 
 A human-readable description of the System.
 
+**system_type**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+
+A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.
+
+**administrating_department**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
+
+An optional value to identify the owning department or group of the system within your organization
+
+**third_country_transfers**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_constrained string_
+
+An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)
+
 **joint_controller**<span class="required"/>&nbsp;&nbsp;[array]
 
 An optional array of contact information if a Joint Controller exists. This information can also be more granularly stored at the [dataset](/fides/language/resources/dataset/) level (`name`, `address`, `email`, `phone`).
@@ -45,6 +57,10 @@ system:
     name: Demo Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
+    administrating_department: Engineering
+    third_country_transfers:
+    - USA
+    - CAN
     joint_controller:
       name: Dave L. Epper
       address: 1 Acme Pl. New York, NY
@@ -75,6 +91,8 @@ POST /system
   "name": "Demo Analytics System",
   "description": "A system used for analyzing customer behaviour.",
   "system_type": "Service",
+  "administrating_department": "Engineering",
+  "third_country_transfers": ["USA", "CAN"],
   "joint_controller": {
     "name": "Dave L. Epper",
     "address": "1 Acme Pl. New York, NY",

@@ -131,6 +131,8 @@ class DataUse(SqlAlchemyBase, FidesBase):
     __tablename__ = "data_uses"
 
     parent_key = Column(Text)
+    legal_basis = Column(Text)
+    recipients = Column(ARRAY(String))
 
 
 # Dataset
@@ -147,6 +149,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     collections = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
+    third_country_transfers = Column(ARRAY(String))
 
 
 # Evaluation
@@ -213,7 +216,10 @@ class System(SqlAlchemyBase, FidesBase):
     system_type = Column(String)
     system_dependencies = Column(ARRAY(String))
     joint_controller = Column(PGEncryptedString, nullable=True)
+    # department: Column(String, nullable=True)
+    third_country_transfers = Column(ARRAY(String))
     privacy_declarations = Column(JSON)
+    administrating_department = Column(String)
 
 
 sql_model_map: Dict = {
