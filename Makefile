@@ -14,7 +14,7 @@ IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
 # Run in Compose
 RUN = docker compose run --rm $(IMAGE_NAME)
-RUN_NO_DEPS = docker compose run --no-deps --rm $(IMAGE_NAME)
+RUN_NO_DEPS = docker compose run --no-deps --no-TTY --rm $(IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -113,7 +113,7 @@ pytest-unit:
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-	@docker compose run --rm $(IMAGE_NAME) \
+	@docker compose run --no-TTY --rm $(IMAGE_NAME) \
 	pytest -x -m integration
 	@make teardown
 
@@ -125,6 +125,7 @@ pytest-external:
 	-e AWS_ACCESS_KEY_ID \
 	-e AWS_SECRET_ACCESS_KEY \
 	-e AWS_DEFAULT_REGION \
+	--no-TTY \
 	--rm $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
