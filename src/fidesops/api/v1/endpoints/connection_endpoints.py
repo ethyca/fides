@@ -173,7 +173,8 @@ def validate_secrets(
     )
 
     connection_type = connection_config.connection_type
-    schema = get_connection_secrets_validator(connection_type.value)
+    saas_config = connection_config.get_saas_config()
+    schema = get_connection_secrets_validator(connection_type.value, saas_config)
 
     try:
         connection_secrets = schema.parse_obj(request_body)

@@ -4,6 +4,7 @@ import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+from fidesops.util.data_category import DataCategory
 
 import pydash
 import pytest
@@ -22,7 +23,6 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
-    DataCategory,
     Policy,
     Rule,
     RuleTarget,
@@ -53,7 +53,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
-
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 
@@ -712,6 +711,135 @@ def example_datasets() -> List[Dict]:
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture
+def snowflake_example_test_dataset_config(
+    snowflake_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[2]
+    fides_key = dataset["fides_key"]
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": snowflake_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+
+
+@pytest.fixture
+def redshift_example_test_dataset_config(
+    redshift_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    dataset = example_datasets[3]
+    fides_key = dataset["fides_key"]
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": redshift_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": dataset,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+
+
+@pytest.fixture
+def postgres_example_test_dataset_config(
+    connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[0]
+    fides_key = postgres_dataset["fides_key"]
+    connection_config.name = fides_key
+    connection_config.key = fides_key
+    connection_config.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": fides_key,
+            "dataset": postgres_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def mssql_example_test_dataset_config(
+    connection_config_mssql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mssql_dataset = example_datasets[4]
+    fides_key = mssql_dataset["fides_key"]
+    connection_config_mssql.name = fides_key
+    connection_config_mssql.key = fides_key
+    connection_config_mssql.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_mssql.id,
+            "fides_key": fides_key,
+            "dataset": mssql_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def postgres_example_test_dataset_config_read_access(
+    read_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[0]
+    fides_key = postgres_dataset["fides_key"]
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": read_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": postgres_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def mysql_example_test_dataset_config(
+    connection_config_mysql: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mysql_dataset = example_datasets[5]
+    fides_key = mysql_dataset["fides_key"]
+    connection_config_mysql.name = fides_key
+    connection_config_mysql.key = fides_key
+    connection_config_mysql.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_mysql.id,
+            "fides_key": fides_key,
+            "dataset": mysql_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
 
 
 @pytest.fixture

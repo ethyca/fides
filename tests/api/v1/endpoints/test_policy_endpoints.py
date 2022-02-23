@@ -17,13 +17,11 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
     ActionType,
     Policy,
-    DataCategory,
     Rule,
     RuleTarget,
-    generate_fides_data_categories,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
-
+from fidesops.util.data_category import DataCategory, generate_fides_data_categories
 
 class TestGetPolicies:
     @pytest.fixture(scope="function")

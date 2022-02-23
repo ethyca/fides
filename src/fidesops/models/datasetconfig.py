@@ -10,6 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
+from fidesops.models.connectionconfig import ConnectionType
 
 from fidesops.db.base_class import Base
 from fidesops.graph.config import (
@@ -25,6 +26,7 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.logger import NotPii
+from fidesops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +76,24 @@ class DatasetConfig(Base):
 
     def get_graph(self) -> Dataset:
         """
-        Return the saved dataset JSON as a dataset graph for query execution
+        Return the saved dataset JSON as a dataset graph for query execution.
+
+        For dataset configs associated to a ConnectionConfig of type saas,
+        the corresponding SaaS config is merged in as well
         """
-        return convert_dataset_to_graph(
+        dataset_graph = convert_dataset_to_graph(
             FidesopsDataset(**self.dataset), self.connection_config.key
         )
+        if (
+            self.connection_config.connection_type == ConnectionType.saas
+            and self.connection_config.saas_config is not None
+            and self.connection_config.saas_config["fides_key"] == self.fides_key
+        ):
+            dataset_graph = merge_datasets(
+                dataset_graph,
+                self.connection_config.get_saas_config().get_graph(),
+            )
+        return dataset_graph
 
 
 def to_graph_field(field: FidesopsDatasetField) -> Field:

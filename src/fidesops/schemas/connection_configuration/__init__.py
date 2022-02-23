@@ -39,6 +39,11 @@ from fidesops.schemas.connection_configuration.connection_secrets_snowflake impo
 from fidesops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
+from fidesops.schemas.connection_configuration.connection_secrets_saas import (
+    SaaSSchema,
+    SaaSSchemaFactory,
+)
+from fidesops.schemas.saas.saas_config import SaaSConfig
 
 secrets_validators: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,
@@ -54,7 +59,7 @@ secrets_validators: Dict[str, Any] = {
 
 
 def get_connection_secrets_validator(
-    connection_type: str,
+    connection_type: str, saas_config: SaaSConfig
 ) -> ConnectionConfigSecretsSchema:
     """
     Returns a validation schema for the connection "secrets" depending on the connection_type.
@@ -63,7 +68,12 @@ def get_connection_secrets_validator(
     validated against a PostgreSQL schema.
     """
     try:
-        return secrets_validators[connection_type]
+        schema = (
+            SaaSSchemaFactory(saas_config).get_saas_schema()
+            if saas_config
+            else secrets_validators[connection_type]
+        )
+        return schema
     except KeyError:
         raise NotImplementedError(
             f"Add {connection_type} to the 'secrets_validators' mapping."
@@ -79,4 +89,5 @@ connection_secrets_schemas = Union[
     MSSQLDocsSchema,
     MariaDBDocsSchema,
     BigQueryDocsSchema,
+    SaaSSchema,
 ]
