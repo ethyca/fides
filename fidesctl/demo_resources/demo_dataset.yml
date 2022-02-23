@@ -10,7 +10,7 @@ dataset:
   retention: "30 days after account deletion"
   third_country_transfers:
     - GBR
-    - DEU
+    - CAN
   collections:
   - name: users
     description: User information

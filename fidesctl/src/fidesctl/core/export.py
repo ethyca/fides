@@ -441,6 +441,11 @@ def export_datamap_to_excel(
     return filename
 
 
+def remove_duplicates_from_comma_separated_column(comma_separated_string: str) -> str:
+    "transform the row using a set to remove duplcation"
+    return ", ".join(set(comma_separated_string.split(", ")))
+
+
 def build_joined_dataframe(
     server_resource_dict: Dict[str, List], url: str, headers: Dict[str, str]
 ) -> pd.DataFrame:
@@ -471,19 +476,17 @@ def build_joined_dataframe(
     joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
 
     ## probably create a set of third_country and joint_controller attrs to combine as a single entity
-    joined_df["third_country_combined"] = (
-        # joined_df["system.third_country_transfers"]
-        # + joined_df["dataset.third_country_transfers"]
-        [
-            ", ".join(i)
-            for i in zip(
-                joined_df["system.third_country_transfers"].map(str),
-                joined_df["dataset.third_country_transfers"],
-            )
-        ]
+    joined_df["third_country_combined"] = [
+        ", ".join(i)
+        for i in zip(
+            joined_df["system.third_country_transfers"].map(str),
+            joined_df["dataset.third_country_transfers"],
+        )
+    ]
+
+    joined_df["third_country_combined"] = joined_df["third_country_combined"].transform(
+        remove_duplicates_from_comma_separated_column
     )
-    # joined_df["system.third_country_transfers"] = ""
-    # joined_df["dataset.third_country_transfers"] = ""
 
     joined_df["system.joint_controller"] = ""
     # joined_df["dataset.joint_controller"] = ""
