@@ -321,18 +321,18 @@ TEST_DATABASE_PARAMETERS = {
             }
         },
     },
-    # "mssql": {
-    #     "url": MSSQL_URL,
-    #     "setup_url": MASTER_MSSQL_URL,
-    #     "init_script_path": "tests/data/example_sql/sqlserver_example.sql",
-    #     "is_external": False,
-    #     "expected_collection": {
-    #         "dbo": {
-    #             "visit": ["email", "last_visit"],
-    #             "login": ["id", "customer_id", "time"],
-    #         }
-    #     },
-    # },
+    "mssql": {
+        "url": MSSQL_URL,
+        "setup_url": MASTER_MSSQL_URL,
+        "init_script_path": "tests/data/example_sql/sqlserver_example.sql",
+        "is_external": False,
+        "expected_collection": {
+            "dbo": {
+                "visit": ["email", "last_visit"],
+                "login": ["id", "customer_id", "time"],
+            }
+        },
+    },
     "snowflake": {
         "url": SNOWFLAKE_URL,
         "setup_url": SNOWFLAKE_URL,
