@@ -6,8 +6,9 @@ from fidesctl.core import system as _system, api
 from fideslang.models import System, SystemMetadata
 
 
-def create_server_systems(test_config, systems: List[System]):
-    for system in systems:
+@pytest.fixture(scope="function")
+def create_server_systems(test_config, redshift_systems):
+    for system in redshift_systems:
         api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
@@ -18,6 +19,14 @@ def create_server_systems(test_config, systems: List[System]):
             url=test_config.cli.server_url,
             resource_type="system",
             json_resource=system.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+    yield
+    for system in redshift_systems:
+        api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
             headers=test_config.user.request_headers,
         )
 
@@ -116,8 +125,7 @@ def test_scan_aws_systems():
 
 
 @pytest.mark.integration
-def test_get_all_server_systems(test_config, redshift_systems):
-    create_server_systems(test_config, redshift_systems)
+def test_get_all_server_systems(test_config, create_server_systems):
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -127,8 +135,7 @@ def test_get_all_server_systems(test_config, redshift_systems):
 
 
 @pytest.mark.external
-def test_scan_system_aws_passes(test_config):
-    create_server_systems(test_config, _system.generate_redshift_systems())
+def test_scan_system_aws_passes(test_config, create_server_systems):
     _system.scan_system_aws(
         coverage_threshold=100,
         manifest_dir="",
