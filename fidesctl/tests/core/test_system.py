@@ -84,8 +84,8 @@ def redshift_systems():
         System(
             fides_key="redshift-cluster-2",
             organization_fides_key="default_organization",
-            name="redshift-cluster-1",
-            description="Fides Generated Description for Cluster: redshift-cluster-1",
+            name="redshift-cluster-2",
+            description="Fides Generated Description for Cluster: redshift-cluster-2",
             fidesctl_meta=SystemMetadata(
                 endpoint_address="redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
