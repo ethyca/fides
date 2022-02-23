@@ -1,0 +1,23 @@
+saas_config:
+  - fides_key: stripe_connector
+    name: Stripe Connector
+    description: A sample schema representing the Stripe connector for Fidesops
+    version: 1.0
+
+    connector_params:
+    - name: host
+      default_value: api.stripe.com
+    - name: api_key
+
+    client_config:
+      protocol: https
+      host:
+        connector_param: host
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          token:
+            connector_param: api_key
+    
+    test_request:
+      path: /v1/customers

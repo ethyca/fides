@@ -12,7 +12,6 @@ from fidesops.common_exceptions import (
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
     ActionType,
-    DataCategory,
     Policy,
     Rule,
     RuleTarget,
@@ -30,6 +29,7 @@ from fidesops.service.privacy_request.onetrust_service import (
     FIDES_TASK,
     OneTrustService,
 )
+from fidesops.util.data_category import DataCategory
 
 
 @mock.patch(

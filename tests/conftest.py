@@ -38,6 +38,7 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.bigquery_fixtures import *
+from .fixtures.saas_fixtures import *
 
 logger = logging.getLogger(__name__)
 

@@ -813,3 +813,35 @@ class TestPutConnectionConfigSecrets:
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
+
+    @pytest.mark.saas_connector
+    def test_put_connection_config_saas_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+        dataset_config_saas,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas.key}/secret"
+        payload = saas_secrets
+
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas.key}."
+        )
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.secrets == saas_secrets
+        assert connection_config_saas.last_test_timestamp is None
+        assert connection_config_saas.last_test_succeeded is None

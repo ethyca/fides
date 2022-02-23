@@ -6,12 +6,12 @@ from typing import Tuple, Set, Dict, Optional, List, Callable
 
 from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import (
+    EdgeDirection,
     FieldAddress,
     CollectionAddress,
     SeedAddress,
     Collection,
     Dataset,
-    EdgeDirection,
     Field,
     FieldPath,
 )
@@ -120,7 +120,7 @@ class Edge:
         cls,
         addr_1: FieldAddress,
         addr_2: FieldAddress,
-        direction: [Optional[EdgeDirection]] = None,
+        direction: Optional[EdgeDirection] = None,
     ) -> Edge:
         """Create an edge from addr_1 to addr_2 with the given direction."""
         if direction == "from":

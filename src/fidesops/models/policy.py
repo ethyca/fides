@@ -7,7 +7,6 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Type,
     Union,
 )
 
@@ -28,11 +27,11 @@ from sqlalchemy.orm import (
     declared_attr,
     backref,
 )
+
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
-
 
 from fidesops import common_exceptions
 from fidesops.common_exceptions import WebhookOrderException
@@ -49,6 +48,7 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.masking.strategy.masking_strategy_factory import (
     SupportedMaskingStrategies,
 )
+from fidesops.util.data_category import _validate_data_category
 
 
 class ActionType(EnumType):
@@ -60,18 +60,6 @@ class ActionType(EnumType):
     update = "update"
 
 
-def generate_fides_data_categories() -> Type[EnumType]:
-    """Programmatically generated the DataCategory enum based on the imported Fides data."""
-    FidesDataCategory = EnumType(
-        "FidesDataCategory",
-        {cat.fides_key: cat.fides_key for cat in DEFAULT_TAXONOMY.data_category},
-    )
-    return FidesDataCategory
-
-
-DataCategory = generate_fides_data_categories()
-
-
 PseudonymizationPolicy = SupportedMaskingStrategies
 """
 *Deprecated*: The method by which to pseudonymize data.
@@ -80,16 +68,6 @@ As of 10/20/2021 this class is deprecated. We cannot remove this currently as th
 class is referenced in multiple database migrations. This class is to be removed
 when project migrations are consolidated.
 """
-
-
-def _validate_data_category(data_category: str) -> str:
-    """Checks that the data category passed in is currently supported."""
-    valid_categories = DataCategory.__members__.keys()
-    if data_category not in valid_categories:
-        raise common_exceptions.DataCategoryNotSupported(
-            f"The data category {data_category} is not supported."
-        )
-    return data_category
 
 
 def _validate_rule(

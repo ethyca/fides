@@ -1,3 +1,4 @@
+from fidesops.service.connectors.saas_connector import AuthenticatedClient
 import pytest
 import json
 
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.service.connectors import MongoDBConnector
 from fidesops.service.connectors.sql_connector import (
     MySQLConnector,
@@ -16,6 +17,7 @@ from fidesops.service.connectors.sql_connector import (
 )
 from fidesops.common_exceptions import ConnectionException
 from fidesops.service.connectors import PostgreSQLConnector
+from fidesops.service.connectors import SaaSConnector
 from fidesops.service.connectors import get_connector
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -1183,3 +1185,252 @@ class TestMongoConnectionPutSecretsAPI:
 
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
+
+
+@pytest.mark.saas_connector
+class TestSaaSConnectionPutSecretsAPI:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail, policy, connection_config_saas) -> str:
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas.key}/secret"
+
+    def test_saas_connection_incorrect_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"domain": "can", "username": "someone", "api_key": "letmein"}
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas.key}."
+        )
+        assert body["test_status"] == "failed"
+        assert (
+            f"Operational Error connecting to {connection_config_saas.key}."
+            == body["failure_reason"]
+        )
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.secrets == {
+            "domain": "can",
+            "username": "someone",
+            "api_key": "letmein",
+        }
+        assert connection_config_saas.last_test_timestamp is not None
+        assert connection_config_saas.last_test_succeeded is False
+
+    def test_saas_connection_connect_with_components(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = saas_secrets
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas.key}."
+        )
+        assert body["test_status"] == "succeeded"
+        assert body["failure_reason"] is None
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.secrets == saas_secrets
+        assert connection_config_saas.last_test_timestamp is not None
+        assert connection_config_saas.last_test_succeeded is True
+
+    def test_saas_connection_connect_missing_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "domain": saas_secrets["domain"],
+            "username": saas_secrets["username"],
+        }
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+
+        body = json.loads(resp.text)
+        assert body["detail"][0]["msg"] == "field required"
+
+    def test_saas_connection_connect_with_extra_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {**saas_secrets, "extra": "junk"}
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+
+        body = json.loads(resp.text)
+        assert body["detail"][0]["msg"] == "extra fields not permitted"
+
+
+@pytest.mark.saas_connector
+class TestSaaSConnectionTestSecretsAPI:
+    @pytest.fixture(scope="function")
+    def url(
+        self,
+        oauth_client: ClientDetail,
+        policy,
+        connection_config_saas,
+        dataset_config_saas,
+    ) -> str:
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas.key}/test"
+
+    def test_connection_configuration_test_not_authenticated(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+    ):
+        assert connection_config_saas.last_test_timestamp is None
+
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.last_test_timestamp is None
+        assert connection_config_saas.last_test_succeeded is None
+
+    def test_connection_configuration_test_incorrect_scopes(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+    ):
+        assert connection_config_saas.last_test_timestamp is None
+
+        auth_header = generate_auth_header(scopes=[STORAGE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.last_test_timestamp is None
+        assert connection_config_saas.last_test_succeeded is None
+
+    def test_connection_configuration_test_failed_response(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+    ):
+        assert connection_config_saas.last_test_timestamp is None
+
+        connection_config_saas.secrets = {"domain": "invalid_domain"}
+        connection_config_saas.save(db)
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+
+        body = json.loads(resp.text)
+        assert body["test_status"] == "failed"
+        assert (
+            f"Operational Error connecting to {connection_config_saas.key}."
+            == body["failure_reason"]
+        )
+        assert (
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_saas.key}."
+        )
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.last_test_timestamp is not None
+        assert connection_config_saas.last_test_succeeded is False
+
+    def test_connection_configuration_test(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_saas,
+    ):
+        assert connection_config_saas.last_test_timestamp is None
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Test completed for ConnectionConfig with key: {connection_config_saas.key}."
+        )
+        assert body["failure_reason"] is None
+        assert body["test_status"] == "succeeded"
+
+        db.refresh(connection_config_saas)
+        assert connection_config_saas.last_test_timestamp is not None
+        assert connection_config_saas.last_test_succeeded is True
+
+
+@pytest.mark.saas_connector
+class TestSaasConnector:
+    def test_saas_connector(
+        self, db: Session, connection_config_saas, dataset_config_saas
+    ):
+        connector = get_connector(connection_config_saas)
+        assert connector.__class__ == SaaSConnector
+
+        client = connector.client()
+        assert client.__class__ == AuthenticatedClient
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        connection_config_saas.secrets = {"domain": "bad_host"}
+        connection_config_saas.save(db)
+        connector = get_connector(connection_config_saas)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()

@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
 from fidesops.service.connectors.http_connector import HTTPSConnector
+from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.mongodb_connector import MongoDBConnector
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.service.connectors.base_connector import BaseConnector
@@ -21,6 +22,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.redshift.value: RedshiftConnector,
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.https.value: HTTPSConnector,
+    ConnectionType.saas.value: SaaSConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.bigquery.value: BigQueryConnector,

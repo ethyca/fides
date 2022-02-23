@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import enum
 from datetime import datetime
 from typing import Optional
@@ -10,6 +12,7 @@ from sqlalchemy import (
     Boolean,
 )
 
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -17,7 +20,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-
+from fidesops.schemas.saas.saas_config import SaaSConfig
 from fidesops.core.config import config
 from fidesops.db.base_class import (
     Base,
@@ -42,6 +45,7 @@ class ConnectionType(enum.Enum):
     mongodb = "mongodb"
     mysql = "mysql"
     https = "https"
+    saas = "saas"
     redshift = "redshift"
     snowflake = "snowflake"
     mssql = "mssql"
@@ -83,6 +87,15 @@ class ConnectionConfig(Base):
     )  # Type bytea in the db
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
+
+    # only applicable to ConnectionConfigs of connection type saas
+    saas_config = Column(
+        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+
+    def get_saas_config(self) -> Optional[SaaSConfig]:
+        """Returns a SaaSConfig object from a yaml config"""
+        return SaaSConfig(**self.saas_config) if self.saas_config else None
 
     def update_test_status(
         self, test_status: ConnectionTestStatus, db: Session

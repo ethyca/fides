@@ -135,3 +135,6 @@ envfiles/
 
 # Access request package local upload destination, generated at runtime
 fides_uploads
+
+# Prevent SaaS configs from being committed
+saas_config.toml
