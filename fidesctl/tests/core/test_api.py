@@ -149,4 +149,4 @@ def test_visualize(test_config, resource_type):
     response = requests.get(
         f"{test_config.cli.server_url}/{resource_type}/visualize/graphs"
     )
-    assert response.status_code == 200
+    assert response.status_code != 200
