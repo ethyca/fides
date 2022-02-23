@@ -1,9 +1,7 @@
 """Contains the scan group of the commands for Fidesctl."""
 import click
 
-from fidesctl.core import (
-    dataset as _dataset,
-)
+from fidesctl.core import dataset as _dataset, system as _system
 
 
 @click.group(name="scan")
@@ -38,6 +36,40 @@ def scan_dataset(
     config = ctx.obj["CONFIG"]
     _dataset.scan_dataset(
         connection_string=connection_string,
+        manifest_dir=manifest_dir,
+        coverage_threshold=coverage_threshold,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+    )
+
+
+@scan.group(name="system")
+@click.pass_context
+def scan_system(ctx: click.Context) -> None:
+    """
+    Scan fidesctl System resources
+    """
+
+
+@scan_system.command(name="aws")
+@click.pass_context
+@click.option("-m", "--manifest-dir", type=str, default="")
+@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
+def scan_system_aws(
+    ctx: click.Context,
+    manifest_dir: str,
+    coverage_threshold: int,
+) -> None:
+    """
+    Connect to an aws account by leveraging a valid boto3 environment varible
+    configuration and compares tracked resources to existing systems.
+    Tracked resources: [Redshift]
+
+    Outputs missing resources and has a non-zero exit if coverage is
+    under the stated threshold.
+    """
+    config = ctx.obj["CONFIG"]
+    _system.scan_system_aws(
         manifest_dir=manifest_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
