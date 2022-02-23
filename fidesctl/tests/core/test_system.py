@@ -6,23 +6,17 @@ from fidesctl.core import system as _system, api
 from fideslang.models import System, SystemMetadata
 
 
-@pytest.fixture(scope="function")
-def create_server_systems(test_config, redshift_systems):
-    for system in redshift_systems:
-        api.delete(
-            url=test_config.cli.server_url,
-            resource_type="system",
-            resource_id=system.fides_key,
-            headers=test_config.user.request_headers,
-        )
+def create_server_systems(test_config, systems):
+    for system in systems:
         api.create(
             url=test_config.cli.server_url,
             resource_type="system",
             json_resource=system.json(exclude_none=True),
             headers=test_config.user.request_headers,
         )
-    yield
-    for system in redshift_systems:
+ 
+def delete_server_systems(test_config, systems):
+    for system in systems:
         api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
@@ -30,6 +24,21 @@ def create_server_systems(test_config, redshift_systems):
             headers=test_config.user.request_headers,
         )
 
+@pytest.fixture(scope="function")
+def create_test_server_systems(test_config, redshift_systems):
+    systems = redshift_systems
+    delete_server_systems(test_config, systems)
+    create_server_systems(test_config, systems)
+    yield
+    delete_server_systems(test_config, systems)
+
+@pytest.fixture(scope="function")
+def create_external_server_systems(test_config):
+    systems = _system.generate_redshift_systems()
+    delete_server_systems(test_config, systems)
+    create_server_systems(test_config, systems)
+    yield
+    delete_server_systems(test_config, systems)
 
 @pytest.fixture()
 def redshift_describe_clusters():
@@ -125,7 +134,7 @@ def test_scan_aws_systems():
 
 
 @pytest.mark.integration
-def test_get_all_server_systems(test_config, create_server_systems):
+def test_get_all_server_systems(test_config, create_test_server_systems):
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -135,7 +144,7 @@ def test_get_all_server_systems(test_config, create_server_systems):
 
 
 @pytest.mark.external
-def test_scan_system_aws_passes(test_config, create_server_systems):
+def test_scan_system_aws_passes(test_config, create_external_server_systems):
     _system.scan_system_aws(
         coverage_threshold=100,
         manifest_dir="",
