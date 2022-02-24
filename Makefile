@@ -99,7 +99,7 @@ check-install:
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_NO_DEPS) fidesctl --local evaluate && python -c "from fidesapi.main import start_webserver"
+	@$(RUN_NO_DEPS) fidesctl --local evaluate
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
