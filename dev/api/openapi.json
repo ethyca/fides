@@ -3083,8 +3083,7 @@
           },
           "retention": {
             "title": "Retention",
-            "type": "string",
-            "default": "No retention or erasure policy"
+            "type": "string"
           },
           "fields": {
             "title": "Fields",

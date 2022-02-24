@@ -1468,9 +1468,10 @@ You're not viewing the latest version.
 
 
 <h1 id="organization">Organization</h1>
-<p>An Organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than Organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" Organization can't refer to the Policy objects that are defined by your "European Stores" Organization.</p>
-<p>Unless you're creating multiple Organizations (which should be rare), you can ignore the Organization resource. While all of your other resources must refer to an Organization (through their <code>organization_fides_key</code> properties), Fides creates a default Organization that it uses for all resources that don't otherwise specify an Organization.</p>
-<p>The fides key for the default Organization is <code>default_organization</code></p>
+<p>An Organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than one Organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" Organization can't refer to the Policy objects that are defined by your "European Stores" Organization.</p>
+<p>The Organization resource will also contain vital information with regards to compliance reporting in the case of a data map or RoPA (Record of Processing Activities).</p>
+<p>All other resource types must refer to an Organization (through their <code>organization_fides_key</code> properties). Fides creates a default Organization that it uses for all resources that don't otherwise specify an Organization. Unless you're creating multiple Organizations (which should be rare), it is suggested to use the default Organization resource.</p>
+<p>The fides key for the default Organization is <code>default_organization</code>.</p>
 <h2 id="object-structure">Object Structure</h2>
 <p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;<em>string</em></p>
 <p>A string token of your own invention that uniquely identifies this Organization. It's your responsibility to ensure that the value is unique across all of your Organization objects. The value can only contain alphanumeric characters, hyphens, periods and underscores (<code>[A-Za-z0-9_.-]</code>).</p>
