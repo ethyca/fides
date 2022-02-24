@@ -12,7 +12,7 @@ system:
         data_categories:
           - user.provided.identifiable.contact
           - user.derived.identifiable.device.cookie_id
-        data_uses: improve.system
+        data_use: improve.system
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -28,7 +28,7 @@ system:
         data_categories:
           #- user.provided.identifiable.contact # uncomment to add this category to the system
           - user.derived.identifiable.device.cookie_id
-        data_uses: third_party_sharing.personalized_advertising.direct_marketing
+        data_use: advertising
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
