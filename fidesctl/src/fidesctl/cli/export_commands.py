@@ -63,3 +63,58 @@ def export_dataset(
         manifests_dir=manifests_dir,
         dry=dry,
     )
+
+
+@export.command(name="organization")
+@click.pass_context
+@manifests_dir_argument
+@dry_flag
+def export_organization(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+) -> None:
+    """
+    Export an organization in a data map format.
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_organization(
+        url=config.cli.server_url,
+        organization_list=taxonomy.organization,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
+    )
+
+
+@export.command(name="datamap")
+@click.pass_context
+@manifests_dir_argument
+@dry_flag
+@click.option(
+    "--csv",
+    is_flag=True,
+    help="Export using csv format",
+)
+def export_datamap(
+    ctx: click.Context,
+    manifests_dir: str,
+    dry: bool,
+    csv: bool,
+) -> None:
+    """
+    Export a formatted data map to excel using template
+
+    The csv flag can be used to output data as csv instead
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _export.export_datamap(
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
+        to_csv=csv,
+    )

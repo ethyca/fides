@@ -7,6 +7,7 @@ from fideslang.models import (
     Dataset,
     DatasetCollection,
     DatasetField,
+    Organization,
     PrivacyDeclaration,
     System,
 )
@@ -51,6 +52,7 @@ def test_sample_dataset_taxonomy():
                             name="test_field_1",
                             data_categories=["test_category_1"],
                             data_qualifier="aggregated.anonymized",
+                            retention="No retention policy",
                         ),
                         DatasetField(
                             name="test_field_2",
@@ -75,31 +77,18 @@ def test_sample_dataset_taxonomy():
 
 
 @pytest.mark.unit
-def test_system_records_to_export(test_sample_system_taxonomy):
+def test_system_records_to_export(test_sample_system_taxonomy, test_config):
     """
     Asserts that unique records are returned properly (including
     the header row)
     """
-    output_list = export.generate_system_records(test_sample_system_taxonomy)
-
-    assert len(output_list) == 3
-
-
-@pytest.mark.unit
-def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
-
-    dataset_name = test_sample_dataset_taxonomy[0].name
-    dataset_description = test_sample_dataset_taxonomy[0].description
-    test_field = test_sample_dataset_taxonomy[0].collections[0].fields[1]
-
-    dataset_rows = export.generate_data_category_rows(
-        dataset_name,
-        dataset_description,
-        test_field.data_qualifier,
-        test_field.data_categories,
+    output_list = export.generate_system_records(
+        test_sample_system_taxonomy,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
     )
-
-    assert len(dataset_rows) == 2
+    print(output_list)
+    assert len(output_list) == 3
 
 
 @pytest.mark.unit
@@ -115,20 +104,12 @@ def test_dataset_records_to_export(test_sample_dataset_taxonomy):
 
 
 @pytest.mark.unit
-def test_csv_export(tmpdir):
+def test_organization_records_to_export():
     """
-    Asserts that the csv is successfully created
+    Asserts the default organization is successfully exported
     """
 
-    output_list = [("column_1", "column_2"), ("foo", "bar")]
-    resource_exported = "test"
-
-    exported_filename = export.export_to_csv(
-        list_to_export=output_list,
-        resource_exported=resource_exported,
-        manifests_dir=f"{tmpdir}",
+    output_list = export.generate_contact_records(
+        [Organization(fides_key="default_organization")]
     )
-
-    exported_file = tmpdir.join(exported_filename)
-
-    assert path.exists(exported_file)
+    assert len(output_list) == 5

@@ -1,10 +1,12 @@
 # Organization
 
-An Organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than Organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" Organization can't refer to the Policy objects that are defined by your "European Stores" Organization.
+An Organization represents all or part of an enterprise or company, and establishes the root of your resource hierarchy. This means that while you can have more than one Organization resource, they can't refer to each other's sub-resources. For example, your "American Stores" Organization can't refer to the Policy objects that are defined by your "European Stores" Organization.
 
-Unless you're creating multiple Organizations (which should be rare), you can ignore the Organization resource. While all of your other resources must refer to an Organization (through their `organization_fides_key` properties), Fides creates a default Organization that it uses for all resources that don't otherwise specify an Organization.
+The Organization resource will also contain vital information with regards to compliance reporting in the case of a data map or RoPA (Record of Processing Activities).
 
-The fides key for the default Organization is `default_organization`
+All other resource types must refer to an Organization (through their `organization_fides_key` properties). Fides creates a default Organization that it uses for all resources that don't otherwise specify an Organization. Unless you're creating multiple Organizations (which should be rare), it is suggested to use the default Organization resource.
+
+The fides key for the default Organization is `default_organization`.
 
 ## Object Structure
 

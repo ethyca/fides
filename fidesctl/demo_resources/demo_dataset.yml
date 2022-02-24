@@ -9,7 +9,7 @@ dataset:
   - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   retention: "30 days after account deletion"
   third_country_transfers:
-    - USA
+    - GBR
     - CAN
   collections:
   - name: users
@@ -28,11 +28,13 @@ dataset:
       data_categories:
       - user.provided.identifiable.contact.email
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: Account termination
     - name: first_name
       description: User's first name
       data_categories:
       - user.provided.identifiable.name
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: Account termination
     - name: food_preference
       description: User's favorite food
       data_categories: []
