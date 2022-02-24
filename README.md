@@ -163,7 +163,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
      -          #- user.provided.identifiable.contact # uncomment to add this category to the system
      +          - user.provided.identifiable.contact # uncomment to add this category to the system
                 - user.derived.identifiable.device.cookie_id
-              data_use: marketing_advertising_or_promotion
+              data_uses: marketing_advertising_or_promotion
               data_subjects:
      ```
 
