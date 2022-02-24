@@ -8,7 +8,7 @@ Fully deployed, `fidesops` has three individual systems you'll need to run:
 2. [**Hosted Cache**](#step-2-setup-hosted-cache): Redis database server used as a temporary cache during execution and scheduling of tasks
 3. [**fidesops Web Server**](#step-3-setup-fidesops-web-server): Main application with API endpoints to configure, execute, and report on privacy requests
 
-![Deployment Diagram](img/Deployment_Diagram.svg)
+![Deployment Diagram](img/Deployment_Diagram.png)
 
 Let's review each individually.
 
