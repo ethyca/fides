@@ -12,9 +12,15 @@ IMAGE := $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
 IMAGE_LOCAL := $(REGISTRY)/$(IMAGE_NAME):local
 IMAGE_LATEST := $(REGISTRY)/$(IMAGE_NAME):latest
 
+# Disable TTY to perserve output within Github Actions logs
+# CI env variable is always set to true in Github Actions
+ifeq "$(CI)" "true"
+    CI_ARGS:=--no-TTY
+endif
+
 # Run in Compose
-RUN = docker compose run --rm $(IMAGE_NAME)
-RUN_NO_DEPS = docker compose run --no-deps --rm $(IMAGE_NAME)
+RUN = docker compose run --rm $(CI_ARGS) $(IMAGE_NAME)
+RUN_NO_DEPS = docker compose run --no-deps --rm $(CI_ARGS) $(IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -113,7 +119,7 @@ pytest-unit:
 
 pytest-integration:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-	@docker compose run --rm $(IMAGE_NAME) \
+	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m integration
 	@make teardown
 
@@ -125,7 +131,7 @@ pytest-external:
 	-e AWS_ACCESS_KEY_ID \
 	-e AWS_SECRET_ACCESS_KEY \
 	-e AWS_DEFAULT_REGION \
-	--rm $(IMAGE_NAME) \
+	--rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
 
@@ -155,11 +161,11 @@ teardown:
 
 .PHONY: docs-build
 docs-build: build-local
-	@docker compose run --rm $(IMAGE_NAME) \
+	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker compose build docs
-	@docker compose run --rm --service-ports docs \
+	@docker compose run --rm --service-ports $(CI_ARGS) docs \
 	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"
