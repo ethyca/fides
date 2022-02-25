@@ -1,10 +1,11 @@
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any
 
 from fidesops.graph.config import FieldPath
+from fidesops.util.collection_util import Row
 
 
 def consolidate_query_matches(
-    row: Dict[str, Any],
+    row: Row,
     target_path: FieldPath,
     flattened_matches: Optional[List] = None,
 ) -> List[Any]:

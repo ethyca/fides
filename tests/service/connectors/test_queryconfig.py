@@ -491,11 +491,9 @@ class TestMongoQueryConfig:
         dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
         customer_details = traversal.traversal_node_dict[
             CollectionAddress("mongo_test", "customer_details")
         ]
-
         config = MongoQueryConfig(customer_details)
         row = {
             "birthday": "1988-01-10",
@@ -519,16 +517,18 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
         assert mongo_statement[0] == {"_id": 1}
-        # TODO lots of this update statmement is wrong
+
         assert mongo_statement[1] == {
             "$set": {
                 "birthday": None,
-                "emergency_contacts.name": None,
-                "workplace_info.direct_reports": None,
-                "emergency_contacts.phone": None,
+                "children.0": None,
+                "children.1": None,
+                "emergency_contacts.0.name": None,
+                "workplace_info.direct_reports.0": None,  # Both direct reports are masked.
+                "workplace_info.direct_reports.1": None,
+                "emergency_contacts.0.phone": None,
                 "gender": None,
-                "workplace_info.position": None,
-                "children": None,
+                "workplace_info.position": None
             }
         }
 

@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
+import pydash
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
@@ -22,6 +23,10 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
     get_strategy,
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.task.refine_target_path import (
+    build_refined_target_paths,
+    join_detailed_path,
+)
 from fidesops.util.collection_util import append, filter_nonempty_values
 from fidesops.util.querytoken import QueryToken
 
@@ -120,14 +125,13 @@ class QueryConfig(Generic[T], ABC):
     def update_value_map(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
-        """Map the relevant fields (as strings) to be updated on the row with their masked values from Policy Rules
+        """Map the relevant field (as strings) to be updated on the row with their masked values from Policy Rules
 
-        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None}
+        Example return:  {'name': None, 'ccn': None, 'code': None, 'workplace_info.employer': None, 'children.0': None}
 
-        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields and nested
-        workplace_info.employer fields for a given customer_id will be replaced with null values.
-
-        FieldPaths are mapped to their dotted string path representation.
+        In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields, nested
+        workplace_info.employer field, and the first element in 'children' for a given customer_id will be replaced
+        with null values.
 
         """
         rule_to_collection_field_paths: Dict[
@@ -159,16 +163,22 @@ class QueryConfig(Generic[T], ABC):
                         f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
                     continue
-                val: Any = rule_field_path.retrieve_from(row)
-                masked_val = self._generate_masked_value(
-                    request.id,
-                    strategy,
-                    val,
-                    masking_override,
-                    null_masking,
-                    rule_field_path,
-                )
-                value_map[rule_field_path.string_path] = masked_val
+
+                paths_to_mask: List[str] = [
+                    join_detailed_path(path)
+                    for path in build_refined_target_paths(
+                        row, query_paths={rule_field_path: None}
+                    )
+                ]
+                for detailed_path in paths_to_mask:
+                    value_map[detailed_path] = self._generate_masked_value(
+                        request_id=request.id,
+                        strategy=strategy,
+                        val=pydash.objects.get(row, detailed_path),
+                        masking_override=masking_override,
+                        null_masking=null_masking,
+                        str_field_path=detailed_path,
+                    )
         return value_map
 
     @staticmethod
@@ -193,17 +203,17 @@ class QueryConfig(Generic[T], ABC):
         val: Any,
         masking_override: MaskingOverride,
         null_masking: bool,
-        field_path: FieldPath,
+        str_field_path: str,
     ) -> T:
         masked_val = strategy.mask(val, request_id)
         logger.debug(
-            f"Generated the following masked val for field {field_path.string_path}: {masked_val}"
+            f"Generated the following masked val for field {str_field_path}: {masked_val}"
         )
         if null_masking:
             return masked_val
         if masking_override.length:
             logger.warning(
-                f"Because a length has been specified for field {field_path.string_path}, we will truncate length "
+                f"Because a length has been specified for field {str_field_path}, we will truncate length "
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type

@@ -7,7 +7,7 @@ from sqlalchemy.engine import Engine
 from fidesops.db.base_class import FidesopsBase
 from fidesops.graph.config import *
 from fidesops.graph.traversal import *
-from fidesops.graph.traversal import Traversal, Row, TraversalNode
+from fidesops.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
 from fidesops.models.connectionconfig import ConnectionConfig
@@ -19,6 +19,7 @@ from fidesops.service.connectors.sql_connector import SQLConnector
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
 from ..fixtures.application_fixtures import faker
+from fidesops.util.collection_util import Row
 
 
 class MockResources(TaskResources):

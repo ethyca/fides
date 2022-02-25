@@ -1,10 +1,7 @@
 import logging
-from typing import Generator
 
 import pytest
 from sqlalchemy import func, select, table
-
-from fidesops.db.session import get_db_session, get_db_engine
 
 logger = logging.getLogger(__name__)
 
