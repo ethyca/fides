@@ -21,7 +21,10 @@ from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.service.connectors import get_connector
 from fidesops.task import graph_task
-from fidesops.task.graph_task import filter_data_categories
+from fidesops.task.filter_results import filter_data_categories
+from fidesops.task.graph_task import (
+    get_cached_data_for_erasures,
+)
 from ..graph.graph_test_util import (
     assert_rows_match,
     records_matching_fields,
@@ -71,7 +74,7 @@ def test_sql_erasure_ignores_collections_without_pk(
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    access_request_data = graph_task.run_access_request(
+    graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -84,7 +87,7 @@ def test_sql_erasure_ignores_collections_without_pk(
         graph,
         [integration_postgres_config],
         {"email": seed_email},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     logs = (
@@ -188,7 +191,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert erasure == {
@@ -244,7 +247,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
         graph,
         [integration_postgres_config],
         {"email": seed_email},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert v == {
@@ -814,7 +817,7 @@ def test_access_erasure_type_conversion(
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
-        access_request_data,
+        get_cached_data_for_erasures(privacy_request.id),
     )
 
     assert erasure == {

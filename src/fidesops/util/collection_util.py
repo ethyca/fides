@@ -4,6 +4,10 @@ from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
 T = TypeVar("T")
 U = TypeVar("U")
 
+NodeInput = Dict[str, List[Any]]  # Of format {node_address: []}
+Row = Dict[str, Any]
+FIDESOPS_DO_NOT_MASK_INDEX = "FIDESOPS_DO_NOT_MASK"
+
 
 def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
     """Merge any number of dictionaries.

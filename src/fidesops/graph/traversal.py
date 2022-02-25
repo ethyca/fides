@@ -18,12 +18,11 @@ from fidesops.graph.config import (
 from fidesops.graph.graph import Node, Edge, DatasetGraph
 from fidesops.util.logger import NotPii
 from fidesops.util.matching_queue import MatchingQueue
-from fidesops.util.collection_util import append
+from fidesops.util.collection_util import append, Row
 
 logger = logging.getLogger(__name__)
 
 
-Row = Dict[str, Any]
 """A type expressing a single row of data from (any) collection"""
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""

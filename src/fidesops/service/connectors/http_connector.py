@@ -5,7 +5,7 @@ from typing import Dict, Any, List, Optional
 import requests
 
 from fidesops.common_exceptions import ClientUnsuccessfulException
-from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.graph.traversal import TraversalNode
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
@@ -13,6 +13,7 @@ from fidesops.schemas.connection_configuration import HttpsSchema
 
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import QueryConfig
+from fidesops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 

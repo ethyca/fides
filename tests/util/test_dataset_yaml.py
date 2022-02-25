@@ -285,7 +285,7 @@ def test_dataset_graph_connected_by_nested_fields():
     assert [
         field_path.string_path
         for field_path in dataset_graph.data_category_field_mapping[
-           CollectionAddress("mongo_nested_test", "photos")
+            CollectionAddress("mongo_nested_test", "photos")
         ]["system.operations"]
     ] == ["_id", "thumbnail.camera_used"]
 
@@ -312,4 +312,6 @@ example_object_with_data_categories_nested_yaml = """dataset:
 def test_object_data_category_validation():
     """Test trying to validate object with data category specified"""
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(__to_dataset__(example_object_with_data_categories_nested_yaml))
+        FidesopsDataset.parse_obj(
+            __to_dataset__(example_object_with_data_categories_nested_yaml)
+        )

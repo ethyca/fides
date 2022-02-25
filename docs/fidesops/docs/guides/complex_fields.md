@@ -267,9 +267,9 @@ arrays should be considered.
 1) If an array is the entry point into a node, we will search for corresponding matches across the entire array. You cannot specify a certain index.
 2) Everything is basically an "OR" query. Data returned from multiple array fields will be flattened before being passed into the next collection.
    1) For example, say Collection A returned values [1, 2, 3] and Collection B returned values [4, 5, 6].  Collection C has an array field that depends on both Collection A and Collection B. We search Collection C's array field to return any record that contains one of the values [1, 2, 3, 4, 5, 6] in the array.
-3. If an array field is an entry point to a node, only matching indices in that array are considered, both for access/(and eventually erasures), as well as for subsequent queries on dependent collections where applicable.
+3. If an array field is an entry point to a node, only matching indices in that array are considered, both for access and erasures, as well as for subsequent queries on dependent collections where applicable.
    1. For example, a query on Collection A only matched indices 0 and 1 in an array.  Only the data located at indices 0 and 1 are used to query data on dependent collection C.
-
+4.  Individual array elements are masked, not the entire array, e.g. ["MASKED", "MASKED", "MASKED"]
 
 ### Can I see a more detailed example of a query traversal with complex objects?
 

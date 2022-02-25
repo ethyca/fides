@@ -162,10 +162,15 @@ dataset:
             fidesops_meta:
               data_type: integer
       - name: conversations
-        fidesops_meta:
-          data_type: object[]
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: thread
+            fidesops_meta:
+              data_type: object[]
             fields:
               - name: comment
                 fidesops_meta:
@@ -177,8 +182,17 @@ dataset:
                 data_categories: [ user.provided.identifiable.name ]
                 fidesops_meta:
                   data_type: string
+              - name: ccn
+                data_categories: [ user.provided.identifiable.financial.account_number ]
+                fidesops_meta:
+                  data_type: string
       - name: employee
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: email
             data_categories: [ user.provided.identifiable.contact.email ]
             fidesops_meta:
@@ -217,6 +231,11 @@ dataset:
               data_type: string
       - name: payment_card
         fields:
+          - name: _id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
           - name: billing_address_id
             data_categories: [ system.operations ]
           - name: ccn

@@ -10,6 +10,7 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from pymongo import MongoClient
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -53,6 +54,9 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("fidesops-integration.toml")
+
+logger = logging.getLogger(__name__)
+
 
 # Unified list of connections to integration dbs specified from fidesops-integration.toml
 

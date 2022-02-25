@@ -1,31 +1,35 @@
 from fidesops.graph.config import FieldPath
 from fidesops.task.refine_target_path import (
     refine_target_path,
-    build_incoming_refined_target_paths,
+    build_refined_target_paths,
+    join_detailed_path, _match_found,
 )
+from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 
 
-class TestRefineTargetPath:
+class TestRefineTargetPathToValue:
+    """Test target paths built to specific matched values"""
+
     def test_refine_target_path_value_does_not_match(self):
         data = {"A": "a", "B": "b"}
 
-        assert refine_target_path(data, ["A"], ["b"]) == []
+        assert refine_target_path(data, ["A"], only=["b"]) == []
 
     def test_refine_target_path_to_scalar_value(self):
         data = {"A": "a", "B": "b"}
-        assert refine_target_path(data, ["A"], ["a"]) == [
+        assert refine_target_path(data, ["A"], only=["a"]) == [
             "A"
         ]  # Target path is unchanged
 
     def test_refine_target_path_to_scalar_from_multiple_options(self):
         data = {"A": "a", "B": "b"}
-        assert refine_target_path(data, ["A"], ["a", "b", "c"]) == [
+        assert refine_target_path(data, ["A"], only=["a", "b", "c"]) == [
             "A"
         ]  # Target path is unchanged
 
     def test_refine_target_path_to_nested_value(self):
         data = {"A": {"B": {"C": "D", "E": "F", "G": "G"}}}
-        assert refine_target_path(data, ["A", "B", "C"], ["D"]) == [
+        assert refine_target_path(data, ["A", "B", "C"], only=["D"]) == [
             "A",
             "B",
             "C",
@@ -33,7 +37,7 @@ class TestRefineTargetPath:
 
     def test_refine_target_path_to_top_level_array(self):
         data = {"A": ["a", "b", "c"], "D": ["e", "f", "g"]}
-        assert refine_target_path(data, ["A"], ["c"]) == ["A", 2]
+        assert refine_target_path(data, ["A"], only=["c"]) == ["A", 2]
 
     def test_refine_target_path_to_nested_array(self):
         data = {"A": {"B": {"C": ["d", "e", "f"], "D": ["g", "h", "i"]}}}
@@ -41,7 +45,7 @@ class TestRefineTargetPath:
 
     def test_refine_target_paths_to_multiple_indices_in_nested_arrays(self):
         data = {"A": {"B": {"C": ["d", "e", "f", "e", "e"], "D": ["g", "h", "i"]}}}
-        assert refine_target_path(data, ["A", "B", "C"], ["e"]) == [
+        assert refine_target_path(data, ["A", "B", "C"], only=["e"]) == [
             ["A", "B", "C", 1],
             ["A", "B", "C", 3],
             ["A", "B", "C", 4],
@@ -55,7 +59,7 @@ class TestRefineTargetPath:
                 {"B": "I", "D": "K", "F": "J"},
             ]
         }
-        assert refine_target_path(data, ["A", "F"], ["G"]) == ["A", 0, "F"]
+        assert refine_target_path(data, ["A", "F"], only=["G"]) == ["A", 0, "F"]
 
     def test_refine_target_path_to_multiple_embedded_objects_in_arrays(self):
         data = {
@@ -67,7 +71,7 @@ class TestRefineTargetPath:
             ],
             "B": "C",
         }
-        assert refine_target_path(data, ["A", "F"], ["G"]) == [
+        assert refine_target_path(data, ["A", "F"], only=["G"]) == [
             ["A", 0, "F"],
             ["A", 3, "F"],
         ]
@@ -84,7 +88,7 @@ class TestRefineTargetPath:
             ],
             "B": "C",
         }
-        assert refine_target_path(data, ["A", "F"], ["G", "I"]) == [
+        assert refine_target_path(data, ["A", "F"], only=["G", "I"]) == [
             ["A", 0, "F"],
             ["A", 3, "F"],
             ["A", 5, "F"],
@@ -92,7 +96,7 @@ class TestRefineTargetPath:
 
     def test_refined_target_path_array_of_arrays(self):
         data = {"A": [["B", "C", "D", "C", "E"]], "C": ["E", "F"]}
-        assert refine_target_path(data, ["A"], ["C", "E"]) == [
+        assert refine_target_path(data, ["A"], only=["C", "E"]) == [
             ["A", 0, 1],
             ["A", 0, 3],
             ["A", 0, 4],
@@ -182,30 +186,76 @@ class TestRefineTargetPath:
         assert result == [["F", 0], ["F", 1, 1], ["F", 1, 2, 0, 1], ["F", 1, 2, 0, 2]]
 
 
-class TestBuildIncomingRefinedTargetPaths:
+class TestRefineTargetPathToAll:
+    """Test expanding target path to all possible paths"""
+
+    def test_refine_target_path_to_scalar_value(self):
+        data = {"A": "a", "B": "b"}
+        assert refine_target_path(data, ["A"]) == ["A"]
+
+    def test_refine_target_path_to_nested_value(self):
+        data = {"A": {"B": {"C": "D", "E": "F", "G": "G"}}}
+        assert refine_target_path(data, ["A", "B", "C"]) == [
+            "A",
+            "B",
+            "C",
+        ]  # Target path is unchanged
+
+    def test_refine_target_path_to_top_level_array(self):
+        data = {"A": ["a", "b", "c"], "D": ["e", "f", "g"]}
+        assert refine_target_path(data, ["A"]) == [["A", 0], ["A", 1], ["A", 2]]
+
+    def test_refine_target_path_to_nested_array(self):
+        data = {"A": {"B": {"C": ["d", "e", "f"], "D": ["g", "h", "i"]}}}
+        assert refine_target_path(data, ["A", "B", "C"]) == [
+            ["A", "B", "C", 0],
+            ["A", "B", "C", 1],
+            ["A", "B", "C", 2],
+        ]
+
+    def test_refine_target_path_to_embedded_object_in_arrays(self):
+        data = {
+            "A": [
+                {"B": "C", "D": "E", "F": "G"},
+                {"D": "J"},
+                {"B": "I", "D": "K", "F": "J"},
+            ]
+        }
+        assert refine_target_path(data, ["A", "F"]) == [["A", 0, "F"], ["A", 2, "F"]]
+
+    def test_refined_target_path_array_of_arrays(self):
+        data = {"A": [["B", "C", "D", "C", "E"]], "C": ["E", "F"]}
+        assert refine_target_path(data, ["A"]) == [
+            ["A", 0, 0],
+            ["A", 0, 1],
+            ["A", 0, 2],
+            ["A", 0, 3],
+            ["A", 0, 4],
+        ]
+
+
+class TestBuildRefinedTargetPaths:
     def test_build_refined_paths_bad_path(self):
         row = {"A": [1, 2, 3], "B": "C"}
-        result = build_incoming_refined_target_paths(
-            row, {FieldPath("A", "B", "C"): ["F"]}
-        )
+        result = build_refined_target_paths(row, {FieldPath("A", "B", "C"): ["F"]})
         assert result == []
 
     def test_one_match_makes_list_of_lists(self):
         row = {"A": [1, 2, 3], "B": "C"}
-        result = build_incoming_refined_target_paths(row, {FieldPath("A"): [1]})
+        result = build_refined_target_paths(row, {FieldPath("A"): [1]})
         assert result == [["A", 0]]
 
     def test_two_matches_makes_list_of_lists(self):
         row = {"A": [1, 2, 3], "B": "C"}
-        result = build_incoming_refined_target_paths(row, {FieldPath("A"): [1, 3]})
+        result = build_refined_target_paths(row, {FieldPath("A"): [1, 3]})
         assert result == [["A", 0], ["A", 2]]
 
     def test_list_of_list_of_lists(self):
         row = {"A": [[[1, 2, 3]], [[4, 5, 6]]], "B": "C"}
-        result = build_incoming_refined_target_paths(row, {FieldPath("A"): [1, 3]})
+        result = build_refined_target_paths(row, {FieldPath("A"): [1, 3]})
         assert result == [["A", 0, 0, 0], ["A", 0, 0, 2]]
 
-    def test_build_incoming_refined_path_multiple_matches_in_array(self):
+    def test_build_refined_path_multiple_matches_in_array(self):
         row = {
             "A": ["b", "c", "d", "e"],
             "C": {"D": {"E": ["g", "h", "i", "j"], "G": "H"}},
@@ -217,12 +267,12 @@ class TestBuildIncomingRefinedTargetPaths:
             ],
         }
 
-        result = build_incoming_refined_target_paths(
+        result = build_refined_target_paths(
             row, {FieldPath("J", "K"): [2], FieldPath("J", "J"): [4]}
         )
         assert result == [["J", 3, "K"], ["J", 1, "J"], ["J", 3, "J"]]
 
-    def test_build_incoming_refined_target_paths_large_data(self, sample_data):
+    def test_build_refined_target_paths_large_data(self, sample_data):
         incoming_paths = {
             FieldPath(
                 "F",
@@ -230,7 +280,7 @@ class TestBuildIncomingRefinedTargetPaths:
             FieldPath("snacks"): ["pizza"],
             FieldPath("thread", "comment"): ["com_0002"],
         }
-        result = build_incoming_refined_target_paths(sample_data, incoming_paths)
+        result = build_refined_target_paths(sample_data, incoming_paths)
         assert result == [
             ["F", 0],
             ["snacks", 0],
@@ -240,3 +290,25 @@ class TestBuildIncomingRefinedTargetPaths:
             ["F", 1, 2, 0, 1],
             ["F", 1, 2, 0, 2],
         ]
+
+
+def test_join_detailed_path():
+    assert join_detailed_path(["A", 0, 1, 2]) == "A.0.1.2"
+
+    assert join_detailed_path([0]) == "0"
+
+    assert join_detailed_path(["A"]) == "A"
+
+    assert join_detailed_path([]) == ""
+
+
+def test_match_found():
+    assert _match_found(FIDESOPS_DO_NOT_MASK_INDEX) is False
+
+    assert _match_found("A") is True
+
+    assert _match_found(1) is True
+
+    assert _match_found("A", ["B"]) is False
+
+    assert _match_found("A", ["A", "B"]) is True

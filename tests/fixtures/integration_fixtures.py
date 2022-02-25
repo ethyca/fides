@@ -195,9 +195,29 @@ def generate_mongo_specific_records():
                 "gender": "male",
                 "birthday": datetime(1988, 1, 10),
                 "workplace_info": {
-                    "employer": "Mountain Baking Company",
-                    "position": "Chief Strategist",
+                    "employer": "Green Tea Company",
+                    "position": "Head Grower",
+                    "direct_reports": ["Margo Robbins"],
                 },
+                "emergency_contacts": [
+                    {
+                        "name": "Grace Customer",
+                        "relationship": "mother",
+                        "phone": "123-456-7890",
+                    },
+                    {
+                        "name": "Joseph Customer",
+                        "relationship": "brother",
+                        "phone": "000-000-0000",
+                    },
+                ],
+                "children": ["Kent Customer", "Kenny Customer"],
+                "travel_identifiers": ["D222-22221", "Z111-1111"],
+                "comments": [
+                    {"comment_id": "com_0011"},
+                    {"comment_id": "com_0013"},
+                    {"comment_id": "com_0015"},
+                ],
             },
             {
                 "id": "002",
@@ -205,15 +225,37 @@ def generate_mongo_specific_records():
                 "gender": "female",
                 "birthday": datetime(1985, 3, 5),
                 "workplace_info": {
-                    "employer": "Incline Software Company",
-                    "position": "Software Engineer",
+                    "employer": "The Tool Shop",
+                    "position": "Mechanic 1",
+                    "direct_reports": ["Langdon Jeanne", "Dorothy Faron"],
                 },
+                "emergency_contacts": [
+                    {
+                        "name": "Jenny Customer",
+                        "relationship": "spouse",
+                        "phone": "111-000-1111",
+                    },
+                    {
+                        "name": "Jill Customer",
+                        "relationship": "sister",
+                        "phone": "222-222-2222",
+                    },
+                ],
+                "children": ["Connie Customer"],
+                "travel_identifiers": ["C222-222222"],
             },
             {
                 "id": "003",
                 "customer_id": 10002,
                 "gender": "female",
                 "birthday": datetime(1990, 2, 28),
+                "travel_identifiers": ["G111-11111"],
+                "children": ["Erica Example"],
+                "comments": [
+                    {"comment_id": "com_0012"},
+                    {"comment_id": "com_0014"},
+                    {"comment_id": "com_0016"},
+                ],
             },
         ],
         "customer_feedback": [
@@ -221,8 +263,8 @@ def generate_mongo_specific_records():
                 "id": "feed_1",
                 "customer_information": {
                     "email": "test_one@example.com",
-                    "phone": "333-333-3333",
-                    "internal_customer_id": "cust_004",
+                    "phone": "333-000-3333",
+                    "internal_customer_id": "cust_014",
                 },
                 "rating": 3,
                 "date": datetime(2022, 1, 5),
@@ -232,8 +274,8 @@ def generate_mongo_specific_records():
                 "id": "feed_2",
                 "customer_information": {
                     "email": "test_two@example.com",
-                    "phone": "111-111-1111",
-                    "internal_customer_id": "cust_005",
+                    "phone": "111-000-1111",
+                    "internal_customer_id": "cust_015",
                 },
                 "rating": 5,
                 "date": datetime(2022, 1, 10),
@@ -243,13 +285,147 @@ def generate_mongo_specific_records():
         "internal_customer_profile": [
             {
                 "id": "prof_1",
-                "customer_identifiers": {"internal_id": "cust_004"},
+                "customer_identifiers": {"internal_id": "cust_014"},
                 "derived_interests": ["marketing", "food"],
             },
             {
                 "id": "prof_2",
-                "customer_identifiers": {"internal_id": "cust_005"},
+                "customer_identifiers": {"internal_id": "cust_015"},
                 "derived_interests": ["programming", "hiking", "skateboarding"],
+            },
+            {
+                "id": "prof_3",
+                "customer_identifiers": {
+                    "internal_id": "cust_016",
+                    "derived_emails": ["jenny1@example.com", "jenny@example.com"],
+                },
+                "derived_interests": ["interior design", "travel", "photography"],
+            },
+        ],
+        "conversations": [
+            {
+                "id": "thread_1",
+                "thread": [
+                    {
+                        "comment": "com_0011",
+                        "message": "hey do you know when we're landing?",
+                        "chat_name": "John C",
+                        "ccn": "123456789",
+                    },
+                    {
+                        "comment": "com_0012",
+                        "message": "the detour we're taking for the storm we'll probably add an hour",
+                        "chat_name": "Jenny C",
+                        "ccn": "987654321",
+                    },
+                ],
+            },
+            {
+                "id": "thread_2",
+                "thread": [
+                    {
+                        "comment": "com_0013",
+                        "message": "should we text Grace when we land or should we just surprise her?",
+                        "chat_name": "John C",
+                        "ccn": "123456789",
+                    },
+                    {
+                        "comment": "com_0014",
+                        "message": "I think we should give her a heads-up",
+                        "chat_name": "Jenny C",
+                        "ccn": "987654321",
+                    },
+                    {
+                        "comment": "com_0015",
+                        "message": "Aw but she loves surprises.",
+                        "chat_name": "John C",
+                        "ccn": "123456789",
+                    },
+                    {
+                        "comment": "com_0016",
+                        "message": "I'm pretty sure she needs the peace of mind",
+                        "chat_name": "Jenny C",
+                    },
+                ],
+            },
+            {
+                "id": "thread_3",
+                "thread": [
+                    {
+                        "comment": "com_0017",
+                        "message": "Flight attendants, prepare the cabin take-off please.",
+                        "chat_name": "Pilot 21",
+                    },
+                    {
+                        "comment": "com_0018",
+                        "message": "Airliner B, runway 13 cleared for takeoff",
+                        "chat_name": "ATC 12",
+                    },
+                ],
+            },
+        ],
+        "flights": [
+            {
+                "id": "cust_flight_1",
+                "passenger_information": {
+                    "passenger_ids": ["old_travel_number", "D222-22221"],
+                    "full_name": "John Customer",
+                },
+                "flight_no": "AA230",
+                "date": "2021-01-01",
+                "pilots": ["3", "4"],
+                "plane": 20002,
+            },
+            {
+                "id": "cust_flight_2",
+                "passenger_information": {
+                    "passenger_ids": ["JK111-11111", "G111-11111"],
+                    "full_name": "Jenny Customer",
+                },
+                "flight_no": "AA240",
+                "date": "2021-02-01",
+                "pilots": ["4"],
+                "plane": 40005,
+            },
+        ],
+        "aircraft": [
+            {
+                "id": "plane_type_1",
+                "model": "Airbus A350",
+                "planes": ["20001", "20002", "20003", "20004", "20005"],
+            },
+            {
+                "id": "plane_type_2",
+                "model": "Boeing 747-8",
+                "planes": ["40005", "30006", "40007"],
+            },
+        ],
+        "employee": [
+            {
+                "email": "employee-3@example.com",
+                "name": "Jonathan Employee",
+                "id": "3",
+                "address": {
+                    "house": 555,
+                    "street": "Example Ave",
+                    "city": "Example City",
+                    "state": "TX",
+                    "zip": "12000",
+                },
+                "foreign_id": "000000000000000000000001",
+            },
+            {
+                "email": "employee-4@example.com",
+                "name": "Jessica Employee",
+                "id": "4",
+                "address": {
+                    "house": 555,
+                    "street": "Example Ave",
+                    "city": "Example City",
+                    "state": "TX",
+                    "zip": "12000",
+                },
+                "foreign_id": "000000000000000000000002",
             },
         ],
     }
