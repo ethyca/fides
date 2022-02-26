@@ -43,9 +43,11 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          
-      - name: Deploy the docs without a version in the URL for legacy links
-        run: mkdocs gh-deploy -v -f docs/fidesctl/mkdocs.yml --force
+
+      # Deploys docs without a version in the URL for legacy links
+      - name: Deploy the Legacy Docs
+        if: ${{ env.TAG }}
+        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
 
       - name: Deploy Stable Docs if a Release is Tagged
         if: ${{ env.TAG }}
