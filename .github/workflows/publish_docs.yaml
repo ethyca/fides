@@ -46,11 +46,11 @@ jobs:
 
       # Deploys docs without a version in the URL for legacy links
       # This will match the "stable" version of the versioned docs
-      - name: Deploy the Legacy Docs
+      - name: Deploy the Legacy Docs if a Release is Published
         if: ${{ env.TAG }}
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
 
-      - name: Deploy Stable Docs if a Release is Tagged
+      - name: Deploy Stable Docs if a Release is Published
         if: ${{ env.TAG }}
         run: mike deploy --config-file docs/fides/mkdocs.yml --push --update-aliases ${{ env.TAG }} stable
 
