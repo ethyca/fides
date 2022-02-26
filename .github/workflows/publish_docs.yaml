@@ -45,6 +45,7 @@ jobs:
           git config user.email github-actions@github.com
 
       # Deploys docs without a version in the URL for legacy links
+      # This will match the "stable" version of the versioned docs
       - name: Deploy the Legacy Docs
         if: ${{ env.TAG }}
         run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
