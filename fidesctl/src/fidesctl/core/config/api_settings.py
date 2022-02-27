@@ -4,7 +4,7 @@
 
 import os
 from logging import DEBUG, INFO, getLevelName
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 from pydantic import validator
 
@@ -15,23 +15,30 @@ class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
     # Database
-    test_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
-    database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    sync_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
-    async_database_url: str = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+    database_user: str = "postgres"
+    database_password: str = "fidesctl"
+    database_host: str = "fidesctl-db"
+    database_port: str = "5432"
+    database_name: str = "fidesctl"
+    test_database_name: str = "fidesctl_test"
+    database_url: Optional[str]
+    sync_database_url: Optional[str]
+    async_database_url: Optional[str]
 
     # Logging
     log_destination: str = ""
     log_level: Union[int, str] = INFO
     log_serialization: str = ""
 
-    @validator("database_url", pre=True, always=True)
+    @validator("database_url", always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:
         "Set the database_url to the test_database_url if in test mode."
-        url = (
-            values["test_database_url"]
-            if os.getenv("FIDESCTL_TEST_MODE") == "True"
-            else value
+        url = "{}:{}@{}:{}/{}".format(
+            values["database_user"],
+            values["database_password"],
+            values["database_host"],
+            values["database_port"],
+            values["test_database_name"] if os.getenv("FIDESCTL_TEST_MODE") == "True" else values["database_name"],
         )
         return url
 

@@ -2,4 +2,10 @@
 server_url = "http://fidesctl:8080"
 
 [api]
-test_database_url = "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+
+database_user = "postgres"
+database_password = "fidesctl"
+database_host = "fidesctl-db"
+database_port = "5432"
+
+test_database_name = "fidesctl_test"

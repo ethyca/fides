@@ -2,4 +2,10 @@
 server_url = "http://invalid:8080"
 
 [api]
-database_url = "postgresql+psycopg2://postgres:fidesctl@invalid:5432/fidesctl"
+database_user = "postgres"
+database_password = "fidesctl"
+database_host = "fidesctl-db"
+database_port = "5432"
+
+database_name = "invalid"
+
