@@ -916,6 +916,99 @@ def test_create_and_process_erasure_request_redshift(
             assert row.state is None
 
 
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+def test_create_and_process_access_request_bigquery(
+        bigquery_resources,
+        db,
+        cache,
+        policy,
+):
+    customer_email = bigquery_resources["email"]
+    customer_name = bigquery_resources["name"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+    pr = get_privacy_request_results(db, policy, cache, data)
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__bigquery_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    address_table_key = (
+        f"EN_{pr.id}__access_request__bigquery_example_test_dataset:address"
+    )
+
+    city = bigquery_resources["city"]
+    state = bigquery_resources["state"]
+    assert len(results[address_table_key]) == 1
+    assert results[address_table_key][0]["city"] == city
+    assert results[address_table_key][0]["state"] == state
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+def test_create_and_process_erasure_request_bigquery(
+        bigquery_example_test_dataset_config,
+        bigquery_resources,
+        integration_config: Dict[str, str],
+        db,
+        cache,
+        erasure_policy,
+):
+    customer_email = bigquery_resources["email"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    # Should erase customer name
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    bigquery_client = bigquery_resources["client"]
+    with bigquery_client.connect() as connection:
+        stmt = f"select name from customer where email = '{customer_email}';"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert row.name is None
+
+        address_id = bigquery_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # Not yet masked because these fields aren't targeted by erasure policy
+            assert row.city == bigquery_resources["city"]
+            assert row.state == bigquery_resources["state"]
+
+    target = erasure_policy.rules[0].targets[0]
+    target.data_category = "user.provided.identifiable.contact.state"
+    target.save(db=db)
+
+    # Should erase state fields on address table
+    pr = get_privacy_request_results(db, erasure_policy, cache, data)
+    pr.delete(db=db)
+
+    bigquery_client = bigquery_resources["client"]
+    with bigquery_client.connect() as connection:
+
+        address_id = bigquery_resources["address_id"]
+        stmt = f"select 'id', city, state from address where id = {address_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            # State field was targeted by erasure policy but city was not
+            assert row.city is not None
+            assert row.state is None
+
+
 class TestPrivacyRequestRunnerRunWebhooks:
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_halt_received(
