@@ -2,10 +2,8 @@
 server_url = "http://fidesctl:8080"
 
 [api]
-
 database_user = "postgres"
 database_password = "fidesctl"
 database_host = "fidesctl-db"
 database_port = "5432"
-
 test_database_name = "fidesctl_test"

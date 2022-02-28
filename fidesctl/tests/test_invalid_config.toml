@@ -6,6 +6,4 @@ database_user = "postgres"
 database_password = "fidesctl"
 database_host = "fidesctl-db"
 database_port = "5432"
-
 database_name = "invalid"
-
