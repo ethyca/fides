@@ -17,6 +17,21 @@ from .application_fixtures import integration_config
 logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope="function")
+def bigquery_connection_config_without_secrets(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_bigquery_config",
+            "connection_type": ConnectionType.bigquery,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def bigquery_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -28,9 +43,9 @@ def bigquery_connection_config(db: Session) -> Generator:
         },
     )
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or os.environ.get(
+    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or ast.literal_eval(os.environ.get(
         "BIGQUERY_KEYFILE_CREDS"
-    )
+    ))
     dataset = integration_config.get("bigquery", {}).get(
         "dataset"
     ) or os.environ.get("BIGQUERY_DATASET")
@@ -45,25 +60,77 @@ def bigquery_connection_config(db: Session) -> Generator:
 
 @pytest.fixture
 def bigquery_example_test_dataset_config(
-        connection_config: ConnectionConfig,
+        bigquery_connection_config: ConnectionConfig,
         db: Session,
         example_datasets: List[Dict],
 ) -> Generator:
-    bigquery_dataset = example_datasets[6]
+    bigquery_dataset = example_datasets[7]
     fides_key = bigquery_dataset["fides_key"]
-    connection_config.name = fides_key
-    connection_config.key = fides_key
-    connection_config.save(db=db)
+    bigquery_connection_config.name = fides_key
+    bigquery_connection_config.key = fides_key
+    bigquery_connection_config.save(db=db)
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config.id,
+            "connection_config_id": bigquery_connection_config.id,
             "fides_key": fides_key,
             "dataset": bigquery_dataset,
         },
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def bigquery_resources(
+        bigquery_example_test_dataset_config,
+):
+    bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+        uuid = str(uuid4())
+        customer_email = f"customer-{uuid}@example.com"
+        customer_name = f"{uuid}"
+
+        stmt = "select max(id) from customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + 1
+
+        stmt = "select max(id) from address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + 1
+
+        city = "Test City"
+        state = "TX"
+        stmt = f"""
+        insert into address (id, house, street, city, state, zip)
+        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
+        """
+        connection.execute(stmt)
+
+        stmt = f"""
+            insert into customer (id, email, name, address_id)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+        """
+        connection.execute(stmt)
+
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": bigquery_client,
+            "address_id": address_id,
+            "city": city,
+            "state": state,
+            "connector": connector,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f'delete from address where id = {address_id};'
+        connection.execute(stmt)
 
 
 @pytest.fixture(scope="session")

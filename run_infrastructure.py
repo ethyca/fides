@@ -9,7 +9,7 @@ from typing import (
     List,
 )
 
-DOCKER_WAIT = 3
+DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
     "mssql",
     "postgres",
@@ -20,7 +20,7 @@ DOCKERFILE_DATASTORES = [
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": ["SNOWFLAKE_TEST_URI"],
     "redshift": ["REDSHIFT_TEST_URI", "REDSHIFT_TEST_DB_SCHEMA"],
-    "bigquery": ["BIGQUERY_TEST_URI", "BIGQUERY_TEST_DB_SCHEMA"],
+    "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 IMAGE_NAME = "fidesops"

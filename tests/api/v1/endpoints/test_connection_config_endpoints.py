@@ -691,11 +691,11 @@ class TestPutConnectionConfigSecrets:
             api_client: TestClient,
             db: Session,
             generate_auth_header,
-            bigquery_connection_config,
+            bigquery_connection_config_without_secrets,
     ) -> None:
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config.key}/secret"
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config_without_secrets.key}/secret"
         payload = {
             "dataset": "some-dataset",
             "keyfile_creds": {
@@ -719,10 +719,10 @@ class TestPutConnectionConfigSecrets:
         assert resp.status_code == 200
         assert (
                 json.loads(resp.text)["msg"]
-                == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config.key}."
+                == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config_without_secrets.key}."
         )
-        db.refresh(bigquery_connection_config)
-        assert bigquery_connection_config.secrets == {
+        db.refresh(bigquery_connection_config_without_secrets)
+        assert bigquery_connection_config_without_secrets.secrets == {
             "url": None,
             "dataset": "some-dataset",
             "keyfile_creds": {
@@ -738,8 +738,8 @@ class TestPutConnectionConfigSecrets:
                 "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com"
             }
         }
-        assert bigquery_connection_config.last_test_timestamp is None
-        assert bigquery_connection_config.last_test_succeeded is None
+        assert bigquery_connection_config_without_secrets.last_test_timestamp is None
+        assert bigquery_connection_config_without_secrets.last_test_succeeded is None
 
     def test_put_connection_config_snowflake_secrets(
         self,

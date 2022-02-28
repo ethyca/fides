@@ -4,8 +4,10 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Generic, TypeVar, Tuple
 
 import pydash
-from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
+from sqlalchemy import text, Table, MetaData
+from sqlalchemy.engine import Engine
+from sqlalchemy.sql import Executable, Update
+from sqlalchemy.sql.elements import TextClause, ColumnElement
 
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -247,7 +249,7 @@ class QueryConfig(Generic[T], ABC):
         returns None"""
 
 
-class SQLQueryConfig(QueryConfig[TextClause]):
+class SQLQueryConfig(QueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
     def format_fields_for_query(
@@ -386,26 +388,41 @@ class SQLQueryConfig(QueryConfig[TextClause]):
         return None
 
 
-class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
+class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     """
-    Generates SQL valid for SQLServer. This way of building queries should also work for every other connector,
-    but SQLServer is separated due to increased code complexity for building queries
+    Generates SQL valid for connectors that require the query string to be built without tuples.
     """
 
+    # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
-        """Returns clauses in a format they can be added into SQL queries."""
+        """
+        Returns clauses in a format they can be added into SQL queries.
+        Expects the operand of IN statements to be formatted in the following manner so that
+        these distinct keys can be appended to the clause:
+        ":_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2"
+        """
         if operator == "IN":
             return f"{string_path} IN ({operand})"
         return super().format_clause_for_query(string_path, operator, operand)
 
+    # Overrides SQLConnector.generate_query
     def generate_query(  # pylint: disable=R0914
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,
     ) -> Optional[TextClause]:
-        """Generate a retrieval query"""
+        """
+        Generate a retrieval query. Generates distinct key/val pairs for building the query string instead of a tuple.
+
+        E.g. The base SQLQueryConfig uses 1 key as a tuple:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
+        which for some connectors gets interpreted as data types (mssql) or quotes (bigquery).
+
+        This override produces distinct keys for the query_str:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+        """
 
         filtered_data = self.node.typed_filtered_values(input_data)
 
@@ -448,6 +465,12 @@ class MicrosoftSQLServerQueryConfig(SQLQueryConfig):
             f"There is not enough data to generate a valid query for {self.node.address}"
         )
         return None
+
+
+class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+    """
+    Generates SQL valid for SQLServer.
+    """
 
 
 class SnowflakeQueryConfig(SQLQueryConfig):
@@ -505,6 +528,52 @@ class RedshiftQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Redshift reserved words."""
         return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+
+class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+    """
+    Generates SQL valid for BigQuery
+    """
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words."""
+        return f'SELECT {field_list} FROM `{self.node.node.collection.name}` WHERE {" OR ".join(clauses)}'
+
+    def generate_update(
+        self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
+    ) -> Optional[Update]:
+        """
+        Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead.
+        Returns a SQLAlchemy Update object. Does not actually execute the update object.
+        """
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        valid = len(non_empty_primary_keys) > 0
+        if not valid:
+            logger.warning(
+                f"There is not enough data to generate a valid update statement for {self.node.address}"
+            )
+            return None
+
+        table = Table(
+            self.node.address.collection, MetaData(bind=client), autoload=True
+        )
+        pk_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        ]
+        return table.update().where(*pk_clauses).values(**update_value_map)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
