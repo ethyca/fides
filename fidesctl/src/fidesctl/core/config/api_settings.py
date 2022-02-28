@@ -38,7 +38,9 @@ class APISettings(FidesSettings):
             values["database_password"],
             values["database_host"],
             values["database_port"],
-            values["test_database_name"] if os.getenv("FIDESCTL_TEST_MODE") == "True" else values["database_name"],
+            values["test_database_name"]
+            if os.getenv("FIDESCTL_TEST_MODE") == "True"
+            else values["database_name"],
         )
         return url
 
