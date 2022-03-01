@@ -13,7 +13,11 @@ After initializing fidesctl, a default configuration file will be generated and 
 
 ```toml title="fidesctl.toml"
 [api]
-database_url = "postgres:fidesctl@fidesctl-db:5432/fidesctl"
+database_user = "postgres"
+database_password = "fidesctl"
+database_host = "fidesctl-db"
+database_port = "5432"
+database_name = "fidesctl"
 
 # Logging
 log_destination = ""
@@ -34,8 +38,12 @@ To better describe the various configuration options, the following tables descr
 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
-    | database_url | String | postgres:fidesctl@fidesctl-db:5432/fidesctl | The PostgreSQL database connection string for the fidesctl database. __NOTE__: Do not include the driver here, fidesctl will do this for you. |
-    | test_database_url | String | ""| Used instead of the `database_url` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. |
+    | database_user | String | postgres | The username of the Postgres account. |
+    | database_password | String | fidesctl | The password of the Postgres account. |
+    | database_host | String | fidesctl-db | The hostname of the Postgres database server. |
+    | database_post | String | 5432 | The port of the Postgres database server. |
+    | database_name | String | fidesctl | The name of the Postgres database. |
+    | test_database_name | String | ""| Used instead of the `database_name` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
     | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
     | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
     | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
