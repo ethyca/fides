@@ -93,7 +93,8 @@ def transform_rds_systems(
     Given a describe clusters and describe instances responses, build a system object
     which represents each cluster or instance.
 
-    A system is created for each cluster but for instances 
+    A system is created for each cluster, but for instances we only create a system if
+    it is not part of a cluster
     """
     rds_cluster_systems = [
         System(
