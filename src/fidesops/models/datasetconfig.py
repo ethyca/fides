@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, Optional
 
 from boto3 import Session
 from sqlalchemy import (
@@ -96,7 +96,9 @@ class DatasetConfig(Base):
         return dataset_graph
 
 
-def to_graph_field(field: FidesopsDatasetField) -> Field:
+def to_graph_field(
+    field: FidesopsDatasetField, return_all_elements: Optional[bool] = None
+) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
     # NOTE: on the dataset field, annotations like identity & references are
@@ -148,9 +150,13 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
 
         (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
 
-    if field.fields:
-        sub_fields = [to_graph_field(fld) for fld in field.fields]
+        if meta_section.return_all_elements:
+            # If specified on array field, lifts and passes into sub-fields, for example,
+            # arrays of objects
+            return_all_elements = True
 
+    if field.fields:
+        sub_fields = [to_graph_field(fld, return_all_elements) for fld in field.fields]
     return generate_field(
         name=field.name,
         data_categories=field.data_categories,
@@ -161,6 +167,7 @@ def to_graph_field(field: FidesopsDatasetField) -> Field:
         length=length,
         is_array=is_array,
         sub_fields=sub_fields,
+        return_all_elements=return_all_elements,
     )
 
 

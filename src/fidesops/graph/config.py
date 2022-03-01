@@ -240,6 +240,8 @@ class Field(BaseModel, ABC):
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
     data_categories: Optional[List[FidesOpsKey]]
     data_type_converter: DataTypeConverter = DataType.no_op.value
+    return_all_elements: Optional[bool] = None
+    # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
 
     """Known type of held data"""
     length: Optional[int]
@@ -351,6 +353,7 @@ def generate_field(
     length: Optional[int],
     is_array: bool,
     sub_fields: List[Field],
+    return_all_elements: Optional[bool],
 ) -> Field:
     """Generate a graph field."""
 
@@ -361,6 +364,7 @@ def generate_field(
             is_array=is_array,
             fields={f.name: f for f in sub_fields},
             data_type_converter=DataType.object.value,
+            return_all_elements=return_all_elements,
         )
     return ScalarField(
         name=name,
@@ -371,6 +375,7 @@ def generate_field(
         primary_key=is_pk,
         length=length,
         is_array=is_array,
+        return_all_elements=return_all_elements,
     )
 
 

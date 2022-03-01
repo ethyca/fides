@@ -105,6 +105,8 @@ class FidesopsMeta(BaseModel):
     """Optionally specify the data type. Fidesops will attempt to cast values to this type when querying."""
     length: Optional[int]
     """Optionally specify the allowable field length. Fidesops will not generate values that exceed this size."""
+    return_all_elements: Optional[bool]
+    """Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False."""
 
     @validator("data_type")
     def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
@@ -131,6 +133,21 @@ class FidesopsDatasetField(DatasetField):
         """Validate that all annotated data categories exist in the taxonomy"""
         return _valid_data_categories(v)
 
+    @validator("fidesops_meta")
+    def valid_meta(cls, meta_values: Optional[FidesopsMeta]) -> Optional[FidesopsMeta]:
+        """Validate upfront that the return_all_elements flag can only be specified on array fields"""
+        if not meta_values:
+            return meta_values
+
+        is_array: bool = bool(
+            meta_values.data_type and meta_values.data_type.endswith("[]")
+        )
+        if not is_array and meta_values.return_all_elements is not None:
+            raise ValueError(
+                "The 'return_all_elements' attribute can only be specified on array fields."
+            )
+        return meta_values
+
     @validator("fields")
     def validate_object_fields(
         cls,
@@ -143,7 +160,7 @@ class FidesopsDatasetField(DatasetField):
         """
         declared_data_type = None
 
-        if values["fidesops_meta"]:
+        if values.get("fidesops_meta"):
             declared_data_type = values["fidesops_meta"].data_type
 
         if fields and declared_data_type:

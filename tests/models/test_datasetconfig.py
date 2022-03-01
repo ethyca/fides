@@ -118,3 +118,35 @@ def test_convert_dataset_to_graph(example_datasets):
         field([graph], "postgres_example_test_dataset", "visit", "email").primary_key
         is False
     )
+
+
+def test_convert_dataset_to_graph_array_fields(example_datasets):
+    """Test a more complex dataset->graph conversion using the helper method directly"""
+
+    dataset = FidesopsDataset(**example_datasets[1])
+    graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
+
+    assert graph is not None
+    assert graph.name == "mongo_test"
+    assert len(graph.collections) == 9
+
+    rewards_collection = list(filter(lambda x: x.name == "rewards", graph.collections))[
+        0
+    ]
+    assert rewards_collection
+    owner_field = list(filter(lambda x: x.name == "owner", rewards_collection.fields))[
+        0
+    ]
+
+    assert owner_field.is_array
+    assert owner_field.data_type() == "object"
+    assert owner_field.return_all_elements
+    for field_name, field_obj in owner_field.fields.items():
+        # Assert return_all_elements propagated to sub-fields for use in querying
+        assert field_obj.return_all_elements
+
+    points_field = list(
+        filter(lambda x: x.name == "points", rewards_collection.fields)
+    )[0]
+    assert not points_field.is_array
+    assert points_field.return_all_elements is None

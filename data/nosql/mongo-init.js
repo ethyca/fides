@@ -87,14 +87,16 @@ db.internal_customer_profile.insert([
     },
     {
          "customer_identifiers": {
-            "internal_id": "cust_002"
+            "internal_id": "cust_002",
+            "derived_phone": ["757-499-5508"]
         },
         "derived_interests": ["programming", "hiking", "skateboarding"]
     },
     {
         "customer_identifiers": {
             "internal_id": "cust_003",
-            "derived_emails": ["jane1@example.com", "jane@example.com"]  // Identity within an array field
+            "derived_emails": ["jane1@example.com", "jane@example.com"],  // Identity within an array field
+            "derived_phone": ["530-486-6983", "254-344-9868"]
         },
         "derived_interests": ["interior design", "travel", "photography"]
     }
@@ -246,6 +248,11 @@ db.customer.insert([
     }
 ]);
 
+db.rewards.insert([
+    {"owner": [{"phone": "530-486-6983", "shopper_name": "janec"}, {"phone": "818-695-1881", "shopper_name": "janec"}], "points": 95, "expiration": Date("2023-01-05")},
+    {"owner": [{"phone": "254-344-9868", "shopper_name": "janec"}], "points": 50, "expiration": Date("2023-02-05")},
+    {"owner": [{"phone": "304-969-7140", "shopper-name": "timc"}], "points": 3, "expiration": Date("2022-02-05")}
+])
 
 
 db.payment_card.insert([

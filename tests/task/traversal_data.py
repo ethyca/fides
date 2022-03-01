@@ -424,12 +424,73 @@ def combined_mongo_postgresql_graph(
                         is_array=True,
                         identity="email",
                     ),
+                    "derived_phone": ScalarField(
+                        name="derived_phone",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=True,
+                        identity="phone_number",
+                        return_all_elements=True,
+                    ),
                 },
             ),
             ScalarField(
                 name="derived_interests",
                 data_type_converter=StringTypeConverter(),
                 is_array=True,
+            ),
+        ],
+        after=set(),
+    )
+    rewards = Collection(
+        name="rewards",
+        fields=[
+            ScalarField(
+                name="_id",
+                data_type_converter=ObjectIdTypeConverter(),
+                is_array=False,
+                primary_key=True,
+            ),
+            ObjectField(
+                name="owner",
+                data_type_converter=StringTypeConverter(),
+                is_array=True,
+                identity="email",
+                return_all_elements=True,
+                fields={
+                    "phone": ScalarField(
+                        return_all_elements=True,
+                        name="phone",
+                        data_type_converter=StringTypeConverter(),
+                        is_array=False,
+                        references=[
+                            (
+                                FieldAddress(
+                                    "mongo_test",
+                                    "internal_customer_profile",
+                                    "customer_identifiers",
+                                    "derived_phone",
+                                ),
+                                "from",
+                            )
+                        ],
+                    ),
+                    "shopper_name": ScalarField(
+                        return_all_elements=True,
+                        name="shopper_name",
+                        data_type_converter=NoOpTypeConverter(),
+                        is_array=False,
+                    ),
+                },
+            ),
+            ScalarField(
+                name="points",
+                data_type_converter=StringTypeConverter(),
+                is_array=False,
+            ),
+            ScalarField(
+                name="expiration_date",
+                data_type_converter=NoOpTypeConverter(),
+                is_array=False,
             ),
         ],
         after=set(),
@@ -447,6 +508,7 @@ def combined_mongo_postgresql_graph(
             employee,
             flights,
             internal_customer_profile,
+            rewards,
         ],
         connection_key=mongo_config.key,
     )

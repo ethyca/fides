@@ -6,11 +6,11 @@ from typing import List, Any, Dict
 
 import pydash
 
-from fidesops.graph.config import FieldPath
 from fidesops.task.refine_target_path import (
     build_refined_target_paths,
     DetailedPath,
     join_detailed_path,
+    FieldPathNodeInput,
 )
 from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def filter_element_match(
     row: Row,
-    query_paths: Dict[FieldPath, List[Any]],
+    query_paths: FieldPathNodeInput,
     delete_elements: bool = True,
 ) -> Dict[str, Any]:
     """

@@ -39,7 +39,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
     assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
-    assert len(example_datasets[1]["collections"]) == 8
+    assert len(example_datasets[1]["collections"]) == 9
     assert example_datasets[2]["fides_key"] == "snowflake_example_test_dataset"
     assert len(example_datasets[2]["collections"]) == 11
     assert example_datasets[3]["fides_key"] == "redshift_example_test_dataset"
@@ -469,7 +469,7 @@ class TestPutDatasets:
         assert mongo_dataset["fides_key"] == "mongo_test"
         assert mongo_dataset["name"] == "Mongo Example Test Dataset"
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
-        assert len(mongo_dataset["collections"]) == 8
+        assert len(mongo_dataset["collections"]) == 9
 
         # Check the mssql dataset
         mssql_dataset = response_body["succeeded"][4]
@@ -479,7 +479,9 @@ class TestPutDatasets:
         assert mssql_config is not None
         assert mssql_dataset["fides_key"] == "mssql_example_test_dataset"
         assert mssql_dataset["name"] == "Microsoft SQLServer Example Test Dataset"
-        assert "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
+        assert (
+            "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
+        )
         assert len(mssql_dataset["collections"]) == 11
 
         # check the mysql dataset
