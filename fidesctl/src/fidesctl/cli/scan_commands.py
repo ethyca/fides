@@ -63,7 +63,7 @@ def scan_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and compares tracked resources to existing systems.
-    Tracked resources: [Redshift]
+    Tracked resources: [Redshift, RDS]
 
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
