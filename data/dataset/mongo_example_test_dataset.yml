@@ -94,6 +94,12 @@ dataset:
                 fidesops_meta:
                   data_type: string[]
                   identity: email
+              - name: derived_phone
+                data_categories: [ user.derived ]
+                fidesops_meta:
+                  data_type: string[]
+                  return_all_elements: true
+                  identity: phone_number
           - name: derived_interests
             data_categories: [ user.derived ]
             fidesops_meta:
@@ -257,3 +263,27 @@ dataset:
             data_categories: [ user.provided.identifiable.financial ]
           - name: preferred
             data_categories: [ user.provided.nonidentifiable ]
+      - name: rewards
+        fields:
+          - name: _id
+            fidesops_meta:
+              primary_key: True
+              data_type: object_id
+          - name: owner
+            fidesops_meta:
+              data_type: object[]
+              return_all_elements: true
+            fields:
+              - name: phone
+                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                fidesops_meta:
+                  data_type: string
+                  references:
+                    - dataset: mongo_test
+                      field: internal_customer_profile.customer_identifiers.derived_phone
+                      direction: from
+              - name: shopper_name
+          - name: points
+            fidesops_meta:
+              data_type: integer
+          - name: expiration_date

@@ -251,6 +251,7 @@ class TestField:
             length=0,
             is_array=False,
             sub_fields=[],
+            return_all_elements=None,
         )
         array_field = generate_field(
             name="arr",
@@ -262,6 +263,7 @@ class TestField:
             length=0,
             is_array=True,
             sub_fields=[],
+            return_all_elements=True,
         )
         object_field = generate_field(
             name="obj",
@@ -273,6 +275,7 @@ class TestField:
             length=0,
             is_array=False,
             sub_fields=[string_field, array_field],
+            return_all_elements=None,
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -284,10 +287,12 @@ class TestField:
             length=0,
             is_array=True,
             sub_fields=[string_field, object_field],
+            return_all_elements=None,
         )
 
         assert _is_string_field(string_field)
         assert isinstance(array_field, ScalarField) and array_field.is_array
+        assert array_field.return_all_elements
         assert isinstance(object_field, ObjectField) and _is_string_field(
             object_field.fields["str"]
         )
@@ -397,6 +402,7 @@ class TestField:
                 length=0,
                 is_array=False,
                 sub_fields=[apt_no_sub_field],
+                return_all_elements=None,
             )
 
 
@@ -425,4 +431,3 @@ class TestFieldPath:
     def test_parse(self):
         assert FieldPath.parse("a") == FieldPath("a")
         assert FieldPath.parse("a.b.c.d.e") == FieldPath("a", "b", "c", "d", "e")
-

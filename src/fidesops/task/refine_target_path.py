@@ -8,7 +8,7 @@ Level = Union[
     str, int
 ]  # A specific level along the path to a resource. Can be a dictionary key or an array index.
 DetailedPath = List[Level]  # A more detailed field path, potentially containing indices
-
+FieldPathNodeInput = Dict[FieldPath, Optional[List[Any]]]
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +18,7 @@ def join_detailed_path(detailed_path: DetailedPath) -> str:
 
 
 def build_refined_target_paths(
-    row: Row, query_paths: Dict[FieldPath, Optional[List[Any]]]
+    row: Row, query_paths: FieldPathNodeInput
 ) -> List[DetailedPath]:
     """
     Return a list of more detailed path(s) to the data in "row". Runs recursive `refine_target_path` for

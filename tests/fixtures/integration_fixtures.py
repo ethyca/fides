@@ -290,7 +290,10 @@ def generate_mongo_specific_records():
             },
             {
                 "id": "prof_2",
-                "customer_identifiers": {"internal_id": "cust_015"},
+                "customer_identifiers": {
+                    "internal_id": "cust_015",
+                    "derived_phone": ["757-499-5508"],
+                },
                 "derived_interests": ["programming", "hiking", "skateboarding"],
             },
             {
@@ -298,6 +301,7 @@ def generate_mongo_specific_records():
                 "customer_identifiers": {
                     "internal_id": "cust_016",
                     "derived_emails": ["jenny1@example.com", "jenny@example.com"],
+                    "derived_phone": ["424-216-1577", "413-821-6662"],
                 },
                 "derived_interests": ["interior design", "travel", "photography"],
             },
@@ -426,6 +430,29 @@ def generate_mongo_specific_records():
                     "zip": "12000",
                 },
                 "foreign_id": "000000000000000000000002",
+            },
+        ],
+        "rewards": [
+            {
+                "id": "rew_1",
+                "owner": [
+                    {"phone": "424-216-1577", "shopper_name": "jenny"},
+                    {"phone": "217-821-9886", "shopper_name": "jenny"},
+                ],
+                "points": 100,
+                "expiration": datetime(2023, 1, 5),
+            },
+            {
+                "id": "rew_2",
+                "owner": [{"phone": "413-821-6662", "shopper_name": "jenny"}],
+                "points": 2,
+                "expiration": datetime(2023, 2, 5),
+            },
+            {
+                "id": "rew_3",
+                "owner": [{"phone": "805-496-5401", "shopper-name": "jenny"}],
+                "points": 2,
+                "expiration": datetime(2022, 2, 5),
             },
         ],
     }

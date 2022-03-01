@@ -55,76 +55,97 @@ information for Jane across tables in both the postgres and mongo databases.
 
 ```json
 {
-    "mongo_test:flights": [
+  "mongo_test:flights": [
+    {
+      "passenger_information": {
+        "full_name": "Jane Customer"
+      }
+    }
+  ],
+  "mongo_test:customer_details": [
+    {
+      "gender": "female",
+      "children": [
+        "Erica Example"
+      ],
+      "birthday": "1990-02-28T00:00:00"
+    }
+  ],
+  "postgres_example:address": [
+    {
+      "city": "Example Mountain",
+      "state": "TX",
+      "house": 1111,
+      "zip": "54321",
+      "street": "Example Place"
+    }
+  ],
+  "postgres_example:customer": [
+    {
+      "email": "jane@example.com",
+      "name": "Jane Customer"
+    }
+  ],
+  "mongo_test:rewards": [
+    {
+      "owner": [
         {
-            "passenger_information": {
-                "full_name": "Jane Customer"
-            }
-        }
-    ],
-    "mongo_test:payment_card": [
-        {
-            "ccn": "987654321",
-            "name": "Example Card 2",
-            "code": "123"
-        }
-    ],
-    "postgres_example_test_dataset:address": [
-        {
-            "zip": "54321",
-            "street": "Example Place",
-            "state": "TX",
-            "city": "Example Mountain",
-            "house": 1111
-        }
-    ],
-    "mongo_test:customer_details": [
-        {
-            "birthday": "1990-02-28T00:00:00",
-            "gender": "female",
-            "children": [
-                "Erica Example"
-            ]
-        }
-    ],
-    "postgres_example_test_dataset:customer": [
-        {
-            "email": "jane@example.com",
-            "name": "Jane Customer"
-        }
-    ],
-    "postgres_example_test_dataset:payment_card": [
-        {
-            "ccn": 373719391,
-            "name": "Example Card 3",
-            "code": 222
-        }
-    ],
-    "mongo_test:employee": [
-        {
-            "email": "employee-2@example.com",
-            "name": "Jane Employee"
-        }
-    ],
-    "mongo_test:conversations": [
-        {
-            "thread": [
-                {
-                    "chat_name": "Jane C"
-                }
-            ]
+          "phone": "530-486-6983"
         },
         {
-            "thread": [
-                {
-                    "chat_name": "Jane C"
-                },
-                {
-                    "chat_name": "Jane C"
-                }
-            ]
+          "phone": "818-695-1881"
         }
-    ]
+      ]
+    },
+    {
+      "owner": [
+        {
+          "phone": "254-344-9868"
+        }
+      ]
+    }
+  ],
+  "mongo_test:employee": [
+    {
+      "email": "employee-2@example.com",
+      "name": "Jane Employee"
+    }
+  ],
+  "mongo_test:conversations": [
+    {
+      "thread": [
+        {
+          "ccn": "987654321",
+          "chat_name": "Jane C"
+        }
+      ]
+    },
+    {
+      "thread": [
+        {
+          "ccn": "987654321",
+          "chat_name": "Jane C"
+        },
+        {
+          "chat_name": "Jane C"
+        }
+      ]
+    }
+  ],
+  "mongo_test:payment_card": [
+    {
+      "ccn": "987654321",
+      "code": "123",
+      "name": "Example Card 2"
+    }
+  ],
+  "postgres_example:payment_card": [
+    {
+      "ccn": 373719391,
+      "code": 222,
+      "name": "Example Card 3"
+    }
+  ]
 }
 
 ```

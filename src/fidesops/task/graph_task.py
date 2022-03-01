@@ -17,6 +17,7 @@ from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     FieldPath,
+    Field,
 )
 from fidesops.graph.graph import Edge, DatasetGraph
 from fidesops.graph.traversal import TraversalNode, Traversal
@@ -26,6 +27,7 @@ from fidesops.models.privacy_request import PrivacyRequest, ExecutionLogStatus
 from fidesops.service.connectors import BaseConnector
 from fidesops.task.consolidate_query_matches import consolidate_query_matches
 from fidesops.task.filter_element_match import filter_element_match
+from fidesops.task.refine_target_path import FieldPathNodeInput
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import get_cache
 from fidesops.util.collection_util import partition, append, NodeInput, Row
@@ -128,7 +130,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def to_dask_input_data(self, *data: List[Row]) -> NodeInput:
+    def pre_process_input_data(self, *data: List[Row]) -> NodeInput:
         """
         Consolidates the outputs of queries from potentially multiple collections whose
         data is needed as input into the current collection.
@@ -229,31 +231,67 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ExecutionLogStatus.complete,
             )
 
+    def post_process_input_data(
+        self, pre_processed_inputs: NodeInput
+    ) -> FieldPathNodeInput:
+        """
+        For each entrypoint field, specify if we should return all data, or just data that matches the coerced
+        input values. Used for post-processing access request results for a given collection.
+
+        :param pre_processed_inputs: string paths mapped to values that were used to query the current collection
+        :return: FieldPaths mapped to type-coerced values that we need to match in
+        access request results, or FieldPaths mapped to None if we want to return everything.
+
+        :Example:
+        owner.phone field will not be filtered but we will process the owner.identifier results to return
+        values that match one of [1234, 5678, 9102]
+
+        {FieldPath("owner", "phone"): None, FieldPath("owner", "identifier"): [1234, 5678, 9102]}
+        """
+        out: FieldPathNodeInput = {}
+        for key, values in pre_processed_inputs.items():
+            path: FieldPath = FieldPath.parse(key)
+            field: Field = self.traversal_node.node.collection.field(path)
+            if (
+                field
+                and path in self.traversal_node.query_field_paths
+                and isinstance(values, list)
+            ):
+                if field.return_all_elements:
+                    # All data will be returned
+                    out[path] = None
+                else:
+                    # Default behavior - we will filter values to match those in filtered
+                    cast_values = [
+                        field.cast(v) for v in values
+                    ]  # Cast values to expected type where possible
+                    filtered = list(filter(lambda x: x is not None, cast_values))
+                    if filtered:
+                        out[path] = filtered
+        return out
+
     def access_results_post_processing(
         self, formatted_input_data: NodeInput, output: List[Row]
     ) -> List[Row]:
         """
-        Does some post-processing filtering of access request results to remove non-matched array elements before
-        passing on to the next node for discovering other records.
+        Completes post-processing filtering of access request results.
 
-        If an array was an entrypoint into the node, only *matched* array elements are returned on the node,
-        used to find data on other nodes, and masked.
+        By default, if an array field was an entry point into the node, return only array elements that *match* the
+        condition.  Specifying return_all_elements = true on the field's config will instead return *all* array elements.
 
-        Caches the data in TWO separate formats: one with placeholders indicating which array elements should not be
-        masked, where applicable. The second format removes these elements from the arrays altogether.
+        Caches the data in TWO separate formats: 1) erasure format, *replaces* unmatched array elements with placeholder
+        text, and 2) access request format, which *removes* unmatched array elements altogether.  If no data was filtered
+        out, both cached versions will be the same.
         """
-        coerced_input_data: Dict[FieldPath, List[Any]] = {
-            FieldPath.parse(field): inputs
-            for field, inputs in self.traversal_node.typed_filtered_values(
-                formatted_input_data  # Cast incoming values to correct type where possible
-            ).items()
-        }
+        post_processed_node_input_data: FieldPathNodeInput = (
+            self.post_process_input_data(formatted_input_data)
+        )
 
-        # For future erasures: cache results with non-matching array elements *replaced* with placeholder text
+        # For erasures: cache results with non-matching array elements *replaced* with placeholder text
         placeholder_output: List[Row] = copy.deepcopy(output)
         for row in placeholder_output:
             filter_element_match(
-                row, query_paths=coerced_input_data, delete_elements=False
+                row, query_paths=post_processed_node_input_data, delete_elements=False
             )
         self.resources.cache_results_with_placeholders(
             f"access_request__{self.key}", placeholder_output
@@ -264,7 +302,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             logger.info(
                 f"Filtering row in {self.traversal_node.node.address} for matching array elements."
             )
-            filter_element_match(row, coerced_input_data)
+            filter_element_match(row, post_processed_node_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
@@ -273,7 +311,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
-        formatted_input_data: NodeInput = self.to_dask_input_data(*inputs)
+        formatted_input_data: NodeInput = self.pre_process_input_data(*inputs)
         output: List[Row] = self.connector.retrieve_data(
             self.traversal_node, self.resources.policy, formatted_input_data
         )
