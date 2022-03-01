@@ -6,7 +6,12 @@
     "api": {
       "title": "Api",
       "default": {
-        "test_database_url": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "database_user": "postgres",
+        "database_password": "fidesctl",
+        "database_host": "fidesctl-db",
+        "database_port": "5432",
+        "database_name": "fidesctl",
+        "test_database_name": "fidesctl_test",
         "database_url": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         "sync_database_url": "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         "async_database_url": "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
@@ -57,17 +62,56 @@
       "description": "Class used to store values from the 'cli' section of the config.",
       "type": "object",
       "properties": {
-        "test_database_url": {
-          "title": "Test Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "database_user": {
+          "title": "Database User",
+          "default": "postgres",
           "env_names": [
-            "fidesctl__api__test_database_url"
+            "fidesctl__api__database_user"
+          ],
+          "type": "string"
+        },
+        "database_password": {
+          "title": "Database Password",
+          "default": "fidesctl",
+          "env_names": [
+            "fidesctl__api__database_password"
+          ],
+          "type": "string"
+        },
+        "database_host": {
+          "title": "Database Host",
+          "default": "fidesctl-db",
+          "env_names": [
+            "fidesctl__api__database_host"
+          ],
+          "type": "string"
+        },
+        "database_port": {
+          "title": "Database Port",
+          "default": "5432",
+          "env_names": [
+            "fidesctl__api__database_port"
+          ],
+          "type": "string"
+        },
+        "database_name": {
+          "title": "Database Name",
+          "default": "fidesctl",
+          "env_names": [
+            "fidesctl__api__database_name"
+          ],
+          "type": "string"
+        },
+        "test_database_name": {
+          "title": "Test Database Name",
+          "default": "fidesctl_test",
+          "env_names": [
+            "fidesctl__api__test_database_name"
           ],
           "type": "string"
         },
         "database_url": {
           "title": "Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__database_url"
           ],
@@ -75,7 +119,6 @@
         },
         "sync_database_url": {
           "title": "Sync Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__sync_database_url"
           ],
@@ -83,7 +126,6 @@
         },
         "async_database_url": {
           "title": "Async Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__async_database_url"
           ],
