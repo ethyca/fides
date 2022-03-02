@@ -3,7 +3,7 @@
 In this section we'll cover:
 
 - How to check the high-level status of your privacy requests
-- How to get more detailed execution logs of queries that were run as part of your privacy requests. 
+- How to get more detailed execution logs of collections and fields that were potentially affected as part of your privacy request.
 
 
 Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
@@ -11,8 +11,8 @@ Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_req
 
 ## Overview
 
-The reporting feature allows you to fetch information about privacy requests. You can opt for high-level or more detailed 
-information about the individual queries executed internally.
+The reporting feature allows you to fetch information about privacy requests. You can opt for high-level status 
+information, or get more detailed information about the status of the requests on each of your collections.
 
 
 ## High-level Status
@@ -58,7 +58,7 @@ Use the following query params to further filter your privacy requests.  Filters
 `GET api/v1/privacy-request?created_gt=2021-10-01&created_lt=2021-10-05&status=pending`
 
 - id
-- status (one of `in_processing`, `pending`, `complete`, or `error`)
+- status (one of `in_processing`, `pending`, `paused`, `complete`, or `error`)
 - created_lt
 - created_gt
 - started_lt
@@ -67,6 +67,7 @@ Use the following query params to further filter your privacy requests.  Filters
 - completed_gt
 - errored_lt
 - errored_gt
+
 
 ## View All Privacy Request Logs
 
@@ -77,60 +78,64 @@ Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_requ
 
 ## View Individual Privacy Request Log Details
 
-Use the `verbose` query param to see more details about individual queries run as part of the Privacy Request along
-with individual statuses. 
+Use the `verbose` query param to see more details about individual collections visited as part of the Privacy Request along
+with individual statuses. Individual collection statuses include `in_processing`, `retrying`, `complete` or `error`.
+You may see multiple logs for each collection as they reach different steps in the lifecycle.  
 
 `verbose` will embed a “results” key in the response, with execution logs grouped by dataset name.  In the example below,
-we have two datasets: `my-mongo-db` and `my-postgres-db`. There is one execution log for my-mongo-db and two execution
-logs for my-postgres-db.  The embedded execution logs are automatically truncated at 50 logs, so to view the entire 
-list of logs, visit the execution logs endpoint separately.
+we have two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for `my-mongo-db` (when the `flights` 
+collection is starting execution and when the `flights` collection has finished) and two execution
+logs for `my-postgres-db` (when the `order` collection is starting and finishing execution).  `fields_affected` are the fields
+that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
+are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
 
-`GET api/v1/privacy-request?verbose=True`
+`GET api/v1/privacy-request?id={privacy_request_id}&verbose=True`
 
 ```json
 {
     "items": [
         {
-            "id": "pri_5f4feff5-fb60-4286-82bd-7e0748ce90ac",
-            "created_at": "2021-10-04T17:36:32.223287+00:00",
-            "started_processing_at": "2021-10-04T17:36:37.248880+00:00",
-            "finished_processing_at": "2021-10-04T17:36:37.263121+00:00",
-            "status": "pending",
+            "id": "pri_2e0655c3-7a76-425e-8c4c-52fee32ce14b",
+            "created_at": "2022-02-28T16:38:03.878898+00:00",
+            "started_processing_at": "2022-02-28T16:38:04.021763+00:00",
+            "finished_processing_at": "2022-02-28T16:38:06.211547+00:00",
+            "status": "complete",
+            "external_id": null,
             "results": {
                 "my-mongo-db": [
                     {
-                        "collection_name": "order",
+                        "collection_name": "flights",
+                        "fields_affected": [],
+                        "message": "starting",
+                        "action_type": "access",
+                        "status": "in_processing",
+                        "updated_at": "2022-02-28T16:38:04.668513+00:00"
+                    },
+                     {
+                        "collection_name": "flights",
                         "fields_affected": [
                             {
-                                "path": "order.customer_name",
-                                "field_name": "name",
+                                "path": "mongo_test:flights:passenger_information.full_name",
+                                "field_name": "passenger_information.full_name",
                                 "data_categories": [
                                     "user.provided.identifiable.name"
                                 ]
                             }
                         ],
-                        "message": null,
+                        "message": "success",
                         "action_type": "access",
-                        "status": "pending",
-                        "updated_at": "2021-10-05T18:24:55.570430+00:00"
+                        "status": "complete",
+                        "updated_at": "2022-02-28T16:38:04.727094+00:00"
                     }
                 ],
                 "my-postgres-db": [
                     {
                         "collection_name": "order",
-                        "fields_affected": [
-                            {
-                                "path": "order.customer_name",
-                                "field_name": "name",
-                                "data_categories": [
-                                    "user.provided.identifiable.name"
-                                ]
-                            }
-                        ],
-                        "message": null,
+                        "fields_affected": [],
+                        "message": "starting",
                         "action_type": "access",
-                        "status": "pending",
-                        "updated_at": "2021-10-05T18:24:39.953914+00:00"
+                        "status": "in_processing",
+                        "updated_at": "2022-02-28T16:38:04.668513+00:00"
                     },
                     {
                         "collection_name": "order",
@@ -142,11 +147,11 @@ list of logs, visit the execution logs endpoint separately.
                                     "user.provided.identifiable.name"
                                 ]
                             }
-                        ],
-                        "message": null,
+                        ], 
+                        "message": "success",
                         "action_type": "access",
-                        "status": "pending",
-                        "updated_at": "2021-10-05T18:24:45.240612+00:00"
+                        "status": "complete",
+                        "updated_at": "2022-02-28T16:39:04.668513+00:00"
                     }
                 ]
             }

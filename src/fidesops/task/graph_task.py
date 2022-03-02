@@ -18,8 +18,9 @@ from fidesops.graph.config import (
     TERMINATOR_ADDRESS,
     FieldPath,
     Field,
+    FieldAddress,
 )
-from fidesops.graph.graph import Edge, DatasetGraph
+from fidesops.graph.graph import Edge, DatasetGraph, Node
 from fidesops.graph.traversal import TraversalNode, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, AccessLevel
 from fidesops.models.policy import ActionType, Policy
@@ -219,14 +220,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             logger.info(f"Ending {self.resources.request.id}, {self.key}")
             self.update_status(
                 "success",
-                [
-                    {
-                        "field_name": field.name,
-                        "path": f"{self.traversal_node.node.address}:{field.name}",
-                        "data_categories": field.data_categories,
-                    }
-                    for field in self.traversal_node.node.collection.field_dict.values()
-                ],
+                build_affected_field_logs(
+                    self.traversal_node.node, self.resources.policy, action_type
+                ),
                 action_type,
                 ExecutionLogStatus.complete,
             )
@@ -487,3 +483,52 @@ def run_erasure(  # pylint: disable = too-many-arguments
         )
 
         return erasure_update_map
+
+
+def build_affected_field_logs(
+    node: Node, policy: Policy, action_type: ActionType
+) -> List[Dict[str, Any]]:
+    """For a given node (collection), policy, and action_type (access or erasure) format all of the fields that
+    were potentially touched to be stored in the ExecutionLogs for troubleshooting.
+
+    :Example:
+    [{
+        "path": "dataset_name:collection_name:field_name",
+        "field_name": "field_name",
+        "data_categories": ["data_category_1", "data_category_2"]
+    }]
+    """
+
+    targeted_field_paths: Dict[FieldAddress, str] = {}
+
+    for rule in policy.rules:
+        if rule.action_type != action_type:
+            continue
+        rule_categories: List[str] = rule.get_target_data_categories()
+        if not rule_categories:
+            continue
+
+        collection_categories: Dict[
+            str, List[FieldPath]
+        ] = node.collection.field_paths_by_category
+        for rule_cat in rule_categories:
+            for collection_cat, field_paths in collection_categories.items():
+                if collection_cat.startswith(rule_cat):
+                    targeted_field_paths.update(
+                        {
+                            node.address.field_address(field_path): collection_cat
+                            for field_path in field_paths
+                        }
+                    )
+
+    ret: List[Dict[str, Any]] = []
+    for field_address, data_categories in targeted_field_paths.items():
+        ret.append(
+            {
+                "path": field_address.value,
+                "field_name": field_address.field_path.string_path,
+                "data_categories": [data_categories],
+            }
+        )
+
+    return ret
