@@ -30,7 +30,7 @@ def transform_redshift_systems(
     describe_clusters: Dict[str, List[Dict]]
 ) -> List[System]:
     """
-    Given a describe clusters response, build a system object which represents
+    Given a "describe_clusters" response, build a system object which represents
     each cluster.
     """
     redshift_systems = [
@@ -90,7 +90,7 @@ def transform_rds_systems(
     describe_clusters: Dict[str, List[Dict]], describe_instances: Dict[str, List[Dict]]
 ) -> List[System]:
     """
-    Given a describe clusters and describe instances responses, build a system object
+    Given "describe_clusters" and "describe_instances" responses, build a system object
     which represents each cluster or instance.
 
     A system is created for each cluster, but for instances we only create a system if
@@ -169,7 +169,7 @@ def generate_system_aws(file_name: str, include_null: bool) -> str:
 
 def get_system_arns(systems: List[System]) -> List[str]:
     """
-    Given a list of systems, build a list of aws arns
+    Given a list of systems, build a list of AWS ARNs
     """
     system_arns = [
         system.fidesctl_meta.resource_id
