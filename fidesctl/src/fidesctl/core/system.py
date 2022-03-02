@@ -30,21 +30,21 @@ def transform_redshift_systems(
     describe_clusters: Dict[str, List[Dict]]
 ) -> List[System]:
     """
-    Given a describe clusters response, build a system object which represents
+    Given a "describe_clusters" response, build a system object which represents
     each cluster.
     """
     redshift_systems = [
         System(
             fides_key=cluster["ClusterIdentifier"],
             name=cluster["ClusterIdentifier"],
-            description=f"Fides Generated Description for Cluster: {cluster['ClusterIdentifier']}",
+            description=f"Fides Generated Description for Redshift Cluster: {cluster['ClusterIdentifier']}",
             system_type="redshift_cluster",
             fidesctl_meta=SystemMetadata(
                 endpoint_address=cluster["Endpoint"]["Address"]
-                if cluster["Endpoint"]
+                if cluster.get("Endpoint")
                 else None,
                 endpoint_port=cluster["Endpoint"]["Port"]
-                if cluster["Endpoint"]
+                if cluster.get("Endpoint")
                 else None,
                 resource_id=cluster["ClusterNamespaceArn"],
             ),
@@ -64,13 +64,95 @@ def generate_redshift_systems() -> List[System]:
     return redshift_systems
 
 
+def describe_rds_clusters() -> Dict[str, List[Dict]]:
+    """
+    Creates boto3 rds client and returns describe_db_clusters response.
+    """
+    rds_client = boto3.client(
+        "rds",
+    )
+    describe_clusters = rds_client.describe_db_clusters()
+    return describe_clusters
+
+
+def describe_rds_instances() -> Dict[str, List[Dict]]:
+    """
+    Creates boto3 rds client and returns describe_db_instances response.
+    """
+    rds_client = boto3.client(
+        "rds",
+    )
+    describe_instances = rds_client.describe_db_instances()
+    return describe_instances
+
+
+def transform_rds_systems(
+    describe_clusters: Dict[str, List[Dict]], describe_instances: Dict[str, List[Dict]]
+) -> List[System]:
+    """
+    Given "describe_clusters" and "describe_instances" responses, build a system object
+    which represents each cluster or instance.
+
+    A system is created for each cluster, but for instances we only create a system if
+    it is not part of a cluster
+    """
+    rds_cluster_systems = [
+        System(
+            fides_key=cluster["DBClusterIdentifier"],
+            name=cluster["DBClusterIdentifier"],
+            description=f"Fides Generated Description for RDS Cluster: {cluster['DBClusterIdentifier']}",
+            system_type="rds_cluster",
+            fidesctl_meta=SystemMetadata(
+                endpoint_address=cluster["Endpoint"],
+                endpoint_port=cluster["Port"],
+                resource_id=cluster["DBClusterArn"],
+            ),
+            privacy_declarations=[],
+        )
+        for cluster in describe_clusters["DBClusters"]
+    ]
+    rds_instances_systems = [
+        System(
+            fides_key=instance["DBInstanceIdentifier"],
+            name=instance["DBInstanceIdentifier"],
+            description=f"Fides Generated Description for RDS Instance: {instance['DBInstanceIdentifier']}",
+            system_type="rds_instance",
+            fidesctl_meta=SystemMetadata(
+                endpoint_address=instance["Endpoint"]["Address"]
+                if instance.get("Endpoint")
+                else None,
+                endpoint_port=instance["Endpoint"]["Port"]
+                if instance.get("Endpoint")
+                else None,
+                resource_id=instance["DBInstanceArn"],
+            ),
+            privacy_declarations=[],
+        )
+        for instance in describe_instances["DBInstances"]
+        if not instance.get("DBClusterIdentifier")
+    ]
+    return rds_cluster_systems + rds_instances_systems
+
+
+def generate_rds_systems() -> List[System]:
+    """
+    Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
+    """
+    describe_clusters = describe_rds_clusters()
+    describe_instances = describe_rds_instances()
+    rds_systems = transform_rds_systems(
+        describe_clusters=describe_clusters, describe_instances=describe_instances
+    )
+    return rds_systems
+
+
 def generate_system_aws(file_name: str, include_null: bool) -> str:
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and extract tracked resource to write a System manifest with.
-    Tracked resources: [Redshift]
+    Tracked resources: [Redshift, RDS]
     """
-    generate_system_functions = [generate_redshift_systems]
+    generate_system_functions = [generate_redshift_systems, generate_rds_systems]
     aws_systems = [
         found_system
         for generate_function in generate_system_functions
@@ -85,14 +167,16 @@ def generate_system_aws(file_name: str, include_null: bool) -> str:
     return file_name
 
 
-def get_redshift_arns(describe_clusters: Dict[str, List[Dict]]) -> List[str]:
+def get_system_arns(systems: List[System]) -> List[str]:
     """
-    Given a describe clusters response, build a list of cluster arns
+    Given a list of systems, build a list of AWS ARNs
     """
-    redshift_arns = [
-        cluster["ClusterNamespaceArn"] for cluster in describe_clusters["Clusters"]
+    system_arns = [
+        system.fidesctl_meta.resource_id
+        for system in systems
+        if system.fidesctl_meta and system.fidesctl_meta.resource_id
     ]
-    return redshift_arns
+    return system_arns
 
 
 def scan_redshift_systems() -> Tuple[str, List[str]]:
@@ -100,9 +184,19 @@ def scan_redshift_systems() -> Tuple[str, List[str]]:
     Fetches Redshift clusters from AWS and returns a scan label and
     list of cluster arns.
     """
-    redshift_clusters = describe_redshift_clusters()
-    redshift_arns = get_redshift_arns(describe_clusters=redshift_clusters)
+    redshift_systems = generate_redshift_systems()
+    redshift_arns = get_system_arns(systems=redshift_systems)
     return "Redshift Clusters", redshift_arns
+
+
+def scan_rds_systems() -> Tuple[str, List[str]]:
+    """
+    Fetches RDS clusters from AWS and returns a scan label and
+    list of cluster arns.
+    """
+    rds_systems = generate_rds_systems()
+    rds_arns = get_system_arns(systems=rds_systems)
+    return "RDS Databases", rds_arns
 
 
 def get_all_server_systems(
@@ -191,20 +285,16 @@ def scan_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and compares tracked resources to existing systems.
-    Tracked resources: [Redshift]
+    Tracked resources: [Redshift, RDS]
     """
-    scan_system_functions = [scan_redshift_systems]
+    scan_system_functions = [scan_redshift_systems, scan_rds_systems]
 
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
         url=url, headers=headers, exclude_systems=manifest_systems
     )
-    existing_system_arns = [
-        system.fidesctl_meta.resource_id
-        for system in manifest_systems + server_systems
-        if system.fidesctl_meta and system.fidesctl_meta.resource_id
-    ]
+    existing_system_arns = get_system_arns(systems=manifest_systems + server_systems)
 
     (
         scan_text_output,

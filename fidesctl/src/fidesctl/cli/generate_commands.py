@@ -55,7 +55,7 @@ def generate_system_aws(
     """
     Connect to an aws account by leveraging a boto3 environment variable
     configuration and generate a system manifest file that consists of every
-    tracked resource. Tracked resources: [Redshift]
+    tracked resource. Tracked resources: [Redshift, RDS]
 
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.
