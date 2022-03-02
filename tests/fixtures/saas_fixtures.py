@@ -1,12 +1,10 @@
 import pytest
 import os
-from fidesops.schemas.saas.saas_config import SaaSConfig
 import pydash
 import yaml
 
 from sqlalchemy.orm import Session
 from typing import Dict, Generator
-
 
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.connectionconfig import (
@@ -15,6 +13,7 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.schemas.saas.saas_config import SaaSConfig
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -31,6 +30,7 @@ saas_secrets_dict = {
     }
 }
 
+
 def load_config(filename: str) -> Dict:
     yaml_file = load_file(filename)
     with open(yaml_file, "r") as file:
@@ -42,7 +42,7 @@ def example_saas_configs() -> Dict[str, Dict]:
     example_saas_configs = {}
     example_saas_configs["mailchimp"] = load_config(
         "data/saas/config/mailchimp_config.yml"
-    )[0]
+    )
     return example_saas_configs
 
 
@@ -93,6 +93,45 @@ def connection_config_saas(
             "access": AccessLevel.read,
             "secrets": saas_secrets_dict["mailchimp"],
             "saas_config": example_saas_configs["mailchimp"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_saas_without_saas_config(
+    db: Session,
+) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "connection_config_without_saas_config",
+            "name": "connection_config_without_saas_config",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.read,
+            "secrets": saas_secrets_dict["mailchimp"],
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def connection_config_saas_with_invalid_saas_config(
+    db: Session, example_saas_configs: Dict[str, Dict]
+) -> Generator:
+    invalid_saas_config = example_saas_configs["mailchimp"].copy()
+    invalid_saas_config["endpoints"][0]["requests"]["read"]["request_params"].pop()
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "connection_config_without_saas_config",
+            "name": "connection_config_without_saas_config",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.read,
+            "secrets": saas_secrets_dict["mailchimp"],
+            "saas_config": invalid_saas_config,
         },
     )
     yield connection_config

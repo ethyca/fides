@@ -31,75 +31,78 @@ dataset:
             data_categories: [system.operations]
       - name: member
         fields:
-        - name: id
-          data_categories: [user.derived.identifiable.unique_id]
-        - name: list_id
-          data_categories: [system.operations]
-        - name: email_address
-          data_categories: [user.provided.identifiable.contact.email]
-        - name: unique_email_id
-          data_categories: [user.derived.identifiable.unique_id]
-        - name: web_id
-          data_categories: [user.derived.identifiable.unique_id]
-        - name: email_type
-          data_categories: [system.operations]
-        - name: status
-          data_categories: [system.operations]
-        - name: merge_fields
-          fields:
-            - name: FNAME
-              data_categories: [user.provided.identifiable.name]
-            - name: LNAME
-              data_categories: [user.provided.identifiable.name]
-            - name: ADDRESS
-              fields:
-                - name: addr1
-                  data_categories: [user.provided.identifiable.contact.street]
-                - name: addr2
-                  data_categories: [user.provided.identifiable.contact.street]
-                - name: city
-                  data_categories: [user.provided.identifiable.contact.city]
-                - name: state
-                  data_categories: [user.provided.identifiable.contact.state]
-                - name: zip
-                  data_categories: [user.provided.identifiable.contact.postal_code]
-                - name: country
-                  data_categories: [user.provided.identifiable.contact.country]
-            - name: PHONE
-              data_categories: [user.provided.identifiable.contact.phone_number]
-            - name: BIRTHDAY
-              data_categories: [user.provided.identifiable.date_of_birth]
-        - name: ip_signup
-          data_categories: [user.derived.identifiable.device.ip_address]
-        - name: timestamp_signup
-          data_categories: [system.operations]
-        - name: ip_opt
-          data_categories: [system.operations]
-        - name: timestamp_opt
-          data_categories: [system.operations]
-        - name: language
-          data_categories: [system.operations]
-        - name: email_client
-          data_categories: [system.operations]
-        - name: location
-          fields:
-            - name: latitude
-              data_categories: [system.operations]
-            - name: longitude
-              data_categories: [system.operations]
-            - name: gmtoff
-              data_categories: [system.operations]
-            - name: dstoff
-              data_categories: [system.operations]
-            - name: country_code
-              data_categories: [user.provided.identifiable.contact.country]
-            - name: timezone
-              data_categories: [system.operations]
-        - name: source
-          data_categories: [system.operations]
-        - name: tags
-          fields:
-            - name: id
-              data_categories: [system.operations]
-            - name: name
-              data_categories: [system.operations]
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: list_id
+            data_categories: [system.operations]
+          - name: email_address
+            data_categories: [user.provided.identifiable.contact.email]
+          - name: unique_email_id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: web_id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: email_type
+            data_categories: [system.operations]
+          - name: status
+            data_categories: [system.operations]
+          - name: merge_fields
+            fields:
+              - name: FNAME
+                data_categories: [user.provided.identifiable.name]
+              - name: LNAME
+                data_categories: [user.provided.identifiable.name]
+              - name: ADDRESS
+                fields:
+                  - name: addr1
+                    data_categories: [user.provided.identifiable.contact.street]
+                  - name: addr2
+                    data_categories: [user.provided.identifiable.contact.street]
+                  - name: city
+                    data_categories: [user.provided.identifiable.contact.city]
+                  - name: state
+                    data_categories: [user.provided.identifiable.contact.state]
+                  - name: zip
+                    data_categories:
+                      [user.provided.identifiable.contact.postal_code]
+                  - name: country
+                    data_categories:
+                      [user.provided.identifiable.contact.country]
+              - name: PHONE
+                data_categories:
+                  [user.provided.identifiable.contact.phone_number]
+              - name: BIRTHDAY
+                data_categories: [user.provided.identifiable.date_of_birth]
+          - name: ip_signup
+            data_categories: [user.derived.identifiable.device.ip_address]
+          - name: timestamp_signup
+            data_categories: [system.operations]
+          - name: ip_opt
+            data_categories: [system.operations]
+          - name: timestamp_opt
+            data_categories: [system.operations]
+          - name: language
+            data_categories: [system.operations]
+          - name: email_client
+            data_categories: [system.operations]
+          - name: location
+            fields:
+              - name: latitude
+                data_categories: [system.operations]
+              - name: longitude
+                data_categories: [system.operations]
+              - name: gmtoff
+                data_categories: [system.operations]
+              - name: dstoff
+                data_categories: [system.operations]
+              - name: country_code
+                data_categories: [user.provided.identifiable.contact.country]
+              - name: timezone
+                data_categories: [system.operations]
+          - name: source
+            data_categories: [system.operations]
+          - name: tags
+            fields:
+              - name: id
+                data_categories: [system.operations]
+              - name: name
+                data_categories: [system.operations]

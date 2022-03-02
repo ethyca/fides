@@ -103,6 +103,10 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
+class SaaSConfigNotFoundException(FidesopsException):
+    """Custom Exception - SaaS Config Not Found"""
+
+
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
 

@@ -19,7 +19,7 @@ from fidesops.api.v1.scope_registry import (
 
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 
 page_size = Params().size
 
@@ -821,7 +821,6 @@ class TestPutConnectionConfigSecrets:
         db: Session,
         generate_auth_header,
         connection_config_saas,
-        dataset_config_saas,
         saas_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -845,3 +844,28 @@ class TestPutConnectionConfigSecrets:
         assert connection_config_saas.secrets == saas_secrets
         assert connection_config_saas.last_test_timestamp is None
         assert connection_config_saas.last_test_succeeded is None
+
+    @pytest.mark.saas_connector
+    def test_put_connection_config_saas_secrets_missing_saas_config(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        connection_config_saas_without_saas_config,
+        saas_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas_without_saas_config.key}/secret"
+        payload = saas_secrets
+
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+
+        body = json.loads(resp.text)
+        assert (
+            body["detail"]
+            == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
+        )

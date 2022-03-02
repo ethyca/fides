@@ -65,3 +65,7 @@ CONNECTION_TEST = "/connection/{connection_key}/test"
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
+
+# SaaS Config URLs
+SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
+SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
