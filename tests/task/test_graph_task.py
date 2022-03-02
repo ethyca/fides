@@ -10,16 +10,19 @@ from fidesops.graph.config import (
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.models.policy import Policy
+from fidesops.models.policy import Policy, ActionType, RuleTarget, Rule
 from fidesops.task.graph_task import (
     collect_queries,
     TaskResources,
     EMPTY_REQUEST,
+    build_affected_field_logs,
 )
 from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
 from ..graph.graph_test_util import (
     MockSqlTask,
     MockMongoTask,
+    field,
+    erasure_policy,
 )
 
 dask.config.set(scheduler="processes")
@@ -366,3 +369,117 @@ def test_mongo_dry_run_queries() -> None:
         env[CollectionAddress("postgres", "address")]
         == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
     )
+
+
+class TestBuildAffectedFieldLogs:
+    @pytest.fixture(scope="function")
+    def node_fixture(self):
+        t = sample_traversal()
+
+        postgres_order_node = t.traversal_node_dict[
+            CollectionAddress("postgres", "Order")
+        ]
+        dataset = postgres_order_node.node.dataset
+
+        field([dataset], "postgres", "Order", "customer_id").data_categories = ["A"]
+        field([dataset], "postgres", "Order", "shipping_address_id").data_categories = [
+            "B"
+        ]
+        field([dataset], "postgres", "Order", "order_id").data_categories = ["B"]
+        field([dataset], "postgres", "Order", "billing_address_id").data_categories = [
+            "C"
+        ]
+        return postgres_order_node
+
+    def test_build_affected_field_logs(self, node_fixture):
+        policy = erasure_policy("A", "B")
+
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node, policy, action_type=ActionType.erasure
+        )
+
+        # Only fields for data categories A and B which were specified on the Policy, made it to the logs for this node
+        assert formatted_for_logs == [
+            {
+                "path": "postgres:Order:customer_id",
+                "field_name": "customer_id",
+                "data_categories": ["A"],
+            },
+            {
+                "path": "postgres:Order:order_id",
+                "field_name": "order_id",
+                "data_categories": ["B"],
+            },
+            {
+                "path": "postgres:Order:shipping_address_id",
+                "field_name": "shipping_address_id",
+                "data_categories": ["B"],
+            },
+        ]
+
+    def test_build_affected_field_logs_no_data_categories_on_policy(self, node_fixture):
+        no_categories_policy = erasure_policy()
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            no_categories_policy,
+            action_type=ActionType.erasure,
+        )
+        # No data categories specified on policy, so no fields affected
+        assert formatted_for_logs == []
+
+    def test_build_affected_field_logs_no_matching_data_categories(self, node_fixture):
+        d_categories_policy = erasure_policy("D")
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            d_categories_policy,
+            action_type=ActionType.erasure,
+        )
+        # No matching data categories specified on policy, so no fields affected
+        assert formatted_for_logs == []
+
+    def test_build_affected_field_logs_no_data_categories_for_action_type(
+        self, node_fixture
+    ):
+        policy = erasure_policy("A", "B")
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node,
+            policy,
+            action_type=ActionType.access,
+        )
+        # We only have data categories specified on an erasure policy, and we're looking for access action type
+        assert formatted_for_logs == []
+
+    def test_multiple_rules_targeting_same_field(self, node_fixture):
+        policy = erasure_policy("A")
+
+        policy.rules = [
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+            Rule(
+                action_type=ActionType.erasure,
+                targets=[RuleTarget(data_category="A")],
+                masking_strategy={
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            ),
+        ]
+
+        formatted_for_logs = build_affected_field_logs(
+            node_fixture.node, policy, action_type=ActionType.erasure
+        )
+
+        # No duplication of the matching customer_id field, even though multiple rules targeted data category A
+        assert formatted_for_logs == [
+            {
+                "path": "postgres:Order:customer_id",
+                "field_name": "customer_id",
+                "data_categories": ["A"],
+            }
+        ]
