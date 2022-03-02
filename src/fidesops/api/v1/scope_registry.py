@@ -40,6 +40,10 @@ DATASET_CREATE_OR_UPDATE = "dataset:create_or_update"
 DATASET_READ = "dataset:read"
 DATASET_DELETE = "dataset:delete"
 
+SAAS_CONFIG_CREATE_OR_UPDATE = "saas_config:create_or_update"
+SAAS_CONFIG_READ = "saas_config:read"
+SAAS_CONFIG_DELETE = "saas_config:delete"
+
 SCOPE_REGISTRY = [
     CLIENT_CREATE,
     CLIENT_UPDATE,
@@ -70,4 +74,7 @@ SCOPE_REGISTRY = [
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_READ,
     WEBHOOK_DELETE,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_READ,
+    SAAS_CONFIG_DELETE,
 ]

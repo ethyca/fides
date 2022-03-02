@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import MongoDBConnector
 from fidesops.service.connectors.sql_connector import (
     MySQLConnector,
@@ -1217,7 +1217,7 @@ class TestSaaSConnectionPutSecretsAPI:
         )
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to {connection_config_saas.key}."
+            f"Operational Error connecting to '{connection_config_saas.key}'."
             == body["failure_reason"]
         )
 
@@ -1375,7 +1375,7 @@ class TestSaaSConnectionTestSecretsAPI:
         body = json.loads(resp.text)
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to {connection_config_saas.key}."
+            f"Operational Error connecting to '{connection_config_saas.key}'."
             == body["failure_reason"]
         )
         assert (

@@ -1,15 +1,15 @@
 import logging
 from typing import Any, Dict, List, Optional
+import pydash
 from requests import Session, Request, PreparedRequest, Response
 
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.models.connectionconfig import ConnectionTestStatus, ConnectionConfig
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.common_exceptions import ConnectionException
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig, Strategy
+from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
+from fidesops.schemas.saas.saas_config import Strategy
 from fidesops.service.connectors.query_config import SaaSQueryConfig, SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -21,11 +21,12 @@ class AuthenticatedClient:
     authentication and parameter configurations
     """
 
-    def __init__(self, uri: str, client_config: ClientConfig, secrets: Dict[str, Any]):
+    def __init__(self, uri: str, configuration: ConnectionConfig):
         self.session = Session()
         self.uri = uri
-        self.client_config = client_config
-        self.secrets = secrets
+        self.key = configuration.key
+        self.client_config = configuration.get_saas_config().client_config
+        self.secrets = configuration.secrets
 
     def add_authentication(
         self, req: PreparedRequest, authentication: Strategy
@@ -33,15 +34,14 @@ class AuthenticatedClient:
         """Uses the incoming strategy to add the appropriate authentication method to the base request"""
         strategy = authentication.strategy
         configuration = authentication.configuration
-        logger.info(f"Authenticating client using {strategy}")
         if strategy == "basic_authentication":
-            username_key = configuration["username"]["connector_param"]
-            password_key = configuration["password"]["connector_param"]
+            username_key = pydash.get(configuration, "username.connector_param")
+            password_key = pydash.get(configuration, "password.connector_param")
             req.prepare_auth(
                 auth=(self.secrets[username_key], self.secrets[password_key])
             )
         elif strategy == "bearer_authentication":
-            token_key = configuration["token"]["connector_param"]
+            token_key = pydash.get(configuration, "token.connector_param")
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
         return req
 
@@ -49,15 +49,23 @@ class AuthenticatedClient:
         self, request_params: SaaSRequestParams
     ) -> PreparedRequest:
         """Returns an authenticated request based on the client config and incoming path, query, and body params"""
-        (path, params, data) = request_params
+        path, params, data = request_params
         req = Request(url=f"{self.uri}{path}", params=params, data=data).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
     def get(self, request_params: SaaSRequestParams) -> Response:
         """Builds and executes an authenticated GET request"""
-        prepared_request = self.get_authenticated_request(request_params)
-        prepared_request.method = "GET"
-        return self.session.send(prepared_request)
+        try:
+            prepared_request = self.get_authenticated_request(request_params)
+            prepared_request.method = "GET"
+            response = self.session.send(prepared_request)
+        except Exception:
+            raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
+
+        if not response.ok:
+            raise ClientUnsuccessfulException(status_code=response.status_code)
+
+        return response
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
@@ -76,15 +84,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        try:
-            test_request_path = self.saas_config.test_request.path
-            prepared_request: SaaSRequestParams = (test_request_path, {}, {})
-            self.client().get(prepared_request)
-        except Exception:
-            raise ConnectionException(
-                f"Operational Error connecting to {self.configuration.key}."
-            )
-
+        test_request_path = self.saas_config.test_request.path
+        prepared_request: SaaSRequestParams = test_request_path, {}, {}
+        self.client().get(prepared_request)
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -96,7 +98,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """Creates an authenticated request builder"""
         uri = self.build_uri()
         logger.info(f"Creating client to {uri}")
-        return AuthenticatedClient(uri, self.client_config, self.secrets)
+        return AuthenticatedClient(uri, self.configuration)
 
     @staticmethod
     def get_value_by_path(dictionary: Dict, path: str) -> Dict:

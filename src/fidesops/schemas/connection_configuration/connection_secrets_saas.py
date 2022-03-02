@@ -23,7 +23,7 @@ class SaaSSchema(BaseModel, abc.ABC):
         )
         if not min_fields_present:
             raise ValueError(
-                f"{cls.__name__} must be supplied all of: {required_components}."
+                f"{cls.__name__} must be supplied all of: [{', '.join(required_components)}]."
             )
 
         return values
