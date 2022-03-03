@@ -2022,7 +2022,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Application Maria DB\",\n    \"key\": \"{{mariadb_key}}\",\n    \"connection_type\": \"mariadb\",\n    \"access\": \"read\"\n}]",
+							"raw": "[\n    {\"name\": \"Application Maria DB\",\n    \"key\": \"{{mariadb_key}}\",\n    \"connection_type\": \"mariadb\",\n    \"access\": \"write\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2059,7 +2059,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"host\": \"mariadb_example\",\n    \"port\": 3806,\n    \"dbname\": \"mariadb_example\",\n    \"username\": \"mariadb_user\",\n    \"password\": \"mariadb_pw\"\n}",
+							"raw": "{\n    \"host\": \"mariadb_example\",\n    \"port\": 3306,\n    \"dbname\": \"mariadb_example\",\n    \"username\": \"mariadb_user\",\n    \"password\": \"mariadb_pw\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
