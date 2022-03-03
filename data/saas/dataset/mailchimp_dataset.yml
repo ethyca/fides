@@ -18,7 +18,7 @@ dataset:
           - name: subject
             data_categories: [system.operations]
           - name: message
-            data_categories: [system.operations]
+            data_categories: [user.provided.nonidentifiable]
           - name: read
             data_categories: [system.operations]
           - name: timestamp
@@ -31,6 +31,12 @@ dataset:
             data_categories: [system.operations]
           - name: list_id
             data_categories: [system.operations]
+          - name: from_email
+            data_categories: [user.provided.identifiable.contact.email]
+          - name: from_label
+            data_categories: [user.provided.identifiable.contact.email]
+          - name: subject
+            data_categories: [user.provided.nonidentifiable]
       - name: member
         fields:
           - name: id

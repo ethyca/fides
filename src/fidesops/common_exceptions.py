@@ -99,6 +99,10 @@ class WebhookOrderException(BaseException):
     """Custom Exception - Issue with webhooks order"""
 
 
+class PostProcessingException(BaseException):
+    """Custom Exception - Issue with post processing"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
