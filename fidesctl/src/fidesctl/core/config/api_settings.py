@@ -10,6 +10,8 @@ from pydantic import validator
 
 from .fides_settings import FidesSettings
 
+from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_API
+
 
 class APISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
@@ -29,6 +31,9 @@ class APISettings(FidesSettings):
     log_destination: str = ""
     log_level: Union[int, str] = INFO
     log_serialization: str = ""
+
+    # analytics
+    analytics_id: str = generate_client_id(FIDESCTL_API)
 
     @validator("database_url", always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:

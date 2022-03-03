@@ -28,8 +28,15 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     # List the values we want to include in the user-facing config
     included_values = {
-        "api": {"database_url", "log_level", "log_destination", "log_serialization"},
-        "cli": {"server_url"},
+        "api": {
+            "database_url",
+            "log_level",
+            "log_destination",
+            "log_serialization",
+            "analytics_id",
+        },
+        "cli": {"server_url", "analytics_id"},
+        "user": {"analytics_opt_out"},
     }
 
     click.echo("Initializing Fidesctl...")
