@@ -16,13 +16,13 @@ class ConnectorParams(BaseModel):
 
 class RequestParam(BaseModel):
     """
-    A request parameter which includes the type (query, path, or body) along with a default value or
+    A request parameter which includes the type (query or path) along with a default value or
     a reference to an identity value or a value in another dataset.
     """
 
     name: str
     type: Literal[
-        "query", "path", "body"
+        "query", "path"
     ]  # used to determine location in the generated request
     default_value: Optional[Any]
     identity: Optional[str]
@@ -52,7 +52,6 @@ class RequestParam(BaseModel):
                 raise ValueError(
                     "References can only have a direction of 'from', found 'to'"
                 )
-
         return references
 
 

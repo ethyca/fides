@@ -1,3 +1,4 @@
+
 import pytest
 import time
 from typing import Any, Dict, List, Set
@@ -19,19 +20,21 @@ from fidesops.core.config import config
 from fidesops.models.policy import PolicyPreWebhook, ActionType
 from fidesops.models.privacy_request import PrivacyRequestStatus
 from fidesops.schemas.external_https import SecondPartyResponseFormat
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_session
 from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.schemas.masking.masking_configuration import (
+    HmacMaskingConfiguration,
+    MaskingConfiguration,
+)
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
-from fidesops.service.connectors import PostgreSQLConnector
+from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.sql_connector import (
     SnowflakeConnector,
     RedshiftConnector,
-    MicrosoftSQLServerConnector,
-    MySQLConnector,
-    MariaDBConnector,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
+from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.async_util import wait_for
 from fidesops.util.data_category import DataCategory
@@ -105,10 +108,11 @@ def get_privacy_request_results(
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:
         strategy_name: str = rule.masking_strategy["strategy"]
+        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
         if strategy_name in unique_masking_strategies_by_name:
             continue
         unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = get_strategy(strategy_name, {})
+        masking_strategy = get_strategy(strategy_name, configuration)
         if masking_strategy.secrets_required():
             masking_secrets: List[
                 MaskingSecretCache
@@ -333,6 +337,47 @@ def test_create_and_process_access_request_saas(
 
     # Both pre-execution webhooks and both post-execution webhooks were called
     assert trigger_webhook_mock.call_count == 4
+
+    pr.delete(db=db)
+
+
+@pytest.mark.saas_connector
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_create_and_process_erasure_request_saas(
+    trigger_webhook_mock,
+    connection_config_saas,
+    dataset_config_saas,
+    db,
+    cache,
+    erasure_policy_hmac,
+    generate_auth_header,
+    mailchimp_account_email,
+    reset_mailchimp_data
+):
+    customer_email = mailchimp_account_email
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy_hmac.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(db, erasure_policy_hmac, cache, data)
+
+    connector = SaaSConnector(connection_config_saas)
+    request = ("GET", "/3.0/search-members", {"query": mailchimp_account_email}, {})
+    resp = connector.create_client().send(request)
+    body = resp.json()
+    merge_fields = body["exact_matches"]["members"][0]["merge_fields"]
+
+    masking_configuration = HmacMaskingConfiguration()
+    masking_strategy = HmacMaskingStrategy(masking_configuration)
+
+    assert merge_fields["FNAME"] == masking_strategy.mask(
+        reset_mailchimp_data["merge_fields"]["FNAME"], pr.id
+    )
+    assert merge_fields["LNAME"] == masking_strategy.mask(
+        reset_mailchimp_data["merge_fields"]["LNAME"], pr.id
+    )
 
     pr.delete(db=db)
 

@@ -2,12 +2,12 @@ saas_config:
   fides_key: mailchimp_connector_example
   name: Mailchimp SaaS Config
   description: A sample schema representing the Mailchimp connector for Fidesops
-  version: 1.0
+  version: 0.0.1
 
   connector_params:
-  - name: domain
-  - name: username
-  - name: api_key
+    - name: domain
+    - name: username
+    - name: api_key
 
   client_config:
     protocol: https
@@ -20,68 +20,58 @@ saas_config:
           connector_param: username
         password:
           connector_param: api_key
-  
+
   test_request:
     path: /3.0/lists
-
+    
   endpoints:
-  - name: messages
-    requests:
-      read:
-        path: /3.0/conversations/<conversation_id>/messages
-        request_params:
-          - name: conversation_id
-            type: path
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-  - name: conversations
-    requests:
-      read:
-        path: /3.0/conversations
-        request_params:
-          - name: count
-            type: query
-            default_value: 1000
-          - name: offset
-            type: query
-            default_value: 0
-          - name: placeholder
-            type: query
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.unique_email_id
-                direction: from
-        pagination:
-          strategy: basic_pagination
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            initial_value: 0
-  - name: member
-    requests:
-      read:
-        path: /3.0/search-members
-        request_params:
-          - name: query
-            type: query
-            identity: email
-            data_type: string
-        data_path: exact_matches/members
-      delete:
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>/actions/delete-permanent
-        request_params:
-          - name: list_id
-            type: path
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
-                direction: from
-          - name: subscriber_hash
-            type: path
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.id
-                direction: from
+    - name: messages
+      requests:
+        read:
+          path: /3.0/conversations/<conversation_id>/messages
+          request_params:
+            - name: conversation_id
+              type: path
+              references:
+                - dataset: mailchimp_connector_example
+                  field: conversations.id
+                  direction: from
+          data_path: conversation_messages
+    - name: conversations
+      requests:
+        read:
+          path: /3.0/conversations
+          request_params:
+            - name: count
+              type: query
+              default_value: 1000
+            - name: offset
+              type: query
+              default_value: 0
+            - name: placeholder
+              type: query
+              identity: email
+    - name: member
+      requests:
+        read:
+          path: /3.0/search-members
+          request_params:
+            - name: query
+              type: query
+              identity: email
+          data_path: exact_matches.members
+        update:
+          path: /3.0/lists/<list_id>/members/<subscriber_hash>
+          request_params:
+            - name: list_id
+              type: path
+              references:
+                - dataset: mailchimp_connector_example
+                  field: member.list_id
+                  direction: from
+            - name: subscriber_hash
+              type: path
+              references:
+                - dataset: mailchimp_connector_example
+                  field: member.id
+                  direction: from
