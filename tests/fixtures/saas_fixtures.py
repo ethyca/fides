@@ -1,3 +1,4 @@
+import json
 import pytest
 import os
 import pydash
@@ -14,6 +15,7 @@ from fidesops.models.connectionconfig import (
 )
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.service.connectors.saas_connector import SaaSConnector
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -90,7 +92,7 @@ def connection_config_saas(
             "key": saas_config.fides_key,
             "name": saas_config.fides_key,
             "connection_type": ConnectionType.saas,
-            "access": AccessLevel.read,
+            "access": AccessLevel.write,
             "secrets": saas_secrets_dict["mailchimp"],
             "saas_config": example_saas_configs["mailchimp"],
         },
@@ -148,3 +150,29 @@ def mailchimp_account_email():
     return pydash.get(saas_config, "mailchimp.account_email") or os.environ.get(
         "MAILCHIMP_ACCOUNT_EMAIL"
     )
+
+
+@pytest.fixture(scope="function")
+def reset_mailchimp_data(connection_config_saas, mailchimp_account_email) -> Generator:
+    """
+    Gets the current value of the resource and restores it after the test is complete.
+    Used for erasure tests.
+    """
+    connector = SaaSConnector(connection_config_saas)
+    request = (
+        "GET",
+        "/3.0/search-members",
+        {"query": mailchimp_account_email},
+        {},
+    )
+    response = connector.create_client().send(request)
+    body = response.json()
+    member = body["exact_matches"]["members"][0]
+    yield member
+    request = (
+        "PUT",
+        f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
+        {},
+        json.dumps(member),
+    )
+    connector.create_client().send(request)

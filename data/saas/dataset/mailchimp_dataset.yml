@@ -13,6 +13,8 @@ dataset:
             data_categories: [system.operations]
           - name: from_email
             data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
           - name: subject
             data_categories: [system.operations]
           - name: message
@@ -33,14 +35,22 @@ dataset:
         fields:
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
           - name: list_id
             data_categories: [system.operations]
           - name: email_address
             data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
           - name: unique_email_id
             data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              data_type: string
           - name: web_id
             data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              data_type: string
           - name: email_type
             data_categories: [system.operations]
           - name: status
@@ -49,31 +59,50 @@ dataset:
             fields:
               - name: FNAME
                 data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
               - name: LNAME
                 data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
               - name: ADDRESS
                 fields:
                   - name: addr1
                     data_categories: [user.provided.identifiable.contact.street]
+                    fidesops_meta:
+                      data_type: string
                   - name: addr2
                     data_categories: [user.provided.identifiable.contact.street]
+                    fidesops_meta:
+                      data_type: string
                   - name: city
                     data_categories: [user.provided.identifiable.contact.city]
+                    fidesops_meta:
+                      data_type: string
                   - name: state
                     data_categories: [user.provided.identifiable.contact.state]
+                    fidesops_meta:
+                      data_type: string
                   - name: zip
-                    data_categories:
-                      [user.provided.identifiable.contact.postal_code]
+                    data_categories: [user.provided.identifiable.contact.postal_code]
+                    fidesops_meta:
+                      data_type: string
                   - name: country
-                    data_categories:
-                      [user.provided.identifiable.contact.country]
+                    data_categories: [user.provided.identifiable.contact.country]
+                    fidesops_meta:
+                      data_type: string
               - name: PHONE
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.provided.identifiable.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
               - name: BIRTHDAY
                 data_categories: [user.provided.identifiable.date_of_birth]
+                fidesops_meta:
+                  data_type: string
           - name: ip_signup
             data_categories: [user.derived.identifiable.device.ip_address]
+            fidesops_meta:
+              data_type: string
           - name: timestamp_signup
             data_categories: [system.operations]
           - name: ip_opt
@@ -96,6 +125,8 @@ dataset:
                 data_categories: [system.operations]
               - name: country_code
                 data_categories: [user.provided.identifiable.contact.country]
+                fidesops_meta:
+                  data_type: string
               - name: timezone
                 data_categories: [system.operations]
           - name: source
