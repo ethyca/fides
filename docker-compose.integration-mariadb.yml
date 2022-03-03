@@ -19,4 +19,4 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./data/sql/mariadb_example.sql:/docker-entrypoint-initdb.d/mariadb_example.sql
+      - ./data/sql/mariadb_example_schema.sql:/docker-entrypoint-initdb.d/mariadb_example_schema.sql
