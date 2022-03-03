@@ -1,8 +1,11 @@
 import pytest
 import random
-from fidesops.task import graph_task
+
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+
+from fidesops.task import graph_task
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
@@ -20,6 +23,11 @@ def test_saas_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
+    identity_attribute = "email"
+    identity_value = mailchimp_account_email
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = PrivacyRequestIdentity(**identity_kwargs)
+    privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_saas.get_saas_config().fides_key
     merged_graph = dataset_config_saas.get_graph()
@@ -59,11 +67,11 @@ def test_saas_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:conversations"],
         min_size=2,
-        keys=["id", "campaign_id", "list_id"],
+        keys=["id", "campaign_id", "list_id", "from_email", "from_label", "subject"],
     )
     assert_rows_match(
         v[f"{dataset_name}:messages"],
-        min_size=7,
+        min_size=3,
         keys=[
             "id",
             "conversation_id",
@@ -128,6 +136,11 @@ def test_saas_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
+    identity_attribute = "email"
+    identity_value = mailchimp_account_email
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = PrivacyRequestIdentity(**identity_kwargs)
+    privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_saas.get_saas_config().fides_key
     merged_graph = dataset_config_saas.get_graph()

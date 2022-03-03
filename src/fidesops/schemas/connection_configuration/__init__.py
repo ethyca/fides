@@ -55,6 +55,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
     ConnectionType.mariadb.value: MariaDBSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
+    ConnectionType.saas.value: SaaSSchema,
 }
 
 

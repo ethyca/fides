@@ -309,7 +309,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Run an access request on a single node."""
         formatted_input_data: NodeInput = self.pre_process_input_data(*inputs)
         output: List[Row] = self.connector.retrieve_data(
-            self.traversal_node, self.resources.policy, formatted_input_data
+            self.traversal_node,
+            self.resources.policy,
+            self.resources.request,
+            formatted_input_data,
         )
         filtered_output: List[Row] = self.access_results_post_processing(
             formatted_input_data, output

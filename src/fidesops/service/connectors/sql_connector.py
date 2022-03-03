@@ -105,7 +105,11 @@ class SQLConnector(BaseConnector[Engine]):
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
@@ -122,7 +126,7 @@ class SQLConnector(BaseConnector[Engine]):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
@@ -131,7 +135,7 @@ class SQLConnector(BaseConnector[Engine]):
         client = self.client()
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
-                row, policy, request
+                row, policy, privacy_request
             )
             if update_stmt is not None:
                 with client.connect() as connection:
@@ -284,7 +288,11 @@ class RedshiftConnector(SQLConnector):
 
     # Overrides SQLConnector.retrieve_data
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from Amazon Redshift
 
@@ -308,7 +316,7 @@ class RedshiftConnector(SQLConnector):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Returns the number of records masked
@@ -320,7 +328,9 @@ class RedshiftConnector(SQLConnector):
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy, request)
+            update_stmt = query_config.generate_update_stmt(
+                row, policy, privacy_request
+            )
             if update_stmt is not None:
                 with client.connect() as connection:
                     self.set_schema(connection)
@@ -368,7 +378,7 @@ class BigQueryConnector(SQLConnector):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
@@ -377,7 +387,7 @@ class BigQueryConnector(SQLConnector):
         client = self.client()
         for row in rows:
             update_stmt: Optional[Executable] = query_config.generate_update(
-                row, policy, request, client
+                row, policy, privacy_request, client
             )
             if update_stmt is not None:
                 with client.connect() as connection:

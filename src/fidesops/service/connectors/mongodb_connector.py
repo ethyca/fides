@@ -83,7 +83,11 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(
-        self, node: TraversalNode, policy: Policy, input_data: Dict[str, List[Any]]
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve mongo data"""
         # pylint: disable = too-many-locals
@@ -111,7 +115,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         self,
         node: TraversalNode,
         policy: Policy,
-        request: PrivacyRequest,
+        privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
         # pylint: disable=too-many-locals
@@ -121,7 +125,9 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         client = self.client()
         update_ct = 0
         for row in rows:
-            update_stmt = query_config.generate_update_stmt(row, policy, request)
+            update_stmt = query_config.generate_update_stmt(
+                row, policy, privacy_request
+            )
             if update_stmt is not None:
                 query, update = update_stmt
                 db = client[node.address.dataset]

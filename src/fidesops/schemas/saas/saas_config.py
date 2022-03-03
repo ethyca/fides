@@ -3,6 +3,7 @@ from pydantic import BaseModel, validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -56,7 +57,7 @@ class RequestParam(BaseModel):
 
 
 class Strategy(BaseModel):
-    """General shape for swappable strategies (ex: auth, pagination, postprocessing, etc.)"""
+    """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
 
     strategy: str
     configuration: Dict[str, Any]
@@ -71,8 +72,8 @@ class SaaSRequest(BaseModel):
     path: str
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]  # defaults to collection name if not specified
-    preprocessor: Optional[Strategy]
-    postprocessor: Optional[List[Strategy]]
+    preprocessors: Optional[List[Strategy]]
+    postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
 
 
