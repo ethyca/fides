@@ -29,7 +29,12 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     # List the values we want to include in the user-facing config
     included_values = {
         "api": {
-            "database_url",
+            "database_user",
+            "database_password",
+            "database_host",
+            "database_port",
+            "database_name",
+            "test_database_name",
             "log_level",
             "log_destination",
             "log_serialization",

@@ -1,10 +1,7 @@
 """This module defines the settings for everything related to the CLI."""
+from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_CLI
 
 from .fides_settings import FidesSettings
-
-from typing import Optional
-
-from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_CLI
 
 # pylint: disable=C0115,C0116, E0213
 
