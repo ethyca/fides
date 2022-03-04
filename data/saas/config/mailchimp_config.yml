@@ -23,7 +23,7 @@ saas_config:
 
   test_request:
     path: /3.0/lists
-
+    
   endpoints:
   - name: messages
     requests:
