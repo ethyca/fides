@@ -19,6 +19,7 @@ and use that to look up the `seller_id`.
 - name: seller_id 
   data_categories: [user.derived.identifiable.unique_id]
   fidesops_meta:
+    data_type: integer
     references:
       - dataset: flaskr_postgres_dataset
         field: users.id
@@ -32,6 +33,7 @@ to take the user `id` and use that to look up purchases by `buyer_id`.
 - name: buyer_id
   data_categories: [user.derived.identifiable.unique_id]
   fidesops_meta:
+    data_type: integer
     references:
       - dataset: flaskr_postgres_dataset
         field: users.id
@@ -45,6 +47,7 @@ the user by `email`, and from there, travel through other tables linked to `user
 - name: email
   data_categories: [user.provided.identifiable.contact.email]
   fidesops_meta:
+    data_type: string
     identity: email
 ```
 
@@ -63,7 +66,6 @@ def create_dataset(connection_key, yaml_path, access_token):
     Requires the `connection_key` for the PostgreSQL connection, and `yaml_path`
     that is a local filepath to a .yml Dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/api#operations-tag-Datasets
     """
 
     with open(yaml_path, "r") as file:

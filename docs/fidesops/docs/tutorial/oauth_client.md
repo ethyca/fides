@@ -17,7 +17,6 @@ Add a method to our Python script that will call the fidesops API to create a to
 def get_access_token(client_id, client_secret):
     """
     Authorize with fidesops via OAuth. Returns a valid access token if successful.
-    See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     """
     data = {
         "grant_type": "client_credentials",
@@ -45,10 +44,9 @@ def oauth_headers(access_token):
 def create_oauth_client(access_token):
     """
     Create a new OAuth client in fidesops.Returns the response JSON if successful.
-    See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     """
     
-    # Here we're giving the client all the scopes, but in a production app, just give the client the scopes they actually need.
+    # Here we're giving the client many scopes, but in a production app, just give the client the scopes they actually need.
     scopes_data = [
         "client:create",
         "client:update",
