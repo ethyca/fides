@@ -20,7 +20,6 @@ convenience (handy if you'll be running this script multiple times).
 def create_policy(key, access_token):
     """
     Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     policy_create_data = [
@@ -36,7 +35,8 @@ def create_policy(key, access_token):
     )
     logger.info(f"Creating a Policy. Status {response.status_code}")
     return response.json()
- ```   
+```   
+
 ```python
 ...
 def create_policy_rule(
@@ -45,7 +45,6 @@ def create_policy_rule(
     """
     Create a Policy Rule to return matched data in an access request to the given Storage destination.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/api#operations-Policy-create_or_update_policies_api_v1_policy_put
     """
 
     rule_create_data = [
@@ -72,7 +71,6 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
     """
     Create a Policy Rule Target that matches the given data_category.
     Returns the response JSON if successful, or throws an error otherwise.
-    See http://localhost:8000/api#operations-Policy-create_or_update_rules_api_v1_policy__policy_key__rule_put
     """
 
     target_create_data = [
@@ -95,7 +93,6 @@ def delete_policy_rule(policy_key, key, access_token):
     """
     Deletes a Policy rule with the given key.
     Returns the response JSON.
-    See http://localhost:8000/api#operations-Policy-delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
     """
     return requests.delete(
         f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{key}",
@@ -139,6 +136,6 @@ if __name__ == "__main__":
 If you look back at our annotated YAML `fides_resources/flaskr_postgres_dataset.yml`, we can see the relevant fields
 associated with this Data Category that we will expect in our final upload package:
 
-    - `products` collection:  `description`,`name`, and `price` 
-    - `user` collection: `email`, `first_name`, `last_name`, and `password`
-    - `purchases` collection`: `city`, `state`, `street_1`, `street_2`, and `zip`
+- `products` collection:  `description`,`name`, and `price` 
+- `user` collection: `email`, `first_name`, `last_name`, and `password`
+- `purchases` collection`: `city`, `state`, `street_1`, `street_2`, and `zip`

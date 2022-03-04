@@ -10,9 +10,10 @@ documentation.
       2. Right-click on postgres connection > Create > Other 
       3. Select ER Diagram, Click Next
       4. Drill down to Postgres > app > Schemas > public and click the checkbox.
-      5. Click Finish
+      5. Add a name to your ER Diagram
+      6. Click Finish
 2. Drag and drop tables so they are less messy.
-3. File > Save As (img/app_database.png)
+3. File > Save As (app_database.png)
 4. Replace img/app_database.png with the new file
 
 

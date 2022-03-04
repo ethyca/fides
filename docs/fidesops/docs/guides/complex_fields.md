@@ -1,6 +1,6 @@
 # Complex Fields
 
-Fidesops can retrieve data from complex objects and arrays in MongoDB (*access* requests only; erasure support coming soon), although
+Fidesops can retrieve and mask data from complex objects and arrays in MongoDB, although
 this involves annotating your dataset files to let fidesops know about your complex data.
 
 In this section we'll cover:
