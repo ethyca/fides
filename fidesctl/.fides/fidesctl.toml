@@ -14,4 +14,4 @@ server_url = "http://fidesctl:8080"
 analytics_id = "5b1837ae7ac208e69dcd33fe4cf75405"
 
 [user]
-analytics_opt_out = true
+analytics_opt_out = false

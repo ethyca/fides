@@ -10,6 +10,8 @@ from fidesctl.core import (
     parse as _parse,
 )
 
+from fidesctl.cli.utils import send_anonymous_event
+
 
 @click.group(name="export")
 @click.pass_context
@@ -86,6 +88,15 @@ def export_organization(
         manifests_dir=manifests_dir,
         dry=dry,
     )
+
+    if not ctx.obj["CONFIG"].user.analytics_opt_out:
+        context_obj = click.get_current_context()
+        command = " ".join(
+            filter(None, [context_obj.parent.info_name, context_obj.info_name])
+        )
+        send_anonymous_event(
+            command=command, client_id=ctx.obj["CONFIG"].cli.analytics_id
+        )
 
 
 @export.command(name="datamap")
