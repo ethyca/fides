@@ -18,6 +18,8 @@ from .scan_commands import scan
 from .util_comands import init, ping, webserver
 from .view_commands import view
 
+from fidesctl.cli.utils import send_anonymous_event
+
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view]
 API_COMMANDS = [
@@ -77,6 +79,13 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
+
+    # if not opted out, send anonymous usage tracking
+    if not ctx.obj["CONFIG"].user.analytics_opt_out:
+        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
+        send_anonymous_event(
+            command=command, client_id=ctx.obj["CONFIG"].cli.analytics_id
+        )
 
 
 # This is a special section used for auto-generating the CLI docs
