@@ -4,7 +4,7 @@ We include a minimal fidesops collection for executing example `access` and `era
 mock external databases, and setting up the required prerequisite configuration.
 
 ## Loading the collection
-1. Get [postman](https://www.postman.com/)
+1. Get [Postman](https://www.postman.com/)
 2. Postman > File > Import
 
 ![File_Import](../img/postman_images/import_collection.png)
