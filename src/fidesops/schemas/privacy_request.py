@@ -21,7 +21,7 @@ class PrivacyRequestCreate(BaseSchema):
     external_id: Optional[str]
     started_processing_at: Optional[datetime]
     finished_processing_at: Optional[datetime]
-    requested_at: datetime
+    requested_at: Optional[datetime]
     identity: PrivacyRequestIdentity
     policy_key: FidesOpsKey
     encryption_key: Optional[str] = None

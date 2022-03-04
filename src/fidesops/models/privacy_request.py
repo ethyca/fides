@@ -21,7 +21,10 @@ from sqlalchemy.orm import relationship, Session
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import Base
+from fidesops.db.base_class import (
+    Base,
+    FidesopsBase,
+)
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
     Policy,
@@ -115,6 +118,16 @@ class PrivacyRequest(Base):
         passive_deletes="all",
         primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
     )
+
+    @classmethod
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+        """
+        Check whether this object has been passed a `requested_at` value. Default to
+        the current datetime if not.
+        """
+        if data.get("requested_at", None) is None:
+            data["requested_at"] = datetime.utcnow()
+        return super().create(db=db, data=data)
 
     def delete(self, db: Session) -> None:
         """

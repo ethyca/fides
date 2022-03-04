@@ -58,7 +58,6 @@ def create_oauth_client(access_token):
         "connection:create_or_update",
         "connection:read",
         "connection:delete",
-        "privacy-request:create",
         "privacy-request:read",
         "privacy-request:delete",
         "rule:create_or_update",

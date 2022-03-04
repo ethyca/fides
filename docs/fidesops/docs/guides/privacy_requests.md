@@ -43,7 +43,7 @@ we submit  a request to apply the `a-demo-policy` Policy to all target data in t
 
 * `external_id` is an optional  identifier of your own invention that lets you track the Privacy Request. See [How-To: Report on Privacy Requests](reporting.md) for more information.
 
-* `requested_at` is an ISO8601 timestamp that specifies the moment that the request was submitted.
+* `requested_at` (Optional) is an ISO8601 timestamp that specifies the moment that the request was submitted. Defaults to the `created_at` time if not specified.
 
 * `policy_key` identifies the Policy object to which this request will be applied. See [How-To: Configure Request Policies](policies.md) for more information.
 

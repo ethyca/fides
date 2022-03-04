@@ -1,6 +1,10 @@
 import pytest
 import requests_mock
-from datetime import datetime, timedelta
+from datetime import (
+    datetime,
+    timedelta,
+    timezone,
+)
 from pydantic import ValidationError
 from typing import List
 from uuid import uuid4
@@ -25,6 +29,44 @@ def test_privacy_request(
     assert from_db.id is not None
     assert from_db.policy.id == policy.id
     assert from_db.client_id == policy.client_id
+
+
+def test_create_privacy_request_sets_requested_at(
+    db: Session,
+    policy: Policy,
+) -> None:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": None,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.requested_at is not None
+    pr.delete(db)
+
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.requested_at is not None
+    pr.delete(db)
+
+    requested_at = datetime.now(timezone.utc)
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": requested_at,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.requested_at == requested_at
+    pr.delete(db)
 
 
 def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) -> None:
