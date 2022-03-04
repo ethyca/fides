@@ -22,7 +22,7 @@ to locate the remaining user information:
 
 ### Define helper method
 ```python
-def create_privacy_request(email, policy_key, access_token):
+def create_privacy_request(email, policy_key):
     """
     Create a Privacy Request that is executed against the given request Policy.
     Returns the response JSON if successful, or throws an error otherwise.
@@ -37,7 +37,6 @@ def create_privacy_request(email, policy_key, access_token):
     ]
     response = requests.post(
         f"{FIDESOPS_URL}/api/v1/privacy-request",
-        headers=oauth_headers(access_token=access_token),
         json=privacy_request_data,
     )
     logger.info(f"Executing a Privacy Request. Status {response.status_code}")
@@ -59,7 +58,6 @@ if __name__ == "__main__":
     privacy_requests = create_privacy_request(
         email=email,
         policy_key="example_request_policy",
-        access_token=access_token,
     )
 ```
 

@@ -63,7 +63,6 @@ def create_oauth_client():
         "connection:create_or_update",
         "connection:read",
         "connection:delete",
-        "privacy-request:create",
         "privacy-request:read",
         "privacy-request:delete",
         "rule:create_or_update",
@@ -430,7 +429,6 @@ def create_privacy_request(user_email: str, policy_key: str):
     ]
     response = requests.post(
         f"{FIDESOPS_URL}/api/v1/privacy-request",
-        headers=oauth_header,
         json=privacy_request_data,
     )
 

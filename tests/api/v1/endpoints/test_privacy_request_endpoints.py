@@ -18,7 +18,6 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
 )
 from fidesops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_CREATE,
     STORAGE_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -53,17 +52,6 @@ class TestCreatePrivacyRequest:
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
-    def test_privacy_request_unauthenticated(self, api_client: TestClient, url):
-        resp = api_client.post(url)
-        assert resp.status_code == 401
-
-    def test_privacy_request_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        resp = api_client.post(url, json={}, headers=auth_header)
-        assert resp.status_code == 403
-
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
@@ -73,7 +61,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         policy,
     ):
         data = [
@@ -83,8 +70,7 @@ class TestCreatePrivacyRequest:
                 "identity": {"email": "test@example.com"},
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -101,7 +87,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         policy,
     ):
         payload = []
@@ -114,8 +99,7 @@ class TestCreatePrivacyRequest:
                 },
             )
 
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        response = api_client.post(url, headers=auth_header, json=payload)
+        response = api_client.post(url, json=payload)
 
         assert 422 == response.status_code
         assert (
@@ -132,7 +116,6 @@ class TestCreatePrivacyRequest:
         url,
         api_client: TestClient,
         db,
-        generate_auth_header,
         policy,
     ):
         data = [
@@ -142,8 +125,7 @@ class TestCreatePrivacyRequest:
                 "identity": {"email": "test@example.com"},
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         assert start_processing_mock.called
 
@@ -160,7 +142,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         policy,
     ):
         external_id = "ext_some-uuid-here-1234"
@@ -172,10 +153,7 @@ class TestCreatePrivacyRequest:
                 "identity": {"email": "test@example.com"},
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(
-            V1_URL_PREFIX + PRIVACY_REQUESTS, json=data, headers=auth_header
-        )
+        resp = api_client.post(V1_URL_PREFIX + PRIVACY_REQUESTS, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -194,7 +172,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         policy,
         cache,
     ):
@@ -206,8 +183,7 @@ class TestCreatePrivacyRequest:
                 "identity": identity,
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -229,7 +205,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         erasure_policy_aes,
         cache,
     ):
@@ -241,8 +216,7 @@ class TestCreatePrivacyRequest:
                 "identity": identity,
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -257,7 +231,7 @@ class TestCreatePrivacyRequest:
         assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(
-        self, url, db, api_client: TestClient, generate_auth_header, policy, cache
+        self, url, db, api_client: TestClient, policy, cache
     ):
         data = [
             {
@@ -267,8 +241,7 @@ class TestCreatePrivacyRequest:
                 "encryption_key": "test",
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
 
@@ -281,7 +254,6 @@ class TestCreatePrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        generate_auth_header,
         policy,
         cache,
     ):
@@ -294,8 +266,7 @@ class TestCreatePrivacyRequest:
                 "encryption_key": "test--encryption",
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
@@ -313,7 +284,6 @@ class TestCreatePrivacyRequest:
         self,
         url,
         api_client: TestClient,
-        generate_auth_header,
         policy,
     ):
         data = [
@@ -323,8 +293,7 @@ class TestCreatePrivacyRequest:
                 "identity": {},
             }
         ]
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
-        resp = api_client.post(url, json=data, headers=auth_header)
+        resp = api_client.post(url, json=data)
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 0
