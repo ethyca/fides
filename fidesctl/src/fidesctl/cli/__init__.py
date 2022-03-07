@@ -4,6 +4,8 @@ import click
 import fidesctl
 from fidesctl.core.config import get_config
 
+from fidesctl.cli.utils import send_anonymous_event, opt_out_anonymous_usage
+
 from .annotate_commands import annotate
 from .core_commands import (
     apply,
@@ -18,7 +20,6 @@ from .scan_commands import scan
 from .util_comands import init, ping, webserver
 from .view_commands import view
 
-from fidesctl.cli.utils import send_anonymous_event
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view]
@@ -80,11 +81,30 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
 
+    # set config if opt in / out of anonymous usage tracking not set
+    if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+        included_values_dict = {
+            "api": {
+                "analytics_id": ctx.obj["CONFIG"].api.analytics_id,
+            },
+            "cli": {
+                "analytics_id": ctx.obj["CONFIG"].cli.analytics_id,
+            },
+            "user": {"analytics_opt_out": None},
+        }
+
+        opt_out = opt_out_anonymous_usage(
+            analytics_values=included_values_dict, config_path=config_path
+        )
+        ctx.obj["CONFIG"].user.analytics_opt_out = opt_out
+        click.echo(
+            f"Successfully updated config and set analytics_opt_out to {opt_out}"
+        )
+
     # if not opted out, send anonymous usage tracking
     if not ctx.obj["CONFIG"].user.analytics_opt_out:
-        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
         send_anonymous_event(
-            command=command, client_id=ctx.obj["CONFIG"].cli.analytics_id
+            command=ctx.invoked_subcommand, client_id=ctx.obj["CONFIG"].cli.analytics_id
         )
 
 
