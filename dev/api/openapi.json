@@ -3256,6 +3256,9 @@
           "data_protection_officer": {
             "$ref": "#/components/schemas/ContactDetails"
           },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/OrganizationMetadata"
+          },
           "representative": {
             "$ref": "#/components/schemas/ContactDetails"
           },
@@ -3268,6 +3271,20 @@
           }
         },
         "description": "The Organization resource model.\n\nThis resource is used as a way to organize all other resources."
+      },
+      "OrganizationMetadata": {
+        "title": "OrganizationMetadata",
+        "type": "object",
+        "properties": {
+          "resource_filters": {
+            "title": "Resource Filters",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceFilter"
+            }
+          }
+        },
+        "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
       },
       "Policy": {
         "title": "Policy",
@@ -3449,6 +3466,25 @@
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
       },
+      "ResourceFilter": {
+        "title": "ResourceFilter",
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "description": "The ResourceFilter resource model."
+      },
       "StatusEnum": {
         "title": "StatusEnum",
         "enum": [
@@ -3558,7 +3594,7 @@
             "type": "string"
           }
         },
-        "description": "The SystemMetadata resource model.\n\nasdasdasas"
+        "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
       },
       "ValidationError": {
         "title": "ValidationError",
