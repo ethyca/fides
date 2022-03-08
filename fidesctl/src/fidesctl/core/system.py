@@ -1,5 +1,6 @@
 """Module that adds functionality for generating or scanning systems."""
-from typing import Dict, List, Tuple, Callable
+from collections import defaultdict
+from typing import Dict, List, Tuple, Optional
 
 import boto3
 
@@ -8,11 +9,12 @@ from pydantic import AnyHttpUrl
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.parse import parse
-from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.api_helpers import get_server_resources, get_server_resource
 from fideslang import manifests
-from fideslang.models import System, SystemMetadata
+from fideslang.models import Organization, System, SystemMetadata
 
 from .utils import echo_green, echo_red
+from .filters import filter_aws_systems
 
 
 def describe_redshift_clusters() -> Dict[str, List[Dict]]:
@@ -27,7 +29,7 @@ def describe_redshift_clusters() -> Dict[str, List[Dict]]:
 
 
 def transform_redshift_systems(
-    describe_clusters: Dict[str, List[Dict]]
+    describe_clusters: Dict[str, List[Dict]], organization_key: str
 ) -> List[System]:
     """
     Given a "describe_clusters" response, build a system object which represents
@@ -39,6 +41,7 @@ def transform_redshift_systems(
             name=cluster["ClusterIdentifier"],
             description=f"Fides Generated Description for Redshift Cluster: {cluster['ClusterIdentifier']}",
             system_type="redshift_cluster",
+            organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
                 endpoint_address=cluster["Endpoint"]["Address"]
                 if cluster.get("Endpoint")
@@ -55,12 +58,14 @@ def transform_redshift_systems(
     return redshift_systems
 
 
-def generate_redshift_systems() -> List[System]:
+def generate_redshift_systems(organization_key: str) -> List[System]:
     """
     Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
     """
     describe_clusters = describe_redshift_clusters()
-    redshift_systems = transform_redshift_systems(describe_clusters=describe_clusters)
+    redshift_systems = transform_redshift_systems(
+        describe_clusters=describe_clusters, organization_key=organization_key
+    )
     return redshift_systems
 
 
@@ -87,7 +92,9 @@ def describe_rds_instances() -> Dict[str, List[Dict]]:
 
 
 def transform_rds_systems(
-    describe_clusters: Dict[str, List[Dict]], describe_instances: Dict[str, List[Dict]]
+    describe_clusters: Dict[str, List[Dict]],
+    describe_instances: Dict[str, List[Dict]],
+    organization_key: str,
 ) -> List[System]:
     """
     Given "describe_clusters" and "describe_instances" responses, build a system object
@@ -102,6 +109,7 @@ def transform_rds_systems(
             name=cluster["DBClusterIdentifier"],
             description=f"Fides Generated Description for RDS Cluster: {cluster['DBClusterIdentifier']}",
             system_type="rds_cluster",
+            organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
                 endpoint_address=cluster["Endpoint"],
                 endpoint_port=cluster["Port"],
@@ -117,6 +125,7 @@ def transform_rds_systems(
             name=instance["DBInstanceIdentifier"],
             description=f"Fides Generated Description for RDS Instance: {instance['DBInstanceIdentifier']}",
             system_type="rds_instance",
+            organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
                 endpoint_address=instance["Endpoint"]["Address"]
                 if instance.get("Endpoint")
@@ -134,33 +143,93 @@ def transform_rds_systems(
     return rds_cluster_systems + rds_instances_systems
 
 
-def generate_rds_systems() -> List[System]:
+def generate_rds_systems(organization_key: str) -> List[System]:
     """
     Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
     """
     describe_clusters = describe_rds_clusters()
     describe_instances = describe_rds_instances()
     rds_systems = transform_rds_systems(
-        describe_clusters=describe_clusters, describe_instances=describe_instances
+        describe_clusters=describe_clusters,
+        describe_instances=describe_instances,
+        organization_key=organization_key,
     )
     return rds_systems
 
 
-def generate_system_aws(file_name: str, include_null: bool) -> str:
+def get_organization(
+    organization_key: str,
+    manifest_organizations: List[Organization],
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+) -> Optional[Organization]:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
-    configuration and extract tracked resource to write a System manifest with.
-    Tracked resources: [Redshift, RDS]
+    Attempts to find a given organization by key. Prioritizing a manifest organization
+    list and then the server. Raises an error if it cannot find the organization.
+    """
+    taxonomy_organization = next(
+        (org for org in manifest_organizations if org.fides_key == organization_key),
+        None,
+    )
+
+    if taxonomy_organization:
+        return taxonomy_organization
+
+    server_organization = get_server_resource(
+        url=url,
+        resource_type="organization",
+        resource_key=organization_key,
+        headers=headers,
+    )
+
+    if not server_organization:
+        echo_red(
+            "Could not find organization ({}) to execute command".format(
+                organization_key
+            )
+        )
+        raise SystemExit(1)
+    return server_organization
+
+
+def generate_aws_systems(organization_key: str) -> List[System]:
+    """
+    Calls each generate system function for aws resources
     """
     generate_system_functions = [generate_redshift_systems, generate_rds_systems]
     aws_systems = [
         found_system
         for generate_function in generate_system_functions
-        for found_system in generate_function()
+        for found_system in generate_function(organization_key)
     ]
+    return aws_systems
+
+
+def generate_system_aws(
+    file_name: str,
+    include_null: bool,
+    organization_key: str,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+) -> str:
+    """
+    Connect to an aws account by leveraging a valid boto3 environment varible
+    configuration and extract tracked resource to write a System manifest with.
+    Tracked resources: [Redshift, RDS]
+    """
+    aws_systems = generate_aws_systems(organization_key=organization_key)
+    organization = get_organization(
+        organization_key=organization_key,
+        manifest_organizations=[],
+        url=url,
+        headers=headers,
+    )
+    filtered_aws_systems = filter_aws_systems(
+        systems=aws_systems, organization=organization
+    )
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in aws_systems],
+        [i.dict(exclude_none=not include_null) for i in filtered_aws_systems],
         "system",
     )
     echo_green(f"Generated system manifest written to {file_name}")
@@ -177,26 +246,6 @@ def get_system_arns(systems: List[System]) -> List[str]:
         if system.fidesctl_meta and system.fidesctl_meta.resource_id
     ]
     return system_arns
-
-
-def scan_redshift_systems() -> Tuple[str, List[str]]:
-    """
-    Fetches Redshift clusters from AWS and returns a scan label and
-    list of cluster arns.
-    """
-    redshift_systems = generate_redshift_systems()
-    redshift_arns = get_system_arns(systems=redshift_systems)
-    return "Redshift Clusters", redshift_arns
-
-
-def scan_rds_systems() -> Tuple[str, List[str]]:
-    """
-    Fetches RDS clusters from AWS and returns a scan label and
-    list of cluster arns.
-    """
-    rds_systems = generate_rds_systems()
-    rds_arns = get_system_arns(systems=rds_systems)
-    return "RDS Databases", rds_arns
 
 
 def get_all_server_systems(
@@ -221,24 +270,44 @@ def get_all_server_systems(
     return system_list
 
 
+def get_scan_resource_label(system_type: str) -> str:
+    """
+    Given a system type, returns the label to use in scan output
+    """
+    resource_label_map = {
+        "redshift_cluster": "Redshift Cluster",
+        "rds_instance": "RDS Instance",
+        "rds_cluster": "RDS Cluster",
+    }
+    resource_label = resource_label_map.get(system_type, "Unknown")
+    return resource_label
+
+
 def scan_aws_systems(
-    scan_system_functions: List[Callable[[], Tuple[str, List[str]]]],
+    aws_systems: List[System],
     existing_system_arns: List[str],
 ) -> Tuple[str, int, int]:
     """
-    Given a list of scan system functions, compares function result to
-    existing system arns. Returns missing resource text output, scanned
+    Given a list of aws systems, compares resource arns to existing
+    system arns. Returns missing resource text output, scanned
     resource count, and missing resource count.
     """
+    aws_systems_by_type = defaultdict(list)
+    for aws_system in aws_systems:
+        aws_systems_by_type[aws_system.system_type].append(aws_system)
+
     scan_text_output = ""
     scanned_resource_count = 0
     missing_resource_count = 0
-    for scan_system_function in scan_system_functions:
-        resource_label, resource_arns = scan_system_function()
+    for typed_aws_systems in aws_systems_by_type.values():
+        resource_arns = get_system_arns(systems=typed_aws_systems)
         missing_resources = set(resource_arns) - set(existing_system_arns)
         scanned_resource_count += len(resource_arns)
         missing_resource_count += len(missing_resources)
         if missing_resource_count > 0:
+            resource_label = get_scan_resource_label(
+                system_type=typed_aws_systems[0].system_type
+            )
             scan_text_output += f"Missing {resource_label}:\n"
             scan_text_output += "\t{}\n".format("\n\t".join(missing_resources))
 
@@ -278,6 +347,7 @@ def print_scan_system_aws_result(
 
 def scan_system_aws(
     manifest_dir: str,
+    organization_key: str,
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -287,8 +357,6 @@ def scan_system_aws(
     configuration and compares tracked resources to existing systems.
     Tracked resources: [Redshift, RDS]
     """
-    scan_system_functions = [scan_redshift_systems, scan_rds_systems]
-
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
@@ -296,12 +364,25 @@ def scan_system_aws(
     )
     existing_system_arns = get_system_arns(systems=manifest_systems + server_systems)
 
+    aws_systems = generate_aws_systems(organization_key=organization_key)
+    organization = get_organization(
+        organization_key=organization_key,
+        manifest_organizations=manifest_taxonomy.organization
+        if manifest_taxonomy
+        else [],
+        url=url,
+        headers=headers,
+    )
+    filtered_aws_systems = filter_aws_systems(
+        systems=aws_systems, organization=organization
+    )
+
     (
         scan_text_output,
         scanned_resource_count,
         missing_resource_count,
     ) = scan_aws_systems(
-        scan_system_functions=scan_system_functions,
+        aws_systems=filtered_aws_systems,
         existing_system_arns=existing_system_arns,
     )
 
