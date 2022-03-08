@@ -172,10 +172,13 @@ def create_privacy_request(
             unique_masking_strategies_by_name: Set[str] = set()
             for rule in erasure_rules:
                 strategy_name: str = rule.masking_strategy["strategy"]
+                configuration: MaskingConfiguration = rule.masking_strategy[
+                    "configuration"
+                ]
                 if strategy_name in unique_masking_strategies_by_name:
                     continue
                 unique_masking_strategies_by_name.add(strategy_name)
-                masking_strategy = get_strategy(strategy_name, {})
+                masking_strategy = get_strategy(strategy_name, configuration)
                 if masking_strategy.secrets_required():
                     masking_secrets: List[
                         MaskingSecretCache
