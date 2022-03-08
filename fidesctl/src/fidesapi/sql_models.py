@@ -178,6 +178,7 @@ class Organization(SqlAlchemyBase, FidesBase):
     organization_parent_key = Column(String, nullable=True)
     controller = Column(PGEncryptedString, nullable=True)
     data_protection_officer = Column(PGEncryptedString, nullable=True)
+    fidesctl_meta = Column(JSON)
     representative = Column(PGEncryptedString, nullable=True)
     security_policy = Column(String, nullable=True)
 

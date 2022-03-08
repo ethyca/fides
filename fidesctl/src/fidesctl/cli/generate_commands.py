@@ -47,10 +47,12 @@ def generate_system(ctx: click.Context) -> None:
 @click.pass_context
 @click.argument("output_filename", type=str)
 @include_null_flag
+@click.option("-o", "--organization", type=str, default="default_organization")
 def generate_system_aws(
     ctx: click.Context,
     output_filename: str,
     include_null: bool,
+    organization: str,
 ) -> None:
     """
     Connect to an aws account by leveraging a boto3 environment variable
@@ -60,5 +62,11 @@ def generate_system_aws(
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.
     """
-
-    _system.generate_system_aws(output_filename, include_null)
+    config = ctx.obj["CONFIG"]
+    _system.generate_system_aws(
+        file_name=output_filename,
+        include_null=include_null,
+        organization_key=organization,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+    )

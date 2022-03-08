@@ -54,10 +54,12 @@ def scan_system(ctx: click.Context) -> None:
 @scan_system.command(name="aws")
 @click.pass_context
 @click.option("-m", "--manifest-dir", type=str, default="")
+@click.option("-o", "--organization", type=str, default="default_organization")
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan_system_aws(
     ctx: click.Context,
     manifest_dir: str,
+    organization: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -71,6 +73,7 @@ def scan_system_aws(
     config = ctx.obj["CONFIG"]
     _system.scan_system_aws(
         manifest_dir=manifest_dir,
+        organization_key=organization,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,

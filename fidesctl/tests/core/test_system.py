@@ -37,7 +37,9 @@ def create_test_server_systems(test_config, redshift_systems):
 
 @pytest.fixture(scope="function")
 def create_external_server_systems(test_config):
-    systems = _system.generate_redshift_systems() + _system.generate_rds_systems()
+    systems = _system.generate_redshift_systems(
+        organization_key="default_organization"
+    ) + _system.generate_rds_systems(organization_key="default_organization")
     delete_server_systems(test_config, systems)
     create_server_systems(test_config, systems)
     yield
@@ -169,7 +171,10 @@ def rds_describe_instances():
 
 @pytest.mark.unit
 def test_transform_redshift_systems(redshift_describe_clusters, redshift_systems):
-    actual_result = _system.transform_redshift_systems(redshift_describe_clusters)
+    actual_result = _system.transform_redshift_systems(
+        describe_clusters=redshift_describe_clusters,
+        organization_key="default_organization",
+    )
     assert actual_result == redshift_systems
 
 
@@ -180,6 +185,7 @@ def test_transform_rds_systems(
     actual_result = _system.transform_rds_systems(
         describe_clusters=rds_describe_clusters,
         describe_instances=rds_describe_instances,
+        organization_key="default_organization",
     )
     assert actual_result == rds_systems
 
@@ -195,21 +201,19 @@ def test_get_system_arns(redshift_systems):
 
 
 @pytest.mark.unit
-def test_scan_aws_systems():
+def test_scan_aws_systems(redshift_systems, rds_systems):
     (
         scan_text_output,
         scanned_resource_count,
         missing_resource_count,
     ) = _system.scan_aws_systems(
-        scan_system_functions=[
-            lambda: ("Scanned Resource Type 1", ["arn1", "arn2", "arn3"]),
-            lambda: ("Scanned Resource Type 2", ["arn4"]),
-            lambda: ("Scanned Resource Type 3", ["arn5"]),
+        aws_systems=redshift_systems + rds_systems,
+        existing_system_arns=[
+            "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
         ],
-        existing_system_arns=["arn4", "arn3"],
     )
     assert scan_text_output
-    assert scanned_resource_count == 5
+    assert scanned_resource_count == 4
     assert missing_resource_count == 3
 
 
@@ -228,12 +232,19 @@ def test_scan_system_aws_passes(test_config, create_external_server_systems):
     _system.scan_system_aws(
         coverage_threshold=100,
         manifest_dir="",
+        organization_key="default_organization",
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
     )
 
 
 @pytest.mark.external
-def test_generate_system_aws(tmpdir):
-    actual_result = _system.generate_system_aws(f"{tmpdir}/test_file.yml", False)
+def test_generate_system_aws(tmpdir, test_config):
+    actual_result = _system.generate_system_aws(
+        file_name=f"{tmpdir}/test_file.yml",
+        include_null=False,
+        organization_key="default_organization",
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+    )
     assert actual_result
