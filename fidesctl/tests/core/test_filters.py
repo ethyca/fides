@@ -87,8 +87,8 @@ def organization_with_no_filter():
 
 
 @pytest.mark.unit
-def test_get_system_arn(system_with_arn):
-    actual_result = _filters.get_system_arn(system=system_with_arn)
+def test_get_system_arn(system_with_arn1):
+    actual_result = _filters.get_system_arn(system=system_with_arn1)
     assert actual_result == "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
 
 
