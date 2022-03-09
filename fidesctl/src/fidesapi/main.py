@@ -1,11 +1,12 @@
 """
 Contains the code that sets up the API.
 """
-
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from logging import WARNING
 from typing import Callable, Dict
+from importlib.metadata import version
+import platform
 
 from fastapi import FastAPI, Request, Response
 from loguru import logger as log
@@ -16,9 +17,19 @@ from fidesapi.database import database
 from fidesapi.routes import crud, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
+from fideslog.sdk.python import event, client
 
-app = FastAPI(title="fidesctl")
+
+PRODUCT_NAME = "fidesctl"
+app = FastAPI(title=PRODUCT_NAME)
 CONFIG: FidesctlConfig = get_config()
+
+fideslog_client = client.AnalyticsClient(
+    client_id=CONFIG.api.analytics_id,
+    os=platform.system(),
+    product_name=PRODUCT_NAME,
+    production_version=version(PRODUCT_NAME),
+)
 
 
 def configure_routes() -> None:
@@ -67,6 +78,26 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     return response
 
 
+@app.middleware("http")
+async def send_anonymous_event(request: Request, call_next: Callable) -> Response:
+    "If opted in, send anonymous event data from the fidesctl API"
+    response = await call_next(request)
+
+    if not CONFIG.user.analytics_opt_out:
+        command = request.url.path
+        status_code = response.status_code
+        fideslog_event = event.AnalyticsEvent(
+            event="API",
+            event_created_at=datetime.now(timezone.utc),
+            command=request.method,
+            endpoint=command,
+            status_code=status_code,
+        )
+
+        await fideslog_client.send(event=fideslog_event)
+    return response
+
+
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
@@ -94,5 +125,5 @@ async def db_action(action: DBActions) -> Dict:
 
 def start_webserver() -> None:
     "Run the webserver."
-    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
+    server = Server(Config(app, host="0.0.0.0", port=8888, log_level=WARNING))
     server.run()

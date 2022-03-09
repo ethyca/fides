@@ -57,15 +57,16 @@ def send_anonymous_event(command: str, client_id: str) -> None:
     """
     product_name = "fidesctl"
     fideslog_client = client.AnalyticsClient(
-        api_key=client_id,
         client_id=client_id,
         os=platform.system(),
         product_name=product_name,
         production_version=version(product_name),
     )
     fideslog_event = event.AnalyticsEvent(
-        event=command,
+        event="CLI",
+        command=command,
         event_created_at=datetime.now(timezone.utc),
+        status_code=200,
     )
     asyncio.run(fideslog_client.send(event=fideslog_event))
 
