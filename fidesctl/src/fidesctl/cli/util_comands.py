@@ -2,25 +2,13 @@
 import os
 
 import click
+from fideslog.sdk.python.utils import OPT_OUT_COPY
 import requests
 import toml
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_green, echo_red
-
-# This will be removed when the fideslog SDK is updated to expose it.
-OPT_OUT_COPY = """
-Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
-Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
-
-***
-Don't believe us? Check out the open-source code here:
-    https://github.com/ethyca/fideslog
-***
-
-To opt-out of all telemetry, press "n". To continue with telemetry, press any other key.
-"""
 
 
 @click.command()

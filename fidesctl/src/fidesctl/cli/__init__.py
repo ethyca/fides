@@ -1,6 +1,6 @@
 """Contains the groups and setup for the CLI."""
 import click
-from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_API
+from fideslog.sdk.python.utils import OPT_OUT_COPY
 
 import fidesctl
 from fidesctl.cli.utils import send_anonymous_event
@@ -15,7 +15,7 @@ from .db_commands import database
 from .export_commands import export
 from .generate_commands import generate
 from .scan_commands import scan
-from .util_comands import init, ping, webserver, OPT_OUT_COPY
+from .util_comands import init, ping, webserver
 from .view_commands import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -85,9 +85,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
             input(OPT_OUT_COPY).lower() == "n"
         )
-        ctx.obj["CONFIG"].cli.analytics_id = ctx.obj[
-            "CONFIG"
-        ].cli.analytics_id or generate_client_id(FIDESCTL_API)
 
         config_updates = {
             "cli": {"analytics_id": ctx.obj["CONFIG"].cli.analytics_id},
