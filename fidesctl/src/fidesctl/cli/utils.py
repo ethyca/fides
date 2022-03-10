@@ -1,15 +1,14 @@
 """Contains reusable utils for the CLI commands."""
 import asyncio
 import json
-import platform
 import sys
 from datetime import datetime, timezone
-from importlib.metadata import version
 from typing import Dict
 
 import click
 import requests
-from fideslog.sdk.python import client, event
+from fideslog.sdk.python.client import AnalyticsClient
+from fideslog.sdk.python.event import AnalyticsEvent
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
@@ -36,22 +35,15 @@ def handle_cli_response(
     return response
 
 
-def send_anonymous_event(command: str, client_id: str) -> None:
+def send_analytics_event(client: AnalyticsClient, command: str) -> None:
     """
     Sends basic anonymized event information via the
     fideslog SDK.
     """
-    product_name = "fidesctl"
-    fideslog_client = client.AnalyticsClient(
-        client_id=client_id,
-        os=platform.system(),
-        product_name=product_name,
-        production_version=version(product_name),
-    )
-    fideslog_event = event.AnalyticsEvent(
-        event="CLI",
+    analytics_event = AnalyticsEvent(
+        event="CLI Command Executed",
         command=command,
         event_created_at=datetime.now(timezone.utc),
         status_code=200,
     )
-    asyncio.run(fideslog_client.send(event=fideslog_event))
+    asyncio.run(client.send(analytics_event))

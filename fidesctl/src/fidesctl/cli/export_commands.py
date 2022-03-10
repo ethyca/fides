@@ -1,16 +1,10 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import (
-    dry_flag,
-    manifests_dir_argument,
-)
-from fidesctl.core import (
-    export as _export,
-    parse as _parse,
-)
-
-from fidesctl.cli.utils import send_anonymous_event
+from fidesctl.cli.options import dry_flag, manifests_dir_argument
+from fidesctl.cli.utils import send_analytics_event
+from fidesctl.core import export as _export
+from fidesctl.core import parse as _parse
 
 
 @click.group(name="export")
@@ -22,9 +16,7 @@ def export(ctx: click.Context) -> None:
 
     if not ctx.obj["CONFIG"].user.analytics_opt_out:
         command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-        send_anonymous_event(
-            command=command, client_id=ctx.obj["CONFIG"].cli.analytics_id
-        )
+        send_analytics_event(ctx.obj["ANALYTICS"].client, command)
 
 
 @export.command(name="system")

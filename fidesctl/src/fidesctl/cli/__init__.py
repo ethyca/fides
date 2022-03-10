@@ -1,9 +1,12 @@
 """Contains the groups and setup for the CLI."""
+from importlib.metadata import version
+from platform import system
+
 import click
+from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.utils import OPT_OUT_COPY
 
 import fidesctl
-from fidesctl.cli.utils import send_anonymous_event
 from fidesctl.core.config import get_config
 from fidesctl.core.config.utils import update_config_file
 from fidesctl.core.utils import echo_red
@@ -96,10 +99,13 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file: {err.strerror}")
 
-    if not ctx.obj["CONFIG"].user.analytics_opt_out:
-        send_anonymous_event(
-            command=ctx.invoked_subcommand, client_id=ctx.obj["CONFIG"].cli.analytics_id
-        )
+    product_name = "fidesctl-cli"
+    ctx.obj["ANALYTICS"].client = AnalyticsClient(
+        client_id=ctx.obj["CONFIG"].cli.analytics_id,
+        os=system(),
+        product_name=product_name,
+        production_version=version(product_name),
+    )
 
 
 # This is a special section used for auto-generating the CLI docs
