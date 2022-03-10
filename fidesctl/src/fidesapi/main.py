@@ -1,16 +1,13 @@
 """
 Contains the code that sets up the API.
 """
-import platform
-from datetime import datetime, timezone
+
+from datetime import datetime
 from enum import Enum
-from importlib.metadata import version
 from logging import WARNING
 from typing import Callable, Dict
 
-
 from fastapi import FastAPI, Request, Response
-from fideslog.sdk.python import event, client
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -20,17 +17,8 @@ from fidesapi.routes import crud, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
-
-PRODUCT_NAME = "fidesctl"
-app = FastAPI(title=PRODUCT_NAME)
+app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
-
-fideslog_client = client.AnalyticsClient(
-    client_id=CONFIG.api.analytics_id,
-    os=platform.system(),
-    product_name=PRODUCT_NAME,
-    production_version=version(PRODUCT_NAME),
-)
 
 
 def configure_routes() -> None:
@@ -76,26 +64,6 @@ async def log_request(request: Request, call_next: Callable) -> Response:
         handler_time=f"{handler_time.microseconds * 0.001}ms",
         path=request.url.path,
     ).info("Request received")
-    return response
-
-
-@app.middleware("http")
-async def send_anonymous_event(request: Request, call_next: Callable) -> Response:
-    "If opted in, send anonymous event data from the fidesctl API"
-    response = await call_next(request)
-
-    if not CONFIG.user.analytics_opt_out:
-        command = request.url.path
-        status_code = response.status_code
-        fideslog_event = event.AnalyticsEvent(
-            event="API",
-            event_created_at=datetime.now(timezone.utc),
-            command=request.method,
-            endpoint=command,
-            status_code=status_code,
-        )
-
-        await fideslog_client.send(event=fideslog_event)
     return response
 
 
