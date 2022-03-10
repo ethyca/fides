@@ -8,8 +8,6 @@ from typing import Dict, Union, Optional
 
 from pydantic import validator
 
-from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_API
-
 from .fides_settings import FidesSettings
 
 
@@ -31,9 +29,6 @@ class APISettings(FidesSettings):
     log_destination: str = ""
     log_level: Union[int, str] = INFO
     log_serialization: str = ""
-
-    # analytics
-    analytics_id: str = generate_client_id(FIDESCTL_API)
 
     @validator("database_url", always=True)
     def get_database_url(cls: FidesSettings, value: str, values: Dict) -> str:

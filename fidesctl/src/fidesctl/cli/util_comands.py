@@ -39,7 +39,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
             "log_level",
             "log_destination",
             "log_serialization",
-            "analytics_id",
         },
         "cli": {"server_url", "analytics_id"},
         "user": {"analytics_opt_out"},
