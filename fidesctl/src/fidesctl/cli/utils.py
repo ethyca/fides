@@ -85,26 +85,3 @@ def opt_out_anonymous_usage(
         analytics_values["user"]["analytics_opt_out"] = bool(opt_in.lower() == "n")
         update_config_file(analytics_values)
     return bool(opt_in.lower() == "n")
-
-
-def update_config_file(analytics_values: Dict, config_path: str = "") -> None:
-    """
-    Loads the current config specified by the user
-    Appends any new values required to the existing config
-
-    finally, rewrites the config file (to avoid issue duplicating sections)
-
-    This should likely be moved to fidesctl.core.config?
-    """
-
-    config_path = config_path or ".fides/fidesctl.toml"
-
-    current_config = toml.load(config_path)
-    for key, value in analytics_values.items():
-        if current_config[key]:
-            current_config[key].update(value)
-        else:
-            current_config.update({key: value})
-
-    with open(config_path, "w") as config_file:
-        toml.dump(current_config, config_file)
