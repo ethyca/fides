@@ -2,7 +2,7 @@
 import click
 
 from fidesctl.cli.options import dry_flag, manifests_dir_argument
-from fidesctl.cli.utils import send_analytics_event
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core import export as _export
 from fidesctl.core import parse as _parse
 
@@ -13,10 +13,6 @@ def export(ctx: click.Context) -> None:
     """
     Export fidesctl resource types
     """
-
-    if not ctx.obj["CONFIG"].user.analytics_opt_out:
-        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-        send_analytics_event(ctx.obj["analytics_client"], command)
 
 
 @export.command(name="system")
@@ -33,12 +29,15 @@ def export_system(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_system(
-        url=config.cli.server_url,
-        system_list=taxonomy.system,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
+    with_analytics(
+        _export.export_system(
+            url=config.cli.server_url,
+            system_list=taxonomy.system,
+            headers=config.user.request_headers,
+            manifests_dir=manifests_dir,
+            dry=dry,
+        ),
+        ctx,
     )
 
 
@@ -56,12 +55,15 @@ def export_dataset(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_dataset(
-        url=config.cli.server_url,
-        dataset_list=taxonomy.dataset,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
+    with_analytics(
+        _export.export_dataset(
+            url=config.cli.server_url,
+            dataset_list=taxonomy.dataset,
+            headers=config.user.request_headers,
+            manifests_dir=manifests_dir,
+            dry=dry,
+        ),
+        ctx,
     )
 
 
@@ -79,17 +81,16 @@ def export_organization(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_organization(
-        url=config.cli.server_url,
-        organization_list=taxonomy.organization,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
+    with_analytics(
+        _export.export_organization(
+            url=config.cli.server_url,
+            organization_list=taxonomy.organization,
+            headers=config.user.request_headers,
+            manifests_dir=manifests_dir,
+            dry=dry,
+        ),
+        ctx,
     )
-
-    if not ctx.obj["CONFIG"].user.analytics_opt_out:
-        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-        send_analytics_event(ctx.obj["analytics_client"], command)
 
 
 @export.command(name="datamap")
@@ -114,11 +115,14 @@ def export_datamap(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_datamap(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        dry=dry,
-        to_csv=csv,
+    with_analytics(
+        _export.export_datamap(
+            url=config.cli.server_url,
+            taxonomy=taxonomy,
+            headers=config.user.request_headers,
+            manifests_dir=manifests_dir,
+            dry=dry,
+            to_csv=csv,
+        ),
+        ctx,
     )

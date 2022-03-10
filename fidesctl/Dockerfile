@@ -53,5 +53,8 @@ RUN pip install -e ".[all,mssql]"
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
+# Enable detection of running within Docker
+ENV RUNNING_IN_DOCKER=TRUE
+
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]

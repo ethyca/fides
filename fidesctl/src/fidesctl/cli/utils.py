@@ -1,14 +1,15 @@
 """Contains reusable utils for the CLI commands."""
-import asyncio
+
 import json
 import sys
+from asyncio import run
 from datetime import datetime, timezone
-from typing import Dict
+from os import getenv
+from typing import Any, Callable, Dict
 
 import click
-import requests
-from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
+from requests import Response
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
@@ -18,9 +19,7 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     click.secho(json.dumps(dict_object, indent=2), fg=color)
 
 
-def handle_cli_response(
-    response: requests.Response, verbose: bool = True
-) -> requests.Response:
+def handle_cli_response(response: Response, verbose: bool = True) -> Response:
     """Viewable CLI response"""
     if response.status_code >= 200 and response.status_code <= 299:
         if verbose:
@@ -35,15 +34,45 @@ def handle_cli_response(
     return response
 
 
-def send_analytics_event(client: AnalyticsClient, command: str) -> None:
+def with_analytics(command_handler: Callable, ctx: click.Context) -> Any:  # type: ignore
     """
-    Sends basic anonymized event information via the
-    fideslog SDK.
+    Send an `AnalyticsEvent` with details about the executed command,
+    as long as the CLI has not been configured to opt out of analytics.
+
+    :param command_handler: The handler function defining the evaluation logic for the analyzed command
+    :param ctx: The command's execution `click.Context` object
     """
-    analytics_event = AnalyticsEvent(
-        event="CLI Command Executed",
-        command=command,
-        event_created_at=datetime.now(timezone.utc),
-        status_code=200,
-    )
-    asyncio.run(client.send(analytics_event))
+
+    executed_at = datetime.now(timezone.utc)
+
+    def wrapper(*args: tuple, **kwargs: Dict) -> Any:  # type: ignore
+        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
+        error = None
+        status_code = 0
+
+        try:
+            return command_handler
+        except Exception as err:
+            error = type(err)
+            status_code = 1
+            raise err
+        finally:
+            if not ctx.obj["CONFIG"].user.analytics_opt_out:
+                event = AnalyticsEvent(
+                    "CLI Command Executed",
+                    executed_at,
+                    command=command,
+                    docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
+                    error=error,
+                    flags=[],  # TODO: Figure out if it's possible to capture this
+                    resource_counts={  # TODO: Figure out if it's possible to capture this
+                        "datasets": 0,
+                        "policies": 0,
+                        "systems": 0,
+                    },
+                    status_code=status_code,
+                )
+
+                run(ctx.meta["ANALYTICS_CLIENT"].send(event))
+
+    return wrapper()
