@@ -1,14 +1,16 @@
 """
 Contains the code that sets up the API.
 """
+import platform
 from datetime import datetime, timezone
 from enum import Enum
+from importlib.metadata import version
 from logging import WARNING
 from typing import Callable, Dict
-from importlib.metadata import version
-import platform
+
 
 from fastapi import FastAPI, Request, Response
+from fideslog.sdk.python import event, client
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -17,7 +19,6 @@ from fidesapi.database import database
 from fidesapi.routes import crud, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
-from fideslog.sdk.python import event, client
 
 
 PRODUCT_NAME = "fidesctl"
@@ -125,5 +126,5 @@ async def db_action(action: DBActions) -> Dict:
 
 def start_webserver() -> None:
     "Run the webserver."
-    server = Server(Config(app, host="0.0.0.0", port=8888, log_level=WARNING))
+    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
     server.run()

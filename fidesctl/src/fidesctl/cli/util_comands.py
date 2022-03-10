@@ -5,9 +5,22 @@ import click
 import requests
 import toml
 
-from fidesctl.cli.utils import handle_cli_response, opt_out_anonymous_usage
+from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_green, echo_red
+
+# This will be removed when the fideslog SDK is updated to expose it.
+OPT_OUT_COPY = """
+Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
+Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
+
+***
+Don't believe us? Check out the open-source code here:
+    https://github.com/ethyca/fideslog
+***
+
+To opt-out of all telemetry, press "n". To continue with telemetry, press any other key.
+"""
 
 
 @click.command()
@@ -60,8 +73,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}"""
-        if config.user.analytics_opt_out:
-            config.user.analytics_opt_out = opt_out_anonymous_usage()
+        config.user.analytics_opt_out = bool(input(OPT_OUT_COPY).lower() == "n")
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
