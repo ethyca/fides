@@ -1,29 +1,17 @@
 """Contains reusable utils for the CLI commands."""
 import asyncio
-from datetime import datetime, timezone
-from importlib.metadata import version
 import json
 import platform
 import sys
-from typing import Dict, Optional
+from datetime import datetime, timezone
+from importlib.metadata import version
+from typing import Any, Dict
+
 import click
 import requests
-import toml
+from fideslog.sdk.python import client, event
 
-from fideslog.sdk.python import event, client
-
-
-OPT_OUT_COPY = """
-Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
-Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
-
-***
-Don't believe us? Check out the open-source code here:
-    https://github.com/ethyca/fideslog 
-***
-
-To opt-out of all telemetry, press "n". To continue with telemetry, press any other key.
-"""
+from fidesctl.core.config.utils import update_config_file
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
@@ -71,9 +59,7 @@ def send_anonymous_event(command: str, client_id: str) -> None:
     asyncio.run(fideslog_client.send(event=fideslog_event))
 
 
-def opt_out_anonymous_usage(
-    analytics_values: Optional[Dict] = None, config_path: str = ""
-) -> bool:
+def opt_out_anonymous_usage(analytics_values: Dict[str, Dict[str, Any]]) -> bool:  # type: ignore
     """
     This function handles the verbiage and response of opting
     in or out of anonymous usage analytic tracking.
