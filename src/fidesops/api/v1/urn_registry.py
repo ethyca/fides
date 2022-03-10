@@ -69,3 +69,8 @@ DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+
+
+# User URLs
+USERS = "/user"
+USER_DETAIL = "/user/{user_id}"

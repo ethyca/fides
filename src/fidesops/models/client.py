@@ -2,13 +2,14 @@ import json
 from datetime import datetime
 from typing import List, Any, Optional, Tuple
 
-from sqlalchemy import Column, String, ARRAY
+from sqlalchemy import Column, String, ARRAY, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.base_class import Base
+from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_CLIENT_ID,
@@ -21,6 +22,7 @@ from fidesops.util.cryptographic_util import (
 )
 
 DEFAULT_SCOPES: List[str] = []
+ADMIN_UI_ROOT = "admin_ui_root"
 
 
 class ClientDetail(Base):
@@ -33,12 +35,18 @@ class ClientDetail(Base):
     hashed_secret = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     scopes = Column(ARRAY(String), nullable=False, default="{}")
+    fides_key = Column(String, index=True, unique=True, nullable=True)
+    user_id = Column(
+        String, ForeignKey(FidesopsUser.id_field_path), nullable=True, unique=True
+    )
 
     @classmethod
     def create_client_and_secret(
         cls,
         db: Session,
         scopes: List[str] = DEFAULT_SCOPES,
+        fides_key: str = None,
+        user_id: str = None,
     ) -> Tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret so it can
         be returned to the user on create"""
@@ -66,9 +74,10 @@ class ClientDetail(Base):
                 "salt": salt,
                 "hashed_secret": hashed_secret,
                 "scopes": scopes,
+                "fides_key": fides_key,
+                "user_id": user_id,
             },
         )
-
         return client, secret
 
     @classmethod
