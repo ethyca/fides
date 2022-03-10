@@ -219,6 +219,25 @@ class Evaluation(BaseModel):
 
 
 # Organization
+class ResourceFilter(BaseModel):
+    """
+    The ResourceFilter resource model.
+    """
+
+    type: str
+    value: str
+
+
+class OrganizationMetadata(BaseModel):
+    """
+    The OrganizationMetadata resource model.
+
+    Object used to hold application specific metadata for an organization
+    """
+
+    resource_filters: Optional[List[ResourceFilter]]
+
+
 class Organization(FidesModel):
     """
     The Organization resource model.
@@ -230,6 +249,7 @@ class Organization(FidesModel):
     organization_parent_key: None = None
     controller: Optional[ContactDetails]
     data_protection_officer: Optional[ContactDetails]
+    fidesctl_meta: Optional[OrganizationMetadata]
     representative: Optional[ContactDetails]
     security_policy: Optional[HttpUrl]
 
@@ -322,7 +342,7 @@ class SystemMetadata(BaseModel):
     """
     The SystemMetadata resource model.
 
-    asdasdasas
+    Object used to hold application specific metadata for a system
     """
 
     resource_id: Optional[str]
