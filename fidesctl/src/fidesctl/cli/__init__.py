@@ -99,16 +99,11 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file: {err.strerror}")
 
-    product_name = "fidesctl"
-    ctx.obj.update(
-        {
-            "analytics_client": AnalyticsClient(
-                client_id=ctx.obj["CONFIG"].cli.analytics_id,
-                os=system(),
-                product_name=product_name + "-cli",
-                production_version=version(product_name),
-            )
-        }
+    ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+        client_id=ctx.obj["CONFIG"].cli.analytics_id,
+        os=system(),
+        product_name=fidesctl.__name__ + "-cli",
+        production_version=version(fidesctl.__name__),
     )
 
 
