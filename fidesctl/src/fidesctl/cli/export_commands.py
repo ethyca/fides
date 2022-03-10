@@ -16,7 +16,7 @@ def export(ctx: click.Context) -> None:
 
     if not ctx.obj["CONFIG"].user.analytics_opt_out:
         command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-        send_analytics_event(ctx.obj["ANALYTICS"].client, command)
+        send_analytics_event(ctx.obj["analytics_client"], command)
 
 
 @export.command(name="system")
@@ -86,6 +86,10 @@ def export_organization(
         manifests_dir=manifests_dir,
         dry=dry,
     )
+
+    if not ctx.obj["CONFIG"].user.analytics_opt_out:
+        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
+        send_analytics_event(ctx.obj["analytics_client"], command)
 
 
 @export.command(name="datamap")

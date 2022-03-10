@@ -7,7 +7,7 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo
+from fidesctl.cli.utils import pretty_echo, send_analytics_event
 from fidesctl.core import (
     apply as _apply,
     evaluate as _evaluate,
@@ -77,16 +77,21 @@ def evaluate(
             headers=config.user.request_headers,
             dry=dry,
         )
+    try:
+        _evaluate.evaluate(
+            url=config.cli.server_url,
+            headers=config.user.request_headers,
+            manifests_dir=manifests_dir,
+            policy_fides_key=fides_key,
+            message=message,
+            local=config.cli.local_mode,
+            dry=dry,
+        )
+    finally:
 
-    _evaluate.evaluate(
-        url=config.cli.server_url,
-        headers=config.user.request_headers,
-        manifests_dir=manifests_dir,
-        policy_fides_key=fides_key,
-        message=message,
-        local=config.cli.local_mode,
-        dry=dry,
-    )
+        if not ctx.obj["CONFIG"].user.analytics_opt_out:
+            command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
+            send_analytics_event(ctx.obj["analytics_client"], command)
 
 
 @click.command()
