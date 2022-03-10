@@ -8,3 +8,4 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
+from fidesops.models.fidesops_user import FidesopsUser

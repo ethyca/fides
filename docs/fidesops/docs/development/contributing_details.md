@@ -31,7 +31,7 @@ SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct d
 ### Adding models
 
 Database tables are defined with model classes. Model files should live in `src/app/models/`. Individual model classes must inherit from our custom base class at `app.db.base_class.Base` to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping
-
+You should also import your model in src/fidesops/db/base.py so it is visible for alembic.
 ```
 class Book(Base):
     __tablename__ = 'book'

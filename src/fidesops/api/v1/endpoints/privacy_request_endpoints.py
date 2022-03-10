@@ -25,7 +25,6 @@ from fidesops.api.v1.scope_registry import (
 from fidesops.api.v1.urn_registry import REQUEST_PREVIEW, PRIVACY_REQUEST_RESUME
 from fidesops.common_exceptions import (
     TraversalError,
-    NoSuchStrategyException,
     ValidationError,
 )
 from fidesops.graph.config import CollectionAddress
@@ -42,7 +41,6 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
 from fidesops.schemas.external_https import (
-    SecondPartyResponseFormat,
     PrivacyRequestResumeFormat,
 )
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
@@ -55,9 +53,7 @@ from fidesops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     BulkPostPrivacyRequests,
 )
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_factory import (
-    SupportedMaskingStrategies,
     get_strategy,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner

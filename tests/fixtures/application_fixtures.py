@@ -4,6 +4,8 @@ import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+
+from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
 
@@ -692,6 +694,19 @@ def succeeded_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield pr
     pr.delete(db)
+
+
+@pytest.fixture(scope="function")
+def user(db: Session):
+    user = FidesopsUser.create(
+        db=db,
+        data={
+            "username": "test_fidesops_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"
+        }
+    )
+    yield user
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")

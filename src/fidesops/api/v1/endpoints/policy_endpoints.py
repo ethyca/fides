@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import (

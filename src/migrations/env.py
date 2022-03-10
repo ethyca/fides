@@ -34,9 +34,6 @@ target_metadata = Base.metadata
 # ... etc.
 
 
-TABLES_WITH_BYTEA_SECRETS: List[str] = ["connectionconfig", "storageconfig"]
-
-
 def get_url():
     """
     Returns a Fidesops database URL. If the environment is set to TESTING
@@ -64,25 +61,11 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         compare_type=True,
-        include_object=include_object,
         compare_server_default=True,  # Lets alembic recognize that a server default has changed
     )
 
     with context.begin_transaction():
         context.run_migrations()
-
-
-def include_object(object: SchemaItem, name: str, type_: str, _, __) -> bool:
-    """
-    Custom logic to prevent encrypted secrets from being updated in an automatically-generated alembic migration.
-    """
-    if (
-        type_ == "column"
-        and object.table.name in TABLES_WITH_BYTEA_SECRETS
-        and name == "secrets"
-    ):
-        return False
-    return True
 
 
 def run_migrations_online():
@@ -103,7 +86,6 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
-            include_object=include_object,
             compare_server_default=True,  # Lets alembic recognize that a server default has changed
         )
 
