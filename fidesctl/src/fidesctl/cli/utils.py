@@ -34,45 +34,42 @@ def handle_cli_response(response: Response, verbose: bool = True) -> Response:
     return response
 
 
-def with_analytics(command_handler: Callable, ctx: click.Context) -> Any:  # type: ignore
+def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict) -> Any:  # type: ignore
     """
     Send an `AnalyticsEvent` with details about the executed command,
     as long as the CLI has not been configured to opt out of analytics.
 
-    :param command_handler: The handler function defining the evaluation logic for the analyzed command
     :param ctx: The command's execution `click.Context` object
+    :param command_handler: The handler function defining the evaluation logic for the analyzed command
+    :param **kwargs: Any arguments that must be passed to the `command_handler` function
     """
 
+    command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
+    error = None
     executed_at = datetime.now(timezone.utc)
+    status_code = 0
 
-    def wrapper(*args: tuple, **kwargs: Dict) -> Any:  # type: ignore
-        command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-        error = None
-        status_code = 0
+    try:
+        return command_handler(**kwargs)
+    except Exception as err:
+        error = type(err)
+        status_code = 1
+        raise err
+    finally:
+        if not ctx.obj["CONFIG"].user.analytics_opt_out:
+            event = AnalyticsEvent(
+                "CLI Command Executed",
+                executed_at,
+                command=command,
+                docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
+                error=error,
+                flags=[],  # TODO: Figure out if it's possible to capture this
+                resource_counts={  # TODO: Figure out if it's possible to capture this
+                    "datasets": 0,
+                    "policies": 0,
+                    "systems": 0,
+                },
+                status_code=status_code,
+            )
 
-        try:
-            return command_handler
-        except Exception as err:
-            error = type(err)
-            status_code = 1
-            raise err
-        finally:
-            if not ctx.obj["CONFIG"].user.analytics_opt_out:
-                event = AnalyticsEvent(
-                    "CLI Command Executed",
-                    executed_at,
-                    command=command,
-                    docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
-                    error=error,
-                    flags=[],  # TODO: Figure out if it's possible to capture this
-                    resource_counts={  # TODO: Figure out if it's possible to capture this
-                        "datasets": 0,
-                        "policies": 0,
-                        "systems": 0,
-                    },
-                    status_code=status_code,
-                )
-
-                run(ctx.meta["ANALYTICS_CLIENT"].send(event))
-
-    return wrapper()
+            run(ctx.meta["ANALYTICS_CLIENT"].send(event))

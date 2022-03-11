@@ -29,14 +29,13 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
-        _apply.apply(
-            url=config.cli.server_url,
-            taxonomy=taxonomy,
-            headers=config.user.request_headers,
-            dry=dry,
-            diff=diff,
-        ),
         ctx,
+        _apply.apply,
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.request_headers,
+        dry=dry,
+        diff=diff,
     )
 
 
@@ -80,16 +79,15 @@ def evaluate(
         )
 
     with_analytics(
-        _evaluate.evaluate(
-            url=config.cli.server_url,
-            headers=config.user.request_headers,
-            manifests_dir=manifests_dir,
-            policy_fides_key=fides_key,
-            message=message,
-            local=config.cli.local_mode,
-            dry=dry,
-        ),
         ctx,
+        _evaluate.evaluate,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        policy_fides_key=fides_key,
+        message=message,
+        local=config.cli.local_mode,
+        dry=dry,
     )
 
 
@@ -104,6 +102,6 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 
     If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.
     """
-    taxonomy = with_analytics(_parse.parse(manifests_dir), ctx)
+    taxonomy = with_analytics(ctx, _parse.parse, manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.dict(), color="green")

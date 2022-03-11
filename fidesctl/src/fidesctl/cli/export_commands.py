@@ -30,14 +30,13 @@ def export_system(
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
-        _export.export_system(
-            url=config.cli.server_url,
-            system_list=taxonomy.system,
-            headers=config.user.request_headers,
-            manifests_dir=manifests_dir,
-            dry=dry,
-        ),
         ctx,
+        _export.export_system,
+        url=config.cli.server_url,
+        system_list=taxonomy.system,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
     )
 
 
@@ -56,14 +55,13 @@ def export_dataset(
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
-        _export.export_dataset(
-            url=config.cli.server_url,
-            dataset_list=taxonomy.dataset,
-            headers=config.user.request_headers,
-            manifests_dir=manifests_dir,
-            dry=dry,
-        ),
         ctx,
+        _export.export_dataset,
+        url=config.cli.server_url,
+        dataset_list=taxonomy.dataset,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
     )
 
 
@@ -82,14 +80,13 @@ def export_organization(
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
-        _export.export_organization(
-            url=config.cli.server_url,
-            organization_list=taxonomy.organization,
-            headers=config.user.request_headers,
-            manifests_dir=manifests_dir,
-            dry=dry,
-        ),
         ctx,
+        _export.export_organization,
+        url=config.cli.server_url,
+        organization_list=taxonomy.organization,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
     )
 
 
@@ -116,13 +113,12 @@ def export_datamap(
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
-        _export.export_datamap(
-            url=config.cli.server_url,
-            taxonomy=taxonomy,
-            headers=config.user.request_headers,
-            manifests_dir=manifests_dir,
-            dry=dry,
-            to_csv=csv,
-        ),
         ctx,
+        _export.export_datamap,
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.request_headers,
+        manifests_dir=manifests_dir,
+        dry=dry,
+        to_csv=csv,
     )
