@@ -1,7 +1,10 @@
 """Contains the scan group of the commands for Fidesctl."""
+
 import click
 
-from fidesctl.core import dataset as _dataset, system as _system
+from fidesctl.cli.utils import with_analytics
+from fidesctl.core import dataset as _dataset
+from fidesctl.core import system as _system
 
 
 @click.group(name="scan")
@@ -34,7 +37,9 @@ def scan_dataset(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    _dataset.scan_dataset(
+    with_analytics(
+        ctx,
+        _dataset.scan_dataset,
         connection_string=connection_string,
         manifest_dir=manifest_dir,
         coverage_threshold=coverage_threshold,
@@ -71,7 +76,9 @@ def scan_system_aws(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    _system.scan_system_aws(
+    with_analytics(
+        ctx,
+        _system.scan_system_aws,
         manifest_dir=manifest_dir,
         organization_key=organization,
         coverage_threshold=coverage_threshold,

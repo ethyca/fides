@@ -6,7 +6,7 @@ from fideslog.sdk.python.utils import OPT_OUT_COPY
 import requests
 import toml
 
-from fidesctl.cli.utils import handle_cli_response
+from fidesctl.cli.utils import handle_cli_response, with_analytics
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_green, echo_red
 
@@ -88,7 +88,7 @@ def ping(ctx: click.Context) -> None:
     healthcheck_url = config.cli.server_url + "/health"
     echo_green(f"Pinging {healthcheck_url}...")
     try:
-        handle_cli_response(_api.ping(healthcheck_url))
+        handle_cli_response(with_analytics(ctx, _api.ping, url=healthcheck_url))
     except requests.exceptions.ConnectionError:
         echo_red("Connection failed, webserver is unreachable.")
 
@@ -105,4 +105,4 @@ def webserver(ctx: click.Context) -> None:
         echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
         raise SystemExit
 
-    start_webserver()
+    with_analytics(ctx, start_webserver)
