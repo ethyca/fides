@@ -377,7 +377,7 @@ class TestDatabase:
             print(queries)
             for query in queries:
                 engine.execute(sqlalchemy.sql.text(query))
-            yield
+        yield
 
     def test_get_db_tables(self, request, database_type):
         print(request.node.get_closest_marker("external"))
