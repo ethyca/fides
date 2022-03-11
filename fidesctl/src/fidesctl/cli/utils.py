@@ -56,7 +56,9 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
         status_code = 1
         raise err
     finally:
-        if not ctx.obj["CONFIG"].user.analytics_opt_out:
+        if (
+            ctx.obj["CONFIG"].user.analytics_opt_out is False
+        ):  # requires explicit opt-in
             event = AnalyticsEvent(
                 "CLI Command Executed",
                 executed_at,
