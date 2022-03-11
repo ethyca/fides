@@ -2,7 +2,7 @@
 
 As an alternative to manually creating resource files like in our [tutorial](../tutorial/dataset.md), it is possible to generate these files using the `generate` CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.
 
-Once you have created your resources you will want to keep them up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. 
+Once you have created your resources you will need to keep them up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. 
 
 The `scan` and `generate` commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. 
 
