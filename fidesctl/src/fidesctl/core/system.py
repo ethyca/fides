@@ -20,6 +20,7 @@ def describe_redshift_clusters() -> Dict[str, List[Dict]]:
     Creates boto3 redshift client and returns describe_clusters response.
     """
     import boto3
+
     redshift_client = boto3.client(
         "redshift",
     )
@@ -73,6 +74,7 @@ def describe_rds_clusters() -> Dict[str, List[Dict]]:
     Creates boto3 rds client and returns describe_db_clusters response.
     """
     import boto3
+
     rds_client = boto3.client(
         "rds",
     )
@@ -85,6 +87,7 @@ def describe_rds_instances() -> Dict[str, List[Dict]]:
     Creates boto3 rds client and returns describe_db_instances response.
     """
     import boto3
+
     rds_client = boto3.client(
         "rds",
     )
