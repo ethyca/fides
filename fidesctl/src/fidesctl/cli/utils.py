@@ -63,12 +63,8 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
                 command=command,
                 docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
                 error=error,
-                flags=[],  # TODO: Figure out if it's possible to capture this
-                resource_counts={  # TODO: Figure out if it's possible to capture this
-                    "datasets": 0,
-                    "policies": 0,
-                    "systems": 0,
-                },
+                flags=None,  # TODO: Figure out if it's possible to capture this
+                resource_counts=None,  # TODO: Figure out if it's possible to capture this
                 status_code=status_code,
             )
 
