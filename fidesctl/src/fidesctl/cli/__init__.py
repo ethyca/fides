@@ -83,7 +83,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if (
         ctx.obj["CONFIG"].user.analytics_opt_out is None
-        and ctx.invoked_subcommand.lower() != "init"
+        and ctx.invoked_subcommand != "init"
     ):
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
             input(OPT_OUT_COPY).lower() == "n"
@@ -98,6 +98,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
             update_config_file(config_updates)
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file: {err.strerror}")
+            click.echo("Run 'fidesctl init' to create a configuration file.")
 
     if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in
         ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
