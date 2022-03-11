@@ -5,6 +5,7 @@
 ####################
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
+TEST_CONFIG_PATH := tests/test_config.toml
 
 # Image Names & Tags
 IMAGE_NAME := fidesctl
@@ -101,11 +102,11 @@ check-all: build-local check-install fidesctl black pylint \
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl
+	@$(RUN_NO_DEPS) fidesctl -f ${TEST_CONFIG_PATH}
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_NO_DEPS) fidesctl --local evaluate
+	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
