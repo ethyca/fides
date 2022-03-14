@@ -15,7 +15,7 @@ DB_INDEX=0
 
 [security]
 APP_ENCRYPTION_KEY="OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
-CORS_ORIGINS=["http://localhost", "http://localhost:8080"]
+CORS_ORIGINS=["http://localhost", "http://localhost:8080", "http://localhost:3000"]
 ENCODING="UTF-8"
 OAUTH_ROOT_CLIENT_ID="fidesopsadmin"
 OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
