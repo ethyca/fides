@@ -363,20 +363,20 @@ TEST_DATABASE_PARAMETERS = {
 @pytest.mark.external
 @pytest.mark.parametrize("database_type", TEST_DATABASE_PARAMETERS.keys())
 class TestDatabase:
-    @pytest.fixture(scope="function", autouse=True)
-    def database_setup(self, database_type):
+    @pytest.fixture(scope="class", autouse=True)
+    def database_setup(self):
         """
         Set up the Database for testing.
 
         The query file must have each query on a separate line.
         """
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
-        with open(database_parameters.get("init_script_path"), "r") as query_file:
-            queries = [query for query in query_file.read().splitlines() if query != ""]
-        print(queries)
-        for query in queries:
-            engine.execute(sqlalchemy.sql.text(query))
+        for database_parameters in TEST_DATABASE_PARAMETERS.values():
+            engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
+            with open(database_parameters.get("init_script_path"), "r") as query_file:
+                queries = [query for query in query_file.read().splitlines() if query != ""]
+            print(queries)
+            for query in queries:
+                engine.execute(sqlalchemy.sql.text(query))
         yield
 
     def test_get_db_tables(self, request, database_type):

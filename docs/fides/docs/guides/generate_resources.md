@@ -2,11 +2,17 @@
 
 As an alternative to manually creating resource files like in our [tutorial](../tutorial/dataset.md), it is possible to generate these files using the `generate` CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.
 
-Not only is this the simplest way to begin annotating your resources, but it also follows the expected fidesctl format for these resources. This is important as some commands, like `scan`, expect resources to follow this format. 
+Once you have created your resources you will need to keep them up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. 
+
+The `scan` and `generate` commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. 
 
 # Working With a Database
 
-The `generate dataset` command can connect to a database and automatically generate resource YAML file based on the database schema. Given a database schema with a single `users` table as follows:
+The `generate dataset` command can connect to a database and automatically generate resource YAML file based on the database schema.
+
+## Generating a Dataset
+
+Given a database schema with a single `users` table as follows:
 
 ```shell
 flaskr=# SELECT * FROM users;
@@ -65,12 +71,30 @@ dataset:
       data_categories: []
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
-<!-- TODO: Link to the `annotate dataset` usage documentation below, when it exists. -->
-The resulting file still requires annotating the dataset with data categories to represent what is stored. 
+The resulting file still requires annotating the dataset with data categories to represent what is stored.
+
+<!-- TODO: Add a section for `annotate dataset` usage below -->
+
+## Scanning the Dataset
+
+The `scan dataset` command can then connect to your database and compare its schema to your already defined datasets. The command output confirms our database resource is covered fully!
+
+```sh
+Loading resource manifests from: dataset.yml
+Taxonomy successfully created.
+Successfully scanned the following datasets:
+	public
+
+Annotation coverage: 100%
+```
 
 # Working With an AWS Account
 
-The `generate system aws` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources. Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
+The `generate system aws` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.
+
+## Providing Credentials
+
+Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
 
 We can define our credentials directly as environment variables:
 ```sh
@@ -85,7 +109,34 @@ export AWS_PROFILE="my_profile_1"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-Then invoke the `generate system aws` command 
+## Required Permissions
+
+The identity which is authenticated must be allowed to invoke the following actions:
+* redshift:DescribeClusters
+* rds:DescribeDBInstances
+* rds:DescribeDBClusters
+
+These can be supplied in an IAM policy:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "redshift:DescribeClusters",
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusters"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+## Generating Systems
+
+Once credentials have been configured we can invoke the `generate system aws` command:
 ```sh
 ./venv/bin/fidesctl generate system aws \
   fides_resources/aws_systems.yml
@@ -104,4 +155,14 @@ system:
     resource_id: arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176
   system_type: redshift_cluster
   privacy_declarations: []
+```
+## Scanning the Systems
+
+The `scan system aws` command can then connect to your AWS account and compare its resources to your already defined systems. The command output confirms our resources are covered fully!
+
+```sh
+Loading resource manifests from: manifest.yml
+Taxonomy successfully created.
+Scanned 1 resource and all were found in taxonomy.
+Resource coverage: 100%
 ```
