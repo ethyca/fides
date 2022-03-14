@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/scan_resource/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/generate_resources/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.1">
     
     
       
-        <title>Scanning Resources - Fides</title>
+        <title>Generating Resources - Fides</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#scanning-resources" class="md-skip">
+        <a href="#generating-resources" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Scanning Resources
+              Generating Resources
             
           </span>
         </div>
@@ -648,20 +648,6 @@ You're not viewing the latest version.
               
   
   
-  
-    <li class="md-nav__item">
-      <a href="../generate_resource/" class="md-nav__link">
-        Generating Resources
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
     
   
   
@@ -674,7 +660,7 @@ You're not viewing the latest version.
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Scanning Resources
+        Generating Resources
       </a>
       
     </li>
@@ -1359,17 +1345,20 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/scan_resource.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/generate_resources.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="scanning-resources">Scanning Resources</h1>
-<p>As you annotate resources with fidesctl it is important to keep your fidesctl resources up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. It will output any part of the dataset which is not defined or categorized. The command will exit in error if a coverage threshold is not met. </p>
-<p>The <code>scan</code> command works best when used in tandem with the <code>generate</code> command as it creates resources in the expected format. The fidesctl format for datasets must be followed in order to be able to track coverage. </p>
+<h1 id="generating-resources">Generating Resources</h1>
+<p>As an alternative to manually creating resource files like in our <a href="../../tutorial/dataset/">tutorial</a>, it is possible to generate these files using the <code>generate</code> CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.</p>
+<p>Once you have created your resources you will need to keep them up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. </p>
+<p>The <code>scan</code> and <code>generate</code> commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. </p>
 <h1 id="working-with-a-database">Working With a Database</h1>
-<p>The <code>scan dataset</code> command can connect to a database and compare its schema to your already defined resources. Given a database schema with a single <code>users</code> table as follows:</p>
+<p>The <code>generate dataset</code> command can connect to a database and automatically generate resource YAML file based on the database schema.</p>
+<h2 id="generating-a-dataset">Generating a Dataset</h2>
+<p>Given a database schema with a single <code>users</code> table as follows:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1383,7 +1372,15 @@ You're not viewing the latest version.
 <span class="o">(</span><span class="m">2</span> rows<span class="o">)</span>
 </code></pre></div>
 </td></tr></table>
-<p>We have fully annotated this schema before with the following dataset resource file:
+<p>We can invoke the <code>generate dataset</code> by providing a connection url for this database:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset <span class="se">\</span>
+  postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
+  fides_resources/flaskr_postgres_dataset.yml
+</code></pre></div>
+</td></tr></table></p>
+<p>The result is a resource file with a dataset with collections and fields to represent our schema:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1437,41 +1434,35 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">created_at&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">email&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.contact.email</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">first_name</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.name</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">id&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.derived.identifiable.unique_id</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">last_name</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">last_name&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.name</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">password&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.credentials.password</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div>
-</td></tr></table></p>
-<p>We can invoke the <code>scan dataset</code> by simply providing a connection url for this database:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan dataset <span class="se">\</span>
-  --manifest-dir dataset.yml <span class="se">\</span>
-  database <span class="se">\</span>
-  postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/postgres
-</code></pre></div>
-</td></tr></table></p>
-<p>The command output confirms our database resource is covered fully!
+</td></tr></table>
+The resulting file still requires annotating the dataset with data categories to represent what is stored.</p>
+<!-- TODO: Add a section for `annotate dataset` usage below -->
+
+<h2 id="scanning-the-dataset">Scanning the Dataset</h2>
+<p>The <code>scan dataset</code> command can then connect to your database and compare its schema to your already defined datasets. The command output confirms our database resource is covered fully!</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1484,7 +1475,102 @@ Successfully scanned the following datasets:
 
 Annotation coverage: <span class="m">100</span>%
 </code></pre></div>
+</td></tr></table>
+<h1 id="working-with-an-aws-account">Working With an AWS Account</h1>
+<p>The <code>generate system aws</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
+<h2 id="providing-credentials">Providing Credentials</h2>
+<p>Authentication is managed through environment variable configuration defined by <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html">boto3</a>. </p>
+<p>We can define our credentials directly as environment variables:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key&gt;&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+</code></pre></div>
 </td></tr></table></p>
+<p>Or reference a profile through an environment variable:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
+<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+</code></pre></div>
+</td></tr></table></p>
+<h2 id="required-permissions">Required Permissions</h2>
+<p>The identity which is authenticated must be allowed to invoke the following actions:
+* redshift:DescribeClusters
+* rds:DescribeDBInstances
+* rds:DescribeDBClusters</p>
+<p>These can be supplied in an IAM policy:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot;redshift:DescribeClusters&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot;rds:DescribeDBInstances&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot;rds:DescribeDBClusters&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">],</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table></p>
+<h2 id="generating-systems">Generating Systems</h2>
+<p>Once credentials have been configured we can invoke the <code>generate system aws</code> command:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate system aws <span class="se">\</span>
+  fides_resources/aws_systems.yml
+</code></pre></div>
+</td></tr></table></p>
+<p>The result is a resource file with a system that represents a redshift cluster defined in our account:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Cluster:</span><span class="nv"> </span><span class="s">my_redshift_cluster&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">endpoint_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster.us-east-1.redshift.amazonaws.com</span><span class="w"></span>
+<span class="w">    </span><span class="nt">endpoint_port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5439&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176</span><span class="w"></span>
+<span class="w">  </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redshift_cluster</span><span class="w"></span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table></p>
+<h2 id="scanning-the-systems">Scanning the Systems</h2>
+<p>The <code>scan system aws</code> command can then connect to your AWS account and compare its resources to your already defined systems. The command output confirms our resources are covered fully!</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Loading resource manifests from: manifest.yml
+Taxonomy successfully created.
+Scanned <span class="m">1</span> resource and all were found <span class="k">in</span> taxonomy.
+Resource coverage: <span class="m">100</span>%
+</code></pre></div>
+</td></tr></table>
 
               
             </article>
@@ -1536,9 +1622,9 @@ Annotation coverage: <span class="m">100</span>%
       
         
         <a
-          href="../generate_resource/"
+          href="../../tutorial/pass/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Generating Resources"
+          aria-label="Previous: Manage Google Analytics with Fidesctl"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1549,7 +1635,7 @@ Annotation coverage: <span class="m">100</span>%
               <span class="md-footer__direction">
                 Previous
               </span>
-              Generating Resources
+              Manage Google Analytics with Fidesctl
             </div>
           </div>
         </a>
