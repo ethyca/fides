@@ -16,7 +16,10 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
 def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
-    Initialize a Fidesctl instance.
+    Initializes a Fidesctl instance, creating the default directory (`.fides/`) and
+    the configuration file (`fidesctl_config.toml`).
+
+    Additionally, requests the ability to respectfully collect anonymous usage data.
     """
 
     # Constants

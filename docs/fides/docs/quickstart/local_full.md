@@ -38,6 +38,16 @@ Initializing Fidesctl...
 
 Created a '.fides' directory.
 
+Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
+Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
+
+***
+Don't believe us? Check out the open-source code here:
+    https://github.com/ethyca/fideslog
+***
+
+To opt-out of all telemetry, press "n". To continue with telemetry, press any other key.
+
 Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
             https://ethyca.github.io/fides/installation/configuration/
 
