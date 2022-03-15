@@ -37,6 +37,13 @@ class UserCreate(BaseSchema):
         return password
 
 
+class UserLogin(BaseSchema):
+    """Similar to UserCreate except we do not need the extra validation on username and password"""
+
+    username: str
+    password: str
+
+
 class UserCreateResponse(BaseSchema):
     """Response after creating a FidesopsUser"""
 

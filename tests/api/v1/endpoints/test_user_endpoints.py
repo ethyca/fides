@@ -4,11 +4,17 @@ import json
 
 import pytest
 
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS
+from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
-from fidesops.api.v1.scope_registry import STORAGE_READ, USER_CREATE, USER_DELETE
+from fidesops.api.v1.scope_registry import (
+    STORAGE_READ,
+    USER_CREATE,
+    USER_DELETE,
+    SCOPE_REGISTRY,
+    PRIVACY_REQUEST_READ,
+)
 from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.util.oauth_util import generate_jwe
+from fidesops.util.oauth_util import generate_jwe, extract_payload
 from fidesops.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
@@ -227,8 +233,110 @@ class TestDeleteUser:
         assert client_search is None
 
         # Admin client who made the request is not deleted
-        admin_client_search = ClientDetail.get_by(
-            db, field="id", value=admin_client_id
-        )
+        admin_client_search = ClientDetail.get_by(db, field="id", value=admin_client_id)
         assert admin_client_search is not None
         admin_client_search.delete(db)
+
+
+class TestUserLogin:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + LOGIN
+
+    def test_user_does_not_exist(self, db, url, api_client):
+        body = {"username": "does not exist", "password": "idonotknowmypassword"}
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 404
+
+    def test_bad_login(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "idonotknowmypassword"}
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 403
+
+    def test_login_creates_client(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+
+        assert user.client is None  # client does not exist
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 200
+
+        db.refresh(user)
+        assert user.client is not None
+        assert list(response.json().keys()) == ["access_token"]
+        token = response.json()["access_token"]
+
+        token_data = json.loads(extract_payload(token))
+
+        assert token_data["client-id"] == user.client.id
+        assert token_data["scopes"] == SCOPE_REGISTRY
+
+        user.client.delete(db)
+
+    def test_login_uses_existing_client(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+
+        client, _ = ClientDetail.create_client_and_secret(
+            db, scopes=[PRIVACY_REQUEST_READ], user_id=user.id
+        )
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 200
+
+        db.refresh(user)
+        assert user.client is not None
+        assert list(response.json().keys()) == ["access_token"]
+        token = response.json()["access_token"]
+
+        token_data = json.loads(extract_payload(token))
+
+        assert token_data["client-id"] == client.id
+        assert token_data["scopes"] == [
+            PRIVACY_REQUEST_READ
+        ]  # Uses scopes on existing client
+
+        client.delete(db)
+
+
+class TestUserLogout:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + LOGOUT
+
+    def test_user_not_deleted_on_logout(self, db, url, api_client, user):
+        user_id = user.id
+        client, _ = ClientDetail.create_client_and_secret(
+            db, scopes=[PRIVACY_REQUEST_READ], user_id=user.id
+        )
+        client_id = client.id
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 204
+
+        # Verify client was deleted
+        client_search = ClientDetail.get_by(db, field="id", value=client_id)
+        assert client_search is None
+
+        # Assert user is not deleted
+        user_search = FidesopsUser.get_by(db, field="id", value=user_id)
+        assert user_search is not None
+
+    def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
+        oauth_client_id = oauth_client.id
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 204 == response.status_code
+
+        # Verify client was deleted
+        client_search = ClientDetail.get_by(db, field="id", value=oauth_client_id)
+        assert client_search is None
+
+        # Gets AuthorizationError - client does not exist, this token can't be used anymore
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 403
