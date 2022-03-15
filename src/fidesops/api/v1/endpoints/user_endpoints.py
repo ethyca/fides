@@ -11,12 +11,17 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.schemas.user import UserCreate, UserCreateResponse
+from fidesops.schemas.oauth import AccessToken
+from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
 
 from fidesops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.scope_registry import USER_CREATE, USER_DELETE
+from fidesops.api.v1.scope_registry import (
+    USER_CREATE,
+    USER_DELETE,
+    SCOPE_REGISTRY,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
@@ -74,3 +79,52 @@ def delete_user(
     logger.info(f"Deleting user with id: '{user_id}'.")
 
     user.delete(db)
+
+
+@router.post(
+    urls.LOGIN,
+    status_code=200,
+    response_model=AccessToken,
+)
+def user_login(
+    *, db: Session = Depends(deps.get_db), user_data: UserLogin
+) -> AccessToken:
+    """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
+    user = FidesopsUser.get_by(db, field="username", value=user_data.username)
+
+    if not user:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No user found.")
+
+    if not user.credentials_valid(user_data.password):
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
+        )
+
+    client: ClientDetail = user.client
+    if not client:
+        logger.info("Creating client for login")
+        client, _ = ClientDetail.create_client_and_secret(
+            db, SCOPE_REGISTRY, user_id=user.id
+        )
+
+    logger.info("Creating login access token")
+    access_code = client.create_access_code_jwe()
+    return AccessToken(access_token=access_code)
+
+
+@router.post(
+    urls.LOGOUT,
+    status_code=204,
+)
+def user_logout(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[],
+    ),
+    db: Session = Depends(deps.get_db),
+) -> None:
+    """Logout the user by deleting its client"""
+
+    logger.info("Logging out user.")
+    client.delete(db)
