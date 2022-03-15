@@ -83,7 +83,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if (
         ctx.obj["CONFIG"].user.analytics_opt_out is None
-        and ctx.invoked_subcommand != "init"
+        and ctx.invoked_subcommand != "init"  # init also handles this workflow
     ):
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
             input(OPT_OUT_COPY).lower() == "n"
