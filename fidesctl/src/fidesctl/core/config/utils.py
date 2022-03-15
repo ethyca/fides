@@ -60,7 +60,7 @@ def update_config_file(  # type: ignore
     with open(config_path, "w") as config_file:
         dump(current_config, config_file)
 
-    echo(f"Updated {config_file}:")
+    echo(f"Updated {config_path}:")
 
     for key, value in updates.items():
         for subkey, val in value.items():
