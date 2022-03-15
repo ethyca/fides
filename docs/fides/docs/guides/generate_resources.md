@@ -136,7 +136,7 @@ These can be supplied in an IAM policy:
 
 ## Filtering AWS Resources
 
-It is possible to filter resources at the organization level by adding a resource filter within `fidesctl_meta`. The `ignore_resource_arn` filter can exclude any resources with an exact matching arn or also supports wildcarding individual arn fields. An empty arn field in the filter pattern works as a wildcard.
+It is possible to filter resources at the organization level by adding a resource filter within `fidesctl_meta`. The `ignore_resource_arn` filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.
 
 The filter can be added to the organization model within your manifest file:
 ```yaml
@@ -146,10 +146,17 @@ organization:
   fidesctl_meta:
     resource_filters:
     - type: ignore_resource_arn
-      value: 'arn:aws:rds:us-east-1:910934740016::'
+      value: 'arn:aws:rds:us-east-1:910934740016:db:database-2'
 ```
-In this example, fides will ignore any `rds` resources in `us-east-1` and account `910934740016`. 
 
+In the above example we explicitly ignore a single rds database but if we wanted to ignore all rds databases we could remove the partition, account id, region and database name ARN fields:
+```yaml
+resource_filters:
+- type: ignore_resource_arn
+  value: 'arn::rds:::db:'
+```
+
+Any field ARN can be wildcarded by leaving it empty. 
 ## Generating Systems
 
 Once credentials have been configured we can invoke the `generate system aws` command:
