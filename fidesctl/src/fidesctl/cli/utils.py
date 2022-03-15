@@ -60,7 +60,7 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
             ctx.obj["CONFIG"].user.analytics_opt_out is False
         ):  # requires explicit opt-in
             event = AnalyticsEvent(
-                "CLI Command Executed",
+                "cli_command_executed",
                 executed_at,
                 command=command,
                 docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
