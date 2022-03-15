@@ -1529,6 +1529,33 @@ Annotation coverage: <span class="m">100</span>%
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table></p>
+<h2 id="filtering-aws-resources">Filtering AWS Resources</h2>
+<p>It is possible to filter resources at the organization level by adding a resource filter within <code>fidesctl_meta</code>. The <code>ignore_resource_arn</code> filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.</p>
+<p>The filter can be added to the organization model within your manifest file:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:rds:us-east-1:910934740016:db:database-2&#39;</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table></p>
+<p>In the above example we explicitly ignore a single rds database but if we wanted to ignore all rds databases we could remove the partition, account id, region and database name ARN fields:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
+<span class="w">  </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn::rds:::db:&#39;</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table></p>
+<p>Any ARN field can be wildcarded by leaving it empty. </p>
 <h2 id="generating-systems">Generating Systems</h2>
 <p>Once credentials have been configured we can invoke the <code>generate system aws</code> command:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
