@@ -95,9 +95,9 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         }
 
         try:
-            update_config_file(config_updates)
+            update_config_file(config_updates, config_path)
         except FileNotFoundError as err:
-            echo_red(f"Failed to update config file: {err.strerror}")
+            echo_red(f'Failed to update config file: {err.strerror}: "{config_path}"')
             click.echo("Run 'fidesctl init' to create a configuration file.")
 
     if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in

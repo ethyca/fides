@@ -2,12 +2,12 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
-import os
 
 import toml
 from pydantic import BaseModel
 
 from fidesctl.core.utils import echo_red
+from fidesctl.core.config.utils import get_config_path
 
 from .api_settings import APISettings
 from .cli_settings import CLISettings
@@ -24,31 +24,23 @@ class FidesctlConfig(BaseModel):
 
 def get_config(config_path: str = "") -> FidesctlConfig:
     """
-    Attempt to read config file from:
-    a) passed in configuration, if it exists
-    b) env var FIDESCTL_CONFIG_PATH
-    b) local directory
-    c) home directory
+    Attempt to load user-defined configuration.
 
-    This will fail on the first encountered bad conf file.
+    This will fail if the first encountered conf file is invalid.
+
+    On failure, returns default configuration.
     """
-    default_file_name = ".fides/fidesctl.toml"
 
-    possible_config_locations = [
-        config_path,
-        os.getenv("FIDESCTL_CONFIG_PATH", ""),
-        os.path.join(os.curdir, default_file_name),
-        os.path.join(os.path.expanduser("~"), default_file_name),
-    ]
+    try:
+        file_location = get_config_path(config_path)
+        settings = toml.load(file_location)
+        fidesctl_config = FidesctlConfig.parse_obj(settings)
+        return fidesctl_config
+    except FileNotFoundError:
+        echo_red("No config file found")
+    except IOError:
+        echo_red(f"Error reading config file from {file_location}")
 
-    for file_location in possible_config_locations:
-        if file_location != "" and os.path.isfile(file_location):
-            try:
-                settings = toml.load(file_location)
-                fidesctl_config = FidesctlConfig.parse_obj(settings)
-                return fidesctl_config
-            except IOError:
-                echo_red(f"Error reading config file from {file_location}")
     fidesctl_config = FidesctlConfig()
-    print("No config file found. Using default configuration values.")
+    print("Using default configuration values.")
     return fidesctl_config
