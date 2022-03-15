@@ -134,7 +134,7 @@ These can be supplied in an IAM policy:
 }
 ```
 
-# Filtering AWS Resources
+## Filtering AWS Resources
 
 It is possible to filter resources at the organization level by adding a resource filter within `fidesctl_meta`. The `ignore_resource_arn` filter can exclude any resources with an exact matching arn or also supports wildcarding individual arn fields. An empty arn field in the filter pattern works as a wildcard.
 
