@@ -156,7 +156,7 @@ resource_filters:
   value: 'arn::rds:::db:'
 ```
 
-Any field ARN can be wildcarded by leaving it empty. 
+Any ARN field can be wildcarded by leaving it empty. 
 ## Generating Systems
 
 Once credentials have been configured we can invoke the `generate system aws` command:
