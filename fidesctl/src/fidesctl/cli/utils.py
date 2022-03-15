@@ -53,7 +53,7 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
     try:
         return command_handler(**kwargs)
     except Exception as err:
-        error = type(err)
+        error = type(err).__name__
         status_code = 1
         raise err
     finally:
