@@ -1,6 +1,6 @@
 import os
 from errno import ENOENT
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from click import echo
 from toml import dump, load
@@ -31,6 +31,31 @@ def get_config_path(config_path: str) -> str:
             return file_location
 
     raise FileNotFoundError(ENOENT, os.strerror(ENOENT), config_path)
+
+
+def get_config_from_file(
+    config_path: str,
+    section: str,
+    option: str,
+) -> Union[str, bool, int, None]:
+    """
+    Return the value currently written to the config file for the specified `section.option`.
+    """
+
+    try:
+        config_path = get_config_path(config_path)
+    except FileNotFoundError as error:
+        raise error
+
+    current_config = load(config_path)
+
+    config_section = current_config.get(section)
+    if config_section is not None:
+        config_option = config_section.get(option)
+        if config_option is not None:
+            return config_option
+
+    return None
 
 
 def update_config_file(  # type: ignore

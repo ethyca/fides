@@ -1,6 +1,7 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
 from platform import system
+from typing import Dict
 
 import click
 from fideslog.sdk.python.client import AnalyticsClient
@@ -8,7 +9,7 @@ from fideslog.sdk.python.utils import OPT_OUT_COPY
 
 import fidesctl
 from fidesctl.core.config import get_config
-from fidesctl.core.config.utils import update_config_file
+from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import echo_red
 
 from .annotate_commands import annotate
@@ -81,24 +82,33 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
 
-    if (
-        ctx.obj["CONFIG"].user.analytics_opt_out is None
-        and ctx.invoked_subcommand != "init"  # init also handles this workflow
-    ):
-        ctx.obj["CONFIG"].user.analytics_opt_out = bool(
-            input(OPT_OUT_COPY).lower() == "n"
-        )
+    if ctx.invoked_subcommand != "init":  # init also handles this workflow
+        config_updates: Dict[str, Dict] = {}
+        if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+            ctx.obj["CONFIG"].user.analytics_opt_out = bool(
+                input(OPT_OUT_COPY).lower() == "n"
+            )
 
-        config_updates = {
-            "cli": {"analytics_id": ctx.obj["CONFIG"].cli.analytics_id},
-            "user": {"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out},
-        }
+            config_updates.update(
+                user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
+            )
 
-        try:
-            update_config_file(config_updates, config_path)
-        except FileNotFoundError as err:
-            echo_red(f'Failed to update config file: {err.strerror}: "{config_path}"')
-            click.echo("Run 'fidesctl init' to create a configuration file.")
+        if (
+            get_config_from_file(config_path, "cli", "analytics_id") is None
+            and ctx.obj["CONFIG"].user.analytics_opt_out is True
+        ):
+            config_updates.update(
+                cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id}
+            )
+
+        if len(config_updates) > 0:
+            try:
+                update_config_file(config_updates, config_path)
+            except FileNotFoundError as err:
+                echo_red(
+                    f"Failed to update config file ({config_path}): {err.strerror}"
+                )
+                click.echo("Run 'fidesctl init' to create a configuration file.")
 
     if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in
         ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
