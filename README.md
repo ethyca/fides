@@ -173,7 +173,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
       <summary>Run <code>fidesctl evaluate demo_resources/</code> </summary>
 
-      Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes.
+      Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
 
      ```bash
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
