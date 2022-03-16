@@ -5,7 +5,8 @@ In this section we'll cover:
 
 - What is a Privacy Request?
 - How does a Privacy Request work in conjunction with a policy?
-- How can I execute a Privacy Request?
+- How can I submit a Privacy Request?
+- How can I approve/deny a Privacy Request? 
 - How do I monitor Privacy Requests as they execute?
 - How can I integrate the Privacy Request flow into my existing support tools?
 - Specifying encryption of access request results 
@@ -24,6 +25,7 @@ For more information on Policies, see [How-To: Configure Policies](policies.md#r
 
 You submit a Privacy Request by calling the  **Submit a Privacy Request** operation. Here, 
 we submit  a request to apply the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` and the phone number `+1 (123) 456 7891`.
+Privacy Requests are executed immediately by default. This setting may be changed in the fidesops.toml configuration file.
 
 `POST /api/v1/privacy-request`
 
@@ -57,6 +59,33 @@ we submit  a request to apply the `a-demo-policy` Policy to all target data in t
 A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 
+## How can I approve or deny a Privacy Request?
+
+Privacy Requests are executed immediately by default. By setting the REQUIRE_MANUAL_REQUEST_APPROVAL variable in your fidesops.toml to TRUE, 
+Privacy Requests will require approval before executing. To approve or deny Privacy Requests, send a list of Privacy 
+Request ids to one of the following endpoints to approve or deny in bulk.
+
+`PATCH api/v1/privacy-request/administrate/approve`
+
+```json
+{
+  "request_ids":[
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673",
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"
+  ]
+}
+```
+
+`PATCH api/v1/privacy-request/administrate/deny`
+
+```json
+{
+  "request_ids":[
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673",
+    "pri_2d181f15-486d-4bcf-a871-f50ed9f95673"
+  ]
+}
+```
 
 ## How do I monitor Privacy Requests as they execute?
 Privacy Requests can be monitored at any time throughout their execution by submitting any of the following requests:

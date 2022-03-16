@@ -50,6 +50,7 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_COUNT` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 2 | The number of times a failed request will be retried
 |`TASK_RETRY_DELAY` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 5 | The delays between retries in seconds
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 2 | The backoff factor for retries, to space out repeated retries.
+|`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 
 
 ## An example `fidesops.toml` configuration file
@@ -81,6 +82,7 @@ OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
 TASK_RETRY_COUNT=3
 TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
+REQUIRE_MANUAL_REQUEST_APPROVAL=True
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
@@ -130,5 +132,6 @@ Please note: Fidesops will filter out any sensitive configuration variables. The
 - `TASK_RETRY_COUNT`
 - `TASK_RETRY_DELAY`
 - `TASK_RETRY_BACKOFF`
+- `REQUIRE_MANUAL_REQUEST_APPROVAL`
 
 For more information please see the [api docs](/fidesops/api#operations-tag-Config).

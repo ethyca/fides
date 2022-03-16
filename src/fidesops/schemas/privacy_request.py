@@ -79,6 +79,8 @@ class PrivacyRequestResponse(BaseSchema):
     id: str
     created_at: Optional[datetime]
     started_processing_at: Optional[datetime]
+    reviewed_at: Optional[datetime]
+    reviewed_by: Optional[str]
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
@@ -103,8 +105,18 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
         allow_population_by_field_name = True
 
 
+class ReviewPrivacyRequestIds(BaseSchema):
+    """Pass in a list of privacy request ids"""
+
+    request_ids: List[str] = Field(..., max_items=50)
+
+
 class BulkPostPrivacyRequests(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create of PrivacyRequest responses."""
 
     succeeded: List[PrivacyRequestResponse]
     failed: List[BulkUpdateFailed]
+
+
+class BulkReviewResponse(BulkPostPrivacyRequests):
+    """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
