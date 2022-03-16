@@ -419,6 +419,7 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
                 }
@@ -430,6 +431,44 @@ class TestGetPrivacyRequests:
 
         resp = response.json()
         assert resp == expected_resp
+
+    def test_get_privacy_requests_with_identity(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?status=complete&include_identities=true", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert (
+            resp["items"][0]["identity"]
+            == succeeded_privacy_request.get_cached_identity_data()
+        )
+
+        # Now test the identities are omitted if not explicitly requested
+        response = api_client.get(url + f"?status=complete", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert resp["items"][0].get("identity") is None
+
+        response = api_client.get(
+            url + f"?status=complete&include_identities=false", headers=auth_header
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == succeeded_privacy_request.id
+        assert resp["items"][0].get("identity") is None
 
     def test_filter_privacy_requests_by_status(
         self,
@@ -605,6 +644,7 @@ class TestGetPrivacyRequests:
                     "finished_processing_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
+                    "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
                     "results": {
@@ -995,14 +1035,14 @@ class TestApprovePrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_approve_privacy_request_no_user_on_client(
-            self,
-            submit_mock,
-            db,
-            url,
-            api_client,
-            generate_auth_header,
-            privacy_request,
-            user,
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+        user,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1033,7 +1073,7 @@ class TestApprovePrivacyRequest:
         api_client,
         generate_auth_header,
         user,
-        privacy_request
+        privacy_request,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1122,7 +1162,14 @@ class TestDenyPrivacyRequest:
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
     def test_deny_privacy_request(
-        self, submit_mock, db, url, api_client, generate_auth_header, user, privacy_request
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
@@ -1280,6 +1327,7 @@ class TestResumePrivacyRequest:
             "finished_processing_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
+            "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
         }

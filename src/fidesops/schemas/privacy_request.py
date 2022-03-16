@@ -84,6 +84,11 @@ class PrivacyRequestResponse(BaseSchema):
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
+    # This field intentionally doesn't use the PrivacyRequestIdentity schema
+    # as it is an API response field, and we don't want to reveal any more
+    # about our PII structure than is explicitly stored in the cache on request
+    # creation.
+    identity: Optional[Dict[str, str]]
 
     class Config:
         """Set orm_mode and use_enum_values"""

@@ -109,7 +109,7 @@ def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
 
     return (
         datetime.now() - issued_at
-    ).total_seconds() / 60.0 > config.redis.DEFAULT_TTL_SECONDS
+    ).total_seconds() / 60.0 > config.execution.PRIVACY_REQUEST_DELAY_TIMEOUT
 
 
 def verify_callback_oauth(

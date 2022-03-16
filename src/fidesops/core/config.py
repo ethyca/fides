@@ -88,6 +88,7 @@ class DatabaseSettings(FidesSettings):
 class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
+    PRIVACY_REQUEST_DELAY_TIMEOUT: int = 3600
     TASK_RETRY_COUNT: int
     TASK_RETRY_DELAY: int  # In seconds
     TASK_RETRY_BACKOFF: int
@@ -105,7 +106,7 @@ class RedisSettings(FidesSettings):
     PASSWORD: str
     CHARSET: str = "utf8"
     DECODE_RESPONSES: bool = True
-    DEFAULT_TTL_SECONDS: int = 3600
+    DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
 
     class Config:

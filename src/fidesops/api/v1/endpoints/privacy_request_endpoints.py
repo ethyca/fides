@@ -222,7 +222,12 @@ def create_privacy_request(
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=Page[Union[PrivacyRequestVerboseResponse, PrivacyRequestResponse]],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
 )
 def get_request_status(
     *,
@@ -240,6 +245,7 @@ def get_request_status(
     errored_gt: Optional[date] = None,
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
 ) -> AbstractPage[PrivacyRequest]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
@@ -302,7 +308,14 @@ def get_request_status(
     else:
         PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
 
-    return paginate(query, params)
+    paginated = paginate(query, params)
+    if include_identities:
+        # Conditionally include the cached identity data in the response if
+        # it is explicitly requested
+        for item in paginated.items:
+            item.identity = item.get_cached_identity_data()
+
+    return paginated
 
 
 def execution_logs_by_dataset_name(
