@@ -814,18 +814,18 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
 
-    @pytest.mark.saas_connector
-    def test_put_connection_config_saas_secrets(
+    @pytest.mark.unit_saas
+    def test_put_connection_config_saas_example_secrets(
         self,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        connection_config_saas,
+        connection_config_saas_example,
         saas_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas.key}/secret"
-        payload = saas_secrets
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas_example.key}/secret"
+        payload = saas_secrets["saas_example"]
 
         resp = api_client.put(
             url + "?verify=False",
@@ -837,25 +837,25 @@ class TestPutConnectionConfigSecrets:
         body = json.loads(resp.text)
         assert (
             body["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas.key}."
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_saas_example.key}."
         )
 
-        db.refresh(connection_config_saas)
-        assert connection_config_saas.secrets == saas_secrets
-        assert connection_config_saas.last_test_timestamp is None
-        assert connection_config_saas.last_test_succeeded is None
+        db.refresh(connection_config_saas_example)
+        assert connection_config_saas_example.secrets == saas_secrets["saas_example"]
+        assert connection_config_saas_example.last_test_timestamp is None
+        assert connection_config_saas_example.last_test_succeeded is None
 
-    @pytest.mark.saas_connector
-    def test_put_connection_config_saas_secrets_missing_saas_config(
+    @pytest.mark.unit_saas
+    def test_put_connection_config_saas_example_secrets_missing_saas_config(
         self,
         api_client: TestClient,
         generate_auth_header,
-        connection_config_saas_without_saas_config,
+        connection_config_saas_example_without_saas_config,
         saas_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas_without_saas_config.key}/secret"
-        payload = saas_secrets
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_saas_example_without_saas_config.key}/secret"
+        payload = saas_secrets["saas_example"]
 
         resp = api_client.put(
             url + "?verify=False",

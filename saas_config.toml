@@ -1,5 +1,10 @@
+[saas_example]
+domain = "domain"
+username = "username"
+api_key = "api_key"
+
 [mailchimp]
 domain = ""
 username = ""
 api_key = ""
-account_email = ""
+identity_email = ""

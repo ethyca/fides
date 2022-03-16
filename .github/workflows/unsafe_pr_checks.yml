@@ -28,5 +28,5 @@ jobs:
           MAILCHIMP_DOMAIN: ${{ secrets.MAILCHIMP_DOMAIN }}
           MAILCHIMP_USERNAME: ${{ secrets.MAILCHIMP_USERNAME }}
           MAILCHIMP_API_KEY: ${{ secrets.MAILCHIMP_API_KEY }}
-          MAILCHIMP_ACCOUNT_EMAIL: ${{ secrets.MAILCHIMP_ACCOUNT_EMAIL }}
+          MAILCHIMP_IDENTITY_EMAIL: ${{ secrets.MAILCHIMP_IDENTITY_EMAIL }}
         run: make pytest-saas

@@ -1,4 +1,3 @@
-
 import pytest
 import time
 from typing import Any, Dict, List, Set
@@ -303,20 +302,21 @@ def test_create_and_process_access_request_mariadb(
     pr.delete(db=db)
 
 
-@pytest.mark.saas_connector
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas(
     trigger_webhook_mock,
-    connection_config_saas,
-    dataset_config_saas,
+    connection_config_mailchimp,
+    dataset_config_mailchimp,
     db,
     cache,
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
-    mailchimp_account_email,
+    mailchimp_identity_email,
 ):
-    customer_email = mailchimp_account_email
+    customer_email = mailchimp_identity_email
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
@@ -341,20 +341,21 @@ def test_create_and_process_access_request_saas(
     pr.delete(db=db)
 
 
-@pytest.mark.saas_connector
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_erasure_request_saas(
     trigger_webhook_mock,
-    connection_config_saas,
-    dataset_config_saas,
+    connection_config_mailchimp,
+    dataset_config_mailchimp,
     db,
     cache,
     erasure_policy_hmac,
     generate_auth_header,
-    mailchimp_account_email,
-    reset_mailchimp_data
+    mailchimp_identity_email,
+    reset_mailchimp_data,
 ):
-    customer_email = mailchimp_account_email
+    customer_email = mailchimp_identity_email
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": erasure_policy_hmac.key,
@@ -363,8 +364,8 @@ def test_create_and_process_erasure_request_saas(
 
     pr = get_privacy_request_results(db, erasure_policy_hmac, cache, data)
 
-    connector = SaaSConnector(connection_config_saas)
-    request = ("GET", "/3.0/search-members", {"query": mailchimp_account_email}, {})
+    connector = SaaSConnector(connection_config_mailchimp)
+    request = ("GET", "/3.0/search-members", {"query": mailchimp_identity_email}, {})
     resp = connector.create_client().send(request)
     body = resp.json()
     merge_fields = body["exact_matches"]["members"][0]["merge_fields"]
@@ -378,44 +379,6 @@ def test_create_and_process_erasure_request_saas(
     assert merge_fields["LNAME"] == masking_strategy.mask(
         reset_mailchimp_data["merge_fields"]["LNAME"], pr.id
     )
-
-    pr.delete(db=db)
-
-
-@pytest.mark.saas_connector
-@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-def test_create_and_process_access_request_saas(
-    trigger_webhook_mock,
-    connection_config_saas,
-    dataset_config_saas,
-    db,
-    cache,
-    policy,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    mailchimp_account_email,
-):
-    customer_email = mailchimp_account_email
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(db, policy, cache, data)
-    results = pr.get_results()
-    assert len(results.keys()) == 3
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_connector_example:"
-    member_key = result_key_prefix + "member"
-    assert results[member_key][0]["email_address"] == customer_email
-
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
 
     pr.delete(db=db)
 
@@ -1002,10 +965,10 @@ def test_create_and_process_erasure_request_redshift(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_create_and_process_access_request_bigquery(
-        bigquery_resources,
-        db,
-        cache,
-        policy,
+    bigquery_resources,
+    db,
+    cache,
+    policy,
 ):
     customer_email = bigquery_resources["email"]
     customer_name = bigquery_resources["name"]
@@ -1039,12 +1002,12 @@ def test_create_and_process_access_request_bigquery(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_create_and_process_erasure_request_bigquery(
-        bigquery_example_test_dataset_config,
-        bigquery_resources,
-        integration_config: Dict[str, str],
-        db,
-        cache,
-        erasure_policy,
+    bigquery_example_test_dataset_config,
+    bigquery_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
 ):
     customer_email = bigquery_resources["email"]
     data = {

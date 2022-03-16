@@ -10,13 +10,14 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 
-@pytest.mark.saas_connector
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp
 def test_saas_access_request_task(
     db,
     policy,
-    connection_config_saas,
-    dataset_config_saas,
-    mailchimp_account_email,
+    connection_config_mailchimp,
+    dataset_config_mailchimp,
+    mailchimp_identity_email,
 ) -> None:
     """Full access request based on the Mailchimp SaaS config"""
 
@@ -24,21 +25,21 @@ def test_saas_access_request_task(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
-    identity_value = mailchimp_account_email
+    identity_value = mailchimp_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = PrivacyRequestIdentity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
-    dataset_name = connection_config_saas.get_saas_config().fides_key
-    merged_graph = dataset_config_saas.get_graph()
+    dataset_name = connection_config_mailchimp.get_saas_config().fides_key
+    merged_graph = dataset_config_mailchimp.get_graph()
     graph = DatasetGraph(merged_graph)
 
     v = graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
-        [connection_config_saas],
-        {"email": mailchimp_account_email},
+        [connection_config_mailchimp],
+        {"email": mailchimp_identity_email},
     )
 
     assert_rows_match(
@@ -85,7 +86,7 @@ def test_saas_access_request_task(
     )
 
     # links
-    assert v[f"{dataset_name}:member"][0]["email_address"] == mailchimp_account_email
+    assert v[f"{dataset_name}:member"][0]["email_address"] == mailchimp_identity_email
 
     logs = (
         ExecutionLog.query(db=db)
@@ -122,13 +123,14 @@ def test_saas_access_request_task(
     )
 
 
-@pytest.mark.saas_connector
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp
 def test_saas_erasure_request_task(
     db,
     policy,
-    connection_config_saas,
-    dataset_config_saas,
-    mailchimp_account_email,
+    connection_config_mailchimp,
+    dataset_config_mailchimp,
+    mailchimp_identity_email,
     reset_mailchimp_data,
 ) -> None:
     """Full erasure request based on the Mailchimp SaaS config"""
@@ -137,29 +139,29 @@ def test_saas_erasure_request_task(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
-    identity_value = mailchimp_account_email
+    identity_value = mailchimp_identity_email
     identity_kwargs = {identity_attribute: identity_value}
     identity = PrivacyRequestIdentity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
-    dataset_name = connection_config_saas.get_saas_config().fides_key
-    merged_graph = dataset_config_saas.get_graph()
+    dataset_name = connection_config_mailchimp.get_saas_config().fides_key
+    merged_graph = dataset_config_mailchimp.get_graph()
     graph = DatasetGraph(merged_graph)
 
     graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
-        [connection_config_saas],
-        {"email": mailchimp_account_email},
+        [connection_config_mailchimp],
+        {"email": mailchimp_identity_email},
     )
 
     v = graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
-        [connection_config_saas],
-        {"email": mailchimp_account_email},
+        [connection_config_mailchimp],
+        {"email": mailchimp_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
     )
 
