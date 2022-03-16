@@ -4,7 +4,7 @@ In this section we'll cover:
 
 - How to check the high-level status of your privacy requests
 - How to get more detailed execution logs of collections and fields that were potentially affected as part of your privacy request.
-
+- How to download all privacy requests as a CSV
 
 Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
@@ -170,4 +170,15 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
 }
 
 
+```
+## Downloading all privacy requests as a CSV 
+
+
+To get all privacy requests in CSV format, use the `download_csv` query param:
+
+`GET api/v1/privacy-request/?download_csv=True`
+
+```csv
+Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied
+2022-03-14 16:53:28.869258+00:00,{'email': 'customer-1@example.com'},my_primary_policy,complete,fid_16ffde2f-613b-4f79-bbae-41420b0f836b,2022-03-14 16:54:08.804283+00:00
 ```

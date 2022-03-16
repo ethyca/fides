@@ -406,7 +406,6 @@ def run_access_request(
                 data[tn.address] = GraphTask(tn, resources)
 
         def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
-
             """A termination function that just returns its inputs mapped to their source addresses.
 
             This needs to wait for all dependent keys because this is how dask is informed to wait for
@@ -463,7 +462,6 @@ def run_erasure(  # pylint: disable = too-many-arguments
         traversal.traverse(env, collect_tasks_fn)
 
         def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
-
             """The dependent_values here is an int output from each task feeding in, where
             each task reports the output of 'task.rtf(access_request_data)', which is the number of
             records updated.
