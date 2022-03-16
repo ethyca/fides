@@ -514,6 +514,7 @@ def policy(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
@@ -619,6 +620,7 @@ def erasure_policy_hmac(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def privacy_requests(db: Session, policy: Policy) -> Generator:
     privacy_requests = []
@@ -679,7 +681,7 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
-def succeeded_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequest:
     pr = PrivacyRequest.create(
         db=db,
         data={
@@ -693,6 +695,7 @@ def succeeded_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
             "client_id": policy.client_id,
         },
     )
+    pr.cache_identity({"email": "email@example.com"})
     yield pr
     pr.delete(db)
 
