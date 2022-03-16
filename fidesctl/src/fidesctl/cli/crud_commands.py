@@ -1,13 +1,9 @@
 """Contains all of the CRUD-type CLI commands for Fidesctl."""
+
 import click
 
-from fidesctl.cli.options import (
-    fides_key_argument,
-    resource_type_argument,
-)
-from fidesctl.cli.utils import (
-    handle_cli_response,
-)
+from fidesctl.cli.options import fides_key_argument, resource_type_argument
+from fidesctl.cli.utils import handle_cli_response, with_analytics
 from fidesctl.core import api as _api
 
 
@@ -21,7 +17,9 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        _api.delete(
+        with_analytics(
+            ctx,
+            _api.delete,
             url=config.cli.server_url,
             resource_type=resource_type,
             resource_id=fides_key,
@@ -40,7 +38,9 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        _api.get(
+        with_analytics(
+            ctx,
+            _api.get,
             url=config.cli.server_url,
             resource_type=resource_type,
             resource_id=fides_key,
@@ -58,7 +58,9 @@ def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=inval
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        _api.ls(
+        with_analytics(
+            ctx,
+            _api.ls,
             url=config.cli.server_url,
             resource_type=resource_type,
             headers=config.user.request_headers,

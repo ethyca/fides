@@ -9,3 +9,6 @@ test_database_name = "fidesctl_test"
 
 [cli]
 server_url = "http://fidesctl:8080"
+
+[user]
+analytics_opt_out = false

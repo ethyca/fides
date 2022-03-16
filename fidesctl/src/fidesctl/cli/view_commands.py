@@ -1,9 +1,8 @@
 """Contains the view group of the commands for Fidesctl."""
+
 import click
 
-from fidesctl.cli.utils import (
-    pretty_echo,
-)
+from fidesctl.cli.utils import pretty_echo, with_analytics
 
 
 @click.group(name="view")
@@ -27,4 +26,4 @@ def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
-    pretty_echo(config_dict, color="green")
+    with_analytics(ctx, pretty_echo, dict_object=config_dict, color="green")

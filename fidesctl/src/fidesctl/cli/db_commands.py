@@ -2,9 +2,7 @@
 import click
 
 from fidesctl.cli.options import yes_flag
-from fidesctl.cli.utils import (
-    handle_cli_response,
-)
+from fidesctl.cli.utils import handle_cli_response, with_analytics
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_red
 
@@ -24,7 +22,14 @@ def db_init(ctx: click.Context) -> None:
     Initialize the Fidesctl database.
     """
     config = ctx.obj["CONFIG"]
-    handle_cli_response(_api.db_action(config.cli.server_url, "init"))
+    handle_cli_response(
+        with_analytics(
+            ctx,
+            _api.db_action,
+            server_url=config.cli.server_url,
+            action="init",
+        )
+    )
 
 
 @database.command(name="reset")
@@ -44,6 +49,13 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
         are_you_sure = input("Are you sure [y/n]? ")
 
     if are_you_sure.lower() == "y":
-        handle_cli_response(_api.db_action(config.cli.server_url, "reset"))
+        handle_cli_response(
+            with_analytics(
+                ctx,
+                _api.db_action,
+                server_url=config.cli.server_url,
+                action="reset",
+            )
+        )
     else:
         print("Aborting!")

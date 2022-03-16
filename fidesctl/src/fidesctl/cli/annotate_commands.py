@@ -1,9 +1,9 @@
 """Contains the annotate group of CLI commands for Fidesctl."""
+
 import click
 
-from fidesctl.core import (
-    annotate_dataset as _annotate_dataset,
-)
+from fidesctl.cli.utils import with_analytics
+from fidesctl.core import annotate_dataset as _annotate_dataset
 
 
 @click.group(name="annotate")
@@ -37,7 +37,9 @@ def annotate_dataset(
     Guided flow for annotating datasets. The dataset file will be edited in-place.
     """
     config = ctx.obj["CONFIG"]
-    _annotate_dataset.annotate_dataset(
+    with_analytics(
+        ctx,
+        _annotate_dataset.annotate_dataset,
         config=config,
         dataset_file=input_filename,
         annotate_all=all_members,

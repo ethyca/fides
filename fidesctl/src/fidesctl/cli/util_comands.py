@@ -2,10 +2,11 @@
 import os
 
 import click
+from fideslog.sdk.python.utils import OPT_OUT_COPY
 import requests
 import toml
 
-from fidesctl.cli.utils import handle_cli_response
+from fidesctl.cli.utils import handle_cli_response, with_analytics
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_green, echo_red
 
@@ -15,7 +16,10 @@ from fidesctl.core.utils import echo_green, echo_red
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
 def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
-    Initialize a Fidesctl instance.
+    Initializes a Fidesctl instance, creating the default directory (`.fides/`) and
+    the configuration file (`fidesctl_config.toml`).
+
+    Additionally, requests the ability to respectfully collect anonymous usage data.
     """
 
     # Constants
@@ -28,8 +32,19 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     # List the values we want to include in the user-facing config
     included_values = {
-        "api": {"database_url", "log_level", "log_destination", "log_serialization"},
-        "cli": {"server_url"},
+        "api": {
+            "database_user",
+            "database_password",
+            "database_host",
+            "database_port",
+            "database_name",
+            "test_database_name",
+            "log_level",
+            "log_destination",
+            "log_serialization",
+        },
+        "cli": {"server_url", "analytics_id"},
+        "user": {"analytics_opt_out"},
     }
 
     click.echo("Initializing Fidesctl...")
@@ -48,6 +63,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}"""
+        config.user.analytics_opt_out = bool(input(OPT_OUT_COPY).lower() == "n")
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
@@ -75,7 +91,7 @@ def ping(ctx: click.Context) -> None:
     healthcheck_url = config.cli.server_url + "/health"
     echo_green(f"Pinging {healthcheck_url}...")
     try:
-        handle_cli_response(_api.ping(healthcheck_url))
+        handle_cli_response(with_analytics(ctx, _api.ping, url=healthcheck_url))
     except requests.exceptions.ConnectionError:
         echo_red("Connection failed, webserver is unreachable.")
 
@@ -92,4 +108,4 @@ def webserver(ctx: click.Context) -> None:
         echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
         raise SystemExit
 
-    start_webserver()
+    with_analytics(ctx, start_webserver)

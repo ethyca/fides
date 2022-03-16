@@ -1,11 +1,11 @@
 """Contains the generate group of CLI commands for Fidesctl."""
+
 import click
 
-from fidesctl.core import dataset as _dataset, system as _system
-
-from fidesctl.cli.options import (
-    include_null_flag,
-)
+from fidesctl.cli.options import include_null_flag
+from fidesctl.cli.utils import with_analytics
+from fidesctl.core import dataset as _dataset
+from fidesctl.core import system as _system
 
 
 @click.group(name="generate")
@@ -32,7 +32,13 @@ def generate_dataset(
     It will need to be run again if the database schema changes.
     """
 
-    _dataset.generate_dataset(connection_string, output_filename, include_null)
+    with_analytics(
+        ctx,
+        _dataset.generate_dataset,
+        connection_string=connection_string,
+        filename=output_filename,
+        include_null=include_null,
+    )
 
 
 @generate.group(name="system")
@@ -63,7 +69,9 @@ def generate_system_aws(
     It will need to be run again if the tracked resources change.
     """
     config = ctx.obj["CONFIG"]
-    _system.generate_system_aws(
+    with_analytics(
+        ctx,
+        _system.generate_system_aws,
         file_name=output_filename,
         include_null=include_null,
         organization_key=organization,

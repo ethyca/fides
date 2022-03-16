@@ -7,12 +7,10 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo
-from fidesctl.core import (
-    apply as _apply,
-    evaluate as _evaluate,
-    parse as _parse,
-)
+from fidesctl.cli.utils import pretty_echo, with_analytics
+from fidesctl.core import apply as _apply
+from fidesctl.core import evaluate as _evaluate
+from fidesctl.core import parse as _parse
 
 
 @click.command()
@@ -30,7 +28,9 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
+    with_analytics(
+        ctx,
+        _apply.apply,
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,
@@ -78,7 +78,9 @@ def evaluate(
             dry=dry,
         )
 
-    _evaluate.evaluate(
+    with_analytics(
+        ctx,
+        _evaluate.evaluate,
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
@@ -100,6 +102,6 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 
     If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.
     """
-    taxonomy = _parse.parse(manifests_dir)
+    taxonomy = with_analytics(ctx, _parse.parse, manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.dict(), color="green")

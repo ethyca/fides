@@ -1,15 +1,17 @@
 """Contains the groups and setup for the CLI."""
+from importlib.metadata import version
+from platform import system
+from typing import Dict
+
 import click
+from fideslog.sdk.python.client import AnalyticsClient
 
 import fidesctl
+from fidesctl.cli.utils import check_and_update_analytics_config
 from fidesctl.core.config import get_config
 
 from .annotate_commands import annotate
-from .core_commands import (
-    apply,
-    evaluate,
-    parse,
-)
+from .core_commands import apply, evaluate, parse
 from .crud_commands import delete, get, ls
 from .db_commands import database
 from .export_commands import export
@@ -77,6 +79,17 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
+
+    if ctx.invoked_subcommand != "init":  # init also handles this workflow
+        check_and_update_analytics_config(ctx, config_path)
+
+    if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in
+        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+            client_id=ctx.obj["CONFIG"].cli.analytics_id,
+            os=system(),
+            product_name=fidesctl.__name__ + "-cli",
+            production_version=version(fidesctl.__name__),
+        )
 
 
 # This is a special section used for auto-generating the CLI docs

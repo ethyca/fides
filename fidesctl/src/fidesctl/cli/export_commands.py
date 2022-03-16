@@ -1,14 +1,10 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import (
-    dry_flag,
-    manifests_dir_argument,
-)
-from fidesctl.core import (
-    export as _export,
-    parse as _parse,
-)
+from fidesctl.cli.options import dry_flag, manifests_dir_argument
+from fidesctl.cli.utils import with_analytics
+from fidesctl.core import export as _export
+from fidesctl.core import parse as _parse
 
 
 @click.group(name="export")
@@ -33,7 +29,9 @@ def export_system(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_system(
+    with_analytics(
+        ctx,
+        _export.export_system,
         url=config.cli.server_url,
         system_list=taxonomy.system,
         headers=config.user.request_headers,
@@ -56,7 +54,9 @@ def export_dataset(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_dataset(
+    with_analytics(
+        ctx,
+        _export.export_dataset,
         url=config.cli.server_url,
         dataset_list=taxonomy.dataset,
         headers=config.user.request_headers,
@@ -79,7 +79,9 @@ def export_organization(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_organization(
+    with_analytics(
+        ctx,
+        _export.export_organization,
         url=config.cli.server_url,
         organization_list=taxonomy.organization,
         headers=config.user.request_headers,
@@ -110,7 +112,9 @@ def export_datamap(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _export.export_datamap(
+    with_analytics(
+        ctx,
+        _export.export_datamap,
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,

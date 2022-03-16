@@ -7,3 +7,6 @@ database_password = "fidesctl"
 database_host = "fidesctl-db"
 database_port = "5432"
 test_database_name = "fidesctl_test"
+
+[user]
+analytics_opt_out = true

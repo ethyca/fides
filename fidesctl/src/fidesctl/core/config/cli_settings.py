@@ -1,4 +1,5 @@
 """This module defines the settings for everything related to the CLI."""
+from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_CLI
 
 from .fides_settings import FidesSettings
 
@@ -10,6 +11,7 @@ class CLISettings(FidesSettings):
 
     local_mode: bool = False
     server_url: str = "http://localhost:8080"
+    analytics_id: str = generate_client_id(FIDESCTL_CLI)
 
     class Config:
         env_prefix = "FIDESCTL__CLI__"
