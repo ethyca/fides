@@ -74,10 +74,10 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     </details>
 
 
-2. Run `fidesctl evaluate demo_resources/`. This command ensures that the demo_analytics_system and demo_marketing_system systems are compliant with your privacy policy as code:
+2. Use the <code>evaluate</code> command to see if this project's demo analytics and demo marketing systems are compliant with your privacy policy as code:
     <details>
 
-    <summary>Results of <code>fidesctl evaluate</code></summary>
+    <summary>Run <code>fidesctl evaluate demo_resources/</code></summary>
 
       ```bash
       root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
@@ -171,9 +171,9 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     <details>
 
-      <summary>Run <code>fidesctl evaluate</code> again</summary>
+      <summary>Run <code>fidesctl evaluate demo_resources/</code> </summary>
 
-        Re-run `fidesctl evaluate demo_resources` which will cause an evaluation failure! This is because your privacy policy has 1 rule that should fail if any system uses contact information for marketing purposes, and you've just updated your marketing system to start using contact information for marketing purposes.
+      Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
 
      ```bash
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
