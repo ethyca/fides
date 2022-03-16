@@ -237,3 +237,6 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [mypy-url]: http://mypy-lang.org/
 [twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
 [twitter-url]: https://twitter.com/ethyca
+
+
+ci test
