@@ -106,7 +106,7 @@ mypy: compose-build
 pytest: compose-build
 	@echo "Running pytest unit tests..."
 	@docker-compose run $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "not integration and not integration_external and not saas_connector"
+		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
 
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
@@ -123,9 +123,9 @@ pytest-integration-external: compose-build
 		$(IMAGE_NAME) pytest $(pytestpath) -m "integration_external"
 
 pytest-saas: compose-build
-	@echo "Running unit and integration tests for SaaS connectors"
-	@docker-compose run -e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_ACCOUNT_EMAIL $(IMAGE_NAME) \
-		pytest $(pytestpath) -m "saas_connector"
+	@echo "Running integration tests for SaaS connectors"
+	@docker-compose run -e MAILCHIMP_DOMAIN -e MAILCHIMP_USERNAME -e MAILCHIMP_API_KEY -e MAILCHIMP_IDENTITY_EMAIL $(IMAGE_NAME) \
+		pytest $(pytestpath) -m "integration_saas"
 
 
 ####################

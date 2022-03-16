@@ -355,18 +355,18 @@ class TestValidateDataset:
             == response_body["traversal_details"]["msg"]
         )
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_validate_saas_dataset_invalid_traversal(
         self,
         db,
-        connection_config_saas_with_invalid_saas_config,
-        example_saas_datasets,
+        connection_config_saas_example_with_invalid_saas_config,
+        saas_datasets,
         api_client: TestClient,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASET_VALIDATE
         path_params = {
-            "connection_key": connection_config_saas_with_invalid_saas_config.key
+            "connection_key": connection_config_saas_example_with_invalid_saas_config.key
         }
         validate_dataset_url = path.format(**path_params)
 
@@ -374,7 +374,7 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url,
             headers=auth_header,
-            json=example_saas_datasets["mailchimp"],
+            json=saas_datasets["saas_example"],
         )
         assert response.status_code == 200
 
@@ -384,7 +384,7 @@ class TestValidateDataset:
         assert response_body["traversal_details"]["is_traversable"] is False
         assert (
             response_body["traversal_details"]["msg"]
-            == "Some nodes were not reachable: mailchimp_connector_example:messages"
+            == "Some nodes were not reachable: saas_connector_example:messages"
         )
 
     def test_put_validate_dataset(
@@ -666,22 +666,22 @@ class TestPutDatasets:
         mssql_config.delete(db)
         bigquery_config.delete(db)
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_patch_datasets_missing_saas_config(
         self,
-        connection_config_saas_without_saas_config,
-        example_saas_datasets,
+        connection_config_saas_example_without_saas_config,
+        saas_datasets,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas_without_saas_config.key}
+        path_params = {"connection_key": connection_config_saas_example_without_saas_config.key}
         datasets_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
-            datasets_url, headers=auth_header, json=[example_saas_datasets["mailchimp"]]
+            datasets_url, headers=auth_header, json=[saas_datasets["saas_example"]]
         )
         assert response.status_code == 200
 
@@ -690,24 +690,24 @@ class TestPutDatasets:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == f"Connection config '{connection_config_saas_without_saas_config.key}' "
+            == f"Connection config '{connection_config_saas_example_without_saas_config.key}' "
             "must have a SaaS config before validating or adding a dataset"
         )
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_patch_datasets_extra_reference(
         self,
-        connection_config_saas,
-        example_saas_datasets,
+        connection_config_saas_example,
+        saas_datasets,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas.key}
+        path_params = {"connection_key": connection_config_saas_example.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = example_saas_datasets["mailchimp"]
+        invalid_dataset = saas_datasets["saas_example"]
         invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "references": [
                 {
@@ -733,20 +733,20 @@ class TestPutDatasets:
             "references or identities. Please add them to the SaaS config."
         )
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_patch_datasets_extra_identity(
         self,
-        connection_config_saas,
-        example_saas_datasets,
+        connection_config_saas_example,
+        saas_datasets,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas.key}
+        path_params = {"connection_key": connection_config_saas_example.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = example_saas_datasets["mailchimp"]
+        invalid_dataset = saas_datasets["saas_example"]
         invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "identity": "email"
         }
@@ -766,20 +766,20 @@ class TestPutDatasets:
             "references or identities. Please add them to the SaaS config."
         )
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_patch_datasets_fides_key_mismatch(
         self,
-        connection_config_saas,
-        example_saas_datasets,
+        connection_config_saas_example,
+        saas_datasets,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas.key}
+        path_params = {"connection_key": connection_config_saas_example.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = example_saas_datasets["mailchimp"]
+        invalid_dataset = saas_datasets["saas_example"]
         invalid_dataset["fides_key"] = "different_key"
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -794,7 +794,7 @@ class TestPutDatasets:
         assert (
             response_body["failed"][0]["message"]
             == "The fides_key 'different_key' of the dataset does not match the fides_key "
-            "'mailchimp_connector_example' of the connection config"
+            "'saas_connector_example' of the connection config"
         )
 
     @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")

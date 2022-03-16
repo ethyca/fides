@@ -60,7 +60,7 @@ class TestMergeDatasets:
         assert len(query_field.references) == 0
         assert query_field.identity == "email"
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_add_reference(self):
         """Augment a SaaS dataset collection with a dataset reference"""
 
@@ -116,7 +116,7 @@ class TestMergeDatasets:
             "from",
         )
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_add_with_object_fields(self):
         """Verify complex SaaS dataset fields are preserved after merging"""
         saas_dataset = Dataset(
@@ -162,7 +162,7 @@ class TestMergeDatasets:
         assert isinstance(name_field, ObjectField)
         assert len(name_field.fields) == 2
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_merge_same_scalar_field(self):
         """Merge two scalar fields between datsets with the same collection/field name"""
         saas_dataset = Dataset(
@@ -205,7 +205,7 @@ class TestMergeDatasets:
         assert len(collection.fields) == 1
         assert len(collection.fields[0].references) == 1
 
-    @pytest.mark.saas_connector
+    @pytest.mark.unit_saas
     def test_merge_same_object_field(self):
         """Merge a scalar and object field between datsets with the same collection/field name"""
         saas_dataset = Dataset(

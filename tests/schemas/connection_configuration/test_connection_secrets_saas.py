@@ -7,11 +7,11 @@ from fidesops.schemas.connection_configuration.connection_secrets_saas import (
 )
 
 
-@pytest.mark.saas_connector
+@pytest.mark.unit_saas
 class TestSaaSConnectionSecrets:
     @pytest.fixture(scope="function")
-    def saas_config(self, example_saas_configs) -> SaaSConfig:
-        return SaaSConfig(**example_saas_configs["mailchimp"])
+    def saas_config(self, saas_configs) -> SaaSConfig:
+        return SaaSConfig(**saas_configs["saas_example"])
 
     def test_get_saas_schema(self, saas_config):
         """
