@@ -1,6 +1,10 @@
+import io
+import csv
+
 import logging
 from collections import defaultdict
 from datetime import date, datetime
+from starlette.responses import StreamingResponse
 from typing import List, Optional, Union, DefaultDict, Dict, Set, Callable, Any
 
 from fastapi import APIRouter, Body, Depends, Security, HTTPException
@@ -8,7 +12,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
@@ -219,6 +223,41 @@ def create_privacy_request(
     )
 
 
+def privacy_request_csv_download(privacy_request_query: Query) -> StreamingResponse:
+    """Download privacy requests as CSV for Admin UI"""
+    f = io.StringIO()
+    csv_file = csv.writer(f)
+
+    csv_file.writerow(
+        [
+            "Time received",
+            "Subject identity",
+            "Policy key",
+            "Request status",
+            "Reviewer",
+            "Time approved/denied",
+        ]
+    )
+
+    for pr in privacy_request_query:
+        csv_file.writerow(
+            [
+                pr.created_at,
+                pr.get_cached_identity_data(),
+                pr.policy.key if pr.policy else None,
+                pr.status.value if pr.status else None,
+                pr.reviewed_by,
+                pr.reviewed_at,
+            ]
+        )
+    f.seek(0)
+    response = StreamingResponse(f, media_type="text/csv")
+    response.headers[
+        "Content-Disposition"
+    ] = f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
+    return response
+
+
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
@@ -246,7 +285,8 @@ def get_request_status(
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
-) -> AbstractPage[PrivacyRequest]:
+    download_csv: Optional[bool] = False,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
     To fetch a single privacy request, use the id query param `?id=`.
@@ -258,8 +298,6 @@ def get_request_status(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Cannot specify both succeeded and failed query params.",
         )
-
-    logger.info(f"Finding all request statuses with pagination params {params}")
 
     query = db.query(PrivacyRequest)
 
@@ -299,6 +337,11 @@ def get_request_status(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
+    if download_csv:
+        # Returning here if download_csv param was specified
+        logger.info("Downloading privacy requests as csv")
+        return privacy_request_csv_download(query)
+
     # Conditionally embed execution log details in the response.
     if verbose:
         logger.info(f"Finding execution log details")
@@ -315,6 +358,7 @@ def get_request_status(
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
 
+    logger.info(f"Finding all request statuses with pagination params {params}")
     return paginated
 
 
