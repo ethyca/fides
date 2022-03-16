@@ -204,15 +204,15 @@ class TestDeleteUser:
         )
         client_id = user_client.id
         saved_user_id = other_user.id
-        admin_user_id = user.id
 
-        admin_client, _ = ClientDetail.create_client_and_secret(
-            db, [USER_DELETE], fides_key=ADMIN_UI_ROOT, user_id=user.id
-        )
-        admin_client_id = admin_client.id
+        # Temporarily set the user's client to be the Admin UI Root client
+        client = user.client
+        client.fides_key = ADMIN_UI_ROOT
+        client.save(db)
+
         payload = {
             JWE_PAYLOAD_SCOPES: [USER_DELETE],
-            JWE_PAYLOAD_CLIENT_ID: admin_client.id,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         jwe = generate_jwe(json.dumps(payload))
@@ -233,7 +233,7 @@ class TestDeleteUser:
         assert client_search is None
 
         # Admin client who made the request is not deleted
-        admin_client_search = ClientDetail.get_by(db, field="id", value=admin_client_id)
+        admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
         assert admin_client_search is not None
         admin_client_search.delete(db)
 
@@ -254,6 +254,8 @@ class TestUserLogin:
         assert response.status_code == 403
 
     def test_login_creates_client(self, db, url, user, api_client):
+        # Delete existing client for test purposes
+        user.client.delete(db)
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 
         assert user.client is None  # client does not exist
@@ -276,10 +278,9 @@ class TestUserLogin:
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 
-        client, _ = ClientDetail.create_client_and_secret(
-            db, scopes=[PRIVACY_REQUEST_READ], user_id=user.id
-        )
-
+        existing_client_id = user.client.id
+        user.client.scopes = [PRIVACY_REQUEST_READ]
+        user.client.save(db)
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == 200
 
@@ -290,12 +291,10 @@ class TestUserLogin:
 
         token_data = json.loads(extract_payload(token))
 
-        assert token_data["client-id"] == client.id
+        assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
         ]  # Uses scopes on existing client
-
-        client.delete(db)
 
 
 class TestUserLogout:
@@ -305,14 +304,11 @@ class TestUserLogout:
 
     def test_user_not_deleted_on_logout(self, db, url, api_client, user):
         user_id = user.id
-        client, _ = ClientDetail.create_client_and_secret(
-            db, scopes=[PRIVACY_REQUEST_READ], user_id=user.id
-        )
-        client_id = client.id
+        client_id = user.client.id
 
         payload = {
-            JWE_PAYLOAD_SCOPES: client.scopes,
-            JWE_PAYLOAD_CLIENT_ID: client.id,
+            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}

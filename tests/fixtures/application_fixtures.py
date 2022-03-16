@@ -5,6 +5,7 @@ from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.core.config import load_file, load_toml
-from fidesops.models.client import ClientDetail
+from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     AccessLevel,
@@ -705,7 +706,17 @@ def user(db: Session):
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"
         }
     )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=SCOPE_REGISTRY,
+        user_id=user.id,
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
     yield user
+    client.delete(db)
     user.delete(db)
 
 

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f8695a40-88b3-4012-8477-f882ffeca6d8",
+		"_postman_id": "7a31c401-46b8-4d1f-a55c-22c7b05d5b90",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -66,7 +66,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -728,7 +728,7 @@
 			"description": "These API calls step you through how to set up all the resources in Fidesops to execute erasure privacy requests in your system.\n\nIt assumes you've already run through the API requests in the \"Access\" section so database connections, storage, and annotated datasets are already configured."
 		},
 		{
-			"name": "Other Useful API calls",
+			"name": "Privacy Request Management",
 			"item": [
 				{
 					"name": "Preview a Privacy Request",
@@ -768,6 +768,154 @@
 					},
 					"response": []
 				},
+				{
+					"name": "Check the Status of my Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{privacy_request_id}}"
+								},
+								{
+									"key": "verbose",
+									"value": "True"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all Privacy Request Execution Logs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/log",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"log"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve a Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"request_ids\": [\"{{privacy_request_id}}\", \"bad_id\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/administrate/approve",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"administrate",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deny a Privacy Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"request_ids\": [\"{{privacy_request_id}}\", \"bad_id\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/administrate/deny",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"administrate",
+								"deny"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Other Useful API calls",
+			"item": [
 				{
 					"name": "Get Allowed Scopes",
 					"request": {
@@ -914,73 +1062,6 @@
 							"path": [
 								"masking",
 								"strategy"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Check the Status of my Privacy Request",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-request",
-								""
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "{{privacy_request_id}}"
-								},
-								{
-									"key": "verbose",
-									"value": "True"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get all Privacy Request Execution Logs",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/log",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-request",
-								"{{privacy_request_id}}",
-								"log"
 							]
 						}
 					},

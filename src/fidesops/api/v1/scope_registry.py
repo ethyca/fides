@@ -18,6 +18,7 @@ PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
     "privacy-request:resume"  # User has permission to restart a paused privacy request
 )
+PRIVACY_REQUEST_REVIEW = "privacy-request:review"
 
 WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
 WEBHOOK_READ = "webhook:read"
@@ -62,6 +63,7 @@ SCOPE_REGISTRY = [
     POLICY_CREATE_OR_UPDATE,
     POLICY_READ,
     POLICY_DELETE,
+    PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
