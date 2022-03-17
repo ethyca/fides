@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, List, Optional, Dict, Union
 
 import pydash as pydash
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     """
-    Given a path to a dict, returns the dict/list
+    Given a path to a dict/list, returns the dict/list
     E.g.
     data = {
         "exact_matches": {
@@ -34,6 +34,8 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 {"howdy": 123},
                 {"meow": 841}
             ]
+
+    If given a list, the unwrap will apply to the dicts inside the list.
     """
 
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
@@ -43,23 +45,32 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
         return STRATEGY_NAME
 
     def process(
-        self, data: Dict[str, Any], identity_data: Dict[str, Any] = None
+        self,
+        data: Union[List[Dict[str, Any]], Dict[str, Any]],
+        identity_data: Dict[str, Any] = None,
     ) -> Optional[Any]:
         """
-        :param data: A dict
+        :param data: A list or dict
         :param identity_data: Dict of cached identity data
         :return: unwrapped list or dict
         """
-        if not isinstance(data, dict):
-            logger.warning(
-                f"Data is either None or not in expected format. Skipping processing for the following post processing strategy: {self.get_strategy_name()}."
-            )
-            return data
-        unwrapped = pydash.objects.get(data, self.data_path, None)
+        unwrapped = None
+        if isinstance(data, dict):
+            unwrapped = pydash.get(data, self.data_path)
+
+        elif isinstance(data, list):
+            unwrapped = []
+            for item in data:
+                unwrapped.append(pydash.get(item, self.data_path))
+            # flatten the list to account for the event where the output of unwrapped
+            # is a list of lists
+            unwrapped = pydash.flatten(unwrapped)
+
         if unwrapped is None:
             logger.warning(
                 f"{self.data_path} could not be found for the following post processing strategy: {self.get_strategy_name()}"
             )
+
         return unwrapped
 
     @staticmethod

@@ -55,10 +55,8 @@ saas_config:
               - dataset: mailchimp_connector_example
                 field: conversations.id
                 direction: from
+        data_path: conversation_messages
         postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: conversation_messages
           - strategy: filter
             configuration:
               field: from_email
@@ -78,10 +76,7 @@ saas_config:
           - name: placeholder
             type: query
             identity: email
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: conversations
+        data_path: conversations
   - name: member
     requests:
       read:
@@ -91,10 +86,7 @@ saas_config:
             type: query
             identity: email
             data_type: string
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: exact_matches.members
+        data_path: exact_matches.members
       update:
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
@@ -180,7 +172,9 @@ This is where we define how we are going to access and update each collection in
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` This denotes the identity value that this request_param should take.
           - `default_value` Hard-coded default value for a `request_param`. This is most often used for query params since a static path param can just be included in the `path`.
+    - `data_path`: The expression used to access the collection information from the raw JSON response.
     - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
+    - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md)
 
 ## Example scenarios
 #### Dynamic path with dataset references

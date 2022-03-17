@@ -36,10 +36,8 @@ saas_config:
               - dataset: mailchimp_connector_example
                 field: conversations.id
                 direction: from
+        data_path: conversation_messages
         postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: conversation_messages
           - strategy: filter
             configuration:
               field: from_email
@@ -59,10 +57,13 @@ saas_config:
           - name: placeholder
             type: query
             identity: email
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: conversations
+        data_path: conversations
+        pagination:
+          strategy: offset
+          configuration:
+            incremental_param: offset
+            increment_by: 1000
+            limit: 10000
   - name: member
     requests:
       read:
@@ -71,11 +72,7 @@ saas_config:
           - name: query
             type: query
             identity: email
-            data_type: string
-        postprocessors:
-          - strategy: unwrap
-            configuration:
-              data_path: exact_matches.members
+        data_path: exact_matches.members
       update:
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
         request_params:
