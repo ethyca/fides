@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, List, Optional, Dict, Union
 
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -48,7 +48,11 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     def get_strategy_name(self) -> str:
         return STRATEGY_NAME
 
-    def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Optional[Any]:
+    def process(
+        self,
+        data: Union[List[Dict[str, Any]], Dict[str, Any]],
+        identity_data: Dict[str, Any] = None,
+    ) -> Optional[Any]:
         """
         :param data: A list or an object
         :param identity_data: Dict of cached identity data
@@ -58,10 +62,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             return None
         filter_value = self.value
         if isinstance(self.value, IdentityParamRef):
-            if (
-                identity_data is None
-                or identity_data.get(self.value.identity, None) is None
-            ):
+            if identity_data is None or identity_data.get(self.value.identity) is None:
                 logger.warning(
                     f"Could not retrieve identity reference '{self.value.identity}' due to missing identity data for the following post processing strategy: {self.get_strategy_name()}"
                 )

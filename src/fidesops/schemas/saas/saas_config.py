@@ -1,9 +1,10 @@
 from typing import Any, Dict, List, Literal, Optional, Union
-from pydantic import BaseModel, validator
+from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+from pydantic import BaseModel, validator, root_validator
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
+from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -25,23 +26,10 @@ class RequestParam(BaseModel):
     type: Literal[
         "query", "path"
     ]  # used to determine location in the generated request
-    default_value: Optional[Any]
     identity: Optional[str]
-    data_type: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
-
-    @validator("references")
-    def check_references_or_identity(
-        cls,
-        references: Optional[List[FidesopsDatasetReference]],
-        values: Dict[str, str],
-    ) -> Optional[List[FidesopsDatasetReference]]:
-        """Validates that each request_param only has an identity or references, not both"""
-        if values["identity"] is not None and references is not None:
-            raise ValueError(
-                "Can only have one of 'reference' or 'identity' per request_param, not both"
-            )
-        return references
+    default_value: Optional[Any]
+    data_type: Optional[str]
 
     @validator("references")
     def check_reference_direction(
@@ -55,6 +43,21 @@ class RequestParam(BaseModel):
                 )
         return references
 
+    @root_validator
+    def check_exactly_one_value_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        value_fields = [
+            bool(values.get("identity")),
+            bool(values.get("references")),
+            bool(
+                values.get("default_value") is not None
+            ),  # to prevent a value of 0 from returning False
+        ]
+        if sum(value_fields) != 1:
+            raise ValueError(
+                "Must have exactly one of 'identity', 'references', or 'default_value'"
+            )
+        return values
+
 
 class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
@@ -66,15 +69,29 @@ class Strategy(BaseModel):
 class SaaSRequest(BaseModel):
     """
     A single request with a static or dynamic path, and the request params needed to build the request.
-    Also includes optional strategies for pre/postprocessing and pagination.
+    Also includes optional strategies for postprocessing and pagination.
     """
 
     path: str
     request_params: Optional[List[RequestParam]]
-    data_path: Optional[str]  # defaults to collection name if not specified
-    preprocessors: Optional[List[Strategy]]
+    data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+
+    @root_validator(pre=True)
+    def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calls the appropriate validation logic for the request based on
+        the specified pagination strategy. Passes in the raw value dict
+        before any field validation.
+        """
+        pagination = values.get("pagination")
+        if pagination is not None:
+            pagination_strategy = get_strategy(
+                pagination.get("strategy"), pagination.get("configuration")
+            )
+            pagination_strategy.validate_request(values)
+        return values
 
 
 class Endpoint(BaseModel):
@@ -89,12 +106,6 @@ class ConnectorParam(BaseModel):
 
     name: str
     default_value: Optional[Any]
-
-
-class ConnectorParamRef(BaseModel):
-    """A reference to a value in the connector params (by name)"""
-
-    connector_param: str
 
 
 class ClientConfig(BaseModel):
