@@ -1,16 +1,18 @@
-# CI/CD Reference
+<<<<<<< HEAD:docs/fides/docs/cicd/ci_reference.md
+# Example Integrations
+=======
+# Implementation Examples 
+>>>>>>> 7f16cf8 (CI references docs reorganization (#262)):docs/fides/docs/ci_reference.md
 
-Fidesctl is primarily a tool designed to integrate with your CI pipeline configuration. You should plan to implement at least two CI actions:
+The following code snippets are meant as simple example implementations, and illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
 
-1. `fidesctl evaluate --dry <resource_dir>`
-    - Run against the latest commit on code changesets (pull requests, merge requests, etc.)
-    - Checks if code changes will be accepted, without also applying changes to the fidesctl server
-2. `fidesctl evaluate <resource_dir>`
-    - Run against commits representing merges into the default branch
-    - Synchronizes the latest changes to the fidesctl server
-
-The following code snippets are meant only as simple example implementations, to illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
-
+  - [GitHub Actions](#github-actions)
+  - [GitLab CI](#gitlab-ci)
+  - [Jenkins](#jenkins)
+  - [CircleCI](#circleci)
+  - [Azure Pipelines](#azure-pipelines)
+  
+---
 ## GitHub Actions
 
 ```yaml title="<code>.github/workflows/fidesctl_ci.yml</code>"
@@ -22,7 +24,7 @@ on:
     branches:
       - main
     paths: # Only run checks when the resource files change or the workflow file changes
-      - fides_resources/**
+      - .fides/**
       - .github/workflows/fidesctl_ci.yml
 
 jobs:
@@ -33,7 +35,7 @@ jobs:
     steps:
       - name: Dry Evaluation
         uses: actions/checkout@v2
-        run: fidesctl evaluate --dry fides_resources/
+        run: fidesctl evaluate --dry .fides/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
@@ -57,11 +59,11 @@ jobs:
     steps:
       - name: Evaluation
         uses: actions/checkout@v2
-        run: fidesctl evaluate fides_resources/
+        run: fidesctl evaluate .fides/
         env:
           FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
 ```
-
+___
 ## GitLab CI
 
 ```yaml title="<code>.gitlab-ci.yml</code>"
@@ -75,11 +77,11 @@ variables: &global-variables
 fidesctl-ci:
   stage: test
   image: ethyca/fidesctl
-  script: fidesctl evaluate --dry fides_resources/
+  script: fidesctl evaluate --dry .fides/
   only:
     if: '$CI_PIPELINE_SOURCE = merge_request_event'
     changes:
-      - fides_resources/**
+      - .fides/**
       - .gitlab-ci.yml
   variables:
     <<: *global-variables
@@ -87,12 +89,12 @@ fidesctl-ci:
 fidesctl-cd:
   stage: deploy
   image: ethyca/fidesctl
-  script: fidesctl evaluate fides_resources/
+  script: fidesctl evaluate .fides/
   if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   variables:
     <<: *global-variables
 ```
-
+___
 ## Jenkins
 
 ```groovy title="<code>Jenkinsfile</code> (Declarative Syntax)"
@@ -108,11 +110,11 @@ pipeline {
         FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
       }
       steps {
-        sh 'fidesctl evaluate --dry fides_resources/'
+        sh 'fidesctl evaluate --dry .fides/'
       }
       when {
         anyOf {
-          changeset 'fides_resources/**'
+          changeset '.fides/**'
           changeset 'Jenkinsfile'
         }
         changeRequest()
@@ -123,7 +125,7 @@ pipeline {
         FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
       }
       steps {
-        sh 'fidesctl evaluate fides_resources/'
+        sh 'fidesctl evaluate .fides/'
       }
       when {
         branch 'main'
@@ -132,7 +134,7 @@ pipeline {
   }
 }
 ```
-
+___
 ## CircleCI
 
 ```yaml title="<code>.circleci/config.yml</code>"
@@ -149,12 +151,12 @@ jobs:
   fidesctl-evaluate-dry:
     executor: fidesctl
     steps:
-      - run: fidesctl evaluate --dry fides_resources/
+      - run: fidesctl evaluate --dry .fides/
 
   fidesctl-evaluate:
     executor: fidesctl
     steps:
-      - run: fidesctl evaluate fides_resources/
+      - run: fidesctl evaluate .fides/
 
 workflows:
   version: 2
@@ -171,4 +173,43 @@ workflows:
           filters:
             branches:
               only: main
+```
+<<<<<<< HEAD:docs/fides/docs/cicd/ci_reference.md
+___
+=======
+
+>>>>>>> 7f16cf8 (CI references docs reorganization (#262)):docs/fides/docs/ci_reference.md
+## Azure Pipelines
+
+```yaml title="<code>.azure-pipelines.yml</code>"
+# Trigger a dry run of the evaluate job on pull requests that target main
+pr:
+  - main
+
+jobs:
+  - job: "fidesctl_evaluate_dry"
+    pool:
+      vmImage: ubuntu-latest
+    container:
+      image: ethyca/fidesctl:latest
+    steps:
+      - checkout: self
+      - script: fidesctl evaluate --dry .fides/
+        displayName: "Fidesctl Dry Evaluation"
+
+
+# Trigger the evaluate job on commits to the default branch
+trigger: 
+  - main
+
+jobs:
+  - job: "fidesctl_evaluate"
+    pool:
+      vmImage: ubuntu-latest
+    container:
+      image: ethyca/fidesctl:latest
+    steps:
+      - checkout: self
+      - script: fidesctl evaluate .fides/
+        displayName: "Fidesctl Evaluation"
 ```
