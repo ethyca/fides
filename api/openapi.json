@@ -2960,6 +2960,16 @@
             "title": "Parent Key",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string"
+          },
+          "legal_basis": {
+            "$ref": "#/components/schemas/LegalBasisEnum"
+          },
+          "recipients": {
+            "title": "Recipients",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "description": "The DataUse resource model."
@@ -3024,6 +3034,13 @@
             "type": "string",
             "default": "No retention or erasure policy"
           },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "collections": {
             "title": "Collections",
             "type": "array",
@@ -3066,8 +3083,7 @@
           },
           "retention": {
             "title": "Retention",
-            "type": "string",
-            "default": "No retention or erasure policy"
+            "type": "string"
           },
           "fields": {
             "title": "Fields",
@@ -3176,6 +3192,19 @@
           }
         }
       },
+      "LegalBasisEnum": {
+        "title": "LegalBasisEnum",
+        "enum": [
+          "Consent",
+          "Contract",
+          "Legal Obligation",
+          "Vital Interest",
+          "Public Interest",
+          "Legitimate Interests"
+        ],
+        "type": "string",
+        "description": "The model for allowable legal basis categories\n\nBased upon article 6 of the GDPR"
+      },
       "MatchesEnum": {
         "title": "MatchesEnum",
         "enum": [
@@ -3185,7 +3214,7 @@
           "OTHER"
         ],
         "type": "string",
-        "description": "The MatchesEnum resouce model.\n\nDetermines how the listed resources are matched in the evaluation logic."
+        "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
       "Organization": {
         "title": "Organization",
@@ -3227,6 +3256,9 @@
           "data_protection_officer": {
             "$ref": "#/components/schemas/ContactDetails"
           },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/OrganizationMetadata"
+          },
           "representative": {
             "$ref": "#/components/schemas/ContactDetails"
           },
@@ -3239,6 +3271,20 @@
           }
         },
         "description": "The Organization resource model.\n\nThis resource is used as a way to organize all other resources."
+      },
+      "OrganizationMetadata": {
+        "title": "OrganizationMetadata",
+        "type": "object",
+        "properties": {
+          "resource_filters": {
+            "title": "Resource Filters",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceFilter"
+            }
+          }
+        },
+        "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
       },
       "Policy": {
         "title": "Policy",
@@ -3420,6 +3466,25 @@
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
       },
+      "ResourceFilter": {
+        "title": "ResourceFilter",
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "description": "The ResourceFilter resource model."
+      },
       "StatusEnum": {
         "title": "StatusEnum",
         "enum": [
@@ -3472,6 +3537,9 @@
               "type": "string"
             }
           },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/SystemMetadata"
+          },
           "system_type": {
             "title": "System Type",
             "type": "string"
@@ -3493,9 +3561,40 @@
           },
           "joint_controller": {
             "$ref": "#/components/schemas/ContactDetails"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "administrating_department": {
+            "title": "Administrating Department",
+            "type": "string",
+            "default": "Not defined"
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
+      },
+      "SystemMetadata": {
+        "title": "SystemMetadata",
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "string"
+          },
+          "endpoint_address": {
+            "title": "Endpoint Address",
+            "type": "string"
+          },
+          "endpoint_port": {
+            "title": "Endpoint Port",
+            "type": "string"
+          }
+        },
+        "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
       },
       "ValidationError": {
         "title": "ValidationError",

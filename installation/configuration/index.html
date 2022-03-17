@@ -698,22 +698,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/generate_resource/" class="md-nav__link">
+      <a href="../../guides/generate_resources/" class="md-nav__link">
         Generating Resources
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/scan_resource/" class="md-nav__link">
-        Scanning Resources
       </a>
     </li>
   
@@ -1443,8 +1429,18 @@ You're not viewing the latest version.
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
-<span class="n">database_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres:fidesctl@fidesctl-db:5432/fidesctl&quot;</span><span class="w"></span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
+<span class="n">database_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
+<span class="n">database_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
+<span class="n">database_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl-db&quot;</span><span class="w"></span>
+<span class="n">database_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;5432&quot;</span><span class="w"></span>
+<span class="n">database_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
 
 <span class="c1"># Logging</span><span class="w"></span>
 <span class="n">log_destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
@@ -1454,9 +1450,11 @@ You're not viewing the latest version.
 <span class="k">[cli]</span><span class="w"></span>
 <span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="w"></span>
 <span class="n">server_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="w"></span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;test_analytics_id&quot;</span><span class="w"></span>
 
 <span class="k">[user]</span><span class="w"></span>
 <span class="n">encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;test_encryption_key&quot;</span><span class="w"></span>
+<span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <p>To better describe the various configuration options, the following tables describe each available option, grouped by section:</p>
@@ -1472,16 +1470,40 @@ You're not viewing the latest version.
 </thead>
 <tbody>
 <tr>
-<td align="center">database_url</td>
+<td align="center">database_user</td>
 <td align="center">String</td>
-<td align="center">postgres:fidesctl@fidesctl-db:5432/fidesctl</td>
-<td align="center">The PostgreSQL database connection string for the fidesctl database. <strong>NOTE</strong>: Do not include the driver here, fidesctl will do this for you.</td>
+<td align="center">postgres</td>
+<td align="center">The username of the Postgres account.</td>
 </tr>
 <tr>
-<td align="center">test_database_url</td>
+<td align="center">database_password</td>
+<td align="center">String</td>
+<td align="center">fidesctl</td>
+<td align="center">The password of the Postgres account.</td>
+</tr>
+<tr>
+<td align="center">database_host</td>
+<td align="center">String</td>
+<td align="center">fidesctl-db</td>
+<td align="center">The hostname of the Postgres database server.</td>
+</tr>
+<tr>
+<td align="center">database_post</td>
+<td align="center">String</td>
+<td align="center">5432</td>
+<td align="center">The port of the Postgres database server.</td>
+</tr>
+<tr>
+<td align="center">database_name</td>
+<td align="center">String</td>
+<td align="center">fidesctl</td>
+<td align="center">The name of the Postgres database.</td>
+</tr>
+<tr>
+<td align="center">test_database_name</td>
 <td align="center">String</td>
 <td align="center">""</td>
-<td align="center">Used instead of the <code>database_url</code> when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
+<td align="center">Used instead of the <code>database_name</code> when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
 </tr>
 <tr>
 <td align="center">log_destination</td>
@@ -1527,6 +1549,12 @@ You're not viewing the latest version.
 <td align="center">""</td>
 <td align="center">The base URL of the fidesctl webserver endpoints, in <code>host:port</code> format.</td>
 </tr>
+<tr>
+<td align="center">analytics_id</td>
+<td align="center">String</td>
+<td align="center">""</td>
+<td align="center">A fully anonymized unique identifier for the <code>fidesctl</code> CLI instance.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1546,6 +1574,12 @@ You're not viewing the latest version.
 <td align="center">String</td>
 <td align="center">""</td>
 <td align="center">An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.</td>
+</tr>
+<tr>
+<td align="center">analytics_opt_out</td>
+<td align="center">Boolean</td>
+<td align="center">""</td>
+<td align="center">When set to <code>true</code>, prevents sending anonymous analytics data to Ethyca.</td>
 </tr>
 </tbody>
 </table>

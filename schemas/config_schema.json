@@ -6,7 +6,12 @@
     "api": {
       "title": "Api",
       "default": {
-        "test_database_url": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "database_user": "postgres",
+        "database_password": "fidesctl",
+        "database_host": "fidesctl-db",
+        "database_port": "5432",
+        "database_name": "fidesctl",
+        "test_database_name": "fidesctl_test",
         "database_url": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         "sync_database_url": "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         "async_database_url": "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
@@ -24,7 +29,8 @@
       "title": "Cli",
       "default": {
         "local_mode": false,
-        "server_url": "http://localhost:8080"
+        "server_url": "http://localhost:8080",
+        "analytics_id": "d16306815a6eaa1e3a8a332d3dbf4c77"
       },
       "allOf": [
         {
@@ -42,7 +48,8 @@
           "user-id": "1",
           "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.uZEytEk5nO7uxQgmk9mN0zND3qfM1Bl3mNp_GyYsiVE"
         },
-        "encryption_key": "test_encryption_key"
+        "encryption_key": "test_encryption_key",
+        "analytics_opt_out": null
       },
       "allOf": [
         {
@@ -57,17 +64,56 @@
       "description": "Class used to store values from the 'cli' section of the config.",
       "type": "object",
       "properties": {
-        "test_database_url": {
-          "title": "Test Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "database_user": {
+          "title": "Database User",
+          "default": "postgres",
           "env_names": [
-            "fidesctl__api__test_database_url"
+            "fidesctl__api__database_user"
+          ],
+          "type": "string"
+        },
+        "database_password": {
+          "title": "Database Password",
+          "default": "fidesctl",
+          "env_names": [
+            "fidesctl__api__database_password"
+          ],
+          "type": "string"
+        },
+        "database_host": {
+          "title": "Database Host",
+          "default": "fidesctl-db",
+          "env_names": [
+            "fidesctl__api__database_host"
+          ],
+          "type": "string"
+        },
+        "database_port": {
+          "title": "Database Port",
+          "default": "5432",
+          "env_names": [
+            "fidesctl__api__database_port"
+          ],
+          "type": "string"
+        },
+        "database_name": {
+          "title": "Database Name",
+          "default": "fidesctl",
+          "env_names": [
+            "fidesctl__api__database_name"
+          ],
+          "type": "string"
+        },
+        "test_database_name": {
+          "title": "Test Database Name",
+          "default": "fidesctl_test",
+          "env_names": [
+            "fidesctl__api__test_database_name"
           ],
           "type": "string"
         },
         "database_url": {
           "title": "Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__database_url"
           ],
@@ -75,7 +121,6 @@
         },
         "sync_database_url": {
           "title": "Sync Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__sync_database_url"
           ],
@@ -83,7 +128,6 @@
         },
         "async_database_url": {
           "title": "Async Database Url",
-          "default": "postgres:fidesctl@fidesctl-db:5432/fidesctl",
           "env_names": [
             "fidesctl__api__async_database_url"
           ],
@@ -143,6 +187,14 @@
             "fidesctl__cli__server_url"
           ],
           "type": "string"
+        },
+        "analytics_id": {
+          "title": "Analytics Id",
+          "default": "d16306815a6eaa1e3a8a332d3dbf4c77",
+          "env_names": [
+            "fidesctl__cli__analytics_id"
+          ],
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -186,6 +238,13 @@
             "fidesctl__user__encryption_key"
           ],
           "type": "string"
+        },
+        "analytics_opt_out": {
+          "title": "Analytics Opt Out",
+          "env_names": [
+            "fidesctl__user__analytics_opt_out"
+          ],
+          "type": "boolean"
         }
       },
       "additionalProperties": false

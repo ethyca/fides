@@ -648,22 +648,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../guides/generate_resource/" class="md-nav__link">
+      <a href="../guides/generate_resources/" class="md-nav__link">
         Generating Resources
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../guides/scan_resource/" class="md-nav__link">
-        Scanning Resources
       </a>
     </li>
   
@@ -1704,19 +1690,13 @@ You're not viewing the latest version.
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --version               Show the version and exit.
-  -f, --config-path TEXT  Path to a configuration file.
-                          Use &#39;fidesctl view-config&#39; to
-                          print the config. Not compatible
-                          with the &#39;fidesctl webserver&#39;
-                          subcommand.
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --version               Show the version and exit.
+  -f, --config-path TEXT  Path to a configuration file. Use &#39;fidesctl view-
+                          config&#39; to print the config. Not compatible with the
+                          &#39;fidesctl webserver&#39; subcommand.
 
-  --local                 Run in &#39;local_mode&#39;. This mode
-                          doesn&#39;t make API calls and can
-                          be used without the API
+  --local                 Run in &#39;local_mode&#39;. This mode doesn&#39;t make API
+                          calls and can be used without the API
                           server/database.
 
   --help                  Show this message and exit.
@@ -1731,11 +1711,7 @@ You're not viewing the latest version.
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -a, --all-members  Annotate all dataset members, not
-                     just fields
-
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -a, --all-members  Annotate all dataset members, not just fields
   -v, --validate     Strictly validate annotation inputs.
   --help             Show this message and exit.
 </code></pre></div>
@@ -1752,8 +1728,8 @@ You're not viewing the latest version.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
-  --diff  Print the diff between the server&#39;s old and new
-          states in Python DeepDiff format
+  --diff  Print the diff between the server&#39;s old and new states in Python
+          DeepDiff format
 
   --help  Show this message and exit.
 </code></pre></div>
@@ -1763,10 +1739,8 @@ You're not viewing the latest version.
 <p><strong>Usage:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl delete [OPTIONS] [data_category|data_qualifier|da
-                ta_subject|data_use|dataset|organization|p
-                olicy|registry|system|evaluation]
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl delete [OPTIONS] [data_category|data_qualifier|data_subject|data_use|
+                dataset|organization|policy|registry|system|evaluation]
                 FIDES_KEY
 </code></pre></div>
 </td></tr></table>
@@ -1784,26 +1758,20 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -k, --fides-key TEXT  The fides_key of the single policy
-                        that you wish to evaluate.
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -k, --fides-key TEXT  The fides_key of the single policy that you wish to
+                        evaluate.
 
-  -m, --message TEXT    A message that you can supply to
-                        describe the context of this
-                        evaluation.
+  -m, --message TEXT    A message that you can supply to describe the context
+                        of this evaluation.
 
-  --dry                 Does not send changes to the
-                        server.
-
+  --dry                 Does not send changes to the server.
   --help                Show this message and exit.
 </code></pre></div>
 </td></tr></table>
@@ -1847,9 +1815,7 @@ generate a dataset manifest file that consists of every schema/table/field.</p>
 <p>This is a one-time operation that does not track the state of the database.
 It will need to be run again if the database schema changes.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate-dataset [OPTIONS] CONNECTION_STRING
-                          OUTPUT_FILENAME
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate-dataset [OPTIONS] CONNECTION_STRING OUTPUT_FILENAME
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1860,10 +1826,8 @@ It will need to be run again if the database schema changes.</p>
 <p>View a resource from the server as a JSON object.</p>
 <p><strong>Usage:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl get [OPTIONS] [data_category|data_qualifier|data_
-             subject|data_use|dataset|organization|policy|
-             registry|system|evaluation] FIDES_KEY
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl get [OPTIONS] [data_category|data_qualifier|data_subject|data_use|dat
+             aset|organization|policy|registry|system|evaluation] FIDES_KEY
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1894,10 +1858,8 @@ It will need to be run again if the database schema changes.</p>
 <p>Get a list of all resources of this type from the server and display them as JSON.</p>
 <p><strong>Usage:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl ls [OPTIONS] [data_category|data_qualifier|data_s
-            ubject|data_use|dataset|organization|policy|re
-            gistry|system|evaluation]
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl ls [OPTIONS] [data_category|data_qualifier|data_subject|data_use|data
+            set|organization|policy|registry|system|evaluation]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -1954,11 +1916,9 @@ under the stated threshold.</p>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -m, --manifest-dir TEXT
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -m, --manifest-dir TEXT
   -c, --coverage-threshold INTEGER RANGE
-  --help                          Show this message and
-                                  exit.
+  --help                          Show this message and exit.
 </code></pre></div>
 </td></tr></table>
 <h3 id="fidesctl-view-config">fidesctl view-config</h3>
