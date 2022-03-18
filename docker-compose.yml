@@ -21,7 +21,6 @@ services:
         read_only: False
     environment:
       FIDESCTL_TEST_MODE: "True"
-      ANALYTICS_ID_OVERRIDE: ${FIDESCTL__CLI__ANALYTICS_ID:-}
 
   fidesctl-db:
     image: postgres:12
