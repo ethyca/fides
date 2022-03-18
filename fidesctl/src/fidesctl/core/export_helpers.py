@@ -136,6 +136,7 @@ def get_formatted_data_use(
     formatted_data_use = {
         "name": data_use.name,
         "legal_basis": "N/A",
+        "special_category": "N/A",
         "recipients": "N/A",
     }
 
@@ -143,6 +144,11 @@ def get_formatted_data_use(
         formatted_data_use["legal_basis"] = data_use.legal_basis.value
     except AttributeError:
         echo_red("Legal Basis undefined for specified Data Use, setting as N/A.")
+
+    try:
+        formatted_data_use["special_category"] = data_use.special_category.value
+    except AttributeError:
+        echo_red("Special Category undefined for specified Data Use, setting as N/A.")
 
     try:
         formatted_data_use["recipients"] = ", ".join(data_use.recipients)
