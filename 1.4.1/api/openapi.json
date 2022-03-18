@@ -1,0 +1,3683 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "fidesctl",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/data_category/": {
+      "get": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_data_category__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Data Category  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataCategory"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_category__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataCategory"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_data_category__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataCategory"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_category/{fides_key}": {
+      "get": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_data_category__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_data_category__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_qualifier/": {
+      "get": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_data_qualifier__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Data Qualifier  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataQualifier"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_qualifier__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQualifier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_data_qualifier__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQualifier"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_qualifier/{fides_key}": {
+      "get": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_data_qualifier__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_data_qualifier__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_subject/": {
+      "get": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_data_subject__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Data Subject  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataSubject"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_subject__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSubject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSubject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_data_subject__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSubject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSubject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_subject/{fides_key}": {
+      "get": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_data_subject__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSubject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_data_subject__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_use/": {
+      "get": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_data_use__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Data Use  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataUse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_data_use__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataUse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataUse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_data_use__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataUse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataUse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_use/{fides_key}": {
+      "get": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_data_use__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataUse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_data_use__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset/": {
+      "get": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_dataset__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Dataset  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_dataset__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dataset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_dataset__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dataset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataset/{fides_key}": {
+      "get": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_dataset__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_dataset__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_organization__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Organization  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_organization__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_organization__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/{fides_key}": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_organization__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_organization__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policy/": {
+      "get": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_policy__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Policy  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Policy"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_policy__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_policy__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policy/{fides_key}": {
+      "get": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_policy__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_policy__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry/": {
+      "get": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_registry__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Registry  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Registry"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_registry__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_registry__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry/{fides_key}": {
+      "get": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_registry__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_registry__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_system__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List System  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/System"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_system__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_system__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/System"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/system/{fides_key}": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_system__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_system__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "List",
+        "description": "Get a list of all of the resources of this type.",
+        "operationId": "List_evaluation__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response List Evaluation  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Evaluation"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Update",
+        "description": "Update a resource by its fides_key.",
+        "operationId": "update_evaluation__put",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Evaluation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Create",
+        "description": "Create a resource.",
+        "operationId": "create_evaluation__post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Evaluation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/{fides_key}": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Get",
+        "description": "Get a resource by its fides_key.",
+        "operationId": "get_evaluation__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Delete",
+        "description": "Delete a resource by its fides_key.",
+        "operationId": "delete_evaluation__fides_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_category/visualize/{figure_type}": {
+      "get": {
+        "tags": [
+          "Visualize",
+          "DataCategory"
+        ],
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_category_visualize__figure_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FigureTypeEnum"
+            },
+            "name": "figure_type",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_qualifier/visualize/{figure_type}": {
+      "get": {
+        "tags": [
+          "Visualize",
+          "DataQualifier"
+        ],
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_qualifier_visualize__figure_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FigureTypeEnum"
+            },
+            "name": "figure_type",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_use/visualize/{figure_type}": {
+      "get": {
+        "tags": [
+          "Visualize",
+          "DataUse"
+        ],
+        "summary": "Get Chart",
+        "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
+        "operationId": "get_chart_data_use_visualize__figure_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FigureTypeEnum"
+            },
+            "name": "figure_type",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/view/evaluations": {
+      "get": {
+        "tags": [
+          "View"
+        ],
+        "summary": "Evaluation View",
+        "description": "Returns an html document with a list of evaluations",
+        "operationId": "evaluation_view_view_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "description": "Confirm that the API is running and healthy.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/db/{action}": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ContactDetails": {
+        "title": "ContactDetails",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "default": ""
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "default": ""
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "default": ""
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
+      },
+      "DBActions": {
+        "title": "DBActions",
+        "enum": [
+          "init",
+          "reset"
+        ],
+        "type": "string",
+        "description": "The available path parameters for the `/admin/db/{action}` endpoint."
+      },
+      "DataCategory": {
+        "title": "DataCategory",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "parent_key": {
+            "title": "Parent Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          }
+        },
+        "description": "The DataCategory resource model."
+      },
+      "DataQualifier": {
+        "title": "DataQualifier",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "parent_key": {
+            "title": "Parent Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          }
+        },
+        "description": "The DataQualifier resource model."
+      },
+      "DataSubject": {
+        "title": "DataSubject",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          }
+        },
+        "description": "The DataSubject resource model."
+      },
+      "DataUse": {
+        "title": "DataUse",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "parent_key": {
+            "title": "Parent Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "legal_basis": {
+            "$ref": "#/components/schemas/LegalBasisEnum"
+          },
+          "recipients": {
+            "title": "Recipients",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "The DataUse resource model."
+      },
+      "Dataset": {
+        "title": "Dataset",
+        "required": [
+          "fides_key",
+          "collections"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "meta": {
+            "title": "Meta",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "joint_controller": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string",
+            "default": "No retention or erasure policy"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "collections": {
+            "title": "Collections",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatasetCollection"
+            }
+          }
+        },
+        "description": "The Dataset resource model."
+      },
+      "DatasetCollection": {
+        "title": "DatasetCollection",
+        "required": [
+          "name",
+          "fields"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string"
+          },
+          "fields": {
+            "title": "Fields",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatasetField"
+            }
+          }
+        },
+        "description": "The DatasetCollection resource model.\n\nThis resource is nested witin a Dataset."
+      },
+      "DatasetField": {
+        "title": "DatasetField",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "retention": {
+            "title": "Retention",
+            "type": "string"
+          },
+          "fields": {
+            "title": "Fields",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatasetField"
+            }
+          }
+        },
+        "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
+      },
+      "Evaluation": {
+        "title": "Evaluation",
+        "required": [
+          "fides_key",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusEnum"
+          },
+          "violations": {
+            "title": "Violations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Violation"
+            },
+            "default": []
+          },
+          "message": {
+            "title": "Message",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "description": "The Evaluation resource model.\n\nThis resource is created after an evaluation is executed."
+      },
+      "FigureTypeEnum": {
+        "title": "FigureTypeEnum",
+        "enum": [
+          "graphs",
+          "text"
+        ],
+        "type": "string",
+        "description": "Figure Type Enum to capture the discrete possible values\nfor a valid figure type to be visualized"
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "LegalBasisEnum": {
+        "title": "LegalBasisEnum",
+        "enum": [
+          "Consent",
+          "Contract",
+          "Legal Obligation",
+          "Vital Interest",
+          "Public Interest",
+          "Legitimate Interests"
+        ],
+        "type": "string",
+        "description": "The model for allowable legal basis categories\n\nBased upon article 6 of the GDPR"
+      },
+      "MatchesEnum": {
+        "title": "MatchesEnum",
+        "enum": [
+          "ANY",
+          "ALL",
+          "NONE",
+          "OTHER"
+        ],
+        "type": "string",
+        "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
+      },
+      "Organization": {
+        "title": "Organization",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "organization_parent_key": {
+            "title": "Organization Parent Key",
+            "type": "null"
+          },
+          "controller": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "data_protection_officer": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/OrganizationMetadata"
+          },
+          "representative": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "security_policy": {
+            "title": "Security Policy",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "description": "The Organization resource model.\n\nThis resource is used as a way to organize all other resources."
+      },
+      "OrganizationMetadata": {
+        "title": "OrganizationMetadata",
+        "type": "object",
+        "properties": {
+          "resource_filters": {
+            "title": "Resource Filters",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceFilter"
+            }
+          }
+        },
+        "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
+      },
+      "Policy": {
+        "title": "Policy",
+        "required": [
+          "fides_key",
+          "rules"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "rules": {
+            "title": "Rules",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyRule"
+            }
+          }
+        },
+        "description": "The Policy resource model.\n\nAn object used to organize a list of PolicyRules."
+      },
+      "PolicyRule": {
+        "title": "PolicyRule",
+        "required": [
+          "name",
+          "data_categories",
+          "data_uses",
+          "data_subjects"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "data_categories": {
+            "$ref": "#/components/schemas/PrivacyRule"
+          },
+          "data_uses": {
+            "$ref": "#/components/schemas/PrivacyRule"
+          },
+          "data_subjects": {
+            "$ref": "#/components/schemas/PrivacyRule"
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          }
+        },
+        "description": "The PolicyRule resource model.\n\nDescribes the allowed combination of the various privacy data types."
+      },
+      "PrivacyDeclaration": {
+        "title": "PrivacyDeclaration",
+        "required": [
+          "name",
+          "data_categories",
+          "data_use",
+          "data_subjects"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "data_use": {
+            "title": "Data Use",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+          },
+          "data_subjects": {
+            "title": "Data Subjects",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "dataset_references": {
+            "title": "Dataset References",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          }
+        },
+        "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
+      },
+      "PrivacyRule": {
+        "title": "PrivacyRule",
+        "required": [
+          "matches",
+          "values"
+        ],
+        "type": "object",
+        "properties": {
+          "matches": {
+            "$ref": "#/components/schemas/MatchesEnum"
+          },
+          "values": {
+            "title": "Values",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          }
+        },
+        "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
+      },
+      "Registry": {
+        "title": "Registry",
+        "required": [
+          "fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          }
+        },
+        "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
+      },
+      "ResourceFilter": {
+        "title": "ResourceFilter",
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "description": "The ResourceFilter resource model."
+      },
+      "StatusEnum": {
+        "title": "StatusEnum",
+        "enum": [
+          "FAIL",
+          "PASS"
+        ],
+        "type": "string",
+        "description": "The model for possible evaluation results."
+      },
+      "System": {
+        "title": "System",
+        "required": [
+          "fides_key",
+          "system_type",
+          "privacy_declarations"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "title": "Organization Fides Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Human-Readable string name for this resource."
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "In-depth description of what this resource is."
+          },
+          "registry_id": {
+            "title": "Registry Id",
+            "type": "integer"
+          },
+          "meta": {
+            "title": "Meta",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/SystemMetadata"
+          },
+          "system_type": {
+            "title": "System Type",
+            "type": "string"
+          },
+          "privacy_declarations": {
+            "title": "Privacy Declarations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyDeclaration"
+            }
+          },
+          "system_dependencies": {
+            "title": "System Dependencies",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            }
+          },
+          "joint_controller": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "third_country_transfers": {
+            "title": "Third Country Transfers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "administrating_department": {
+            "title": "Administrating Department",
+            "type": "string",
+            "default": "Not defined"
+          }
+        },
+        "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
+      },
+      "SystemMetadata": {
+        "title": "SystemMetadata",
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "string"
+          },
+          "endpoint_address": {
+            "title": "Endpoint Address",
+            "type": "string"
+          },
+          "endpoint_port": {
+            "title": "Endpoint Port",
+            "type": "string"
+          }
+        },
+        "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      },
+      "Violation": {
+        "title": "Violation",
+        "required": [
+          "violating_attributes",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "violating_attributes": {
+            "$ref": "#/components/schemas/ViolationAttributes"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "description": "The model for violations within an evaluation"
+      },
+      "ViolationAttributes": {
+        "title": "ViolationAttributes",
+        "required": [
+          "data_categories",
+          "data_subjects",
+          "data_uses",
+          "data_qualifier"
+        ],
+        "type": "object",
+        "properties": {
+          "data_categories": {
+            "title": "Data Categories",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data_subjects": {
+            "title": "Data Subjects",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data_qualifier": {
+            "title": "Data Qualifier",
+            "type": "string"
+          }
+        },
+        "description": "The model for attributes which led to an evaluation violation"
+      }
+    }
+  }
+}
