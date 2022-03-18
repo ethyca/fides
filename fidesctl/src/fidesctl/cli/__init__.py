@@ -86,7 +86,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in
         ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
             client_id=ctx.obj["CONFIG"].cli.analytics_id,
-            developer_mode=(getenv("FIDESCTL_TEST_MODE") == "True"),
+            developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
             os=system(),
             product_name=fidesctl.__name__ + "-cli",
             production_version=version(fidesctl.__name__),
