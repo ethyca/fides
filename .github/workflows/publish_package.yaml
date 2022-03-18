@@ -2,26 +2,30 @@ name: Publish fidesctl
 
 on:
   push:
+    ##### added for ci test #####
+    branches:
+      - SteveDMurphy-403-conda-build
     tags:
       - "*"
 
 jobs:
-  upload_to_pypi:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+##### removed for ci test #####
+#   upload_to_pypi:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: Install Twine
-        run: pip install twine
+#       - name: Install Twine
+#         run: pip install twine
 
-      - name: Twine Upload
-        run: |
-          cd fidesctl/
-          python setup.py sdist 
-          twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+#       - name: Twine Upload
+#         run: |
+#           cd fidesctl/
+#           python setup.py sdist 
+#           twine upload dist/*
+#         env:
+#           TWINE_USERNAME: __token__
+#           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
   upload_to_conda:
     runs-on: ubuntu-latest
