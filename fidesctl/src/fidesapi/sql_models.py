@@ -132,6 +132,7 @@ class DataUse(SqlAlchemyBase, FidesBase):
 
     parent_key = Column(Text)
     legal_basis = Column(Text)
+    special_category = Column(Text)
     recipients = Column(ARRAY(String))
 
 
