@@ -4,4 +4,3 @@ mkdocs-render-swagger-plugin==0.0.3
 mkdocs-click==0.5.0
 mkdocs-git-revision-date-plugin
 mike==1.1.2
-fidesctl # We always want the latest version
