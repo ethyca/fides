@@ -1,12 +1,6 @@
 name: Publish Docs
 
 on:
-  #For testing this PR
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .github/**
   push:
     branches:
       - main
