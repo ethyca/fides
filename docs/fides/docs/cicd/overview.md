@@ -1,6 +1,5 @@
 # CI/CD Overview
 
-<<<<<<< HEAD
 ## 
 Fidesctl is primarily designed to integrate with your existing CI pipeline configurations. Common implementations include:
 
@@ -9,25 +8,12 @@ Fidesctl is primarily designed to integrate with your existing CI pipeline confi
 * Jenkins
 * CircleCI
 * Azure Pipelines
-=======
-Fidesctl is primarily designed to integrate with your existing CI pipeline configurations, including:
-
-* [Github Actions](./ci_reference.md#github-actions)
-* [Gitlab CI](./ci_reference.md#gitlab-ci)
-* [Jenkins](./ci_reference.md#jenkins)
-* [CircleCI](./ci_reference.md#circleci)
-* [Azure Pipelines](./ci_reference.md#azure-pipelines)
->>>>>>> 7f16cf8 (CI references docs reorganization (#262))
 * AWS CodePipeline
 * Bitbucket
 * Bamboo
 * Team City
 
-<<<<<<< HEAD
 Implementing Fidesctl is possible in nearly any CI pipeline, including those not listed. 
-=======
-However, Fidesctl is capable of integrating with nearly any CI tool, including those not listed. 
->>>>>>> 7f16cf8 (CI references docs reorganization (#262))
 
 
 ## Implementation

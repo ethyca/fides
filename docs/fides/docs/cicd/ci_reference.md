@@ -1,8 +1,4 @@
-<<<<<<< HEAD:docs/fides/docs/cicd/ci_reference.md
 # Example Integrations
-=======
-# Implementation Examples 
->>>>>>> 7f16cf8 (CI references docs reorganization (#262)):docs/fides/docs/ci_reference.md
 
 The following code snippets are meant as simple example implementations, and illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
 
@@ -174,11 +170,7 @@ workflows:
             branches:
               only: main
 ```
-<<<<<<< HEAD:docs/fides/docs/cicd/ci_reference.md
 ___
-=======
-
->>>>>>> 7f16cf8 (CI references docs reorganization (#262)):docs/fides/docs/ci_reference.md
 ## Azure Pipelines
 
 ```yaml title="<code>.azure-pipelines.yml</code>"
