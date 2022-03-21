@@ -19,6 +19,7 @@ data_use:
     - IRS
     - NYDTF
     legal_basis: Legal Obligation
+    special_category: Employment
     parent_key: third_party_sharing.legal_obligation
   - fides_key: third_party_sharing.personalized_advertising.direct_marketing
     name: Direct Marketing
@@ -26,6 +27,7 @@ data_use:
     recipients: 
     - Processor - marketing co. 
     legal_basis: Consent
+    special_category: Consent
     parent_key: third_party_sharing.personalized_advertising
 ```
 
@@ -35,6 +37,7 @@ The above example uses the existing `demo_data_use.yml` from the Fides project. 
 * `name`: The name used here will also be surfaced as the **purpose of processing** when exporting data from Fides
 * `description`: An optional description of the purpose of processing
 * `recipients`: A list of recipients of personal data for this data use, our Payroll example above has multiple recipients for tax purposes
-* `legal_basis`: The legal basis category for processing, used as part of exporting data from Fides. 
+* `legal_basis`: The legal basis category for processing, used as part of exporting data from Fides. Loosely tied to article 6 of the GDPR.
+* `special_category`: The special cateogry associated to processing of personal data. Loosely tied to article 9 of the GDPR.
 * `parent_key`: The parent Data Use fides key extended from
 

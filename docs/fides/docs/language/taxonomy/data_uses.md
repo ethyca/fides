@@ -37,6 +37,20 @@ The legal basis category of which the data use falls under. This field is used a
 * `Public Interest`
 * `Legitimate Interest`
 
+**special_category**<span class="spacer"/>_enum_<span class="spacer"/>
+
+The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:
+
+* `Consent`
+* `Employment`
+* `Vital Interests`
+* `Non-profit Bodies`
+* `Public by Data Subject`
+* `Legal Claims`
+* `Substantial Public Interest`
+* `Medical`
+* `Public Health Interest`
+
 **recipent**<span class="spacer"/>_string_<span class="spacer"/>
 
 An array of recipients is applied here when sharing personal data outside of your organization (e.g. Internal Revenue Service, HMRC, etc.)
