@@ -15,4 +15,5 @@ data_use:
     recipients: 
     - Processor - marketing co. 
     legal_basis: Consent
+    special_category: Consent
     parent_key: third_party_sharing.personalized_advertising
