@@ -19,9 +19,12 @@ ifeq "$(CI)" "true"
     CI_ARGS:=--no-TTY
 endif
 
+# If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
+ANALYTICS_ID_OVERRIDE = -e FIDESCTL__CLI__ANALYTICS_ID
+
 # Run in Compose
-RUN = docker compose run --rm $(CI_ARGS) $(IMAGE_NAME)
-RUN_NO_DEPS = docker compose run --no-deps --rm $(CI_ARGS) $(IMAGE_NAME)
+RUN = docker compose run --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
+RUN_NO_DEPS = docker compose run --no-deps --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
 
 .PHONY: help
 help:
