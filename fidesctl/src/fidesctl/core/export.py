@@ -126,7 +126,7 @@ def generate_system_records(
     server_system_list: List,
     url: str,
     headers: Dict[str, str],
-) -> List[Tuple[str, str, str, str, str, str, str, str, str, str, str, str]]:
+) -> List[Tuple[str, str, str, str, str, str, str, str, str, str, str, str, str]]:
     """
     Takes a list of systems from the server, creating a list of tuples
     to be used as records to be exported. The headers of the csv are
