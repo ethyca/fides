@@ -375,7 +375,7 @@ class System(FidesModel):
     meta: Optional[Dict[str, str]]
     fidesctl_meta: Optional[SystemMetadata]
     system_type: str
-    responsibility_role: ResponsibilityRole = "Controller"
+    responsibility_role: ResponsibilityRole = ResponsibilityRole.CONTROLLER
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]
