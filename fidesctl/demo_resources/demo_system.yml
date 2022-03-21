@@ -4,6 +4,7 @@ system:
     description: A system used for analyzing customer behaviour.
     system_type: Service
     administrating_department: Engineering
+    responsibility_role: Controller
     third_country_transfers:
     - USA
     - CAN
@@ -21,8 +22,9 @@ system:
 
   - fides_key: demo_marketing_system
     name: Demo Marketing System
-    description: Collect data about our users for marketing.
+    description: Collect data about our users for marketing.    
     system_type: Service
+    responsibility_role: Processor
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:
