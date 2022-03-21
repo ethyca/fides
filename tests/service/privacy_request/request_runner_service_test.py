@@ -27,6 +27,7 @@ from fidesops.schemas.masking.masking_configuration import (
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.sql_connector import (
     SnowflakeConnector,
@@ -365,7 +366,9 @@ def test_create_and_process_erasure_request_saas(
     pr = get_privacy_request_results(db, erasure_policy_hmac, cache, data)
 
     connector = SaaSConnector(connection_config_mailchimp)
-    request = ("GET", "/3.0/search-members", {"query": mailchimp_identity_email}, {})
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET, path="/3.0/search-members", params={"query": mailchimp_identity_email}, body=None
+    )
     resp = connector.create_client().send(request)
     body = resp.json()
     merge_fields = body["exact_matches"]["members"][0]["merge_fields"]

@@ -40,8 +40,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # find query param value from deconstructed request_params, throw exception if query param not found
-        method, path, params, body = request_params
-        param_value = params.get(self.incremental_param)
+        param_value = request_params.params.get(self.incremental_param)
         if param_value is None:
             raise FidesopsException(
                 f"Unable to find query param named '{self.incremental_param}' in request"
@@ -60,8 +59,13 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # update query param and return updated request_param tuple
-        params[self.incremental_param] = param_value
-        return method, path, params, body
+        request_params.params[self.incremental_param] = param_value
+        return SaaSRequestParams(
+            method=request_params.method,
+            path=request_params.path,
+            params=request_params.params,
+            body=request_params.body,
+        )
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

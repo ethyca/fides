@@ -1,4 +1,7 @@
+from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
+
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from pydantic import BaseModel, validator, root_validator
 from fidesops.schemas.base_class import BaseSchema
@@ -73,10 +76,17 @@ class SaaSRequest(BaseModel):
     """
 
     path: str
+    method: Optional[HTTPMethod]
     request_params: Optional[List[RequestParam]]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        orm_mode = True
+        use_enum_values = True
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:

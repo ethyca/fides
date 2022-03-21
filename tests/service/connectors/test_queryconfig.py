@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, Optional
 
 import pytest
 
@@ -17,6 +17,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
 
@@ -622,37 +624,31 @@ class TestSaaSQueryConfig:
 
         # static path with single query param
         config = SaaSQueryConfig(member, endpoints)
-        prepared_request = config.generate_query(
+        prepared_request: SaaSRequestParams = config.generate_query(
             {"query": ["customer-1@example.com"]}, policy
         )
-        assert prepared_request == (
-            "GET",
-            "/3.0/search-members",
-            {"query": "customer-1@example.com"},
-            None,
-        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == "/3.0/search-members"
+        assert prepared_request.params == {"query": "customer-1@example.com"}
+        assert prepared_request.body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints)
         prepared_request = config.generate_query(
             {"placeholder": ["customer-1@example.com"]}, policy
         )
-        assert prepared_request == (
-            "GET",
-            "/3.0/conversations",
-            {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"},
-            None,
-        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == "/3.0/conversations"
+        assert prepared_request.params == {"count": 1000, "offset": 0, "placeholder": "customer-1@example.com"}
+        assert prepared_request.body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints)
         prepared_request = config.generate_query({"conversation_id": ["abc"]}, policy)
-        assert prepared_request == (
-            "GET",
-            "/3.0/conversations/abc/messages",
-            {},
-            None,
-        )
+        assert prepared_request.method == HTTPMethod.GET.value
+        assert prepared_request.path == "/3.0/conversations/abc/messages"
+        assert prepared_request.params == {}
+        assert prepared_request.body is None
 
     def test_generate_update_stmt(
         self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
@@ -673,16 +669,46 @@ class TestSaaSQueryConfig:
 
         # build request by taking a row, masking it, and adding it to
         # the body of a PUT request
-        prepared_request = config.generate_update_stmt(
+        prepared_request: SaaSRequestParams = config.generate_update_stmt(
             row, erasure_policy_string_rewrite, privacy_request
         )
-        assert prepared_request == (
-            "PUT",
-            "/3.0/lists/abc/members/123",
-            {},
-            json.dumps(
-                {
-                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-                }
-            ),
+        assert prepared_request.method == HTTPMethod.PUT.value
+        assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.params == {}
+        assert prepared_request.body == json.dumps(
+            {
+                "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+            }
+        )
+
+    def test_generate_update_stmt_custom_http_method(
+            self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
+    ):
+        saas_config: Optional[SaaSConfig] = connection_config_saas_example.get_saas_config()
+        saas_config.endpoints[2].requests.get("update").method = HTTPMethod.POST
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+
+        config = SaaSQueryConfig(member, endpoints)
+        row = {
+            "id": "123",
+            "merge_fields": {"FNAME": "First", "LNAME": "Last"},
+            "list_id": "abc",
+        }
+
+        # build request by taking a row, masking it, and adding it to
+        # the body of a POST request
+        prepared_request: SaaSRequestParams = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request.method == HTTPMethod.POST.value
+        assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.params == {}
+        assert prepared_request.body == json.dumps(
+            {
+                "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+            }
         )
