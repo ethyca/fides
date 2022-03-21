@@ -1,5 +1,14 @@
 # Installation
 
+## Requirements 
+To run this project, ensure you have the following requirements installed and running on your machine:
+
+* [Docker 12+](https://docs.docker.com/desktop/#download-and-install)
+* Python 3.7+
+* Make
+* pg_config (`brew install libpq` or `brew install postgres` on Mac)
+
+
 ## Clone the fidesdemo repo
 
 Let's clone [Fides Demo](https://github.com/ethyca/fidesdemo), and rewind to an earlier tag, so we can build out 
