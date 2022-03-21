@@ -164,8 +164,9 @@ test_request:
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
-- `requests` A map of read and update requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
+- `requests` A map of `read` and `update` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from request_params.
+    - `method` (optional) HTTP method. Defaults to `GET` for read requests, `PUT` for update requests. Other options are `POST`, `PATCH`, or `DELETE`.
     - `request_params`
         - `name` Used as the key for query param values, or to map this param to a value placeholder in the path.
         - `type` Either "query" or "path".

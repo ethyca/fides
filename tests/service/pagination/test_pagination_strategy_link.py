@@ -1,8 +1,10 @@
 import json
+from typing import Optional
+
 import pytest
 from requests import Response
 from fidesops.schemas.saas.strategy_configuration import LinkPaginationConfiguration
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
 
 
@@ -33,46 +35,76 @@ def response_with_body_link():
 
 def test_link_in_headers(response_with_header_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
-    request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "abc"},
+        body=None
+    )
 
     paginator = LinkPaginationStrategy(config)
-    next_request: SaaSRequestParams = paginator.get_next_request(
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_header_link, "customers"
     )
-    assert next_request == ("GET", "/customers", {"page": "def"}, None)
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "def"},
+        body=None
+    )
 
 
 def test_link_in_headers_missing(response_with_body_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
-    request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "abc"},
+        body=None
+    )
 
     paginator = LinkPaginationStrategy(config)
-    next_request: SaaSRequestParams = paginator.get_next_request(
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_body_link, "customers"
     )
-    assert next_request == None
+    assert next_request is None
 
 
 def test_link_in_body(response_with_body_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
-    request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "abc"},
+        body=None
+    )
 
     paginator = LinkPaginationStrategy(config)
-    next_request: SaaSRequestParams = paginator.get_next_request(
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_body_link, "customers"
     )
-    assert next_request == ("GET", "/customers", {"page": "def"}, None)
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "def"},
+        body=None
+    )
 
 
 def test_link_in_body_missing(response_with_header_link):
     config = LinkPaginationConfiguration(source="body", path="links.next")
-    request_params: SaaSRequestParams = "GET", "/customers", {"page": "abc"}, None
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        params={"page": "abc"},
+        body=None
+    )
 
     paginator = LinkPaginationStrategy(config)
-    next_request: SaaSRequestParams = paginator.get_next_request(
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_header_link, "customers"
     )
-    assert next_request == None
+    assert next_request is None
 
 
 def test_wrong_source():
