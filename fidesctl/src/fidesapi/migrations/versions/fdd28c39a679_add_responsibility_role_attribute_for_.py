@@ -1,7 +1,7 @@
 """add responsibility_role attribute for system
 
 Revision ID: fdd28c39a679
-Revises: 150f234ef1de
+Revises: 7a94527643a1
 Create Date: 2022-03-21 17:37:23.855761
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "fdd28c39a679"
-down_revision = "150f234ef1de"
+down_revision = "7a94527643a1"
 branch_labels = None
 depends_on = None
 
