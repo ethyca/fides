@@ -426,20 +426,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../installation/conda/" class="md-nav__link">
-        Installation from Conda
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../installation/docker/" class="md-nav__link">
         Installation from Docker
       </a>
@@ -1447,7 +1433,7 @@ You're not viewing the latest version.
 <p>Fidesctl does not follow a set release schedule, but instead ships versions based on the addition of features/functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.</p>
 <h2 id="planning">Planning</h2>
 <p>For each release a corresponding GitHub Project is created. These projects can be found <a href="https://github.com/ethyca/fides/projects">here</a>. Issues are then added to release projects as a way to organize what will be included in each release.</p>
-<p>Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all fidesctl releases <a href="https://github.com/ethyca/fides/releases">here</a>. Each new release triggers a GitHub Action that pushes the new version to PyPI and Conda as well as pushes a clean version to DockerHub. The release project is then marked as <code>closed</code>.</p>
+<p>Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all fidesctl releases <a href="https://github.com/ethyca/fides/releases">here</a>. Each new release triggers a GitHub Action that pushes the new version to PyPI as well as pushes a clean version to DockerHub. The release project is then marked as <code>closed</code>.</p>
 <p>Hotfixes are an exception to this and can be added and pushed as patch versions when needed.</p>
 <h2 id="branching">Branching</h2>
 <p>Fidesctl uses continuous delivery with a single <code>main</code> branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.</p>
