@@ -52,7 +52,7 @@ async def acquire_access_token(
     form_data: OAuth2ClientCredentialsRequestForm = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessToken:
-    """Given a set of credentials, returns an access token if they are correct. Raises 401
+    """Returns an access token if given credentials are correct, raises 401
     exception if not"""
 
     basic_credentials = await HTTPBasic(auto_error=False)(request)
