@@ -116,6 +116,7 @@ def test_xlsx_export(tmpdir):
         "system.third_country_safeguards",
         "dataset.retention",
         "organization.link_to_security_policy",
+        "system.responsibility_role",
     ]
 
     organization_df = pd.DataFrame()
