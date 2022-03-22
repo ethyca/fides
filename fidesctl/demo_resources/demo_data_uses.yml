@@ -15,3 +15,11 @@ data_use:
     - Processor - marketing co. 
     legal_basis: Consent
     parent_key: third_party_sharing.personalized_advertising
+  - fides_key: third_party_sharing.legitimate_interest.fraud_detection
+    name: Fraud Detection
+    description: Fraud detection within our demo systems
+    recipients: 
+    - Fraud detectors inc.
+    legal_basis: Legitimate Interests
+    legitimate_interest_impact_assessment: https://example.org/legitimate_interest_assessment
+    parent_key: third_party_sharing.legitimate_interest # Should this have failed validation for not existing?

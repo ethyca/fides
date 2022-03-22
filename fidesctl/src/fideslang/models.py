@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field, HttpUrl
+from pydantic import validator, BaseModel, Field, AnyUrl, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -90,6 +90,9 @@ class DataQualifier(FidesModel):
 class DataSubject(FidesModel):
     """The DataSubject resource model."""
 
+    rights_available: Optional[str]
+    automated_decisions_or_profiling: Optional[bool]
+
 
 class DataUse(FidesModel):
     """The DataUse resource model."""
@@ -97,7 +100,8 @@ class DataUse(FidesModel):
     parent_key: Optional[FidesKey]
     legal_basis: Optional[LegalBasisEnum]
     recipients: Optional[List[str]]
-
+    legitimate_interest: Optional[bool]
+    legitimate_interest_impact_assessment: Optional[AnyUrl]
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
 

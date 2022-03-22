@@ -1,0 +1,6 @@
+data_subject:
+  - fides_key: potential_customer
+    name: Potential Customer
+    description: A prospective individual or other organization that purchases goods or services from the organization.
+    rights_available: Deletion
+    automated_decisions_or_profiling: true

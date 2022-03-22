@@ -5,9 +5,11 @@ Contains all of the SqlAlchemy models for the Fides resources.
 """
 
 from typing import Dict
+from xmlrpc.client import Boolean
 
 from sqlalchemy import (
     ARRAY,
+    BOOLEAN,
     JSON,
     Column,
     Integer,
@@ -121,6 +123,8 @@ class DataSubject(SqlAlchemyBase, FidesBase):
     """
 
     __tablename__ = "data_subjects"
+    rights_available = Column(String, nullable=True)
+    automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
 
 
 class DataUse(SqlAlchemyBase, FidesBase):
@@ -133,6 +137,8 @@ class DataUse(SqlAlchemyBase, FidesBase):
     parent_key = Column(Text)
     legal_basis = Column(Text)
     recipients = Column(ARRAY(String))
+    legitimate_interest = Column(BOOLEAN, nullable=True)
+    legitimate_interest_impact_assessment = Column(String, nullable=True)
 
 
 # Dataset
