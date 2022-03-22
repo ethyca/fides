@@ -12,6 +12,8 @@ Closes <issue>
 
 * [ ] All CI Pipelines Succeeded
 * [ ] Documentation Updated
+* [ ] Issue Requirements are Met
+* [ ] Relevant Follow-Up Issues Created
 
 ### Description Of Changes
 

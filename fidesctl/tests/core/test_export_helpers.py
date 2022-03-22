@@ -117,6 +117,8 @@ def test_xlsx_export(tmpdir):
         "dataset.retention",
         "organization.link_to_security_policy",
         "system.responsibility_role",
+        "system.privacy_declaration.data_use.legal_basis",
+        "system.privacy_declaration.data_use.special_category",
     ]
 
     organization_df = pd.DataFrame()

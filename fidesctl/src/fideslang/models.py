@@ -82,6 +82,25 @@ class LegalBasisEnum(str, Enum):
     LEGITIMATE_INTEREST = "Legitimate Interests"
 
 
+class SpecialCategoriesEnum(str, Enum):
+    """
+    The model for processing special categories
+    of personal data.
+
+    Based upon article 9 of the GDPR
+    """
+
+    CONSENT = "Consent"
+    EMPLOYMENT = "Employment"
+    VITAL_INTEREST = "Vital Interests"
+    NON_PROFIT_BODIES = "Non-profit Bodies"
+    PUBLIC_BY_DATA_SUBJECT = "Public by Data Subject"
+    LEGAL_CLAIMS = "Legal Claims"
+    PUBLIC_INTEREST = "Substantial Public Interest"
+    MEDICAL = "Medical"
+    PUBLIC_HEALTH_INTEREST = "Public Health Interest"
+
+
 # Privacy Data Types
 class DataCategory(FidesModel):
     """The DataCategory resource model."""
@@ -110,6 +129,7 @@ class DataUse(FidesModel):
 
     parent_key: Optional[FidesKey]
     legal_basis: Optional[LegalBasisEnum]
+    special_category: Optional[SpecialCategoriesEnum]
     recipients: Optional[List[str]]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
