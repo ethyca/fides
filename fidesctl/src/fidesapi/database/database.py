@@ -62,13 +62,12 @@ async def load_default_taxonomy() -> None:
         resources = list(map(dict, DEFAULT_TAXONOMY.dict()[resource_type]))
 
         try:
-            await upsert_resources(sql_model_map[resource_type], resources)
+            result = await upsert_resources(sql_model_map[resource_type], resources)
         except QueryError:
             pass  # The upsert_resources function will log the error
         else:
-            log.info(
-                f"Successfully UPSERTED {len(resources)} {resource_type} resources"
-            )
+            log.info(f"INSERTED {result[0]} {resource_type} resources")
+            log.info(f"UPDATED {result[1]} {resource_type} resources")
 
 
 def reset_db(database_url: str) -> None:
