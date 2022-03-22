@@ -42,20 +42,22 @@ def test_unwrap_path_not_found():
     }
     processor = UnwrapPostProcessorStrategy(configuration=config)
     result = processor.process(data)
-    assert result is None
+    assert result == []
 
 
 def test_unwrap_unexpected_format():
     config = UnwrapPostProcessorConfiguration(data_path="exact_matches.members")
     data = "not-a-list-or-dict"
     processor = UnwrapPostProcessorStrategy(configuration=config)
-    assert processor.process(data) == None
+    result = processor.process(data)
+    assert result == []
 
 
 def test_unwrap_no_value():
     config = UnwrapPostProcessorConfiguration(data_path="exact_matches.members")
     processor = UnwrapPostProcessorStrategy(configuration=config)
-    assert None is processor.process(None)
+    result = processor.process(None)
+    assert result == []
 
 
 def test_unwrap_list():
