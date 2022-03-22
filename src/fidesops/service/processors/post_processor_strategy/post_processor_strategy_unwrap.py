@@ -48,30 +48,38 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any] = None,
-    ) -> Optional[Any]:
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         :param data: A list or dict
-        :param identity_data: Dict of cached identity data
-        :return: unwrapped list or dict
+        :param identity_data: dict of cached identity data
+        :return: unwrapped list, dict, or empty list
         """
-        unwrapped = None
+
+        result = []
         if isinstance(data, dict):
             unwrapped = pydash.get(data, self.data_path)
-
+            if unwrapped is None:
+                logger.warning(
+                    f"{self.data_path} could not be found for the following "
+                    f"post processing strategy: {self.get_strategy_name()}"
+                )
+            else:
+                result = unwrapped
         elif isinstance(data, list):
-            unwrapped = []
             for item in data:
-                unwrapped.append(pydash.get(item, self.data_path))
+                unwrapped = pydash.get(item, self.data_path)
+                if unwrapped is None:
+                    logger.warning(
+                        f"{self.data_path} could not be found for the following "
+                        f"post processing strategy: {self.get_strategy_name()}"
+                    )
+                else:
+                    result.append(unwrapped)
             # flatten the list to account for the event where the output of unwrapped
             # is a list of lists
-            unwrapped = pydash.flatten(unwrapped)
+            result = pydash.flatten(result)
 
-        if unwrapped is None:
-            logger.warning(
-                f"{self.data_path} could not be found for the following post processing strategy: {self.get_strategy_name()}"
-            )
-
-        return unwrapped
+        return result
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:

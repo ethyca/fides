@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
 
 class PostProcessorStrategy(ABC):
@@ -10,5 +10,7 @@ class PostProcessorStrategy(ABC):
         """Returns strategy name"""
 
     @abstractmethod
-    def process(self, data: Any, identity_data: Dict[str, Any] = None) -> Any:
+    def process(
+        self, data: Any, identity_data: Dict[str, Any] = None
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """Process data from SaaS connector"""
