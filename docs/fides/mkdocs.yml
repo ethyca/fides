@@ -18,7 +18,6 @@ nav:
       - Installation Overview: installation/installation.md
       - Prerequisites & Dependencies: installation/prerequisites_dependencies.md
       - Installation from PyPI: installation/pypi.md
-      - Installation from Conda: installation/conda.md
       - Installation from Docker: installation/docker.md
       - Setting up the database: installation/database.md
       - Configuration: installation/configuration.md
