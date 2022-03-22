@@ -17,7 +17,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.schemas.saas.saas_config import SaaSConfig, RequestParam
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.query_config import SQLQueryConfig, MongoQueryConfig
@@ -711,4 +711,37 @@ class TestSaaSQueryConfig:
             {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
             }
+        )
+
+    def test_generate_update_stmt_with_request_body(
+        self, erasure_policy_string_rewrite, combined_traversal, connection_config_saas_example
+    ):
+        saas_config: Optional[SaaSConfig] = connection_config_saas_example.get_saas_config()
+        saas_config.endpoints[2].requests.get("update").body = '{"properties": {<masked_object_fields>, "list_id": <list_id>}}'
+        body_request_params = RequestParam(
+            name="list_id",
+            type="body",
+            references=[{"dataset": "saas_connector_example", "field": "member.list_id", "direction": "from"}]
+        )
+        saas_config.endpoints[2].requests.get("update").request_params.append(body_request_params)
+        endpoints = saas_config.top_level_endpoint_dict
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        config = SaaSQueryConfig(member, endpoints)
+        row = {
+            "id": "123",
+            "merge_fields": {"FNAME": "First", "LNAME": "Last"},
+            "list_id": "abc",
+        }
+        # build request by taking a row, masking it, and adding it to
+        # the body of a PUT request
+        prepared_request = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+        assert prepared_request == SaaSRequestParams(
+            method=HTTPMethod.PUT,
+            path="/3.0/lists/abc/members/123",
+            params={},
+            body=json.dumps({'properties': {"merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}, 'list_id': 'abc'}}),
         )

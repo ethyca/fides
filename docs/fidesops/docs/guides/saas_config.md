@@ -165,11 +165,12 @@ This is where we define how we are going to access and update each collection in
 
 - `name` This name corresponds to a Collection in the corresponding Dataset.
 - `requests` A map of `read` and `update` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
-    - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from request_params.
+    - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `request_params`.
     - `method` (optional) HTTP method. Defaults to `GET` for read requests, `PUT` for update requests. Other options are `POST`, `PATCH`, or `DELETE`.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `request_params`. For update requests, you'll need to additionally annotated `<masked_object_fields>` as a placeholder for the fidesops generated update values.
     - `request_params`
         - `name` Used as the key for query param values, or to map this param to a value placeholder in the path.
-        - `type` Either "query" or "path".
+        - `type` Can be "query", "path", or "body".
         - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
         - `identity` This denotes the identity value that this request_param should take.
           - `default_value` Hard-coded default value for a `request_param`. This is most often used for query params since a static path param can just be included in the `path`.
@@ -265,6 +266,43 @@ PUT /3.0/lists/123/members/456
 }
 ```
 and the contents of the body would be masked according to the configured [policy](policies.md).
+
+
+#### Data update with a dynamic HTTP body
+
+Sometimes, the update request needs a different body structure than what we obtain from the read request. In this example, we use a custom HTTP body that contains our masked object fields.
+```yml
+update:
+  path: /crm/v3/objects/contacts
+  body: {
+    "properties": {
+      <masked_object_fields>
+      "user_ref_id": <user_ref_id>            
+    }
+  }
+  request_params:
+    - name: user_ref_id
+      type: body
+      references:
+        - dataset: dataset_test
+          field: contacts.user_ref_id
+          direction: from
+```
+
+Fidesops will replace the `<masked_object_fields>` placeholder with the result of the policy-driven masking service, for example `{'company': None, 'email': None}`.
+
+This results in the following update request:
+```yaml
+PUT /crm/v3/objects/contacts
+{
+  "properties": {
+      "company": "None",
+      "email": "None"
+      "user_ref_id": "p983u4ncp3q8u4r"
+  }
+}
+```
+
 
 ## How does this relate to graph traversal?
 
