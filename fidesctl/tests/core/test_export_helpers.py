@@ -108,7 +108,7 @@ def test_xlsx_export(tmpdir):
         "system.administrating_department",
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
-        "system.privacy_declaration.data_subjects",
+        "system.privacy_declaration.data_subjects.name",
         "dataset.data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
@@ -120,6 +120,8 @@ def test_xlsx_export(tmpdir):
         "system.privacy_declaration.data_use.special_category",
         "system.privacy_declaration.data_use.legitimate_interest",
         "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+        "system.privacy_declaration.data_subjects.rights_available",
+        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
     ]
 
     organization_df = pd.DataFrame()

@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Set
 
 import pandas as pd
 
-from fidesctl.core.api_helpers import get_server_resource
+from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
 
 from fideslang.models import Taxonomy
@@ -88,7 +88,7 @@ def export_datamap_to_excel(
         "system.administrating_department",
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
-        "system.privacy_declaration.data_subjects",
+        "system.privacy_declaration.data_subjects.name",
         "dataset.data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
@@ -100,6 +100,8 @@ def export_datamap_to_excel(
         "system.privacy_declaration.data_use.special_category",
         "system.privacy_declaration.data_use.legitimate_interest",
         "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+        "system.privacy_declaration.data_subjects.rights_available",
+        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
     ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(
@@ -178,6 +180,50 @@ def get_formatted_data_use(
         )
 
     return formatted_data_use
+
+
+def get_formatted_data_subjects(
+    url: str, headers: Dict[str, str], data_subjects_fides_keys: List[str]
+) -> List[Dict[str, str]]:
+    """
+    This function retrieves the data subjects from the server
+    and formats the results, returning the necessary values
+    as a list of dicts
+    """
+
+    data_subjects = get_server_resources(
+        url, "data_subject", data_subjects_fides_keys, headers
+    )
+
+    formatted_data_subject_attributes_list = [
+        "name",
+        "rights_available",
+        "automated_decisions_or_profiling",
+    ]
+
+    formatted_data_subjects_list = []  # empty list to populate and return
+
+    for data_subject in data_subjects:
+        formatted_data_subject = dict(
+            zip(
+                formatted_data_subject_attributes_list,
+                [
+                    "N/A",
+                ]
+                * len(formatted_data_subject_attributes_list),
+            )
+        )
+        for attribute in formatted_data_subject_attributes_list:
+            try:
+                formatted_data_subject[attribute] = getattr(data_subject, attribute)
+            except AttributeError:
+                echo_red(
+                    f"{attribute} undefined for specified Data Subject, setting as N/A."
+                )
+
+        formatted_data_subjects_list.append(formatted_data_subject)
+
+    return formatted_data_subjects_list
 
 
 def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
