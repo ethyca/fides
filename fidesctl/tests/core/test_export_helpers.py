@@ -118,6 +118,8 @@ def test_xlsx_export(tmpdir):
         "organization.link_to_security_policy",
         "system.privacy_declaration.data_use.legal_basis",
         "system.privacy_declaration.data_use.special_category",
+        "system.privacy_declaration.data_use.legitimate_interest",
+        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
     ]
 
     organization_df = pd.DataFrame()

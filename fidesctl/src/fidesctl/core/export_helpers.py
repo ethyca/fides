@@ -98,6 +98,8 @@ def export_datamap_to_excel(
         "organization.link_to_security_policy",
         "system.privacy_declaration.data_use.legal_basis",
         "system.privacy_declaration.data_use.special_category",
+        "system.privacy_declaration.data_use.legitimate_interest",
+        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
     ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(
