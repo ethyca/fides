@@ -100,10 +100,32 @@ class DataUse(FidesModel):
     parent_key: Optional[FidesKey]
     legal_basis: Optional[LegalBasisEnum]
     recipients: Optional[List[str]]
-    legitimate_interest: Optional[bool]
+    legitimate_interest: bool = False
     legitimate_interest_impact_assessment: Optional[AnyUrl]
+
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
+
+    @validator("legitimate_interest", always=True)
+    @classmethod
+    def set_legitimate_interest(cls, value: bool, values: Dict):
+        """Sets if a legitimate interest is used."""
+        if values["legal_basis"] == "Legitimate Interests":
+            value = True
+        return value
+
+    @validator("legitimate_interest_impact_assessment", always=True)
+    @classmethod
+    def ensure_impact_assessment(cls, value: AnyUrl, values: Dict):
+        """
+        Validates an impact assessment is applied if a
+        legitimate interest has been defined.
+        """
+        if values["legitimate_interest"]:
+            assert (
+                value is not None
+            ), "Impact assessment cannot be null for a legitimate interest, please provide a valid url"
+        return value
 
 
 # Dataset
