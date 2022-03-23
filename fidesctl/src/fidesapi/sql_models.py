@@ -136,6 +136,7 @@ class DataUse(SqlAlchemyBase, FidesBase):
 
     parent_key = Column(Text)
     legal_basis = Column(Text)
+    special_category = Column(Text)
     recipients = Column(ARRAY(String))
     legitimate_interest = Column(BOOLEAN, nullable=True)
     legitimate_interest_impact_assessment = Column(String, nullable=True)
