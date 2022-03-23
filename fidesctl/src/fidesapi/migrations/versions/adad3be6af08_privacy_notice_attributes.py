@@ -1,7 +1,7 @@
 """privacy notice attributes
 
 Revision ID: adad3be6af08
-Revises: 150f234ef1de
+Revises: 7a94527643a1
 Create Date: 2022-03-22 19:22:15.248311
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "adad3be6af08"
-down_revision = "150f234ef1de"
+down_revision = "7a94527643a1"
 branch_labels = None
 depends_on = None
 

@@ -5,7 +5,6 @@ Contains all of the SqlAlchemy models for the Fides resources.
 """
 
 from typing import Dict
-from xmlrpc.client import Boolean
 
 from sqlalchemy import (
     ARRAY,

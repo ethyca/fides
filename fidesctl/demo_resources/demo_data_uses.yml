@@ -17,6 +17,10 @@ data_use:
     legal_basis: Consent
     special_category: Consent
     parent_key: third_party_sharing.personalized_advertising
+  - fides_key: third_party_sharing.legitimate_interest
+    name: Legitimate Interests
+    description: Legitimate interests for processing personal data
+    parent_key: third_party_sharing
   - fides_key: third_party_sharing.legitimate_interest.fraud_detection
     name: Fraud Detection
     description: Fraud detection within our demo systems
@@ -24,4 +28,4 @@ data_use:
     - Fraud detectors inc.
     legal_basis: Legitimate Interests
     legitimate_interest_impact_assessment: https://example.org/legitimate_interest_assessment
-    parent_key: third_party_sharing.legitimate_interest # Should this have failed validation for not existing?
+    parent_key: third_party_sharing.legitimate_interest

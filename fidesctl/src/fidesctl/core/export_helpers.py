@@ -140,6 +140,8 @@ def get_formatted_data_use(
         "legal_basis": "N/A",
         "special_category": "N/A",
         "recipients": "N/A",
+        "legitimate_interest": "N/A",
+        "legitimate_interest_impact_assessment": "N/A",
     }
 
     try:
@@ -156,6 +158,22 @@ def get_formatted_data_use(
         formatted_data_use["recipients"] = ", ".join(data_use.recipients)
     except TypeError:
         echo_red("Recipients undefined for specified Data Use, setting as N/A")
+
+    try:
+        legitimate_interest = data_use.legitimate_interest
+        if legitimate_interest:
+            formatted_data_use["legitimate_interest"] = data_use.name
+    except TypeError:
+        echo_red("Legitimate Interest undefined for specified Data Use, setting as N/A")
+
+    try:
+        formatted_data_use[
+            "legitimate_interest_impact_assessment"
+        ] = data_use.legitimate_interest_impact_assessment
+    except TypeError:
+        echo_red(
+            "Legitimate interest impact assessment undefined for specified Data Use, setting as N/A"
+        )
 
     return formatted_data_use
 

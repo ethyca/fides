@@ -128,7 +128,7 @@ class DataUse(FidesModel):
 
     @validator("legitimate_interest", always=True)
     @classmethod
-    def set_legitimate_interest(cls, value: bool, values: Dict):
+    def set_legitimate_interest(cls, value: bool, values: Dict) -> bool:
         """Sets if a legitimate interest is used."""
         if values["legal_basis"] == "Legitimate Interests":
             value = True
@@ -136,7 +136,7 @@ class DataUse(FidesModel):
 
     @validator("legitimate_interest_impact_assessment", always=True)
     @classmethod
-    def ensure_impact_assessment(cls, value: AnyUrl, values: Dict):
+    def ensure_impact_assessment(cls, value: AnyUrl, values: Dict) -> AnyUrl:
         """
         Validates an impact assessment is applied if a
         legitimate interest has been defined.
