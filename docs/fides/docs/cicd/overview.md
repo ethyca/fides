@@ -26,4 +26,4 @@ To integrate Fidesctl with your CI pipeline, you should plan to implement at lea
     - `evaluate` synchronizes the latest changes to the fidesctl server.
     - Run this against commits representing merges into the default branch.
 
-[Implementation examples](./ci_reference.md) are also available for a variety of CI tools.
+[Implementation examples](./examples.md) are also available for a variety of CI tools.

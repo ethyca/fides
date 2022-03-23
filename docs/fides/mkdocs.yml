@@ -36,7 +36,7 @@ nav:
       - Extending Data Use: guides/extending_data_use.md
   - CI/CD Integration: 
       - Overview: cicd/overview.md
-      - Example Integrations: cicd/ci_reference.md
+      - Example Integrations: cicd/examples.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
