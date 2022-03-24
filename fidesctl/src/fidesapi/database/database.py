@@ -1,7 +1,7 @@
 """
 Contains all of the logic related to the database including connections, setup, teardown, etc.
 """
-import os
+from os import path
 
 from alembic import command
 from alembic.config import Config
@@ -22,9 +22,9 @@ def get_alembic_config(database_url: str) -> Config:
     Do lots of magic to make alembic work programmatically from the CLI.
     """
 
-    migrations_dir = os.path.dirname(os.path.abspath(__file__))
-    directory = os.path.join(migrations_dir, "../migrations")
-    config = Config(os.path.join(migrations_dir, "../alembic.ini"))
+    migrations_dir = path.dirname(path.abspath(__file__))
+    directory = path.join(migrations_dir, "../migrations")
+    config = Config(path.join(migrations_dir, "../alembic.ini"))
     config.set_main_option("script_location", directory.replace("%", "%%"))
     config.set_main_option("sqlalchemy.url", database_url)
     return config
