@@ -27,7 +27,7 @@ async def create_resource(
         try:
             await get_resource(sql_model, resource_dict["fides_key"])
         except errors.NotFoundError:
-            log.debug("Resource not found. Inserting.")
+            pass
         else:
             error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
