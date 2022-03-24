@@ -75,7 +75,8 @@ async def load_default_taxonomy() -> None:
         except AlreadyExistsError:
             pass
 
-    log.info(f"INSERTED {inserted} organization resources")
+    log.info(f"INSERTED {inserted} organization resource(s)")
+    log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
 
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
     upsert_resource_types.remove("organization")
@@ -90,8 +91,8 @@ async def load_default_taxonomy() -> None:
         except QueryError:
             pass  # The upsert_resources function will log the error
         else:
-            log.info(f"INSERTED {result[0]} {resource_type} resources")
-            log.info(f"UPDATED {result[1]} {resource_type} resources")
+            log.info(f"INSERTED {result[0]} {resource_type} resource(s)")
+            log.info(f"UPDATED {result[1]} {resource_type} resource(s)")
 
 
 def reset_db(database_url: str) -> None:
