@@ -2,6 +2,7 @@
 
 import pytest
 import requests
+from json import loads
 
 from fidesctl.core import api as _api
 from fideslang import parse, model_list
@@ -122,6 +123,20 @@ def test_api_update(test_config, resources_dict, endpoint):
         json_resource=manifest.json(exclude_none=True),
     )
     print(result.text)
+    assert result.status_code == 200
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("endpoint", model_list)
+def test_api_upsert(test_config, resources_dict, endpoint):
+    manifest = resources_dict[endpoint]
+    result = _api.upsert(
+        url=test_config.cli.server_url,
+        headers=test_config.user.request.headers,
+        resource_type=endpoint,
+        resources=[loads(manifest.json())],
+    )
+
     assert result.status_code == 200
 
 
