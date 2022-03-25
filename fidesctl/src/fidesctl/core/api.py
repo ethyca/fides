@@ -5,10 +5,13 @@ import requests
 
 
 def generate_resource_url(
-    url: str, resource_type: str = "", resource_id: str = "", version: str = "v1"
+    url: str,
+    resource_type: str = "",
+    resource_id: str = "",
 ) -> str:
     """
-    Generate a resource's URL using a base url, the resource type and a version.
+    Generate a resource's URL using a base url, the resource type,
+    and [optionally] the resource's ID.
     """
     return f"{url}/{resource_type}/{resource_id}"
 

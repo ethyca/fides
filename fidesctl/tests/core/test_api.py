@@ -21,9 +21,7 @@ def test_generate_resource_urls_no_id(test_config):
     Test that the URL generator works as intended.
     """
     expected_url = f"{test_config}/test/"
-    result_url = _api.generate_resource_url(
-        url=test_config, resource_type="test", version="v1"
-    )
+    result_url = _api.generate_resource_url(url=test_config, resource_type="test")
     assert expected_url == result_url
 
 
@@ -34,7 +32,9 @@ def test_generate_resource_urls_with_id(test_config):
     """
     expected_url = f"{test_config}/test/1"
     result_url = _api.generate_resource_url(
-        url=test_config, resource_type="test", version="v1", resource_id="1"
+        url=test_config,
+        resource_type="test",
+        resource_id="1",
     )
     assert expected_url == result_url
 
