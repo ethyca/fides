@@ -53,7 +53,7 @@ class FidesModel(BaseModel):
         orm_mode = True
 
 
-class ResponsibilityRole(str, Enum):
+class DataResponsibilityTitle(str, Enum):
     """
     The model defining the responsibility or role over
     the system that processes personal data.
@@ -395,7 +395,9 @@ class System(FidesModel):
     meta: Optional[Dict[str, str]]
     fidesctl_meta: Optional[SystemMetadata]
     system_type: str
-    responsibility_role: ResponsibilityRole = ResponsibilityRole.CONTROLLER
+    data_responsibility_title: DataResponsibilityTitle = (
+        DataResponsibilityTitle.CONTROLLER
+    )
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]

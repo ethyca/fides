@@ -216,7 +216,7 @@ class System(SqlAlchemyBase, FidesBase):
     meta = Column(JSON)
     fidesctl_meta = Column(JSON)
     system_type = Column(String)
-    responsibility_role = Column(String)
+    data_responsibility_title = Column(String)
     system_dependencies = Column(ARRAY(String))
     joint_controller = Column(PGEncryptedString, nullable=True)
     third_country_transfers = Column(ARRAY(String))

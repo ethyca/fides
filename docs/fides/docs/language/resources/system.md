@@ -27,7 +27,7 @@ A human-readable description of the System.
 
 A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.
 
-**responsibility_role**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_
+**data_responsibility_title**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_
 
 An attribute to describe the role of responsibility over the personal data, used when exporting to a data map.
 Defaults to `Controller` if not set explicitly.
@@ -66,7 +66,7 @@ system:
     name: Demo Analytics System
     description: A system used for analyzing customer behaviour.
     system_type: Service
-    responsibility_role: Controller
+    data_responsibility_title: Controller
     administrating_department: Engineering
     third_country_transfers:
     - USA
@@ -101,7 +101,7 @@ POST /system
   "name": "Demo Analytics System",
   "description": "A system used for analyzing customer behaviour.",
   "system_type": "Service",
-  "responsibility_role": "Controller",
+  "data_responsibility_title": "Controller",
   "administrating_department": "Engineering",
   "third_country_transfers": ["USA", "CAN"],
   "joint_controller": {

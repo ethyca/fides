@@ -136,7 +136,7 @@ def generate_system_records(
         (
             "system.name",
             "system.description",
-            "system.responsibility_role",
+            "system.data_responsibility_title",
             "system.administrating_department",
             "system.third_country_transfers",
             "system.privacy_declaration.name",
@@ -163,7 +163,7 @@ def generate_system_records(
                 (
                     system.name,
                     system.description,
-                    system.responsibility_role.value,
+                    system.data_responsibility_title.value,
                     system.administrating_department,
                     third_country_list,
                     declaration.name,
