@@ -107,7 +107,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node, self.endpoints)
+        return SaaSQueryConfig(node, self.endpoints, self.secrets)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""

@@ -111,7 +111,7 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', or 'default_value'"
+        assert details[0]["msg"] == "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
 
     def test_put_validate_saas_config_wrong_reference_direction(
         self,
@@ -226,7 +226,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 2
+        assert len(saas_config["endpoints"]) == 3
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
@@ -300,7 +300,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == connection_config_saas_example.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 3
+        assert len(response_body["endpoints"]) == 4
 
 
 @pytest.mark.unit_saas

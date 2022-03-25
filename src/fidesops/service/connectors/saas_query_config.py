@@ -19,9 +19,15 @@ T = TypeVar("T")
 class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     """Query config that generates populated SaaS requests for a given collection"""
 
-    def __init__(self, node: TraversalNode, endpoints: Dict[str, Endpoint]):
+    def __init__(
+        self,
+        node: TraversalNode,
+        endpoints: Dict[str, Endpoint],
+        secrets: Dict[str, Any],
+    ):
         super().__init__(node)
         self.endpoints = endpoints
+        self.secrets = secrets
 
     @staticmethod
     def _build_request_body(  # pylint: disable=R0913
@@ -37,7 +43,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         Attempts to
         """
         if not custom_body:
-            logger.info(f"Missing custom body {path}")
             return None
         if default_value:
             custom_body = custom_body.replace(f"<{param_name}>", f'"{default_value}"')
@@ -52,7 +57,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 f'"{identity}"',
             )
         else:
-            logger.info(f"Missing body param value(s) for {path}")
             return None
         return custom_body
 
@@ -110,8 +114,18 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     query_params[param.name] = param.default_value
                 elif param.references or param.identity:
                     query_params[param.name] = input_data[param.name][0]
+                elif param.connector_param:
+                    query_params[param.name] = pydash.get(
+                        self.secrets, param.connector_param
+                    )
             elif param.type == "path":
-                path = path.replace(f"<{param.name}>", input_data[param.name][0])
+                if param.references or param.identity:
+                    path = path.replace(f"<{param.name}>", input_data[param.name][0])
+                elif param.connector_param:
+                    path = path.replace(
+                        f"<{param.name}>",
+                        pydash.get(self.secrets, param.connector_param),
+                    )
             elif param.type == "body":
                 body = SaaSQueryConfig._build_request_body(
                     path,
@@ -143,6 +157,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         current_request: SaaSRequest = self.get_request_by_action("update")
         collection_name: str = self.node.address.collection
         param_values: Dict[str, Row] = {collection_name: row}
+        identity_data: Dict[str, Any] = request.get_cached_identity_data()
 
         path: str = current_request.path
         params: Dict[str, Any] = {}
@@ -159,11 +174,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     )
                 elif param.identity:
                     params[param.name] = pydash.get(param_values, param.identity)
+                elif param.connector_param:
+                    params[param.name] = pydash.get(self.secrets, param.connector_param)
             elif param.type == "path":
-                path = path.replace(
-                    f"<{param.name}>",
-                    pydash.get(param_values, param.references[0].field),
-                )
+                if param.references:
+                    path = path.replace(
+                        f"<{param.name}>",
+                        pydash.get(param_values, param.references[0].field),
+                    )
+                elif param.identity:
+                    path = path.replace(
+                        f"<{param.name}>",
+                        pydash.get(identity_data, param.identity),
+                    )
+                elif param.connector_param:
+                    path = path.replace(
+                        f"<{param.name}>",
+                        pydash.get(self.secrets, param.connector_param),
+                    )
             elif param.type == "body":
                 body = SaaSQueryConfig._build_request_body(
                     path,
@@ -177,7 +205,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     if param.identity
                     else None,
                 )
-
         logger.info(f"Populated request params for {current_request.path}")
 
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)

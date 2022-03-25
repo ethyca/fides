@@ -27,6 +27,8 @@ saas_secrets_dict = {
         "domain": pydash.get(saas_config, "saas_example.domain"),
         "username": pydash.get(saas_config, "saas_example.username"),
         "api_key": pydash.get(saas_config, "saas_example.api_key"),
+        "api_version": pydash.get(saas_config, "saas_example.api_version"),
+        "page_limit": pydash.get(saas_config, "saas_example.page_limit")
     },
     "mailchimp": {
         "domain": pydash.get(saas_config, "mailchimp.domain")

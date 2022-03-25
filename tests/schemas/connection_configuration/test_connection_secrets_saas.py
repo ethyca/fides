@@ -22,32 +22,28 @@ class TestSaaSConnectionSecrets:
         assert schema.__name__ == f"{saas_config.fides_key}_schema"
         assert issubclass(schema.__base__, SaaSSchema)
 
-    def test_validation(self, saas_config):
+    def test_validation(self, saas_config, saas_secrets):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        config = {"domain": "domain", "username": "username", "api_key": "api_key"}
+        config = saas_secrets["saas_example"]
         schema.parse_obj(config)
 
     def test_missing_fields(self, saas_config):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = {"domain": "domain", "username": "username"}
-        with pytest.raises(ValidationError) as exception:
+        with pytest.raises(ValidationError) as exc:
             schema.parse_obj(config)
-        errors = exception.value.errors()
-        assert errors[0]["msg"] == "field required"
         assert (
-            errors[1]["msg"]
-            == f"{saas_config.fides_key}_schema must be supplied all of: "
+            f"{saas_config.fides_key}_schema must be supplied all of: "
             f"[{', '.join([connector_param.name for connector_param in saas_config.connector_params])}]."
+            in str(exc.value)
         )
 
-    def test_extra_fields(self, saas_config):
+    def test_extra_fields(self, saas_config, saas_secrets):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = {
-            "domain": "domain",
-            "username": "username",
-            "api_key": "api_key",
+            **saas_secrets["saas_example"],
             "extra": "extra",
         }
-        with pytest.raises(ValidationError) as exception:
+        with pytest.raises(ValidationError) as exc:
             schema.parse_obj(config)
-        assert exception.value.errors()[0]["msg"] == "extra fields not permitted"
+        assert exc.value.errors()[0]["msg"] == "extra fields not permitted"

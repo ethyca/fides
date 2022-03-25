@@ -29,10 +29,10 @@ class RequestParam(BaseModel):
     type: Literal[
         "query", "path", "body"
     ]  # used to determine location in the generated request
+    default_value: Optional[Any]
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
-    default_value: Optional[Any]
-    data_type: Optional[str]
+    connector_param: Optional[str]
 
     @validator("references")
     def check_reference_direction(
@@ -54,10 +54,11 @@ class RequestParam(BaseModel):
             bool(
                 values.get("default_value") is not None
             ),  # to prevent a value of 0 from returning False
+            bool(values.get("connector_param")),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
-                "Must have exactly one of 'identity', 'references', or 'default_value'"
+                "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
             )
         return values
 
