@@ -16,7 +16,7 @@ def sort_create_update_unchanged(
     manifest_resource_list: List[FidesModel],
     server_resource_list: List[FidesModel],
     diff: bool = False,
-) -> Tuple[List[FidesModel], List[FidesModel], List[FidesModel]]:
+) -> Tuple[List[FidesModel], List[FidesModel]]:
     """
     Check the contents of the resource lists and populate separate
     new lists for resource creation, updating, or no change.
@@ -29,9 +29,7 @@ def sort_create_update_unchanged(
         for server_resource in server_resource_list
     }
 
-    create_list = []
-    update_list = []
-    unchanged_list = []
+    create_list, update_list = [], []
     for manifest_resource in manifest_resource_list:
         resource_key = manifest_resource.fides_key
 
@@ -39,15 +37,13 @@ def sort_create_update_unchanged(
         if resource_key in server_resource_dict.keys():
             server_resource = server_resource_dict[resource_key]
 
-            if manifest_resource == server_resource:
-                unchanged_list.append(manifest_resource)
-            else:
-                if diff:
-                    print(
-                        f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
-                    )
-                    pprint(DeepDiff(server_resource, manifest_resource))
-                update_list.append(manifest_resource)
+            if diff:
+                print(
+                    f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
+                )
+                pprint(DeepDiff(server_resource, manifest_resource))
+
+            update_list.append(manifest_resource)
 
         else:
             if diff:
@@ -55,7 +51,7 @@ def sort_create_update_unchanged(
                 pprint(manifest_resource)
             create_list.append(manifest_resource)
 
-    return create_list, update_list, unchanged_list
+    return create_list, update_list
 
 
 def echo_results(action: str, resource_type: str, resource_count: int) -> None:
@@ -81,16 +77,17 @@ def apply(
         print(f"Processing {resource_type} resources...")
         resource_list = getattr(taxonomy, resource_type)
 
-        existing_keys = [resource.fides_key for resource in resource_list]
-        server_resource_list = get_server_resources(
-            url, resource_type, existing_keys, headers
-        )
-
-        # Determine which resources should be created, updated, or are unchanged
-        create_list, update_list, unchanged_list = sort_create_update_unchanged(
-            resource_list, server_resource_list, diff
-        )
         if dry:
+            existing_keys = [resource.fides_key for resource in resource_list]
+            server_resource_list = get_server_resources(
+                url, resource_type, existing_keys, headers
+            )
+
+            # Determine which resources should be created, updated, or are unchanged
+            create_list, update_list = sort_create_update_unchanged(
+                resource_list, server_resource_list, diff
+            )
+
             echo_results("would create", resource_type, len(create_list))
             echo_results("would update", resource_type, len(update_list))
         else:

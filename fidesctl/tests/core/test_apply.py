@@ -41,11 +41,9 @@ def test_sort_create_update_unchanged_create():
     (
         create_result,
         update_result,
-        unchanged_result,
     ) = apply.sort_create_update_unchanged(manifest_resource_list, server_resource_list)
     assert create_result == expected_create_result
     assert update_result == []
-    assert unchanged_result == []
 
 
 @pytest.mark.unit
@@ -70,45 +68,6 @@ def test_sort_create_update_unchanged_update():
     (
         create_result,
         update_result,
-        unchanged_result,
     ) = apply.sort_create_update_unchanged(manifest_resource_list, server_resource_list)
     assert [] == create_result
     assert expected_update_result == update_result
-    assert [] == unchanged_result
-
-
-@pytest.mark.unit
-def test_sort_create_update_unchanged_unchanged():
-    resource_1 = models.DataCategory(
-        id=1,
-        organization_fides_key=1,
-        fides_key="some_resource",
-        name="Test resource 1",
-        description="Test Description",
-    )
-    resource_2 = models.DataCategory(
-        organization_fides_key=1,
-        fides_key="some_resource",
-        name="Test resource 1",
-        description="Test Description",
-    )
-    expected_unchanged_result = [resource_2]
-    manifest_resource_list = [resource_2]
-    server_resource_list = [resource_1]
-
-    (
-        create_result,
-        update_result,
-        unchanged_result,
-    ) = apply.sort_create_update_unchanged(manifest_resource_list, server_resource_list)
-    assert [] == create_result
-    assert [] == update_result
-    assert expected_unchanged_result == unchanged_result
-
-
-@pytest.mark.unit
-def test_execute_create_update_unchanged_empty():
-    apply.execute_create_update_unchanged(
-        url="test", headers={"test": "test"}, resource_type="test"
-    )
-    assert True
