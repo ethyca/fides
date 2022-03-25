@@ -6,7 +6,7 @@ from abc import ABC
 from functools import wraps
 
 from time import sleep
-from typing import List, Dict, Any, Tuple, Callable, Optional
+from typing import List, Dict, Any, Tuple, Callable, Optional, Set
 
 import dask
 from dask.threaded import get
@@ -33,12 +33,14 @@ from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import get_cache
 from fidesops.util.collection_util import partition, append, NodeInput, Row
 from fidesops.util.logger import NotPii
+from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
 dask.config.set(scheduler="processes")
 
 EMPTY_REQUEST = PrivacyRequest()
+COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
 
 def retry(
@@ -98,19 +100,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         )
 
         # build incoming edges to the form : [dataset address: [(foreign field, local field)]
-        b: Dict[CollectionAddress, List[Edge]] = partition(
+        self.incoming_edges_by_collection: Dict[
+            CollectionAddress, List[Edge]
+        ] = partition(
             self.traversal_node.incoming_edges(), lambda e: e.f1.collection_address()
         )
 
-        self.incoming_field_path_map: Dict[
-            CollectionAddress, List[Tuple[FieldPath, FieldPath]]
-        ] = {
-            col_addr: [(edge.f1.field_path, edge.f2.field_path) for edge in edge_list]
-            for col_addr, edge_list in b.items()
-        }
-
         # the input keys this task will read from.These will build the dask graph
-        self.input_keys: List[CollectionAddress] = sorted(b.keys())
+        self.input_keys: List[CollectionAddress] = sorted(
+            self.incoming_edges_by_collection.keys()
+        )
 
         self.key = self.traversal_node.address
 
@@ -122,6 +121,44 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def __repr__(self) -> str:
         return f"{type(self)}:{self.key}"
 
+    @property
+    def grouped_fields(self) -> Set[Optional[str]]:
+        """Convenience property - returns a set of fields that have been specified on the collection as dependent
+        upon one another
+        """
+        return self.traversal_node.node.collection.grouped_inputs or set()
+
+    def build_incoming_field_path_maps(
+        self, group_dependent_fields: bool = False
+    ) -> Tuple[COLLECTION_FIELD_PATH_MAP, COLLECTION_FIELD_PATH_MAP]:
+        """
+        For each collection connected to the current collection, return a list of tuples
+        mapping the foreign field to the local field.  This is used to process data from incoming collections
+        into the current collection.
+
+        :param group_dependent_fields: Whether we should split the incoming fields into two groups: one whose
+        fields are completely independent of one another, and the other whose incoming data needs to stay linked together.
+        If False, all fields are returned in the first tuple, and the second tuple just maps collections to an empty list.
+
+        """
+
+        def field_map(keep: Callable) -> COLLECTION_FIELD_PATH_MAP:
+            return {
+                col_addr: [
+                    (edge.f1.field_path, edge.f2.field_path)
+                    for edge in edge_list
+                    if keep(edge.f2.field_path.string_path)
+                ]
+                for col_addr, edge_list in self.incoming_edges_by_collection.items()
+            }
+
+        if group_dependent_fields:
+            return field_map(
+                lambda string_path: string_path not in self.grouped_fields
+            ), field_map(lambda string_path: string_path in self.grouped_fields)
+
+        return field_map(lambda string_path: True), field_map(lambda string_path: False)
+
     def generate_dry_run_query(self) -> str:
         """Type-specific query generated for this traversal_node."""
         return self.connector.dry_run_query(self.traversal_node)
@@ -131,7 +168,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
 
-    def pre_process_input_data(self, *data: List[Row]) -> NodeInput:
+    def pre_process_input_data(
+        self, *data: List[Row], group_dependent_fields: bool = False
+    ) -> NodeInput:
         """
         Consolidates the outputs of queries from potentially multiple collections whose
         data is needed as input into the current collection.
@@ -148,6 +187,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
            table3.y => self.contact.email
          becomes
          {id:[1,2,3,4], name:["A","B"], contact.address:["C"], "contact.email": [4, 5]}
+
+         If there are dependent fields from one collection into another, they are separated out as follows:
+         {fidesops_grouped_inputs: [{"organization_id": 1, "project_id": "math}, {"organization_id": 5, "project_id": "science"}]
         """
         if not len(data) == len(self.input_keys):
             logger.warning(
@@ -157,23 +199,42 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 NotPii(len(data)),
             )
 
-        output: Dict[str, List[Any]] = {}
+        output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
+
+        (
+            independent_field_mappings,
+            dependent_field_mappings,
+        ) = self.build_incoming_field_path_maps(group_dependent_fields)
+
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
-            field_mappings: List[
-                Tuple[FieldPath, FieldPath]
-            ] = self.incoming_field_path_map[collection_address]
 
             logger.info(
                 f"Consolidating incoming data into {self.traversal_node.node.address} from {collection_address}."
             )
             for row in rowset:
-                for foreign_field_path, local_field_path in field_mappings:
+                # Consolidate lists of independent field inputs
+                for foreign_field_path, local_field_path in independent_field_mappings[
+                    collection_address
+                ]:
                     new_values: List = consolidate_query_matches(
                         row=row, target_path=foreign_field_path
                     )
                     if new_values:
                         append(output, local_field_path.string_path, new_values)
+
+                # Separately group together dependent inputs if applicable
+                if dependent_field_mappings[collection_address]:
+                    grouped_data: Dict[str, Any] = {}
+                    for (
+                        foreign_field_path,
+                        local_field_path,
+                    ) in dependent_field_mappings[collection_address]:
+                        dependent_values: List = consolidate_query_matches(
+                            row=row, target_path=foreign_field_path
+                        )
+                        grouped_data[local_field_path.string_path] = dependent_values
+                    output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
         return output
 
     def update_status(
@@ -307,7 +368,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
-        formatted_input_data: NodeInput = self.pre_process_input_data(*inputs)
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
+        )
         output: List[Row] = self.connector.retrieve_data(
             self.traversal_node,
             self.resources.policy,
@@ -315,7 +378,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data,
         )
         filtered_output: List[Row] = self.access_results_post_processing(
-            formatted_input_data, output
+            self.pre_process_input_data(*inputs, group_dependent_fields=False), output
         )
         self.log_end(ActionType.access)
         return filtered_output

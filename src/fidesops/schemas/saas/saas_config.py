@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Set
 
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
@@ -83,6 +82,7 @@ class SaaSRequest(BaseModel):
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
+    grouped_inputs: Optional[List[str]] = []
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -103,6 +103,38 @@ class SaaSRequest(BaseModel):
                 pagination.get("strategy"), pagination.get("configuration")
             )
             pagination_strategy.validate_request(values)
+        return values
+
+    @root_validator
+    def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate that grouped_inputs must reference fields from the same collection"""
+        grouped_inputs = set(values.get("grouped_inputs", []))
+
+        if grouped_inputs:
+            request_params = values.get("request_params", [])
+            names = {param.name for param in request_params}
+
+            if not grouped_inputs.issubset(names):
+                raise ValueError(
+                    "Grouped input fields must also be declared as request_params."
+                )
+
+            referenced_collections: List[str] = []
+            for param in request_params:
+                if param.name in grouped_inputs:
+                    if not param.references and not param.identity:
+                        raise ValueError(
+                            "Grouped input fields must either be reference fields or identity fields."
+                        )
+                    if param.references:
+                        collect = param.references[0].field.split(".")[0]
+                        referenced_collections.append(collect)
+
+            if not len(set(referenced_collections)) == 1:
+                raise ValueError(
+                    "Grouped input fields must all reference the same collection."
+                )
+
         return values
 
 
@@ -175,7 +207,16 @@ class SaaSConfig(BaseModel):
                 if param.identity:
                     fields.append(ScalarField(name=param.name, identity=param.identity))
             if fields:
-                collections.append(Collection(name=endpoint.name, fields=fields))
+                grouped_inputs: Optional[Set[str]] = set()
+                if endpoint.requests.get("read"):
+                    grouped_inputs = set(endpoint.requests["read"].grouped_inputs or [])
+                collections.append(
+                    Collection(
+                        name=endpoint.name,
+                        fields=fields,
+                        grouped_inputs=grouped_inputs,
+                    )
+                )
 
         return Dataset(
             name=self.name,

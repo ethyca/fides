@@ -151,3 +151,32 @@ dataset:
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+      - name: projects
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+          - name: slug
+            data_categories: [ system.operations ]
+          - name: organization
+            fields:
+              - name: slug
+                fidesops_meta:
+                  data_type: string
+      - name: user_feedback
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+          - name: user
+            fields:
+              - name: username
+                data_categories: [ user.provided.identifiable.name ]
+              - name: email
+                data_categories: [ user.provided.identifiable.contact.email ]
+              - name: name
+                data_categories: [ user.provided.identifiable.name ]
+              - name: ipAddress
+                data_categories: [ user.derived.identifiable.device.ip_address ]
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]

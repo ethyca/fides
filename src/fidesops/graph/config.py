@@ -394,6 +394,8 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
+    # An optional set of dependent fields that need to be queried together
+    grouped_inputs: Set[str] = set()
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:

@@ -17,7 +17,11 @@ from fidesops.task.graph_task import (
     EMPTY_REQUEST,
     build_affected_field_logs,
 )
-from .traversal_data import sample_traversal, combined_mongo_postgresql_graph
+from .traversal_data import (
+    sample_traversal,
+    combined_mongo_postgresql_graph,
+    traversal_paired_dependency,
+)
 from ..graph.graph_test_util import (
     MockSqlTask,
     MockMongoTask,
@@ -35,9 +39,7 @@ connection_configs = [
 
 
 @pytest.fixture(scope="function")
-def combined_traversal_node_dict(
-    integration_mongodb_config, connection_config
-):
+def combined_traversal_node_dict(integration_mongodb_config, connection_config):
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         connection_config, integration_mongodb_config
     )
@@ -96,6 +98,7 @@ class TestPreProcessInputData:
         root_email_input = [{"email": "customer-1@example.com"}]
         assert make_graph_task(node).pre_process_input_data(root_email_input) == {
             "customer_information.email": ["customer-1@example.com"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_customer_feedback_collection(
@@ -129,6 +132,16 @@ class TestPreProcessInputData:
         ) == {
             "customer_identifiers.derived_emails": ["customer-1@example.com"],
             "customer_identifiers.internal_id": ["cust_001"],
+            "fidesops_grouped_inputs": [],
+        }
+
+        # group_dependent_fields=True just results in an empty list because no grouped input fields are specified.
+        assert internal_customer_profile_task.pre_process_input_data(
+            root_email_input, customer_feedback_input, group_dependent_fields=True
+        ) == {
+            "customer_identifiers.derived_emails": ["customer-1@example.com"],
+            "customer_identifiers.internal_id": ["cust_001"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_flights_collection(
@@ -158,6 +171,7 @@ class TestPreProcessInputData:
                 "B111-11111",
                 "C111-11111",
             ],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_aircraft_collection(
@@ -177,6 +191,7 @@ class TestPreProcessInputData:
         ]
         assert task.pre_process_input_data(truncated_flights_output) == {
             "planes": [10002, 101010],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_employee_collection(
@@ -201,6 +216,7 @@ class TestPreProcessInputData:
         ) == {
             "id": ["1", "2", "3", "4"],
             "email": ["customer-1@example.com"],
+            "fidesops_grouped_inputs": [],
         }
 
     def test_pre_process_input_conversation_collection(
@@ -229,6 +245,55 @@ class TestPreProcessInputData:
 
         assert task.pre_process_input_data(truncated_customer_details_output) == {
             "thread.comment": ["com_0001", "com_0003", "com_0005", "com_0007"],
+            "fidesops_grouped_inputs": [],
+        }
+
+    def test_pre_process_input_data_group_dependent_fields(self):
+        """Test processing inputs where fields have been marked as dependent"""
+        traversal_with_grouped_inputs = traversal_paired_dependency()
+        n = traversal_with_grouped_inputs.traversal_node_dict[
+            CollectionAddress("mysql", "User")
+        ]
+
+        task = MockSqlTask(
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+        )
+
+        project_output = [
+            {
+                "organization_id": "12345",
+                "project_id": "abcde",
+                "project_name": "Sample project",
+            },
+            {
+                "organization_id": "54321",
+                "project_id": "fghij",
+                "project_name": "Meteor project",
+            },
+            {
+                "organization_id": "54321",
+                "project_id": "klmno",
+                "project_name": "Saturn project",
+            },
+        ]
+
+        # Typical output - project ids and organization ids would be completely independent from each other
+        assert task.pre_process_input_data(project_output) == {
+            "organization": ["12345", "54321", "54321"],
+            "project": ["abcde", "fghij", "klmno"],
+            "fidesops_grouped_inputs": [],
+        }
+
+        # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap
+        # with actual table keys "fidesops_grouped_inputs"
+        assert task.pre_process_input_data(
+            project_output, group_dependent_fields=True
+        ) == {
+            "fidesops_grouped_inputs": [
+                {"organization": ["12345"], "project": ["abcde"]},
+                {"organization": ["54321"], "project": ["fghij"]},
+                {"organization": ["54321"], "project": ["klmno"]},
+            ]
         }
 
 
