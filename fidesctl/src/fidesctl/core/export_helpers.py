@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime
+from enum import Enum
 import shutil
 
 from typing import Dict, List, Tuple, Set
@@ -136,50 +137,40 @@ def get_formatted_data_use(
     """
     This function retrieves the data use from the server
     and formats the results, returning the necessary values
-    as a dict
+    as a dict. With multiple types possible, some introspection
+    is done to handle each accordingly.
     """
 
     data_use = get_server_resource(url, "data_use", data_use_fides_key, headers)
 
     formatted_data_use = {
         "name": data_use.name,
-        "legal_basis": "N/A",
-        "special_category": "N/A",
-        "recipients": "N/A",
-        "legitimate_interest": "N/A",
-        "legitimate_interest_impact_assessment": "N/A",
     }
 
-    try:
-        formatted_data_use["legal_basis"] = data_use.legal_basis.value
-    except AttributeError:
-        echo_red("Legal Basis undefined for specified Data Use, setting as N/A.")
+    for attribute in [
+        "legal_basis",
+        "special_category",
+        "recipients",
+        "legitimate_interest_impact_assessment",
+        "legitimate_interest",
+    ]:
+        try:
+            attribute_value = getattr(data_use, attribute)
+            if attribute_value is None:
+                attribute_value = "N/A"
+            elif isinstance(attribute_value, Enum):
+                attribute_value = attribute_value.value
+            elif isinstance(attribute_value, list):
+                attribute_value = ", ".join(attribute_value)
+            elif attribute == "legitimate_interest":
+                if attribute_value is True:
+                    attribute_value = getattr(data_use, "name")
+                else:
+                    attribute_value = "N/A"
 
-    try:
-        formatted_data_use["special_category"] = data_use.special_category.value
-    except AttributeError:
-        echo_red("Special Category undefined for specified Data Use, setting as N/A.")
-
-    try:
-        formatted_data_use["recipients"] = ", ".join(data_use.recipients)
-    except TypeError:
-        echo_red("Recipients undefined for specified Data Use, setting as N/A")
-
-    try:
-        legitimate_interest = data_use.legitimate_interest
-        if legitimate_interest:
-            formatted_data_use["legitimate_interest"] = data_use.name
-    except TypeError:
-        echo_red("Legitimate Interest undefined for specified Data Use, setting as N/A")
-
-    try:
-        formatted_data_use[
-            "legitimate_interest_impact_assessment"
-        ] = data_use.legitimate_interest_impact_assessment
-    except TypeError:
-        echo_red(
-            "Legitimate interest impact assessment undefined for specified Data Use, setting as N/A"
-        )
+            formatted_data_use[attribute] = attribute_value
+        except AttributeError:
+            echo_red(f"{attribute} undefined for specified Data Use, setting as N/A.")
 
     return formatted_data_use
 
