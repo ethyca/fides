@@ -226,7 +226,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 3
+        assert len(saas_config["endpoints"]) == 5
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
@@ -300,7 +300,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == connection_config_saas_example.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 4
+        assert len(response_body["endpoints"]) == 6
 
 
 @pytest.mark.unit_saas

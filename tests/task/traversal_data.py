@@ -597,6 +597,45 @@ def integration_db_graph(
     return DatasetGraph(integration_db_dataset(db_name, connection_key))
 
 
+def traversal_paired_dependency() -> Traversal:
+    """Build a traversal that has grouped inputs"""
+    projects = Collection(
+        name="Project",
+        fields=[
+            ScalarField(name="project_id"),
+            ScalarField(name="organization_id"),
+            ScalarField(name="org_leader_email", identity="email"),
+            ScalarField(name="project_name")
+        ],
+    )
+    users = Collection(
+        name="User",
+        fields=[
+            ScalarField(
+                name="project",
+                references=[(FieldAddress("mysql", "Project", "project_id"), "from")],
+            ),
+            ScalarField(
+                name="organization",
+                references=[(FieldAddress("mysql", "Project", "organization_id"), "from")],
+            ),
+            ScalarField(name="username"),
+            ScalarField(name="email"),
+            ScalarField(name="position"),
+
+        ],
+        grouped_inputs= {"project", "organization"}
+    )
+
+    mysql = Dataset(
+        name="mysql", collections=[projects, users], connection_key="mysql"
+    )
+
+    graph = DatasetGraph(mysql)
+    identity = {"email": "email@gmail.com"}
+    return Traversal(graph, identity)
+
+
 def sample_traversal() -> Traversal:
     """A traversal that covers multiple data sources, modelled after atlas multi-table
     examples"""

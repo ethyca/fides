@@ -128,11 +128,6 @@ class PrivacyRequestRunner:
                 session.close()
                 return
 
-            datasets = DatasetConfig.all(db=session)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-            dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = privacy_request.get_cached_identity_data()
-            connection_configs = ConnectionConfig.all(db=session)
             policy = privacy_request.policy
             try:
                 policy.rules[0]
@@ -142,6 +137,14 @@ class PrivacyRequestRunner:
                 )
 
             try:
+                datasets = DatasetConfig.all(db=session)
+                dataset_graphs = [
+                    dataset_config.get_graph() for dataset_config in datasets
+                ]
+                dataset_graph = DatasetGraph(*dataset_graphs)
+                identity_data = privacy_request.get_cached_identity_data()
+                connection_configs = ConnectionConfig.all(db=session)
+
                 access_result = run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
