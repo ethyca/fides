@@ -22,7 +22,7 @@ system:
 
   - fides_key: demo_marketing_system
     name: Demo Marketing System
-    description: Collect data about our users for marketing.    
+    description: Collect data about our users for marketing.
     system_type: Service
     responsibility_role: Processor
     privacy_declarations:
