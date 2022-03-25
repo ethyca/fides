@@ -4,6 +4,7 @@ system:
     description: A system used for analyzing customer behaviour.
     system_type: Service
     administrating_department: Engineering
+    data_responsibility_title: Controller
     third_country_transfers:
     - USA
     - CAN
@@ -23,6 +24,7 @@ system:
     name: Demo Marketing System
     description: Collect data about our users for marketing.
     system_type: Service
+    data_responsibility_title: Processor
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:

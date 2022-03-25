@@ -33,7 +33,9 @@ nav:
       - Generating Resources: guides/generate_resources.md
       - Example Policies: guides/policies.md
       - Extending Data Use: guides/extending_data_use.md
-  - CI/CD Reference: ci_reference.md
+  - CI/CD Integration: 
+      - Overview: cicd/overview.md
+      - Example Integrations: cicd/examples.md
   - Fides Language:
       - Overview: language/overview.md
       - Syntax: language/syntax.md
