@@ -53,6 +53,20 @@ class FidesModel(BaseModel):
         orm_mode = True
 
 
+class DataResponsibilityTitle(str, Enum):
+    """
+    The model defining the responsibility or role over
+    the system that processes personal data.
+
+    Used to identify whether the organization is a
+    Controller, Processor, or Sub-Processor of the data
+    """
+
+    CONTROLLER = "Controller"
+    PROCESSOR = "Processor"
+    SUB_PROCESSOR = "Sub-Processor"
+
+
 class LegalBasisEnum(str, Enum):
     """
     The model for allowable legal basis categories
@@ -381,6 +395,9 @@ class System(FidesModel):
     meta: Optional[Dict[str, str]]
     fidesctl_meta: Optional[SystemMetadata]
     system_type: str
+    data_responsibility_title: DataResponsibilityTitle = (
+        DataResponsibilityTitle.CONTROLLER
+    )
     privacy_declarations: List[PrivacyDeclaration]
     system_dependencies: Optional[List[FidesKey]]
     joint_controller: Optional[ContactDetails]
