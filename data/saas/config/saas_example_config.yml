@@ -8,6 +8,8 @@ saas_config:
     - name: domain
     - name: username
     - name: api_key
+    - name: api_version
+    - name: page_limit
 
   client_config:
     protocol: https
@@ -91,3 +93,23 @@ saas_config:
               - dataset: saas_connector_example
                 field: member.id
                 direction: from
+  - name: payment_methods
+    requests:
+      read:
+        path: /<version>/payment_methods
+        request_params:
+          - name: limit
+            type: query
+            connector_param: page_limit
+          - name: version
+            type: path
+            connector_param: api_version
+          - name: query
+            type: query
+            identity: email
+      update:
+        path: /<version>/payment_methods
+        request_params:
+          - name: version
+            type: path
+            connector_param: api_version

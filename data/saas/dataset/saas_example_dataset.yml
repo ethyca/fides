@@ -143,3 +143,11 @@ dataset:
                 data_categories: [system.operations]
               - name: name
                 data_categories: [system.operations]
+      - name: payment_methods
+        fields:
+          - name: type
+            data_categories: [system.operations]
+          - name: customer_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
