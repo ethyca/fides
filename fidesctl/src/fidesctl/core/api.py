@@ -73,7 +73,7 @@ def update(
     Update an existing resource.
     """
     resource_url = generate_resource_url(url, resource_type)
-    return requests.put(resource_url, headers=headers, json=json_resource)
+    return requests.put(resource_url, headers=headers, data=json_resource)
 
 
 def upsert(

@@ -132,7 +132,7 @@ def test_api_upsert(test_config, resources_dict, endpoint):
     manifest = resources_dict[endpoint]
     result = _api.upsert(
         url=test_config.cli.server_url,
-        headers=test_config.user.request.headers,
+        headers=test_config.user.request_headers,
         resource_type=endpoint,
         resources=[loads(manifest.json())],
     )
