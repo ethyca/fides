@@ -8,7 +8,7 @@ The `scan` and `generate` commands work best when used in tandem as they follow 
 
 # Working With a Database
 
-The `generate dataset` command can connect to a database and automatically generate resource YAML file based on the database schema.
+The `generate` command can connect to a database and automatically generate resource YAML file based on the database schema.
 
 ## Generating a Dataset
 
@@ -23,9 +23,9 @@ flaskr=# SELECT * FROM users;
 (2 rows)
 ```
 
-We can invoke the `generate dataset` by providing a connection url for this database:
+We can invoke the `generate` command by providing a connection url for this database:
 ```sh
-./venv/bin/fidesctl generate dataset \
+./venv/bin/fidesctl generate dataset db \
   postgresql://postgres:postgres@localhost:5432/flaskr \
   fides_resources/flaskr_postgres_dataset.yml
 ```
@@ -77,8 +77,14 @@ The resulting file still requires annotating the dataset with data categories to
 
 ## Scanning the Dataset
 
-The `scan dataset` command can then connect to your database and compare its schema to your already defined datasets. The command output confirms our database resource is covered fully!
+The `scan` command can then connect to your database and compare its schema to your already defined datasets:
+```sh
+./venv/bin/fidesctl scan dataset db \
+  postgresql://postgres:postgres@localhost:5432/flaskr \
+  --manifest-dir fides_resources/flaskr_postgres_dataset.yml
+```
 
+The command output confirms our database resource is covered fully:
 ```sh
 Loading resource manifests from: dataset.yml
 Taxonomy successfully created.
@@ -90,7 +96,7 @@ Annotation coverage: 100%
 
 # Working With an AWS Account
 
-The `generate system aws` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.
+The `generate` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.
 
 ## Providing Credentials
 
@@ -181,8 +187,13 @@ system:
 ```
 ## Scanning the Systems
 
-The `scan system aws` command can then connect to your AWS account and compare its resources to your already defined systems. The command output confirms our resources are covered fully!
+The `scan` command can then connect to your AWS account and compare its resources to your already defined systems:
+```sh
+./venv/bin/fidesctl scan system aws \
+  --manifest-dir fides_resources/aws_systems.yml
+```
 
+The command output confirms our resources are covered fully:
 ```sh
 Loading resource manifests from: manifest.yml
 Taxonomy successfully created.
