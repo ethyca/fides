@@ -51,7 +51,7 @@ def get_db_collections_and_fields(
     return db_tables
 
 
-def create_dataset_collections(
+def create_dataset_db_collections(
     db_tables: Dict[str, Dict[str, List[str]]]
 ) -> List[Dataset]:
     """
@@ -87,7 +87,7 @@ def create_dataset_collections(
     return table_manifests
 
 
-def find_uncategorized_dataset_fields(
+def find_uncategorized_dataset_db_fields(
     dataset_key: str, dataset: Optional[Dataset], db_dataset: Dict[str, List[str]]
 ) -> Tuple[List[str], int]:
     """
@@ -129,7 +129,7 @@ def find_uncategorized_dataset_fields(
     return uncategorized_fields, total_field_count
 
 
-def find_all_uncategorized_dataset_fields(
+def find_all_uncategorized_dataset_db_fields(
     manifest_taxonomy: Optional[Taxonomy],
     db_collections: Dict[str, Dict[str, List[str]]],
     url: AnyHttpUrl,
@@ -163,7 +163,7 @@ def find_all_uncategorized_dataset_fields(
         (
             current_uncategorized_keys,
             current_field_count,
-        ) = find_uncategorized_dataset_fields(
+        ) = find_uncategorized_dataset_db_fields(
             dataset_key=db_dataset_key, dataset=dataset, db_dataset=db_dataset
         )
         total_field_count += current_field_count
@@ -172,7 +172,7 @@ def find_all_uncategorized_dataset_fields(
     return uncategorized_fields, total_field_count
 
 
-def print_dataset_scan_result(
+def print_dataset_db_scan_result(
     datasets: List[str],
     uncategorized_fields: List[str],
     coverage_percent: int,
@@ -199,7 +199,7 @@ def print_dataset_scan_result(
     echo_green(annotation_output)
 
 
-def scan_dataset(
+def scan_dataset_db(
     connection_string: str,
     manifest_dir: Optional[str],
     coverage_threshold: int,
@@ -217,7 +217,7 @@ def scan_dataset(
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
 
-    uncategorized_fields, db_field_count = find_all_uncategorized_dataset_fields(
+    uncategorized_fields, db_field_count = find_all_uncategorized_dataset_db_fields(
         manifest_taxonomy=manifest_taxonomy,
         db_collections=db_collections,
         url=url,
@@ -230,7 +230,7 @@ def scan_dataset(
     coverage_percent = int(
         ((db_field_count - len(uncategorized_fields)) / db_field_count) * 100
     )
-    print_dataset_scan_result(
+    print_dataset_db_scan_result(
         datasets=list(db_collections.keys()),
         uncategorized_fields=uncategorized_fields,
         coverage_percent=coverage_percent,
@@ -238,7 +238,9 @@ def scan_dataset(
     )
 
 
-def generate_dataset(connection_string: str, file_name: str, include_null: bool) -> str:
+def generate_dataset_db(
+    connection_string: str, file_name: str, include_null: bool
+) -> str:
     """
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest, excluding optional null attributes.
@@ -248,7 +250,7 @@ def generate_dataset(connection_string: str, file_name: str, include_null: bool)
     """
     db_engine = get_db_engine(connection_string)
     db_collections = get_db_collections_and_fields(db_engine)
-    collections = create_dataset_collections(db_collections)
+    collections = create_dataset_db_collections(db_collections)
     manifests.write_manifest(
         file_name,
         [i.dict(exclude_none=not include_null) for i in collections],

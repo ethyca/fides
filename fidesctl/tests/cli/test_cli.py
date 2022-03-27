@@ -283,3 +283,73 @@ def test_nested_field_fails_evaluation(
     )
     print(result.output)
     assert result.exit_code == 1
+
+@pytest.mark.integration
+def test_generate_dataset_db(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+    tmp_file=tmpdir.join("dataset.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "dataset",
+            "db",
+            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+            f"{tmp_file}"
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+@pytest.mark.integration
+def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "dataset",
+            "db",
+            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+            "--coverage-threshold",
+            "0",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+@pytest.mark.external
+def test_generate_system_aws(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+    tmp_file=tmpdir.join("dataset.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "system",
+            "aws",
+            f"{tmp_file}"
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+@pytest.mark.external
+def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "system",
+            "aws",
+            "--coverage-threshold",
+            "0",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
