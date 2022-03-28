@@ -1,8 +1,9 @@
 import os
+from unittest.mock import patch
 
 import pytest
 
-from fidesctl.core.config import get_config, FidesctlConfig, APISettings
+from fidesctl.core.config import APISettings, FidesctlConfig, get_config
 
 
 # Unit
@@ -28,21 +29,24 @@ def test_default_config():
     assert config.cli.server_url == "http://localhost:8080"
 
 
+@patch.dict(
+    os.environ,
+    {
+        "FIDESCTL_CONFIG_PATH": "",
+        "FIDESCTL__USER__USER_ID": "2",
+        "FIDESCTL__CLI__SERVER_URL": "test"
+    },
+    clear=True,
+)
 @pytest.mark.unit
 def test_config_from_env_vars():
     "Test building a config from env vars."
-    ## TODO: This test doesn't properly inject env vars, but has been tested
-    ## and is working. Need to revisit and fix this test.
-    os.environ["FIDESCTL_CONFIG_PATH"] = ""
-    os.environ["FIDESCTL__USER__USER_ID"] = "2"
-    os.environ["FIDESCTL__CLI__SERVER_URL"] = "test"
-    os.chdir("/fides")
     config = get_config()
     os.chdir("/fides/fidesctl")
 
-    # assert config.user.user_id == "2"
-    # assert config.user.api_key == "test_api_key"
-    # assert config.cli.server_url == "test"
+    assert config.user.user_id == "2"
+    assert config.user.api_key == "test_api_key"
+    assert config.cli.server_url == "test"
 
 
 @pytest.mark.unit
