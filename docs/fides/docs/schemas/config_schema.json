@@ -29,7 +29,8 @@
       "title": "Cli",
       "default": {
         "local_mode": false,
-        "server_url": "http://localhost:8080"
+        "server_url": "http://localhost:8080",
+        "analytics_id": ""
       },
       "allOf": [
         {
@@ -47,7 +48,8 @@
           "user-id": "1",
           "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.uZEytEk5nO7uxQgmk9mN0zND3qfM1Bl3mNp_GyYsiVE"
         },
-        "encryption_key": "test_encryption_key"
+        "encryption_key": "test_encryption_key",
+        "analytics_opt_out": null
       },
       "allOf": [
         {
@@ -185,6 +187,14 @@
             "fidesctl__cli__server_url"
           ],
           "type": "string"
+        },
+        "analytics_id": {
+          "title": "Analytics Id",
+          "default": "",
+          "env_names": [
+            "fidesctl__cli__analytics_id"
+          ],
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -228,6 +238,13 @@
             "fidesctl__user__encryption_key"
           ],
           "type": "string"
+        },
+        "analytics_opt_out": {
+          "title": "Analytics Opt Out",
+          "env_names": [
+            "fidesctl__user__analytics_opt_out"
+          ],
+          "type": "boolean"
         }
       },
       "additionalProperties": false
