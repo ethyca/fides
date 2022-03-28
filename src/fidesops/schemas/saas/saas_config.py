@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Literal, Optional, Union, Set
 
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, validator, root_validator, Extra
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesopsDatasetReference
 from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
@@ -10,25 +10,13 @@ from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
-class ConnectorParams(BaseModel):
+class ParamValue(BaseModel):
     """
-    Required information for the given SaaS connector.
-    """
-
-    name: str
-
-
-class RequestParam(BaseModel):
-    """
-    A request parameter which includes the type (query, path, or body) along with a default value or
-    a reference to an identity value or a value in another dataset.
+    A named variable which can be sourced from identities, dataset references, or connector params. These values
+    are used to replace the placeholders in the path, header, query, and body param values.
     """
 
     name: str
-    type: Literal[
-        "query", "path", "body"
-    ]  # used to determine location in the generated request
-    default_value: Optional[Any]
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
     connector_param: Optional[str]
@@ -50,14 +38,11 @@ class RequestParam(BaseModel):
         value_fields = [
             bool(values.get("identity")),
             bool(values.get("references")),
-            bool(
-                values.get("default_value") is not None
-            ),  # to prevent a value of 0 from returning False
             bool(values.get("connector_param")),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
-                "Must have exactly one of 'identity', 'references', 'default_value', or 'connector_param'"
+                "Must have exactly one of 'identity', 'references', or 'connector_param'"
             )
         return values
 
@@ -69,16 +54,30 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
+class Header(BaseModel):
+    name: str
+    value: str
+
+
+class QueryParam(BaseModel):
+    name: str
+    value: Union[int, str]
+
+
 class SaaSRequest(BaseModel):
     """
-    A single request with a static or dynamic path, and the request params needed to build the request.
-    Also includes optional strategies for postprocessing and pagination.
+    A single request with static or dynamic path, headers, query, and body params.
+    Also specifies the names and sources for the param values needed to build the request.
+
+    Includes optional strategies for postprocessing and pagination.
     """
 
     path: str
-    method: Optional[HTTPMethod]
+    method: HTTPMethod
+    headers: Optional[List[Header]]
+    query_params: Optional[List[QueryParam]]
     body: Optional[str]
-    request_params: Optional[List[RequestParam]]
+    param_values: Optional[List[ParamValue]]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
@@ -89,6 +88,7 @@ class SaaSRequest(BaseModel):
 
         orm_mode = True
         use_enum_values = True
+        extra = Extra.forbid
 
     @root_validator(pre=True)
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -111,16 +111,16 @@ class SaaSRequest(BaseModel):
         grouped_inputs = set(values.get("grouped_inputs", []))
 
         if grouped_inputs:
-            request_params = values.get("request_params", [])
-            names = {param.name for param in request_params}
+            param_values = values.get("param_values", [])
+            names = {param.name for param in param_values}
 
             if not grouped_inputs.issubset(names):
                 raise ValueError(
-                    "Grouped input fields must also be declared as request_params."
+                    "Grouped input fields must also be declared as param_values."
                 )
 
             referenced_collections: List[str] = []
-            for param in request_params:
+            for param in param_values:
                 if param.name in grouped_inputs:
                     if not param.references and not param.identity:
                         raise ValueError(
@@ -149,7 +149,6 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user-provided and constants)"""
 
     name: str
-    default_value: Optional[Any]
 
 
 class ClientConfig(BaseModel):
@@ -170,7 +169,7 @@ class SaaSConfig(BaseModel):
 
     The required fields for the config are converted into a Dataset which is
     merged with the standard Fidesops Dataset to provide a complete set of dependencies
-    for the graph traversal
+    for the graph traversal.
     """
 
     fides_key: FidesOpsKey
@@ -192,7 +191,7 @@ class SaaSConfig(BaseModel):
         collections = []
         for endpoint in self.endpoints:
             fields = []
-            for param in endpoint.requests["read"].request_params or []:
+            for param in endpoint.requests["read"].param_values or []:
                 if param.references:
                     references = []
                     for reference in param.references:

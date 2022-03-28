@@ -22,16 +22,17 @@ saas_config:
           connector_param: api_key
 
   test_request:
+    method: GET
     path: /3.0/lists
     
   endpoints:
   - name: messages
     requests:
       read:
+        method: GET
         path: /3.0/conversations/<conversation_id>/messages
-        request_params:
+        param_values:
           - name: conversation_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: conversations.id
@@ -46,16 +47,15 @@ saas_config:
   - name: conversations
     requests:
       read:
+        method: GET
         path: /3.0/conversations
-        request_params:
+        query_params:
           - name: count
-            type: query
-            default_value: 1000
+            value: 1000
           - name: offset
-            type: query
-            default_value: 0
+            value: 0
+        param_values:
           - name: placeholder
-            type: query
             identity: email
         data_path: conversations
         pagination:
@@ -67,23 +67,25 @@ saas_config:
   - name: member
     requests:
       read:
+        method: GET
         path: /3.0/search-members
-        request_params:
+        query_params:
           - name: query
-            type: query
+            value: <email>
+        param_values:
+          - name: email
             identity: email
         data_path: exact_matches.members
       update:
+        method: PUT
         path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        request_params:
+        param_values:
           - name: list_id
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.list_id
                 direction: from
           - name: subscriber_hash
-            type: path
             references:
               - dataset: mailchimp_connector_example
                 field: member.id

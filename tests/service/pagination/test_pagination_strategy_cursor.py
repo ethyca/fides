@@ -36,9 +36,7 @@ def test_cursor(response_with_body):
     )
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
-        path="/conversations",
-        params={},
-        body=None
+        path="/conversations"
     )
 
     paginator = CursorPaginationStrategy(config)
@@ -48,8 +46,7 @@ def test_cursor(response_with_body):
     assert next_request == SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"after": 3},
-        body=None
+        query_params={"after": 3},
     )
 
 
@@ -60,8 +57,6 @@ def test_missing_cursor_value(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={},
-        body=None
     )
 
     paginator = CursorPaginationStrategy(config)
@@ -78,8 +73,6 @@ def test_cursor_with_empty_list(response_with_empty_list):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={},
-        body=None
     )
 
     paginator = CursorPaginationStrategy(config)

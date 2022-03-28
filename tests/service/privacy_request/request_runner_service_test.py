@@ -367,7 +367,7 @@ def test_create_and_process_erasure_request_saas(
 
     connector = SaaSConnector(connection_config_mailchimp)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", params={"query": mailchimp_identity_email}, body=None
+        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}
     )
     resp = connector.create_client().send(request)
     body = resp.json()

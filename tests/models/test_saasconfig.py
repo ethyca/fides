@@ -1,16 +1,22 @@
 from typing import Dict
 import pytest
+from pydantic import ValidationError
 
 from fidesops.graph.config import FieldAddress
-from fidesops.schemas.saas.saas_config import SaaSConfig
+from fidesops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 
 
 @pytest.mark.unit_saas
-def test_saas_configs(saas_configs) -> None:
+def test_saas_configs(saas_configs):
     """Simple test to verify that the available configs can be deserialized into SaaSConfigs"""
     for saas_config in saas_configs.values():
         SaaSConfig(**saas_config)
 
+@pytest.mark.unit_saas
+def test_saas_request_without_method():
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(path="/test")
+    assert "field required" in str(exc.value)
 
 @pytest.mark.unit_saas
 def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
@@ -31,7 +37,7 @@ def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
     assert field_address == FieldAddress(saas_config.fides_key, "conversations", "id")
     assert direction == "from"
 
-    assert query_field.name == "query"
+    assert query_field.name == "email"
     assert query_field.identity == "email"
 
     user_feedback_collection = saas_dataset.collections[5]

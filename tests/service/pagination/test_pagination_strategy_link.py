@@ -38,8 +38,7 @@ def test_link_in_headers(response_with_header_link):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "abc"},
-        body=None
+        query_params={"page": "abc"},
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -49,8 +48,7 @@ def test_link_in_headers(response_with_header_link):
     assert next_request == SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "def"},
-        body=None
+        query_params={"page": "def"},
     )
 
 
@@ -59,8 +57,7 @@ def test_link_in_headers_missing(response_with_body_link):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "abc"},
-        body=None
+        query_params={"page": "abc"},
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -75,8 +72,7 @@ def test_link_in_body(response_with_body_link):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "abc"},
-        body=None
+        query_params={"page": "abc"},
     )
 
     paginator = LinkPaginationStrategy(config)
@@ -86,8 +82,7 @@ def test_link_in_body(response_with_body_link):
     assert next_request == SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "def"},
-        body=None
+        query_params={"page": "def"},
     )
 
 
@@ -96,8 +91,7 @@ def test_link_in_body_missing(response_with_header_link):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
-        params={"page": "abc"},
-        body=None
+        query_params={"page": "abc"},
     )
 
     paginator = LinkPaginationStrategy(config)
