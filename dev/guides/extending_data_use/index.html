@@ -426,20 +426,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../installation/conda/" class="md-nav__link">
-        Installation from Conda
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../installation/docker/" class="md-nav__link">
         Installation from Docker
       </a>
@@ -740,10 +726,57 @@ You're not viewing the latest version.
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          CI/CD Integration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="CI/CD Integration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          CI/CD Integration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../ci_reference/" class="md-nav__link">
-        CI/CD Reference
+      <a href="../../cicd/overview/" class="md-nav__link">
+        Overview
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cicd/examples/" class="md-nav__link">
+        Example Integrations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1418,7 +1451,9 @@ You're not viewing the latest version.
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.legal_obligation.payroll</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Payroll</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legally obliged sharing of payroll information</span><span class="w"></span>
@@ -1427,6 +1462,7 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IRS</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NYDTF</span><span class="w"></span>
 <span class="w">    </span><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legal Obligation</span><span class="w"></span>
+<span class="w">    </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Employment</span><span class="w"></span>
 <span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.legal_obligation</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Direct Marketing</span><span class="w"></span>
@@ -1434,6 +1470,7 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"> </span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor - marketing co.</span><span class="w"> </span>
 <span class="w">    </span><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Consent</span><span class="w"></span>
+<span class="w">    </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Consent</span><span class="w"></span>
 <span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
@@ -1443,7 +1480,8 @@ You're not viewing the latest version.
 <li><code>name</code>: The name used here will also be surfaced as the <strong>purpose of processing</strong> when exporting data from Fides</li>
 <li><code>description</code>: An optional description of the purpose of processing</li>
 <li><code>recipients</code>: A list of recipients of personal data for this data use, our Payroll example above has multiple recipients for tax purposes</li>
-<li><code>legal_basis</code>: The legal basis category for processing, used as part of exporting data from Fides. </li>
+<li><code>legal_basis</code>: The legal basis category for processing, used as part of exporting data from Fides. Loosely tied to article 6 of the GDPR.</li>
+<li><code>special_category</code>: The special cateogry associated to processing of personal data. Loosely tied to article 9 of the GDPR.</li>
 <li><code>parent_key</code>: The parent Data Use fides key extended from</li>
 </ul>
 
@@ -1520,9 +1558,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../../ci_reference/"
+          href="../../cicd/overview/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: CI/CD Reference"
+          aria-label="Next: Overview"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1530,7 +1568,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Next
               </span>
-              CI/CD Reference
+              Overview
             </div>
           </div>
           <div class="md-footer__button md-icon">

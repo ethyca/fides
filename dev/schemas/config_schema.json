@@ -30,7 +30,7 @@
       "default": {
         "local_mode": false,
         "server_url": "http://localhost:8080",
-        "analytics_id": "dba9403882eb1378f71cf574c1137512"
+        "analytics_id": "4c0595aebf8bb1ae57af9a338edbe6aa"
       },
       "allOf": [
         {
@@ -190,7 +190,7 @@
         },
         "analytics_id": {
           "title": "Analytics Id",
-          "default": "dba9403882eb1378f71cf574c1137512",
+          "default": "4c0595aebf8bb1ae57af9a338edbe6aa",
           "env_names": [
             "fidesctl__cli__analytics_id"
           ],

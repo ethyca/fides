@@ -6,11 +6,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/dev/ci_reference/</loc>
-         <lastmod>2022-03-28</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/dev/cli/</loc>
          <lastmod>2022-03-28</lastmod>
          <changefreq>daily</changefreq>
@@ -27,6 +22,16 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/api/</loc>
+         <lastmod>2022-03-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/cicd/examples/</loc>
+         <lastmod>2022-03-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/cicd/overview/</loc>
          <lastmod>2022-03-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -92,11 +97,6 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/guides/policies/</loc>
-         <lastmod>2022-03-28</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/installation/conda/</loc>
          <lastmod>2022-03-28</lastmod>
          <changefreq>daily</changefreq>
     </url>

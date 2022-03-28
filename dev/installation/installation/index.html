@@ -476,20 +476,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../conda/" class="md-nav__link">
-        Installation from Conda
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../docker/" class="md-nav__link">
         Installation from Docker
       </a>
@@ -747,10 +733,57 @@ You're not viewing the latest version.
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          CI/CD Integration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="CI/CD Integration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          CI/CD Integration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../ci_reference/" class="md-nav__link">
-        CI/CD Reference
+      <a href="../../cicd/overview/" class="md-nav__link">
+        Overview
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cicd/examples/" class="md-nav__link">
+        Example Integrations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1416,13 +1449,13 @@ You're not viewing the latest version.
 <p>You should also check-out the <a href="../prerequisites_dependencies/">prerequisites</a> that must be fulfilled when installing fidesctl. Fidesctl requires additional <a href="../prerequisites_dependencies/">dependencies</a> to be installed - which can be done via <code>extras</code>.</p>
 <p>When you install fidesctl, you need to <a href="../database/">setup the database</a> which must also be kept updated when fidesctl is upgraded.</p>
 <h2 id="installation-tools">Installation Tools</h2>
-<p>Only <code>pip</code> and <code>conda</code> installations are currently officially supported. For more details see <a href="../pypi/">Installation from PyPI</a> or <a href="../conda/">Installation from Conda</a></p>
+<p>Only <code>pip</code> installations are currently officially supported. For more details see <a href="../pypi/">Installation from PyPI</a></p>
 <p>In some cases a lightweight installation might be desired, for instance, if the webserver is not needed. If this is the case, our <code>pip</code> installation supports optional dependencies.</p>
 <p>While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as the supported tools - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.</p>
 <p><strong>When this option works best</strong></p>
 <ul>
 <li>This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.</li>
-<li>The only officially supported mechanisms of installation are pip and conda.</li>
+<li>The only officially supported mechanisms of installation is pip.</li>
 </ul>
 <p><strong>Intended users</strong></p>
 <ul>
@@ -1436,7 +1469,7 @@ You're not viewing the latest version.
 </ul>
 <p><strong>What the Fidesctl community provides for this method</strong></p>
 <ul>
-<li>You have <a href="../pypi/">Installation from PyPI</a> and <a href="../conda/">Installation from Conda</a> on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.</li>
+<li>You have <a href="../pypi/">Installation from PyPI</a> on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.</li>
 <li>You have the <a href="../../quickstart/local_full/">Running fidesctl Locally</a> guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.</li>
 </ul>
 <p><strong>Where to ask for help</strong></p>

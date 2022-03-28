@@ -2893,6 +2893,16 @@
         },
         "description": "The DataQualifier resource model."
       },
+      "DataResponsibilityTitle": {
+        "title": "DataResponsibilityTitle",
+        "enum": [
+          "Controller",
+          "Processor",
+          "Sub-Processor"
+        ],
+        "type": "string",
+        "description": "The model defining the responsibility or role over\nthe system that processes personal data.\n\nUsed to identify whether the organization is a\nController, Processor, or Sub-Processor of the data"
+      },
       "DataSubject": {
         "title": "DataSubject",
         "required": [
@@ -2963,6 +2973,9 @@
           },
           "legal_basis": {
             "$ref": "#/components/schemas/LegalBasisEnum"
+          },
+          "special_category": {
+            "$ref": "#/components/schemas/SpecialCategoriesEnum"
           },
           "recipients": {
             "title": "Recipients",
@@ -3485,6 +3498,22 @@
         },
         "description": "The ResourceFilter resource model."
       },
+      "SpecialCategoriesEnum": {
+        "title": "SpecialCategoriesEnum",
+        "enum": [
+          "Consent",
+          "Employment",
+          "Vital Interests",
+          "Non-profit Bodies",
+          "Public by Data Subject",
+          "Legal Claims",
+          "Substantial Public Interest",
+          "Medical",
+          "Public Health Interest"
+        ],
+        "type": "string",
+        "description": "The model for processing special categories\nof personal data.\n\nBased upon article 9 of the GDPR"
+      },
       "StatusEnum": {
         "title": "StatusEnum",
         "enum": [
@@ -3543,6 +3572,14 @@
           "system_type": {
             "title": "System Type",
             "type": "string"
+          },
+          "data_responsibility_title": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataResponsibilityTitle"
+              }
+            ],
+            "default": "Controller"
           },
           "privacy_declarations": {
             "title": "Privacy Declarations",

@@ -426,20 +426,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../installation/conda/" class="md-nav__link">
-        Installation from Conda
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../installation/docker/" class="md-nav__link">
         Installation from Docker
       </a>
@@ -697,10 +683,57 @@ You're not viewing the latest version.
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          CI/CD Integration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="CI/CD Integration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          CI/CD Integration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../../ci_reference/" class="md-nav__link">
-        CI/CD Reference
+      <a href="../../../cicd/overview/" class="md-nav__link">
+        Overview
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../cicd/examples/" class="md-nav__link">
+        Example Integrations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1473,6 +1506,14 @@ You're not viewing the latest version.
 <p>A human-readable description of the System.</p>
 <p><strong>system_type</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.</p>
+<p><strong>data_responsibility_title</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em></p>
+<p>An attribute to describe the role of responsibility over the personal data, used when exporting to a data map.
+Defaults to <code>Controller</code> if not set explicitly.</p>
+<ul>
+<li><code>Controller</code></li>
+<li><code>Processor</code></li>
+<li><code>Sub-Processor</code></li>
+</ul>
 <p><strong>administrating_department</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>An optional value to identify the owning department or group of the system within your organization</p>
 <p><strong>third_country_transfers</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
@@ -1509,11 +1550,13 @@ You're not viewing the latest version.
 <span class="normal">22</span>
 <span class="normal">23</span>
 <span class="normal">24</span>
-<span class="normal">25</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">25</span>
+<span class="normal">26</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_analytics_system</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Analytics System</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A system used for analyzing customer behaviour.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_responsibility_title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Controller</span><span class="w"></span>
 <span class="w">    </span><span class="nt">administrating_department</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Engineering</span><span class="w"></span>
 <span class="w">    </span><span class="nt">third_country_transfers</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">USA</span><span class="w"></span>
@@ -1570,13 +1613,15 @@ You're not viewing the latest version.
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/sys</span><span class="kc">te</span><span class="err">m</span><span class="w"></span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/sys</span><span class="kc">te</span><span class="err">m</span><span class="w"></span>
 
 <span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo_analytics_system&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Demo Analytics System&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A system used for analyzing customer behaviour.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;system_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Service&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data_responsibility_title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Controller&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;administrating_department&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Engineering&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;third_country_transfers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;USA&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;CAN&quot;</span><span class="p">],</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;joint_controller&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
