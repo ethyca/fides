@@ -16,6 +16,19 @@ A UI-friendly label for the Data Subject.
 
 A human-readable description of the Data Subject.
 
+**rights_available**<span class="spacer">_string_<span class="spacer">
+
+An array of rights available to the data subject, loosely coupled with Chapter 3 of the GDPR.
+
+Examples include:
+* Erasure
+* Rectification
+* Portability
+
+**automated_decisions_or_profiling**<span class="spacer">boolean<span class="spacer">
+
+A boolean value of whether or not automated decision-making or profiling exists. Tied to article 22 of the GDPR.
+
 **organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
 
 The fides key of the organization to which this Data Subject belongs.

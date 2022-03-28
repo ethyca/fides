@@ -55,6 +55,14 @@ The special category for processing of which the data use falls under. This fiel
 
 An array of recipients is applied here when sharing personal data outside of your organization (e.g. Internal Revenue Service, HMRC, etc.)
 
+**legitimate_interest**<span class="spacer">boolean<span class="spacer">default: `False`
+
+A boolean value representing whether or not the legal basis is a `Legitimate Interest`. This is validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
+
+**legitimate_interest_impact_assessment**<span class="spacer">_url_<span class="spacer">
+
+A url to the legitimate interest impact assessment. Can be any valid url (e.g. http, file, etc.)
+
 **organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
 
 The fides key of the organization to which this Data Use belongs.
