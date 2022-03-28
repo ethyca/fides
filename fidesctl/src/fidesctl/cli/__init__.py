@@ -83,14 +83,16 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand != "init":  # init also handles this workflow
         check_and_update_analytics_config(ctx, config_path)
 
-    if ctx.obj["CONFIG"].user.analytics_opt_out is False:  # requires explicit opt-in
-        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-            client_id=ctx.obj["CONFIG"].cli.analytics_id,
-            developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
-            os=system(),
-            product_name=fidesctl.__name__ + "-cli",
-            production_version=version(fidesctl.__name__),
-        )
+        if (  # requires explicit opt-in
+            ctx.obj["CONFIG"].user.analytics_opt_out is False
+        ):
+            ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+                client_id=ctx.obj["CONFIG"].cli.analytics_id,
+                developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
+                os=system(),
+                product_name=fidesctl.__name__ + "-cli",
+                production_version=version(fidesctl.__name__),
+            )
 
 
 # This is a special section used for auto-generating the CLI docs
