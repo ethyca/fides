@@ -31,8 +31,7 @@ def test_offset(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 1},
-        body=None
+        query_params={"page": 1},
     )
     paginator = OffsetPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
@@ -41,8 +40,7 @@ def test_offset(response_with_body):
     assert next_request == SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 2},
-        body=None
+        query_params={"page": 2},
     )
 
 
@@ -56,8 +54,7 @@ def test_offset_with_connector_param_reference(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 1},
-        body=None
+        query_params={"page": 1},
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -67,8 +64,7 @@ def test_offset_with_connector_param_reference(response_with_body):
     assert next_request == SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 2},
-        body=None
+        query_params={"page": 2},
     )
 
 
@@ -81,13 +77,14 @@ def test_offset_with_connector_param_reference_not_found(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 1},
-        body=None
+        query_params={"page": 1},
     )
 
     paginator = OffsetPaginationStrategy(config)
     with pytest.raises(FidesopsException) as exc:
-        paginator.get_next_request(request_params, {}, response_with_body, "conversations")
+        paginator.get_next_request(
+            request_params, {}, response_with_body, "conversations"
+        )
     assert (
         f"Unable to find value for 'limit' with the connector_param reference '{config.limit.connector_param}'"
         == str(exc.value)
@@ -101,8 +98,7 @@ def test_offset_limit(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"page": 10},
-        body=None
+        query_params={"page": 10},
     )
 
     paginator = OffsetPaginationStrategy(config)
@@ -135,13 +131,14 @@ def test_offset_missing_start_value(response_with_body):
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/conversations",
-        params={"row": 1},
-        body=None
+        query_params={"row": 1},
     )
 
     paginator = OffsetPaginationStrategy(config)
     with pytest.raises(FidesopsException) as exc:
-        paginator.get_next_request(request_params, {}, response_with_body, "conversations")
+        paginator.get_next_request(
+            request_params, {}, response_with_body, "conversations"
+        )
     assert (
         f"Unable to find query param named '{config.incremental_param}' in request"
         == str(exc.value)
@@ -149,7 +146,7 @@ def test_offset_missing_start_value(response_with_body):
 
 
 def test_validate_request():
-    request_params = [{"name": "page", "type": "query", "default_value": 1}]
+    query_params = [{"name": "page", "value": 1}]
     pagination = {
         "strategy": "offset",
         "configuration": {
@@ -158,11 +155,11 @@ def test_validate_request():
             "limit": 10,
         },
     }
-    SaaSRequest(path="/test", request_params=request_params, pagination=pagination)
+    SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
 
 
 def test_validate_request_missing_param():
-    request_params = [{"name": "row", "type": "query", "default_value": 1}]
+    query_params = [{"name": "row", "value": 1}]
     pagination = {
         "strategy": "offset",
         "configuration": {
@@ -172,5 +169,5 @@ def test_validate_request_missing_param():
         },
     }
     with pytest.raises(ValueError) as exc:
-        SaaSRequest(path="/test", request_params=request_params, pagination=pagination)
+        SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
     assert "Query param 'page' not found." in str(exc.value)

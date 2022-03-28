@@ -49,7 +49,7 @@ pagination:
 ```
 
 We can also access links returned in the body. If we receive this value in the body:
-```
+```json
 {
   ...
   "next_page": {
@@ -76,12 +76,12 @@ This strategy is used when a specific value from a response object is used as a 
 
 #### Examples
 If an API request returns the following:
-```
+```json
 {
   "messages": [
-      {"id": 1, msg: "this is"},
-      {"id": 2, msg: "a"}
-      {"id": 3, msg: "test"}
+      {"id": 1, "msg": "this is"},
+      {"id": 2, "msg": "a"}
+      {"id": 3, "msg": "test"}
   ]
 }
 ```

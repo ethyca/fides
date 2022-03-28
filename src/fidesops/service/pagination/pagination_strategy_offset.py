@@ -40,7 +40,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # find query param value from deconstructed request_params, throw exception if query param not found
-        param_value = request_params.params.get(self.incremental_param)
+        param_value = request_params.query_params.get(self.incremental_param)
         if param_value is None:
             raise FidesopsException(
                 f"Unable to find query param named '{self.incremental_param}' in request"
@@ -59,11 +59,11 @@ class OffsetPaginationStrategy(PaginationStrategy):
             return None
 
         # update query param and return updated request_param tuple
-        request_params.params[self.incremental_param] = param_value
+        request_params.query_params[self.incremental_param] = param_value
         return SaaSRequestParams(
             method=request_params.method,
             path=request_params.path,
-            params=request_params.params,
+            query_params=request_params.query_params,
             body=request_params.body,
         )
 
@@ -73,12 +73,11 @@ class OffsetPaginationStrategy(PaginationStrategy):
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """Ensures that the query param specified by 'incremental_param' exists in the request"""
-        request_params = (
-            request_param
-            for request_param in request.get("request_params", [])
-            if request_param.get("name") == self.incremental_param
-            and request_param.get("type") == "query"
+        query_params = (
+            query_params
+            for query_params in request.get("query_params", [])
+            if query_params.get("name") == self.incremental_param
         )
-        request_param = next(request_params, None)
-        if request_param is None:
+        query_param = next(query_params, None)
+        if query_param is None:
             raise ValueError(f"Query param '{self.incremental_param}' not found.")

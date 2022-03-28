@@ -11,8 +11,9 @@ endpoints:
   - name: messages
     requests:
       read:
+        method: GET
         path: /conversations/<id>/messages
-        request_params:
+        param_values:
           ...
         postprocessors:
           - strategy: unwrap
@@ -61,37 +62,37 @@ Post-Processor Config:
 
 Identity data passed in through request:
 
-```
+```json
 {
   "email": "somebody@email.com"
 }
 ```
 
 Data to be processed:
-```
-data = [
+```json
+[
     {
-        "id": 1397429347
-        "email_contact": "somebody@email.com"
+        "id": 1397429347,
+        "email_contact": "somebody@email.com",
         "name": "Somebody Awesome"
     },
     {
-        "id": 238475234
-        "email_contact": "somebody-else@email.com"
+        "id": 238475234,
+        "email_contact": "somebody-else@email.com",
         "name": "Somebody Cool"
     }
 ]
 ```
 
 Result:
-```
-result = [
-          {
-              "id": 1397429347
-              "email_contact": "somebody@email.com"
-              "name": "Somebody Awesome"
-          }
-        ]
+```json
+[
+    {
+        "id": 1397429347,
+        "email_contact": "somebody@email.com",
+        "name": "Somebody Awesome"
+    }
+]
 ```
 
 Note: Type casting is not supported at this time. We currently only support filtering by string values. e.g. `bob@mail.com` and not `12344245`.
@@ -120,22 +121,19 @@ Post-Processor Config:
 ```
 
 Data to be processed:
-```
-data = {
+```json
+{
   "exact_matches": {
     "members": [
       { "howdy": 123 },
       { "meow": 841 }
     ]
   }
-}
-
-data_path = exact_matches.members
-    
+}   
 ```
 Result:
-```
-result = [
+```json
+[
   { "howdy": 123 },
   { "meow": 841 }
 ]

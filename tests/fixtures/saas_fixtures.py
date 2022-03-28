@@ -179,7 +179,7 @@ def connection_config_saas_example_with_invalid_saas_config(
     db: Session, saas_configs: Dict[str, Dict]
 ) -> Generator:
     invalid_saas_config = saas_configs["saas_example"].copy()
-    invalid_saas_config["endpoints"][0]["requests"]["read"]["request_params"].pop()
+    invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -217,7 +217,7 @@ def reset_mailchimp_data(
     """
     connector = SaaSConnector(connection_config_mailchimp)
     request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET, path="/3.0/search-members", params={"query": mailchimp_identity_email}, body=None
+        method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}, body=None
     )
     response = connector.create_client().send(request)
     body = response.json()
@@ -226,7 +226,7 @@ def reset_mailchimp_data(
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.PUT,
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
-        params={},
+        query_params={},
         body=json.dumps(member)
     )
     connector.create_client().send(request)

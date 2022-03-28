@@ -16,11 +16,14 @@ class HTTPMethod(Enum):
 
 
 class SaaSRequestParams(BaseModel):
-    """Custom type to represent a SaaS request param"""
+    """
+    Holds the method, path, headers, query, and body params to build a SaaS HTTP request.
+    """
 
     method: HTTPMethod
     path: str
-    params: Dict[str, Any]
+    headers: Dict[str, Any] = {}
+    query_params: Dict[str, Any] = {}
     body: Optional[str]
 
     class Config:

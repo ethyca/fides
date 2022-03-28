@@ -5,7 +5,7 @@ import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.graph.traversal import Row, TraversalNode
@@ -67,12 +67,13 @@ class AuthenticatedClient:
     ) -> PreparedRequest:
         """
         Returns an authenticated request based on the client config and
-        incoming path, query, and body params.
+        incoming path, headers, query, and body params.
         """
         req = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
-            params=request_params.params,
+            headers=request_params.headers,
+            params=request_params.query_params,
             data=request_params.body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
@@ -111,9 +112,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request_path = self.saas_config.test_request.path
+        test_request = self.saas_config.test_request
         prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=HTTPMethod.GET, path=test_request_path, params={}, body=None
+            method=test_request.method, path=test_request.path
         )
         self.client().send(prepared_request)
         return ConnectionTestStatus.succeeded
