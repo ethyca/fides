@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field, AnyUrl, HttpUrl
+from pydantic import root_validator, validator, BaseModel, Field, AnyUrl, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -67,6 +67,37 @@ class DataResponsibilityTitle(str, Enum):
     SUB_PROCESSOR = "Sub-Processor"
 
 
+class IncludeExcludeEnum(str, Enum):
+    """
+    Determine whether or not defined rights are
+    being included or excluded.
+    """
+
+    ALL = "ALL"
+    EXCLUDE = "EXCLUDE"
+    INCLUDE = "INCLUDE"
+    NONE = "NONE"
+
+
+class DataSubjectRightsEnum(str, Enum):
+    """
+    The model for data subject rights over
+    personal data.
+
+    Based upon chapter 3 of the GDPR
+    """
+
+    INFORMED = "Informed"
+    ACCESS = "Access"
+    RECTIFICATION = "Rectification"
+    ERASURE = "Erasure"
+    PORTABILITY = "Portability"
+    RESTRICT_PROCESSING = "Restrict Processing"
+    WITHDRAW_CONSENT = "Withdraw Consent"
+    OBJECT = "Object"
+    OBJECT_TO_AUTOMATED_PROCESSING = "Object to Automated Processing"
+
+
 class LegalBasisEnum(str, Enum):
     """
     The model for allowable legal basis categories
@@ -120,10 +151,37 @@ class DataQualifier(FidesModel):
     _no_self_reference: classmethod = no_self_reference_validator
 
 
+class DataSubjectRights(BaseModel):
+    """
+    The DataSubjectRights resource model.
+
+    Includes a strategy and optionally a
+    list of data subject rights to apply
+    via the set strategy.
+    """
+
+    strategy: IncludeExcludeEnum
+    values: Optional[List[DataSubjectRightsEnum]]
+
+    @root_validator()
+    @classmethod
+    def include_exclude_has_values(cls, values: Dict) -> Dict:
+        """
+        Validate the if include or exclude is chosen, that at least one
+        value is present.
+        """
+        strategy, rights = values.get("strategy"), values.get("values")
+        if strategy in ("INCLUDE", "EXCLUDE"):
+            assert (
+                rights is not None
+            ), f"If {strategy} is chosen, rights must also be listed."
+        return values
+
+
 class DataSubject(FidesModel):
     """The DataSubject resource model."""
 
-    rights_available: Optional[str]
+    rights: Optional[DataSubjectRights]
     automated_decisions_or_profiling: Optional[bool]
 
 

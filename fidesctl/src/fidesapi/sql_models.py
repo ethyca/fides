@@ -122,7 +122,7 @@ class DataSubject(SqlAlchemyBase, FidesBase):
     """
 
     __tablename__ = "data_subjects"
-    rights_available = Column(String, nullable=True)
+    rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
 
 

@@ -7,10 +7,9 @@ from typing import Dict, List, Tuple, Set
 
 import pandas as pd
 
+from fideslang.models import DataSubjectRights, DataSubjectRightsEnum, Taxonomy
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
-
-from fideslang.models import Taxonomy
 
 
 DATAMAP_TEMPLATE = "src/fidesctl/templates/fides_datamap_template.xlsx"
@@ -197,6 +196,7 @@ def get_formatted_data_subjects(
     formatted_data_subjects_list = []  # empty list to populate and return
 
     for data_subject in data_subjects:
+        data_subject_dict = data_subject.dict()
         formatted_data_subject = dict(
             zip(
                 formatted_data_subject_attributes_list,
@@ -206,9 +206,20 @@ def get_formatted_data_subjects(
                 * len(formatted_data_subject_attributes_list),
             )
         )
+
+        # calculate and format data subject rights as applicable
+        if data_subject_dict["rights"]:
+            data_subject_dict["rights_available"] = calculate_data_subject_rights(
+                data_subject_dict["rights"]
+            )
+        else:
+            data_subject_dict["rights_available"] = "No data subject rights listed"
+
         for attribute in formatted_data_subject_attributes_list:
             try:
-                formatted_data_subject[attribute] = getattr(data_subject, attribute)
+                formatted_data_subject[attribute] = (
+                    data_subject_dict[attribute] or "N/A"
+                )
             except AttributeError:
                 echo_red(
                     f"{attribute} undefined for specified Data Subject, setting as N/A."
@@ -217,6 +228,32 @@ def get_formatted_data_subjects(
         formatted_data_subjects_list.append(formatted_data_subject)
 
     return formatted_data_subjects_list
+
+
+def calculate_data_subject_rights(rights: DataSubjectRights) -> str:
+    """
+    Calculate and format the data subject individual rights.
+
+    Loads all available rights
+    """
+    all_rights = [right.value for right in DataSubjectRightsEnum]
+    strategy: str = rights["strategy"].value
+    data_subject_rights: str
+    if strategy == "ALL":
+        data_subject_rights = ", ".join(all_rights)
+    elif strategy == "INCLUDE":
+        included_rights = [right.value for right in rights["values"]]
+        data_subject_rights = ", ".join(included_rights)
+    elif strategy == "EXCLUDE":
+        excluded_rights = [right.value for right in rights["values"]]
+        included_rights = [
+            right for right in all_rights if right not in excluded_rights
+        ]
+        data_subject_rights = ", ".join(included_rights)
+    elif strategy == "NONE":
+        data_subject_rights = "No data subject rights listed"
+
+    return data_subject_rights
 
 
 def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
