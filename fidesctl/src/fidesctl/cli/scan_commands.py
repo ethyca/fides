@@ -72,7 +72,7 @@ def scan_system(ctx: click.Context) -> None:
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan_system_aws(
     ctx: click.Context,
-    manifest_dir: str,
+    manifests_dir: str,
     organization: str,
     coverage_threshold: int,
 ) -> None:
