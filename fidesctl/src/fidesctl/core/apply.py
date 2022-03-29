@@ -12,18 +12,19 @@ from fidesctl.core.utils import echo_green
 from fideslang import FidesModel, Taxonomy
 
 
-def sort_create_update_unchanged(
+def sort_create_update(
     manifest_resource_list: List[FidesModel],
     server_resource_list: List[FidesModel],
     diff: bool = False,
 ) -> Tuple[List[FidesModel], List[FidesModel]]:
     """
     Check the contents of the resource lists and populate separate
-    new lists for resource creation, updating, or no change.
+    new lists for resource creation or updating.
 
-    The `diff` flag will print out the differences between the server resources
-    the local resource files.
+    The `diff` flag will print out the differences between the
+    server resources the local resource files.
     """
+
     server_resource_dict = {
         server_resource.fides_key: server_resource
         for server_resource in server_resource_list
@@ -41,14 +42,19 @@ def sort_create_update_unchanged(
                 print(
                     f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
                 )
-                pprint(DeepDiff(server_resource, manifest_resource))
+                pprint(
+                    DeepDiff(
+                        manifest_resource.dict(exclude_unset=True),
+                        server_resource.dict(exclude_unset=True),
+                    )
+                )
 
             update_list.append(manifest_resource)
 
         else:
             if diff:
                 print(f"\nNew resource with fides_key: {manifest_resource.fides_key}")
-                pprint(manifest_resource)
+                pprint(manifest_resource.dict(exclude_unset=True))
             create_list.append(manifest_resource)
 
     return create_list, update_list
@@ -77,33 +83,35 @@ def apply(
         print(f"Processing {resource_type} resources...")
         resource_list = getattr(taxonomy, resource_type)
 
-        if dry:
+        if diff or dry:
             existing_keys = [resource.fides_key for resource in resource_list]
             server_resource_list = get_server_resources(
                 url, resource_type, existing_keys, headers
             )
 
             # Determine which resources should be created, updated, or are unchanged
-            create_list, update_list = sort_create_update_unchanged(
+            create_list, update_list = sort_create_update(
                 resource_list, server_resource_list, diff
             )
 
-            echo_results("would create", resource_type, len(create_list))
-            echo_results("would update", resource_type, len(update_list))
-        else:
-            raw = handle_cli_response(
-                api.upsert(
-                    headers=headers,
-                    resource_type=resource_type,
-                    url=url,
-                    resources=[loads(resource.json()) for resource in resource_list],
-                ),
-                verbose=False,
-            )
+            if dry:
+                echo_results("would create", resource_type, len(create_list))
+                echo_results("would update", resource_type, len(update_list))
+                continue
 
-            response = loads(raw.content)
+        raw = handle_cli_response(
+            api.upsert(
+                headers=headers,
+                resource_type=resource_type,
+                url=url,
+                resources=[loads(resource.json()) for resource in resource_list],
+            ),
+            verbose=False,
+        )
 
-            echo_results("created", resource_type, response["inserted"])
-            echo_results("updated", resource_type, response["updated"])
+        response = loads(raw.content)
+
+        echo_results("created", resource_type, response["inserted"])
+        echo_results("updated", resource_type, response["updated"])
 
     print("-" * 10)

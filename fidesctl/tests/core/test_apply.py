@@ -1,8 +1,8 @@
 """Unit tests for the Commands module."""
 import pytest
 
-from fidesctl.core import apply
 import fideslang as models
+from fidesctl.core.apply import sort_create_update
 
 
 # Helpers
@@ -21,7 +21,7 @@ def server_resource_key_pairs():
 
 # Unit
 @pytest.mark.unit
-def test_sort_create_update_unchanged_create():
+def test_sort_create_update_create():
     resource_1 = models.DataCategory(
         organization_fides_key=1,
         fides_key="some_resource",
@@ -41,13 +41,13 @@ def test_sort_create_update_unchanged_create():
     (
         create_result,
         update_result,
-    ) = apply.sort_create_update_unchanged(manifest_resource_list, server_resource_list)
+    ) = sort_create_update(manifest_resource_list, server_resource_list)
     assert create_result == expected_create_result
     assert update_result == []
 
 
 @pytest.mark.unit
-def test_sort_create_update_unchanged_update():
+def test_sort_create_update_update():
     resource_1 = models.DataCategory(
         id=1,
         organization_fides_key=1,
@@ -68,6 +68,6 @@ def test_sort_create_update_unchanged_update():
     (
         create_result,
         update_result,
-    ) = apply.sort_create_update_unchanged(manifest_resource_list, server_resource_list)
+    ) = sort_create_update(manifest_resource_list, server_resource_list)
     assert [] == create_result
     assert expected_update_result == update_result
