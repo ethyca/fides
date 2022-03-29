@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: fidesctl
+  - fides_key: public
     organization_fides_key: default_organization
     name: fidesctl
     description: "The dataset responsible for storing all of the data related to a fidesctl instance."
@@ -13,6 +13,8 @@ dataset:
         fields:
           - name: version_num
             description: "Fides Generated Description for Column: version_num"
+            data_categories:
+              - system.operations
 
       - name: public.data_categories
         description: "Fides Generated Description for Table: public.data_categories"
@@ -148,17 +150,17 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-          
+
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
 
           - name: retention
             description: "A string representing how long the dataset is retained for. Can also be found and applied as a property within Collections and Fields."
             data_categories:
-            - system.operations
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
@@ -214,19 +216,19 @@ dataset:
           - name: controller
             description: "Encrypted contact information for the controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: data_protection_officer
             description: "Encrypted contact information for the Data Protection Officer (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: representative
             description: "Encrypted contact information for the representative (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: security_policy
@@ -328,7 +330,7 @@ dataset:
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
 
           - name: created_at

@@ -112,7 +112,7 @@ fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
 	
 fidesctl-db-scan:
-	@$(RUN) fidesctl scan dataset db "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+	@$(RUN) fidesctl scan dataset db "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
