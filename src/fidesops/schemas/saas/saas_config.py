@@ -4,8 +4,15 @@ from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 from pydantic import BaseModel, validator, root_validator, Extra
 from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.dataset import FidesopsDatasetReference
-from fidesops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesops.schemas.dataset import FidesopsDatasetReference, FidesCollectionKey
+from fidesops.graph.config import (
+    Collection,
+    Dataset,
+    FieldAddress,
+    ScalarField,
+    CollectionAddress,
+    Field,
+)
 from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
@@ -143,6 +150,7 @@ class Endpoint(BaseModel):
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], SaaSRequest]
+    after: List[FidesCollectionKey] = []
 
 
 class ConnectorParam(BaseModel):
@@ -214,6 +222,9 @@ class SaaSConfig(BaseModel):
                         name=endpoint.name,
                         fields=fields,
                         grouped_inputs=grouped_inputs,
+                        after={
+                            CollectionAddress(*s.split(".")) for s in endpoint.after
+                        },
                     )
                 )
 

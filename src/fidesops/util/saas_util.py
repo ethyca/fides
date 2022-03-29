@@ -2,8 +2,7 @@ from collections import defaultdict
 from functools import reduce
 from typing import Any, Dict, List, Optional, Set
 from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.config import Collection, Dataset, Field
-
+from fidesops.graph.config import Collection, Dataset, Field, CollectionAddress
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 
@@ -43,6 +42,18 @@ def get_collection_grouped_inputs(
     return collection.grouped_inputs
 
 
+def get_collection_after(
+    collections: List[Collection], name: str
+) -> Set[CollectionAddress]:
+    """If specified, return the collections that need to run before the current collection for saas configs"""
+    collection: Collection = next(
+        (collect for collect in collections if collect.name == name), {}
+    )
+    if not collection:
+        return set()
+    return collection.after
+
+
 def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
     """
     Merges all Collections and Fields from the config_dataset into the dataset.
@@ -63,6 +74,7 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
                 grouped_inputs=get_collection_grouped_inputs(
                     config_dataset.collections, collection_name
                 ),
+                after=get_collection_after(config_dataset.collections, collection_name),
             )
         )
 

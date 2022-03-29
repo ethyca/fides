@@ -610,6 +610,9 @@ def traversal_paired_dependency() -> Traversal:
     )
     users = Collection(
         name="User",
+        after={
+            CollectionAddress("mysql", "Project"),
+        },
         fields=[
             ScalarField(
                 name="project",
@@ -620,11 +623,11 @@ def traversal_paired_dependency() -> Traversal:
                 references=[(FieldAddress("mysql", "Project", "organization_id"), "from")],
             ),
             ScalarField(name="username"),
-            ScalarField(name="email"),
+            ScalarField(name="email", identity="email"),
             ScalarField(name="position"),
 
         ],
-        grouped_inputs= {"project", "organization"}
+        grouped_inputs={"project", "organization", "email"}
     )
 
     mysql = Dataset(

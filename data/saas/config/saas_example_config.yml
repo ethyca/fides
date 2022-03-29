@@ -105,7 +105,7 @@ saas_config:
           - name: On-Behalf-Of
             value: <email>
           - name: Token
-            value: Custom <api_key> 
+            value: Custom <api_key>
         query_params:
           - name: limit
             value: <limit>
@@ -134,12 +134,16 @@ saas_config:
         param_values:
           - name: placeholder
             identity: email
-  - name: user_feedback
+  - name: users
+    after: [ saas_connector_example.projects ]
     requests:
       read:
         method: GET
         path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
-        grouped_inputs: [ organization_slug, project_slug ]
+        query_params:
+          - name: query
+            value: <query>
+        grouped_inputs: [ organization_slug, project_slug, query ]
         param_values:
           - name: organization_slug
             references:
@@ -151,3 +155,5 @@ saas_config:
               - dataset: saas_connector_example
                 field: projects.slug
                 direction: from
+          - name: query
+            identity: email

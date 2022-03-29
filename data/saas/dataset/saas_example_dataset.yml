@@ -162,7 +162,7 @@ dataset:
               - name: slug
                 fidesops_meta:
                   data_type: string
-      - name: user_feedback
+      - name: users
         fields:
           - name: id
             data_categories: [ system.operations ]
