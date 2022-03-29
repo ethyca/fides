@@ -249,15 +249,14 @@ class TestPreProcessInputData:
         }
 
     def test_pre_process_input_data_group_dependent_fields(self):
-        """Test processing inputs where fields have been marked as dependent"""
+        """Test processing inputs where several reference fields and an identity field have
+         been marked as dependent.
+        """
         traversal_with_grouped_inputs = traversal_paired_dependency()
         n = traversal_with_grouped_inputs.traversal_node_dict[
             CollectionAddress("mysql", "User")
         ]
-
-        task = MockSqlTask(
-            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
-        )
+        task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
 
         project_output = [
             {
@@ -277,22 +276,36 @@ class TestPreProcessInputData:
             },
         ]
 
+        identity_output = [{"email": "email@gmail.com"}]
         # Typical output - project ids and organization ids would be completely independent from each other
-        assert task.pre_process_input_data(project_output) == {
-            "organization": ["12345", "54321", "54321"],
+        assert task.pre_process_input_data(identity_output, project_output) == {
+            "email": ["email@gmail.com"],
             "project": ["abcde", "fghij", "klmno"],
+            "organization": ["12345", "54321", "54321"],
             "fidesops_grouped_inputs": [],
         }
 
         # With group_dependent_fields = True.  Fields are grouped together under a key that shouldn't overlap
         # with actual table keys "fidesops_grouped_inputs"
         assert task.pre_process_input_data(
-            project_output, group_dependent_fields=True
+            identity_output, project_output, group_dependent_fields=True
         ) == {
             "fidesops_grouped_inputs": [
-                {"organization": ["12345"], "project": ["abcde"]},
-                {"organization": ["54321"], "project": ["fghij"]},
-                {"organization": ["54321"], "project": ["klmno"]},
+                {
+                    "project": ["abcde"],
+                    "organization": ["12345"],
+                    "email": ["email@gmail.com"],
+                },
+                {
+                    "project": ["fghij"],
+                    "organization": ["54321"],
+                    "email": ["email@gmail.com"],
+                },
+                {
+                    "project": ["klmno"],
+                    "organization": ["54321"],
+                    "email": ["email@gmail.com"],
+                },
             ]
         }
 

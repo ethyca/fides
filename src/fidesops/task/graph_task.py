@@ -128,6 +128,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """
         return self.traversal_node.node.collection.grouped_inputs or set()
 
+    @property
+    def dependent_identity_fields(self) -> bool:
+        """If the current collection needs inputs from other collections, in addition to its seed data."""
+        collection = self.traversal_node.node.collection
+        for field in self.grouped_fields:
+            if collection.field(FieldPath(field)).identity:
+                return True
+        return False
+
     def build_incoming_field_path_maps(
         self, group_dependent_fields: bool = False
     ) -> Tuple[COLLECTION_FIELD_PATH_MAP, COLLECTION_FIELD_PATH_MAP]:
@@ -167,6 +176,27 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
         connection_config: ConnectionConfig = self.connector.configuration
         return connection_config.access == AccessLevel.write
+
+    def _combine_seed_data(
+        self,
+        *data: List[Row],
+        grouped_data: Dict[str, Any],
+        dependent_field_mappings: COLLECTION_FIELD_PATH_MAP,
+    ) -> Dict[str, Any]:
+        """Combine the seed data with the other dependent inputs. This is used when the seed data in a collection requires
+        inputs from another collection to generate subsequent queries."""
+        # Get the identity values from the seeds that were passed into this collection.
+        seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)
+        seed_data = data[seed_index]
+
+        for (foreign_field_path, local_field_path) in dependent_field_mappings[
+            ROOT_COLLECTION_ADDRESS
+        ]:
+            dependent_values: List = consolidate_query_matches(
+                row=seed_data, target_path=foreign_field_path
+            )
+            grouped_data[local_field_path.string_path] = dependent_values
+        return grouped_data
 
     def pre_process_input_data(
         self, *data: List[Row], group_dependent_fields: bool = False
@@ -209,6 +239,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         for i, rowset in enumerate(data):
             collection_address = self.input_keys[i]
 
+            if (
+                group_dependent_fields
+                and self.dependent_identity_fields
+                and collection_address == ROOT_COLLECTION_ADDRESS
+            ):
+                # Skip building data for the root collection if the seed data needs to be combined with other inputs
+                continue
+
             logger.info(
                 f"Consolidating incoming data into {self.traversal_node.node.address} from {collection_address}."
             )
@@ -234,6 +272,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                             row=row, target_path=foreign_field_path
                         )
                         grouped_data[local_field_path.string_path] = dependent_values
+
+                    if self.dependent_identity_fields:
+                        grouped_data = self._combine_seed_data(
+                            *data,
+                            grouped_data=grouped_data,
+                            dependent_field_mappings=dependent_field_mappings,
+                        )
+
                     output[FIDESOPS_GROUPED_INPUTS].append(grouped_data)
         return output
 
