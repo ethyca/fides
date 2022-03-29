@@ -16,14 +16,29 @@ A UI-friendly label for the Data Subject.
 
 A human-readable description of the Data Subject.
 
-**rights_available**<span class="spacer">_string_<span class="spacer">
+**rights**<span class="spacer">_enum_<span class="spacer">
 
-An array of rights available to the data subject, loosely coupled with Chapter 3 of the GDPR.
+An array of rights available to the data subject, available values coupled with Chapter 3 of the GDPR. The output of a data map is based upon
+the strategy for applying rights (`rights.strategy`) and the selections made from the following valid options:
 
-Examples include:
-* Erasure
-* Rectification
-* Portability
+* `Informed`
+* `Access`
+* `Rectification`
+* `Erasure`
+* `Portability`
+* `Restrict Processing`
+* `Withdraw Consent`
+* `Object`
+* `Object to Automated Processing`
+
+**strategy**<span class="spacer">_enum_<span class="spacer">
+
+A strategy for selecting the rights available to the data subject.
+
+* `ALL`
+* `EXCLUDE`
+* `INCLUDE`
+* `NONE`
 
 **automated_decisions_or_profiling**<span class="spacer">boolean<span class="spacer">
 
