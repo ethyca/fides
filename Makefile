@@ -110,6 +110,9 @@ check-install:
 .PHONY: fidesctl
 fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
+	
+fidesctl-db-scan:
+	@$(RUN_NO_DEPS) fidesctl scan db --coverage
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
