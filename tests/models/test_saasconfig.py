@@ -12,11 +12,13 @@ def test_saas_configs(saas_configs):
     for saas_config in saas_configs.values():
         SaaSConfig(**saas_config)
 
+
 @pytest.mark.unit_saas
 def test_saas_request_without_method():
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(path="/test")
     assert "field required" in str(exc.value)
+
 
 @pytest.mark.unit_saas
 def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
@@ -61,3 +63,20 @@ def test_saas_config_to_dataset(saas_configs: Dict[str, Dict]):
         saas_config.fides_key, "projects", "slug"
     )
     assert direction == "from"
+
+
+@pytest.mark.unit_saas
+def test_saas_config_ignore_errors_param(saas_configs: Dict[str, Dict]):
+    """Verify saas config ignore errors"""
+    # convert endpoint references to dataset references to be able to hook SaaS connectors into the graph traversal
+    saas_config = SaaSConfig(**saas_configs["saas_example"])
+
+    collections_endpoint = next(
+        end for end in saas_config.endpoints if end.name == "conversations"
+    )
+    # Specified on collections read endpoint
+    assert collections_endpoint.requests["read"].ignore_errors
+
+    member_endpoint = next(end for end in saas_config.endpoints if end.name == "member")
+    # Not specified on member read endpoint - defaults to False
+    assert not member_endpoint.requests["read"].ignore_errors

@@ -89,6 +89,7 @@ class SaaSRequest(BaseModel):
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
+    ignore_errors: Optional[bool] = False
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
