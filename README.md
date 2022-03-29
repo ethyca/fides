@@ -1,6 +1,7 @@
 # Meet Fidesctl: Privacy Policies as Code
 
 [![Latest Release Version][release-image]][release-url]
+[![Docker Build & Push][docker-workflow-image]][actions-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
@@ -229,6 +230,8 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 
 [release-image]: https://img.shields.io/github/release/ethyca/fides.svg
 [release-url]: https://github.com/ethyca/fides/releases
+[docker-workflow-image]: https://github.com/ethyca/fides/workflows/docker/badge.svg
+[actions-url]: https://github.com/ethyca/fides/actions
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg
