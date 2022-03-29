@@ -78,7 +78,9 @@ class AuthenticatedClient:
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
-    def send(self, request_params: SaaSRequestParams) -> Response:
+    def send(
+        self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
+    ) -> Response:
         """
         Builds and executes an authenticated request.
         The HTTP method is determined by the request_params.
@@ -90,6 +92,14 @@ class AuthenticatedClient:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
 
         if not response.ok:
+            if ignore_errors:
+                logger.info(
+                    f"Ignoring response with status code {response.status_code}."
+                )
+                response = Response()
+                response._content = b"{}"  # pylint: disable=W0212
+                return response
+
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return response
@@ -176,7 +186,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
 
-        response: Response = self.client().send(prepared_request)
+        response: Response = self.client().send(
+            prepared_request, saas_request.ignore_errors
+        )
 
         # unwrap response using data_path
         try:
@@ -279,9 +291,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
+        self.collection_name = node.address.collection
+        update_request: SaaSRequest = self.endpoints[self.collection_name].requests[
+            "update"
+        ]
         rows_updated = 0
         for prepared_request in prepared_requests:
-            self.client().send(prepared_request)
+            self.client().send(prepared_request, update_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 

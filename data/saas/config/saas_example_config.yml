@@ -52,6 +52,7 @@ saas_config:
     requests:
       read:
         method: GET
+        ignore_errors: true
         path: /3.0/conversations
         query_params:
           - name: count

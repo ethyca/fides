@@ -38,7 +38,6 @@ def test_cursor(response_with_body):
         method=HTTPMethod.GET,
         path="/conversations"
     )
-
     paginator = CursorPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_body, "conversations"
@@ -80,3 +79,4 @@ def test_cursor_with_empty_list(response_with_empty_list):
         request_params, {}, response_with_empty_list, "conversations"
     )
     assert next_request is None
+
