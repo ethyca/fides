@@ -15,12 +15,20 @@ def scan(ctx: click.Context) -> None:
     """
 
 
-@scan.command(name="dataset")
+@scan.group(name="dataset")
+@click.pass_context
+def scan_dataset(ctx: click.Context) -> None:
+    """
+    Scan fidesctl Dataset resources
+    """
+
+
+@scan_dataset.command(name="db")
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.option("-m", "--manifest-dir", type=str, default="")
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
-def scan_dataset(
+def scan_dataset_db(
     ctx: click.Context,
     connection_string: str,
     manifest_dir: str,
@@ -39,7 +47,7 @@ def scan_dataset(
     config = ctx.obj["CONFIG"]
     with_analytics(
         ctx,
-        _dataset.scan_dataset,
+        _dataset.scan_dataset_db,
         connection_string=connection_string,
         manifest_dir=manifest_dir,
         coverage_threshold=coverage_threshold,

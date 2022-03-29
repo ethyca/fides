@@ -16,12 +16,20 @@ def generate(ctx: click.Context) -> None:
     """
 
 
-@generate.command(name="dataset")
+@generate.group(name="dataset")
+@click.pass_context
+def generate_dataset(ctx: click.Context) -> None:
+    """
+    Generate fidesctl Dataset resources
+    """
+
+
+@generate_dataset.command(name="db")
 @click.pass_context
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 @include_null_flag
-def generate_dataset(
+def generate_dataset_db(
     ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
 ) -> None:
     """
@@ -34,9 +42,9 @@ def generate_dataset(
 
     with_analytics(
         ctx,
-        _dataset.generate_dataset,
+        _dataset.generate_dataset_db,
         connection_string=connection_string,
-        filename=output_filename,
+        file_name=output_filename,
         include_null=include_null,
     )
 
