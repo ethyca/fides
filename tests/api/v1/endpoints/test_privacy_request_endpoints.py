@@ -428,6 +428,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "policy": {
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                    },
                 }
             ],
             "total": 1,
@@ -458,6 +462,9 @@ class TestGetPrivacyRequests:
             resp["items"][0]["identity"]
             == succeeded_privacy_request.get_cached_identity_data()
         )
+
+        assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
+        assert resp["items"][0]["policy"]["name"] == privacy_request.policy.name
 
         # Now test the identities are omitted if not explicitly requested
         response = api_client.get(url + f"?status=complete", headers=auth_header)
@@ -653,6 +660,10 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "policy": {
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                    },
                     "results": {
                         "my-mongo-db": [
                             {
@@ -1376,4 +1387,8 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "policy": {
+                "key": privacy_request.policy.key,
+                "name": privacy_request.policy.name,
+            },
         }

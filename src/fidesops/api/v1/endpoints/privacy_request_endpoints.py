@@ -545,7 +545,7 @@ def review_privacy_request(
             failed.append(
                 {
                     "message": f"Cannot transition status",
-                    "data": PrivacyRequestResponse(**privacy_request.__dict__),
+                    "data": PrivacyRequestResponse.from_orm(privacy_request),
                 }
             )
             continue
@@ -555,7 +555,7 @@ def review_privacy_request(
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
-                "data": PrivacyRequestResponse(**privacy_request.__dict__),
+                "data": PrivacyRequestResponse.from_orm(privacy_request),
             }
             failed.append(failure)
         else:

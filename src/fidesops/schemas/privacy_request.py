@@ -7,6 +7,7 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.policy import Policy as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
@@ -89,6 +90,7 @@ class PrivacyRequestResponse(BaseSchema):
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
     identity: Optional[Dict[str, str]]
+    policy: PolicySchema
 
     class Config:
         """Set orm_mode and use_enum_values"""
