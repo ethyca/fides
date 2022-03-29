@@ -1390,7 +1390,7 @@ You're not viewing the latest version.
 <p>Once you have created your resources you will need to keep them up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. </p>
 <p>The <code>scan</code> and <code>generate</code> commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. </p>
 <h1 id="working-with-a-database">Working With a Database</h1>
-<p>The <code>generate dataset</code> command can connect to a database and automatically generate resource YAML file based on the database schema.</p>
+<p>The <code>generate</code> command can connect to a database and automatically generate resource YAML file based on the database schema.</p>
 <h2 id="generating-a-dataset">Generating a Dataset</h2>
 <p>Given a database schema with a single <code>users</code> table as follows:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1406,10 +1406,10 @@ You're not viewing the latest version.
 <span class="o">(</span><span class="m">2</span> rows<span class="o">)</span>
 </code></pre></div>
 </td></tr></table>
-<p>We can invoke the <code>generate dataset</code> by providing a connection url for this database:
+<p>We can invoke the <code>generate</code> command by providing a connection url for this database:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
   postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
   fides_resources/flaskr_postgres_dataset.yml
 </code></pre></div>
@@ -1496,7 +1496,15 @@ The resulting file still requires annotating the dataset with data categories to
 <!-- TODO: Add a section for `annotate dataset` usage below -->
 
 <h2 id="scanning-the-dataset">Scanning the Dataset</h2>
-<p>The <code>scan dataset</code> command can then connect to your database and compare its schema to your already defined datasets. The command output confirms our database resource is covered fully!</p>
+<p>The <code>scan</code> command can then connect to your database and compare its schema to your already defined datasets:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan dataset db <span class="se">\</span>
+  postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
+  --manifest-dir fides_resources/flaskr_postgres_dataset.yml
+</code></pre></div>
+</td></tr></table></p>
+<p>The command output confirms our database resource is covered fully:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1509,9 +1517,9 @@ Successfully scanned the following datasets:
 
 Annotation coverage: <span class="m">100</span>%
 </code></pre></div>
-</td></tr></table>
+</td></tr></table></p>
 <h1 id="working-with-an-aws-account">Working With an AWS Account</h1>
-<p>The <code>generate system aws</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
+<p>The <code>generate</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
 <h2 id="providing-credentials">Providing Credentials</h2>
 <p>Authentication is managed through environment variable configuration defined by <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html">boto3</a>. </p>
 <p>We can define our credentials directly as environment variables:
@@ -1622,7 +1630,13 @@ Annotation coverage: <span class="m">100</span>%
 </code></pre></div>
 </td></tr></table></p>
 <h2 id="scanning-the-systems">Scanning the Systems</h2>
-<p>The <code>scan system aws</code> command can then connect to your AWS account and compare its resources to your already defined systems. The command output confirms our resources are covered fully!</p>
+<p>The <code>scan</code> command can then connect to your AWS account and compare its resources to your already defined systems:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan system aws <span class="se">\</span>
+  --manifest-dir fides_resources/aws_systems.yml
+</code></pre></div>
+</td></tr></table></p>
+<p>The command output confirms our resources are covered fully:
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1631,7 +1645,7 @@ Taxonomy successfully created.
 Scanned <span class="m">1</span> resource and all were found <span class="k">in</span> taxonomy.
 Resource coverage: <span class="m">100</span>%
 </code></pre></div>
-</td></tr></table>
+</td></tr></table></p>
 
               
             </article>

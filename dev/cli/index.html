@@ -1192,6 +1192,19 @@ You're not viewing the latest version.
     dataset
   </a>
   
+    <nav class="md-nav" aria-label="dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-db" class="md-nav__link">
+    db
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1266,6 +1279,19 @@ You're not viewing the latest version.
   <a href="#fidesctl-scan-dataset" class="md-nav__link">
     dataset
   </a>
+  
+    <nav class="md-nav" aria-label="dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-dataset-db" class="md-nav__link">
+    db
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1791,6 +1817,19 @@ You're not viewing the latest version.
     dataset
   </a>
   
+    <nav class="md-nav" aria-label="dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-db" class="md-nav__link">
+    db
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1865,6 +1904,19 @@ You're not viewing the latest version.
   <a href="#fidesctl-scan-dataset" class="md-nav__link">
     dataset
   </a>
+  
+    <nav class="md-nav" aria-label="dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-dataset-db" class="md-nav__link">
+    db
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2161,12 +2213,22 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 </code></pre></div>
 </td></tr></table>
 <h4 id="fidesctl-generate-dataset">fidesctl generate dataset</h4>
+<p>Generate fidesctl Dataset resources</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate dataset [OPTIONS] COMMAND [ARGS]...
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h5 id="fidesctl-generate-dataset-db">fidesctl generate dataset db</h5>
 <p>Connect to a database directly via a SQLAlchemy-style connection string and
 generate a dataset manifest file that consists of every schema/table/field.</p>
 <p>This is a one-time operation that does not track the state of the database.
 It will need to be run again if the database schema changes.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate dataset [OPTIONS] CONNECTION_STRING OUTPUT_FILENAME
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate dataset db [OPTIONS] CONNECTION_STRING OUTPUT_FILENAME
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
@@ -2274,6 +2336,16 @@ the validity of all manifest files.</p>
 </code></pre></div>
 </td></tr></table>
 <h4 id="fidesctl-scan-dataset">fidesctl scan dataset</h4>
+<p>Scan fidesctl Dataset resources</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset [OPTIONS] COMMAND [ARGS]...
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h5 id="fidesctl-scan-dataset-db">fidesctl scan dataset db</h5>
 <p>Connect to a database directly via a SQLAlchemy-style connection string and
 compare the database objects to existing datasets.</p>
 <p>If there are fields within the database that aren't listed and categorized
@@ -2281,7 +2353,7 @@ within one of the datasets, this counts as lacking coverage.</p>
 <p>Outputs missing fields and has a non-zero exit if coverage is
 under the stated threshold.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset [OPTIONS] CONNECTION_STRING
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset db [OPTIONS] CONNECTION_STRING
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>

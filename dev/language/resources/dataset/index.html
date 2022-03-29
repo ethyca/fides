@@ -1510,7 +1510,7 @@ You're not viewing the latest version.
 <p>At each level -- Dataset, collection, and field, you can assign one or more Data Categories and Data Qualifiers. The Categories and Qualifiers declared at each child level is additive, for example, if you declare a collection with category <code>user.derived</code>, and a field with category <code>user.provided.identifiable.name</code>, your dataset will contain both user-derived and user-provided name data.</p>
 </li>
 </ul>
-<p>While you can create Dataset objects by hand, you typically use the <code>fidesctl generate dataset</code>  command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.</p>
+<p>While you can create Dataset objects by hand, you typically use the <a href="../../../guides/generate_resources/">generate</a> command to create rudimentary Dataset manifest files that are based on your real-world databases. After you run the command, which creates the schema components, you add your Data Categories and Data Qualifiers to the manifest.</p>
 <p>You use your Datasets by adding them to Systems. A System can contain any number of Datasets, and a Dataset can be added to any number of Systems.</p>
 <p>Datasets cannot contain other Datasets.</p>
 <h2 id="object-structure">Object Structure</h2>
