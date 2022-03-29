@@ -99,8 +99,8 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl black pylint \
-			mypy xenon pytest-unit pytest-integration pytest-external
+check-all: build-local check-install fidesctl fidesctl-db-scan black \
+			pylint mypy xenon pytest-unit pytest-integration pytest-external
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
@@ -112,7 +112,7 @@ fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
 	
 fidesctl-db-scan:
-	@$(RUN_NO_DEPS) fidesctl scan db --coverage
+	@$(RUN) fidesctl scan dataset db "postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
 	@$(RUN_NO_DEPS) mypy

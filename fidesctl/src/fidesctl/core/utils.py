@@ -37,6 +37,7 @@ def get_db_engine(connection_string: str) -> Engine:
     """
     Use SQLAlchemy to create a DB engine.
     """
+    connection_string = "postgresql+psycopg2://" + connection_string
     try:
         engine = sqlalchemy.create_engine(connection_string)
     except Exception as err:
