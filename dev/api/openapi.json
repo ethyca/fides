@@ -259,6 +259,79 @@
         }
       }
     },
+    "/data_category/upsert": {
+      "post": {
+        "tags": [
+          "DataCategory"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_data_category_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_category"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 data_category(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 data_category(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/data_qualifier/": {
       "get": {
         "tags": [
@@ -497,6 +570,79 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_qualifier/upsert": {
+      "post": {
+        "tags": [
+          "DataQualifier"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_data_qualifier_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_qualifier"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 data_qualifier(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 data_qualifier(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
               }
             }
           },
@@ -767,6 +913,79 @@
         }
       }
     },
+    "/data_subject/upsert": {
+      "post": {
+        "tags": [
+          "DataSubject"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_data_subject_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_subject"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 data_subject(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 data_subject(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/data_use/": {
       "get": {
         "tags": [
@@ -1005,6 +1224,79 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data_use/upsert": {
+      "post": {
+        "tags": [
+          "DataUse"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_data_use_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "data_use"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 data_use(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 data_use(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
               }
             }
           },
@@ -1275,6 +1567,79 @@
         }
       }
     },
+    "/dataset/upsert": {
+      "post": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_dataset_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "dataset"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 dataset(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 dataset(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organization/": {
       "get": {
         "tags": [
@@ -1513,6 +1878,79 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/upsert": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_organization_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "organization"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 organization(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 organization(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
               }
             }
           },
@@ -1783,6 +2221,79 @@
         }
       }
     },
+    "/policy/upsert": {
+      "post": {
+        "tags": [
+          "Policy"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_policy_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "policy"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 policy(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 policy(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/registry/": {
       "get": {
         "tags": [
@@ -2021,6 +2532,79 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry/upsert": {
+      "post": {
+        "tags": [
+          "Registry"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_registry_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "registry"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 registry(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 registry(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
               }
             }
           },
@@ -2291,6 +2875,79 @@
         }
       }
     },
+    "/system/upsert": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_system_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "system"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 system(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 system(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/evaluation/": {
       "get": {
         "tags": [
@@ -2529,6 +3186,79 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/upsert": {
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "Upsert",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_evaluation_upsert_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string",
+              "default": "evaluation"
+            },
+            "name": "resource_type",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Resources",
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "Upserted 3 evaluation(s)",
+                  "inserted": 0,
+                  "updated": 3
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Upserted 3 evaluation(s)",
+                  "inserted": 1,
+                  "updated": 2
+                }
               }
             }
           },

@@ -2051,7 +2051,7 @@ You're not viewing the latest version.
 </code></pre></div>
 </td></tr></table>
 <h3 id="fidesctl-apply">fidesctl apply</h3>
-<p>Validates local manifest files and then sends them to the server to be persisted.</p>
+<p>Validate local manifest files and persist any changes via the API server.</p>
 <p><strong>Usage:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl apply [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div>
@@ -2061,9 +2061,9 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
-  --diff  Print the diff between the server&#39;s old and new states in Python
-          DeepDiff format
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Prevent the persistance of any changes.
+  --diff  Include any changes between server and local resources in the
+          command output
 
   --help  Show this message and exit.
 </code></pre></div>
@@ -2137,7 +2137,7 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
   -m, --message TEXT    A message that you can supply to describe the context
                         of this evaluation.
 
-  --dry                 Does not send changes to the server.
+  --dry                 Prevent the persistance of any changes.
   --help                Show this message and exit.
 </code></pre></div>
 </td></tr></table>
@@ -2161,7 +2161,7 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Prevent the persistance of any changes.
   --csv   Export using csv format
   --help  Show this message and exit.
 </code></pre></div>
@@ -2174,7 +2174,7 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 </td></tr></table>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Prevent the persistance of any changes.
   --help  Show this message and exit.
 </code></pre></div>
 </td></tr></table>
@@ -2186,7 +2186,7 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 </td></tr></table>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Prevent the persistance of any changes.
   --help  Show this message and exit.
 </code></pre></div>
 </td></tr></table>
@@ -2198,7 +2198,7 @@ either adjust your Privacy Declarations, Datasets, or Policies before trying aga
 </td></tr></table>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Does not send changes to the server.
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --dry   Prevent the persistance of any changes.
   --help  Show this message and exit.
 </code></pre></div>
 </td></tr></table>
