@@ -70,18 +70,9 @@ The fidesctl webserver will now be accessible at `localhost:8080`, you can test 
 
 ## Using the CLI
 
-Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command `fidesctl ping` to make sure that the CLI can talk to the webserver. The output should look something like this:
+Now that the database and webserver are running, you can verify that the database is reachable from the webserver.
 
-```txt
-Pinging http://fidesctl:8080/health...
-{
-    "data": {
-        "message": "Fidesctl API service is healthy!"
-    }
-}
-```
-
-Next is to verify that the database is reachable from the webserver. Run the command `fidesctl ls organizations` to verify that all is working. The output should look something like this:
+Run the command `fidesctl ls organizations` to verify that all is working. The output should look something like this:
 
 ```json
 [

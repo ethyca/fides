@@ -8,6 +8,7 @@ test_database_name = "fidesctl_test"
 
 [cli]
 server_url = "http://fidesctl:8080"
+analytics_id = "8104b5470e11c42c3146d715ebd082ef"
 
 [user]
 analytics_opt_out = false
