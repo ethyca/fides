@@ -1,8 +1,6 @@
 """Contains reusable utils for the CLI commands."""
 
-from http import server
 import json
-from pydoc import cli
 import sys
 from asyncio import run
 from datetime import datetime, timezone
@@ -15,16 +13,14 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsException
 from fideslog.sdk.python.utils import OPT_OUT_COPY
 
-import fidesctl
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import echo_red, check_response
 from fidesctl.core import api as _api
 
 
-def check_server(ctx: click.Context):
-    config = ctx.obj["CONFIG"]
-    healthcheck_url = config.cli.server_url + "/health"
-    version_url = config.cli.server_url + "/version"
+def check_server(cli_version: str, server_url: str):
+    healthcheck_url = server_url + "/health"
+    version_url = server_url + "/version"
     try:
         check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
@@ -32,8 +28,6 @@ def check_server(ctx: click.Context):
         raise
 
     server_version = check_response(_api.ping(version_url)).json()["data"]["version"]
-    # cli_version = fidesctl.__version__
-    cli_version = "1.3.0"
     if str(server_version) != str(cli_version):
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"

@@ -37,6 +37,7 @@ API_COMMANDS = [
     webserver,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
+VERSION = fidesctl.__version__
 
 
 @click.group(
@@ -44,7 +45,7 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
     invoke_without_command=True,
     name="fidesctl",
 )
-@click.version_option(version=fidesctl.__version__)
+@click.version_option(version=VERSION)
 @click.option(
     "--config-path",
     "-f",
@@ -85,7 +86,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in [
         command.name for command in API_COMMANDS if command.name != "webserver"
     ]:
-        check_server(ctx)
+        check_server(VERSION, config.cli.server_url)
 
     if ctx.invoked_subcommand != "init":  # init also handles this workflow
         check_and_update_analytics_config(ctx, config_path)
