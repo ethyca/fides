@@ -99,7 +99,7 @@ def apply(
                 echo_results("would update", resource_type, len(update_list))
                 continue
 
-        raw = handle_cli_response(
+        handle_cli_response(
             api.upsert(
                 headers=headers,
                 resource_type=resource_type,
@@ -109,9 +109,6 @@ def apply(
             verbose=False,
         )
 
-        response = loads(raw.content)
-
-        echo_results("created", resource_type, response["inserted"])
-        echo_results("updated", resource_type, response["updated"])
+        echo_results("applied", resource_type, len(resource_list))
 
     print("-" * 10)
