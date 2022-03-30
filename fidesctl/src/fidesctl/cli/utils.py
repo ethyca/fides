@@ -24,9 +24,9 @@ def check_server(cli_version: str, server_url: str) -> None:
     version_url = server_url + "/version"
     try:
         check_response(_api.ping(healthcheck_url))
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as err:
         echo_red("Connection failed, webserver is unreachable.")
-        raise
+        raise SystemExit(err)
 
     server_version = check_response(_api.ping(version_url)).json()["data"]["version"]
     if str(server_version) != str(cli_version):
