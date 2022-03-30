@@ -4,10 +4,11 @@ from os import getenv
 from platform import system
 
 import click
+import requests
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fidesctl
-from fidesctl.cli.utils import check_and_update_analytics_config
+from fidesctl.cli.utils import check_and_update_analytics_config, check_server
 from fidesctl.core.config import get_config
 
 from .annotate_commands import annotate
@@ -17,7 +18,7 @@ from .db_commands import database
 from .export_commands import export
 from .generate_commands import generate
 from .scan_commands import scan
-from .util_comands import init, ping, webserver
+from .util_comands import init, webserver
 from .view_commands import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -33,9 +34,9 @@ API_COMMANDS = [
     init,
     database,
     ls,
-    ping,
     webserver,
-] + LOCAL_COMMANDS
+]
+ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 
 
 @click.group(
@@ -71,15 +72,18 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     # If local_mode is enabled, don't add unsupported commands
     if not (local or config.cli.local_mode):
         config.cli.local_mode = False
-        # Ping the server here to check if the versions are matching
         for command in API_COMMANDS:
             cli.add_command(command)
     else:
         config.cli.local_mode = True
-    ctx.obj["CONFIG"] = config
 
+    ctx.obj["CONFIG"] = config
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
+
+    # Check the server health and version if an API command is invoked
+    if ctx.invoked_subcommand in [command.name for command in API_COMMANDS]:
+        check_server(ctx)
 
     if ctx.invoked_subcommand != "init":  # init also handles this workflow
         check_and_update_analytics_config(ctx, config_path)
@@ -100,5 +104,5 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 # This has to be done due to the dynamic way in which commands are added for the real CLI group
 cli_docs = cli
 
-for cli_command in API_COMMANDS:
+for cli_command in ALL_COMMANDS:
     cli_docs.add_command(cli_command)

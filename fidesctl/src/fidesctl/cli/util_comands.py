@@ -83,21 +83,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
-def ping(ctx: click.Context) -> None:
-    """
-    Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
-    """
-    config = ctx.obj["CONFIG"]
-    healthcheck_url = config.cli.server_url + "/health"
-    echo_green(f"Pinging {healthcheck_url}...")
-    try:
-        handle_cli_response(with_analytics(ctx, _api.ping, url=healthcheck_url))
-    except requests.exceptions.ConnectionError:
-        echo_red("Connection failed, webserver is unreachable.")
-
-
-@click.command()
-@click.pass_context
 def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server using Uvicorn on port 8080.

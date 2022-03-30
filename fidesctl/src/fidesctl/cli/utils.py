@@ -1,6 +1,8 @@
 """Contains reusable utils for the CLI commands."""
 
+from http import server
 import json
+from pydoc import cli
 import sys
 from asyncio import run
 from datetime import datetime, timezone
@@ -8,13 +10,34 @@ from os import getenv
 from typing import Any, Callable, Dict
 
 import click
+import requests
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsException
 from fideslog.sdk.python.utils import OPT_OUT_COPY
-from requests import Response
 
+import fidesctl
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import echo_red
+from fidesctl.core.utils import echo_red, check_response
+from fidesctl.core import api as _api
+
+
+def check_server(ctx: click.Context):
+    config = ctx.obj["CONFIG"]
+    healthcheck_url = config.cli.server_url + "/health"
+    version_url = config.cli.server_url + "/version"
+    try:
+        check_response(_api.ping(healthcheck_url))
+    except requests.exceptions.ConnectionError:
+        echo_red("Connection failed, webserver is unreachable.")
+        raise
+
+    server_version = check_response(_api.ping(version_url)).json()["data"]["version"]
+    # cli_version = fidesctl.__version__
+    cli_version = "1.3.0"
+    if str(server_version) != str(cli_version):
+        echo_red(
+            f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
+        )
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
@@ -24,7 +47,9 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     click.secho(json.dumps(dict_object, indent=2), fg=color)
 
 
-def handle_cli_response(response: Response, verbose: bool = True) -> Response:
+def handle_cli_response(
+    response: requests.Response, verbose: bool = True
+) -> requests.Response:
     """Viewable CLI response"""
     if response.status_code >= 200 and response.status_code <= 299:
         if verbose:
