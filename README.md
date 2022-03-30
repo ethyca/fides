@@ -19,69 +19,32 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ## :rocket: Quick Start 
 
-1. Get running with fidesctl!
+1. Getting fidesctl set up on your machine
 
     <details>
-
-    This will spin up the entire project and open a shell within the `fidesctl` container. Once you see the `fidesctl#` prompt (takes ~3 minutes the first time), you know you're ready to go:
-
-    <summary>Run <code>make cli</code></summary>
-
-      ```bash
-      ~/git/fides% make cli
-      Build the images required in the docker-compose file...
-      ...
-      Building fidesapi
-      ...
-      Building fidesctl
-      ...
-      Building docs
-      ...
-      root@1a742083cedf:/fides/fidesctl#
-      ```
-
+    This will clone the `fidesctl` repository to your machine
+    <summary>Run <code>git clone https://github.com/ethyca/fides.git</code></summary>
     </details>
 
     <details>
-    This builds the required images, spins up the database, and runs the initialization scripts.
-
-    <summary>Run <code>fidesctl db init</code></summary>
-
-      ```bash
-      ~/git/fides% fidesctl db init
-      INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
-      INFO  [alembic.runtime.migration] Will assume transactional DDL.
-      ```
-
+    This will move you into the fidesctl package directory of the fides repo.
+    <summary>Run <code>cd fides/fidesctl</code></summary>
     </details>
 
     <details>
-
-    This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
-
-    <summary>Run <code>fidesctl ping</code></summary>
-
-      ```bash
-      root@796cfde906f1:/fides/fidesctl# fidesctl ping
-      Pinging http://fidesctl:8080/health...
-      {
-        "data": {
-          "message": "Fides service is healthy!"
-        }
-      }
-      ```
-
+    This will install the local version of the fidesctl package.
+    <summary>Run <code>pip install -e .</code></summary>
     </details>
 
 
-2. Use the <code>evaluate</code> command to see if this project's demo analytics and demo marketing systems are compliant with your privacy policy as code:
+2. Use the <code>evaluate</code> command to see if this project's own fides annotations comply with our policies. 
     <details>
 
-    <summary>Run <code>fidesctl evaluate demo_resources/</code></summary>
+    <summary>Run <code>fidesctl --local evaluate</code></summary>
 
       ```bash
-      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-      Loading resource manifests from: demo_resources
+      root@fa175a43c077:/fides/fidesctl# fidesctl --local evaluate
+      Loading resource manifests from: .fides/
       Taxonomy successfully created.
       ----------
       Processing registry resources...
@@ -107,11 +70,11 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
       Loading resource manifests from: demo_resources
       Taxonomy successfully created.
       Evaluating the following policies:
-      demo_privacy_policy
+      fidesctl_policy
+      data_sharing_policy
       ----------
       Checking for missing resources...
       Executing evaluations...
-      Sending the evaluation results to the server...
       Evaluation passed!
       ```
 
@@ -119,7 +82,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
 
-3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
+3. Now, take a closer look at `fidesctl/.fides/policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
     <details>
       <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
 
