@@ -71,6 +71,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     # If local_mode is enabled, don't add unsupported commands
     if not (local or config.cli.local_mode):
         config.cli.local_mode = False
+        # Ping the server here to check if the versions are matching
         for command in API_COMMANDS:
             cli.add_command(command)
     else:
