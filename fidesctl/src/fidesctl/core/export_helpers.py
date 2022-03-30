@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple, Set
 
 import pandas as pd
 
-from fideslang.models import DataSubjectRights, DataSubjectRightsEnum, Taxonomy
+from fideslang.models import DataSubjectRightsEnum, Taxonomy
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
 
@@ -136,8 +136,8 @@ def get_formatted_data_use(
     """
     This function retrieves the data use from the server
     and formats the results, returning the necessary values
-    as a dict. With multiple types possible, some introspection
-    is done to handle each accordingly.
+    as a dict. Formatting differences exist due to various
+    types allowed across attributes.
     """
 
     data_use = get_server_resource(url, "data_use", data_use_fides_key, headers)
@@ -180,7 +180,11 @@ def get_formatted_data_subjects(
     """
     This function retrieves the data subjects from the server
     and formats the results, returning the necessary values
-    as a list of dicts
+    as a list of dicts.
+
+    rights_available is treated differently due to the
+    different strategy options available in returning
+    the available data subject rights.
     """
 
     data_subjects = get_server_resources(
@@ -230,7 +234,7 @@ def get_formatted_data_subjects(
     return formatted_data_subjects_list
 
 
-def calculate_data_subject_rights(rights: DataSubjectRights) -> str:
+def calculate_data_subject_rights(rights: Dict) -> str:
     """
     Calculate and format the data subject individual rights.
 
