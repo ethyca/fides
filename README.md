@@ -19,7 +19,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ## :rocket: Quick Start 
 
-1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands:
+1. Get running with fidesctl!
 
     <details>
 
