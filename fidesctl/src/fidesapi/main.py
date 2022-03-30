@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request, Response
 from loguru import logger as log
 from uvicorn import Config, Server
 
+import fidesctl
 from fidesapi import view
 from fidesapi.database import database
 from fidesapi.routes import crud, visualize
@@ -71,6 +72,15 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
     return {"data": {"message": "Fidesctl API service is healthy!"}}
+
+
+@app.get("/version", tags=["Version"])
+async def version() -> Dict:
+    "Return the version of the fidesctl app that is running."
+    version = fidesctl.__version__
+    return {
+        "data": {"message": f"Fidesctl version: {version}", "version": str(version)}
+    }
 
 
 class DBActions(str, Enum):
