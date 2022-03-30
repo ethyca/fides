@@ -5,7 +5,7 @@
 ####################
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
-TEST_CONFIG_PATH := tests/test_config.toml
+WITH_TEST_CONFIG := -f tests/test_config.toml
 
 # Image Names & Tags
 IMAGE_NAME := fidesctl
@@ -105,14 +105,14 @@ check-all: build-local check-install fidesctl fidesctl-db-scan black \
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl -f ${TEST_CONFIG_PATH}
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
-	
+	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
+
 fidesctl-db-scan:
-	@$(RUN) fidesctl scan dataset db "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
