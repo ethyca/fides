@@ -18,7 +18,8 @@ from fidesctl.core.utils import echo_red, check_response
 from fidesctl.core import api as _api
 
 
-def check_server(cli_version: str, server_url: str):
+def check_server(cli_version: str, server_url: str) -> None:
+    "Runs a health check and a version check against the server."
     healthcheck_url = server_url + "/health"
     version_url = server_url + "/version"
     try:

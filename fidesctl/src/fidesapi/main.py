@@ -77,9 +77,12 @@ async def health() -> Dict:
 @app.get("/version", tags=["Version"])
 async def version() -> Dict:
     "Return the version of the fidesctl app that is running."
-    version = fidesctl.__version__
+    server_version = str(fidesctl.__version__)
     return {
-        "data": {"message": f"Fidesctl version: {version}", "version": str(version)}
+        "data": {
+            "message": f"Fidesctl version: {server_version}",
+            "version": server_version,
+        }
     }
 
 

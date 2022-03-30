@@ -3,11 +3,9 @@ import os
 
 import click
 from fideslog.sdk.python.utils import OPT_OUT_COPY
-import requests
 import toml
 
-from fidesctl.cli.utils import handle_cli_response, with_analytics
-from fidesctl.core import api as _api
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core.utils import echo_green, echo_red
 
 
