@@ -89,7 +89,7 @@ def export_datamap_to_excel(
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
         "system.privacy_declaration.data_subjects",
-        "dataset.data_categories",
+        "unioned_data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
         "third_country_combined",
@@ -181,3 +181,42 @@ def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
 def remove_duplicates_from_comma_separated_column(comma_separated_string: str) -> str:
     "transform the row using a set to remove duplcation"
     return ", ".join(set(comma_separated_string.split(", ")))
+
+
+def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Data categories on the system need to be applied to the entire joined dataset when
+    joined together. These need to be surfaced in a way that
+    """
+
+    # isolate the system data categories into a new dataframe and create a common column
+    systems_categories_df = joined_df.drop(
+        ["dataset.data_categories", "dataset.retention"], axis=1
+    ).drop_duplicates()
+    systems_categories_df["unioned_data_categories"] = systems_categories_df[
+        "system.privacy_declaration.data_categories"
+    ]
+    systems_categories_df["dataset.retention"] = "N/A"
+
+    # isolate the dataset data categories into a new dataframe and create a common column
+    datasets_categories_df = joined_df.drop(
+        ["system.privacy_declaration.data_categories"], axis=1
+    ).drop_duplicates()
+
+    datasets_categories_df = datasets_categories_df[
+        datasets_categories_df["dataset.name"] != "N/A"
+    ]
+
+    datasets_categories_df["unioned_data_categories"] = datasets_categories_df[
+        "dataset.data_categories"
+    ]
+
+    # union the two dataframes together to return all data categories
+    return pd.concat(
+        [
+            systems_categories_df.drop(
+                ["system.privacy_declaration.data_categories"], axis="columns"
+            ),
+            datasets_categories_df.drop(["dataset.data_categories"], axis="columns"),
+        ]
+    )
