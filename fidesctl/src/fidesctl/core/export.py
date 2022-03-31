@@ -13,6 +13,7 @@ from fidesctl.core.export_helpers import (
     export_to_csv,
     export_datamap_to_excel,
     generate_data_category_rows,
+    get_formatted_data_subjects,
     get_formatted_data_use,
     remove_duplicates_from_comma_separated_column,
     get_datamap_fides_keys,
@@ -146,18 +147,23 @@ def generate_system_records(
             "system.privacy_declaration.data_use.legal_basis",
             "system.privacy_declaration.data_use.special_category",
             "system.privacy_declaration.data_use.recipients",
-            "system.privacy_declaration.data_subjects",
+            "system.privacy_declaration.data_use.legitimate_interest",
+            "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+            "system.privacy_declaration.data_subjects.name",
+            "system.privacy_declaration.data_subjects.rights_available",
+            "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
             "system.privacy_declaration.data_qualifier",
             "dataset.fides_key",
         )
     ]
 
     for system in server_system_list:
-
         for declaration in system.privacy_declarations:
             data_use = get_formatted_data_use(url, headers, declaration.data_use)
             data_categories = declaration.data_categories or []
-            data_subjects = declaration.data_subjects or []
+            data_subjects = get_formatted_data_subjects(
+                url, headers, declaration.data_subjects
+            )
             dataset_references = declaration.dataset_references or ["N/A"]
             third_country_list = ", ".join(system.third_country_transfers or [])
             cartesian_product_of_declaration = [
@@ -173,7 +179,11 @@ def generate_system_records(
                     data_use["legal_basis"],
                     data_use["special_category"],
                     data_use["recipients"],
-                    subject,
+                    data_use["legitimate_interest"],
+                    data_use["legitimate_interest_impact_assessment"],
+                    subject["name"],
+                    subject["rights_available"],
+                    subject["automated_decisions_or_profiling"],
                     declaration.data_qualifier,
                     dataset_reference,
                 )

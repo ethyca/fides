@@ -1,15 +1,15 @@
 import csv
 from datetime import datetime
+from enum import Enum
 import shutil
 
 from typing import Dict, List, Tuple, Set
 
 import pandas as pd
 
-from fidesctl.core.api_helpers import get_server_resource
+from fideslang.models import DataSubjectRightsEnum, Taxonomy
+from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
-
-from fideslang.models import Taxonomy
 
 
 DATAMAP_TEMPLATE = "src/fidesctl/templates/fides_datamap_template.xlsx"
@@ -88,7 +88,7 @@ def export_datamap_to_excel(
         "system.administrating_department",
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
-        "system.privacy_declaration.data_subjects",
+        "system.privacy_declaration.data_subjects.name",
         "unioned_data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
@@ -99,6 +99,11 @@ def export_datamap_to_excel(
         "system.data_responsibility_title",
         "system.privacy_declaration.data_use.legal_basis",
         "system.privacy_declaration.data_use.special_category",
+        "system.privacy_declaration.data_use.legitimate_interest",
+        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+        "system.privacy_declaration.data_subjects.rights_available",
+        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+        "dataset.name",
     ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(
@@ -131,34 +136,128 @@ def get_formatted_data_use(
     """
     This function retrieves the data use from the server
     and formats the results, returning the necessary values
-    as a dict
+    as a dict. Formatting differences exist due to various
+    types allowed across attributes.
     """
 
     data_use = get_server_resource(url, "data_use", data_use_fides_key, headers)
 
     formatted_data_use = {
         "name": data_use.name,
-        "legal_basis": "N/A",
-        "special_category": "N/A",
-        "recipients": "N/A",
     }
 
-    try:
-        formatted_data_use["legal_basis"] = data_use.legal_basis.value
-    except AttributeError:
-        echo_red("Legal Basis undefined for specified Data Use, setting as N/A.")
+    for attribute in [
+        "legal_basis",
+        "special_category",
+        "recipients",
+        "legitimate_interest_impact_assessment",
+        "legitimate_interest",
+    ]:
+        try:
+            attribute_value = getattr(data_use, attribute)
+            if attribute_value is None:
+                attribute_value = "N/A"
+            elif isinstance(attribute_value, Enum):
+                attribute_value = attribute_value.value
+            elif isinstance(attribute_value, list):
+                attribute_value = ", ".join(attribute_value)
+            elif attribute == "legitimate_interest":
+                if attribute_value is True:
+                    attribute_value = getattr(data_use, "name")
+                else:
+                    attribute_value = "N/A"
 
-    try:
-        formatted_data_use["special_category"] = data_use.special_category.value
-    except AttributeError:
-        echo_red("Special Category undefined for specified Data Use, setting as N/A.")
-
-    try:
-        formatted_data_use["recipients"] = ", ".join(data_use.recipients)
-    except TypeError:
-        echo_red("Recipients undefined for specified Data Use, setting as N/A")
+            formatted_data_use[attribute] = attribute_value
+        except AttributeError:
+            echo_red(f"{attribute} undefined for specified Data Use, setting as N/A.")
 
     return formatted_data_use
+
+
+def get_formatted_data_subjects(
+    url: str, headers: Dict[str, str], data_subjects_fides_keys: List[str]
+) -> List[Dict[str, str]]:
+    """
+    This function retrieves the data subjects from the server
+    and formats the results, returning the necessary values
+    as a list of dicts.
+
+    rights_available is treated differently due to the
+    different strategy options available in returning
+    the available data subject rights.
+    """
+
+    data_subjects = get_server_resources(
+        url, "data_subject", data_subjects_fides_keys, headers
+    )
+
+    formatted_data_subject_attributes_list = [
+        "name",
+        "rights_available",
+        "automated_decisions_or_profiling",
+    ]
+
+    formatted_data_subjects_list = []  # empty list to populate and return
+
+    for data_subject in data_subjects:
+        data_subject_dict = data_subject.dict()
+        formatted_data_subject = dict(
+            zip(
+                formatted_data_subject_attributes_list,
+                [
+                    "N/A",
+                ]
+                * len(formatted_data_subject_attributes_list),
+            )
+        )
+
+        # calculate and format data subject rights as applicable
+        if data_subject_dict["rights"]:
+            data_subject_dict["rights_available"] = calculate_data_subject_rights(
+                data_subject_dict["rights"]
+            )
+        else:
+            data_subject_dict["rights_available"] = "No data subject rights listed"
+
+        for attribute in formatted_data_subject_attributes_list:
+            try:
+                formatted_data_subject[attribute] = (
+                    data_subject_dict[attribute] or "N/A"
+                )
+            except AttributeError:
+                echo_red(
+                    f"{attribute} undefined for specified Data Subject, setting as N/A."
+                )
+
+        formatted_data_subjects_list.append(formatted_data_subject)
+
+    return formatted_data_subjects_list
+
+
+def calculate_data_subject_rights(rights: Dict) -> str:
+    """
+    Calculate and format the data subject individual rights.
+
+    Loads all available rights
+    """
+    all_rights = [right.value for right in DataSubjectRightsEnum]
+    strategy: str = rights["strategy"].value
+    data_subject_rights: str
+    if strategy == "ALL":
+        data_subject_rights = ", ".join(all_rights)
+    elif strategy == "INCLUDE":
+        included_rights = [right.value for right in rights["values"]]
+        data_subject_rights = ", ".join(included_rights)
+    elif strategy == "EXCLUDE":
+        excluded_rights = [right.value for right in rights["values"]]
+        included_rights = [
+            right for right in all_rights if right not in excluded_rights
+        ]
+        data_subject_rights = ", ".join(included_rights)
+    elif strategy == "NONE":
+        data_subject_rights = "No data subject rights listed"
+
+    return data_subject_rights
 
 
 def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
