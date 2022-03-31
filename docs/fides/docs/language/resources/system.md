@@ -52,6 +52,8 @@ An optional array of contact information if a Joint Controller exists. This info
 
 The array of declarations describing the types of data in your system. This is a list of the privcy attributes (`data_category`, `data_use`, `data_subject`, and `data_qualifier`) for each of your systems.
 
+If a dataset is referenced as part of the system, all applicable data categories set on the dataset are treated as part of the system.
+
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
 The fides key of the [Organization](/fides/language/resources/organization/) to which this System belongs.
