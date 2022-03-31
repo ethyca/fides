@@ -32,7 +32,7 @@ nav:
   - How-To Guides: 
       - Generating Resources: guides/generate_resources.md
       - Example Policies: guides/policies.md
-      - Extending Data Use: guides/extending_data_use.md
+      - Extending the Taxonomy: guides/extending_taxonomy.md
   - CI/CD Integration: 
       - Overview: cicd/overview.md
       - Example Integrations: cicd/examples.md

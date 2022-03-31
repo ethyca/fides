@@ -14,19 +14,19 @@ A string token that uniquely identifies this Data Use. The value is a dot-separa
 
 The final element (`this_data_use`) may only contain alphanumeric characters and underscores (`[A-Za-z0-9_.-]`). The dot character is reserved as a separator.
 
-**name**<span class="spacer"/>_string_
+**name**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A UI-friendly label for the Data Use.
 
-**description**<span class="spacer"/>_string_
+**description**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 A human-readable description of the Data Use.
 
-**parent_key**<span class="spacer"/>_string_<span class="spacer"/>
+**parent_key**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_<span class="spacer"/>
 
 The fides key of the the Data Use's parent.
 
-**legal_basis**<span class="spacer"/>_enum_<span class="spacer"/>
+**legal_basis**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_<span class="spacer"/>
 
 The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:
 
@@ -37,7 +37,7 @@ The legal basis category of which the data use falls under. This field is used a
 * `Public Interest`
 * `Legitimate Interest`
 
-**special_category**<span class="spacer"/>_enum_<span class="spacer"/>
+**special_category**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_enum_
 
 The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:
 
@@ -51,28 +51,28 @@ The special category for processing of which the data use falls under. This fiel
 * `Medical`
 * `Public Health Interest`
 
-**recipent**<span class="spacer"/>_string_<span class="spacer"/>
+**recipent**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_
 
 An array of recipients is applied here when sharing personal data outside of your organization (e.g. Internal Revenue Service, HMRC, etc.)
 
-**legitimate_interest**<span class="spacer">boolean<span class="spacer">default: `False`
+**legitimate_interest**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;boolean<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `False`
 
-A boolean value representing whether or not the legal basis is a `Legitimate Interest`. This is validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
+A boolean value representing whether the legal basis is a `Legitimate Interest`. This is validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.
 
-**legitimate_interest_impact_assessment**<span class="spacer">_url_<span class="spacer">
+**legitimate_interest_impact_assessment**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_url_
 
 A url to the legitimate interest impact assessment. Can be any valid url (e.g. http, file, etc.)
 
-**organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
+**organization_fides_key**<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
 The fides key of the organization to which this Data Use belongs.
 
-!!! Note "Extensibility and Interopability"
+!!! Note "Extensibility and Interoperability"
     Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
 
-    You can [extend the taxonomy](/fides/guides/extending_data_use) to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
+    You can [extend the taxonomy](./../../guides/extending_taxonomy.md) to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interoperability inside and outside your organization.
 
-    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues)
+    If you have suggestions for core categories that should ship with the taxonomy, please submit your requests [here](https://github.com/ethyca/fides/issues).
 
 ## Top Level Data Uses
 
