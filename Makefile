@@ -112,7 +112,9 @@ fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
 
 fidesctl-db-scan:
-	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+	@docker compose up -d $(IMAGE_NAME)
+	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
+	"postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
