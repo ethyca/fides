@@ -4,7 +4,6 @@ from os import getenv
 from platform import system
 
 import click
-import requests
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fidesctl
@@ -18,23 +17,23 @@ from .db_commands import database
 from .export_commands import export
 from .generate_commands import generate
 from .scan_commands import scan
-from .util_comands import init, webserver
+from .util_comands import init, status, webserver
 from .view_commands import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, parse, view]
+LOCAL_COMMANDS = [evaluate, parse, view, webserver]
 API_COMMANDS = [
     annotate,
     apply,
+    database,
     delete,
     export,
     generate,
-    scan,
     get,
     init,
-    database,
     ls,
-    webserver,
+    scan,
+    status,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 VERSION = fidesctl.__version__
@@ -83,9 +82,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         click.echo(cli.get_help(ctx))
 
     # Check the server health and version if an API command is invoked
-    if ctx.invoked_subcommand in [
-        command.name for command in API_COMMANDS if command.name != "webserver"
-    ]:
+    if ctx.invoked_subcommand in [command.name for command in API_COMMANDS]:
         check_server(VERSION, config.cli.server_url)
 
     if ctx.invoked_subcommand != "init":  # init also handles this workflow

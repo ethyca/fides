@@ -71,16 +71,10 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 @app.get("/health", tags=["Health"])
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {"data": {"message": "Fidesctl API service is healthy!"}}
-
-
-@app.get("/version", tags=["Version"])
-async def version() -> Dict:
-    "Return the version of the fidesctl app that is running."
     server_version = str(fidesctl.__version__)
     return {
         "data": {
-            "message": f"Fidesctl version: {server_version}",
+            "message": "Fidesctl API service is healthy!",
             "version": server_version,
         }
     }

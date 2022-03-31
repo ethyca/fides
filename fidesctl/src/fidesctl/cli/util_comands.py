@@ -5,7 +5,8 @@ import click
 from fideslog.sdk.python.utils import OPT_OUT_COPY
 import toml
 
-from fidesctl.cli.utils import with_analytics
+import fidesctl
+from fidesctl.cli.utils import with_analytics, check_server
 from fidesctl.core.utils import echo_green, echo_red
 
 
@@ -77,6 +78,20 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     separate()
 
     echo_green("Fidesctl initialization complete.")
+
+
+@click.command()
+@click.pass_context
+def status(ctx: click.Context) -> None:
+    """
+    Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
+    """
+    config = ctx.obj["CONFIG"]
+    cli_version = fidesctl.__version__
+    server_url = config.cli.server_url
+    echo_green("Getting server status...")
+    check_server(cli_version, server_url)
+    echo_green("Server is reachable and the client/server application versions match.")
 
 
 @click.command()
