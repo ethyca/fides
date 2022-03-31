@@ -2,7 +2,6 @@ import importlib
 from unittest.mock import patch
 
 import pytest
-import requests
 
 import fidesctl.cli.utils as utils
 
@@ -10,7 +9,7 @@ import fidesctl.cli.utils as utils
 @pytest.mark.unit
 def test_check_server_bad_ping():
     "Check for an exception if the server isn't up."
-    with pytest.raises(requests.exceptions.ConnectionError):
+    with pytest.raises(SystemExit):
         utils.check_server("foo", "http://fake_address:8080")
 
 
