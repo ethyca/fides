@@ -92,6 +92,12 @@ dataset:
           - name: updated_at
             description: "The timestamp of when the row was last updated"
 
+          - name: rights
+            description: "JSON structure containing a strategy and optional values for detailing data subject rights available"
+
+          - name: automated_decisions_or_profiling
+            description: "Boolean value representing if automated decisions or profiling is used for the data subject."
+
       - name: public.data_uses
         description: "Fides Generated Description for Table: public.data_uses"
         fields:
@@ -118,6 +124,21 @@ dataset:
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+
+          - name: legal_basis
+            description: "The legal basis for processing personal data as defined by Article 6 of the GDPR"
+
+          - name: special_category
+            description: "The special category as defined by Article 9 of the GDPR"
+
+          - name: recipients
+            description: "An array of recipients of the intended data use."
+
+          - name: legitimate_interest
+            description: "Boolean value denoting whether or not the data use is marked as a legitimate interest"
+
+          - name: legitimate_interest_impact_assessment
+            description: "A url pointing to a legitimate interest impact assessment"
 
       - name: public.datasets
         description: "Fides Generated Description for Table: public.datasets"
@@ -148,7 +169,7 @@ dataset:
 
           - name: organization_fides_key
             description: "Fides Generated Description for Column: organization_fides_key"
-          
+
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
             data_categories:
