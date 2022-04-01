@@ -308,8 +308,8 @@ def test_create_and_process_access_request_mariadb(
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_saas(
     trigger_webhook_mock,
-    connection_config_mailchimp,
-    dataset_config_mailchimp,
+    mailchimp_connection_config,
+    mailchimp_dataset_config,
     db,
     cache,
     policy,
@@ -347,8 +347,8 @@ def test_create_and_process_access_request_saas(
 @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_erasure_request_saas(
     trigger_webhook_mock,
-    connection_config_mailchimp,
-    dataset_config_mailchimp,
+    mailchimp_connection_config,
+    mailchimp_dataset_config,
     db,
     cache,
     erasure_policy_hmac,
@@ -365,7 +365,7 @@ def test_create_and_process_erasure_request_saas(
 
     pr = get_privacy_request_results(db, erasure_policy_hmac, cache, data)
 
-    connector = SaaSConnector(connection_config_mailchimp)
+    connector = SaaSConnector(mailchimp_connection_config)
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET, path="/3.0/search-members", query_params={"query": mailchimp_identity_email}
     )

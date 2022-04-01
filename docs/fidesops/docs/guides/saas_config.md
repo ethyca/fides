@@ -191,7 +191,7 @@ This is where we define how we are going to access and update each collection in
     - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
     - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
 
-## Request params in more detail
+## Param values in more detail
 The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
 
 ```yaml

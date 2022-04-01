@@ -359,14 +359,14 @@ class TestValidateDataset:
     def test_validate_saas_dataset_invalid_traversal(
         self,
         db,
-        connection_config_saas_example_with_invalid_saas_config,
-        saas_datasets,
+        saas_example_connection_config_with_invalid_saas_config,
+        saas_example_dataset,
         api_client: TestClient,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASET_VALIDATE
         path_params = {
-            "connection_key": connection_config_saas_example_with_invalid_saas_config.key
+            "connection_key": saas_example_connection_config_with_invalid_saas_config.key
         }
         validate_dataset_url = path.format(**path_params)
 
@@ -374,7 +374,7 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url,
             headers=auth_header,
-            json=saas_datasets["saas_example"],
+            json=saas_example_dataset,
         )
         assert response.status_code == 200
 
@@ -669,19 +669,19 @@ class TestPutDatasets:
     @pytest.mark.unit_saas
     def test_patch_datasets_missing_saas_config(
         self,
-        connection_config_saas_example_without_saas_config,
-        saas_datasets,
+        saas_example_connection_config_without_saas_config,
+        saas_example_dataset,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas_example_without_saas_config.key}
+        path_params = {"connection_key": saas_example_connection_config_without_saas_config.key}
         datasets_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
-            datasets_url, headers=auth_header, json=[saas_datasets["saas_example"]]
+            datasets_url, headers=auth_header, json=[saas_example_dataset]
         )
         assert response.status_code == 200
 
@@ -690,24 +690,24 @@ class TestPutDatasets:
         assert len(response_body["failed"]) == 1
         assert (
             response_body["failed"][0]["message"]
-            == f"Connection config '{connection_config_saas_example_without_saas_config.key}' "
+            == f"Connection config '{saas_example_connection_config_without_saas_config.key}' "
             "must have a SaaS config before validating or adding a dataset"
         )
 
     @pytest.mark.unit_saas
     def test_patch_datasets_extra_reference(
         self,
-        connection_config_saas_example,
-        saas_datasets,
+        saas_example_connection_config,
+        saas_example_dataset,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas_example.key}
+        path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = saas_datasets["saas_example"]
+        invalid_dataset = saas_example_dataset
         invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "references": [
                 {
@@ -736,17 +736,17 @@ class TestPutDatasets:
     @pytest.mark.unit_saas
     def test_patch_datasets_extra_identity(
         self,
-        connection_config_saas_example,
-        saas_datasets,
+        saas_example_connection_config,
+        saas_example_dataset,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas_example.key}
+        path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = saas_datasets["saas_example"]
+        invalid_dataset = saas_example_dataset
         invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "identity": "email"
         }
@@ -769,17 +769,17 @@ class TestPutDatasets:
     @pytest.mark.unit_saas
     def test_patch_datasets_fides_key_mismatch(
         self,
-        connection_config_saas_example,
-        saas_datasets,
+        saas_example_connection_config,
+        saas_example_dataset,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": connection_config_saas_example.key}
+        path_params = {"connection_key": saas_example_connection_config.key}
         datasets_url = path.format(**path_params)
 
-        invalid_dataset = saas_datasets["saas_example"]
+        invalid_dataset = saas_example_dataset
         invalid_dataset["fides_key"] = "different_key"
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
