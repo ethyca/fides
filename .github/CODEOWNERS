@@ -1,1 +1,2 @@
-
+# Set the fidesctl core team as the default codeowners
+* @ethyca/fides-control
