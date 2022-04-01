@@ -1,7 +1,8 @@
 """This module defines the settings for everything related to the CLI."""
+from typing import Dict, Optional
 
 from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_CLI
-from pydantic import validator
+from pydantic import root_validator, validator, AnyHttpUrl
 
 from .fides_settings import FidesSettings
 
@@ -12,15 +13,30 @@ class CLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
     local_mode: bool = False
-    server_url: str = "http://localhost:8080"
+    server_host: AnyHttpUrl = "http://localhost"
+    server_port: int = 8080
+    server_url: Optional[AnyHttpUrl]
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
+
+    @root_validator(skip_on_failure=True)
+    def get_database_url(cls: FidesSettings, values: Dict) -> Dict:
+        """
+        Create the server_url.
+
+        This needs to be set as a root validator,
+        otherwise the type errors gets suppressed.
+        """
+        values["server_url"] = "{}:{}".format(
+            values["server_host"],
+            values["server_port"],
+        )
+        return values
 
     @validator("analytics_id", always=True)
     def ensure_not_empty(cls, value: str) -> str:
         """
         Validate that the `analytics_id` is not `""`.
         """
-
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
 
     class Config:

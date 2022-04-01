@@ -4,12 +4,11 @@ database_password = "fidesctl"
 database_host = "fidesctl-db"
 database_port = "5432"
 database_name = "fidesctl"
-
 test_database_name = "fidesctl_test"
 
 [cli]
-# Decompose this
-server_url = "http://fidesctl:8080"
+server_host = "http://fidesctl"
+server_port = "8080"
 
 [user]
 analytics_opt_out = false
