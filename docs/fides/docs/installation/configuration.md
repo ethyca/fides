@@ -56,8 +56,8 @@ To better describe the various configuration options, the following tables descr
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
     | local_mode | Boolean | False | When set to `True`, forbids the fidesctl CLI from making calls to the fidesctl webserver. |
-    | server_host | String | "" | The base URL of the fidesctl webserver endpoints, in `<scheme>://<host>` format. |
-    | server_port | String | "" | The optional port of the fidesctl webserver, in `<port>` format. |
+    | server_host | String | http://localhost | The base URL of the fidesctl webserver endpoints, in `<scheme>://<host>` format. |
+    | server_port | Integer | "" | The optional port of the fidesctl webserver, in `<port>` format. |
     | analytics_id | String | "" | A fully anonymized unique identifier for the `fidesctl` CLI instance. |
 
 === "User Section"
