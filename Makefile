@@ -67,7 +67,7 @@ api: build-local
 cli: build-local
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) /bin/bash
+	@$(RUN_NO_DEPS) /bin/bash
 	@make teardown
 
 .PHONY: cli-integration
@@ -113,7 +113,7 @@ fidesctl:
 
 fidesctl-db-scan:
 	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
 	"postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
