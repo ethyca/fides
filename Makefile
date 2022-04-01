@@ -25,6 +25,7 @@ ANALYTICS_ID_OVERRIDE = -e FIDESCTL__CLI__ANALYTICS_ID
 # Run in Compose
 RUN = docker compose run --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
 RUN_NO_DEPS = docker compose run --no-deps --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
+START_APP = docker compose up -d $(IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -53,21 +54,21 @@ help:
 .PHONY: reset-db
 reset-db: build-local
 	@echo "Reset the database..."
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@$(RUN) fidesctl db reset -y
 	@make teardown
 
 .PHONY: api
 api: build-local
 	@echo "Spinning up the webserver..."
-	@docker compose up $(IMAGE_NAME)
+	@$(START_APP)
 	@make teardown
 
 .PHONY: cli
 cli: build-local
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN_NO_DEPS) /bin/bash
+	@$(START_APP)
+	@$(RUN) /bin/bash
 	@make teardown
 
 .PHONY: cli-integration
@@ -112,8 +113,8 @@ fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
 
 fidesctl-db-scan:
-	@docker compose up -d $(IMAGE_NAME)
-	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
+	@$(START_APP)
+	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
 	"postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
