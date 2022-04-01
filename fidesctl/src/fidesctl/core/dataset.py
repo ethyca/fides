@@ -290,7 +290,9 @@ def scan_dataset_db(
         url=url, headers=headers, exclude_datasets=manifest_datasets
     )
 
-    dataset_keys = [dataset.fides_key for dataset in manifest_datasets + server_datasets]
+    dataset_keys = [
+        dataset.fides_key for dataset in manifest_datasets + server_datasets
+    ]
     print(
         "Loaded the following dataset manifests:\n\t{}".format(
             "\t\n".join(dataset_keys)
