@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Dict, List, Optional
-from xmlrpc.client import boolean
 
 from pydantic import root_validator, validator, BaseModel, Field, AnyUrl, HttpUrl
 

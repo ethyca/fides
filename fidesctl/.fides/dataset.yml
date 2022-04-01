@@ -352,6 +352,9 @@ dataset:
             - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
 
+          - name: data_protection_impact_assessment
+            description: "Properties identifying if a DPIA is required, the status of it, and a link if applicable."
+
           - name: created_at
             description: "The timestamp of when the row was created"
 

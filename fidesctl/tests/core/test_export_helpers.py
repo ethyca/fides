@@ -9,6 +9,7 @@ from fideslang.models import (
     DatasetCollection,
     DatasetField,
     DataSubjectRights,
+    DataProtectionImpactAssessment,
 )
 
 
@@ -172,3 +173,15 @@ def test_calculate_data_subject_rights(data_subject_rights: dict):
     assert return_str_value is not None
     if data_subject_rights["strategy"] in ["INCLUDE", "EXCLUDE"]:
         assert return_str_value == "Informed, Erasure"
+
+
+@pytest.mark.unit
+def test_get_formatted_data_protection_impact_assessment():
+    "Tests that only optional None values are formatted as N/A for exporting."
+    formatted_dict = export_helpers.get_formatted_data_protection_impact_assessment(
+        DataProtectionImpactAssessment().dict()
+    )
+
+    assert formatted_dict["is_required"] == False
+    assert formatted_dict["progress"] == "N/A"
+    assert formatted_dict["link"] == "N/A"
