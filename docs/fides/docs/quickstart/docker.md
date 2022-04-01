@@ -64,7 +64,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - FIDESCTL__CLI__SERVER_URL=http://fidesctl:8080
+      - FIDESCTL__CLI__SERVER_HOST=http://fidesctl
+      - FIDESCTL__CLI__SERVER_PORT=8080
       - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
     volumes:
       - type: bind
