@@ -115,7 +115,7 @@ saas_config:
 A SaaS config schema contains the following metadata fields:
 
 - `fides_key` Used to uniquely identify the connector, this field is used to link a SaaS config to a dataset.
-- `name` A human readable name for the connector.
+- `name` A human-readable name for the connector.
 - `description` Used to add a useful description.
 - `version` Used to track different versions of the SaaS config.
 
