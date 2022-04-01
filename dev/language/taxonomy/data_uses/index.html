@@ -663,8 +663,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/extending_data_use/" class="md-nav__link">
-        Extending Data Use
+      <a href="../../../guides/extending_taxonomy/" class="md-nav__link">
+        Extending the Taxonomy
       </a>
     </li>
   
@@ -1551,13 +1551,13 @@ You're not viewing the latest version.
 <p>A string token that uniquely identifies this Data Use. The value is a dot-separated concatenation of the <code>fides_key</code> values of the resource's ancestors plus a final element for this resource:</p>
 <p><code>grandparent.parent.this_data_use</code></p>
 <p>The final element (<code>this_data_use</code>) may only contain alphanumeric characters and underscores (<code>[A-Za-z0-9_.-]</code>). The dot character is reserved as a separator.</p>
-<p><strong>name</strong><span class="spacer"/><em>string</em></p>
+<p><strong>name</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A UI-friendly label for the Data Use.</p>
-<p><strong>description</strong><span class="spacer"/><em>string</em></p>
+<p><strong>description</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>A human-readable description of the Data Use.</p>
-<p><strong>parent_key</strong><span class="spacer"/><em>string</em><span class="spacer"/></p>
+<p><strong>parent_key</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em><span class="spacer"/></p>
 <p>The fides key of the the Data Use's parent.</p>
-<p><strong>legal_basis</strong><span class="spacer"/><em>enum</em><span class="spacer"/></p>
+<p><strong>legal_basis</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em><span class="spacer"/></p>
 <p>The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:</p>
 <ul>
 <li><code>Consent</code></li>
@@ -1567,7 +1567,7 @@ You're not viewing the latest version.
 <li><code>Public Interest</code></li>
 <li><code>Legitimate Interest</code></li>
 </ul>
-<p><strong>special_category</strong><span class="spacer"/><em>enum</em><span class="spacer"/></p>
+<p><strong>special_category</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>enum</em></p>
 <p>The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map. Current valid options:</p>
 <ul>
 <li><code>Consent</code></li>
@@ -1580,15 +1580,19 @@ You're not viewing the latest version.
 <li><code>Medical</code></li>
 <li><code>Public Health Interest</code></li>
 </ul>
-<p><strong>recipent</strong><span class="spacer"/><em>string</em><span class="spacer"/></p>
+<p><strong>recipent</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em></p>
 <p>An array of recipients is applied here when sharing personal data outside of your organization (e.g. Internal Revenue Service, HMRC, etc.)</p>
-<p><strong>organization_fides_key</strong><span class="spacer"/><em>string</em><span class="spacer"/>default: <code>default_organization</code></p>
+<p><strong>legitimate_interest</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;boolean<span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <code>False</code></p>
+<p>A boolean value representing whether the legal basis is a <code>Legitimate Interest</code>. This is validated at run time and looks for a <code>legitimate_interest_impact_assessment</code> to exist if true.</p>
+<p><strong>legitimate_interest_impact_assessment</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>url</em></p>
+<p>A url to the legitimate interest impact assessment. Can be any valid url (e.g. http, file, etc.)</p>
+<p><strong>organization_fides_key</strong><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em><span class="spacer"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <code>default_organization</code></p>
 <p>The fides key of the organization to which this Data Use belongs.</p>
 <div class="admonition note">
-<p class="admonition-title">Extensibility and Interopability</p>
+<p class="admonition-title">Extensibility and Interoperability</p>
 <p>Data Uses in Fides are designed to support common privacy regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.</p>
-<p>You can <a href="/fides/guides/extending_data_use">extend the taxonomy</a> to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.</p>
-<p>If you have suggestions for core categories that should ship with the taxonomy, please submit your requests <a href="https://github.com/ethyca/fides/issues">here</a></p>
+<p>You can <a href="../../../guides/extending_taxonomy/">extend the taxonomy</a> to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interoperability inside and outside your organization.</p>
+<p>If you have suggestions for core categories that should ship with the taxonomy, please submit your requests <a href="https://github.com/ethyca/fides/issues">here</a>.</p>
 </div>
 <h2 id="top-level-data-uses">Top Level Data Uses</h2>
 <p>There are seven top-level Data Use classes:</p>

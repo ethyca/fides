@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/extending_data_use/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/extending_taxonomy/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
     
     
       
-        <title>Extending Data Use - Fides</title>
+        <title>Extending the Taxonomy - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#extending-data-use" class="md-skip">
+        <a href="#extending-the-default-taxonomy" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Extending Data Use
+              Extending the Taxonomy
             
           </span>
         </div>
@@ -675,12 +675,12 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Extending Data Use
+          Extending the Taxonomy
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Extending Data Use
+        Extending the Taxonomy
       </a>
       
         
@@ -699,8 +699,22 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#creating-your-custom-data-use" class="md-nav__link">
-    Creating your custom Data Use
+  <a href="#implementing-a-custom-data-use" class="md-nav__link">
+    Implementing a custom Data Use
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-custom-data-subject" class="md-nav__link">
+    Implementing a custom Data Subject
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
   </a>
   
 </li>
@@ -1407,8 +1421,22 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#creating-your-custom-data-use" class="md-nav__link">
-    Creating your custom Data Use
+  <a href="#implementing-a-custom-data-use" class="md-nav__link">
+    Implementing a custom Data Use
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-custom-data-subject" class="md-nav__link">
+    Implementing a custom Data Subject
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
   </a>
   
 </li>
@@ -1425,17 +1453,17 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/extending_data_use.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/extending_taxonomy.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="extending-data-use">Extending Data Use</h1>
-<p>This page provides an overview of extending the <a href="/fides/language/taxonomy/data_uses">Data Use taxonomy</a> for your organization. We recommend extending from the existing categories to ensure interopability inside and outside your organization.</p>
-<p>One of the core reasons for extending a Data Use is adding attribution to be used when exporting data from Fides and adding context/clarity for legal teams.</p>
-<p>If you have suggestions for core categories that should ship with the taxonomy, please submit your requests <a href="https://github.com/ethyca/fides/issues">here</a></p>
-<h2 id="creating-your-custom-data-use">Creating your custom Data Use</h2>
+<h1 id="extending-the-default-taxonomy">Extending the Default Taxonomy</h1>
+<p>Fides' default taxonomy can be extended to ensure interoperability inside and outside your organization. Extending the existing categories allows the use of attribution when exporting data from Fides, and when adding context or clarity for legal teams.</p>
+<p>If you have suggestions for core categories that should ship with the taxonomy, requests can be submitted on the <a href="https://github.com/ethyca/fides/issues">Fides Github</a>.</p>
+<h2 id="implementing-a-custom-data-use">Implementing a custom Data Use</h2>
+<p>A Data Use is a label that denotes the way data is used in your system. The following is an example of extending the default <a href="../../language/taxonomy/data_uses/">Data Use taxonomy</a>:</p>
 <table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">data_use.yml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1458,7 +1486,7 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.legal_obligation.payroll</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Payroll</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legally obliged sharing of payroll information</span><span class="w"></span>
-<span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HMRC</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IRS</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NYDTF</span><span class="w"></span>
@@ -1468,23 +1496,114 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Direct Marketing</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Consented user information for direct marketing purposes</span><span class="w"></span>
-<span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"> </span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor - marketing co.</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor - marketing co.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Consent</span><span class="w"></span>
 <span class="w">    </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Consent</span><span class="w"></span>
 <span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
-<p>The above example uses the existing <code>demo_data_use.yml</code> from the Fides project. Further details for each field are below:</p>
-<ul>
-<li><code>fides_key</code>: Ideally extended from the existing taxonomy using the dot (<code>.</code>) separator</li>
-<li><code>name</code>: The name used here will also be surfaced as the <strong>purpose of processing</strong> when exporting data from Fides</li>
-<li><code>description</code>: An optional description of the purpose of processing</li>
-<li><code>recipients</code>: A list of recipients of personal data for this data use, our Payroll example above has multiple recipients for tax purposes</li>
-<li><code>legal_basis</code>: The legal basis category for processing, used as part of exporting data from Fides. Loosely tied to article 6 of the GDPR.</li>
-<li><code>special_category</code>: The special cateogry associated to processing of personal data. Loosely tied to article 9 of the GDPR.</li>
-<li><code>parent_key</code>: The parent Data Use fides key extended from</li>
-</ul>
+<p>The above example uses the existing <code>demo_data_uses.yml</code> from the <a href="https://github.com/ethyca/fides">Fides project</a>. Further details for each field are below:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fides_key</code></td>
+<td>Ideally extended from the existing taxonomy using the dot (<code>.</code>) separator. A string token that uniquely identifies this Data Use.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>A UI-friendly name that will also be surfaced as the <strong>Purpose of Processing</strong> when exporting data from Fides.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>An optional description of the purpose of processing.</td>
+</tr>
+<tr>
+<td><code>recipients</code></td>
+<td>A list of recipients of personal data for this data use. The Payroll example above has multiple recipients for tax purposes.</td>
+</tr>
+<tr>
+<td><code>legal_basis</code></td>
+<td>The legal basis category for processing, used as part of exporting data from Fides. Loosely tied to article 6 of the GDPR.</td>
+</tr>
+<tr>
+<td><code>special_category</code></td>
+<td>The special category associated to processing of personal data. Loosely tied to article 9 of the GDPR.</td>
+</tr>
+<tr>
+<td><code>parent_key</code></td>
+<td>The parent Data Use <code>fides_key</code> extended from.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="implementing-a-custom-data-subject">Implementing a custom Data Subject</h2>
+<p>A Data Subject is a label that describes a segment of individuals whose data you store. The following is an example of extending the <a href="../../language/taxonomy/data_subjects/">Data Subject taxonomy</a>:</p>
+<p><table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">data_subject.yml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_subject</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potential_customer</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Potential Customer</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A prospective individual or other organization that purchases goods or services from the organization.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">rights</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INCLUDE</span><span class="w"></span>
+<span class="w">      </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Informed</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Access</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rectification</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Erasure</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table>
+The above example uses the existing <code>demo_data_subjects.yml</code> from the <a href="https://github.com/ethyca/fides">Fides project</a>. Further details for each field are below:</p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fides_key</code></td>
+<td>Ideally extended from the existing taxonomy using the dot (<code>.</code>) separator. A string token that uniquely identifies this Data Use.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>A UI-friendly name that will also be surfaced as the <strong>Categories of individuals</strong>  when exporting data from Fides.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>An optional description of the data subject.</td>
+</tr>
+<tr>
+<td><code>rights</code></td>
+<td>A strategy of how to apply data subject rights, along with an optional list to complement the strategy.</td>
+</tr>
+<tr>
+<td><code>automated_decisions_or_profiling</code></td>
+<td>If automated decision-making or profiling exists for this data subject, set as either true or false.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="next-steps">Next Steps</h2>
+<p>Once created, your new Data Subject or Data Use can be referenced as part of a <a href="../../language/resources/system/">privacy declaration in a system</a>, throughout your <a href="../../language/resources/policy/">policies</a>, and in other Fides <a href="../../language/resources/dataset/">resources</a>.</p>
 
               
             </article>

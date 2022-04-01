@@ -3662,9 +3662,51 @@
             "title": "Description",
             "type": "string",
             "description": "In-depth description of what this resource is."
+          },
+          "rights": {
+            "$ref": "#/components/schemas/DataSubjectRights"
+          },
+          "automated_decisions_or_profiling": {
+            "title": "Automated Decisions Or Profiling",
+            "type": "boolean"
           }
         },
         "description": "The DataSubject resource model."
+      },
+      "DataSubjectRights": {
+        "title": "DataSubjectRights",
+        "required": [
+          "strategy"
+        ],
+        "type": "object",
+        "properties": {
+          "strategy": {
+            "$ref": "#/components/schemas/IncludeExcludeEnum"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataSubjectRightsEnum"
+            }
+          }
+        },
+        "description": "The DataSubjectRights resource model.\n\nIncludes a strategy and optionally a\nlist of data subject rights to apply\nvia the set strategy."
+      },
+      "DataSubjectRightsEnum": {
+        "title": "DataSubjectRightsEnum",
+        "enum": [
+          "Informed",
+          "Access",
+          "Rectification",
+          "Erasure",
+          "Portability",
+          "Restrict Processing",
+          "Withdraw Consent",
+          "Object",
+          "Object to Automated Processing"
+        ],
+        "type": "string",
+        "description": "The model for data subject rights over\npersonal data.\n\nBased upon chapter 3 of the GDPR"
       },
       "DataUse": {
         "title": "DataUse",
@@ -3713,6 +3755,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "legitimate_interest": {
+            "title": "Legitimate Interest",
+            "type": "boolean",
+            "default": false
+          },
+          "legitimate_interest_impact_assessment": {
+            "title": "Legitimate Interest Impact Assessment",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
           }
         },
         "description": "The DataUse resource model."
@@ -3934,6 +3988,17 @@
             }
           }
         }
+      },
+      "IncludeExcludeEnum": {
+        "title": "IncludeExcludeEnum",
+        "enum": [
+          "ALL",
+          "EXCLUDE",
+          "INCLUDE",
+          "NONE"
+        ],
+        "type": "string",
+        "description": "Determine whether or not defined rights are\nbeing included or excluded."
       },
       "LegalBasisEnum": {
         "title": "LegalBasisEnum",
