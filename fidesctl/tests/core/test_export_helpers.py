@@ -123,6 +123,10 @@ def test_xlsx_export(tmpdir):
         "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
         "system.privacy_declaration.data_subjects.rights_available",
         "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+        "dataset.name",
+        "system.data_protection_impact_assessment.is_required",
+        "system.data_protection_impact_assessment.progress",
+        "system.data_protection_impact_assessment.link",
     ]
 
     organization_df = pd.DataFrame()

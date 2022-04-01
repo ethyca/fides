@@ -104,6 +104,9 @@ def export_datamap_to_excel(
         "system.privacy_declaration.data_subjects.rights_available",
         "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
         "dataset.name",
+        "system.data_protection_impact_assessment.is_required",
+        "system.data_protection_impact_assessment.progress",
+        "system.data_protection_impact_assessment.link",
     ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(

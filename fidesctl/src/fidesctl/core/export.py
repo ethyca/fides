@@ -152,6 +152,9 @@ def generate_system_records(
             "system.privacy_declaration.data_subjects.rights_available",
             "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
             "system.privacy_declaration.data_qualifier",
+            "system.data_protection_impact_assessment.is_required",
+            "system.data_protection_impact_assessment.progress",
+            "system.data_protection_impact_assessment.link",
             "dataset.fides_key",
         )
     ]
@@ -184,6 +187,9 @@ def generate_system_records(
                     subject["rights_available"],
                     subject["automated_decisions_or_profiling"],
                     declaration.data_qualifier,
+                    system.data_protection_impact_assessment.is_required,
+                    system.data_protection_impact_assessment.progress or "N/A",
+                    system.data_protection_impact_assessment.link or "N/A",
                     dataset_reference,
                 )
                 for category in data_categories
