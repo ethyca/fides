@@ -16,4 +16,8 @@ host = ""
 api_key = ""
 payment_types = ""
 page_limit = ""
+
+[sentry]
+host = ""
+access_token = ""
 identity_email = ""

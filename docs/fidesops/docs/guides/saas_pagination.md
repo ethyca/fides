@@ -39,13 +39,13 @@ The source value of `headers` is meant to be used with responses following [RFC 
 Link: <https://api.host.com/conversations?page_ref=ad6f38r3>; rel="next",
       <https://api.host.com/conversations?page_ref=gss8ap4g>; rel="prev"
 ```
-Given this Link header, we can specify a path of `link.next` (case-insensitive). This indicates that we are looking in the `Link` header with a `rel` of next.
+Given this Link header, we can specify a rel of `next` (case-insensitive). This indicates that we are looking in the `Link` header with a `rel` of next.
 ```yaml
 pagination:
   strategy: link
   configuration:
     source: headers
-    path: link.next
+    rel: next
 ```
 
 We can also access links returned in the body. If we receive this value in the body:

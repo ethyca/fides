@@ -261,7 +261,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "
                     f"on the '{self.collection_name}' collection: {exc}"
                 )
-
+        if not processed_data:
+            return rows
         if isinstance(processed_data, list):
             if not all([isinstance(item, dict) for item in processed_data]):
                 raise PostProcessingException(
