@@ -381,20 +381,20 @@ class TestDatabase:
         yield
 
     def test_get_db_tables(self, request, database_type):
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         engine = sqlalchemy.create_engine(database_parameters.get("url"))
         actual_result = _dataset.get_db_schemas(engine=engine)
         assert actual_result == database_parameters.get("expected_collection")
 
     def test_generate_dataset(self, tmpdir, database_type):
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         actual_result = _dataset.generate_dataset_db(
             database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 
     def test_generate_dataset_passes_(self, test_config, database_type):
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
@@ -409,7 +409,7 @@ class TestDatabase:
         )
 
     def test_generate_dataset_coverage_failure(self, test_config, database_type):
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
@@ -424,7 +424,7 @@ class TestDatabase:
             )
 
     def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
-        database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
+        database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
