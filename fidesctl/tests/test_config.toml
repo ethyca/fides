@@ -1,5 +1,6 @@
 [cli]
-server_url = "http://fidesctl:8080"
+server_host = "http://fidesctl"
+server_port = 8080
 
 [api]
 database_user = "postgres"

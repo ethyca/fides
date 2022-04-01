@@ -27,7 +27,7 @@ class CLISettings(FidesSettings):
         This needs to be set as a root validator,
         otherwise the type errors gets suppressed.
         """
-        server_host = values["server_url"]
+        server_host = values["server_host"]
         server_port = values["server_port"]
         values["server_url"] = "{}{}".format(
             server_host,
