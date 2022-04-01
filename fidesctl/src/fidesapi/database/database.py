@@ -1,7 +1,7 @@
 """
 Contains all of the logic related to the database including connections, setup, teardown, etc.
 """
-import os
+from os import path
 
 from alembic import command
 from alembic.config import Config
@@ -9,12 +9,12 @@ from alembic.migration import MigrationContext
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fidesapi.utils.errors import QueryError
-from fidesapi.sql_models import sql_model_map, SqlAlchemyBase
-from fideslang import DEFAULT_TAXONOMY
+from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
+from fidesapi.utils.errors import AlreadyExistsError, QueryError
 from fidesctl.core.utils import get_db_engine
+from fideslang import DEFAULT_TAXONOMY
 
-from .crud import upsert_resources
+from .crud import create_resource, upsert_resources
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -22,9 +22,9 @@ def get_alembic_config(database_url: str) -> Config:
     Do lots of magic to make alembic work programmatically from the CLI.
     """
 
-    migrations_dir = os.path.dirname(os.path.abspath(__file__))
-    directory = os.path.join(migrations_dir, "../migrations")
-    config = Config(os.path.join(migrations_dir, "../alembic.ini"))
+    migrations_dir = path.dirname(path.abspath(__file__))
+    directory = path.join(migrations_dir, "../migrations")
+    config = Config(path.join(migrations_dir, "../alembic.ini"))
     config.set_main_option("script_location", directory.replace("%", "%%"))
     config.set_main_option("sqlalchemy.url", database_url)
     return config
@@ -55,20 +55,44 @@ def create_db_if_not_exists(database_url: str) -> None:
 
 
 async def load_default_taxonomy() -> None:
-    "Upserts the default taxonomy into the database."
-    log.info("UPSERTING the default fideslang taxonomy")
-    for resource_type in list(DEFAULT_TAXONOMY.__fields_set__):
+    """
+    Attempts to insert organization resources into the database,
+    to avoid overwriting a user-created organization under the
+    `default_organization` fides_key.
+
+    Upserts the remaining default taxonomy resources.
+    """
+
+    log.info("Loading the default fideslang taxonomy...")
+
+    log.info("Processing organization resources...")
+    organizations = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
+    inserted = 0
+    for org in organizations:
+        try:
+            await create_resource(sql_model_map["organization"], org)
+            inserted += 1
+        except AlreadyExistsError:
+            pass
+
+    log.info(f"INSERTED {inserted} organization resource(s)")
+    log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+
+    upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
+    upsert_resource_types.remove("organization")
+
+    log.info("UPSERTING the remaining default fideslang taxonomy resources")
+    for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
         resources = list(map(dict, DEFAULT_TAXONOMY.dict()[resource_type]))
 
         try:
-            await upsert_resources(sql_model_map[resource_type], resources)
+            result = await upsert_resources(sql_model_map[resource_type], resources)
         except QueryError:
             pass  # The upsert_resources function will log the error
         else:
-            log.info(
-                f"Successfully UPSERTED {len(resources)} {resource_type} resources"
-            )
+            log.info(f"INSERTED {result[0]} {resource_type} resource(s)")
+            log.info(f"UPDATED {result[1]} {resource_type} resource(s)")
 
 
 def reset_db(database_url: str) -> None:

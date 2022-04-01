@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import validator, BaseModel, Field, HttpUrl
+from pydantic import root_validator, validator, BaseModel, Field, AnyUrl, HttpUrl
 
 from fideslang.validation import (
     FidesKey,
@@ -67,6 +67,37 @@ class DataResponsibilityTitle(str, Enum):
     SUB_PROCESSOR = "Sub-Processor"
 
 
+class IncludeExcludeEnum(str, Enum):
+    """
+    Determine whether or not defined rights are
+    being included or excluded.
+    """
+
+    ALL = "ALL"
+    EXCLUDE = "EXCLUDE"
+    INCLUDE = "INCLUDE"
+    NONE = "NONE"
+
+
+class DataSubjectRightsEnum(str, Enum):
+    """
+    The model for data subject rights over
+    personal data.
+
+    Based upon chapter 3 of the GDPR
+    """
+
+    INFORMED = "Informed"
+    ACCESS = "Access"
+    RECTIFICATION = "Rectification"
+    ERASURE = "Erasure"
+    PORTABILITY = "Portability"
+    RESTRICT_PROCESSING = "Restrict Processing"
+    WITHDRAW_CONSENT = "Withdraw Consent"
+    OBJECT = "Object"
+    OBJECT_TO_AUTOMATED_PROCESSING = "Object to Automated Processing"
+
+
 class LegalBasisEnum(str, Enum):
     """
     The model for allowable legal basis categories
@@ -120,8 +151,38 @@ class DataQualifier(FidesModel):
     _no_self_reference: classmethod = no_self_reference_validator
 
 
+class DataSubjectRights(BaseModel):
+    """
+    The DataSubjectRights resource model.
+
+    Includes a strategy and optionally a
+    list of data subject rights to apply
+    via the set strategy.
+    """
+
+    strategy: IncludeExcludeEnum
+    values: Optional[List[DataSubjectRightsEnum]]
+
+    @root_validator()
+    @classmethod
+    def include_exclude_has_values(cls, values: Dict) -> Dict:
+        """
+        Validate the if include or exclude is chosen, that at least one
+        value is present.
+        """
+        strategy, rights = values.get("strategy"), values.get("values")
+        if strategy in ("INCLUDE", "EXCLUDE"):
+            assert (
+                rights is not None
+            ), f"If {strategy} is chosen, rights must also be listed."
+        return values
+
+
 class DataSubject(FidesModel):
     """The DataSubject resource model."""
+
+    rights: Optional[DataSubjectRights]
+    automated_decisions_or_profiling: Optional[bool]
 
 
 class DataUse(FidesModel):
@@ -131,9 +192,32 @@ class DataUse(FidesModel):
     legal_basis: Optional[LegalBasisEnum]
     special_category: Optional[SpecialCategoriesEnum]
     recipients: Optional[List[str]]
+    legitimate_interest: bool = False
+    legitimate_interest_impact_assessment: Optional[AnyUrl]
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
+
+    @validator("legitimate_interest", always=True)
+    @classmethod
+    def set_legitimate_interest(cls, value: bool, values: Dict) -> bool:
+        """Sets if a legitimate interest is used."""
+        if values["legal_basis"] == "Legitimate Interests":
+            value = True
+        return value
+
+    @validator("legitimate_interest_impact_assessment", always=True)
+    @classmethod
+    def ensure_impact_assessment(cls, value: AnyUrl, values: Dict) -> AnyUrl:
+        """
+        Validates an impact assessment is applied if a
+        legitimate interest has been defined.
+        """
+        if values["legitimate_interest"]:
+            assert (
+                value is not None
+            ), "Impact assessment cannot be null for a legitimate interest, please provide a valid url"
+        return value
 
 
 # Dataset

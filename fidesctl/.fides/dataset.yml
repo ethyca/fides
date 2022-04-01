@@ -118,6 +118,12 @@ dataset:
             data_categories:
               - system.operations
 
+          - name: rights
+            description: "JSON structure containing a strategy and optional values for detailing data subject rights available"
+
+          - name: automated_decisions_or_profiling
+            description: "Boolean value representing if automated decisions or profiling is used for the data subject."
+
           - name: fides_key
             data_categories:
               - system.operations
@@ -164,6 +170,20 @@ dataset:
             data_categories:
               - system.operations
 
+          - name: legal_basis
+            description: "The legal basis for processing personal data as defined by Article 6 of the GDPR"
+
+          - name: special_category
+            description: "The special category as defined by Article 9 of the GDPR"
+
+          - name: recipients
+            description: "An array of recipients of the intended data use."
+
+          - name: legitimate_interest
+            description: "Boolean value denoting whether or not the data use is marked as a legitimate interest"
+
+          - name: legitimate_interest_impact_assessment
+            description: "A url pointing to a legitimate interest impact assessment"
           - name: data_categories
             data_categories:
               - system.operations

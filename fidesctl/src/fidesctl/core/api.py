@@ -1,14 +1,17 @@
 """A wrapper to make calling the API consistent across Fidesctl."""
-from typing import Dict
+from typing import Dict, List
 
 import requests
 
 
 def generate_resource_url(
-    url: str, resource_type: str = "", resource_id: str = "", version: str = "v1"
+    url: str,
+    resource_type: str = "",
+    resource_id: str = "",
 ) -> str:
     """
-    Generate a resource's URL using a base url, the resource type and a version.
+    Generate a resource's URL using a base url, the resource type,
+    and [optionally] the resource's ID.
     """
     return f"{url}/{resource_type}/{resource_id}"
 
@@ -71,6 +74,20 @@ def update(
     """
     resource_url = generate_resource_url(url, resource_type)
     return requests.put(resource_url, headers=headers, data=json_resource)
+
+
+def upsert(
+    url: str,
+    resource_type: str,
+    resources: List[Dict],
+    headers: Dict[str, str],
+) -> requests.Response:
+    """
+    For each resource, insert the resource if it doesn't exist, update the resource otherwise.
+    """
+
+    resource_url = generate_resource_url(url, resource_type) + "upsert"
+    return requests.post(resource_url, headers=headers, json=resources)
 
 
 def dry_evaluate(

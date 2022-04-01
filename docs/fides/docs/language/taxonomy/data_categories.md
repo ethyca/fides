@@ -24,7 +24,7 @@ A human-readable description of the Data Category.
 
 **parent_key**<span class="spacer"/>_string_<span class="spacer"/>
 
-The fides key of the the Data Category's parent.
+The fides key of the Data Category's parent.
 
 **organization_fides_key**<span class="spacer"/>_string_<span class="spacer"/>default: `default_organization`
 
