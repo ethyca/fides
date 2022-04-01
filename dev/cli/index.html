@@ -2353,14 +2353,12 @@ within one of the datasets, this counts as lacking coverage.</p>
 <p>Outputs missing fields and has a non-zero exit if coverage is
 under the stated threshold.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset db [OPTIONS] CONNECTION_STRING
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset db [OPTIONS] CONNECTION_STRING [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -m, --manifest-dir TEXT
-  -c, --coverage-threshold INTEGER RANGE
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -c, --coverage-threshold INTEGER RANGE
   --help                          Show this message and exit.
 </code></pre></div>
 </td></tr></table>
@@ -2381,15 +2379,13 @@ Tracked resources: [Redshift, RDS]</p>
 <p>Outputs missing resources and has a non-zero exit if coverage is
 under the stated threshold.</p>
 <p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan system aws [OPTIONS]
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan system aws [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -m, --manifest-dir TEXT
-  -o, --organization TEXT
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -o, --organization TEXT
   -c, --coverage-threshold INTEGER RANGE
   --help                          Show this message and exit.
 </code></pre></div>
