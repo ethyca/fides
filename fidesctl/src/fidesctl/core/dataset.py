@@ -214,7 +214,7 @@ def scan_dataset_db(
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     if manifest_taxonomy:
         dataset_keys = [dataset.fides_key for dataset in manifest_taxonomy.dataset]
-        echo_green(
+        print(
             "Loaded the following dataset manifests:\n\t{}".format(
                 "\t\n".join(dataset_keys)
             )
