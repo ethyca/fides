@@ -8,6 +8,7 @@ database_name = "fidesctl"
 test_database_name = "fidesctl_test"
 
 [cli]
+# Decompose this
 server_url = "http://fidesctl:8080"
 
 [user]
