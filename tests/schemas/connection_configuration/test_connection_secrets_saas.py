@@ -10,8 +10,8 @@ from fidesops.schemas.connection_configuration.connection_secrets_saas import (
 @pytest.mark.unit_saas
 class TestSaaSConnectionSecrets:
     @pytest.fixture(scope="function")
-    def saas_config(self, saas_configs) -> SaaSConfig:
-        return SaaSConfig(**saas_configs["saas_example"])
+    def saas_config(self, saas_example_config) -> SaaSConfig:
+        return SaaSConfig(**saas_example_config)
 
     def test_get_saas_schema(self, saas_config):
         """
@@ -22,9 +22,9 @@ class TestSaaSConnectionSecrets:
         assert schema.__name__ == f"{saas_config.fides_key}_schema"
         assert issubclass(schema.__base__, SaaSSchema)
 
-    def test_validation(self, saas_config, saas_secrets):
+    def test_validation(self, saas_config, saas_example_secrets):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        config = saas_secrets["saas_example"]
+        config = saas_example_secrets
         schema.parse_obj(config)
 
     def test_missing_fields(self, saas_config):
@@ -38,10 +38,10 @@ class TestSaaSConnectionSecrets:
             in str(exc.value)
         )
 
-    def test_extra_fields(self, saas_config, saas_secrets):
+    def test_extra_fields(self, saas_config, saas_example_secrets):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = {
-            **saas_secrets["saas_example"],
+            **saas_example_secrets,
             "extra": "extra",
         }
         with pytest.raises(ValidationError) as exc:

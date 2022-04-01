@@ -604,16 +604,16 @@ class TestMongoQueryConfig:
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(
-        self, connection_config_saas_example, dataset_config_saas_example
+        self, saas_example_connection_config, saas_example_dataset_config
     ):
-        merged_graph = dataset_config_saas_example.get_graph()
+        merged_graph = saas_example_dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
         return Traversal(graph, {"email": "customer-1@example.com"})
 
     def test_generate_query(
-        self, policy, combined_traversal, connection_config_saas_example
+        self, policy, combined_traversal, saas_example_connection_config
     ):
-        saas_config = connection_config_saas_example.get_saas_config()
+        saas_config = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -698,9 +698,9 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
-        saas_config = connection_config_saas_example.get_saas_config()
+        saas_config = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -732,11 +732,11 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
         saas_config: Optional[
             SaaSConfig
-        ] = connection_config_saas_example.get_saas_config()
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.get("update").method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
@@ -769,11 +769,11 @@ class TestSaaSQueryConfig:
         self,
         erasure_policy_string_rewrite,
         combined_traversal,
-        connection_config_saas_example,
+        saas_example_connection_config,
     ):
         saas_config: Optional[
             SaaSConfig
-        ] = connection_config_saas_example.get_saas_config()
+        ] = saas_example_connection_config.get_saas_config()
         saas_config.endpoints[2].requests.get(
             "update"
         ).body = '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
