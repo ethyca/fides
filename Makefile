@@ -135,6 +135,7 @@ pytest-external:
 	-e AWS_ACCESS_KEY_ID \
 	-e AWS_SECRET_ACCESS_KEY \
 	-e AWS_DEFAULT_REGION \
+	-e OKTA_CLIENT_TOKEN \
 	--rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
