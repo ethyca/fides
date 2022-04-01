@@ -146,6 +146,7 @@ class TestListServerResources:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             headers=test_config.user.request_headers,
+            exclude_keys=[],
         )
         assert len(result) > 1
 
@@ -156,14 +157,6 @@ class TestListServerResources:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             headers=test_config.user.request_headers,
+            exclude_keys=[],
         )
         assert result == []
-
-    def test_list_server_resources_error(self, test_config):
-        resource_type = "invalid"
-        with pytest.raises(SystemExit):
-            _api_helpers.list_server_resources(
-                url=test_config.cli.server_url,
-                resource_type=resource_type,
-                headers=test_config.user.request_headers,
-            )

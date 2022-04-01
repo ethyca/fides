@@ -276,6 +276,16 @@ class ContactDetails(BaseModel):
     phone: str = ""
 
 
+class DatasetMetadata(BaseModel):
+    """
+    The DatasetMetadata resource model.
+
+    Object used to hold application specific metadata for a dataset
+    """
+
+    resource_id: Optional[str]
+
+
 class Dataset(FidesModel):
     "The Dataset resource model."
 
@@ -284,6 +294,7 @@ class Dataset(FidesModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    fidesctl_meta: Optional[DatasetMetadata]
     joint_controller: Optional[ContactDetails]
     retention: Optional[str] = "No retention or erasure policy"
     third_country_transfers: Optional[List[str]]

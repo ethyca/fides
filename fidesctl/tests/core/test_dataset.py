@@ -3,9 +3,11 @@ import pytest
 import os
 from typing import List, Dict
 
+from okta.models import Application as OktaApplication
+
 from fidesctl.core import dataset as _dataset, api
 from fideslang.manifests import write_manifest
-from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 
 
 def create_server_datasets(test_config, datasets: List[Dataset]):
@@ -32,58 +34,21 @@ def set_field_data_categories(datasets: List[Dataset], category: str):
 
 
 @pytest.fixture()
-def test_dataset():
-    collections = [
-        DatasetCollection(
-            name="visit",
-            description="Fides Generated Description for Table: visit",
-            fields=[
-                DatasetField(
-                    name="email",
-                    description="Fides Generated Description for Column: email",
-                    data_categories=[],
-                ),
-                DatasetField(
-                    name="last_visit",
-                    description="Fides Generated Description for Column: last_visit",
-                    data_categories=[],
-                ),
-            ],
+def okta_list_applications():
+    okta_applications = [
+        OktaApplication(
+            config={"id": "okta_id_1", "name": "okta_id_1", "label": "okta_label_1"}
         ),
-        DatasetCollection(
-            name="login",
-            description="Fides Generated Description for Table: login",
-            fields=[
-                DatasetField(
-                    name="id",
-                    description="Fides Generated Description for Column: id",
-                    data_categories=[],
-                ),
-                DatasetField(
-                    name="customer_id",
-                    description="Fides Generated Description for Column: customer_id",
-                    data_categories=[],
-                ),
-                DatasetField(
-                    name="time",
-                    description="Fides Generated Description for Column: time",
-                    data_categories=[],
-                ),
-            ],
-        ),
+        OktaApplication(
+            config={"id": "okta_id_2", "name": "okta_id_2", "label": "okta_label_2"}
+        )
     ]
-    dataset = Dataset(
-        fides_key="fidesdb",
-        name="fidesdb",
-        description="Fides Generated Description for Dataset: fidesdb",
-        collections=collections,
-    )
-    yield dataset
+    yield okta_applications
 
 
 # Unit
 @pytest.mark.unit
-def test_generate_dataset_collections():
+def test_create_db_datasets():
     test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
     expected_result = [
         Dataset(
@@ -129,13 +94,14 @@ def test_generate_dataset_collections():
             ],
         )
     ]
-    actual_result = _dataset.create_dataset_db_collections(test_resource)
+    actual_result = _dataset.create_db_datasets(test_resource)
     assert actual_result == expected_result
 
 
 @pytest.mark.unit
 def test_find_uncategorized_dataset_fields_all_categorized():
-    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
+    test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
+    test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
     dataset = Dataset(
         name="ds",
         fides_key="ds",
@@ -168,8 +134,8 @@ def test_find_uncategorized_dataset_fields_all_categorized():
     (
         uncategorized_keys,
         total_field_count,
-    ) = _dataset.find_uncategorized_dataset_db_fields(
-        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    ) = _dataset.find_uncategorized_dataset_fields(
+        existing_dataset=dataset, source_dataset=test_resource_dataset
     )
     assert not uncategorized_keys
     assert total_field_count == 4
@@ -177,8 +143,9 @@ def test_find_uncategorized_dataset_fields_all_categorized():
 
 @pytest.mark.unit
 def test_find_uncategorized_dataset_fields_uncategorized_fields():
-    test_resource = {"ds": {"foo": ["1", "2"]}}
-    dataset = Dataset(
+    test_resource = {"foo": ["1", "2"]}
+    test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
+    existing_dataset = Dataset(
         name="ds",
         fides_key="ds",
         data_categories=["category_1"],
@@ -199,8 +166,8 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
     (
         uncategorized_keys,
         total_field_count,
-    ) = _dataset.find_uncategorized_dataset_db_fields(
-        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    ) = _dataset.find_uncategorized_dataset_fields(
+        existing_dataset=existing_dataset, source_dataset=test_resource_dataset
     )
     assert set(uncategorized_keys) == {"ds.foo.2"}
     assert total_field_count == 2
@@ -208,8 +175,9 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
 
 @pytest.mark.unit
 def test_find_uncategorized_dataset_fields_missing_field():
-    test_resource = {"ds": {"bar": ["4", "5"]}}
-    dataset = Dataset(
+    test_resource = {"bar": ["4", "5"]}
+    test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
+    existing_dataset = Dataset(
         name="ds",
         fides_key="ds",
         collections=[
@@ -227,8 +195,8 @@ def test_find_uncategorized_dataset_fields_missing_field():
     (
         uncategorized_keys,
         total_field_count,
-    ) = _dataset.find_uncategorized_dataset_db_fields(
-        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    ) = _dataset.find_uncategorized_dataset_fields(
+        existing_dataset=existing_dataset, source_dataset=test_resource_dataset
     )
     assert set(uncategorized_keys) == {"ds.bar.5"}
     assert total_field_count == 2
@@ -236,8 +204,9 @@ def test_find_uncategorized_dataset_fields_missing_field():
 
 @pytest.mark.unit
 def test_find_uncategorized_dataset_fields_missing_collection():
-    test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
-    dataset = Dataset(
+    test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
+    test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
+    existing_dataset = Dataset(
         name="ds",
         fides_key="ds",
         collections=[
@@ -259,8 +228,8 @@ def test_find_uncategorized_dataset_fields_missing_collection():
     (
         uncategorized_keys,
         total_field_count,
-    ) = _dataset.find_uncategorized_dataset_db_fields(
-        dataset_key="ds", dataset=dataset, db_dataset=test_resource.get("ds")
+    ) = _dataset.find_uncategorized_dataset_fields(
+        existing_dataset=existing_dataset, source_dataset=test_resource_dataset
     )
     assert set(uncategorized_keys) == {"ds.foo.1", "ds.foo.2"}
     assert total_field_count == 4
@@ -271,6 +240,36 @@ def test_unsupported_dialect_error():
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     with pytest.raises(SystemExit):
         _dataset.generate_dataset_db(test_url, "test_file.yml", False)
+
+
+@pytest.mark.unit
+def test_create_okta_datasets(okta_list_applications):
+    expected_result = [
+        Dataset(
+            fides_key="okta_id_1",
+            name="okta_id_1",
+            fidesctl_meta=DatasetMetadata(
+                resource_id="okta_id_1",
+            ),
+            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            data_categories=[],
+            collections=[],
+        ),
+        Dataset(
+            fides_key="okta_id_2",
+            name="okta_id_2",
+            fidesctl_meta=DatasetMetadata(
+                resource_id="okta_id_2",
+            ),
+            description=f"Fides Generated Description for Okta Application: okta_label_2",
+            data_categories=[],
+            collections=[],
+        )
+    ]
+    okta_datasets = _dataset.create_okta_datasets(
+        okta_applications=okta_list_applications
+    )
+    assert okta_datasets == expected_result
 
 
 # Generate Dataset Database Integration Tests
@@ -373,18 +372,18 @@ class TestDatabase:
         for database_parameters in TEST_DATABASE_PARAMETERS.values():
             engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
             with open(database_parameters.get("init_script_path"), "r") as query_file:
-                queries = [query for query in query_file.read().splitlines() if query != ""]
+                queries = [
+                    query for query in query_file.read().splitlines() if query != ""
+                ]
             print(queries)
             for query in queries:
                 engine.execute(sqlalchemy.sql.text(query))
         yield
 
     def test_get_db_tables(self, request, database_type):
-        print(request.node.get_closest_marker("external"))
-        print(request.keywords)
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
         engine = sqlalchemy.create_engine(database_parameters.get("url"))
-        actual_result = _dataset.get_db_collections_and_fields(engine)
+        actual_result = _dataset.get_db_schemas(engine=engine)
         assert actual_result == database_parameters.get("expected_collection")
 
     def test_generate_dataset(self, tmpdir, database_type):
@@ -396,7 +395,7 @@ class TestDatabase:
 
     def test_generate_dataset_passes_(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = _dataset.create_dataset_db_collections(
+        datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
@@ -411,7 +410,7 @@ class TestDatabase:
 
     def test_generate_dataset_coverage_failure(self, test_config, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = _dataset.create_dataset_db_collections(
+        datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
         create_server_datasets(test_config, datasets)
@@ -426,7 +425,7 @@ class TestDatabase:
 
     def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
         database_parameters = TEST_DATABASE_PARAMETERS.get(database_type)
-        datasets: List[Dataset] = _dataset.create_dataset_db_collections(
+        datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
         )
         set_field_data_categories(datasets, "system.operations")
@@ -442,3 +441,12 @@ class TestDatabase:
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )
+
+@pytest.mark.external
+def test_generate_dataset_okta(tmpdir, test_config):
+    actual_result = _dataset.generate_dataset_okta(
+        file_name=f"{tmpdir}/test_file.yml",
+        include_null=False,
+        org_url="https://dev-78908748.okta.com"
+    )
+    assert actual_result
