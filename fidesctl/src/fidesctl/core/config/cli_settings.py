@@ -14,7 +14,7 @@ class CLISettings(FidesSettings):
 
     local_mode: bool = False
     server_host: AnyHttpUrl = "http://localhost"
-    server_port: int = 8080
+    server_port: Optional[int] = 8080
     server_url: Optional[AnyHttpUrl]
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
 
