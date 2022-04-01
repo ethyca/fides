@@ -212,6 +212,13 @@ def scan_dataset_db(
     local manifest (if one is provided).
     """
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
+    if manifest_taxonomy:
+        dataset_keys = [dataset.fides_key for dataset in manifest_taxonomy.dataset]
+        print(
+            "Loaded the following dataset manifests:\n\t{}".format(
+                "\t\n".join(dataset_keys)
+            )
+        )
 
     # Generate the collections and fields for the target database
     db_engine = get_db_engine(connection_string)
