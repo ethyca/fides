@@ -16,8 +16,5 @@ def test_check_server_bad_ping():
 @pytest.mark.integration
 def test_check_server_version_mismatch(test_config):
     "Check for a warning message if there is a version mismatch."
-    with patch("fidesctl.core.utils.echo_red") as echo_red_mock:
-        # Reload the lib so that it picks up the mocked function
-        importlib.reload(utils)
+    with pytest.raises(SystemExit):
         utils.check_server("0.0.1", test_config.cli.server_url)
-        echo_red_mock.assert_called_once()

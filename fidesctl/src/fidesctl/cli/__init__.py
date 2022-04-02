@@ -11,11 +11,11 @@ from fidesctl.cli.utils import check_and_update_analytics_config, check_server
 from fidesctl.core.config import get_config
 
 from .commands.annotate import annotate
-from .command.core import apply, evaluate, parse
-from .command.crud import delete, get, ls
-from .command.db import database
-from .command.export import export
-from .command.generate import generate
+from .commands.core import apply, evaluate, parse
+from .commands.crud import delete, get, ls
+from .commands.db import database
+from .commands.export import export
+from .commands.generate import generate
 from .commands.scan import scan
 from .commands.util import init, status, webserver
 from .commands.view import view

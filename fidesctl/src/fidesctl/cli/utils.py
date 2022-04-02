@@ -20,18 +20,22 @@ from fidesctl.core import api as _api
 
 def check_server(cli_version: str, server_url: str) -> None:
     "Runs a health check and a version check against the server."
+
     healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
-    except requests.exceptions.ConnectionError as err:
-        echo_red("Connection failed, webserver is unreachable.")
-        raise SystemExit(err)
+    except requests.exceptions.ConnectionError:
+        echo_red(
+            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+        )
+        raise SystemExit(1)
 
     server_version = health_response.json()["data"]["version"]
     if str(server_version) != str(cli_version):
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
         )
+        raise SystemExit(1)
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
