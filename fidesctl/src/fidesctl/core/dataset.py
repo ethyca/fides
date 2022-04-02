@@ -293,9 +293,9 @@ def scan_dataset_db(
     dataset_keys = [
         dataset.fides_key for dataset in manifest_datasets + server_datasets
     ]
-    print(
+    echo_green(
         "Loaded the following dataset manifests:\n\t{}".format(
-            "\t\n".join(dataset_keys)
+            "\n\t".join(dataset_keys)
         )
     )
 
