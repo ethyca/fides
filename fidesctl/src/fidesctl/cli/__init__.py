@@ -10,15 +10,15 @@ import fidesctl
 from fidesctl.cli.utils import check_and_update_analytics_config, check_server
 from fidesctl.core.config import get_config
 
-from .annotate_commands import annotate
-from .core_commands import apply, evaluate, parse
-from .crud_commands import delete, get, ls
-from .db_commands import database
-from .export_commands import export
-from .generate_commands import generate
-from .scan_commands import scan
-from .util_comands import init, status, webserver
-from .view_commands import view
+from .commands.annotate import annotate
+from .command.core import apply, evaluate, parse
+from .command.crud import delete, get, ls
+from .command.db import database
+from .command.export import export
+from .command.generate import generate
+from .commands.scan import scan
+from .commands.util import init, status, webserver
+from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [evaluate, parse, view, webserver]
