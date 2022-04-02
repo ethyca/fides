@@ -89,8 +89,13 @@ def status(ctx: click.Context) -> None:
     config = ctx.obj["CONFIG"]
     cli_version = fidesctl.__version__
     server_url = config.cli.server_url
-    echo_green("Getting server status...")
-    check_server(cli_version, server_url)
+    click.echo("Getting server status...")
+    with_analytics(
+        ctx,
+        check_server,
+        cli_version=cli_version,
+        server_url=server_url,
+    )
     echo_green("Server is reachable and the client/server application versions match.")
 
 
