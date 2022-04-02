@@ -37,7 +37,6 @@ def test_config(test_config_path):
 @pytest.fixture(scope="session", autouse=True)
 def setup_db(test_config):
     "Sets up the database for testing."
-    print(test_config)
     yield api.db_action(test_config.cli.server_url, "reset")
 
 
