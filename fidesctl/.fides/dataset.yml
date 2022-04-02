@@ -189,6 +189,11 @@ dataset:
             data_categories:
               - system.operations
 
+          - name: fidesctl_meta
+            description: "Metadata specifically for the fidesctl application"
+            data_categories:
+              - system.operations
+
           - name: special_category
             description: "The special category as defined by Article 9 of the GDPR"
             data_categories:
