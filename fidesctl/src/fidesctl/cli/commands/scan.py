@@ -3,6 +3,7 @@
 import click
 
 from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.options import manifests_dir_argument
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -26,12 +27,12 @@ def scan_dataset(ctx: click.Context) -> None:
 @scan_dataset.command(name="db")
 @click.pass_context
 @click.argument("connection_string", type=str)
-@click.option("-m", "--manifest-dir", type=str, default="")
+@manifests_dir_argument
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan_dataset_db(
     ctx: click.Context,
     connection_string: str,
-    manifest_dir: str,
+    manifests_dir: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -49,7 +50,7 @@ def scan_dataset_db(
         ctx,
         _dataset.scan_dataset_db,
         connection_string=connection_string,
-        manifest_dir=manifest_dir,
+        manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,
@@ -66,12 +67,12 @@ def scan_system(ctx: click.Context) -> None:
 
 @scan_system.command(name="aws")
 @click.pass_context
-@click.option("-m", "--manifest-dir", type=str, default="")
+@manifests_dir_argument
 @click.option("-o", "--organization", type=str, default="default_organization")
 @click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
 def scan_system_aws(
     ctx: click.Context,
-    manifest_dir: str,
+    manifests_dir: str,
     organization: str,
     coverage_threshold: int,
 ) -> None:
@@ -87,7 +88,7 @@ def scan_system_aws(
     with_analytics(
         ctx,
         _system.scan_system_aws,
-        manifest_dir=manifest_dir,
+        manifest_dir=manifests_dir,
         organization_key=organization,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,

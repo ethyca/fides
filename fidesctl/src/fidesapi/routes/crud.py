@@ -8,16 +8,17 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
-from fidesapi.sql_models import sql_model_map
 from fidesapi.database.crud import (
     create_resource,
+    delete_resource,
     get_resource,
     list_resource,
-    delete_resource,
     update_resource,
+    upsert_resources,
 )
+from fidesapi.sql_models import sql_model_map
 from fideslang import model_map
 
 
@@ -70,6 +71,58 @@ for resource_type, resource_model in model_map.items():
         """Update a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
         return await update_resource(sql_model, resource.dict())
+
+    @router.post(
+        "/upsert",
+        responses={
+            status.HTTP_200_OK: {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "message": f"Upserted 3 {resource_type}(s)",
+                            "inserted": 0,
+                            "updated": 3,
+                        }
+                    }
+                }
+            },
+            status.HTTP_201_CREATED: {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "message": f"Upserted 3 {resource_type}(s)",
+                            "inserted": 1,
+                            "updated": 2,
+                        }
+                    }
+                }
+            },
+        },
+    )
+    async def upsert(
+        resources: List[Dict],
+        response: Response,
+        resource_type: str = get_resource_type(router),
+    ) -> Dict:
+        """
+        For any resource in `resources` that already exists in the database,
+        update the resource by its `fides_key`. Otherwise, create a new resource.
+
+        Responds with a `201 Created` if even a single resource in `resources`
+        did not previously exist. Otherwise, responds with a `200 OK`.
+        """
+
+        sql_model = sql_model_map[resource_type]
+        result = await upsert_resources(sql_model, resources)
+        response.status_code = (
+            status.HTTP_201_CREATED if result[0] > 0 else response.status_code
+        )
+
+        return {
+            "message": f"Upserted {len(resources)} {sql_model.__name__}(s)",
+            "inserted": result[0],
+            "updated": result[1],
+        }
 
     @router.delete("/{fides_key}")
     async def delete(

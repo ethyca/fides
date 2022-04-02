@@ -2,6 +2,7 @@
 
 import pytest
 import requests
+from json import loads
 
 from fidesctl.core import api as _api
 from fideslang import parse, model_list
@@ -21,9 +22,7 @@ def test_generate_resource_urls_no_id(test_config):
     Test that the URL generator works as intended.
     """
     expected_url = f"{test_config}/test/"
-    result_url = _api.generate_resource_url(
-        url=test_config, resource_type="test", version="v1"
-    )
+    result_url = _api.generate_resource_url(url=test_config, resource_type="test")
     assert expected_url == result_url
 
 
@@ -34,7 +33,9 @@ def test_generate_resource_urls_with_id(test_config):
     """
     expected_url = f"{test_config}/test/1"
     result_url = _api.generate_resource_url(
-        url=test_config, resource_type="test", version="v1", resource_id="1"
+        url=test_config,
+        resource_type="test",
+        resource_id="1",
     )
     assert expected_url == result_url
 
@@ -122,6 +123,20 @@ def test_api_update(test_config, resources_dict, endpoint):
         json_resource=manifest.json(exclude_none=True),
     )
     print(result.text)
+    assert result.status_code == 200
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("endpoint", model_list)
+def test_api_upsert(test_config, resources_dict, endpoint):
+    manifest = resources_dict[endpoint]
+    result = _api.upsert(
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+        resource_type=endpoint,
+        resources=[loads(manifest.json())],
+    )
+
     assert result.status_code == 200
 
 

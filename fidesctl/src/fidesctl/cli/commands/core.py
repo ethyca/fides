@@ -19,13 +19,14 @@ from fidesctl.core import parse as _parse
 @click.option(
     "--diff",
     is_flag=True,
-    help="Print the diff between the server's old and new states in Python DeepDiff format",
+    help="Include any changes between server and local resources in the command output",
 )
 @manifests_dir_argument
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
-    Validates local manifest files and then sends them to the server to be persisted.
+    Validate local manifest files and persist any changes via the API server.
     """
+
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     with_analytics(
