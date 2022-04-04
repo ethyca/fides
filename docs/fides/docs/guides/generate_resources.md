@@ -227,7 +227,7 @@ Once credentials have been configured we can invoke the `generate dataset okta` 
 ```sh
 ./venv/bin/fidesctl generate dataset okta \
   <my_org_url> \
-  fides_resources/aws_systems.yml
+  fides_resources/okta_datasets.yml
 ```
 
 The result is a resource file with datasets that represent our application integrations:
