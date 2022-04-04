@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import {
@@ -22,6 +22,14 @@ import config from '../config/config.json';
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
   const { isOpen, onClose, onOpen, openAction } = useRequestModal();
+
+  useEffect(() => {
+    if(alert?.status) {
+      const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
+      return () => clearTimeout(closeAlertTimer)
+    }
+  }, [alert])
+  
   return (
     <div>
       <Head>
