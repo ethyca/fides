@@ -1521,6 +1521,9 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <p>An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3">ISO 3166-1</a></p>
 <p><strong>joint_controller</strong><span class="required"/>&nbsp;&nbsp;[array]</p>
 <p>An optional array of contact information if a Joint Controller exists. This information can also be more granularly stored at the <a href="/fides/language/resources/dataset/">dataset</a> level (<code>name</code>, <code>address</code>, <code>email</code>, <code>phone</code>).</p>
+<p><strong>data_protection_impact_assessment</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p>The array of properties that declare the requirement for and information surrounding a Data Protection Impact Assessment (<code>is_required</code>, <code>progress</code>, <code>link</code>).</p>
+<p>Information will be exported as part of the data map or Record of Processing Activites (RoPA)</p>
 <p><strong>privacy_declarations</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 <p>The array of declarations describing the types of data in your system. This is a list of the privcy attributes (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>) for each of your systems.</p>
 <p><strong>organization_fides_key</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>string</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: <code>default_organization</code></p>
@@ -1552,7 +1555,11 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_analytics_system</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Analytics System</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A system used for analyzing customer behaviour.</span><span class="w"></span>
@@ -1567,6 +1574,10 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1 Acme Pl. New York, NY</span><span class="w"></span>
 <span class="w">      </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controller@acmeinc.com</span><span class="w"></span>
 <span class="w">      </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+1 555 555 5555</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_protection_impact_assessment</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">is_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"></span>
+<span class="w">      </span><span class="nt">progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Complete</span><span class="w"></span>
+<span class="w">      </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/analytics_system_data_protection_impact_assessment</span><span class="w"></span>
 <span class="w">    </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Analyze customer behaviour for improvements.</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>

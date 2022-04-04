@@ -3585,6 +3585,32 @@
         },
         "description": "The DataCategory resource model."
       },
+      "DataProtectionImpactAssessment": {
+        "title": "DataProtectionImpactAssessment",
+        "type": "object",
+        "properties": {
+          "is_required": {
+            "title": "Is Required",
+            "type": "boolean",
+            "description": "A boolean value determining if a data protection impact assessment is required. Defaults to False.",
+            "default": false
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "string",
+            "description": "The optional status of a Data Protection Impact Assessment. Returned on an exported data map or RoPA."
+          },
+          "link": {
+            "title": "Link",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "The optional link to the Data Protection Impact Assessment. Returned on an exported data map or RoPA.",
+            "format": "uri"
+          }
+        },
+        "description": "The DataProtectionImpactAssessment (DPIA) resource model.\n\nContains information in regard to the data protection\nimpact assessment exported on a data map or Record of\nProcessing Activities (RoPA).\n\nA legal requirement under GDPR for any project that\nintroduces a high risk to personal information."
+      },
       "DataQualifier": {
         "title": "DataQualifier",
         "required": [
@@ -4405,6 +4431,18 @@
             "title": "Administrating Department",
             "type": "string",
             "default": "Not defined"
+          },
+          "data_protection_impact_assessment": {
+            "title": "Data Protection Impact Assessment",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataProtectionImpactAssessment"
+              }
+            ],
+            "description": "\n    The DataProtectionImpactAssessment (DPIA) resource model.\n\n    Contains information in regard to the data protection\n    impact assessment exported on a data map or Record of\n    Processing Activities (RoPA).\n\n    A legal requirement under GDPR for any project that\n    introduces a high risk to personal information.\n    ",
+            "default": {
+              "is_required": false
+            }
           }
         },
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
