@@ -227,6 +227,7 @@ class System(SqlAlchemyBase, FidesBase):
     third_country_transfers = Column(ARRAY(String))
     privacy_declarations = Column(JSON)
     administrating_department = Column(String)
+    data_protection_impact_assessment = Column(JSON)
 
 
 sql_model_map: Dict = {
