@@ -10,7 +10,7 @@ def parse(manifests_dir: str) -> Taxonomy:
     Parse local manifest file(s) into a Taxonomy.
     """
 
-    echo_green(f"Loading resource manifests from: {manifests_dir}")
+    print(f"Loading resource manifests from: {manifests_dir}")
     ingested_manifests = ingest_manifests(manifests_dir)
     taxonomy = load_manifests_into_taxonomy(ingested_manifests)
     echo_green("Taxonomy successfully created.")
