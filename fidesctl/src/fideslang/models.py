@@ -160,8 +160,12 @@ class DataSubjectRights(BaseModel):
     via the set strategy.
     """
 
-    strategy: IncludeExcludeEnum
-    values: Optional[List[DataSubjectRightsEnum]]
+    strategy: IncludeExcludeEnum = Field(
+        description="Defines the strategy used when mapping data rights to a data subject.",
+    )
+    values: Optional[List[DataSubjectRightsEnum]] = Field(
+        description="A list of valid data subject rights to be used when applying data rights to a data subject via a strategy.",
+    )
 
     @root_validator()
     @classmethod
@@ -181,19 +185,32 @@ class DataSubjectRights(BaseModel):
 class DataSubject(FidesModel):
     """The DataSubject resource model."""
 
-    rights: Optional[DataSubjectRights]
-    automated_decisions_or_profiling: Optional[bool]
+    rights: Optional[DataSubjectRights] = Field(description=DataSubjectRights.__doc__)
+    automated_decisions_or_profiling: Optional[bool] = Field(
+        description="A boolean value to annotate whether or not automated decisions/profiling exists for the data subject.",
+    )
 
 
 class DataUse(FidesModel):
     """The DataUse resource model."""
 
     parent_key: Optional[FidesKey]
-    legal_basis: Optional[LegalBasisEnum]
-    special_category: Optional[SpecialCategoriesEnum]
-    recipients: Optional[List[str]]
-    legitimate_interest: bool = False
-    legitimate_interest_impact_assessment: Optional[AnyUrl]
+    legal_basis: Optional[LegalBasisEnum] = Field(
+        description="The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map.",
+    )
+    special_category: Optional[SpecialCategoriesEnum] = Field(
+        description="The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map.",
+    )
+    recipients: Optional[List[str]] = Field(
+        description="An array of recipients when sharing personal data outside of your organization.",
+    )
+    legitimate_interest: bool = Field(
+        default=False,
+        description="A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.",
+    )
+    legitimate_interest_impact_assessment: Optional[AnyUrl] = Field(
+        description="A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
+    )
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
@@ -228,14 +245,25 @@ class DatasetField(BaseModel):
     This resource is nested within a DatasetCollection.
     """
 
-    name: str
-    description: Optional[str]
-    data_categories: Optional[List[FidesKey]]
+    name: str = Field(
+        description="A UI-friendly label for the field.",
+    )
+    description: Optional[str] = Field(
+        description="A human-readable description of the field.",
+    )
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Arrays of Data Categories, identified by `fides_key`, that applies to this field.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
     )
-    retention: Optional[str]
-    fields: Optional[List[DatasetField]]
+    retention: Optional[str] = Field(
+        description="An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
+    )
+    fields: Optional[List[DatasetField]] = Field(
+        description="An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases).",
+    )
 
 
 class DatasetCollection(BaseModel):
@@ -245,14 +273,25 @@ class DatasetCollection(BaseModel):
     This resource is nested witin a Dataset.
     """
 
-    name: str
-    description: Optional[str]
-    data_categories: Optional[List[FidesKey]]
+    name: str = Field(
+        description="A UI-friendly label for the collection.",
+    )
+    description: Optional[str] = Field(
+        description="A human-readable description of the collection.",
+    )
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
     )
-    retention: Optional[str]
-    fields: List[DatasetField]
+    retention: Optional[str] = Field(
+        description="An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset.",
+    )
+    fields: List[DatasetField] = Field(
+        description="An array of objects that describe the collection's fields.",
+    )
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
         sort_list_objects_by_name
@@ -270,24 +309,50 @@ class ContactDetails(BaseModel):
     potentially under a system/dataset.
     """
 
-    name: str = ""
-    address: str = ""
-    email: str = ""
-    phone: str = ""
+    name: str = Field(
+        default="",
+        description="An individual name used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    address: str = Field(
+        default="",
+        description="An individual address used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    email: str = Field(
+        default="",
+        description="An individual email used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    phone: str = Field(
+        default="",
+        description="An individual phone number used as part of publishing contact information. Encrypted at rest on the server.",
+    )
 
 
 class Dataset(FidesModel):
     "The Dataset resource model."
 
-    meta: Optional[Dict[str, str]]
-    data_categories: Optional[List[FidesKey]]
+    meta: Optional[Dict[str, str]] = Field(
+        description="An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
+    )
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
     )
-    joint_controller: Optional[ContactDetails]
-    retention: Optional[str] = "No retention or erasure policy"
-    third_country_transfers: Optional[List[str]]
-    collections: List[DatasetCollection]
+    joint_controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    retention: Optional[str] = Field(
+        default="No retention or erasure policy",
+        description="An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
+    )
+    third_country_transfers: Optional[List[str]] = Field(
+        description="An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).",
+    )
+    collections: List[DatasetCollection] = Field(
+        description="An array of objects that describe the Dataset's collections.",
+    )
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
