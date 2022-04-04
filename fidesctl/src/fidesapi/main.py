@@ -7,7 +7,7 @@ from enum import Enum
 from logging import WARNING
 from typing import Callable, Dict
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, status
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -76,10 +76,8 @@ async def log_request(request: Request, call_next: Callable) -> Response:
             "content": {
                 "application/json": {
                     "example": {
-                        "data": {
-                            "message": "Fidesctl API service is healthy!",
-                            "version": str(fidesctl.__version__),
-                        }
+                        "status": "healthy",
+                        "version": "1.0.0",
                     }
                 }
             }
@@ -89,12 +87,9 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 )
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    server_version = str(fidesctl.__version__)
     return {
-        "data": {
-            "message": "Fidesctl API service is healthy!",
-            "version": server_version,
-        }
+        "status": "healthy",
+        "version": str(fidesctl.__version__),
     }
 
 

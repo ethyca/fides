@@ -30,7 +30,7 @@ def check_server(cli_version: str, server_url: str) -> None:
         )
         raise SystemExit(1)
 
-    server_version = health_response.json()["data"]["version"]
+    server_version = health_response.json()["version"]
     if str(server_version) != str(cli_version):
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
