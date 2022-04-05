@@ -72,7 +72,7 @@ Each populated property is listed below with it's referenced property in `demo_s
 
 ## What's missing?
 
-This next section focuses on the data map columns populated with `N/A` and how to replace that with value-added data required as part of a RoPA. To do this, we need to extend the default taxonomy for our particular situation.
+This next section focuses on the data map columns populated with `N/A` and how to replace that with value-added data required as part of a RoPA. To do this, we need to extend the default taxonomy for our particular situation. The manifeset updates can be viewed in `demo_extended_taxonomy.yml`.
 
 ### Data Use
 
