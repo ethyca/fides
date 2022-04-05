@@ -61,7 +61,7 @@ reset-db: build-local
 .PHONY: api
 api: build-local
 	@echo "Spinning up the webserver..."
-	@$(START_APP)
+	@docker compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli

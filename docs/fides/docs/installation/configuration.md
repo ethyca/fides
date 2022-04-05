@@ -43,7 +43,7 @@ To better describe the various configuration options, the following tables descr
     | database_user | String | postgres | The username of the Postgres account. |
     | database_password | String | fidesctl | The password of the Postgres account. |
     | database_host | String | fidesctl-db | The hostname of the Postgres database server. |
-    | database_post | String | 5432 | The port of the Postgres database server. |
+    | database_port | String | 5432 | The port of the Postgres database server. |
     | database_name | String | fidesctl | The name of the Postgres database. |
     | test_database_name | String | ""| Used instead of the `database_name` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
     | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |

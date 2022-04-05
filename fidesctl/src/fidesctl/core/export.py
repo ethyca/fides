@@ -17,6 +17,7 @@ from fidesctl.core.export_helpers import (
     get_formatted_data_use,
     remove_duplicates_from_comma_separated_column,
     get_datamap_fides_keys,
+    get_formatted_data_protection_impact_assessment,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
 
@@ -152,11 +153,20 @@ def generate_system_records(
             "system.privacy_declaration.data_subjects.rights_available",
             "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
             "system.privacy_declaration.data_qualifier",
+            "system.data_protection_impact_assessment.is_required",
+            "system.data_protection_impact_assessment.progress",
+            "system.data_protection_impact_assessment.link",
             "dataset.fides_key",
         )
     ]
 
     for system in server_system_list:
+        third_country_list = ", ".join(system.third_country_transfers or [])
+        data_protection_impact_assessment = (
+            get_formatted_data_protection_impact_assessment(
+                system.data_protection_impact_assessment.dict()
+            )
+        )
         for declaration in system.privacy_declarations:
             data_use = get_formatted_data_use(url, headers, declaration.data_use)
             data_categories = declaration.data_categories or []
@@ -164,7 +174,6 @@ def generate_system_records(
                 url, headers, declaration.data_subjects
             )
             dataset_references = declaration.dataset_references or []
-            third_country_list = ", ".join(system.third_country_transfers or [])
             cartesian_product_of_declaration = [
                 (
                     system.name,
@@ -184,6 +193,9 @@ def generate_system_records(
                     subject["rights_available"],
                     subject["automated_decisions_or_profiling"],
                     declaration.data_qualifier,
+                    data_protection_impact_assessment["is_required"],
+                    data_protection_impact_assessment["progress"],
+                    data_protection_impact_assessment["link"],
                     dataset_reference,
                 )
                 for category in data_categories

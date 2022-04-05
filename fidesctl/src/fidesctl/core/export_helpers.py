@@ -104,6 +104,9 @@ def export_datamap_to_excel(
         "system.privacy_declaration.data_subjects.rights_available",
         "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
         "dataset.name",
+        "system.data_protection_impact_assessment.is_required",
+        "system.data_protection_impact_assessment.progress",
+        "system.data_protection_impact_assessment.link",
     ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(
@@ -280,3 +283,13 @@ def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
 def remove_duplicates_from_comma_separated_column(comma_separated_string: str) -> str:
     "transform the row using a set to remove duplcation"
     return ", ".join(set(comma_separated_string.split(", ")))
+
+
+def get_formatted_data_protection_impact_assessment(
+    data_protection_impact_assessment: dict,
+) -> dict:
+    "Replace None with N/A for consistent formatting of the data map"
+    return {
+        key: ("N/A" if value is None else value)
+        for key, value in data_protection_impact_assessment.items()
+    }
