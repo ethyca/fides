@@ -8,6 +8,10 @@ system:
     third_country_transfers:
     - USA
     - CAN
+    data_protection_impact_assessment:
+      is_required: True
+      progress: Complete
+      link: https://example.org/analytics_system_data_protection_impact_assessment
     privacy_declarations:
       - name: Analyze customer behaviour for improvements.
         data_categories:

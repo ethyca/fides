@@ -9,6 +9,7 @@ from fideslang.models import (
     DatasetCollection,
     DatasetField,
     DataSubjectRights,
+    DataProtectionImpactAssessment,
 )
 
 
@@ -109,7 +110,7 @@ def test_xlsx_export(tmpdir):
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
         "system.privacy_declaration.data_subjects.name",
-        "dataset.data_categories",
+        "unioned_data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
         "third_country_combined",
@@ -123,6 +124,10 @@ def test_xlsx_export(tmpdir):
         "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
         "system.privacy_declaration.data_subjects.rights_available",
         "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+        "dataset.name",
+        "system.data_protection_impact_assessment.is_required",
+        "system.data_protection_impact_assessment.progress",
+        "system.data_protection_impact_assessment.link",
     ]
 
     organization_df = pd.DataFrame()
@@ -168,3 +173,15 @@ def test_calculate_data_subject_rights(data_subject_rights: dict):
     assert return_str_value is not None
     if data_subject_rights["strategy"] in ["INCLUDE", "EXCLUDE"]:
         assert return_str_value == "Informed, Erasure"
+
+
+@pytest.mark.unit
+def test_get_formatted_data_protection_impact_assessment():
+    "Tests that only optional None values are formatted as N/A for exporting."
+    formatted_dict = export_helpers.get_formatted_data_protection_impact_assessment(
+        DataProtectionImpactAssessment().dict()
+    )
+
+    assert formatted_dict["is_required"] == False
+    assert formatted_dict["progress"] == "N/A"
+    assert formatted_dict["link"] == "N/A"

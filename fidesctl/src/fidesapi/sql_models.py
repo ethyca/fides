@@ -153,6 +153,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
+    fidesctl_meta = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))
@@ -227,6 +228,7 @@ class System(SqlAlchemyBase, FidesBase):
     third_country_transfers = Column(ARRAY(String))
     privacy_declarations = Column(JSON)
     administrating_department = Column(String)
+    data_protection_impact_assessment = Column(JSON)
 
 
 sql_model_map: Dict = {

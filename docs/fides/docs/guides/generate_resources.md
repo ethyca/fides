@@ -200,3 +200,57 @@ Taxonomy successfully created.
 Scanned 1 resource and all were found in taxonomy.
 Resource coverage: 100%
 ```
+# Working With an Okta Account
+
+The `generate` command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with. 
+
+## Providing Credentials
+
+Authentication is managed through environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
+
+The simplest way to authenticate is by using a client token:
+```sh
+export OKTA_CLIENT_TOKEN="<my_okta_client_token>"
+```
+
+It is also possible to authenticate using OAuth 2.0:
+```sh
+export OKTA_CLIENT_AUTHORIZATIONMODE="PrivateKey"
+export OKTA_CLIENT_CLIENTID="<my_client_id>"
+export OKTA_CLIENT_SCOPES="<my_scope_1,my_scope_2>"
+export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
+```
+
+## Generating Datasets
+
+Once credentials have been configured we can invoke the `generate dataset okta` command:
+```sh
+./venv/bin/fidesctl generate dataset okta \
+  <my_org_url> \
+  fides_resources/okta_datasets.yml
+```
+
+The result is a resource file with datasets that represent our application integrations:
+```yaml
+dataset:
+- fides_key: 0oa4jejqcp74R9MpJ5d7
+  organization_fides_key: default_organization
+  name: salesforce
+  description: 'Fides Generated Description for Okta Application: Salesforce.com'
+  data_categories: []
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  fidesctl_meta:
+    resource_id: 0oa4jejqcp74R9MpJ5d7
+  retention: No retention or erasure policy
+  collections: []
+- fides_key: 0oa4jekd00tpvn5hN5d7
+  organization_fides_key: default_organization
+  name: google
+  description: 'Fides Generated Description for Okta Application: Google Workspace'
+  data_categories: []
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  fidesctl_meta:
+    resource_id: 0oa4jekd00tpvn5hN5d7
+  retention: No retention or erasure policy
+  collections: []
+```
