@@ -2,7 +2,6 @@
 
 import json
 import sys
-from asyncio import run
 from datetime import datetime, timezone
 from os import getenv
 from typing import Any, Callable, Dict
@@ -138,6 +137,6 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
             )
 
             try:
-                run(ctx.meta["ANALYTICS_CLIENT"].send(event))
+                ctx.meta["ANALYTICS_CLIENT"].send(event)
             except AnalyticsException:
                 pass  # cli analytics should fail silently
