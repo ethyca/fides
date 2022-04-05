@@ -287,8 +287,12 @@ def remove_duplicates_from_comma_separated_column(comma_separated_string: str) -
 
 def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Data categories on the system need to be applied to the entire joined dataset when
-    joined together. These need to be surfaced in a way that
+    Data Categories can be present in both the System and (optionally) Dataset
+    resources, causing duplication when joining them together.
+
+    This function isolates the data categories from each into a new column which
+    when unioned together can be used to populate the data map accurately with
+    the data categories from both System and Dataset.
     """
 
     # isolate the system data categories into a new dataframe and create a common column
