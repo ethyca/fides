@@ -51,6 +51,8 @@ If an `external_id` was provided at request creation, we can also track the priv
 
 `GET api/v1/privacy-request?external_id=<external_id>`
 
+Please note: These parameters will return matching Privacy Requests based on startswith matches.
+
 ### Privacy Request Filtering Options
 
 Use the following query params to further filter your privacy requests.  Filters can be chained, for example, 
