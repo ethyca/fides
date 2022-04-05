@@ -1,8 +1,8 @@
 /* -- START: Default mode CSS -- */
 
 [data-md-color-scheme="default"] {
-    --md-typeset-color: rgb(79, 86, 107);
-    --md-default-fg-color--light: rgb(79, 86, 107);
+    --md-typeset-color: rgb(66, 84, 102);
+    --md-default-fg-color--light: rgb(17, 20, 57);
     --md-primary-fg-color: #0861CE;
     --md-vis-bg-color: rgba(0, 0, 0, 0.02);
     --md-code-bg-color: #0861ce27;
@@ -18,9 +18,16 @@
     --md-code-hl-string-color: rgb(133, 217, 150);
     --md-code-hl-keyword-color: rgb(245, 251, 255);
     --md-code-hl-punctuation-color: rgb(245, 251, 255);
-    --md-bg-footer-color: #0861CE;
+    --md-code-hl-number-color:  #F8B886;
+    --md-code-hl-special-color: #F8B886;
+    --md-bg-footer-color: #111439;
     --md-bg-table-header: rgba(79, 86, 107, 0.05);
     --svg-highlight-col: #0657b9;
+    --code-window-bg:  #2A2F45;
+    --md-code-hl-function-color: #4898FF;
+    --md-code-hl-constant-color: #4898FF;;
+    --md-button-color:  #0861ce;
+    --md-header-bg-color: #111439;
 }
 
 
@@ -32,7 +39,7 @@
     --md-default-bg-color: #2A2F45;
     --md-primary-fg-color: #1A1D2E;
     --md-accent-fg-color: #1FDF8F;
-    --md-typeset-a-color: rgb(82, 108, 254);
+    --md-typeset-a-color: rgb(31, 223, 143);
     --md-vis-bg-color: rgba(0, 0, 0, 0.12);
     --md-code-hl-number-color: rgb(240, 96, 144);
     --md-nav-border: #61647b;
@@ -42,10 +49,17 @@
     --md-bg-table-header: rgba(233, 235, 252, 0.06);
     --md-code-hl-keyword-color: rgb(245, 251, 255);
     --svg-highlight-col: #1FDF8F;
+    --code-window-bg:  #1A1D2E;
+    --md-button-color:  #fff;
+    --md-header-bg-color: #1A1D2E;
 }
 
 body {
     font-family: 'Source Sans Pro', sans-serif;
+}
+
+.md-header{
+    background-color: var(--md-header-bg-color);
 }
 
 .md-header .md-logo img {
@@ -53,7 +67,7 @@ body {
     height: auto;
 }
 
-.md-header__topic {
+.md-header__title .md-ellipsis {
     display: none;
 }
 
@@ -78,13 +92,23 @@ body {
 }
 
 .md-content h1,
-.md-content h2 {
+.md-content h2,
+.md-content h3 {
+    font-weight: 600;
+    color: var(--md-default-fg-color--light);
+}
+
+article.md-content__inner{
+    padding-bottom: 30px;
+}
+
+.md-typeset a{
     font-weight: 600;
 }
 
 .md-footer {
-    background-color: #303036;
-    padding: 30px 50px;
+    background-color: var(--md-bg-footer-color);
+    padding: 17px 50px;
     color: white;
 }
 
@@ -114,14 +138,18 @@ body {
     color: #fff;
 }
 
+.md-typeset .md-button{
+    border-radius: 10px;
+    color: var(--md-button-color);
+    border-color: var(--md-button-color);
+}
+
 p code,
 li code {
     color: var(--md-code-fg-color);
 }
 
-.md-footer {
-    background-color: var(--md-bg-footer-color);
-}
+
 
 .md-typeset__table thead {
     background-color: var(--md-bg-table-header);
@@ -148,7 +176,7 @@ li code {
 .highlighttable .code,
 .highlighttable .code,
 .md-typeset .highlighttable code {
-    background-color: rgb(79, 86, 107);
+    background-color: var(--code-window-bg);
     padding-top: 10px;
     padding-bottom: 10px;
     color: var(--md-code-hl-comment-color);
@@ -190,4 +218,40 @@ li code {
     box-shadow: none;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.highlighttable tr:nth-child(2)  .linenos{  
+    border-radius: 0px 0 0 5px;
+}
+.highlighttable  tr:nth-child(2) .code {
+    border-radius: 0 0px 5px 0;
+}
+
+.highlight .filename > code{
+    background-color: transparent;
+    color: #2A2F45 ;
+}
+
+/***  API Page Dark Mode Compatibility ***/
+
+.swagger-ui,
+.swagger-ui .info .title, 
+.swagger-ui .opblock .opblock-summary-operation-id, 
+.swagger-ui .opblock .opblock-summary-path, 
+.swagger-ui .opblock .opblock-summary-path__deprecated,
+.swagger-ui .opblock .opblock-summary-description,
+.swagger-ui .opblock-tag,
+.swagger-ui .opblock-description-wrapper p, 
+.swagger-ui .opblock-external-docs-wrapper p, 
+.swagger-ui .opblock-title_normal p,
+.swagger-ui table thead tr td, 
+.swagger-ui table thead tr th,
+.swagger-ui .parameter__name,
+.swagger-ui .parameter__type,
+.swagger-ui .tab li{
+    color: var(--md-default-fg-color--light) !important;
+}
+
+.swagger-ui .highlight-code>.microlight code{
+    color: white !important;
 }
