@@ -13,11 +13,12 @@ class CLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
     local_mode: bool = False
-    # Ignored due to this bug: https://github.com/samuelcolvin/pydantic/issues/3143
-    server_host: AnyHttpUrl = "http://localhost"  # type: ignore
-    server_port: Optional[int]
-    server_url: Optional[AnyHttpUrl]
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
+    
+    server_host: str = "localhost"
+    server_port: Optional[int]
+    server_protocol: str = "http"	# if you want, otherwise always http
+    server_url: AnyHttpUrl
 
     @root_validator(skip_on_failure=True)
     def get_database_url(cls: FidesSettings, values: Dict) -> Dict:
@@ -27,12 +28,16 @@ class CLISettings(FidesSettings):
         This needs to be set as a root validator,
         otherwise the type errors gets suppressed.
         """
-        server_host = values["server_host"]
-        server_port = values["server_port"]
-        values["server_url"] = "{}{}".format(
-            server_host,
-            ":" + str(server_port) if server_port else "",
+        host = values["server_host"]
+        port = values["server_port"]
+        protocol = values["server_protocol"]
+
+        values["server_url"] = "{}://{}{}".format(
+        	protocol,
+        	host,
+            ":" + str(port) if port else "",
         )
+        
         return values
 
     @validator("analytics_id", always=True)
