@@ -119,6 +119,7 @@ def annotate_dataset(
             url=config.cli.server_url,
             resource_type=resource_type,
             headers=config.user.request_headers,
+            exclude_keys=[],
         )
     ]
 

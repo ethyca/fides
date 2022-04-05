@@ -1,7 +1,7 @@
 dataset:
   - fides_key: public
     organization_fides_key: default_organization
-    name: fidesctl
+    name: public
     description: "The dataset responsible for storing all of the data related to a fidesctl instance."
     meta: {}
     data_categories:
@@ -186,6 +186,11 @@ dataset:
 
           - name: legal_basis
             description: "The legal basis for processing personal data as defined by Article 6 of the GDPR"
+            data_categories:
+              - system.operations
+
+          - name: fidesctl_meta
+            description: "Metadata specifically for the fidesctl application"
             data_categories:
               - system.operations
 
