@@ -442,6 +442,49 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert resp == expected_resp
 
+    def test_get_privacy_requests_by_partial_id(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?id={privacy_request.id[:5]}", headers=auth_header
+        )
+        assert 200 == response.status_code
+
+        expected_resp = {
+            "items": [
+                {
+                    "id": privacy_request.id,
+                    "created_at": stringify_date(privacy_request.created_at),
+                    "started_processing_at": stringify_date(
+                        privacy_request.started_processing_at
+                    ),
+                    "finished_processing_at": None,
+                    "status": privacy_request.status.value,
+                    "external_id": privacy_request.external_id,
+                    "identity": None,
+                    "reviewed_at": None,
+                    "reviewed_by": None,
+                    "policy": {
+                        "name": privacy_request.policy.name,
+                        "key": privacy_request.policy.key,
+                    },
+                }
+            ],
+            "total": 1,
+            "page": 1,
+            "size": page_size,
+        }
+
+        resp = response.json()
+        assert resp == expected_resp
+
     def test_get_privacy_requests_with_identity(
         self,
         api_client: TestClient,
