@@ -125,6 +125,8 @@ And the following complex fields which we will cover in detail below:
 - `client_config`
 - `test_request`
 - `endpoints`
+- `data_protection_request`
+
 #### Connector params
 The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](database_connectors.md#set-the-connectionconfigs-secrets).
 
@@ -167,6 +169,30 @@ Once the base client is defined we can use a `test_request` to verify our hostna
 test_request:
   method: GET
   path: /3.0/lists
+```
+
+#### Data Protection Request
+If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
+```yaml
+  data_protection_request:
+    method: POST
+    path: /v1beta/workspaces/<workspace_name>/regulations
+    param_values:
+      - name: workspace_name
+        connector_param: workspace
+      - name: user_id
+        identity: email
+    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
+    client_config:
+      protocol: https
+      host:
+        connector_param: config_domain
+      authentication:
+        strategy: bearer_authentication
+        configuration:
+          username:
+            connector_param: access_token
+
 ```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
