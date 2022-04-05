@@ -97,22 +97,21 @@ volumes:
 
 Now we can start interacting with our installation. Let's run the following commands to get going:
 
-1. `docker-compose up -d` -> This will spin up the docker-compose file in the background
-1. `docker-compose run --rm fidesctl /bin/bash` -> Opens a shell within the fidesctl container
-1. `fidesctl ping` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+1. `docker-compose up -d` -> This will spin up the docker-compose file in the background.
+1. `docker-compose run --rm fidesctl /bin/bash` -> This opens a shell within the fidesctl container.
+1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
 
     ```bash
-    root@796cfde906f1:/fides/fidesctl# fidesctl ping
-    Pinging http://fidesctl:8080/health...
-    {
-        "data": {
-            "message": "Fidesctl API service is healthy!"
-        }
-    }
+    root@2da501a72f8f:/fides/fidesctl# fidesctl status
+    Getting server status...
+    Server is reachable and the client/server application versions match.
     ```
+   
+
+Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
 
 ## Next Steps
 
-Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!
+You're now ready to start enforcing privacy with Fidesctl!
 
 See the [Tutorial](../tutorial/index.md) page for a step-by-step guide on setting up a Fidesctl data privacy workflow.

@@ -64,7 +64,7 @@ def echo_results(action: str, resource_type: str, resource_count: int) -> None:
     """
     Echo out the results of the apply.
     """
-    echo_green(f"{action.upper()} {resource_count} {resource_type} resources.")
+    echo_green(f"{action.upper()} {resource_count} {resource_type} resource(s).")
 
 
 def apply(
@@ -80,7 +80,7 @@ def apply(
 
     for resource_type in taxonomy.__fields_set__:
         print("-" * 10)
-        print(f"Processing {resource_type} resources...")
+        print(f"Processing {resource_type} resource(s)...")
         resource_list = getattr(taxonomy, resource_type)
 
         if diff or dry:

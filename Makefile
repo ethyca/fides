@@ -61,7 +61,7 @@ reset-db: build-local
 .PHONY: api
 api: build-local
 	@echo "Spinning up the webserver..."
-	@$(START_APP)
+	@docker compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
@@ -152,7 +152,7 @@ xenon:
 	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
-	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
+	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py,src/fidesctl/cli/__init__.py"
 
 ####################
 # Utils
