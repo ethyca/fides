@@ -8,13 +8,34 @@ from os import getenv
 from typing import Any, Callable, Dict
 
 import click
+import requests
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsException
 from fideslog.sdk.python.utils import OPT_OUT_COPY
-from requests import Response
 
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import echo_red
+from fidesctl.core.utils import echo_red, check_response
+from fidesctl.core import api as _api
+
+
+def check_server(cli_version: str, server_url: str) -> None:
+    "Runs a health check and a version check against the server."
+
+    healthcheck_url = server_url + "/health"
+    try:
+        health_response = check_response(_api.ping(healthcheck_url))
+    except requests.exceptions.ConnectionError:
+        echo_red(
+            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+        )
+        raise SystemExit(1)
+
+    server_version = health_response.json()["version"]
+    if str(server_version) != str(cli_version):
+        echo_red(
+            f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
+        )
+        raise SystemExit(1)
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
@@ -24,7 +45,9 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     click.secho(json.dumps(dict_object, indent=2), fg=color)
 
 
-def handle_cli_response(response: Response, verbose: bool = True) -> Response:
+def handle_cli_response(
+    response: requests.Response, verbose: bool = True
+) -> requests.Response:
     """Viewable CLI response"""
     if response.status_code >= 200 and response.status_code <= 299:
         if verbose:
