@@ -1,7 +1,7 @@
-# exporting a data map using the demo resources
+# Exporting a data map using the demo resources
 
 
-This guide is being made available to detail which attributes are required and how to implement them to export an Article 30 compliant Record of Processing Activites (RoPA) using the data map feature.
+the purpose of this guide is to detail which attributes are required and how to implement them to export an Article 30 compliant Record of Processing Activites (RoPA).
 
 To follow the guide, please follow [Step 1 of the Quickstart](https://github.com/ethyca/fides/#rocket-quick-start)
 
@@ -29,13 +29,13 @@ The data map should have been exported to the `demo_resources/` directory, open 
 
 ### Organization
 
-The header block at the top of a data map is composed of properties found in the Organization resource. The demo items are populated for us, but this should be composed of publicly available information for your company/organization.
+The header block at the top of a data map is composed of properties found in the Organization resource. For demo purposes, this resource has fake data but normally this would be composed of publicly available information for your company/organization.
 
 ![Organization Contact Info](../img/datamap_organization_contact.png)
 
-Reviewing `demo_resources/demo_organization.yml` will highlight the relationship between the Organization resource manifest and the data map.
+Reviewing `demo_resources/demo_organization.yml` will highlight the relationship between the Organization resource manifest and the data map. Each of `controller`, `data_protection_officer`, and `representative` are composed of Contact Detail properties aligning with the exported data map.
 
-Additionally, the link to the security policy of an organization can be found modeled on the Organization resource.
+Additionally, the link to the security policy of an organization can be found modeled on the Organization resource as `security_policy`.
 
 
 ### Dataset
@@ -61,18 +61,19 @@ Each populated property is listed below with it's referenced property in `demo_s
 * **Fides dataset**: Found under `dataset_references`, used to join dataset(s) to the system.
 * **Fides system**: The name defined at the top-level of the system.
 * **Department or Business Function**: `administering_department` set at the top-level of the system.
-* **Purpose of Processing**: The name defined for the `data_use` set in a Privacy Declaraion.
+* **Purpose of Processing**: The name defined for the `data_use` set in a Privacy Declaration.
 * **Categories of Individuals**: The name defined for the `data_subject` set in a Privacy Declaration.
 * **Categories of Personal Data**: Any Data Category set as part of a Privacy Declaration will also be populated here (see the output for Demo Marketing System as a clear example).
 * **Role or Responsibility**: Defined by the `data_responsibility_title` property at the top-level of the system.
+* **Source of the Personal Data**: The fides dataset name if referenced on the system.
 * **Data Protection Impact Assessment**: All of the information related to a DPIA is defined under the `data_protection_impact_assessment` property at the top-level of the system.
 
 
-> **Note:** DPIA is also exported here currently, thinking about removing this to be able to include it in a follow on step?
-
 ## What's missing?
 
-This next section focuses on the data map columns populated with `N/A` and how to replace that with value-added data required as part of a RoPA. To do this, we need to extend the default taxonomy for our particular situation. The manifeset updates can be viewed in `demo_extended_taxonomy.yml`.
+This next section focuses on the data map columns populated with `N/A` and how to use properties within the fides Taxonomy and Resources to replace those with value-added data required as part of a RoPA.
+
+To do this, we need to extend the default taxonomy for our particular needs. The manifeset updates can be viewed in `demo_extended_taxonomy.yml`.
 
 ### Data Use
 
@@ -126,7 +127,24 @@ $ fidesctl apply demo_resources/
 $ fidesctl export datamap demo_resources/
 ```
 
-Opening the new Data Map will show the previously `N/A` columns fully populated, giving us an Article 30 compliant RoPA for one of the two systems defined in `demo_resources/`. Follow the previous step again for the Demo Analytics System to have both systems fully compliant!
+### Additional Properties Found
+
+Opening the new Data Map will show the previously `N/A` columns fully populated, giving us an Article 30 compliant RoPA for one of the two systems defined in `demo_resources/`. Below is a mapping of the newly populated columns with their respective properties:
+
+* **Purpose of Processing**: The name of our newly defined extended `data_use` set in a Privacy Declaration.
+* **Categories of Individuals**: The name of our newly defined extended `data_subject` set in a Privacy Declaration.
+* **Categories of Recipients**: The recipients as defined in our extended Data Use.
+* **Article 6 Lawful Basis for Processing Personal Data**: The `legal_basis` as defined in our extended Data Use .
+* **Article 9 Condition for Processing Special Category Data**: The `special_category` as defined in our extended Data Use.
+* **Legitimate Interests for the Processing**: If the `legal_basis` is `"Legitimate Interests"`, the Data Use name is used to identify what the legitimate interest data use is.
+* **Link to Record of Legitimate Interests Assessment**: If the `legal_basis` is `"Legitimate Interests"`, a legitimate interests impact assessment is required and should be set using the `legitimate_interest_impact_assessment` property.
+* **Rights Available to Individuals**: The `rights` as defined in our extended Data Subject based on the strategy used.
+* **Existence of Automated Decision-Making, Including Profiling**: The boolean value for `automated_decisions_or_profiling` as defined in our extended Data Subject.
+
+
+### Extra Credit
+
+Follow the previous step again for the Demo Analytics System to have both systems fully compliant!
 
 
 ## Where to go from here?
