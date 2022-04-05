@@ -28,7 +28,7 @@ extras = {
     "mysql": [mysql_connector],
     "mssql": [mssql_connector],
     "snowflake": [snowflake_connector],
-    "redshift" : [redshift_connector],
+    "redshift": [redshift_connector],
     "webserver": [fastapi, uvicorn, psycopg_connector, asyncpg],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
