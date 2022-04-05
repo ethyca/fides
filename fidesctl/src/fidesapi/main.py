@@ -7,10 +7,11 @@ from enum import Enum
 from logging import WARNING
 from typing import Callable, Dict
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, status
 from loguru import logger as log
 from uvicorn import Config, Server
 
+import fidesctl
 from fidesapi import view
 from fidesapi.database import database
 from fidesapi.routes import crud, visualize
@@ -67,10 +68,29 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     return response
 
 
-@app.get("/health", tags=["Health"])
+@app.get(
+    "/health",
+    response_model=Dict[str, str],
+    responses={
+        status.HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "healthy",
+                        "version": "1.0.0",
+                    }
+                }
+            }
+        }
+    },
+    tags=["Health"],
+)
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {"data": {"message": "Fidesctl API service is healthy!"}}
+    return {
+        "status": "healthy",
+        "version": str(fidesctl.__version__),
+    }
 
 
 class DBActions(str, Enum):

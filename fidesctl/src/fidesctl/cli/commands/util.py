@@ -3,11 +3,10 @@ import os
 
 import click
 from fideslog.sdk.python.utils import OPT_OUT_COPY
-import requests
 import toml
 
-from fidesctl.cli.utils import handle_cli_response, with_analytics
-from fidesctl.core import api as _api
+import fidesctl
+from fidesctl.cli.utils import check_server, with_analytics
 from fidesctl.core.utils import echo_green, echo_red
 
 
@@ -83,17 +82,21 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
-def ping(ctx: click.Context) -> None:
+def status(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
     """
     config = ctx.obj["CONFIG"]
-    healthcheck_url = config.cli.server_url + "/health"
-    echo_green(f"Pinging {healthcheck_url}...")
-    try:
-        handle_cli_response(with_analytics(ctx, _api.ping, url=healthcheck_url))
-    except requests.exceptions.ConnectionError:
-        echo_red("Connection failed, webserver is unreachable.")
+    cli_version = fidesctl.__version__
+    server_url = config.cli.server_url
+    click.echo("Getting server status...")
+    with_analytics(
+        ctx,
+        check_server,
+        cli_version=cli_version,
+        server_url=server_url,
+    )
+    echo_green("Server is reachable and the client/server application versions match.")
 
 
 @click.command()
