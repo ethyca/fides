@@ -1596,38 +1596,12 @@ Fidesctl initialization complete.
 </td></tr></table>
 <p>The fidesctl webserver will now be accessible at <code>localhost:8080</code>, you can test this by going to <code>localhost:8080/health</code> and <code>localhost:8080/docs</code>.</p>
 <h2 id="using-the-cli">Using the CLI</h2>
-<p>Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command <code>fidesctl ping</code> to make sure that the CLI can talk to the webserver. The output should look something like this:</p>
+<p>Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command <code>fidesctl status</code> to make sure that the CLI can talk to the webserver. The output should look something like this:</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Pinging http://fidesctl:8080/health...
-{
-    &quot;data&quot;: {
-        &quot;message&quot;: &quot;Fidesctl API service is healthy!&quot;
-    }
-}
-</code></pre></div>
-</td></tr></table>
-<p>Next is to verify that the database is reachable from the webserver. Run the command <code>fidesctl ls organizations</code> to verify that all is working. The output should look something like this:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_organization&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;organization_fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_organization&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;organization_parent_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
+Getting server status...
+Server is reachable and the client/server application versions match.
 </code></pre></div>
 </td></tr></table>
 <p>That's it! Your local installation of fidesctl is completely up and running.</p>

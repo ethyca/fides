@@ -3461,7 +3461,17 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Health Health Get",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "status": "healthy",
+                  "version": "1.0.0"
+                }
               }
             }
           }

@@ -1622,29 +1622,22 @@ volumes:
 </td></tr></table>
 <p>Now we can start interacting with our installation. Let's run the following commands to get going:</p>
 <ol>
-<li><code>docker-compose up -d</code> -&gt; This will spin up the docker-compose file in the background</li>
-<li><code>docker-compose run --rm fidesctl /bin/bash</code> -&gt; Opens a shell within the fidesctl container</li>
+<li><code>docker-compose up -d</code> -&gt; This will spin up the docker-compose file in the background.</li>
+<li><code>docker-compose run --rm fidesctl /bin/bash</code> -&gt; This opens a shell within the fidesctl container.</li>
 <li>
-<p><code>fidesctl ping</code> -&gt; This confirms that your <code>fidesctl</code> CLI can reach the server and everything is ready to go!</p>
+<p><code>fidesctl status</code> -&gt; This confirms that your <code>fidesctl</code> CLI can reach the server and everything is ready to go!</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@796cfde906f1:/fides/fidesctl# fidesctl ping
-Pinging http://fidesctl:8080/health...
-<span class="o">{</span>
-    <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Fidesctl API service is healthy!&quot;</span>
-    <span class="o">}</span>
-<span class="o">}</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
+Getting server status...
+Server is reachable and the client/server application versions match.
 </code></pre></div>
 </td></tr></table>
 </li>
 </ol>
+<p>Now that you're up and running, you can use <code>fidesctl</code> from the shell to get a list of all the possible <a href="../../cli/">CLI commands</a>.</p>
 <h2 id="next-steps">Next Steps</h2>
-<p>Now that you're up and running, you can use <code>fidesctl</code> from the shell to get a list of all the possible CLI commands. You're now ready to start enforcing privacy with Fidesctl!</p>
+<p>You're now ready to start enforcing privacy with Fidesctl!</p>
 <p>See the <a href="../../tutorial/">Tutorial</a> page for a step-by-step guide on setting up a Fidesctl data privacy workflow.</p>
 
               

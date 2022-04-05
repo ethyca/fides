@@ -1261,13 +1261,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fidesctl-ping" class="md-nav__link">
-    ping
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -1317,6 +1310,13 @@ You're not viewing the latest version.
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-status" class="md-nav__link">
+    status
+  </a>
   
 </li>
         
@@ -1886,13 +1886,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#fidesctl-ping" class="md-nav__link">
-    ping
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -1942,6 +1935,13 @@ You're not viewing the latest version.
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-status" class="md-nav__link">
+    status
+  </a>
   
 </li>
         
@@ -2315,16 +2315,6 @@ the validity of all manifest files.</p>
   --help         Show this message and exit.
 </code></pre></div>
 </td></tr></table>
-<h3 id="fidesctl-ping">fidesctl ping</h3>
-<p>Sends a request to the Fidesctl API healthcheck endpoint and prints the response.</p>
-<p><strong>Usage:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl ping [OPTIONS]
-</code></pre></div>
-</td></tr></table>
-<p><strong>Options:</strong></p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div>
-</td></tr></table>
 <h3 id="fidesctl-scan">fidesctl scan</h3>
 <p>Scan external resource coverage against fidesctl resources</p>
 <p><strong>Usage:</strong></p>
@@ -2388,6 +2378,16 @@ under the stated threshold.</p>
 <span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -o, --organization TEXT
   -c, --coverage-threshold INTEGER RANGE
   --help                          Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h3 id="fidesctl-status">fidesctl status</h3>
+<p>Sends a request to the Fidesctl API healthcheck endpoint and prints the response.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl status [OPTIONS]
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div>
 </td></tr></table>
 <h3 id="fidesctl-view">fidesctl view</h3>
