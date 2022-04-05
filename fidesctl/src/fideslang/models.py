@@ -363,17 +363,29 @@ class Dataset(FidesModel):
 class ViolationAttributes(BaseModel):
     "The model for attributes which led to an evaluation violation"
 
-    data_categories: List[str]
-    data_subjects: List[str]
-    data_uses: List[str]
-    data_qualifier: str
+    data_categories: List[str] = Field(
+        description="A list of data categories which led to an evaluation violation.",
+    )
+    data_subjects: List[str] = Field(
+        description="A list of data subjects which led to an evaluation violation.",
+    )
+    data_uses: List[str] = Field(
+        description="A list of data uses which led to an evaluation violation.",
+    )
+    data_qualifier: str = Field(
+        description="The data qualifier which led to an evaluation violation.",
+    )
 
 
 class Violation(BaseModel):
     "The model for violations within an evaluation"
 
-    violating_attributes: ViolationAttributes
-    detail: str
+    violating_attributes: ViolationAttributes = Field(
+        description=ViolationAttributes.__doc__
+    )
+    detail: str = Field(
+        description="A human-readable string detailing the evaluation violation.",
+    )
 
 
 class StatusEnum(str, Enum):
@@ -390,10 +402,18 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
-    fides_key: FidesKey
-    status: StatusEnum
-    violations: List[Violation] = []
-    message: str = ""
+    fides_key: FidesKey = Field(
+        description="A uuid generated for each unique evaluation.",
+    )
+    status: StatusEnum = Field(description=StatusEnum.__doc__)
+    violations: List[Violation] = Field(
+        default=[],
+        description=Violation.__doc__,
+    )
+    message: str = Field(
+        default="",
+        description="A human-readable string response for the evaluation.",
+    )
 
     class Config:
         "Config for the Evaluation"
@@ -407,8 +427,12 @@ class ResourceFilter(BaseModel):
     The ResourceFilter resource model.
     """
 
-    type: str
-    value: str
+    type: str = Field(
+        description="The type of filter to be used (i.e. ignore_resource_arn)",
+    )
+    value: str = Field(
+        description="A string representation of resources to be filtered. Can include wildcards.",
+    )
 
 
 class OrganizationMetadata(BaseModel):
@@ -418,7 +442,9 @@ class OrganizationMetadata(BaseModel):
     Object used to hold application specific metadata for an organization
     """
 
-    resource_filters: Optional[List[ResourceFilter]]
+    resource_filters: Optional[List[ResourceFilter]] = Field(
+        description="A list of filters that can be used when generating or scanning systems."
+    )
 
 
 class Organization(FidesModel):
@@ -429,12 +455,25 @@ class Organization(FidesModel):
     """
 
     # It inherits this from FidesModel but Organizations don't have this field
-    organization_parent_key: None = None
-    controller: Optional[ContactDetails]
-    data_protection_officer: Optional[ContactDetails]
-    fidesctl_meta: Optional[OrganizationMetadata]
-    representative: Optional[ContactDetails]
-    security_policy: Optional[HttpUrl]
+    organization_parent_key: None = Field(
+        default=None,
+        description="An inherited field from the FidesModel that is unused with an Organization.",
+    )
+    controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    data_protection_officer: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    fidesctl_meta: Optional[OrganizationMetadata] = Field(
+        description=OrganizationMetadata.__doc__,
+    )
+    representative: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    security_policy: Optional[HttpUrl] = Field(
+        description="Am optional URL to the organization security policy."
+    )
 
 
 # Policy
@@ -458,8 +497,12 @@ class PrivacyRule(BaseModel):
     A list of privacy data types and what match method to use.
     """
 
-    matches: MatchesEnum
-    values: List[FidesKey]
+    matches: MatchesEnum = Field(
+        description=MatchesEnum.__doc__,
+    )
+    values: List[FidesKey] = Field(
+        description="A list of fides keys to be used with the matching type in a privacy rule.",
+    )
 
 
 class PolicyRule(BaseModel):
@@ -470,11 +513,18 @@ class PolicyRule(BaseModel):
     """
 
     name: str
-    data_categories: PrivacyRule
-    data_uses: PrivacyRule
-    data_subjects: PrivacyRule
+    data_categories: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
+    data_uses: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
+    data_subjects: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
     data_qualifier: FidesKey = Field(
-        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="The fides key of the data qualifier to be used in a privacy rule.",
     )
 
 
@@ -485,7 +535,9 @@ class Policy(FidesModel):
     An object used to organize a list of PolicyRules.
     """
 
-    rules: List[PolicyRule]
+    rules: List[PolicyRule] = Field(
+        description=PolicyRule.__doc__,
+    )
 
     _sort_rules: classmethod = validator("rules", allow_reuse=True)(
         sort_list_objects_by_name
@@ -511,14 +563,25 @@ class PrivacyDeclaration(BaseModel):
     to the privacy data types.
     """
 
-    name: str
-    data_categories: List[FidesKey]
-    data_use: FidesKey
+    name: str = Field(
+        description="The name of the privacy declaration on the system.",
+    )
+    data_categories: List[FidesKey] = Field(
+        description="An array of data categories describing a system in a privacy declaration.",
+    )
+    data_use: FidesKey = Field(
+        description="The Data Use describing a system in a privacy declaration.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="The fides key of the data qualifier describing a system in a privacy declaration.",
     )
-    data_subjects: List[FidesKey]
-    dataset_references: Optional[List[FidesKey]]
+    data_subjects: List[FidesKey] = Field(
+        description="An array of data subjects describing a system in a privacy declaration.",
+    )
+    dataset_references: Optional[List[FidesKey]] = Field(
+        description="Referenced Dataset fides keys used by the system.",
+    )
 
 
 class SystemMetadata(BaseModel):
@@ -528,9 +591,15 @@ class SystemMetadata(BaseModel):
     Object used to hold application specific metadata for a system
     """
 
-    resource_id: Optional[str]
-    endpoint_address: Optional[str]
-    endpoint_port: Optional[str]
+    resource_id: Optional[str] = Field(
+        description="The external resource id for the system being modeled."
+    )
+    endpoint_address: Optional[str] = Field(
+        description="The host of the external resource for the system being modeled."
+    )
+    endpoint_port: Optional[str] = Field(
+        description="The port of the external resource for the system being modeled."
+    )
 
 
 class System(FidesModel):
@@ -540,18 +609,38 @@ class System(FidesModel):
     Describes an application and includes a list of PrivacyDeclaration resources.
     """
 
-    registry_id: Optional[int]
-    meta: Optional[Dict[str, str]]
-    fidesctl_meta: Optional[SystemMetadata]
-    system_type: str
-    data_responsibility_title: DataResponsibilityTitle = (
-        DataResponsibilityTitle.CONTROLLER
+    registry_id: Optional[int] = Field(
+        description="The id of the system registry, if used.",
     )
-    privacy_declarations: List[PrivacyDeclaration]
-    system_dependencies: Optional[List[FidesKey]]
-    joint_controller: Optional[ContactDetails]
-    third_country_transfers: Optional[List[str]]
-    administrating_department: Optional[str] = "Not defined"
+    meta: Optional[Dict[str, str]] = Field(
+        description="An optional property to store any extra information for a system. Not used by fidesctl.",
+    )
+    fidesctl_meta: Optional[SystemMetadata] = Field(
+        description=SystemMetadata.__doc__,
+    )
+    system_type: str = Field(
+        description="A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.",
+    )
+    data_responsibility_title: DataResponsibilityTitle = Field(
+        default=DataResponsibilityTitle.CONTROLLER,
+        description=DataResponsibilityTitle.__doc__,
+    )
+    privacy_declarations: List[PrivacyDeclaration] = Field(
+        description=PrivacyDeclaration.__doc__,
+    )
+    system_dependencies: Optional[List[FidesKey]] = Field(
+        description="A list of fideskeys to model dependencies."
+    )
+    joint_controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    third_country_transfers: Optional[List[str]] = Field(
+        description="An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.",
+    )
+    administrating_department: Optional[str] = Field(
+        default="Not defined",
+        description="An optional value to identify the owning department or group of the system within your organization",
+    )
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True
