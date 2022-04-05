@@ -2,7 +2,7 @@
 from typing import Dict, Optional
 
 from fideslog.sdk.python.utils import generate_client_id, FIDESCTL_CLI
-from pydantic import root_validator, validator, AnyHttpUrl
+from pydantic import validator, AnyHttpUrl
 
 from .fides_settings import FidesSettings
 
@@ -14,14 +14,14 @@ class CLISettings(FidesSettings):
 
     local_mode: bool = False
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
-    
+
+    server_protocol: str = "http"  # if you want, otherwise always http
     server_host: str = "localhost"
     server_port: Optional[int]
-    server_protocol: str = "http"	# if you want, otherwise always http
-    server_url: AnyHttpUrl
+    server_url: Optional[AnyHttpUrl]
 
-    @root_validator(skip_on_failure=True)
-    def get_database_url(cls: FidesSettings, values: Dict) -> Dict:
+    @validator("server_url", always=True)
+    def get_server_url(cls: FidesSettings, value: str, values: Dict) -> str:
         """
         Create the server_url.
 
@@ -32,13 +32,13 @@ class CLISettings(FidesSettings):
         port = values["server_port"]
         protocol = values["server_protocol"]
 
-        values["server_url"] = "{}://{}{}".format(
-        	protocol,
-        	host,
+        server_url = "{}://{}{}".format(
+            protocol,
+            host,
             ":" + str(port) if port else "",
         )
-        
-        return values
+
+        return server_url
 
     @validator("analytics_id", always=True)
     def ensure_not_empty(cls, value: str) -> str:

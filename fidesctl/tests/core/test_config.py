@@ -35,7 +35,7 @@ def test_default_config():
     {
         "FIDESCTL_CONFIG_PATH": "",
         "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_HOST": "http://test",
+        "FIDESCTL__CLI__SERVER_HOST": "test",
         "FIDESCTL__CLI__SERVER_PORT": "8080",
     },
     clear=True,
@@ -49,25 +49,6 @@ def test_config_from_env_vars():
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"
     assert config.cli.server_url == "http://test:8080"
-
-
-@patch.dict(
-    os.environ,
-    {
-        "FIDESCTL_CONFIG_PATH": "",
-        "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_HOST": "test",
-        "FIDESCTL__CLI__SERVER_PORT": "8080",
-    },
-    clear=True,
-)
-@pytest.mark.unit
-def test_invalid_config_value_from_env_vars():
-    "Test building a config from env vars."
-    with pytest.raises(ValidationError):
-        config = get_config()
-
-    assert True
 
 
 @pytest.mark.unit

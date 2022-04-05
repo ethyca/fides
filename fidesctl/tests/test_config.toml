@@ -1,5 +1,5 @@
 [cli]
-server_host = "http://fidesctl"
+server_host = "fidesctl"
 server_port = 8080
 
 [api]
