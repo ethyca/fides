@@ -17,6 +17,7 @@ from fidesctl.core.export_helpers import (
     get_formatted_data_use,
     remove_duplicates_from_comma_separated_column,
     get_datamap_fides_keys,
+    union_data_categories_in_joined_dataframe,
     get_formatted_data_protection_impact_assessment,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
@@ -173,7 +174,7 @@ def generate_system_records(
             data_subjects = get_formatted_data_subjects(
                 url, headers, declaration.data_subjects
             )
-            dataset_references = declaration.dataset_references or []
+            dataset_references = declaration.dataset_references or ["N/A"]
             cartesian_product_of_declaration = [
                 (
                     system.name,
@@ -343,8 +344,8 @@ def build_joined_dataframe(
     datasets_df = datasets_df[1:]
 
     # merge systems and datasets
-    joined_df = systems_df.merge(datasets_df, on=["dataset.fides_key"])
-
+    joined_df = systems_df.merge(datasets_df, how="left", on=["dataset.fides_key"])
+    joined_df.fillna("N/A", inplace=True)
     ## create a set of third_country attrs to combine as a single entity
     joined_df["third_country_combined"] = [
         ", ".join(i)
@@ -357,6 +358,9 @@ def build_joined_dataframe(
     joined_df["third_country_combined"] = joined_df["third_country_combined"].transform(
         remove_duplicates_from_comma_separated_column
     )
+
+    # restructure the joined dataframe to represent system and dataset data categories appropriately
+    joined_df = union_data_categories_in_joined_dataframe(joined_df)
 
     # model empty columns until implemented as part of appending to template
     joined_df["system.joint_controller"] = ""

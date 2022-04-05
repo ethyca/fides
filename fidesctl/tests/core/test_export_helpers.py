@@ -110,7 +110,7 @@ def test_xlsx_export(tmpdir):
         "system.privacy_declaration.data_use.name",
         "system.joint_controller",
         "system.privacy_declaration.data_subjects.name",
-        "dataset.data_categories",
+        "unioned_data_categories",
         "system.privacy_declaration.data_use.recipients",
         "system.link_to_processor_contract",
         "third_country_combined",
