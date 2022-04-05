@@ -189,6 +189,7 @@ class SaaSConfig(BaseModel):
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest
+    data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

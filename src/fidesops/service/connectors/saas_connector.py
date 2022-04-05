@@ -1,9 +1,10 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Literal
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
+from fidesops.core.config import config
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
@@ -117,8 +118,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.collection_name = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
-        """Returns the query config for a SaaS connector"""
-        return SaaSQueryConfig(node, self.endpoints, self.secrets)
+        """Returns the query config for a given node"""
+        collection_name = node.address.collection
+        configured_masking_request = self.get_masking_request_from_config(
+            collection_name
+        )
+        return SaaSQueryConfig(
+            node, self.endpoints, self.secrets, configured_masking_request
+        )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
@@ -279,6 +286,42 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
+    def get_masking_request_from_config(
+        self, collection_name: str
+    ) -> Optional[SaaSRequest]:
+        """Get the configured SaaSRequest for use in masking.
+        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
+        """
+        requests: Dict[
+            Literal["read", "update", "delete"], SaaSRequest
+        ] = self.endpoints[collection_name].requests
+
+        update: Optional[SaaSRequest] = requests.get("update")
+        gdpr_delete: Optional[SaaSRequest] = None
+        delete: Optional[SaaSRequest] = None
+
+        if not config.execution.MASKING_STRICT:
+            gdpr_delete = self.saas_config.data_protection_request
+            delete = requests.get("delete")
+
+        try:
+            # Return first viable option
+            action_type: str = next(
+                action
+                for action in [
+                    "update" if update else None,
+                    "data_protection_request" if gdpr_delete else None,
+                    "delete" if delete else None,
+                ]
+                if action
+            )
+            logger.info(
+                f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
+            )
+            return next(request for request in [update, gdpr_delete, delete] if request)
+        except StopIteration:
+            return None
+
     def mask_data(
         self,
         node: TraversalNode,
@@ -288,17 +331,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
         query_config = self.query_config(node)
+        if not query_config.masking_request:
+            raise Exception(
+                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
+                f"Check that MASKING_STRICT env var is appropriately set"
+            )
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
-        self.collection_name = node.address.collection
-        update_request: SaaSRequest = self.endpoints[self.collection_name].requests[
-            "update"
-        ]
         rows_updated = 0
+
         for prepared_request in prepared_requests:
-            self.client().send(prepared_request, update_request.ignore_errors)
+            self.client().send(
+                prepared_request,
+                getattr(query_config.masking_request, "ignore_errors", None),
+            )
             rows_updated += 1
         return rows_updated
 

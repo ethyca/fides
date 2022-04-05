@@ -93,6 +93,7 @@ class ExecutionSettings(FidesSettings):
     TASK_RETRY_DELAY: int  # In seconds
     TASK_RETRY_BACKOFF: int
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
+    MASKING_STRICT: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"

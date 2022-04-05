@@ -25,10 +25,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         node: TraversalNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
+        masking_request: Optional[SaaSRequest] = None,
     ):
         super().__init__(node)
         self.endpoints = endpoints
         self.secrets = secrets
+        self.masking_request = masking_request
 
     def get_request_by_action(self, action: str) -> SaaSRequest:
         """
@@ -160,7 +162,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         This masked row is then added as the body to a dynamically generated SaaS request.
         """
 
-        current_request: SaaSRequest = self.get_request_by_action("update")
+        current_request: SaaSRequest = self.masking_request
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = request.get_cached_identity_data()
