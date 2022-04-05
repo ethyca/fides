@@ -82,7 +82,7 @@ def list_server_resources(
     """
     Get a list of resources from the server and return them as parsed objects.
 
-    Returns an empty list if no resources are found of if the api errors
+    Returns an empty list if no resources are found or if the API returns an error.
     """
     response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
     server_resources: List[FidesModel] = (
