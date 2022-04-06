@@ -21,6 +21,7 @@ Policy we want applied to that Privacy Request, as well as the starting identity
 to locate the remaining user information:
 
 ### Define helper method
+
 ```python
 def create_privacy_request(email, policy_key):
     """

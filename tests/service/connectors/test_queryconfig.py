@@ -649,7 +649,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
         assert prepared_request.query_params == {"query": "customer-1@example.com"}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
@@ -659,7 +659,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
         assert prepared_request.query_params == {"count": 1000, "offset": 0}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
@@ -667,7 +667,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
         assert prepared_request.query_params == {}
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
@@ -689,7 +689,7 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.body is None
+        assert prepared_request.json_body is None
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
@@ -704,7 +704,6 @@ class TestSaaSQueryConfig:
             "limit": "10",
             "query": "customer-1@example.com",
         }
-        assert prepared_request.body is None
 
     def test_generate_update_stmt(
         self,
@@ -735,11 +734,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
+        assert prepared_request.json_body == {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
-        )
+        }
 
     def test_generate_update_stmt_custom_http_method(
         self,
@@ -773,11 +770,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.POST.value
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
+        assert prepared_request.json_body == {
                 "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
-        )
+        }
 
     def test_generate_update_stmt_with_request_body(
         self,
@@ -829,14 +824,12 @@ class TestSaaSQueryConfig:
             path="/3.0/lists/abc/members/123",
             headers={},
             query_params={},
-            body=json.dumps(
-                {
-                    "properties": {
-                        "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-                        "list_id": "abc",
-                    }
+            json_body={
+                "properties": {
+                    "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+                    "list_id": "abc",
                 }
-            ),
+            }
         )
 
         # update with connector_param reference
@@ -851,4 +844,4 @@ class TestSaaSQueryConfig:
         assert prepared_request.method == HTTPMethod.PUT.value
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+        assert prepared_request.json_body == {"customer_name": "MASKED"}

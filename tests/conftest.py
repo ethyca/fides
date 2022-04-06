@@ -41,6 +41,7 @@ from .fixtures.bigquery_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
+from .fixtures.saas.hubspot_fixtures import *
 
 logger = logging.getLogger(__name__)
 

@@ -11,6 +11,11 @@ username = ""
 api_key = ""
 identity_email = ""
 
+[hubspot]
+domain = ""
+hapikey = ""
+identity_email = ""
+
 [stripe]
 host = ""
 api_key = ""

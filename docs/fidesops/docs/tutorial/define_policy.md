@@ -17,6 +17,8 @@ convenience (handy if you'll be running this script multiple times).
 
 ```python
 ...
+
+
 def create_policy(key, access_token):
     """
     Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.
@@ -39,8 +41,10 @@ def create_policy(key, access_token):
 
 ```python
 ...
+
+
 def create_policy_rule(
-    policy_key, key, action_type, storage_destination_key, access_token
+        policy_key, key, action_type, storage_destination_key, access_token
 ):
     """
     Create a Policy Rule to return matched data in an access request to the given Storage destination.
@@ -67,6 +71,8 @@ def create_policy_rule(
 
 ```python
 ...
+
+
 def create_policy_rule_target(policy_key, rule_key, data_category, access_token):
     """
     Create a Policy Rule Target that matches the given data_category.

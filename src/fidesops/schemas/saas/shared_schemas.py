@@ -24,7 +24,7 @@ class SaaSRequestParams(BaseModel):
     path: str
     headers: Dict[str, Any] = {}
     query_params: Dict[str, Any] = {}
-    body: Optional[str]
+    json_body: Optional[Dict[str, Any]]
 
     class Config:
         """Using enum values"""

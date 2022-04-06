@@ -350,12 +350,12 @@ Sometimes, the update request needs a different body structure than what we obta
 update:
   method: PUT
   path: /crm/v3/objects/contacts
-  body: {
+  body: '{
     "properties": {
       <masked_object_fields>
       "user_ref_id": <user_ref_id>            
     }
-  }
+  }'
   param_values:
     - name: user_ref_id
       references:

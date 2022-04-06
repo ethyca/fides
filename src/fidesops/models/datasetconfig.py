@@ -93,6 +93,10 @@ class DatasetConfig(Base):
                 dataset_graph,
                 self.connection_config.get_saas_config().get_graph(),
             )
+        else:
+            logger.debug(
+                f"Connection config with key {self.connection_config.key} is not a saas config, skipping merge dataset"
+            )
         return dataset_graph
 
 

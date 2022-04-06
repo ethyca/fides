@@ -11,6 +11,7 @@ database. For tutorial purposes, we'll just write to a local file under `/fides_
 to upload this to a Storage location like S3.  S3 would require a follow-up step to set up AWS access keys and secrets.
 
 ### Define helper method
+
 ```python
 def create_local_storage(key, format, access_token):
     """
