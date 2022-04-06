@@ -33,6 +33,21 @@ def response_with_body_link():
     return response
 
 
+@pytest.fixture(scope="function")
+def response_with_empty_string_link():
+    response = Response()
+    response._content = bytes(
+        json.dumps(
+            {
+                "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
+                "links": {"next": ""},
+            }
+        ),
+        "utf-8",
+    )
+    return response
+
+
 def test_link_in_headers(response_with_header_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
     request_params: SaaSRequestParams = SaaSRequestParams(
@@ -97,6 +112,21 @@ def test_link_in_body_missing(response_with_header_link):
     paginator = LinkPaginationStrategy(config)
     next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
         request_params, {}, response_with_header_link, "customers"
+    )
+    assert next_request is None
+
+
+def test_link_in_body_empty_string(response_with_empty_string_link):
+    config = LinkPaginationConfiguration(source="body", path="links.next")
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        query_params={"page": "abc"},
+    )
+
+    paginator = LinkPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_empty_string_link, "customers"
     )
     assert next_request is None
 

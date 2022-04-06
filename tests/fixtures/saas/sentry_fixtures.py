@@ -1,4 +1,3 @@
-import json
 from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
@@ -11,8 +10,6 @@ import pytest
 import pydash
 import os
 from typing import Any, Dict, Generator
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors.saas_connector import SaaSConnector
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from sqlalchemy.orm import Session
@@ -27,6 +24,7 @@ def sentry_secrets():
         "access_token": pydash.get(saas_config, "sentry.access_token")
         or os.environ.get("SENTRY_ACCESS_TOKEN"),
     }
+
 
 @pytest.fixture(scope="function")
 def sentry_identity_email():

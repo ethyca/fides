@@ -26,3 +26,12 @@ page_limit = ""
 host = ""
 access_token = ""
 identity_email = ""
+
+[segment]
+domain = ""
+personas_domain = ""
+workspace = ""
+access_token = ""
+namespace_id = ""
+access_secret = ""
+identity_email = ""

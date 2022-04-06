@@ -1,5 +1,5 @@
 from fidesops.core.config import config
-from fidesops.schemas.saas.saas_config import SaaSRequest, Endpoint
+from fidesops.schemas.saas.saas_config import SaaSRequest
 from fidesops.service.connectors.saas_connector import AuthenticatedClient
 import pytest
 import json
@@ -1487,3 +1487,32 @@ class TestSaasConnector:
         config.execution.MASKING_STRICT = True
         del conversation_endpoint.requests["delete"]
         connector.saas_config.data_protection_request = None
+
+
+class TestSaaSConnectorMethods:
+    def test_create_client_from_request(
+        self, db: Session, segment_connection_config, segment_dataset_config
+    ):
+        connector: SaaSConnector = get_connector(segment_connection_config)
+        # Base ClientConfig uses bearer auth
+        assert (
+            connector.client_config.authentication.strategy == "bearer_authentication"
+        )
+
+        segment_user_endpoint = next(
+            end for end in connector.saas_config.endpoints if end.name == "segment_user"
+        )
+        saas_request: SaaSRequest = segment_user_endpoint.requests["read"]
+
+        client = connector.create_client_from_request(saas_request)
+        # ClientConfig on read segment user request uses basic auth, and we've overridden client config to match
+        assert connector.client_config.authentication.strategy == "basic_authentication"
+        assert client.client_config.authentication.strategy == "basic_authentication"
+
+        # Test request users bearer auth - creating the client from the request also updates the connector's auth.
+        test_request: SaaSRequest = connector.saas_config.test_request
+        client = connector.create_client_from_request(test_request)
+        assert (
+            connector.client_config.authentication.strategy == "bearer_authentication"
+        )
+        assert client.client_config.authentication.strategy == "bearer_authentication"

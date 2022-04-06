@@ -50,7 +50,7 @@ class LinkPaginationStrategy(PaginationStrategy):
         elif self.source == LinkSource.body.value:
             next_link = pydash.get(response.json(), self.path)
 
-        if next_link is None:
+        if not next_link:
             logger.debug("The link to the next page was not found.")
             return None
 
