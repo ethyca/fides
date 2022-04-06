@@ -32,6 +32,11 @@ jobs:
           SENTRY_HOST: ${{ secrets.SENTRY_HOST }}
           SENTRY_ACCESS_TOKEN: ${{ secrets.SENTRY_ACCESS_TOKEN }}
           SENTRY_IDENTITY_EMAIL: ${{ secrets.SENTRY_IDENTITY_EMAIL }}
+          STRIPE_HOST: ${{ secrets.STRIPE_HOST }}
+          STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+          STRIPE_PAYMENT_TYPES: ${{ secrets.STRIPE_PAYMENT_TYPES }}
+          STRIPE_ITEMS_PER_PAGE: ${{ secrets.STRIPE_ITEMS_PER_PAGE }}
+          STRIPE_IDENTITY_EMAIL: ${{ secrets.STRIPE_IDENTITY_EMAIL }}
           HUBSPOT_DOMAIN: ${{ secrets.HUBSPOT_DOMAIN }}
           HUBSPOT_HAPIKEY: ${{ secrets.HUBSPOT_HAPIKEY }}
           HUBSPOT_IDENTITY_EMAIL: ${{ secrets.HUBSPOT_IDENTITY_EMAIL }}

@@ -1,0 +1,1454 @@
+dataset:
+  - fides_key: stripe_connector_example
+    name: Stripe Dataset
+    description: A sample dataset representing the Stripe connector for Fidesops
+    collections:
+      - name: customer
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: address
+          fields:
+          - name: city
+            data_categories: [user.provided.identifiable.contact.city]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [user.provided.identifiable.contact.country]
+            fidesops_meta:
+              data_type: string
+          - name: line1
+            data_categories: [user.provided.identifiable.contact.street]
+            fidesops_meta:
+              data_type: string
+          - name: line2
+            data_categories: [user.provided.identifiable.contact.street]
+            fidesops_meta:
+              data_type: string
+          - name: postal_code
+            data_categories: [user.provided.identifiable.contact.postal_code]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [user.provided.identifiable.contact.state]
+            fidesops_meta:
+              data_type: string
+        - name: balance
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: created
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: default_source
+          data_categories: [system.operations]
+        - name: delinquent
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: discount
+          data_categories: [system.operations]
+        - name: email
+          data_categories: [user.provided.identifiable.contact.email]
+          fidesops_meta:
+            data_type: string
+        - name: invoice_prefix
+          data_categories: [system.operations]
+        - name: invoice_settings
+          fields:
+          - name: custom_fields
+            data_categories: [system.operations]
+          - name: default_payment_method
+            data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: name
+          data_categories: [user.provided.identifiable.name]
+          fidesops_meta:
+            data_type: string
+        - name: next_invoice_sequence
+          data_categories: [system.operations]
+        - name: phone
+          data_categories: [user.provided.identifiable.contact.phone_number]
+          fidesops_meta:
+            data_type: string
+        - name: preferred_locales
+          data_categories: [user.provided.identifiable]
+          fidesops_meta:
+            data_type: string[]
+        - name: shipping
+          fields:
+          - name: address
+            fields:
+            - name: city
+              data_categories: [user.provided.identifiable.contact.city]
+              fidesops_meta:
+                data_type: string
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: line1
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: line2
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: postal_code
+              data_categories: [user.provided.identifiable.contact.postal_code]
+              fidesops_meta:
+                data_type: string
+            - name: state
+              data_categories: [user.provided.identifiable.contact.state]
+              fidesops_meta:
+                data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+        - name: tax_exempt
+          data_categories: [system.operations]
+        - name: test_clock
+          data_categories: [system.operations]
+      - name: charge
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: amount
+          data_categories: [user.provided.identifiable.financial]
+        - name: amount_captured
+          data_categories: [user.provided.identifiable.financial]
+        - name: amount_refunded
+          data_categories: [user.provided.identifiable.financial]
+        - name: application
+          data_categories: [system.operations]
+        - name: application_fee
+          data_categories: [system.operations]
+        - name: application_fee_amount
+          data_categories: [system.operations]
+        - name: balance_transaction
+          data_categories: [system.operations]
+        - name: billing_details
+          fields:
+          - name: address
+            fields:
+            - name: city
+              data_categories: [user.provided.identifiable.contact.city]
+              fidesops_meta:
+                data_type: string
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: line1
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: line2
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: postal_code
+              data_categories: [user.provided.identifiable.contact.postal_code]
+              fidesops_meta:
+                data_type: string
+            - name: state
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+        - name: calculated_statement_descriptor
+          data_categories: [system.operations]
+        - name: captured
+          data_categories: [system.operations]
+        - name: created
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: destination
+          data_categories: [system.operations]
+        - name: dispute
+          data_categories: [system.operations]
+        - name: disputed
+          data_categories: [system.operations]
+        - name: failure_balance_transaction
+          data_categories: [system.operations]
+        - name: failure_code
+          data_categories: [system.operations]
+        - name: failure_message
+          data_categories: [system.operations]
+        - name: fraud_details
+          data_categories: [system.operations]
+        - name: invoice
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: on_behalf_of
+          data_categories: [system.operations]
+        - name: order
+          data_categories: [system.operations]
+        - name: outcome
+          fields:
+            - name: network_status
+              data_categories: [system.operations]
+            - name: reason
+              data_categories: [system.operations]
+            - name: risk_level
+              data_categories: [system.operations]
+            - name: risk_score
+              data_categories: [system.operations]
+            - name: seller_message
+              data_categories: [system.operations]
+            - name: type
+              data_categories: [system.operations]
+        - name: paid
+          data_categories: [system.operations]
+        - name: payment_intent
+          data_categories: [system.operations]
+        - name: payment_method
+          data_categories: [system.operations]
+        - name: payment_method_details
+          fields:
+          - name: card
+            fields:
+            - name: brand
+              data_categories: [system.operations]
+            - name: checks
+              fields:
+              - name: address_line1_check
+                data_categories: [system.operations]
+              - name: address_postal_code_check
+                data_categories: [system.operations]
+              - name: cvc_check
+                data_categories: [system.operations]
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: exp_month
+              data_categories: [system.operations]
+            - name: exp_year
+              data_categories: [system.operations]
+            - name: fingerprint
+              data_categories: [system.operations]
+            - name: funding
+              data_categories: [system.operations]
+            - name: installments
+              data_categories: [system.operations]
+            - name: last4
+              data_categories: [user.provided.identifiable.financial.account_number]
+              fidesops_meta:
+                data_type: string
+            - name: network
+              data_categories: [system.operations]
+            - name: three_d_secure
+              data_categories: [system.operations]
+            - name: wallet
+              data_categories: [system.operations]
+          - name: type
+            data_categories: [system.operations]
+        - name: receipt_email
+          data_categories: [user.provided.identifiable.contact.email]
+          fidesops_meta:
+            data_type: string
+        - name: receipt_number
+          data_categories: [system.operations]
+        - name: receipt_url
+          data_categories: [system.operations]
+        - name: refunds
+          data_categories: [system.operations]
+        - name: refunded
+          data_categories: [system.operations]
+        - name: review
+          data_categories: [system.operations]
+        - name: shipping
+          data_categories: [system.operations]
+        - name: source
+          fields:
+            - name: address_city
+              data_categories: [user.provided.identifiable.contact.city]
+              fidesops_meta:
+                data_type: string
+            - name: address_country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: address_line1
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: address_line1_check
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: address_line2
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: address_state
+              data_categories: [user.provided.identifiable.contact.state]
+              fidesops_meta:
+                data_type: string
+            - name: address_zip
+              data_categories: [user.provided.identifiable.contact.postal_code]
+              fidesops_meta:
+                data_type: string
+            - name: address_zip_check
+              data_categories: [system.operations]
+            - name: brand
+              data_categories: [system.operations]
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: customer
+              data_categories: [system.operations]
+            - name: cvc_check
+              data_categories: [system.operations]
+            - name: dynamic_last4
+              data_categories: [user.provided.identifiable.financial.account_number]
+              fidesops_meta:
+                data_type: string
+            - name: exp_month
+              data_categories: [system.operations]
+            - name: exp_year
+              data_categories: [system.operations]
+            - name: fingerprint
+              data_categories: [system.operations]
+            - name: funding
+              data_categories: [system.operations]
+            - name: id
+              data_categories: [system.operations]
+            - name: last4
+              data_categories: [user.provided.identifiable.financial.account_number]
+              fidesops_meta:
+                data_type: string
+            - name: name
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: object
+              data_categories: [system.operations]
+            - name: tokenization_method
+              data_categories: [system.operations]
+        - name: source_transfer
+          data_categories: [system.operations]
+        - name: statement_descriptor
+          data_categories: [system.operations]
+        - name: statement_descriptor_suffix
+          data_categories: [system.operations]
+        - name: status
+          data_categories: [system.operations]
+        - name: transfer_data
+          data_categories: [system.operations]
+        - name: transfer_group
+          data_categories: [system.operations]
+      - name: dispute
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: object
+            data_categories: [system.operations]
+          - name: amount
+            data_categories: [user.provided.identifiable.financial]
+            fidesops_meta:
+              data_type: integer
+          - name: balance_transactions
+            data_categories: [system.operations]
+          - name: charge
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: currency
+            data_categories: [system.operations]
+          - name: evidence
+            fields:
+            - name: access_activity_log
+              data_categories: [system.operations]
+            - name: billing_address
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: cancellation_policy
+              data_categories: [system.operations]
+            - name: cancellation_policy_disclosure
+              data_categories: [system.operations]
+            - name: cancellation_rebuttal
+              data_categories: [system.operations]
+            - name: customer_communication
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: customer_email_address
+              data_categories: [user.provided.identifiable.contact.email]
+              fidesops_meta:
+                data_type: string
+            - name: customer_name
+              data_categories: [user.provided.identifiable.name]
+              fidesops_meta:
+                data_type: string
+            - name: customer_purchase_ip
+              data_categories: [user.derived.identifiable.device.ip_address]
+              fidesops_meta:
+                data_type: string
+            - name: customer_signature
+              data_categories: [system.operations]
+            - name: duplicate_charge_documentation
+              data_categories: [system.operations]
+            - name: duplicate_charge_explanation
+              data_categories: [system.operations]
+            - name: duplicate_charge_id
+              data_categories: [system.operations]
+            - name: product_description
+              data_categories: [system.operations]
+            - name: receipt
+              data_categories: [system.operations]
+            - name: refund_policy
+              data_categories: [system.operations]
+            - name: refund_policy_disclosure
+              data_categories: [system.operations]
+            - name: refund_refusal_explanation
+              data_categories: [system.operations]
+            - name: service_date
+              data_categories: [system.operations]
+            - name: service_documentation
+              data_categories: [system.operations]
+            - name: shipping_address
+              data_categories: [user.provided.identifiable.contact]
+              fidesops_meta:
+                data_type: string
+            - name: shipping_carrier
+              data_categories: [system.operations]
+            - name: shipping_date
+              data_categories: [system.operations]
+            - name: shipping_documentation
+              data_categories: [system.operations]
+            - name: shipping_tracking_number
+              data_categories: [system.operations]
+            - name: uncategorized_file
+              data_categories: [system.operations]
+            - name: uncategorized_text
+              data_categories: [system.operations]
+          - name: evidence_details
+            fields:
+            - name: due_by
+              data_categories: [system.operations]
+            - name: has_evidence
+              data_categories: [system.operations]
+            - name: past_due
+              data_categories: [system.operations]
+            - name: submission_count
+              data_categories: [system.operations]
+          - name: is_charge_refundable
+            data_categories: [system.operations]
+          - name: livemode
+            data_categories: [system.operations]
+          - name: payment_intent
+            data_categories: [system.operations]
+          - name: reason
+            data_categories: [system.operations]
+          - name: status
+            data_categories: [system.operations]
+      - name: payment_intent
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: amount
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: amount_capturable
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: amount_received
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: application
+          data_categories: [system.operations]
+        - name: application_fee_amount
+          data_categories: [system.operations]
+        - name: automatic_payment_methods
+          data_categories: [system.operations]
+        - name: canceled_at
+          data_categories: [system.operations]
+        - name: cancellation_reason
+          data_categories: [system.operations]
+        - name: capture_method
+          data_categories: [system.operations]
+        - name: client_secret
+          data_categories: [system.operations]
+        - name: confirmation_method
+          data_categories: [system.operations]
+        - name: created
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: invoice
+          data_categories: [system.operations]
+        - name: last_payment_error
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: next_action
+          data_categories: [system.operations]
+        - name: on_behalf_of
+          data_categories: [system.operations]
+        - name: payment_method
+          data_categories: [system.operations]
+        - name: payment_method_options
+          fields:
+          - name: card
+            fields:
+            - name: installments
+              data_categories: [system.operations]
+            - name: request_three_d_secure
+              data_categories: [system.operations]
+        - name: payment_method_types
+          data_categories: [system.operations]
+        - name: processing
+          data_categories: [system.operations]
+        - name: receipt_email
+          data_categories: [user.provided.identifiable.contact.email]
+          fidesops_meta:
+            data_type: string
+        - name: review
+          data_categories: [system.operations]
+        - name: setup_future_usage
+          data_categories: [system.operations]
+        - name: shipping
+          fields:
+            - name: address
+              fields:
+                - name: city
+                  data_categories: [user.provided.identifiable.contact.city]
+                  fidesops_meta:
+                    data_type: string
+                - name: country
+                  data_categories: [user.provided.identifiable.contact.country]
+                  fidesops_meta:
+                    data_type: string
+                - name: line1
+                  data_categories: [user.provided.identifiable.contact.street]
+                  fidesops_meta:
+                    data_type: string
+                - name: line2
+                  data_categories: [user.provided.identifiable.contact.street]
+                  fidesops_meta:
+                    data_type: string
+                - name: postal_code
+                  data_categories: [user.provided.identifiable.contact.postal_code]
+                  fidesops_meta:
+                    data_type: string
+                - name: state
+                  data_categories: [user.provided.identifiable.contact.state]
+                  fidesops_meta:
+                    data_type: string
+            - name: carrier
+              data_categories: [system.operations]
+            - name: name
+              data_categories: [user.provided.identifiable.name]
+              fidesops_meta:
+                data_type: string
+            - name: phone
+              data_categories: [user.provided.identifiable.contact.phone_number]
+              fidesops_meta:
+                data_type: string
+            - name: tracking_number
+              data_categories: [system.operations]
+        - name: statement_descriptor
+          data_categories: [system.operations]
+        - name: statement_descriptor_suffix
+          data_categories: [system.operations]
+        - name: status
+          data_categories: [system.operations]
+        - name: transfer_data
+          data_categories: [system.operations]
+        - name: transfer_group
+          data_categories: [system.operations]
+      - name: payment_method
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: billing_details
+          fields:
+          - name: address
+            fields:
+            - name: city
+              data_categories: [user.provided.identifiable.contact.city]
+              fidesops_meta:
+                data_type: string
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: line1
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: line2
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: postal_code
+              data_categories: [user.provided.identifiable.contact.postal_code]
+              fidesops_meta:
+                data_type: string
+            - name: state
+              data_categories: [user.provided.identifiable.contact.state]
+              fidesops_meta:
+                data_type: string
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+        - name: card
+          fields:
+          - name: brand
+            data_categories: [system.operations]
+          - name: checks
+            fields:
+            - name: address_line1_check
+              data_categories: [system.operations]
+            - name: address_postal_code_check
+              data_categories: [system.operations]
+            - name: cvc_check
+              data_categories: [system.operations]
+          - name: country
+            data_categories: [user.provided.identifiable.contact.country]
+            fidesops_meta:
+              data_type: string
+          - name: exp_month
+            data_categories: [system.operations]
+          - name: exp_year
+            data_categories: [system.operations]
+          - name: fingerprint
+            data_categories: [system.operations]
+          - name: funding
+            data_categories: [system.operations]
+          - name: generated_from
+            data_categories: [system.operations]
+          - name: last4
+            data_categories: [user.provided.identifiable.financial.account_number]
+            fidesops_meta:
+              data_type: string
+          - name: networks
+            fields:
+              - name: available
+                data_categories: [system.operations]
+              - name: preferred
+                data_categories: [system.operations]
+          - name: three_d_secure_usage
+            fields:
+            - name: supported
+              data_categories: [system.operations]
+          - name: wallet
+            data_categories: [system.operations]
+        - name: created
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: type
+          data_categories: [system.operations]
+      - name: bank_account
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: account_holder_name
+          data_categories: [user.provided.identifiable.name]
+          fidesops_meta:
+            data_type: string
+        - name: account_holder_type
+          data_categories: [system.operations]
+        - name: account_type
+        - name: bank_name
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: string
+        - name: country
+          data_categories: [user.provided.identifiable.contact.country]
+          fidesops_meta:
+            data_type: string
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: fingerprint
+          data_categories: [system.operations]
+        - name: last4
+          data_categories: [user.provided.identifiable.financial.account_number]
+          fidesops_meta:
+            data_type: string
+        - name: routing_number
+          data_categories: [user.provided.identifiable.financial.account_number]
+          fidesops_meta:
+            data_type: string
+        - name: status
+          data_categories: [system.operations]
+      - name: card
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: address_city
+          data_categories: [user.provided.identifiable.contact.city]
+          fidesops_meta:
+            data_type: string
+        - name: address_country
+          data_categories: [user.provided.identifiable.contact.country]
+          fidesops_meta:
+            data_type: string
+        - name: address_line1
+          data_categories: [user.provided.identifiable.contact.street]
+          fidesops_meta:
+            data_type: string
+        - name: address_line1_check
+          data_categories: [system.operations]
+        - name: address_line2
+          data_categories: [user.provided.identifiable.contact.street]
+          fidesops_meta:
+            data_type: string
+        - name: address_state
+          data_categories: [user.provided.identifiable.contact.state]
+          fidesops_meta:
+            data_type: string
+        - name: address_zip
+          data_categories: [user.provided.identifiable.contact.postal_code]
+          fidesops_meta:
+            data_type: string
+        - name: address_zip_check
+          data_categories: [system.operations]
+        - name: brand
+          data_categories: [system.operations]
+        - name: country
+          data_categories: [user.provided.identifiable.contact.country]
+          fidesops_meta:
+            data_type: string
+        - name: customer
+          data_categories: [system.operations]
+        - name: cvc_check
+          data_categories: [system.operations]
+        - name: dynamic_last4
+          data_categories: [user.provided.identifiable.financial.account_number]
+          fidesops_meta:
+            data_type: string
+        - name: exp_month
+          data_categories: [system.operations]
+        - name: exp_year
+          data_categories: [system.operations]
+        - name: fingerprint
+          data_categories: [system.operations]
+        - name: funding
+          data_categories: [system.operations]
+        - name: last4
+          data_categories: [user.provided.identifiable.financial.account_number]
+          fidesops_meta:
+            data_type: string
+        - name: name
+          data_categories: [user.provided.identifiable.name]
+          fidesops_meta:
+            data_type: string
+        - name: tokenization_method
+          data_categories: [system.operations]
+      - name: credit_note
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: amount
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: created
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: customer_balance_transaction
+          data_categories: [system.operations]
+        - name: discount_amount
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: discount_amounts
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer[]
+        - name: invoice
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: memo
+          data_categories: [system.operations]
+        - name: number
+          data_categories: [system.operations]
+        - name: out_of_band_amount
+          data_categories: [system.operations]
+        - name: pdf
+          data_categories: [system.operations]
+        - name: reason
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: string
+        - name: refund
+          data_categories: [system.operations]
+        - name: status
+          data_categories: [system.operations]
+        - name: subtotal
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: tax_amounts
+          fidesops_meta:
+            data_type: object[]
+          fields:
+          - name: amount
+            data_categories: [user.provided.identifiable.financial]
+            fidesops_meta:
+              data_type: integer
+          - name: inclusive
+            data_categories: [system.operations]
+          - name: tax_rate
+            data_categories: [system.operations]
+        - name: total
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: type
+          data_categories: [system.operations]
+        - name: voided_at
+          data_categories: [system.operations]
+      - name: customer_balance_transaction
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: amount
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: integer
+        - name: created
+          data_categories: [system.operations]
+        - name: credit_note
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: ending_balance
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: invoice
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: type
+          data_categories: [system.operations]
+      - name: tax_id
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: country
+          data_categories: [user.provided.identifiable.contact.country]
+          fidesops_meta:
+            data_type: string
+        - name: created
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: type
+          data_categories: [system.operations]
+        - name: value
+          data_categories: [system.operations]
+        - name: verification
+          fields:
+          - name: status
+            data_categories: [system.operations]
+          - name: verified_address
+            data_categories: [user.provided.identifiable.contact]
+            fidesops_meta:
+              data_type: string
+          - name: verified_name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+      - name: invoice
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: account_country
+          data_categories: [user.provided.identifiable.contact.country]
+          fidesops_meta:
+            data_type: string
+        - name: account_name
+          data_categories: [user.provided.identifiable.name]
+          fidesops_meta:
+            data_type: string
+        - name: amount_due
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: amount_paid
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: amount_remaining
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: application_fee_amount
+          data_categories: [system.operations]
+        - name: attempt_count
+          data_categories: [system.operations]
+        - name: attempted
+          data_categories: [system.operations]
+        - name: auto_advance
+          data_categories: [system.operations]
+        - name: automatic_tax
+          fields:
+            - name: enabled
+              data_categories: [system.operations]
+            - name: status
+              data_categories: [system.operations]
+        - name: billing_reason
+          data_categories: [system.operations]
+        - name: charge
+          data_categories: [system.operations]
+        - name: collection_method
+          data_categories: [system.operations]
+        - name: created
+          data_categories: [system.operations]
+        - name: currency
+          data_categories: [system.operations]
+        - name: custom_fields
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: customer_address
+          fields:
+          - name: city
+            data_categories: [user.provided.identifiable.contact.city]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [user.provided.identifiable.contact.country]
+            fidesops_meta:
+              data_type: string
+          - name: line1
+            data_categories: [user.provided.identifiable.contact.street]
+            fidesops_meta:
+              data_type: string
+          - name: line2
+            data_categories: [user.provided.identifiable.contact.street]
+            fidesops_meta:
+              data_type: string
+          - name: postal_code
+            data_categories: [user.provided.identifiable.contact.postal_code]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [user.provided.identifiable.contact.state]
+            fidesops_meta:
+              data_type: string
+        - name: customer_email
+          data_categories: [user.provided.identifiable.contact.email]
+          fidesops_meta:
+            data_type: string
+        - name: customer_name
+          data_categories: [user.provided.identifiable.name]
+          fidesops_meta:
+            data_type: string
+        - name: customer_phone
+          data_categories: [user.provided.identifiable.contact.phone_number]
+          fidesops_meta:
+            data_type: string
+        - name: customer_shipping
+          fields:
+          - name: address
+            fields:
+            - name: city
+              data_categories: [user.provided.identifiable.contact.city]
+              fidesops_meta:
+                data_type: string
+            - name: country
+              data_categories: [user.provided.identifiable.contact.country]
+              fidesops_meta:
+                data_type: string
+            - name: line1
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: line2
+              data_categories: [user.provided.identifiable.contact.street]
+              fidesops_meta:
+                data_type: string
+            - name: postal_code
+              data_categories: [user.provided.identifiable.contact.postal_code]
+              fidesops_meta:
+                data_type: string
+            - name: state
+              data_categories: [user.provided.identifiable.contact.state]
+              fidesops_meta:
+                data_type: string
+          - name: name
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.provided.identifiable.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+        - name: customer_tax_exempt
+          data_categories: [system.operations]
+        - name: customer_tax_ids
+          data_categories: [system.operations]
+        - name: default_payment_method
+          data_categories: [system.operations]
+        - name: default_source
+          data_categories: [system.operations]
+        - name: default_tax_rates
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: discount
+          fields:
+          - name: object
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: coupon
+            fields:
+            - name: id
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: object
+              data_categories: [system.operations]
+            - name: amount_off
+              data_categories: [user.provided.identifiable.financial]
+              fidesops_meta:
+                data_type: string
+            - name: created
+              data_categories: [system.operations]
+            - name: currency
+              data_categories: [system.operations]
+            - name: duration
+              data_categories: [system.operations]
+            - name: duration_in_months
+              data_categories: [system.operations]
+            - name: livemode
+              data_categories: [system.operations]
+            - name: max_redemptions
+              data_categories: [system.operations]
+            - name: name
+              data_categories: [user.provided.identifiable.name]
+              fidesops_meta:
+                data_type: string
+            - name: percent_off
+              data_categories: [system.operations]
+            - name: redeem_by
+              data_categories: [system.operations]
+            - name: times_redeemed
+              data_categories: [system.operations]
+            - name: valid
+              data_categories: [system.operations]
+          - name: customer
+            data_categories: [system.operations]
+          - name: end
+            data_categories: [system.operations]
+          - name: start
+            data_categories: [system.operations]
+          - name: subscription
+            data_categories: [system.operations]
+        - name: discounts
+          data_categories: [system.operations]
+        - name: due_date
+          data_categories: [system.operations]
+        - name: ending_balance
+          data_categories: [system.operations]
+        - name: footer
+          data_categories: [system.operations]
+        - name: hosted_invoice_url
+          data_categories: [system.operations]
+        - name: invoice_pdf
+          data_categories: [system.operations]
+        - name: last_finalization_error
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: next_payment_attempt
+          data_categories: [system.operations]
+        - name: number
+          data_categories: [system.operations]
+        - name: on_behalf_of
+          data_categories: [system.operations]
+        - name: paid
+          data_categories: [system.operations]
+        - name: paid_out_of_band
+          data_categories: [system.operations]
+        - name: payment_intent
+          data_categories: [system.operations]
+        - name: payment_settings
+          fields:
+            - name: payment_method_options
+              data_categories: [system.operations]
+            - name: payment_method_types
+              data_categories: [system.operations]
+        - name: period_end
+          data_categories: [system.operations]
+        - name: period_start
+          data_categories: [system.operations]
+        - name: post_payment_credit_notes_amount
+          data_categories: [system.operations]
+        - name: pre_payment_credit_notes_amount
+          data_categories: [system.operations]
+        - name: quote
+          data_categories: [system.operations]
+        - name: receipt_number
+          data_categories: [system.operations]
+        - name: starting_balance
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: statement_descriptor
+          data_categories: [system.operations]
+        - name: status
+          data_categories: [system.operations]
+        - name: status_transitions
+          fields:
+          - name: finalized_at
+            data_categories: [system.operations]
+          - name: marked_uncollectible_at
+            data_categories: [system.operations]
+          - name: paid_at
+            data_categories: [system.operations]
+          - name: voided_at
+            data_categories: [system.operations]
+        - name: subscription
+          data_categories: [system.operations]
+        - name: subtotal
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: tax
+          data_categories: [system.operations]
+        - name: test_clock
+          data_categories: [system.operations]
+        - name: total
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: total_tax_amounts
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer[]
+        - name: transfer_data
+          data_categories: [system.operations]
+        - name: webhooks_delivered_at
+          data_categories: [system.operations]
+      - name: invoice_item
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            primary_key: True
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: amount
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: currency
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: date
+          data_categories: [system.operations]
+        - name: description
+          data_categories: [system.operations]
+        - name: discountable
+          data_categories: [system.operations]
+        - name: discounts
+          data_categories: [system.operations]
+        - name: invoice
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: period
+          fields:
+          - name: end
+            data_categories: [system.operations]
+          - name: start
+            data_categories: [system.operations]
+        - name: price
+          fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object
+            data_categories: [system.operations]
+          - name: active
+            data_categories: [system.operations]
+          - name: billing_scheme
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: currency
+            data_categories: [system.operations]
+          - name: livemode
+            data_categories: [system.operations]
+          - name: lookup_key
+            data_categories: [system.operations]
+          - name: nickname
+            data_categories: [system.operations]
+          - name: product
+            data_categories: [system.operations]
+          - name: recurring
+            data_categories: [system.operations]
+          - name: tax_behavior
+            data_categories: [system.operations]
+          - name: tiers_mode
+            data_categories: [system.operations]
+          - name: transform_quantity
+            data_categories: [system.operations]
+          - name: type
+            data_categories: [system.operations]
+          - name: unit_amount
+            data_categories: [system.operations]
+          - name: unit_amount_decimal
+            data_categories: [system.operations]
+        - name: proration
+          data_categories: [system.operations]
+        - name: quantity
+          data_categories: [system.operations]
+        - name: subscription
+          data_categories: [system.operations]
+        - name: tax_rates
+          data_categories: [system.operations]
+        - name: test_clock
+          data_categories: [system.operations]
+        - name: unit_amount
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: integer
+        - name: unit_amount_decimal
+          data_categories: [user.provided.identifiable.financial]
+          fidesops_meta:
+            data_type: string
+      - name: subscription
+        fields:
+        - name: id
+          data_categories: [system.operations]
+          fidesops_meta:
+            data_type: string
+        - name: object
+          data_categories: [system.operations]
+        - name: application_fee_percent
+          data_categories: [system.operations]
+        - name: automatic_tax
+          fields:
+            - name: enabled
+              data_categories: [system.operations]
+        - name: billing_cycle_anchor
+          data_categories: [system.operations]
+        - name: billing_thresholds
+          data_categories: [system.operations]
+        - name: cancel_at
+          data_categories: [system.operations]
+        - name: cancel_at_period_end
+          data_categories: [system.operations]
+        - name: canceled_at
+          data_categories: [system.operations]
+        - name: collection_method
+          data_categories: [system.operations]
+        - name: created
+          data_categories: [system.operations]
+        - name: current_period_end
+          data_categories: [system.operations]
+        - name: current_period_start
+          data_categories: [system.operations]
+        - name: customer
+          data_categories: [system.operations]
+        - name: days_until_due
+          data_categories: [system.operations]
+        - name: default_payment_method
+          data_categories: [system.operations]
+        - name: default_source
+          data_categories: [system.operations]
+        - name: default_tax_rates
+          data_categories: [system.operations]
+        - name: discount
+          fields:
+          - name: object
+            data_categories: [system.operations]
+          - name: coupon
+            fields:
+            - name: id
+              data_categories: [system.operations]
+              fidesops_meta:
+                data_type: string
+            - name: object
+              data_categories: [system.operations]
+            - name: amount_off
+              data_categories: [user.provided.identifiable.financial]
+            - name: created
+              data_categories: [system.operations]
+            - name: currency
+              data_categories: [system.operations]
+            - name: duration
+              data_categories: [system.operations]
+            - name: duration_in_months
+              data_categories: [system.operations]
+            - name: livemode
+              data_categories: [system.operations]
+            - name: max_redemptions
+              data_categories: [system.operations]
+            - name: name
+              data_categories: [system.operations]
+            - name: percent_off
+              data_categories: [system.operations]
+            - name: redeem_by
+              data_categories: [system.operations]
+            - name: times_redeemed
+              data_categories: [system.operations]
+            - name: valid
+              data_categories: [system.operations]
+          - name: customer
+            data_categories: [system.operations]
+          - name: end
+            data_categories: [system.operations]
+          - name: start
+            data_categories: [system.operations]
+          - name: subscription
+            data_categories: [system.operations]
+        - name: ended_at
+          data_categories: [system.operations]
+        - name: latest_invoice
+          data_categories: [system.operations]
+        - name: livemode
+          data_categories: [system.operations]
+        - name: next_pending_invoice_item_invoice
+          data_categories: [system.operations]
+        - name: pause_collection
+          data_categories: [system.operations]
+        - name: payment_settings
+          fields:
+            - name: payment_method_options
+              data_categories: [system.operations]
+            - name: payment_method_types
+              data_categories: [system.operations]
+        - name: pending_invoice_item_interval
+          data_categories: [system.operations]
+        - name: pending_setup_intent
+          data_categories: [system.operations]
+        - name: pending_update
+          data_categories: [system.operations]
+        - name: schedule
+          data_categories: [system.operations]
+        - name: start_date
+          data_categories: [system.operations]
+        - name: status
+          data_categories: [system.operations]
+        - name: test_clock
+          data_categories: [system.operations]
+        - name: transfer_data
+          data_categories: [system.operations]
+        - name: trial_end
+          data_categories: [system.operations]
+        - name: trial_start
+          data_categories: [system.operations]
