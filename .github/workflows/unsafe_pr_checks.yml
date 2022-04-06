@@ -35,4 +35,11 @@ jobs:
           HUBSPOT_DOMAIN: ${{ secrets.HUBSPOT_DOMAIN }}
           HUBSPOT_HAPIKEY: ${{ secrets.HUBSPOT_HAPIKEY }}
           HUBSPOT_IDENTITY_EMAIL: ${{ secrets.HUBSPOT_IDENTITY_EMAIL }}
+          SEGMENT_DOMAIN: ${{ secrets.SEGMENT_DOMAIN }}
+          SEGMENT_PERSONAS_DOMAIN: ${{ secrets.SEGMENT_PERSONAS_DOMAIN }}
+          SEGMENT_WORKSPACE: ${{ secrets.SEGMENT_WORKSPACE }}
+          SEGMENT_ACCESS_TOKEN: ${{ secrets.SEGMENT_ACCESS_TOKEN }}
+          SEGMENT_NAMESPACE_ID: ${{ secrets.SEGMENT_NAMESPACE_ID }}
+          SEGMENT_ACCESS_SECRET: ${{ secrets.SEGMENT_ACCESS_SECRET }}
+          SEGMENT_IDENTITY_EMAIL: ${{ secrets.SEGMENT_IDENTITY_EMAIL }}
         run: make pytest-saas

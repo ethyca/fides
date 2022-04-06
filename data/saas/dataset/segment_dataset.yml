@@ -1,0 +1,133 @@
+dataset:
+  - fides_key: segment_connector_example
+    name: Segment Dataset
+    description: A sample dataset representing the Segment connector for Fidesops
+    collections:
+      - name: segment_user
+        fields:
+          - name: segment_id
+            data_categories: [user.derived.identifiable.unique_id]
+            fidesops_meta:
+              primary_key: True
+      - name: track_events
+        fields:
+          - name: external_ids
+            fields:
+              - name: collection
+                data_categories: [system.operations]
+              - name: type
+                data_categories: [system.operations]
+              - name: id
+                data_categories: [user.derived.identifiable.unique_id]
+          - name: context
+            data_categories: [system.operations]
+          - name: library
+            fields:
+              - name: name
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: version
+                data_categories: [system.operations]
+          - name: type
+            data_categories: [system.operations]
+          - name: source_id
+            data_categories: [system.operations]
+          - name: message_id
+            data_categories: [system.operations]
+          - name: timestamp
+            data_categories: [system.operations]
+          - name: properties
+            fields:
+              - name: accountType
+                data_categories: [system.operations]
+              - name: plan
+                data_categories: [system.operations]
+          - name: event
+            data_categories: [system.operations]
+          - name: related
+            fields:
+              - name: users
+                data_categories: [system.operations]
+          - name: cursor
+            data_categories: [system.operations]
+      - name: traits
+        fields:
+          - name: address
+            fields:
+              - name: city
+                data_categories: [user.provided.identifiable.contact.city]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [user.provided.identifiable.contact.country]
+                fidesops_meta:
+                  data_type: string
+              - name: postalCode
+                data_categories: [user.provided.identifiable.contact.postal_code]
+                fidesops_meta:
+                  data_type: string
+              - name: state
+                data_categories: [user.provided.identifiable.contact.state]
+                fidesops_meta:
+                  data_type: string
+          - name: age
+            data_categories: [user.provided.identifiable.non_specific_age]
+          - name: avatar
+            data_categories: [system.operations]
+          - name: createdAt
+            data_categories: [system.operations]
+          - name: description
+            data_categories: [user.provided.identifiable]
+          - name: email
+            data_categories: [user.provided.identifiable.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: firstName
+            data_categories: [user.provided.identifiable.name]
+            fidesops_meta:
+              data_type: string
+          - name: gender
+            data_categories: [user.provided.identifiable.gender]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: industry
+            data_categories: [system.operations]
+          - name: lastName
+          - name: name
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [ user.provided.identifiable.contact.phone_number ]
+            fidesops_meta:
+              data_type: string
+          - name: subscriptionStatus
+          - name: title
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: username
+            data_categories: [ user.provided.identifiable.name ]
+            fidesops_meta:
+              data_type: string
+          - name: website
+            data_categories: [ user.provided.identifiable ]
+            fidesops_meta:
+              data_type: string
+      - name: external_ids
+        fields:
+          - name: id
+            data_categories: [user.derived.identifiable.unique_id]
+          - name: type
+            data_categories: [system.operations]
+          - name: source_id
+            data_categories: [system.operations]
+          - name: collection
+            data_categories: [system.operations]
+          - name: created_at
+            data_categories: [system.operations]
+          - name: encoding
+            data_categories: [system.operations]

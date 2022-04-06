@@ -9,6 +9,7 @@ from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
 from tests.graph.graph_test_util import assert_rows_match
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
 def test_sentry_saas_access_request_task(

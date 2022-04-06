@@ -61,6 +61,16 @@ class Strategy(BaseModel):
     configuration: Dict[str, Any]
 
 
+class ClientConfig(BaseModel):
+    """Definition for an authenticated base HTTP client"""
+
+    protocol: str
+    host: Union[
+        str, ConnectorParamRef
+    ]  # can be defined inline or be a connector_param reference
+    authentication: Strategy
+
+
 class Header(BaseModel):
     name: str
     value: str
@@ -85,6 +95,7 @@ class SaaSRequest(BaseModel):
     query_params: Optional[List[QueryParam]]
     body: Optional[str]
     param_values: Optional[List[ParamValue]]
+    client_config: Optional[ClientConfig]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
@@ -158,16 +169,6 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user-provided and constants)"""
 
     name: str
-
-
-class ClientConfig(BaseModel):
-    """Definition for an authenticated base HTTP client"""
-
-    protocol: str
-    host: Union[
-        str, ConnectorParamRef
-    ]  # can be defined inline or be a connector_param reference
-    authentication: Strategy
 
 
 class SaaSConfig(BaseModel):
