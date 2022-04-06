@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Optional, Dict
 
 from pydantic import Field, validator
-from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
@@ -10,10 +9,10 @@ from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.policy import Policy as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.schemas.user import PrivacyRequestReviewer
 from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
-from fidesops.util.encryption.aes_gcm_encryption_scheme import (
-    verify_encryption_key,
-)
+from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -82,6 +81,7 @@ class PrivacyRequestResponse(BaseSchema):
     started_processing_at: Optional[datetime]
     reviewed_at: Optional[datetime]
     reviewed_by: Optional[str]
+    reviewer: Optional[PrivacyRequestReviewer]
     finished_processing_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
