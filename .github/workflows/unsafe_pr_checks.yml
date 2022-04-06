@@ -32,4 +32,7 @@ jobs:
           SENTRY_HOST: ${{ secrets.SENTRY_HOST }}
           SENTRY_ACCESS_TOKEN: ${{ secrets.SENTRY_ACCESS_TOKEN }}
           SENTRY_IDENTITY_EMAIL: ${{ secrets.SENTRY_IDENTITY_EMAIL }}
+          HUBSPOT_DOMAIN: ${{ secrets.HUBSPOT_DOMAIN }}
+          HUBSPOT_HAPIKEY: ${{ secrets.HUBSPOT_HAPIKEY }}
+          HUBSPOT_IDENTITY_EMAIL: ${{ secrets.HUBSPOT_IDENTITY_EMAIL }}
         run: make pytest-saas

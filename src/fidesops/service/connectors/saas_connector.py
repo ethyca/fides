@@ -29,6 +29,7 @@ from fidesops.service.pagination.pagination_strategy_factory import (
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fidesops.util.url_util import set_query_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,9 @@ class AuthenticatedClient:
         elif strategy == "bearer_authentication":
             token_key = pydash.get(configuration, "token.connector_param")
             req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
+        elif strategy == "query_param":
+            token_key = pydash.get(configuration, "token.connector_param")
+            req.url = set_query_parameter(req.url, token_key, self.secrets[token_key])
         return req
 
     def get_authenticated_request(
@@ -70,12 +74,12 @@ class AuthenticatedClient:
         Returns an authenticated request based on the client config and
         incoming path, headers, query, and body params.
         """
-        req = Request(
+        req: PreparedRequest = Request(
             method=request_params.method,
             url=f"{self.uri}{request_params.path}",
             headers=request_params.headers,
             params=request_params.query_params,
-            data=request_params.body,
+            json=request_params.json_body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
@@ -91,7 +95,6 @@ class AuthenticatedClient:
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
-
         if not response.ok:
             if ignore_errors:
                 logger.info(

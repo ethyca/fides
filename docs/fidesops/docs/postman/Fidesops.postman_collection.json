@@ -2536,6 +2536,229 @@
 					]
 				},
 				{
+					"name": "Hubspot",
+					"item": [
+						{
+							"name": "Create/Update Hubspot Config",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\"name\": \"Hubspot Connection Config\",\n    \"key\": \"{{hubspot_saas_key}}\",\n    \"connection_type\": \"saas\",\n    \"access\": \"write\"\n}]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Validate Hubspot Saas Config",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fides_key\": \"hubspot_connector_example\",\n    \"name\": \"Hubspot SaaS Config\",\n    \"description\": \"A sample schema representing the Hubspot connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"hapikey\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"query_param\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"hapikey\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/companies/v2/companies/paged\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"contacts\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/crm/v3/objects/contacts/search\",\n                    \"method\": \"POST\",\n                    \"body\": \"{ \\\"filterGroups\\\": [{ \\\"filters\\\": [{ \\\"value\\\": \\\"<email>\\\", \\\"propertyName\\\": \\\"email\\\", \\\"operator\\\": \\\"EQ\\\" }] }] }\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 100\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"postprocessors\": [\n                        {\n                            \"strategy\": \"unwrap\",\n                            \"configuration\": {\n                                \"data_path\": \"results\"\n                            }\n                        }\n                    ],\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"paging.next.link\"\n                        }\n                    }\n                },\n                \"update\": {\n                    \"path\": \"/crm/v3/objects/contacts/<contactId>\",\n                    \"method\": \"PATCH\",\n                    \"body\": \"{ \\\"properties\\\": { <masked_object_fields> } }\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"contactId\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"hubspot_connector_example\",\n                                    \"field\": \"contacts_search.id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        {\n            \"name\": \"owners\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/crm/v3/owners\",\n                    \"method\": \"GET\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"email\",\n                            \"value\": \"<email>\"\n                        },\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 100\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"postprocessors\": [\n                        {\n                            \"strategy\": \"unwrap\",\n                            \"configuration\": {\n                                \"data_path\": \"results\"\n                            }\n                        }\n                    ],\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"paging.next.link\"\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"subscription_preferences\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/communication-preferences/v3/status/email/<email>\",\n                    \"method\": \"GET\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ]\n                },\n                \"update\": {\n                    \"path\": \"/communication-preferences/v3/unsubscribe\",\n                    \"method\": \"POST\",\n                    \"body\": \"{ \\\"emailAddress\\\": \\\"<email>\\\", \\\"subscriptionId\\\": \\\"<subscriptionId>\\\", \\\"legalBasis\\\": \\\"LEGITIMATE_INTEREST_CLIENT\\\", \\\"legalBasisExplanation\\\": \\\"At users request, we opted them out\\\" }\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        },\n                        {\n                            \"name\": \"subscriptionId\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"hubspot_connector_example\",\n                                    \"field\": \"subscription.id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ]\n                }\n            }\n        }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{hubspot_saas_key}}/validate_saas_config",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{hubspot_saas_key}}",
+										"validate_saas_config"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create/Update Hubspot Saas Config",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fides_key\": \"hubspot_connector_example\",\n    \"name\": \"Hubspot SaaS Config\",\n    \"description\": \"A sample schema representing the Hubspot connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"hapikey\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"query_param\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"hapikey\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/companies/v2/companies/paged\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"contacts\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/crm/v3/objects/contacts/search\",\n                    \"method\": \"POST\",\n                    \"body\": \"{ \\\"filterGroups\\\": [{ \\\"filters\\\": [{ \\\"value\\\": \\\"<email>\\\", \\\"propertyName\\\": \\\"email\\\", \\\"operator\\\": \\\"EQ\\\" }] }] }\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 100\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"postprocessors\": [\n                        {\n                            \"strategy\": \"unwrap\",\n                            \"configuration\": {\n                                \"data_path\": \"results\"\n                            }\n                        }\n                    ],\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"paging.next.link\"\n                        }\n                    }\n                },\n                \"update\": {\n                    \"path\": \"/crm/v3/objects/contacts/<contactId>\",\n                    \"method\": \"PATCH\",\n                    \"body\": \"{ \\\"properties\\\": { <masked_object_fields> } }\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"contactId\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"hubspot_connector_example\",\n                                    \"field\": \"contacts_search.id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        {\n            \"name\": \"owners\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/crm/v3/owners\",\n                    \"method\": \"GET\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"email\",\n                            \"value\": \"<email>\"\n                        },\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 100\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"postprocessors\": [\n                        {\n                            \"strategy\": \"unwrap\",\n                            \"configuration\": {\n                                \"data_path\": \"results\"\n                            }\n                        }\n                    ],\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"paging.next.link\"\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"subscription_preferences\",\n            \"requests\": {\n                \"read\": {\n                    \"path\": \"/communication-preferences/v3/status/email/<email>\",\n                    \"method\": \"GET\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        }\n                    ]\n                },\n                \"update\": {\n                    \"path\": \"/communication-preferences/v3/unsubscribe\",\n                    \"method\": \"POST\",\n                    \"body\": \"{ \\\"emailAddress\\\": \\\"<email>\\\", \\\"subscriptionId\\\": \\\"<subscriptionId>\\\", \\\"legalBasis\\\": \\\"LEGITIMATE_INTEREST_CLIENT\\\", \\\"legalBasisExplanation\\\": \\\"At users request, we opted them out\\\" }\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"email\",\n                            \"identity\": \"email\"\n                        },\n                        {\n                            \"name\": \"subscriptionId\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"hubspot_connector_example\",\n                                    \"field\": \"subscription.id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ]\n                }\n            }\n        }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{hubspot_saas_key}}/saas_config",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{hubspot_saas_key}}",
+										"saas_config"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Hubspot Saas Secrets",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"domain\": \"{{hubspot_domain}}\",\n    \"hapikey\": \"{{hubspot_api_key}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{hubspot_saas_key}}/secret",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{hubspot_saas_key}}",
+										"secret"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create/Update Hubspot Saas Dataset",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n{\n    \"fides_key\": \"hubspot_connector_example\",\n    \"name\": \"Hubspot Dataset\",\n    \"description\": \"A sample dataset representing the Hubspot connector for Fidesops\",\n    \"collections\": [\n        {\n            \"name\": \"contacts\",\n            \"fields\": [\n                {\n                    \"name\": \"id\",\n                    \"data_categories\": [\n                        \"user.derived.identifiable.unique_id\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"primary_key\": true,\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"properties\",\n                    \"fidesops_meta\": {\n                        \"data_type\": \"object\"\n                    },\n                    \"fields\": [\n                        {\n                            \"name\": \"company\",\n                            \"data_categories\": [\n                                \"user.provided.nonidentifiable\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"createdate\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"email\",\n                            \"data_categories\": [\n                                \"user.provided.identifiable.contact.email\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"firstname\",\n                            \"data_categories\": [\n                                \"user.provided.identifiable.name\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"lastmodifieddate\",\n                            \"data_categories\": [\n                                \"user.derived.nonidentifiable.sensor\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"lastname\",\n                            \"data_categories\": [\n                                \"user.provided.identifiable.name\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"phone\",\n                            \"data_categories\": [\n                                \"user.provided.identifiable.contact.phone_number\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"website\",\n                            \"data_categories\": [\n                                \"user.provided.nonidentifiable\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"createdAt\",\n                    \"data_categories\": [\n                        \"user.derived.nonidentifiable.sensor\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"updatedAt\",\n                    \"data_categories\": [\n                        \"user.derived.nonidentifiable.sensor\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"archived\",\n                    \"data_categories\": [\n                        \"system.operations\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"boolean\"\n                    }\n                }\n            ]\n        },\n        {\n            \"name\": \"owners\",\n            \"fields\": [\n                {\n                    \"name\": \"firstName\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable.name\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"lastName\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable.name\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"createdAt\",\n                    \"data_categories\": [\n                        \"system.operations\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"archived\",\n                    \"data_categories\": [\n                        \"system.operations\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"boolean\"\n                    }\n                },\n                {\n                    \"name\": \"teams\",\n                    \"fidesops_meta\": {\n                        \"data_type\": \"object[]\"\n                    },\n                    \"fields\": [\n                        {\n                            \"name\": \"id\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"name\",\n                            \"data_categories\": [\n                                \"user.provided.nonidentifiable\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"id\",\n                    \"data_categories\": [\n                        \"user.derived.identifiable.unique_id\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"primary_key\": true,\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"userId\",\n                    \"data_categories\": [\n                        \"user.derived.identifiable.unique_id\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"integer\"\n                    }\n                },\n                {\n                    \"name\": \"email\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable.contact.email\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"updatedAt\",\n                    \"data_categories\": [\n                        \"user.derived.nonidentifiable.sensor\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                }\n            ]\n        },\n        {\n            \"name\": \"subscription_preferences\",\n            \"fields\": [\n                {\n                    \"name\": \"recipient\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable.contact.email\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"subscriptionStatuses\",\n                    \"fidesops_meta\": {\n                        \"data_type\": \"object[]\"\n                    },\n                    \"fields\": [\n                        {\n                            \"name\": \"id\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"primary_key\": true,\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"name\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"description\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"status\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"sourceOfStatus\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"preferenceGroupName\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"legalBasis\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        },\n                        {\n                            \"name\": \"legalBasisExplanation\",\n                            \"data_categories\": [\n                                \"system.operations\"\n                            ],\n                            \"fidesops_meta\": {\n                                \"data_type\": \"string\"\n                            }\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{hubspot_saas_key}}/dataset",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{hubspot_saas_key}}",
+										"dataset"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Hubspot Saas Connection Test",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/connection/{{hubspot_saas_key}}/test",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{hubspot_saas_key}}",
+										"test"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Create/Update Connection Configs: SaaS",
 					"request": {
 						"auth": {
@@ -3064,6 +3287,18 @@
 		{
 			"key": "sentry_access_token",
 			"value": ""
+		},
+		{
+			"key": "hubspot_domain",
+			"value": ""
+		},
+		{
+			"key": "hubspot_api_key",
+			"value": ""
+		},
+		{
+			"key": "hubspot_saas_key",
+			"value": "hubspot_saas_key"
 		}
 	]
 }

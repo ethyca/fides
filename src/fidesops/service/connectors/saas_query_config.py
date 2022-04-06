@@ -91,7 +91,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self,
         current_request: SaaSRequest,
         param_values: Dict[str, Any],
-        update_values: Optional[str],
+        update_values: Optional[Dict[str, Any]],
     ) -> SaaSRequestParams:
         """
         Visits path, headers, query, and body params in the current request and replaces
@@ -113,14 +113,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 query_param.value, param_values
             )
 
-        body = self.assign_placeholders(current_request.body, param_values)
+        body: str = self.assign_placeholders(current_request.body, param_values)
 
         return SaaSRequestParams(
             method=current_request.method,
             path=path,
             headers=headers,
             query_params=query_params,
-            body=body if body else update_values,
+            json_body=json.loads(body) if body else update_values,
         )
 
     def generate_query(
@@ -186,10 +186,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        update_values: str = json.dumps(unflatten_dict(update_value_map))
+        update_values: Dict[str, Any] = unflatten_dict(update_value_map)
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = update_values[1:-1]
+        param_values["masked_object_fields"] = json.dumps(update_values)[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = self.map_param_values(

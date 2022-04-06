@@ -59,6 +59,7 @@ For more detailed information, [see the Datasets Guide](../guides/datasets.md).
 We need to create a method that takes the Dataset we've just annotated and upload it to fidesops:
 
 ### Define helper method
+
 ```python
 def create_dataset(connection_key, yaml_path, access_token):
     """
