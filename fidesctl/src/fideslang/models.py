@@ -537,6 +537,10 @@ class System(FidesModel):
 
     _check_valid_country_code: classmethod = country_code_validator
 
+    class Config:
+        "Class for the System config"
+        use_enum_values = True
+
 
 # Taxonomy
 class Taxonomy(BaseModel):
