@@ -4,19 +4,12 @@ from typing import Dict, List, Tuple, Optional
 import asyncio
 import sqlalchemy
 from sqlalchemy.engine import Engine
-from okta.client import Client as OktaClient
-from okta.models import Application as OktaApplication
 from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
 from fideslang import manifests
-from fideslang.models import (
-    Dataset,
-    DatasetCollection,
-    DatasetField,
-    DatasetMetadata,
-)
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 from .utils import get_db_engine, echo_green, echo_red
 
 SCHEMA_EXCLUSION = {
@@ -116,57 +109,6 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
         ],
     )
     return dataset
-
-
-def get_okta_client(org_url: str) -> OktaClient:
-    """
-    Returns an Okta client for the given organization url. Authentication is
-    handled through environment variables that the okta python sdk support.
-    """
-    config = {
-        "orgUrl": org_url,
-    }
-    okta_client = OktaClient(config)
-    return okta_client
-
-
-async def list_okta_applications(okta_client: OktaClient) -> List[OktaApplication]:
-    """
-    Returns a list of Okta applications. Iterates through each page returned by
-    the client.
-    """
-    applications = []
-    current_applications, resp, err = await okta_client.list_applications()
-    while True:
-        if err:
-            echo_red(f"Failed to list Okta applications: {err}")
-            raise SystemExit(1)
-        applications.extend(current_applications)
-        if resp.has_next():
-            current_applications, err = await resp.next()
-        else:
-            break
-    return applications
-
-
-def create_okta_datasets(okta_applications: List[OktaApplication]) -> List[Dataset]:
-    """
-    Returns a list of dataset objects given a list of Okta applications
-    """
-    datasets = [
-        Dataset(
-            fides_key=application.id,
-            name=application.name,
-            fidesctl_meta=DatasetMetadata(
-                resource_id=application.id,
-            ),
-            description=f"Fides Generated Description for Okta Application: {application.label}",
-            data_categories=[],
-            collections=[],
-        )
-        for application in okta_applications
-    ]
-    return datasets
 
 
 def find_uncategorized_dataset_fields(
@@ -272,6 +214,84 @@ def print_dataset_db_scan_result(
     echo_green(annotation_output)
 
 
+def get_dataset_resource_ids(datasets: List[Dataset]) -> List[str]:
+    """
+    Given a list of datasets, build a list of resource ids
+    """
+    dataset_resource_ids = []
+    for dataset in datasets:
+        resource_id = get_dataset_resource_id(dataset=dataset)
+        if resource_id:
+            dataset_resource_ids.append(resource_id)
+    return dataset_resource_ids
+
+
+def get_dataset_resource_id(dataset: Dataset) -> Optional[str]:
+    """
+    Given a resource dataset, returns the resource id. Returns None
+    if a resource_id is not found in metadata.
+    """
+    dataset_resource_id = (
+        dataset.fidesctl_meta.resource_id
+        if dataset.fidesctl_meta and dataset.fidesctl_meta.resource_id
+        else None
+    )
+    return dataset_resource_id
+
+
+def find_missing_datasets(
+    source_datasets: List[Dataset],
+    existing_datasets: List[Dataset],
+) -> List[Dataset]:
+    """
+    Given a list of source and existing okta datasets, returns a list
+    of datasets which are not found in the existing list.
+    """
+    existing_resource_ids = get_dataset_resource_ids(datasets=existing_datasets)
+    missing_datasets = [
+        source_dataset
+        for source_dataset in source_datasets
+        if get_dataset_resource_id(dataset=source_dataset) not in existing_resource_ids
+    ]
+    return missing_datasets
+
+
+def print_dataset_resource_scan_result(
+    source_datasets: List[Dataset],
+    missing_datasets: List[Dataset],
+    coverage_threshold: int,
+) -> None:
+    """
+    Prints missing datasets and raises an exception if coverage
+    is lower than provided threshold.
+    """
+    output: str = "Successfully scanned the following datasets:\n"
+    for source_dataset in source_datasets:
+        output += "\t{}(id={})\n".format(
+            source_dataset.name, get_dataset_resource_id(dataset=source_dataset)
+        )
+    echo_green(output)
+
+    if missing_datasets:
+        missing_datasets_output = (
+            "The following datasets were not found in existing manifest:\n"
+        )
+        for missing_dataset in missing_datasets:
+            missing_datasets_output += "\t{}(id={})\n".format(
+                missing_dataset.name, get_dataset_resource_id(dataset=missing_dataset)
+            )
+        echo_red(missing_datasets_output)
+
+    coverage_percent = int(
+        ((len(source_datasets) - len(missing_datasets)) / len(source_datasets)) * 100
+    )
+    annotation_output = "Resource coverage: {}%".format(coverage_percent)
+    if coverage_percent < coverage_threshold:
+        echo_red(annotation_output)
+        raise SystemExit(1)
+    echo_green(annotation_output)
+
+
 def scan_dataset_db(
     connection_string: str,
     manifest_dir: Optional[str],
@@ -322,6 +342,47 @@ def scan_dataset_db(
     )
 
 
+def scan_dataset_okta(
+    manifest_dir: str,
+    org_url: str,
+    coverage_threshold: int,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+) -> None:
+    """
+    Given an organization url, fetches Okta applications and compares them
+    against existing datasets in the server and manifest supplied.
+    """
+    manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
+    manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
+    server_datasets = get_all_server_datasets(
+        url=url, headers=headers, exclude_datasets=manifest_datasets
+    )
+
+    import fidesctl.connectors.okta as okta_connector
+
+    okta_client = okta_connector.get_okta_client(org_url)
+    okta_applications = asyncio.run(
+        okta_connector.list_okta_applications(okta_client=okta_client)
+    )
+    okta_datasets = okta_connector.create_okta_datasets(
+        okta_applications=okta_applications
+    )
+    if len(okta_datasets) < 1:
+        echo_red("Okta did not return any applications to scan datasets")
+        raise SystemExit(1)
+
+    missing_datasets = find_missing_datasets(
+        source_datasets=okta_datasets,
+        existing_datasets=server_datasets + manifest_datasets,
+    )
+    print_dataset_resource_scan_result(
+        source_datasets=okta_datasets,
+        missing_datasets=missing_datasets,
+        coverage_threshold=coverage_threshold,
+    )
+
+
 def write_dataset_manifest(
     file_name: str, include_null: bool, datasets: List[Dataset]
 ) -> None:
@@ -359,9 +420,15 @@ def generate_dataset_okta(org_url: str, file_name: str, include_null: bool) -> s
     Given an organization url, generates a dataset manifest from existing Okta
     applications.
     """
-    okta_client = get_okta_client(org_url)
-    okta_applications = asyncio.run(list_okta_applications(okta_client=okta_client))
-    okta_datasets = create_okta_datasets(okta_applications=okta_applications)
+    import fidesctl.connectors.okta as okta_connector
+
+    okta_client = okta_connector.get_okta_client(org_url)
+    okta_applications = asyncio.run(
+        okta_connector.list_okta_applications(okta_client=okta_client)
+    )
+    okta_datasets = okta_connector.create_okta_datasets(
+        okta_applications=okta_applications
+    )
     write_dataset_manifest(
         file_name=file_name, include_null=include_null, datasets=okta_datasets
     )

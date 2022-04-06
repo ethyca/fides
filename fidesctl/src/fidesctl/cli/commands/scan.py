@@ -2,7 +2,7 @@
 
 import click
 
-from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.utils import with_analytics, echo_red
 from fidesctl.cli.options import manifests_dir_argument
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
@@ -52,6 +52,43 @@ def scan_dataset_db(
         connection_string=connection_string,
         manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+    )
+
+
+@scan_dataset.command(name="okta")
+@click.pass_context
+@click.argument("org_url", type=str)
+@manifests_dir_argument
+@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
+def scan_dataset_okta(
+    ctx: click.Context,
+    org_url: str,
+    manifests_dir: str,
+    coverage_threshold: int,
+) -> None:
+    """
+    Scans your existing datasets and compares them to found Okta applications.
+    Connect to an Okta admin account by providing an organization url. Auth token
+    can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.
+
+    Outputs missing resources and has a non-zero exit if coverage is
+    under the stated threshold.
+    """
+    try:
+        import okta
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[okta]"')
+        raise SystemExit
+
+    config = ctx.obj["CONFIG"]
+    with_analytics(
+        ctx,
+        _dataset.scan_dataset_okta,
+        org_url=org_url,
+        coverage_threshold=coverage_threshold,
+        manifest_dir=manifests_dir,
         url=config.cli.server_url,
         headers=config.user.request_headers,
     )

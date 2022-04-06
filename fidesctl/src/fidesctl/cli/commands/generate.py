@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.options import include_null_flag
-from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.utils import with_analytics, echo_red
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -64,6 +64,12 @@ def generate_dataset_okta(
     This is a one-time operation that does not track the state of the okta resources.
     It will need to be run again if the tracked resources change.
     """
+    try:
+        import okta
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[okta]"')
+        raise SystemExit
+
     with_analytics(
         ctx,
         _dataset.generate_dataset_okta,
