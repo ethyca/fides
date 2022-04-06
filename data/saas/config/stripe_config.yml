@@ -1,0 +1,332 @@
+saas_config:
+  fides_key: stripe_connector_example
+  name: Stripe SaaS Config
+  description: A sample schema representing the Stripe connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: host
+    - name: api_key
+    - name: payment_types
+    - name: items_per_page
+
+  client_config:
+    protocol: https
+    host:
+      connector_param: host
+    authentication:
+      strategy: bearer_authentication
+      configuration:
+        token:
+          connector_param: api_key
+
+  test_request:
+    method: GET
+    path: /v1/customers
+    
+  endpoints:
+  - name: customer
+    requests:
+      read:
+        method: GET
+        path: /v1/customers
+        query_params:
+          - name: email
+            value: <email>
+        param_values:
+          - name: email
+            identity: email
+        data_path: data
+  - name: charge
+    requests:
+      read: 
+        method: GET
+        path: /v1/charges
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: dispute
+    requests:
+      read:
+        method: GET
+        path: /v1/disputes
+        query_params:
+          - name: charge
+            value: <charge_id>
+          - name: payment_intent
+            value: <payment_intent_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: charge_id
+            references:
+              - dataset: stripe_connector_example
+                field: charge.id
+                direction: from
+          - name: payment_intent_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_intent.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: payment_intent
+    requests:
+      read:
+        method: GET
+        path: /v1/payment_intents
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: payment_method
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/payment_methods
+        query_params:
+          - name: type
+            value: <type>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: type
+            connector_param: payment_types
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: bank_account
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: bank_account
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: card
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/sources
+        query_params:
+          - name: object
+            value: card
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: credit_note
+    requests:
+      read:
+        method: GET
+        path: /v1/credit_notes
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: customer_balance_transaction
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/balance_transactions
+        query_params:
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: tax_id
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/<customer_id>/tax_ids
+        query_params:
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: invoice
+    requests:
+      read:
+        method: GET
+        path: /v1/invoices
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: invoice_item
+    requests:
+      read:
+        method: GET
+        path: /v1/invoiceitems
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id
+  - name: subscription
+    requests:
+      read:
+        method: GET
+        path: /v1/subscriptions
+        query_params:
+          - name: customer
+            value: <customer_id>
+          - name: limit
+            value: <limit>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+          - name: limit
+            connector_param: items_per_page
+        data_path: data
+        pagination:
+          strategy: cursor
+          configuration:
+            cursor_param: starting_after
+            field: id

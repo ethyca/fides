@@ -136,7 +136,7 @@ saas_config:
           - name: placeholder
             identity: email
   - name: users
-    after: [ saas_connector_example.projects ]
+    after: [saas_connector_example.projects]
     requests:
       read:
         method: GET
@@ -144,7 +144,7 @@ saas_config:
         query_params:
           - name: query
             value: <query>
-        grouped_inputs: [ organization_slug, project_slug, query ]
+        grouped_inputs: [organization_slug, project_slug, query]
         param_values:
           - name: organization_slug
             references:

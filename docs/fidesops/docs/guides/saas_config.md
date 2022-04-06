@@ -251,6 +251,89 @@ messages:
         - name: version
           connector_param: version
 ```
+## How are requests generated?
+The following HTTP request properties are generated for each request based on the endpoint configuration:
+
+- method
+- path
+- headers
+- query params
+- body
+
+#### Method
+This is a required field since a read, update, or delete endpoint might use any of the HTTP methods to perform the given action.
+
+#### Path
+This can be a static value or use placeholders. If the placeholders to build the path are not found at request-time, the request will fail.
+
+#### Headers and query params
+These can also be static or use placeholders. If a placeholder is missing, the request will continue and omit the given header or query param in the request.
+
+If reference values are used for the placeholders, each value will be processed independently unless the `grouped_inputs` field is set. The following examples use query params but this applies to headers as well.
+
+**With ungrouped inputs (default)**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: line_item
+      value: <line_item_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: connector_example
+        field: charge.id
+        direction: from
+  - name: line_item_id
+    references:
+      - dataset: connector_example
+        field: charge.line_item.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge=1
+GET /v1/disputes?charge=2
+GET /v1/disputes?charge=3
+GET /v1/disputes?line_item=a
+GET /v1/disputes?line_item=b
+GET /v1/disputes?line_item=c
+```
+
+**With grouped inputs**
+```yaml
+read:
+  method: GET
+  path: /v1/disputes
+  grouped_inputs: [charge_id, payment_intent_id]
+  query_params:
+    - name: charge
+      value: <charge_id>
+    - name: line_item
+      value: <line_item_id>
+  param_values:
+  - name: charge_id
+    references:
+      - dataset: connector_example
+        field: charge.id
+        direction: from
+  - name: line_item_id
+    references:
+      - dataset: connector_example
+        field: charge.line_item.id
+        direction: from
+```
+```yaml
+GET /v1/disputes?charge=1&line_item=a
+GET /v1/disputes?charge=2&line_item=b
+GET /v1/disputes?charge=3&line_item=c
+```
+
+#### Body
+The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
+
 
 ## Example scenarios
 #### Dynamic path with dataset references
