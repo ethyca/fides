@@ -26,7 +26,6 @@ def test_default_config():
 
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
-    assert config.cli.server_url == "http://localhost:8080"
 
 
 @patch.dict(
@@ -34,7 +33,7 @@ def test_default_config():
     {
         "FIDESCTL_CONFIG_PATH": "",
         "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_URL": "test"
+        "FIDESCTL__CLI__SERVER_URL": "test",
     },
     clear=True,
 )
@@ -55,7 +54,9 @@ def test_database_url_test_mode_disabled():
     api_settings = APISettings(
         test_database_name="test_database_url", database_name="database_url"
     )
-    assert api_settings.database_url == "postgres:fidesctl@fidesctl-db:5432/database_url"
+    assert (
+        api_settings.database_url == "postgres:fidesctl@fidesctl-db:5432/database_url"
+    )
 
 
 @pytest.mark.unit
@@ -64,4 +65,7 @@ def test_database_url_test_mode_enabled():
     api_settings = APISettings(
         test_database_name="test_database_url", database_name="database_url"
     )
-    assert api_settings.database_url == "postgres:fidesctl@fidesctl-db:5432/test_database_url"
+    assert (
+        api_settings.database_url
+        == "postgres:fidesctl@fidesctl-db:5432/test_database_url"
+    )
