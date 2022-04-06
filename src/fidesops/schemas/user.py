@@ -48,3 +48,10 @@ class UserCreateResponse(BaseSchema):
     """Response after creating a FidesopsUser"""
 
     id: str
+
+
+class PrivacyRequestReviewer(BaseSchema):
+    """Data we can expose via the PrivacyRequest.reviewer relation"""
+
+    id: str
+    username: str

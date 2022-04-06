@@ -706,8 +706,8 @@ def user(db: Session):
         db=db,
         data={
             "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"
-        }
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
     )
     client = ClientDetail(
         hashed_secret="thisisatest",

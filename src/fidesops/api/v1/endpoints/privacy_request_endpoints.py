@@ -274,14 +274,14 @@ def get_request_status(
     params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
-    created_lt: Optional[date] = None,
-    created_gt: Optional[date] = None,
-    started_lt: Optional[date] = None,
-    started_gt: Optional[date] = None,
-    completed_lt: Optional[date] = None,
-    completed_gt: Optional[date] = None,
-    errored_lt: Optional[date] = None,
-    errored_gt: Optional[date] = None,
+    created_lt: Optional[Union[date, datetime]] = None,
+    created_gt: Optional[Union[date, datetime]] = None,
+    started_lt: Optional[Union[date, datetime]] = None,
+    started_gt: Optional[Union[date, datetime]] = None,
+    completed_lt: Optional[Union[date, datetime]] = None,
+    completed_gt: Optional[Union[date, datetime]] = None,
+    errored_lt: Optional[Union[date, datetime]] = None,
+    errored_gt: Optional[Union[date, datetime]] = None,
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -350,6 +350,8 @@ def get_request_status(
         )
     else:
         PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
+
+    query = query.order_by(PrivacyRequest.created_at.desc())
 
     paginated = paginate(query, params)
     if include_identities:

@@ -399,6 +399,50 @@ class TestGetPrivacyRequests:
         )
         assert 400 == response.status_code
 
+    def test_get_privacy_requests_displays_reviewer(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        user,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        privacy_request.reviewer = user
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?id={privacy_request.id}", headers=auth_header
+        )
+        assert 200 == response.status_code
+
+        reviewer = response.json()["items"][0]["reviewer"]
+        assert reviewer
+        assert user.id == reviewer["id"]
+        assert user.username == reviewer["username"]
+
+    def test_get_privacy_requests_accept_datetime(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        privacy_request,
+        postgres_execution_log,
+        mongo_execution_log,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        for date_format in ["%Y-%m-%dT00:00:00.000Z", "%Y-%m-%d"]:
+            date_input = privacy_request.created_at.strftime(date_format)
+            response = api_client.get(
+                url + f"?created_gt={date_input}",
+                headers=auth_header,
+            )
+
+        assert 200 == response.status_code
+
     def test_get_privacy_requests_by_id(
         self,
         api_client: TestClient,
@@ -428,6 +472,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -471,6 +516,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -596,9 +642,9 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 3
-        assert resp["items"][0]["id"] == privacy_request.id
+        assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
-        assert resp["items"][2]["id"] == failed_privacy_request.id
+        assert resp["items"][2]["id"] == privacy_request.id
 
     def test_filter_privacy_requests_by_started(
         self,
@@ -614,8 +660,8 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 2
-        assert resp["items"][0]["id"] == privacy_request.id
-        assert resp["items"][1]["id"] == failed_privacy_request.id
+        assert resp["items"][0]["id"] == failed_privacy_request.id
+        assert resp["items"][1]["id"] == privacy_request.id
 
         response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
         assert 200 == response.status_code
@@ -703,6 +749,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "reviewer": None,
                     "policy": {
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -1430,6 +1477,7 @@ class TestResumePrivacyRequest:
             "identity": None,
             "reviewed_at": None,
             "reviewed_by": None,
+            "reviewer": None,
             "policy": {
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
