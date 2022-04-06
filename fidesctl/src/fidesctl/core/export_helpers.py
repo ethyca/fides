@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime
 from enum import Enum
+from os.path import dirname, join
 import shutil
 
 from typing import Dict, List, Tuple, Set
@@ -12,7 +13,11 @@ from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
 
 
-DATAMAP_TEMPLATE = "src/fidesctl/templates/fides_datamap_template.xlsx"
+DATAMAP_TEMPLATE = join(
+    dirname(__file__),
+    "../templates",
+    "fides_datamap_template.xlsx",
+)
 
 
 def export_to_csv(
