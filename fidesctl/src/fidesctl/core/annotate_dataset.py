@@ -82,6 +82,19 @@ def get_data_categories_annotation(
     return user_response
 
 
+def annotate_dataset_level(
+    dataset: Dataset, annotate_all: bool, existing_categories: List[str]
+) -> Dataset:
+    if annotate_all and not dataset.data_categories:
+        click.secho(f"Database [{dataset.name}] has no data categories")
+        dataset.data_categories = get_data_categories_annotation(
+            dataset_member=dataset,
+            valid_categories=existing_categories,
+            validate=validate,
+        )
+    return dataset
+
+
 def annotate_dataset(
     config: FidesctlConfig,
     dataset_file: str,
@@ -113,7 +126,7 @@ def annotate_dataset(
 
     datasets = core_parse.ingest_manifests(dataset_file)["dataset"]
 
-    existing_categories = [
+    existing_categories: List[str] = [
         resource.fides_key
         for resource in api_helpers.list_server_resources(
             url=config.cli.server_url,
@@ -128,13 +141,9 @@ def annotate_dataset(
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
             # Check for data_categories at the Dataset level
-            if annotate_all and not current_dataset.data_categories:
-                click.secho(f"Database [{current_dataset.name}] has no data categories")
-                current_dataset.data_categories = get_data_categories_annotation(
-                    dataset_member=current_dataset,
-                    valid_categories=existing_categories,
-                    validate=validate,
-                )
+            current_dataset = annotate_dataset_level(
+                current_dataset, annotate_all, existing_categories
+            )
 
             # Check for data_categories at the collections level
             for table in current_dataset.collections:
