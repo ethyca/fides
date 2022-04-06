@@ -254,3 +254,25 @@ dataset:
   retention: No retention or erasure policy
   collections: []
 ```
+## Scanning the Datasets
+
+The `scan` command can then connect to your Okta account and compare its applications to your already defined datasets:
+```sh
+./venv/bin/fidesctl scan dataset okta \
+  https://dev-78908748.okta.com \
+  fides_resources/okta_datasets.yml
+```
+
+The command output confirms our resources are covered fully:
+```sh
+Loading resource manifests from: manifest.yml
+Taxonomy successfully created.
+Successfully scanned the following datasets:
+	saasure(id=0oa4h45lj1tcpqU6W5d7)
+	okta_enduser(id=0oa4h45ln0xLKJnAw5d7)
+	okta_browser_plugin(id=0oa4h45lnodX7MHJB5d7)
+	salesforce(id=0oa4jejqcp74R9MpJ5d7)
+	google(id=0oa4jekd00tpvn5hN5d7)
+
+Resource coverage: 100%
+```
