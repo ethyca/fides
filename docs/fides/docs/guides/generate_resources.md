@@ -81,7 +81,7 @@ The `scan` command can then connect to your database and compare its schema to y
 ```sh
 ./venv/bin/fidesctl scan dataset db \
   postgresql://postgres:postgres@localhost:5432/flaskr \
-  --manifest-dir fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml
 ```
 
 The command output confirms our database resource is covered fully:
@@ -190,7 +190,7 @@ system:
 The `scan` command can then connect to your AWS account and compare its resources to your already defined systems:
 ```sh
 ./venv/bin/fidesctl scan system aws \
-  --manifest-dir fides_resources/aws_systems.yml
+  fides_resources/aws_systems.yml
 ```
 
 The command output confirms our resources are covered fully:
