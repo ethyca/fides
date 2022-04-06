@@ -21,6 +21,7 @@ services:
         read_only: False
     environment:
       FIDESCTL_TEST_MODE: "True"
+      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
 
   fidesctl-db:
     image: postgres:12
