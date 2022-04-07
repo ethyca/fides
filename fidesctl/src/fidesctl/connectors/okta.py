@@ -58,5 +58,6 @@ def create_okta_datasets(okta_applications: List[OktaApplication]) -> List[Datas
             collections=[],
         )
         for application in okta_applications
+        if application.status and application.status == "ACTIVE"
     ]
     return datasets
