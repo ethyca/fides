@@ -1,41 +1,54 @@
-# Exporting a data map using the demo resources
+# Generating a Data Map
 
+Fides is capable of exporting a data map of your [resources](./../language/resources/system.md) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources the included in the [Fides repository](https://github.com/ethyca/fides). 
 
-the purpose of this guide is to detail which attributes are required and how to implement them to export an Article 30 compliant Record of Processing Activites (RoPA).
-
-To follow the guide, please follow [Step 1 of the Quickstart](https://github.com/ethyca/fides/#rocket-quick-start)
-
-The rest of the guide will cover the following:
-
-1. Export the `demo_resources` as they are
-1. Review the resource and taxonomy properties used
-1. Extend the default taxonomy (to fill in missing fields)
-1. Export a mock Article 30 compliant RoPA
-
-
+To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
 
-At this point you should have completed [Step 1 of the Quickstart](https://github.com/ethyca/fides/#rocket-quick-start) and have a terminal window ready.
+Once fidesctl is installed, navigate to the project's `fidesctl` directory.
 
-Let's apply and export the provided `demo_resources` and explore what our data map looks like.
+To apply and export the provided `demo_resources`, run the following commands:
 
 ```sh title="Apply and Export Defaults"
 $ fidesctl apply demo_resources/
 $ fidesctl export datamap demo_resources/
 ```
 
-The data map should have been exported to the `demo_resources/` directory, open it and we can review each section.
-
+This will export a data map to the `demo_resources/` directory.
 
 ### Organization
 
-The header block at the top of a data map is composed of properties found in the Organization resource. For demo purposes, this resource has fake data but normally this would be composed of publicly available information for your company/organization.
+The header block at the top of a data map is composed of properties found in the [Organization resource](./../language/resources/organization.md). In a production deployment, this would be composed of publicly available information for your company/organization, but has been pre-populated here to allow exploration.
 
 ![Organization Contact Info](../img/datamap_organization_contact.png)
 
-Reviewing `demo_resources/demo_organization.yml` will highlight the relationship between the Organization resource manifest and the data map. Each of `controller`, `data_protection_officer`, and `representative` are composed of Contact Detail properties aligning with the exported data map.
+The newly-generated data map is a direct result of the provided Organization resource manifest (`demo_resources/demo_organization.yml`):
 
-Additionally, the link to the security policy of an organization can be found modeled on the Organization resource as `security_policy`.
+```yaml title='<code>demo_organization.yml</code>'
+organization:
+  - fides_key: default_organization
+    name: Demo Organization
+    description: An e-commerce organization
+    security_policy: https://ethyca.com/privacy-policy/
+    controller: 
+      name: Con Troller
+      address: 123 demo street, New York, NY, USA
+      email: controller@demo_company.com
+      phone: +1 555 555 5555
+    data_protection_officer:
+      name: DataPro Tection
+      address: 123 demo street, New York, NY, USA
+      email: dpo@demo_company.com
+      phone: +1 555 555 5555
+    representative:
+      name: Rep Resentative
+      address: 123 demo street, New York, NY, USA
+      email: representative@demo_company.com
+      phone: +1 555 555 5555
+```
+Each of `controller`, `data_protection_officer`, and `representative` are composed of Contact Detail properties populated in the exported data map.
+
+Additionally, the link to the security policy of an organization can be populated from the Organization resource's `security_policy` field.
 
 
 ### Dataset
@@ -45,41 +58,73 @@ The Dataset is primarily used to provide a list of Data Categories which populat
 ![Demo Dataset Properties](../img/demo_dataset_properties.png)
 
 
-Reviewing `demo_resources/demo_dataset.yml` will highlight the relationship between the Organization resource manifest and the data map.
+The newly-generated data map is a direct result of the provided Dataset resource manifest (`demo_resources/demo_dataset.yml`):
 
-`data_categories` and `retention` can be set at any of  Dataset, DatasetCollection, or DatasetField. `third_country_transfers` should be set at the Dataset level.
+```yaml title='<code>demo_dataset.yml</code>'
+dataset:
+- fides_key: demo_users_dataset
+  organization_fides_key: default_organization
+  name: Demo Users Dataset
+  description: Data collected about users for our analytics system.
+  meta: null
+  data_categories: []
+  data_qualifiers:
+  - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  retention: "30 days after account deletion"
+  third_country_transfers:
+    - GBR
+    - CAN
+  collections:
+  - name: users
+    description: User information
+    data_categories: []
+    data_qualifiers:
+    - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: User's creation timestamp
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+
+    ...
+```
+
+`data_categories` and `retention` can be set at the `dataset`, `collection`, or `field` level.
+
+`third_country_transfers` should be set at the `dataset` level.
 
 Any Datasets referenced by a system will have this information exported as rows of your data map.
 
-
 ### System
 
-The system houses the remainder of the attributes on our initial data map.
+Your System houses the remainder of the attributes on the initial data map.
 
-Each populated property is listed below with it's referenced property in `demo_system.yml`:
+Each populated property referenced directly from an associated label in `fides_resources/demo_system.yml`:
 
-* **Fides dataset**: Found under `dataset_references`, used to join dataset(s) to the system.
-* **Fides system**: The name defined at the top-level of the system.
-* **Department or Business Function**: `administering_department` set at the top-level of the system.
-* **Purpose of Processing**: The name defined for the `data_use` set in a Privacy Declaration.
-* **Categories of Individuals**: The name defined for the `data_subject` set in a Privacy Declaration.
-* **Categories of Personal Data**: Any Data Category set as part of a Privacy Declaration will also be populated here (see the output for Demo Marketing System as a clear example).
-* **Role or Responsibility**: Defined by the `data_responsibility_title` property at the top-level of the system.
-* **Source of the Personal Data**: The fides dataset name if referenced on the system.
-* **Data Protection Impact Assessment**: All of the information related to a DPIA is defined under the `data_protection_impact_assessment` property at the top-level of the system.
+|Data Map Label    |Resource Label   | Description    |
+|--|----|----|
+| **Fides dataset** | `dataset_references` | Used to join dataset(s) to the system. |
+| **Fides system** | `name` | The `name` defined at the top level of the system. |
+| **Department or Business Function** |  `administering_department` | Set at the top level of the system. | 
+| **Purpose of Processing** | `data_use` | The `data_use` defined in the `privacy_declaration`. |
+| **Categories of Individuals** | `data_subject` | A `data_subject` list defined in the `privacy_declaration`. |
+| **Categories of Personal Data** | `data_categories` | Any `data_categories` set as part of the `privacy_declaration` (see the output for Demo Marketing System as a clear example).|
+| **Role or Responsibility** | `data_responsibility_title` | Set at the top level of the system. |
+| **Source of the Personal Data** | `dataset_references` | The Fides dataset name, if referenced by the system.
+| **Data Protection Impact Assessment**  | `data_protection_impact_assessment` | All of the information related to a Data Protection Impact Assessment, set at the top level of the system.|
 
 
-## What's missing?
+## Extend the Default Taxonomy
 
-This next section focuses on the data map columns populated with `N/A` and how to use properties within the fides Taxonomy and Resources to replace those with value-added data required as part of a RoPA.
+In your initial export, several data map columns are populated with `N/A`. The default [Fides Taxonomy](./../language/taxonomy/overview.md) can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.
 
-To do this, we need to extend the default taxonomy for our particular needs. The manifeset updates can be viewed in `demo_extended_taxonomy.yml`.
+Example manifest updates are included in `demo_resources/demo_extended_taxonomy.yml`.
 
 ### Data Use
+Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
 
-Below is our extended data use that we are going to apply to our Demo Marketing System. Each of these properties is responsible for populating a field on your data map.
-
-```yml title="Extended Data Use"
+```yaml title="Extended Data Use"
 data_use:
   - fides_key: third_party_sharing.personalized_advertising.direct_marketing
     name: Direct Marketing
@@ -92,15 +137,16 @@ data_use:
     parent_key: third_party_sharing.personalized_advertising
 ```
 
-Replace the Data Use of `advertising` with the fides key of `third_party_sharing.personalized_advertising.direct_marketing` on our Demo Marketing System.
+
+You can now apply this Data Use to the Demo Marketing System in `demo_system.yml`. 
+
+Replace the Demo Marketing System's Data Use of `advertising` with the above fides_key of `third_party_sharing.personalized_advertising.direct_marketing` to include its information in your data map.
 
 ### Data Subject
 
-Similarly, a Data Subject provides the opportunity to provide extra information to be used as part of the data map.
+A [Data Subject](./../language/taxonomy/data_subjects.md), shown below, can also be extended to populate your data map with additional information.
 
-Below is our extended data subject to apply to our Demo Marketing System. Each of these properties is responsible for populating a field on your data map.
-
-```yml title="Extended Data Subject"
+```yaml title="Extended Data Subject"
 data_subject:
   - fides_key: potential_customer
     name: Potential Customer
@@ -116,37 +162,46 @@ data_subject:
     automated_decisions_or_profiling: true
 ```
 
-Replace the data subject of `customer` with the fides key of `potential_customer` on our Demo Marketing System.
+You can now apply this Data Subject to the Demo Marketing System in `demo_system.yml`. 
 
-## From Data Map to RoPA
+Replace the Demo Marketing System's Data Subject of `customer` with the above fides_key of `potential_customer` to include its information in your data map.
 
-Now that we have added the relevant information around privacy notices and data subject rights, we can export a fresh copy of our data map:
+## Generate a RoPA
+
+Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:
 
 ```sh title="Apply and Export Defaults"
 $ fidesctl apply demo_resources/
 $ fidesctl export datamap demo_resources/
 ```
 
-### Additional Properties Found
+### Populated Fields
 
-Opening the new Data Map will show the previously `N/A` columns fully populated, giving us an Article 30 compliant RoPA for one of the two systems defined in `demo_resources/`. Below is a mapping of the newly populated columns with their respective properties:
+Opening the new data map will show the previously `N/A` columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in `demo_resources/`. 
 
-* **Purpose of Processing**: The name of our newly defined extended `data_use` set in a Privacy Declaration.
-* **Categories of Individuals**: The name of our newly defined extended `data_subject` set in a Privacy Declaration.
-* **Categories of Recipients**: The recipients as defined in our extended Data Use.
-* **Article 6 Lawful Basis for Processing Personal Data**: The `legal_basis` as defined in our extended Data Use .
-* **Article 9 Condition for Processing Special Category Data**: The `special_category` as defined in our extended Data Use.
-* **Legitimate Interests for the Processing**: If the `legal_basis` is `"Legitimate Interests"`, the Data Use name is used to identify what the legitimate interest data use is.
-* **Link to Record of Legitimate Interests Assessment**: If the `legal_basis` is `"Legitimate Interests"`, a legitimate interests impact assessment is required and should be set using the `legitimate_interest_impact_assessment` property.
-* **Rights Available to Individuals**: The `rights` as defined in our extended Data Subject based on the strategy used.
-* **Existence of Automated Decision-Making, Including Profiling**: The boolean value for `automated_decisions_or_profiling` as defined in our extended Data Subject.
+Below is a mapping of the newly populated columns with their respective values:
+
+|Data Map Label | Description |
+|----|----|
+| **Purpose of Processing** | The name of your newly extended `data_use` set in a Privacy Declaration. |
+| **Categories of Individuals** | The name of your newly extended `data_subject` set in a Privacy Declaration. |
+| **Categories of Recipients** | The recipients defined in your extended Data Use. |
+| **Article 6 Lawful Basis for Processing Personal Data** | The `legal_basis` defined in your extended Data Use. |
+| **Article 9 Condition for Processing Special Category Data**| The `special_category` defined in your extended Data Use. |
+| **Legitimate Interests for the Processing** | If the `legal_basis` is `"Legitimate Interests"`, the Data Use name is used to identify what the legitimate interest data use is. |
+| **Link to Record of Legitimate Interests Assessment** | If the `legal_basis` is `"Legitimate Interests"`, a **legitimate interests impact assessment** is required and should be set using the `legitimate_interest_impact_assessment` property. |
+| **Rights Available to Individuals** | The `rights` defined in your extended Data Subject based on the strategy used. |
+| **Existence of Automated Decision-Making, Including Profiling** | The boolean value for `automated_decisions_or_profiling`, defined in your extended Data Subject. |
 
 
-### Extra Credit
+### Additional Learning
 
-Follow the previous step again for the Demo Analytics System to have both systems fully compliant!
+The provided `demo_system.yml` includes a second System, **Demo Analytics**, which can be enhanced in the same way as the Demo Marketing System. 
 
+Follow the guide to [extend the taxonomy](#extending-the-taxonomy) again, this time for the Demo Analytics System, to have both systems fully compliant!
 
-## Where to go from here?
+## Next Steps
 
-We hope this was helpful in understanding the additional properties required for an Article 30 compliant RoPA! If there are any questions or issues you still have, we would love to hear more from you either in our [Slack Community](https://fidescommunity.slack.com) or in [an issue/PR on GitHub](https://github.com/ethyca/fides/issues).
+We hope this was helpful in understanding the additional properties required for generating an Article 30 compliant RoPA! 
+
+If there are any questions or issues you still have, we would love to hear more from you in our [Slack Community](https://fidescommunity.slack.com) or in [an issue/PR on GitHub](https://github.com/ethyca/fides/issues).
