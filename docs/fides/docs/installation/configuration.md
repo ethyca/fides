@@ -26,8 +26,9 @@ log_serialization = ""
 
 [cli]
 local_mode = False
-server_host = "http://localhost"
-server_port = "8080"
+server_host = "localhost"
+server_port = 8080
+server_protocol = "http
 analytics_id = "test_analytics_id"
 
 [user]
@@ -58,7 +59,7 @@ To better describe the various configuration options, the following tables descr
     | local_mode | Boolean | False | When set to `True`, forbids the fidesctl CLI from making calls to the fidesctl webserver. |
     | server_host | String | localhost | The hostname of the fidesctl webserver. |
     | server_protocol | String | http | The protocol used by the fidesctl webserver. |
-    | server_port | Integer | "" | The optional port of the fidesctl webserver, in `<port>` format. |
+    | server_port | Integer | | The optional port of the fidesctl webserver. |
     | analytics_id | String | "" | A fully anonymized unique identifier for the `fidesctl` CLI instance. |
 
 === "User Section"
@@ -87,6 +88,7 @@ FIDESCTL__<SECTION>__<VAR_NAME>
 For example, if we want to set the `server_url` on a Linux machine we could use:
 
 ```sh
-export FIDESCTL__CLI__SERVER_HOST="http://localhost"
+export FIDESCTL__CLI__SERVER_HOST="localhost"
 export FIDESCTL__CLI__SERVER_PORT="8080"
+export FIDESCTL__CLI__SERVER_PROTOCOL="http"
 ```

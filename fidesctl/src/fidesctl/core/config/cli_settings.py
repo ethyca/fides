@@ -15,19 +15,14 @@ class CLISettings(FidesSettings):
     local_mode: bool = False
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
 
-    server_protocol: str = "http"  # if you want, otherwise always http
+    server_protocol: str = "http"
     server_host: str = "localhost"
     server_port: Optional[int]
     server_url: Optional[AnyHttpUrl]
 
     @validator("server_url", always=True)
     def get_server_url(cls: FidesSettings, value: str, values: Dict) -> str:
-        """
-        Create the server_url.
-
-        This needs to be set as a root validator,
-        otherwise the type errors gets suppressed.
-        """
+        "Create the server_url."
         host = values["server_host"]
         port = values["server_port"]
         protocol = values["server_protocol"]
@@ -35,7 +30,7 @@ class CLISettings(FidesSettings):
         server_url = "{}://{}{}".format(
             protocol,
             host,
-            ":" + str(port) if port else "",
+            f":{port}" if port else "",
         )
 
         return server_url
