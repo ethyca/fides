@@ -179,7 +179,7 @@ def generate_system_records(
                 (
                     system.name,
                     system.description,
-                    system.data_responsibility_title.value,
+                    system.data_responsibility_title,
                     system.administrating_department,
                     third_country_list,
                     declaration.name,
