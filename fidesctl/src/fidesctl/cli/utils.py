@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict
 import click
 import requests
 from fideslog.sdk.python.event import AnalyticsEvent
-from fideslog.sdk.python.exceptions import AnalyticsException
+from fideslog.sdk.python.exceptions import AnalyticsError
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 from fidesctl.core import api as _api
@@ -139,5 +139,5 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
 
             try:
                 ctx.meta["ANALYTICS_CLIENT"].send(event)
-            except AnalyticsException:
+            except AnalyticsError:
                 pass  # cli analytics should fail silently
