@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/quickstart/overview/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/generating_datamap/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
     
     
       
-        <title>Overview - Fides</title>
+        <title>Generating a Data Map - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quick-start" class="md-skip">
+        <a href="#generating-a-data-map" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Generating a Data Map
             
           </span>
         </div>
@@ -267,14 +267,12 @@ You're not viewing the latest version.
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       
       
@@ -295,21 +293,11 @@ You're not viewing the latest version.
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../quickstart/overview/" class="md-nav__link">
         Overview
       </a>
-      
     </li>
   
 
@@ -321,7 +309,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../local_standalone/" class="md-nav__link">
+      <a href="../../quickstart/local_standalone/" class="md-nav__link">
         Running Fidesctl Locally (Standalone)
       </a>
     </li>
@@ -335,7 +323,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../local_full/" class="md-nav__link">
+      <a href="../../quickstart/local_full/" class="md-nav__link">
         Running Fidesctl Locally (Full Installation)
       </a>
     </li>
@@ -349,7 +337,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../docker/" class="md-nav__link">
+      <a href="../../quickstart/docker/" class="md-nav__link">
         Running Fidesctl in Docker
       </a>
     </li>
@@ -619,12 +607,14 @@ You're not viewing the latest version.
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
       
       
       
@@ -647,7 +637,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/generate_resources/" class="md-nav__link">
+      <a href="../generate_resources/" class="md-nav__link">
         Generating Resources
       </a>
     </li>
@@ -661,7 +651,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/policies/" class="md-nav__link">
+      <a href="../policies/" class="md-nav__link">
         Example Policies
       </a>
     </li>
@@ -675,7 +665,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/extending_taxonomy/" class="md-nav__link">
+      <a href="../extending_taxonomy/" class="md-nav__link">
         Extending the Taxonomy
       </a>
     </li>
@@ -687,11 +677,140 @@ You're not viewing the latest version.
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../guides/generating_datamap/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Generating a Data Map
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Generating a Data Map
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#export-the-demo-resources" class="md-nav__link">
+    Export the Demo Resources
+  </a>
+  
+    <nav class="md-nav" aria-label="Export the Demo Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#organization" class="md-nav__link">
+    Organization
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset" class="md-nav__link">
+    Dataset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system" class="md-nav__link">
+    System
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extend-the-default-taxonomy" class="md-nav__link">
+    Extend the Default Taxonomy
+  </a>
+  
+    <nav class="md-nav" aria-label="Extend the Default Taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-use" class="md-nav__link">
+    Data Use
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-subject" class="md-nav__link">
+    Data Subject
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-ropa" class="md-nav__link">
+    Generate a RoPA
+  </a>
+  
+    <nav class="md-nav" aria-label="Generate a RoPA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#populated-fields" class="md-nav__link">
+    Populated Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-learning" class="md-nav__link">
+    Additional Learning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1383,6 +1502,109 @@ You're not viewing the latest version.
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#export-the-demo-resources" class="md-nav__link">
+    Export the Demo Resources
+  </a>
+  
+    <nav class="md-nav" aria-label="Export the Demo Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#organization" class="md-nav__link">
+    Organization
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset" class="md-nav__link">
+    Dataset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system" class="md-nav__link">
+    System
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extend-the-default-taxonomy" class="md-nav__link">
+    Extend the Default Taxonomy
+  </a>
+  
+    <nav class="md-nav" aria-label="Extend the Default Taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-use" class="md-nav__link">
+    Data Use
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-subject" class="md-nav__link">
+    Data Subject
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-ropa" class="md-nav__link">
+    Generate a RoPA
+  </a>
+  
+    <nav class="md-nav" aria-label="Generate a RoPA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#populated-fields" class="md-nav__link">
+    Populated Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-learning" class="md-nav__link">
+    Additional Learning
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    Next Steps
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1393,15 +1615,313 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/quickstart/overview.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/generating_datamap.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="quick-start">Quick Start</h1>
-<hr />
-<p>The fastest way to get fidesctl running is to launch it using the <a href="../local_standalone/">fidesctl standlone)</a> guide. For guides on setting up a complete installation, see the <a href="../docker/">Docker instructions here</a> or the <a href="../local_full/">local full-installation instructions here</a>.</p>
+<h1 id="generating-a-data-map">Generating a Data Map</h1>
+<p>Fides is capable of exporting a data map of your <a href="../../language/resources/system/">resources</a> to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the <a href="https://github.com/ethyca/fides">Fides repository</a>.</p>
+<p>To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the <a href="https://github.com/ethyca/fides/#rocket-quick-start">Quick Start guide</a>.</p>
+<h2 id="export-the-demo-resources">Export the Demo Resources</h2>
+<p>Once fidesctl is installed, navigate to the project's <code>fidesctl</code> directory.</p>
+<p>To apply and export the provided <code>demo_resources</code>, run the following commands:</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Apply and Export Defaults</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>$ fidesctl apply demo_resources/
+$ fidesctl <span class="nb">export</span> datamap demo_resources/
+</code></pre></div>
+</td></tr></table>
+<p>This will export a data map to the <code>demo_resources/</code> directory.</p>
+<h3 id="organization">Organization</h3>
+<p>The header block at the top of a data map is composed of properties found in the <a href="../../language/resources/organization/">Organization resource</a>. In a production deployment, this would be composed of publicly available information for your company/organization, but has been pre-populated here to allow exploration.</p>
+<p><img alt="Organization Contact Info" src="../../img/datamap_organization_contact.png" /></p>
+<p>The newly-generated data map is a direct result of the provided Organization resource manifest (<code>demo_resources/demo_organization.yml</code>):</p>
+<p><table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>demo_organization.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Organization</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">An e-commerce organization</span><span class="w"></span>
+<span class="w">    </span><span class="nt">security_policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://ethyca.com/privacy-policy/</span><span class="w"></span>
+<span class="w">    </span><span class="nt">controller</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Con Troller</span><span class="w"></span>
+<span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123 demo street, New York, NY, USA</span><span class="w"></span>
+<span class="w">      </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controller@demo_company.com</span><span class="w"></span>
+<span class="w">      </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+1 555 555 5555</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_protection_officer</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DataPro Tection</span><span class="w"></span>
+<span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123 demo street, New York, NY, USA</span><span class="w"></span>
+<span class="w">      </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dpo@demo_company.com</span><span class="w"></span>
+<span class="w">      </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+1 555 555 5555</span><span class="w"></span>
+<span class="w">    </span><span class="nt">representative</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rep Resentative</span><span class="w"></span>
+<span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123 demo street, New York, NY, USA</span><span class="w"></span>
+<span class="w">      </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">representative@demo_company.com</span><span class="w"></span>
+<span class="w">      </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+1 555 555 5555</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table>
+Each of <code>controller</code>, <code>data_protection_officer</code>, and <code>representative</code> are composed of Contact Detail properties populated in the exported data map.</p>
+<p>Additionally, the link to the security policy of an organization can be populated from the Organization resource's <code>security_policy</code> field.</p>
+<h3 id="dataset">Dataset</h3>
+<p>The Dataset is primarily used to provide a list of Data Categories which populate the data map. Additional properties can optionally be applied for <code>retention</code> and <code>third_country_transfers</code>.</p>
+<p><img alt="Demo Dataset Properties" src="../../img/demo_dataset_properties.png" /></p>
+<p>The newly-generated data map is a direct result of the provided Dataset resource manifest (<code>demo_resources/demo_dataset.yml</code>):</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>demo_dataset.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_users_dataset</span><span class="w"></span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Users Dataset</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data collected about users for our analytics system.</span><span class="w"></span>
+<span class="w">  </span><span class="nt">meta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data_qualifiers</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30</span><span class="nv"> </span><span class="s">days</span><span class="nv"> </span><span class="s">after</span><span class="nv"> </span><span class="s">account</span><span class="nv"> </span><span class="s">deletion&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">third_country_transfers</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GBR</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CAN</span><span class="w"></span>
+<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">users</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User information</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_qualifiers</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User&#39;s creation timestamp</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">system.operations</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table>
+<p><code>data_categories</code> and <code>retention</code> can be set at any/all of the Dataset, DatasetCollection, and DatasetField levels.</p>
+<p><code>third_country_transfers</code> should be set at the <code>dataset</code> level.</p>
+<p>Any Datasets referenced by a System will have this information included as rows of your data map.</p>
+<h3 id="system">System</h3>
+<p>The System contains the remainder of the attributes on the initial data map.</p>
+<p>Each populated property is referenced directly from an associated label in <code>fides_resources/demo_system.yml</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Data Map Label</th>
+<th>Resource Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fides Dataset</strong></td>
+<td><code>dataset_references</code></td>
+<td>Used to join dataset(s) to the system.</td>
+</tr>
+<tr>
+<td><strong>Fides System</strong></td>
+<td><code>name</code></td>
+<td>The <code>name</code> defined at the top level of the system.</td>
+</tr>
+<tr>
+<td><strong>Department or Business Function</strong></td>
+<td><code>administering_department</code></td>
+<td>Set at the top level of the system.</td>
+</tr>
+<tr>
+<td><strong>Purpose of Processing</strong></td>
+<td><code>data_use</code></td>
+<td>The <code>data_use</code> defined in the <code>privacy_declaration</code>.</td>
+</tr>
+<tr>
+<td><strong>Categories of Individuals</strong></td>
+<td><code>data_subject</code></td>
+<td>A <code>data_subject</code> list defined in the <code>privacy_declaration</code>.</td>
+</tr>
+<tr>
+<td><strong>Categories of Personal Data</strong></td>
+<td><code>data_categories</code></td>
+<td>Any <code>data_categories</code> set as part of the <code>privacy_declaration</code> (see the output for Demo Marketing System as a clear example).</td>
+</tr>
+<tr>
+<td><strong>Role or Responsibility</strong></td>
+<td><code>data_responsibility_title</code></td>
+<td>Set at the top level of the system.</td>
+</tr>
+<tr>
+<td><strong>Source of the Personal Data</strong></td>
+<td><code>dataset_references</code></td>
+<td>The Fides dataset name, if referenced by the system.</td>
+</tr>
+<tr>
+<td><strong>Data Protection Impact Assessment</strong></td>
+<td><code>data_protection_impact_assessment</code></td>
+<td>All the information related to a Data Protection Impact Assessment, set at the top level of the system.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="extend-the-default-taxonomy">Extend the Default Taxonomy</h2>
+<p>In your initial export, several data map columns are populated with <code>N/A</code>. The default <a href="../../language/taxonomy/overview/">Fides Taxonomy</a> can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.</p>
+<p>Example manifest updates are included in <code>demo_resources/demo_extended_taxonomy.yml</code>.</p>
+<h3 id="data-use">Data Use</h3>
+<p>Below is an extended <a href="../../language/taxonomy/data_uses/">Data Use</a> example. Each of these properties is responsible for populating a field on your data map.</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Extended Data Use</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Direct Marketing</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User information for direct marketing purposes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">recipients</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor - marketing co.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legitimate Interests</span><span class="w"></span>
+<span class="w">    </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Vital Interests</span><span class="w"></span>
+<span class="w">    </span><span class="nt">legitimate_interest_impact_assessment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/legitimate_interest_assessment</span><span class="w"></span>
+<span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table>
+<p>You can now apply this Data Use to the Demo Marketing System in <code>demo_system.yml</code>.</p>
+<p>Replace the Demo Marketing System's Data Use of <code>advertising</code> with the above fides_key of <code>third_party_sharing.personalized_advertising.direct_marketing</code> to include its information in your data map.</p>
+<h3 id="data-subject">Data Subject</h3>
+<p>A <a href="../../language/taxonomy/data_subjects/">Data Subject</a>, shown below, can also be extended to populate your data map with additional information.</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Extended Data Subject</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_subject</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potential_customer</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Potential Customer</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A prospective individual or other organization that purchases goods or services from the organization.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">rights</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INCLUDE</span><span class="w"></span>
+<span class="w">      </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Informed</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Access</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rectification</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Erasure</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
+<span class="w">    </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+</code></pre></div>
+</td></tr></table>
+<p>You can now apply this Data Subject to the Demo Marketing System in <code>demo_system.yml</code>.</p>
+<p>Replace the Demo Marketing System's Data Subject of <code>customer</code> with the above fides_key of <code>potential_customer</code> to include its information in your data map.</p>
+<h2 id="generate-a-ropa">Generate a RoPA</h2>
+<p>Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:</p>
+<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Apply and Export Defaults</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>$ fidesctl apply demo_resources/
+$ fidesctl <span class="nb">export</span> datamap demo_resources/
+</code></pre></div>
+</td></tr></table>
+<h3 id="populated-fields">Populated Fields</h3>
+<p>Opening the new data map will show the previously <code>N/A</code> columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in <code>demo_resources/</code>.</p>
+<p>Below is a mapping of the newly populated columns with their respective values:</p>
+<table>
+<thead>
+<tr>
+<th>Data Map Label</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Purpose of Processing</strong></td>
+<td>The name of your newly extended <code>data_use</code> set in a Privacy Declaration.</td>
+</tr>
+<tr>
+<td><strong>Categories of Individuals</strong></td>
+<td>The name of your newly extended <code>data_subject</code> set in a Privacy Declaration.</td>
+</tr>
+<tr>
+<td><strong>Categories of Recipients</strong></td>
+<td>The recipients defined in your extended Data Use.</td>
+</tr>
+<tr>
+<td><strong>Article 6 Lawful Basis for Processing Personal Data</strong></td>
+<td>The <code>legal_basis</code> defined in your extended Data Use.</td>
+</tr>
+<tr>
+<td><strong>Article 9 Condition for Processing Special Category Data</strong></td>
+<td>The <code>special_category</code> defined in your extended Data Use.</td>
+</tr>
+<tr>
+<td><strong>Legitimate Interests for the Processing</strong></td>
+<td>If the <code>legal_basis</code> is <code>"Legitimate Interests"</code>, the Data Use name is used to identify what the legitimate interest data use is.</td>
+</tr>
+<tr>
+<td><strong>Link to Record of Legitimate Interests Assessment</strong></td>
+<td>If the <code>legal_basis</code> is <code>"Legitimate Interests"</code>, a <strong>legitimate interests impact assessment</strong> is required and should be set using the <code>legitimate_interest_impact_assessment</code> property.</td>
+</tr>
+<tr>
+<td><strong>Rights Available to Individuals</strong></td>
+<td>The <code>rights</code> defined in your extended Data Subject based on the strategy used.</td>
+</tr>
+<tr>
+<td><strong>Existence of Automated Decision-Making, Including Profiling</strong></td>
+<td>The boolean value for <code>automated_decisions_or_profiling</code>, defined in your extended Data Subject.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="additional-learning">Additional Learning</h3>
+<p>The provided <code>demo_system.yml</code> includes a second System, <strong>Demo Analytics</strong>, which can be enhanced in the same way as the Demo Marketing System.</p>
+<p>Follow the guide to <a href="#extending-the-taxonomy">extend the taxonomy</a> again, this time for the Demo Analytics System, to have both systems fully compliant!</p>
+<h2 id="next-steps">Next Steps</h2>
+<p>We hope this was helpful in understanding the additional properties required for generating an Article 30 compliant RoPA!</p>
+<p>If there are any questions or issues you still have, we would love to hear more from you in our <a href="https://fidescommunity.slack.com">Slack Community</a> or in <a href="https://github.com/ethyca/fides/issues">an issue/PR on GitHub</a>.</p>
 
               
             </article>
@@ -1453,9 +1973,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../.."
+          href="../extending_taxonomy/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: What is Fides?"
+          aria-label="Previous: Extending the Taxonomy"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1466,7 +1986,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Previous
               </span>
-              What is Fides?
+              Extending the Taxonomy
             </div>
           </div>
         </a>
@@ -1476,9 +1996,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../local_standalone/"
+          href="../../cicd/overview/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Running Fidesctl Locally (Standalone)"
+          aria-label="Next: Overview"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1486,7 +2006,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Next
               </span>
-              Running Fidesctl Locally (Standalone)
+              Overview
             </div>
           </div>
           <div class="md-footer__button md-icon">

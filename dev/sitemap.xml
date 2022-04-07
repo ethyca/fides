@@ -96,6 +96,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://ethyca.github.io/fides/dev/guides/generating_datamap/</loc>
+         <lastmod>2022-04-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://ethyca.github.io/fides/dev/guides/policies/</loc>
          <lastmod>2022-04-07</lastmod>
          <changefreq>daily</changefreq>
