@@ -12,7 +12,7 @@ from fideslang import model_list
 def coverage_threshold_option(command: Callable) -> Callable:
     "Add a flag that assumes yes."
     command = click.option(
-        "--coverage-thershold", "-c", type=click.IntRange(0, 100), default=100
+        "--coverage-threshold", "-c", type=click.IntRange(0, 100), default=100
     )(command)
     return command
 

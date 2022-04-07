@@ -100,7 +100,7 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl fidesctl-db-scan black \
+check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
 			pylint mypy xenon pytest-unit pytest-integration pytest-external
 	@echo "Running formatter, linter, typechecker and tests..."
 

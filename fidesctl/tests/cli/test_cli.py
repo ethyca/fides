@@ -3,6 +3,8 @@ from click.testing import CliRunner
 
 from fidesctl.cli import cli
 
+OKTA_URL = "https://dev-78908748.okta.com"
+
 
 @pytest.fixture()
 def test_cli_runner() -> CliRunner:
@@ -349,7 +351,7 @@ def test_generate_dataset_okta(test_config_path: str, test_cli_runner: CliRunner
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "generate", "dataset", "okta", "https://dev-78908748.okta.com",f"{tmp_file}"],
+        ["-f", test_config_path, "generate", "dataset", "okta", OKTA_URL,f"{tmp_file}"],
     )
     print(result.output)
     assert result.exit_code == 0
@@ -365,7 +367,7 @@ def test_scan_system_okta(test_config_path: str, test_cli_runner: CliRunner):
             "scan",
             "dataset",
             "okta",
-            "https://dev-78908748.okta.com",
+            OKTA_URL,
             "--coverage-threshold",
             "0",
         ],
