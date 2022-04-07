@@ -2,8 +2,9 @@ import os
 from unittest.mock import patch
 
 import pytest
+from pydantic import ValidationError
 
-from fidesctl.core.config import APISettings, FidesctlConfig, get_config
+from fidesctl.core.config import APISettings, get_config
 
 
 # Unit
@@ -33,7 +34,8 @@ def test_default_config():
     {
         "FIDESCTL_CONFIG_PATH": "",
         "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_URL": "test",
+        "FIDESCTL__CLI__SERVER_HOST": "test",
+        "FIDESCTL__CLI__SERVER_PORT": "8080",
     },
     clear=True,
 )
@@ -45,7 +47,7 @@ def test_config_from_env_vars():
 
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"
-    assert config.cli.server_url == "test"
+    assert config.cli.server_url == "http://test:8080"
 
 
 @pytest.mark.unit
