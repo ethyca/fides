@@ -3,6 +3,8 @@ from click.testing import CliRunner
 
 from fidesctl.cli import cli
 
+OKTA_URL = "https://dev-78908748.okta.com"
+
 
 @pytest.fixture()
 def test_cli_runner() -> CliRunner:
@@ -318,7 +320,7 @@ def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.external
 def test_generate_system_aws(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
-    tmp_file = tmpdir.join("dataset.yml")
+    tmp_file = tmpdir.join("system.yml")
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "generate", "system", "aws", f"{tmp_file}"],
@@ -337,6 +339,35 @@ def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
             "scan",
             "system",
             "aws",
+            "--coverage-threshold",
+            "0",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+@pytest.mark.external
+def test_generate_dataset_okta(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+    tmp_file = tmpdir.join("dataset.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "generate", "dataset", "okta", OKTA_URL,f"{tmp_file}"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_scan_system_okta(test_config_path: str, test_cli_runner: CliRunner):
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "dataset",
+            "okta",
+            OKTA_URL,
             "--coverage-threshold",
             "0",
         ],

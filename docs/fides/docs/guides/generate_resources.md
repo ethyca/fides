@@ -6,11 +6,11 @@ Once you have created your resources you will need to keep them up to date. The 
 
 The `scan` and `generate` commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. 
 
-# Working With a Database
+## Working With a Database
 
 The `generate` command can connect to a database and automatically generate resource YAML file based on the database schema.
 
-## Generating a Dataset
+### Generating a Dataset
 
 Given a database schema with a single `users` table as follows:
 
@@ -75,7 +75,7 @@ The resulting file still requires annotating the dataset with data categories to
 
 <!-- TODO: Add a section for `annotate dataset` usage below -->
 
-## Scanning the Dataset
+### Scanning the Dataset
 
 The `scan` command can then connect to your database and compare its schema to your already defined datasets:
 ```sh
@@ -94,11 +94,11 @@ Successfully scanned the following datasets:
 Annotation coverage: 100%
 ```
 
-# Working With an AWS Account
+## Working With an AWS Account
 
 The `generate` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.
 
-## Providing Credentials
+### Providing Credentials
 
 Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
 
@@ -115,7 +115,7 @@ export AWS_PROFILE="my_profile_1"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-## Required Permissions
+### Required Permissions
 
 The identity which is authenticated must be allowed to invoke the following actions:
 * redshift:DescribeClusters
@@ -140,7 +140,7 @@ These can be supplied in an IAM policy:
 }
 ```
 
-## Filtering AWS Resources
+### Filtering AWS Resources
 
 It is possible to filter resources at the organization level by adding a resource filter within `fidesctl_meta`. The `ignore_resource_arn` filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.
 
@@ -163,7 +163,7 @@ resource_filters:
 ```
 
 Any ARN field can be wildcarded by leaving it empty. 
-## Generating Systems
+### Generating Systems
 
 Once credentials have been configured we can invoke the `generate system aws` command:
 ```sh
@@ -185,7 +185,7 @@ system:
   system_type: redshift_cluster
   privacy_declarations: []
 ```
-## Scanning the Systems
+### Scanning the Systems
 
 The `scan` command can then connect to your AWS account and compare its resources to your already defined systems:
 ```sh
@@ -200,11 +200,11 @@ Taxonomy successfully created.
 Scanned 1 resource and all were found in taxonomy.
 Resource coverage: 100%
 ```
-# Working With an Okta Account
+## Working With an Okta Account
 
 The `generate` command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with. 
 
-## Providing Credentials
+### Providing Credentials
 
 Authentication is managed through environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
 
@@ -221,7 +221,7 @@ export OKTA_CLIENT_SCOPES="<my_scope_1,my_scope_2>"
 export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
 ```
 
-## Generating Datasets
+### Generating Datasets
 
 Once credentials have been configured we can invoke the `generate dataset okta` command:
 ```sh
@@ -253,4 +253,26 @@ dataset:
     resource_id: 0oa4jekd00tpvn5hN5d7
   retention: No retention or erasure policy
   collections: []
+```
+### Scanning the Datasets
+
+The `scan` command can then connect to your Okta account and compare its applications to your already defined datasets:
+```sh
+./venv/bin/fidesctl scan dataset okta \
+  https://dev-78908748.okta.com \
+  fides_resources/okta_datasets.yml
+```
+
+The command output confirms our resources are covered fully:
+```sh
+Loading resource manifests from: manifest.yml
+Taxonomy successfully created.
+Successfully scanned the following datasets:
+	saasure(id=0oa4h45lj1tcpqU6W5d7)
+	okta_enduser(id=0oa4h45ln0xLKJnAw5d7)
+	okta_browser_plugin(id=0oa4h45lnodX7MHJB5d7)
+	salesforce(id=0oa4jejqcp74R9MpJ5d7)
+	google(id=0oa4jekd00tpvn5hN5d7)
+
+Resource coverage: 100%
 ```
