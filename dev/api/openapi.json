@@ -3859,6 +3859,9 @@
             "type": "string",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
+          "fidesctl_meta": {
+            "$ref": "#/components/schemas/DatasetMetadata"
+          },
           "joint_controller": {
             "$ref": "#/components/schemas/ContactDetails"
           },
@@ -3970,6 +3973,17 @@
           }
         },
         "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
+      },
+      "DatasetMetadata": {
+        "title": "DatasetMetadata",
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "string"
+          }
+        },
+        "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
       },
       "Evaluation": {
         "title": "Evaluation",

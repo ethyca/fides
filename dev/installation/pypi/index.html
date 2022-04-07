@@ -1456,13 +1456,14 @@ You're not viewing the latest version.
 <p><code>pip install "fidesctl[extra_1, extra_2]"</code></p>
 <p>The optional dependencies are as follows:</p>
 <ul>
-<li><code>webserver</code>: includes FastAPI and the Postgres database connector. Enables <code>fidesctl webserver</code>.</li>
-<li><code>postgres</code>: includes the Postgres database connector.</li>
-<li><code>mysql</code>: includes the MySQL database connector.</li>
-<li><code>mssql</code>: includes the MSSQL database connector.</li>
-<li><code>snowflake</code>: includes the Snowflake database connector.</li>
-<li><code>redshift</code>: includes the Redshift database connector.</li>
 <li><code>all</code>: includes all of the optional dependencies except for <code>mssql</code> due to platform-specific issues.</li>
+<li><code>aws</code>: includes the boto3 package to connect to AWS.</li>
+<li><code>mssql</code>: includes the MSSQL database connector.</li>
+<li><code>mysql</code>: includes the MySQL database connector.</li>
+<li><code>postgres</code>: includes the Postgres database connector.</li>
+<li><code>redshift</code>: includes the Redshift database connector.</li>
+<li><code>snowflake</code>: includes the Snowflake database connector.</li>
+<li><code>webserver</code>: includes FastAPI and the Postgres database connector. Enables <code>fidesctl webserver</code>.</li>
 </ul>
 <p><strong>NOTE:</strong> When installing database adapters there may be other dependencies, such as the <a href="https://www.postgresql.org/docs/current/auth-pg-hba-conf.html">pg_hba.conf</a> file that usually requires a Postgres installation or the <a href="https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server">Microsoft ODBC Driver for SQL Server</a></p>
 <p><strong>Apple M1 users of MSSQL:</strong> Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: https://github.com/mkleehammer/pyodbc/issues/846</p>

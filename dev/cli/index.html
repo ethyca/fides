@@ -1202,6 +1202,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-okta" class="md-nav__link">
+    okta
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1279,6 +1286,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-scan-dataset-db" class="md-nav__link">
     db
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-dataset-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -1827,6 +1841,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-okta" class="md-nav__link">
+    okta
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1904,6 +1925,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-scan-dataset-db" class="md-nav__link">
     db
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-dataset-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -2237,6 +2265,22 @@ It will need to be run again if the database schema changes.</p>
   --help          Show this message and exit.
 </code></pre></div>
 </td></tr></table>
+<h5 id="fidesctl-generate-dataset-okta">fidesctl generate dataset okta</h5>
+<p>Generates datasets for your Okta applications. Connect to an Okta admin
+account by providing an organization url. Auth token can be supplied by
+setting the environment variable OKTA_CLIENT_TOKEN.</p>
+<p>This is a one-time operation that does not track the state of the okta resources.
+It will need to be run again if the tracked resources change.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl generate dataset okta [OPTIONS] ORG_URL OUTPUT_FILENAME
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  --include-null  Includes attributes that would otherwise be null.
+  --help          Show this message and exit.
+</code></pre></div>
+</td></tr></table>
 <h4 id="fidesctl-generate-system">fidesctl generate system</h4>
 <p>Generate fidesctl System resources</p>
 <p><strong>Usage:</strong></p>
@@ -2344,6 +2388,22 @@ within one of the datasets, this counts as lacking coverage.</p>
 under the stated threshold.</p>
 <p><strong>Usage:</strong></p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset db [OPTIONS] CONNECTION_STRING [MANIFESTS_DIR]
+</code></pre></div>
+</td></tr></table>
+<p><strong>Options:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>  -c, --coverage-threshold INTEGER RANGE
+  --help                          Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<h5 id="fidesctl-scan-dataset-okta">fidesctl scan dataset okta</h5>
+<p>Scans your existing datasets and compares them to found Okta applications.
+Connect to an Okta admin account by providing an organization url. Auth token
+can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.</p>
+<p>Outputs missing resources and has a non-zero exit if coverage is
+under the stated threshold.</p>
+<p><strong>Usage:</strong></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl scan dataset okta [OPTIONS] ORG_URL [MANIFESTS_DIR]
 </code></pre></div>
 </td></tr></table>
 <p><strong>Options:</strong></p>
