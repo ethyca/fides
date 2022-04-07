@@ -276,6 +276,16 @@ class ContactDetails(BaseModel):
     phone: str = ""
 
 
+class DatasetMetadata(BaseModel):
+    """
+    The DatasetMetadata resource model.
+
+    Object used to hold application specific metadata for a dataset
+    """
+
+    resource_id: Optional[str]
+
+
 class Dataset(FidesModel):
     "The Dataset resource model."
 
@@ -284,6 +294,7 @@ class Dataset(FidesModel):
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
     )
+    fidesctl_meta: Optional[DatasetMetadata]
     joint_controller: Optional[ContactDetails]
     retention: Optional[str] = "No retention or erasure policy"
     third_country_transfers: Optional[List[str]]
@@ -438,6 +449,30 @@ class Registry(FidesModel):
 
 
 # System
+class DataProtectionImpactAssessment(BaseModel):
+    """
+    The DataProtectionImpactAssessment (DPIA) resource model.
+
+    Contains information in regard to the data protection
+    impact assessment exported on a data map or Record of
+    Processing Activities (RoPA).
+
+    A legal requirement under GDPR for any project that
+    introduces a high risk to personal information.
+    """
+
+    is_required: bool = Field(
+        default=False,
+        description="A boolean value determining if a data protection impact assessment is required. Defaults to False.",
+    )
+    progress: Optional[str] = Field(
+        description="The optional status of a Data Protection Impact Assessment. Returned on an exported data map or RoPA.",
+    )
+    link: Optional[AnyUrl] = Field(
+        description="The optional link to the Data Protection Impact Assessment. Returned on an exported data map or RoPA.",
+    )
+
+
 class PrivacyDeclaration(BaseModel):
     """
     The PrivacyDeclaration resource model.
@@ -487,6 +522,10 @@ class System(FidesModel):
     joint_controller: Optional[ContactDetails]
     third_country_transfers: Optional[List[str]]
     administrating_department: Optional[str] = "Not defined"
+    data_protection_impact_assessment: DataProtectionImpactAssessment = Field(
+        default=DataProtectionImpactAssessment(),
+        description=DataProtectionImpactAssessment.__doc__,
+    )
 
     _sort_privacy_declarations: classmethod = validator(
         "privacy_declarations", allow_reuse=True

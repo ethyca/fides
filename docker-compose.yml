@@ -21,6 +21,8 @@ services:
         read_only: False
     environment:
       FIDESCTL_TEST_MODE: "True"
+      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
+      FIDESCTL__CLI__SERVER_PORT: "8080"
 
   fidesctl-db:
     image: postgres:12

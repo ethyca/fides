@@ -7,7 +7,7 @@ database_name = "fidesctl"
 test_database_name = "fidesctl_test"
 
 [cli]
-server_host = "fidesctl"
+server_host = "localhost"
 server_port = 8080
 
 [user]

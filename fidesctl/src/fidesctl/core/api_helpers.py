@@ -75,23 +75,27 @@ def get_server_resource(
 
 def list_server_resources(
     url: str,
-    resource_type: str,
     headers: Dict[str, str],
+    resource_type: str,
+    exclude_keys: List[str],
 ) -> List[FidesModel]:
     """
     Get a list of resources from the server and return them as parsed objects.
 
-    Returns an empty list if the given endpoint is valid but has no resources.
+    Returns an empty list if no resources are found or if the API returns an error.
     """
     response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
-
-    server_resource: List[FidesModel] = [
-        parse_dict(
-            resource_type=resource_type,
-            resource=resource,
-            from_server=True,
-        )
-        for resource in response.json()
-    ]
-
-    return server_resource
+    server_resources: List[FidesModel] = (
+        [
+            parse_dict(
+                resource_type=resource_type,
+                resource=resource,
+                from_server=True,
+            )
+            for resource in response.json()
+            if isinstance(resource, dict) and resource["fides_key"] not in exclude_keys
+        ]
+        if response.status_code >= 200 and response.status_code <= 299
+        else []
+    )
+    return server_resources

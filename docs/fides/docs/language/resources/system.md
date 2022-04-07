@@ -48,9 +48,17 @@ An optional array to identify any third countries where data is transited to. Fo
 
 An optional array of contact information if a Joint Controller exists. This information can also be more granularly stored at the [dataset](/fides/language/resources/dataset/) level (`name`, `address`, `email`, `phone`).
 
+**data_protection_impact_assessment**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+The array of properties that declare the requirement for and information surrounding a Data Protection Impact Assessment (`is_required`, `progress`, `link`).
+
+Information will be exported as part of the data map or Record of Processing Activites (RoPA)
+
 **privacy_declarations**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[array]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 The array of declarations describing the types of data in your system. This is a list of the privcy attributes (`data_category`, `data_use`, `data_subject`, and `data_qualifier`) for each of your systems.
+
+If a dataset is referenced as part of the system, all applicable data categories set on the dataset are treated as part of the system.
 
 **organization_fides_key**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_string_&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default: `default_organization`
 
@@ -76,6 +84,10 @@ system:
       address: 1 Acme Pl. New York, NY
       email: controller@acmeinc.com
       phone: +1 555 555 5555
+    data_protection_impact_assessment:
+      is_required: True
+      progress: Complete
+      link: https://example.org/analytics_system_data_protection_impact_assessment
     privacy_declarations:
       - name: Analyze customer behaviour for improvements.
         data_categories:

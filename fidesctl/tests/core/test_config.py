@@ -27,7 +27,6 @@ def test_default_config():
 
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
-    assert config.cli.server_url == "http://localhost"
 
 
 @patch.dict(

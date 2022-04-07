@@ -61,7 +61,7 @@ reset-db: build-local
 .PHONY: api
 api: build-local
 	@echo "Spinning up the webserver..."
-	@$(START_APP)
+	@docker compose up $(IMAGE_NAME)
 	@make teardown
 
 .PHONY: cli
@@ -141,6 +141,7 @@ pytest-external:
 	-e AWS_ACCESS_KEY_ID \
 	-e AWS_SECRET_ACCESS_KEY \
 	-e AWS_DEFAULT_REGION \
+	-e OKTA_CLIENT_TOKEN \
 	--rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
@@ -151,7 +152,7 @@ xenon:
 	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
-	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
+	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py,src/fidesctl/cli/__init__.py"
 
 ####################
 # Utils

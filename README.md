@@ -48,31 +48,20 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     <details>
     This builds the required images, spins up the database, and runs the initialization scripts.
 
-    <summary>Run <code>fidesctl db init</code></summary>
+    <summary>Run <code>fidesctl init</code></summary>
 
-      ```bash
-      ~/git/fides% fidesctl db init
-      INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
-      INFO  [alembic.runtime.migration] Will assume transactional DDL.
-      ```
+    ```bash
+    Initializing Fidesctl...
 
-    </details>
+    Created a '.fides' directory.
 
-    <details>
+    ...
 
-    This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+    Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
+                https://ethyca.github.io/fides/installation/configuration/
 
-    <summary>Run <code>fidesctl ping</code></summary>
-
-      ```bash
-      root@796cfde906f1:/fides/fidesctl# fidesctl ping
-      Pinging http://fidesctl:8080/health...
-      {
-        "data": {
-          "message": "Fides service is healthy!"
-        }
-      }
-      ```
+    Fidesctl initialization complete.
+    ```
 
     </details>
 
