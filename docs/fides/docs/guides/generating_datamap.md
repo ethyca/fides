@@ -1,6 +1,6 @@
 # Generating a Data Map
 
-Fides is capable of exporting a data map of your [resources](./../language/resources/system.md) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources the included in the [Fides repository](https://github.com/ethyca/fides). 
+Fides is capable of exporting a data map of your [resources](./../language/resources/system.md) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
 To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
@@ -30,7 +30,7 @@ organization:
     name: Demo Organization
     description: An e-commerce organization
     security_policy: https://ethyca.com/privacy-policy/
-    controller: 
+    controller:
       name: Con Troller
       address: 123 demo street, New York, NY, USA
       email: controller@demo_company.com
@@ -100,13 +100,13 @@ Any Datasets referenced by a System will have this information included as rows 
 
 The System contains the remainder of the attributes on the initial data map.
 
-Each populated property referenced directly from an associated label in `fides_resources/demo_system.yml`:
+Each populated property is referenced directly from an associated label in `fides_resources/demo_system.yml`:
 
 |Data Map Label    |Resource Label   | Description    |
 |--|----|----|
 | **Fides Dataset** | `dataset_references` | Used to join dataset(s) to the system. |
 | **Fides System** | `name` | The `name` defined at the top level of the system. |
-| **Department or Business Function** |  `administering_department` | Set at the top level of the system. | 
+| **Department or Business Function** |  `administering_department` | Set at the top level of the system. |
 | **Purpose of Processing** | `data_use` | The `data_use` defined in the `privacy_declaration`. |
 | **Categories of Individuals** | `data_subject` | A `data_subject` list defined in the `privacy_declaration`. |
 | **Categories of Personal Data** | `data_categories` | Any `data_categories` set as part of the `privacy_declaration` (see the output for Demo Marketing System as a clear example).|
@@ -138,7 +138,7 @@ data_use:
 ```
 
 
-You can now apply this Data Use to the Demo Marketing System in `demo_system.yml`. 
+You can now apply this Data Use to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Use of `advertising` with the above fides_key of `third_party_sharing.personalized_advertising.direct_marketing` to include its information in your data map.
 
@@ -162,7 +162,7 @@ data_subject:
     automated_decisions_or_profiling: true
 ```
 
-You can now apply this Data Subject to the Demo Marketing System in `demo_system.yml`. 
+You can now apply this Data Subject to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Subject of `customer` with the above fides_key of `potential_customer` to include its information in your data map.
 
@@ -177,7 +177,7 @@ $ fidesctl export datamap demo_resources/
 
 ### Populated Fields
 
-Opening the new data map will show the previously `N/A` columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in `demo_resources/`. 
+Opening the new data map will show the previously `N/A` columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in `demo_resources/`.
 
 Below is a mapping of the newly populated columns with their respective values:
 
@@ -196,12 +196,12 @@ Below is a mapping of the newly populated columns with their respective values:
 
 ### Additional Learning
 
-The provided `demo_system.yml` includes a second System, **Demo Analytics**, which can be enhanced in the same way as the Demo Marketing System. 
+The provided `demo_system.yml` includes a second System, **Demo Analytics**, which can be enhanced in the same way as the Demo Marketing System.
 
 Follow the guide to [extend the taxonomy](#extending-the-taxonomy) again, this time for the Demo Analytics System, to have both systems fully compliant!
 
 ## Next Steps
 
-We hope this was helpful in understanding the additional properties required for generating an Article 30 compliant RoPA! 
+We hope this was helpful in understanding the additional properties required for generating an Article 30 compliant RoPA!
 
 If there are any questions or issues you still have, we would love to hear more from you in our [Slack Community](https://fidescommunity.slack.com) or in [an issue/PR on GitHub](https://github.com/ethyca/fides/issues).
