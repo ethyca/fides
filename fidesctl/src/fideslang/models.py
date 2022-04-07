@@ -28,6 +28,11 @@ no_self_reference_validator = validator("parent_key", allow_reuse=True)(
     no_self_reference
 )
 
+name_field = Field(description="Human-Readable name for this resource.")
+description_field = Field(
+    description="A detailed description of what this resource is."
+)
+
 
 # Fides Base Model
 class FidesModel(BaseModel):
@@ -40,12 +45,8 @@ class FidesModel(BaseModel):
         default="default_organization",
         description="Defines the Organization that this resource belongs to.",
     )
-    name: Optional[str] = Field(
-        description="Human-Readable string name for this resource."
-    )
-    description: Optional[str] = Field(
-        description="In-depth description of what this resource is."
-    )
+    name: Optional[str] = name_field
+    description: Optional[str] = description_field
 
     class Config:
         "Config for the FidesModel"
@@ -160,8 +161,12 @@ class DataSubjectRights(BaseModel):
     via the set strategy.
     """
 
-    strategy: IncludeExcludeEnum
-    values: Optional[List[DataSubjectRightsEnum]]
+    strategy: IncludeExcludeEnum = Field(
+        description="Defines the strategy used when mapping data rights to a data subject.",
+    )
+    values: Optional[List[DataSubjectRightsEnum]] = Field(
+        description="A list of valid data subject rights to be used when applying data rights to a data subject via a strategy.",
+    )
 
     @root_validator()
     @classmethod
@@ -181,19 +186,32 @@ class DataSubjectRights(BaseModel):
 class DataSubject(FidesModel):
     """The DataSubject resource model."""
 
-    rights: Optional[DataSubjectRights]
-    automated_decisions_or_profiling: Optional[bool]
+    rights: Optional[DataSubjectRights] = Field(description=DataSubjectRights.__doc__)
+    automated_decisions_or_profiling: Optional[bool] = Field(
+        description="A boolean value to annotate whether or not automated decisions/profiling exists for the data subject.",
+    )
 
 
 class DataUse(FidesModel):
     """The DataUse resource model."""
 
     parent_key: Optional[FidesKey]
-    legal_basis: Optional[LegalBasisEnum]
-    special_category: Optional[SpecialCategoriesEnum]
-    recipients: Optional[List[str]]
-    legitimate_interest: bool = False
-    legitimate_interest_impact_assessment: Optional[AnyUrl]
+    legal_basis: Optional[LegalBasisEnum] = Field(
+        description="The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map.",
+    )
+    special_category: Optional[SpecialCategoriesEnum] = Field(
+        description="The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map.",
+    )
+    recipients: Optional[List[str]] = Field(
+        description="An array of recipients when sharing personal data outside of your organization.",
+    )
+    legitimate_interest: bool = Field(
+        default=False,
+        description="A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.",
+    )
+    legitimate_interest_impact_assessment: Optional[AnyUrl] = Field(
+        description="A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
+    )
 
     _matching_parent_key: classmethod = matching_parent_key_validator
     _no_self_reference: classmethod = no_self_reference_validator
@@ -228,14 +246,21 @@ class DatasetField(BaseModel):
     This resource is nested within a DatasetCollection.
     """
 
-    name: str
-    description: Optional[str]
-    data_categories: Optional[List[FidesKey]]
+    name: str = name_field
+    description: Optional[str] = description_field
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Arrays of Data Categories, identified by `fides_key`, that applies to this field.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
     )
-    retention: Optional[str]
-    fields: Optional[List[DatasetField]]
+    retention: Optional[str] = Field(
+        description="An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
+    )
+    fields: Optional[List[DatasetField]] = Field(
+        description="An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases).",
+    )
 
 
 class DatasetCollection(BaseModel):
@@ -245,14 +270,21 @@ class DatasetCollection(BaseModel):
     This resource is nested witin a Dataset.
     """
 
-    name: str
-    description: Optional[str]
-    data_categories: Optional[List[FidesKey]]
+    name: str = name_field
+    description: Optional[str] = description_field
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
     )
-    retention: Optional[str]
-    fields: List[DatasetField]
+    retention: Optional[str] = Field(
+        description="An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset.",
+    )
+    fields: List[DatasetField] = Field(
+        description="An array of objects that describe the collection's fields.",
+    )
 
     _sort_fields: classmethod = validator("fields", allow_reuse=True)(
         sort_list_objects_by_name
@@ -270,24 +302,63 @@ class ContactDetails(BaseModel):
     potentially under a system/dataset.
     """
 
-    name: str = ""
-    address: str = ""
-    email: str = ""
-    phone: str = ""
+    name: str = Field(
+        default="",
+        description="An individual name used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    address: str = Field(
+        default="",
+        description="An individual address used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    email: str = Field(
+        default="",
+        description="An individual email used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+    phone: str = Field(
+        default="",
+        description="An individual phone number used as part of publishing contact information. Encrypted at rest on the server.",
+    )
+
+
+class DatasetMetadata(BaseModel):
+    """
+    The DatasetMetadata resource model.
+
+    Object used to hold application specific metadata for a dataset
+    """
+
+    resource_id: Optional[str]
 
 
 class Dataset(FidesModel):
     "The Dataset resource model."
 
-    meta: Optional[Dict[str, str]]
-    data_categories: Optional[List[FidesKey]]
+    meta: Optional[Dict[str, str]] = Field(
+        description="An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
+    )
+    data_categories: Optional[List[FidesKey]] = Field(
+        description="Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
     )
-    joint_controller: Optional[ContactDetails]
-    retention: Optional[str] = "No retention or erasure policy"
-    third_country_transfers: Optional[List[str]]
-    collections: List[DatasetCollection]
+    fidesctl_meta: Optional[DatasetMetadata] = Field(
+        description=DatasetMetadata.__doc__,
+    )
+    joint_controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    retention: Optional[str] = Field(
+        default="No retention or erasure policy",
+        description="An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
+    )
+    third_country_transfers: Optional[List[str]] = Field(
+        description="An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3).",
+    )
+    collections: List[DatasetCollection] = Field(
+        description="An array of objects that describe the Dataset's collections.",
+    )
     _sort_collections: classmethod = validator("collections", allow_reuse=True)(
         sort_list_objects_by_name
     )
@@ -298,17 +369,29 @@ class Dataset(FidesModel):
 class ViolationAttributes(BaseModel):
     "The model for attributes which led to an evaluation violation"
 
-    data_categories: List[str]
-    data_subjects: List[str]
-    data_uses: List[str]
-    data_qualifier: str
+    data_categories: List[str] = Field(
+        description="A list of data categories which led to an evaluation violation.",
+    )
+    data_subjects: List[str] = Field(
+        description="A list of data subjects which led to an evaluation violation.",
+    )
+    data_uses: List[str] = Field(
+        description="A list of data uses which led to an evaluation violation.",
+    )
+    data_qualifier: str = Field(
+        description="The data qualifier which led to an evaluation violation.",
+    )
 
 
 class Violation(BaseModel):
-    "The model for violations within an evaluation"
+    "The model for violations within an evaluation."
 
-    violating_attributes: ViolationAttributes
-    detail: str
+    violating_attributes: ViolationAttributes = Field(
+        description=ViolationAttributes.__doc__
+    )
+    detail: str = Field(
+        description="A human-readable string detailing the evaluation violation.",
+    )
 
 
 class StatusEnum(str, Enum):
@@ -325,10 +408,18 @@ class Evaluation(BaseModel):
     This resource is created after an evaluation is executed.
     """
 
-    fides_key: FidesKey
-    status: StatusEnum
-    violations: List[Violation] = []
-    message: str = ""
+    fides_key: FidesKey = Field(
+        description="A uuid generated for each unique evaluation.",
+    )
+    status: StatusEnum = Field(description=StatusEnum.__doc__)
+    violations: List[Violation] = Field(
+        default=[],
+        description=Violation.__doc__,
+    )
+    message: str = Field(
+        default="",
+        description="A human-readable string response for the evaluation.",
+    )
 
     class Config:
         "Config for the Evaluation"
@@ -342,8 +433,12 @@ class ResourceFilter(BaseModel):
     The ResourceFilter resource model.
     """
 
-    type: str
-    value: str
+    type: str = Field(
+        description="The type of filter to be used (i.e. ignore_resource_arn)",
+    )
+    value: str = Field(
+        description="A string representation of resources to be filtered. Can include wildcards.",
+    )
 
 
 class OrganizationMetadata(BaseModel):
@@ -353,7 +448,9 @@ class OrganizationMetadata(BaseModel):
     Object used to hold application specific metadata for an organization
     """
 
-    resource_filters: Optional[List[ResourceFilter]]
+    resource_filters: Optional[List[ResourceFilter]] = Field(
+        description="A list of filters that can be used when generating or scanning systems."
+    )
 
 
 class Organization(FidesModel):
@@ -364,12 +461,25 @@ class Organization(FidesModel):
     """
 
     # It inherits this from FidesModel but Organizations don't have this field
-    organization_parent_key: None = None
-    controller: Optional[ContactDetails]
-    data_protection_officer: Optional[ContactDetails]
-    fidesctl_meta: Optional[OrganizationMetadata]
-    representative: Optional[ContactDetails]
-    security_policy: Optional[HttpUrl]
+    organization_parent_key: None = Field(
+        default=None,
+        description="An inherited field from the FidesModel that is unused with an Organization.",
+    )
+    controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    data_protection_officer: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    fidesctl_meta: Optional[OrganizationMetadata] = Field(
+        description=OrganizationMetadata.__doc__,
+    )
+    representative: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    security_policy: Optional[HttpUrl] = Field(
+        description="Am optional URL to the organization security policy."
+    )
 
 
 # Policy
@@ -393,8 +503,12 @@ class PrivacyRule(BaseModel):
     A list of privacy data types and what match method to use.
     """
 
-    matches: MatchesEnum
-    values: List[FidesKey]
+    matches: MatchesEnum = Field(
+        description=MatchesEnum.__doc__,
+    )
+    values: List[FidesKey] = Field(
+        description="A list of fides keys to be used with the matching type in a privacy rule.",
+    )
 
 
 class PolicyRule(BaseModel):
@@ -405,11 +519,18 @@ class PolicyRule(BaseModel):
     """
 
     name: str
-    data_categories: PrivacyRule
-    data_uses: PrivacyRule
-    data_subjects: PrivacyRule
+    data_categories: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
+    data_uses: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
+    data_subjects: PrivacyRule = Field(
+        description=PrivacyRule.__doc__,
+    )
     data_qualifier: FidesKey = Field(
-        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="The fides key of the data qualifier to be used in a privacy rule.",
     )
 
 
@@ -420,7 +541,9 @@ class Policy(FidesModel):
     An object used to organize a list of PolicyRules.
     """
 
-    rules: List[PolicyRule]
+    rules: List[PolicyRule] = Field(
+        description=PolicyRule.__doc__,
+    )
 
     _sort_rules: classmethod = validator("rules", allow_reuse=True)(
         sort_list_objects_by_name
@@ -470,14 +593,25 @@ class PrivacyDeclaration(BaseModel):
     to the privacy data types.
     """
 
-    name: str
-    data_categories: List[FidesKey]
-    data_use: FidesKey
+    name: str = Field(
+        description="The name of the privacy declaration on the system.",
+    )
+    data_categories: List[FidesKey] = Field(
+        description="An array of data categories describing a system in a privacy declaration.",
+    )
+    data_use: FidesKey = Field(
+        description="The Data Use describing a system in a privacy declaration.",
+    )
     data_qualifier: FidesKey = Field(
         default="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        description="The fides key of the data qualifier describing a system in a privacy declaration.",
     )
-    data_subjects: List[FidesKey]
-    dataset_references: Optional[List[FidesKey]]
+    data_subjects: List[FidesKey] = Field(
+        description="An array of data subjects describing a system in a privacy declaration.",
+    )
+    dataset_references: Optional[List[FidesKey]] = Field(
+        description="Referenced Dataset fides keys used by the system.",
+    )
 
 
 class SystemMetadata(BaseModel):
@@ -487,9 +621,15 @@ class SystemMetadata(BaseModel):
     Object used to hold application specific metadata for a system
     """
 
-    resource_id: Optional[str]
-    endpoint_address: Optional[str]
-    endpoint_port: Optional[str]
+    resource_id: Optional[str] = Field(
+        description="The external resource id for the system being modeled."
+    )
+    endpoint_address: Optional[str] = Field(
+        description="The host of the external resource for the system being modeled."
+    )
+    endpoint_port: Optional[str] = Field(
+        description="The port of the external resource for the system being modeled."
+    )
 
 
 class System(FidesModel):
@@ -499,18 +639,38 @@ class System(FidesModel):
     Describes an application and includes a list of PrivacyDeclaration resources.
     """
 
-    registry_id: Optional[int]
-    meta: Optional[Dict[str, str]]
-    fidesctl_meta: Optional[SystemMetadata]
-    system_type: str
-    data_responsibility_title: DataResponsibilityTitle = (
-        DataResponsibilityTitle.CONTROLLER
+    registry_id: Optional[int] = Field(
+        description="The id of the system registry, if used.",
     )
-    privacy_declarations: List[PrivacyDeclaration]
-    system_dependencies: Optional[List[FidesKey]]
-    joint_controller: Optional[ContactDetails]
-    third_country_transfers: Optional[List[str]]
-    administrating_department: Optional[str] = "Not defined"
+    meta: Optional[Dict[str, str]] = Field(
+        description="An optional property to store any extra information for a system. Not used by fidesctl.",
+    )
+    fidesctl_meta: Optional[SystemMetadata] = Field(
+        description=SystemMetadata.__doc__,
+    )
+    system_type: str = Field(
+        description="A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.",
+    )
+    data_responsibility_title: DataResponsibilityTitle = Field(
+        default=DataResponsibilityTitle.CONTROLLER,
+        description=DataResponsibilityTitle.__doc__,
+    )
+    privacy_declarations: List[PrivacyDeclaration] = Field(
+        description=PrivacyDeclaration.__doc__,
+    )
+    system_dependencies: Optional[List[FidesKey]] = Field(
+        description="A list of fides keys to model dependencies."
+    )
+    joint_controller: Optional[ContactDetails] = Field(
+        description=ContactDetails.__doc__,
+    )
+    third_country_transfers: Optional[List[str]] = Field(
+        description="An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1.",
+    )
+    administrating_department: Optional[str] = Field(
+        default="Not defined",
+        description="An optional value to identify the owning department or group of the system within your organization",
+    )
     data_protection_impact_assessment: DataProtectionImpactAssessment = Field(
         default=DataProtectionImpactAssessment(),
         description=DataProtectionImpactAssessment.__doc__,
@@ -525,6 +685,10 @@ class System(FidesModel):
     )(no_self_reference)
 
     _check_valid_country_code: classmethod = country_code_validator
+
+    class Config:
+        "Class for the System config"
+        use_enum_values = True
 
 
 # Taxonomy
