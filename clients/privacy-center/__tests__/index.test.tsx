@@ -1,5 +1,5 @@
 // __tests__/index.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Home from '../pages/index';
 
 import mockConfig from '../config/__mocks__/config.json';
@@ -41,4 +41,12 @@ describe('Home', () => {
     const modal = screen.getByRole('dialog');
     expect(modal).toBeInTheDocument();
   });
+
+  it('renders the logo from the corrrect url', async () => {
+    render(<Home />);
+    await waitFor(() => {
+      const logo = screen.getByAltText('Logo');
+      expect(logo.src).toEqual(`http://localhost${mockConfig.logo_path}`);
+    });
+  })
 });
