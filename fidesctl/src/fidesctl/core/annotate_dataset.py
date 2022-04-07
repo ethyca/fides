@@ -82,19 +82,6 @@ def get_data_categories_annotation(
     return user_response
 
 
-def annotate_dataset_level(
-    dataset: Dataset, annotate_all: bool, existing_categories: List[str]
-) -> Dataset:
-    if annotate_all and not dataset.data_categories:
-        click.secho(f"Database [{dataset.name}] has no data categories")
-        dataset.data_categories = get_data_categories_annotation(
-            dataset_member=dataset,
-            valid_categories=existing_categories,
-            validate=validate,
-        )
-    return dataset
-
-
 def annotate_dataset(
     config: FidesctlConfig,
     dataset_file: str,
@@ -142,39 +129,21 @@ def annotate_dataset(
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
             # Check for data_categories at the Dataset level
-            current_dataset = annotate_dataset_level(
-                current_dataset, annotate_all, existing_categories
+            if annotate_all and not dataset.data_categories:
+                click.secho(f"Database [{dataset.name}] has no data categories")
+                dataset.data_categories = get_data_categories_annotation(
+                    dataset_member=dataset,
+                    valid_categories=existing_categories,
+                    validate=validate,
+                )
+
+            annotate_collections(
+                current_dataset,
+                existing_categories,
+                annotate_all,
+                validate,
             )
 
-            # Check for data_categories at the collections level
-            for table in current_dataset.collections:
-                click.secho(f"####\nAnnotating Table: [{table.name}]\n")
-                if annotate_all and not table.data_categories:
-                    click.secho(f"Table [{table.name}] has no data categories")
-                    table.data_categories = get_data_categories_annotation(
-                        dataset_member=table,
-                        valid_categories=existing_categories,
-                        validate=validate,
-                    )
-
-                # Check for data_categories at the field level
-                for field in get_all_level_fields(table.fields):
-                    if not field.data_categories:
-                        click.secho(
-                            f"Field [{table.name}.{field.name}] has no data categories\n",
-                            fg="red",
-                        )
-                        user_categories = get_data_categories_annotation(
-                            dataset_member=field,
-                            valid_categories=existing_categories,
-                            validate=validate,
-                        )
-                        click.secho(
-                            f"""Setting data categories for {table.name}.{field.name} to:
-                        {user_categories}\n""",
-                            fg="green",
-                        )
-                        field.data_categories = user_categories
             if include_null:
                 output_dataset.append(current_dataset.dict())
             else:
@@ -186,3 +155,57 @@ def annotate_dataset(
                 output_dataset.append(current_dataset.dict(exclude_none=True))
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")
+
+
+def annotate_collections(
+    current_dataset: Dataset,
+    existing_categories: List[str],
+    annotate_all: bool,
+    validate: bool,
+) -> None:
+    """
+    Check for data_categories at the collections level
+    """
+
+    for table in current_dataset.collections:
+        click.secho(f"####\nAnnotating Table: [{table.name}]\n")
+        if annotate_all and not table.data_categories:
+            click.secho(f"Table [{table.name}] has no data categories")
+            table.data_categories = get_data_categories_annotation(
+                dataset_member=table,
+                valid_categories=existing_categories,
+                validate=validate,
+            )
+
+        annotate_fields(table, existing_categories, validate)
+
+
+def annotate_fields(
+    table: DatasetCollection,
+    existing_categories: List[str],
+    validate: bool,
+) -> None:
+    """
+    Check for data_categories at the field level
+    """
+
+    for field in get_all_level_fields(table.fields):
+        if not field.data_categories:
+            click.secho(
+                f"Field [{table.name}.{field.name}] has no data categories\n",
+                fg="red",
+            )
+
+            user_categories = get_data_categories_annotation(
+                dataset_member=field,
+                valid_categories=existing_categories,
+                validate=validate,
+            )
+
+            click.secho(
+                f"""Setting data categories for {table.name}.{field.name} to:
+            {user_categories}\n""",
+                fg="green",
+            )
+
+            field.data_categories = user_categories
