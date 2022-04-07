@@ -1573,7 +1573,8 @@ Fidesctl initialization complete.
 <span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
-<span class="normal">45</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>services:
+<span class="normal">45</span>
+<span class="normal">46</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>services:
   fidesctl:
     image: ethyca/fidesctl:1.2.0
     command: fidesctl webserver
@@ -1590,7 +1591,8 @@ Fidesctl initialization complete.
     ports:
       - &quot;8080:8080&quot;
     environment:
-      - FIDESCTL__CLI__SERVER_URL=http://fidesctl:8080
+      - FIDESCTL__CLI__SERVER_HOST=http://fidesctl
+      - FIDESCTL__CLI__SERVER_PORT=8080
       - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
     volumes:
       - type: bind

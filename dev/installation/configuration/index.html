@@ -1469,7 +1469,9 @@ You're not viewing the latest version.
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
 <span class="n">database_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
 <span class="n">database_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
 <span class="n">database_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl-db&quot;</span><span class="w"></span>
@@ -1483,11 +1485,13 @@ You're not viewing the latest version.
 
 <span class="k">[cli]</span><span class="w"></span>
 <span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="w"></span>
-<span class="n">server_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="w"></span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;test_analytics_id&quot;</span><span class="w"></span>
+<span class="n">server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;localhost&quot;</span><span class="w"></span>
+<span class="n">server_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8080</span><span class="w"></span>
+<span class="n">server_protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;http</span>
+<span class="s">analytics_id = &quot;</span><span class="n">test_analytics_id</span><span class="s">&quot;</span>
 
-<span class="k">[user]</span><span class="w"></span>
-<span class="n">encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;test_encryption_key&quot;</span><span class="w"></span>
+<span class="s">[user]</span>
+<span class="s">encryption_key = &quot;</span><span class="n">test_encryption_key</span><span class="err">&quot;</span><span class="w"></span>
 <span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
@@ -1578,10 +1582,22 @@ You're not viewing the latest version.
 <td align="center">When set to <code>True</code>, forbids the fidesctl CLI from making calls to the fidesctl webserver.</td>
 </tr>
 <tr>
-<td align="center">server_url</td>
+<td align="center">server_host</td>
 <td align="center">String</td>
-<td align="center">""</td>
-<td align="center">The base URL of the fidesctl webserver endpoints, in <code>host:port</code> format.</td>
+<td align="center">localhost</td>
+<td align="center">The hostname of the fidesctl webserver.</td>
+</tr>
+<tr>
+<td align="center">server_protocol</td>
+<td align="center">String</td>
+<td align="center">http</td>
+<td align="center">The protocol used by the fidesctl webserver.</td>
+</tr>
+<tr>
+<td align="center">server_port</td>
+<td align="center">Integer</td>
+<td align="center"></td>
+<td align="center">The optional port of the fidesctl webserver.</td>
 </tr>
 <tr>
 <td align="center">analytics_id</td>
@@ -1632,7 +1648,11 @@ You're not viewing the latest version.
 </code></pre></div>
 </td></tr></table>
 <p>For example, if we want to set the <code>server_url</code> on a Linux machine we could use:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_URL</span><span class="o">=</span><span class="s2">&quot;http://localhost:8080&quot;</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_HOST</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span>
+<span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_PORT</span><span class="o">=</span><span class="s2">&quot;8080&quot;</span>
+<span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http&quot;</span>
 </code></pre></div>
 </td></tr></table>
 

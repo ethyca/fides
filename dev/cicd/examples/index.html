@@ -1540,7 +1540,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span><span class="w"></span>
 <span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry .fides/</span><span class="w"></span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://fidesctl.privacyco.com&quot;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fidesctl.privacyco.com&quot;</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.github/workflows/fidesctl_cd.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1583,7 +1583,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span><span class="w"></span>
 <span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate .fides/</span><span class="w"></span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://fidesctl.privacyco.com&quot;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fidesctl.privacyco.com&quot;</span><span class="w"></span>
 </code></pre></div>
 </td></tr></table>
 <hr />
@@ -1618,7 +1618,7 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy</span><span class="w"></span>
 
 <span class="nt">variables</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;global-variables</span><span class="w"></span>
-<span class="w">  </span><span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://fidesctl.privacyco.com&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fidesctl.privacyco.com&quot;</span><span class="w"></span>
 
 <span class="nt">fidesctl-ci</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span><span class="w"></span>
@@ -1686,7 +1686,7 @@ You're not viewing the latest version.
   <span class="n">stages</span> <span class="o">{</span>
     <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;test&#39;</span><span class="o">){</span>
       <span class="n">environment</span> <span class="o">{</span>
-        <span class="n">FIDESCTL__CLI__SERVER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://fidesctl.privacyco.com&#39;</span>
+          <span class="nl">FIDESCTL__CLI__SERVER_HOST:</span> <span class="s1">&#39;fidesctl.privacyco.com&#39;</span>
       <span class="o">}</span>
       <span class="n">steps</span> <span class="o">{</span>
         <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate --dry .fides/&#39;</span>
@@ -1701,7 +1701,7 @@ You're not viewing the latest version.
     <span class="o">}</span>
     <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;deploy&#39;</span><span class="o">)</span> <span class="o">{</span>
       <span class="n">environment</span> <span class="o">{</span>
-        <span class="n">FIDESCTL__CLI__SERVER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://fidesctl.privacyco.com&#39;</span>
+          <span class="nl">FIDESCTL__CLI__SERVER_HOST:</span> <span class="s1">&#39;fidesctl.privacyco.com&#39;</span>
       <span class="o">}</span>
       <span class="n">steps</span> <span class="o">{</span>
         <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate .fides/&#39;</span>
@@ -1757,7 +1757,7 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="nt">docker</span><span class="p">:</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span><span class="w"></span>
 <span class="w">        </span><span class="nt">environment</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_URL</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;https://fidesctl.privacyco.com&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;fidesctl.privacyco.com&#39;</span><span class="w"></span>
 
 <span class="nt">jobs</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesctl-evaluate-dry</span><span class="p">:</span><span class="w"></span>

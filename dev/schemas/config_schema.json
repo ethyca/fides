@@ -29,8 +29,11 @@
       "title": "Cli",
       "default": {
         "local_mode": false,
-        "server_url": "http://fidesctl:8080",
-        "analytics_id": "d2b7caf0be210da9a3896ff2039f7e9b"
+        "analytics_id": "19f7f5af4616f454dee4b684005cc66a",
+        "server_protocol": "http",
+        "server_host": "fidesctl",
+        "server_port": 8080,
+        "server_url": "http://fidesctl:8080"
       },
       "allOf": [
         {
@@ -180,20 +183,45 @@
           ],
           "type": "boolean"
         },
-        "server_url": {
-          "title": "Server Url",
-          "default": "http://localhost:8080",
-          "env_names": [
-            "fidesctl__cli__server_url"
-          ],
-          "type": "string"
-        },
         "analytics_id": {
           "title": "Analytics Id",
-          "default": "d2b7caf0be210da9a3896ff2039f7e9b",
+          "default": "19f7f5af4616f454dee4b684005cc66a",
           "env_names": [
             "fidesctl__cli__analytics_id"
           ],
+          "type": "string"
+        },
+        "server_protocol": {
+          "title": "Server Protocol",
+          "default": "http",
+          "env_names": [
+            "fidesctl__cli__server_protocol"
+          ],
+          "type": "string"
+        },
+        "server_host": {
+          "title": "Server Host",
+          "default": "localhost",
+          "env_names": [
+            "fidesctl__cli__server_host"
+          ],
+          "type": "string"
+        },
+        "server_port": {
+          "title": "Server Port",
+          "env_names": [
+            "fidesctl__cli__server_port"
+          ],
+          "type": "integer"
+        },
+        "server_url": {
+          "title": "Server Url",
+          "env_names": [
+            "fidesctl__cli__server_url"
+          ],
+          "minLength": 1,
+          "maxLength": 65536,
+          "format": "uri",
           "type": "string"
         }
       },
