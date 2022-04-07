@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v2
         run: fidesctl evaluate --dry .fides/
         env:
-          FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+          FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
 ```
 
 ```yaml title="<code>.github/workflows/fidesctl_cd.yml</code>"
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v2
         run: fidesctl evaluate .fides/
         env:
-          FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+          FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
 ```
 ___
 ## GitLab CI
@@ -68,7 +68,7 @@ stages:
   - deploy
 
 variables: &global-variables
-  FIDESCTL__CLI__SERVER_URL: "https://fidesctl.privacyco.com"
+  FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
 
 fidesctl-ci:
   stage: test
@@ -103,7 +103,7 @@ pipeline {
   stages {
     stage('test'){
       environment {
-        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
       }
       steps {
         sh 'fidesctl evaluate --dry .fides/'
@@ -118,7 +118,7 @@ pipeline {
     }
     stage('deploy') {
       environment {
-        FIDESCTL__CLI__SERVER_URL = 'https://fidesctl.privacyco.com'
+          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
       }
       steps {
         sh 'fidesctl evaluate .fides/'
@@ -141,7 +141,7 @@ executors:
     docker:
       - image: ethyca/fidesctl:latest
         environment:
-          FIDESCTL__CLI__SERVER_URL: 'https://fidesctl.privacyco.com'
+          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
 
 jobs:
   fidesctl-evaluate-dry:

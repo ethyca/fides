@@ -36,7 +36,7 @@ help:
 	@echo ----
 	@echo build - Builds the Fidesctl Docker image.
 	@echo ----
-	@echo check-all - Run all of the available CI checks for Fidesctl locally.
+	@echo check-all - Run all of the available CI checks for Fidesctl locally except for externally dependent tests.
 	@echo ----
 	@echo reset-db - Wipes all user-created data and resets the database back to its freshly initialized state.
 	@echo ----
@@ -100,8 +100,8 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl fidesctl-db-scan black \
-			pylint mypy xenon pytest-unit pytest-integration pytest-external
+check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
+			pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:

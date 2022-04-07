@@ -29,11 +29,12 @@ nav:
       - Write a Policy: tutorial/policy.md
       - Add Google Analytics: tutorial/google.md
       - Manage Google Analytics with Fidesctl: tutorial/pass.md
-  - How-To Guides: 
+  - How-To Guides:
       - Generating Resources: guides/generate_resources.md
       - Example Policies: guides/policies.md
       - Extending the Taxonomy: guides/extending_taxonomy.md
-  - CI/CD Integration: 
+      - Generating a Data Map: guides/generating_datamap.md
+  - CI/CD Integration:
       - Overview: cicd/overview.md
       - Example Integrations: cicd/examples.md
   - Fides Language:

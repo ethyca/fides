@@ -1,0 +1,24 @@
+data_use:
+  - fides_key: third_party_sharing.personalized_advertising.direct_marketing
+    name: Direct Marketing
+    description: User information for direct marketing purposes
+    recipients:
+    - Processor - marketing co.
+    legal_basis: Legitimate Interests
+    special_category: Vital Interests
+    legitimate_interest_impact_assessment: https://example.org/legitimate_interest_assessment
+    parent_key: third_party_sharing.personalized_advertising
+
+data_subject:
+  - fides_key: potential_customer
+    name: Potential Customer
+    description: A prospective individual or other organization that purchases goods or services from the organization.
+    rights:
+      strategy: INCLUDE
+      values:
+      - Informed
+      - Access
+      - Rectification
+      - Erasure
+      - Object
+    automated_decisions_or_profiling: true

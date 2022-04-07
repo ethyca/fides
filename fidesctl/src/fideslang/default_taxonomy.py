@@ -579,7 +579,7 @@ DEFAULT_TAXONOMY = Taxonomy(
         DataSubject(
             fides_key="customer",
             organization_fides_key="default_organization",
-            name="Custom",
+            name="Customer",
             description="An individual or other organization that purchases goods or services from the organization.",
         ),
         DataSubject(
