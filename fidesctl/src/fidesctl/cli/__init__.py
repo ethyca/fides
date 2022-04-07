@@ -21,7 +21,7 @@ from .commands.util import init, status, webserver
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, parse, view, webserver]
+LOCAL_COMMANDS = [evaluate, init, parse, view, webserver]
 API_COMMANDS = [
     annotate,
     apply,
@@ -30,7 +30,6 @@ API_COMMANDS = [
     export,
     generate,
     get,
-    init,
     ls,
     scan,
     status,
