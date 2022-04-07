@@ -356,7 +356,7 @@ def test_generate_dataset_okta(test_config_path: str, test_cli_runner: CliRunner
 
 
 @pytest.mark.external
-def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
+def test_scan_system_okta(test_config_path: str, test_cli_runner: CliRunner):
     result = test_cli_runner.invoke(
         cli,
         [
