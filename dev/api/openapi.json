@@ -3528,21 +3528,25 @@
           "name": {
             "title": "Name",
             "type": "string",
+            "description": "An individual name used as part of publishing contact information. Encrypted at rest on the server.",
             "default": ""
           },
           "address": {
             "title": "Address",
             "type": "string",
+            "description": "An individual address used as part of publishing contact information. Encrypted at rest on the server.",
             "default": ""
           },
           "email": {
             "title": "Email",
             "type": "string",
+            "description": "An individual email used as part of publishing contact information. Encrypted at rest on the server.",
             "default": ""
           },
           "phone": {
             "title": "Phone",
             "type": "string",
+            "description": "An individual phone number used as part of publishing contact information. Encrypted at rest on the server.",
             "default": ""
           }
         },
@@ -3580,12 +3584,12 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "parent_key": {
             "title": "Parent Key",
@@ -3644,12 +3648,12 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "parent_key": {
             "title": "Parent Key",
@@ -3692,19 +3696,26 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "rights": {
-            "$ref": "#/components/schemas/DataSubjectRights"
+            "title": "Rights",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataSubjectRights"
+              }
+            ],
+            "description": "\n    The DataSubjectRights resource model.\n\n    Includes a strategy and optionally a\n    list of data subject rights to apply\n    via the set strategy.\n    "
           },
           "automated_decisions_or_profiling": {
             "title": "Automated Decisions Or Profiling",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "A boolean value to annotate whether or not automated decisions/profiling exists for the data subject."
           }
         },
         "description": "The DataSubject resource model."
@@ -3717,13 +3728,19 @@
         "type": "object",
         "properties": {
           "strategy": {
-            "$ref": "#/components/schemas/IncludeExcludeEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IncludeExcludeEnum"
+              }
+            ],
+            "description": "Defines the strategy used when mapping data rights to a data subject."
           },
           "values": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DataSubjectRightsEnum"
-            }
+            },
+            "description": "A list of valid data subject rights to be used when applying data rights to a data subject via a strategy."
           }
         },
         "description": "The DataSubjectRights resource model.\n\nIncludes a strategy and optionally a\nlist of data subject rights to apply\nvia the set strategy."
@@ -3767,12 +3784,12 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "parent_key": {
             "title": "Parent Key",
@@ -3780,21 +3797,33 @@
             "type": "string"
           },
           "legal_basis": {
-            "$ref": "#/components/schemas/LegalBasisEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalBasisEnum"
+              }
+            ],
+            "description": "The legal basis category of which the data use falls under. This field is used as part of the creation of an exportable data map."
           },
           "special_category": {
-            "$ref": "#/components/schemas/SpecialCategoriesEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpecialCategoriesEnum"
+              }
+            ],
+            "description": "The special category for processing of which the data use falls under. This field is used as part of the creation of an exportable data map."
           },
           "recipients": {
             "title": "Recipients",
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "An array of recipients when sharing personal data outside of your organization."
           },
           "legitimate_interest": {
             "title": "Legitimate Interest",
             "type": "boolean",
+            "description": "A boolean representation of if the legal basis used is `Legitimate Interest`. Validated at run time and looks for a `legitimate_interest_impact_assessment` to exist if true.",
             "default": false
           },
           "legitimate_interest_impact_assessment": {
@@ -3802,6 +3831,7 @@
             "maxLength": 65536,
             "minLength": 1,
             "type": "string",
+            "description": "A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.",
             "format": "uri"
           }
         },
@@ -3831,19 +3861,20 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "meta": {
             "title": "Meta",
             "type": "object",
             "additionalProperties": {
               "type": "string"
-            }
+            },
+            "description": "An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -3851,23 +3882,38 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "fidesctl_meta": {
-            "$ref": "#/components/schemas/DatasetMetadata"
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatasetMetadata"
+              }
+            ],
+            "description": "\n    The DatasetMetadata resource model.\n\n    Object used to hold application specific metadata for a dataset\n    "
           },
           "joint_controller": {
-            "$ref": "#/components/schemas/ContactDetails"
+            "title": "Joint Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "retention": {
             "title": "Retention",
             "type": "string",
+            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
             "default": "No retention or erasure policy"
           },
           "third_country_transfers": {
@@ -3875,14 +3921,16 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
           },
           "collections": {
             "title": "Collections",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DatasetCollection"
-            }
+            },
+            "description": "An array of objects that describe the Dataset's collections."
           }
         },
         "description": "The Dataset resource model."
@@ -3897,11 +3945,13 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of what this resource is."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -3909,24 +3959,28 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "retention": {
             "title": "Retention",
-            "type": "string"
+            "type": "string",
+            "description": "An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset."
           },
           "fields": {
             "title": "Fields",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DatasetField"
-            }
+            },
+            "description": "An array of objects that describe the collection's fields."
           }
         },
         "description": "The DatasetCollection resource model.\n\nThis resource is nested witin a Dataset."
@@ -3940,11 +3994,13 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of what this resource is."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -3952,24 +4008,28 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "retention": {
             "title": "Retention",
-            "type": "string"
+            "type": "string",
+            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
           },
           "fields": {
             "title": "Fields",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DatasetField"
-            }
+            },
+            "description": "An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases)."
           }
         },
         "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
@@ -3996,10 +4056,16 @@
           "fides_key": {
             "title": "Fides Key",
             "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string"
+            "type": "string",
+            "description": "A uuid generated for each unique evaluation."
           },
           "status": {
-            "$ref": "#/components/schemas/StatusEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatusEnum"
+              }
+            ],
+            "description": "The model for possible evaluation results."
           },
           "violations": {
             "title": "Violations",
@@ -4007,11 +4073,13 @@
             "items": {
               "$ref": "#/components/schemas/Violation"
             },
+            "description": "The model for violations within an evaluation.",
             "default": []
           },
           "message": {
             "title": "Message",
             "type": "string",
+            "description": "A human-readable string response for the evaluation.",
             "default": ""
           }
         },
@@ -4097,34 +4165,60 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "organization_parent_key": {
             "title": "Organization Parent Key",
-            "type": "null"
+            "type": "null",
+            "description": "An inherited field from the FidesModel that is unused with an Organization."
           },
           "controller": {
-            "$ref": "#/components/schemas/ContactDetails"
+            "title": "Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "data_protection_officer": {
-            "$ref": "#/components/schemas/ContactDetails"
+            "title": "Data Protection Officer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "fidesctl_meta": {
-            "$ref": "#/components/schemas/OrganizationMetadata"
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationMetadata"
+              }
+            ],
+            "description": "\n    The OrganizationMetadata resource model.\n\n    Object used to hold application specific metadata for an organization\n    "
           },
           "representative": {
-            "$ref": "#/components/schemas/ContactDetails"
+            "title": "Representative",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "security_policy": {
             "title": "Security Policy",
             "maxLength": 2083,
             "minLength": 1,
             "type": "string",
+            "description": "Am optional URL to the organization security policy.",
             "format": "uri"
           }
         },
@@ -4139,7 +4233,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ResourceFilter"
-            }
+            },
+            "description": "A list of filters that can be used when generating or scanning systems."
           }
         },
         "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
@@ -4168,19 +4263,20 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "rules": {
             "title": "Rules",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PolicyRule"
-            }
+            },
+            "description": "\n    The PolicyRule resource model.\n\n    Describes the allowed combination of the various privacy data types.\n    "
           }
         },
         "description": "The Policy resource model.\n\nAn object used to organize a list of PolicyRules."
@@ -4200,18 +4296,37 @@
             "type": "string"
           },
           "data_categories": {
-            "$ref": "#/components/schemas/PrivacyRule"
+            "title": "Data Categories",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRule"
+              }
+            ],
+            "description": "\n    The PrivacyRule resource model.\n\n    A list of privacy data types and what match method to use.\n    "
           },
           "data_uses": {
-            "$ref": "#/components/schemas/PrivacyRule"
+            "title": "Data Uses",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRule"
+              }
+            ],
+            "description": "\n    The PrivacyRule resource model.\n\n    A list of privacy data types and what match method to use.\n    "
           },
           "data_subjects": {
-            "$ref": "#/components/schemas/PrivacyRule"
+            "title": "Data Subjects",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRule"
+              }
+            ],
+            "description": "\n    The PrivacyRule resource model.\n\n    A list of privacy data types and what match method to use.\n    "
           },
           "data_qualifier": {
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "The fides key of the data qualifier to be used in a privacy rule.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           }
         },
@@ -4229,7 +4344,8 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "description": "The name of the privacy declaration on the system."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -4237,17 +4353,20 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "An array of data categories describing a system in a privacy declaration."
           },
           "data_use": {
             "title": "Data Use",
             "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string"
+            "type": "string",
+            "description": "The Data Use describing a system in a privacy declaration."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
             "pattern": "^[a-zA-Z0-9_.-]+$",
             "type": "string",
+            "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
           "data_subjects": {
@@ -4256,7 +4375,8 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "An array of data subjects describing a system in a privacy declaration."
           },
           "dataset_references": {
             "title": "Dataset References",
@@ -4264,7 +4384,8 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "Referenced Dataset fides keys used by the system."
           }
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
@@ -4278,7 +4399,12 @@
         "type": "object",
         "properties": {
           "matches": {
-            "$ref": "#/components/schemas/MatchesEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MatchesEnum"
+              }
+            ],
+            "description": "\n    The MatchesEnum resource model.\n\n    Determines how the listed resources are matched in the evaluation logic.\n    "
           },
           "values": {
             "title": "Values",
@@ -4286,7 +4412,8 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "A list of fides keys to be used with the matching type in a privacy rule."
           }
         },
         "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
@@ -4314,12 +4441,12 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           }
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
@@ -4334,11 +4461,13 @@
         "properties": {
           "type": {
             "title": "Type",
-            "type": "string"
+            "type": "string",
+            "description": "The type of filter to be used (i.e. ignore_resource_arn)"
           },
           "value": {
             "title": "Value",
-            "type": "string"
+            "type": "string",
+            "description": "A string representation of resources to be filtered. Can include wildcards."
           }
         },
         "description": "The ResourceFilter resource model."
@@ -4393,30 +4522,39 @@
           "name": {
             "title": "Name",
             "type": "string",
-            "description": "Human-Readable string name for this resource."
+            "description": "Human-Readable name for this resource."
           },
           "description": {
             "title": "Description",
             "type": "string",
-            "description": "In-depth description of what this resource is."
+            "description": "A detailed description of what this resource is."
           },
           "registry_id": {
             "title": "Registry Id",
-            "type": "integer"
+            "type": "integer",
+            "description": "The id of the system registry, if used."
           },
           "meta": {
             "title": "Meta",
             "type": "object",
             "additionalProperties": {
               "type": "string"
-            }
+            },
+            "description": "An optional property to store any extra information for a system. Not used by fidesctl."
           },
           "fidesctl_meta": {
-            "$ref": "#/components/schemas/SystemMetadata"
+            "title": "Fidesctl Meta",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemMetadata"
+              }
+            ],
+            "description": "\n    The SystemMetadata resource model.\n\n    Object used to hold application specific metadata for a system\n    "
           },
           "system_type": {
             "title": "System Type",
-            "type": "string"
+            "type": "string",
+            "description": "A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc."
           },
           "data_responsibility_title": {
             "allOf": [
@@ -4424,6 +4562,7 @@
                 "$ref": "#/components/schemas/DataResponsibilityTitle"
               }
             ],
+            "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    ",
             "default": "Controller"
           },
           "privacy_declarations": {
@@ -4431,7 +4570,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PrivacyDeclaration"
-            }
+            },
+            "description": "\n    The PrivacyDeclaration resource model.\n\n    States a function of a system, and describes how it relates\n    to the privacy data types.\n    "
           },
           "system_dependencies": {
             "title": "System Dependencies",
@@ -4439,21 +4579,30 @@
             "items": {
               "pattern": "^[a-zA-Z0-9_.-]+$",
               "type": "string"
-            }
+            },
+            "description": "A list of fides keys to model dependencies."
           },
           "joint_controller": {
-            "$ref": "#/components/schemas/ContactDetails"
+            "title": "Joint Controller",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContactDetails"
+              }
+            ],
+            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
           },
           "third_country_transfers": {
             "title": "Third Country Transfers",
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1."
           },
           "administrating_department": {
             "title": "Administrating Department",
             "type": "string",
+            "description": "An optional value to identify the owning department or group of the system within your organization",
             "default": "Not defined"
           },
           "data_protection_impact_assessment": {
@@ -4477,15 +4626,18 @@
         "properties": {
           "resource_id": {
             "title": "Resource Id",
-            "type": "string"
+            "type": "string",
+            "description": "The external resource id for the system being modeled."
           },
           "endpoint_address": {
             "title": "Endpoint Address",
-            "type": "string"
+            "type": "string",
+            "description": "The host of the external resource for the system being modeled."
           },
           "endpoint_port": {
             "title": "Endpoint Port",
-            "type": "string"
+            "type": "string",
+            "description": "The port of the external resource for the system being modeled."
           }
         },
         "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
@@ -4525,14 +4677,21 @@
         "type": "object",
         "properties": {
           "violating_attributes": {
-            "$ref": "#/components/schemas/ViolationAttributes"
+            "title": "Violating Attributes",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ViolationAttributes"
+              }
+            ],
+            "description": "The model for attributes which led to an evaluation violation"
           },
           "detail": {
             "title": "Detail",
-            "type": "string"
+            "type": "string",
+            "description": "A human-readable string detailing the evaluation violation."
           }
         },
-        "description": "The model for violations within an evaluation"
+        "description": "The model for violations within an evaluation."
       },
       "ViolationAttributes": {
         "title": "ViolationAttributes",
@@ -4549,25 +4708,29 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "A list of data categories which led to an evaluation violation."
           },
           "data_subjects": {
             "title": "Data Subjects",
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "A list of data subjects which led to an evaluation violation."
           },
           "data_uses": {
             "title": "Data Uses",
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "A list of data uses which led to an evaluation violation."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "type": "string"
+            "type": "string",
+            "description": "The data qualifier which led to an evaluation violation."
           }
         },
         "description": "The model for attributes which led to an evaluation violation"
