@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8b833d86-22a0-4a01-84c9-469cfda4cb49",
+		"_postman_id": "179a2ba7-1c31-4398-a984-ab8d3b308bb1",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -2815,7 +2815,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"fides_key\": \"segment_connector_example\",\n    \"name\": \"Segment SaaS Config\",\n    \"description\": \"A sample schema representing the Segment connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"personas_domain\"\n        },\n        {\n            \"name\": \"workspace\"\n        },\n        {\n            \"name\": \"access_token\"\n        },\n        {\n            \"name\": \"namespace_id\"\n        },\n        {\n            \"name\": \"access_secret\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"bearer_authentication\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"access_token\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/v1beta/workspaces/\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"segment_user\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"user_id\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"track_events\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"traits\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 17\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"traits\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"external_ids\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    ],\n    \"data_protection_request\": {\n        \"method\": \"POST\",\n        \"path\": \"/v1beta/workspaces/<workspace_name>/regulations\",\n        \"param_values\": [\n            {\n                \"name\": \"workspace_name\",\n                \"connector_param\": \"workspace\"\n            },\n            {\n                \"name\": \"user_id\",\n                \"identity\": \"email\"\n            }\n        ],\n        \"body\": \"{\\\"regulation_type\\\": \\\"Suppress_With_Delete\\\", \\\"attributes\\\": {\\\"name\\\": \\\"userId\\\",\\\"values\\\": [\\\"<user_id>\\\",]}}\",\n        \"client_config\": {\n            \"protocol\": \"https\",\n            \"host\": {\n                \"connector_param\": \"config_domain\"\n            },\n            \"authentication\": {\n                \"strategy\": \"bearer_authentication\",\n                \"configuration\": {\n                    \"username\": {\n                        \"connector_param\": \"access_token\"\n                    }\n                }\n            }\n        }\n    }\n}",
+									"raw": "{\n    \"fides_key\": \"segment_connector_example\",\n    \"name\": \"Segment SaaS Config\",\n    \"description\": \"A sample schema representing the Segment connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"personas_domain\"\n        },\n        {\n            \"name\": \"api_domain\"\n        },\n        {\n            \"name\": \"workspace\"\n        },\n        {\n            \"name\": \"access_token\"\n        },\n        {\n            \"name\": \"namespace_id\"\n        },\n        {\n            \"name\": \"access_secret\"\n        },\n        {\n            \"name\": \"user_token\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"bearer_authentication\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"access_token\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/v1beta/workspaces/\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"segment_user\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"user_id\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"track_events\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"traits\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 17\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"traits\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"external_ids\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    ],\n    \"data_protection_request\": {\n        \"method\": \"POST\",\n        \"path\": \"/v1beta/workspaces/<workspace_name>/regulations\",\n        \"headers\": [\n            {\n                \"name\": \"Content-Type\",\n                \"value\": \"application/json\"\n            }\n        ],\n        \"param_values\": [\n            {\n                \"name\": \"workspace_name\",\n                \"connector_param\": \"workspace\"\n            },\n            {\n                \"name\": \"user_id\",\n                \"identity\": \"email\"\n            }\n        ],\n        \"body\": \"{\\\"regulation_type\\\": \\\"Suppress_With_Delete\\\", \\\"attributes\\\": {\\\"name\\\": \\\"userId\\\", \\\"values\\\": [\\\"<user_id>\\\"]}}\",\n        \"client_config\": {\n            \"protocol\": \"https\",\n            \"host\": {\n                \"connector_param\": \"domain\"\n            },\n            \"authentication\": {\n                \"strategy\": \"bearer_authentication\",\n                \"configuration\": {\n                    \"token\": {\n                        \"connector_param\": \"access_token\"\n                    }\n                }\n            }\n        }\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2853,7 +2853,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"fides_key\": \"segment_connector_example\",\n    \"name\": \"Segment SaaS Config\",\n    \"description\": \"A sample schema representing the Segment connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"personas_domain\"\n        },\n        {\n            \"name\": \"workspace\"\n        },\n        {\n            \"name\": \"access_token\"\n        },\n        {\n            \"name\": \"namespace_id\"\n        },\n        {\n            \"name\": \"access_secret\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"bearer_authentication\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"access_token\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/v1beta/workspaces/\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"segment_user\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"user_id\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"track_events\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"traits\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 17\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"traits\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"external_ids\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    ],\n    \"data_protection_request\": {\n        \"method\": \"POST\",\n        \"path\": \"/v1beta/workspaces/<workspace_name>/regulations\",\n        \"param_values\": [\n            {\n                \"name\": \"workspace_name\",\n                \"connector_param\": \"workspace\"\n            },\n            {\n                \"name\": \"user_id\",\n                \"identity\": \"email\"\n            }\n        ],\n        \"body\": \"{\\\"regulation_type\\\": \\\"Suppress_With_Delete\\\", \\\"attributes\\\": {\\\"name\\\": \\\"userId\\\",\\\"values\\\": [\\\"<user_id>\\\",]}}\",\n        \"client_config\": {\n            \"protocol\": \"https\",\n            \"host\": {\n                \"connector_param\": \"config_domain\"\n            },\n            \"authentication\": {\n                \"strategy\": \"bearer_authentication\",\n                \"configuration\": {\n                    \"username\": {\n                        \"connector_param\": \"access_token\"\n                    }\n                }\n            }\n        }\n    }\n}",
+									"raw": "{\n    \"fides_key\": \"segment_connector_example\",\n    \"name\": \"Segment SaaS Config\",\n    \"description\": \"A sample schema representing the Segment connector for Fidesops\",\n    \"version\": \"0.0.1\",\n    \"connector_params\": [\n        {\n            \"name\": \"domain\"\n        },\n        {\n            \"name\": \"personas_domain\"\n        },\n        {\n            \"name\": \"api_domain\"\n        },\n        {\n            \"name\": \"workspace\"\n        },\n        {\n            \"name\": \"access_token\"\n        },\n        {\n            \"name\": \"namespace_id\"\n        },\n        {\n            \"name\": \"access_secret\"\n        },\n        {\n            \"name\": \"user_token\"\n        }\n    ],\n    \"client_config\": {\n        \"protocol\": \"https\",\n        \"host\": {\n            \"connector_param\": \"domain\"\n        },\n        \"authentication\": {\n            \"strategy\": \"bearer_authentication\",\n            \"configuration\": {\n                \"token\": {\n                    \"connector_param\": \"access_token\"\n                }\n            }\n        }\n    },\n    \"test_request\": {\n        \"method\": \"GET\",\n        \"path\": \"/v1beta/workspaces/\"\n    },\n    \"endpoints\": [\n        {\n            \"name\": \"segment_user\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"user_id\",\n                            \"identity\": \"email\"\n                        }\n                    ],\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"track_events\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"traits\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits\",\n                    \"query_params\": [\n                        {\n                            \"name\": \"limit\",\n                            \"value\": 17\n                        }\n                    ],\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"traits\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        },\n        {\n            \"name\": \"external_ids\",\n            \"requests\": {\n                \"read\": {\n                    \"method\": \"GET\",\n                    \"path\": \"/v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids\",\n                    \"param_values\": [\n                        {\n                            \"name\": \"namespace_id\",\n                            \"connector_param\": \"namespace_id\"\n                        },\n                        {\n                            \"name\": \"segment_id\",\n                            \"references\": [\n                                {\n                                    \"dataset\": \"segment_connector_example\",\n                                    \"field\": \"segment_user.segment_id\",\n                                    \"direction\": \"from\"\n                                }\n                            ]\n                        }\n                    ],\n                    \"data_path\": \"data\",\n                    \"pagination\": {\n                        \"strategy\": \"link\",\n                        \"configuration\": {\n                            \"source\": \"body\",\n                            \"path\": \"cursor.url\"\n                        }\n                    },\n                    \"client_config\": {\n                        \"protocol\": \"https\",\n                        \"host\": {\n                            \"connector_param\": \"personas_domain\"\n                        },\n                        \"authentication\": {\n                            \"strategy\": \"basic_authentication\",\n                            \"configuration\": {\n                                \"username\": {\n                                    \"connector_param\": \"access_secret\"\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    ],\n    \"data_protection_request\": {\n        \"method\": \"POST\",\n        \"path\": \"/v1beta/workspaces/<workspace_name>/regulations\",\n        \"headers\": [\n            {\n                \"name\": \"Content-Type\",\n                \"value\": \"application/json\"\n            }\n        ],\n        \"param_values\": [\n            {\n                \"name\": \"workspace_name\",\n                \"connector_param\": \"workspace\"\n            },\n            {\n                \"name\": \"user_id\",\n                \"identity\": \"email\"\n            }\n        ],\n        \"body\": \"{\\\"regulation_type\\\": \\\"Suppress_With_Delete\\\", \\\"attributes\\\": {\\\"name\\\": \\\"userId\\\", \\\"values\\\": [\\\"<user_id>\\\"]}}\",\n        \"client_config\": {\n            \"protocol\": \"https\",\n            \"host\": {\n                \"connector_param\": \"domain\"\n            },\n            \"authentication\": {\n                \"strategy\": \"bearer_authentication\",\n                \"configuration\": {\n                    \"token\": {\n                        \"connector_param\": \"access_token\"\n                    }\n                }\n            }\n        }\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2982,222 +2982,227 @@
 					]
 				},
 				{
-					"name": "Create/Update Connection Configs: SaaS",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
+					"name": "Mailchimp",
+					"item": [
+						{
+							"name": "Create/Update Connection Configs: SaaS",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\"name\": \"SaaS Application\",\n    \"key\": \"{{saas_key}}\",\n    \"connection_type\": \"saas\",\n    \"access\": \"read\"\n}]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										""
+									]
 								}
-							]
+							},
+							"response": []
 						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    {\"name\": \"SaaS Application\",\n    \"key\": \"{{saas_key}}\",\n    \"connection_type\": \"saas\",\n    \"access\": \"read\"\n}]",
-							"options": {
-								"raw": {
-									"language": "json"
+						{
+							"name": "Validate SaaS Config",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fides_key\": \"mailchimp_connector_example\",\n  \"name\": \"Mailchimp SaaS Config\",\n  \"description\": \"A sample schema representing the Mailchimp connector for Fidesops\",\n  \"version\": \"0.0.1\",\n  \"connector_params\": [\n    {\n      \"name\": \"domain\"\n    },\n    {\n      \"name\": \"username\"\n    },\n    {\n      \"name\": \"api_key\"\n    }\n  ],\n  \"client_config\": {\n    \"protocol\": \"https\",\n    \"host\": {\n      \"connector_param\": \"domain\"\n    },\n    \"authentication\": {\n      \"strategy\": \"basic_authentication\",\n      \"configuration\": {\n        \"username\": {\n          \"connector_param\": \"username\"\n        },\n        \"password\": {\n          \"connector_param\": \"api_key\"\n        }\n      }\n    }\n  },\n  \"test_request\": {\n    \"method\": \"GET\",\n    \"path\": \"/3.0/lists\"\n  },\n  \"endpoints\": [\n    {\n      \"name\": \"messages\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations/<conversation_id>/messages\",\n          \"param_values\": [\n            {\n              \"name\": \"conversation_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"conversations.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ],\n          \"data_path\": \"conversation_messages\",\n          \"postprocessors\": [\n            {\n              \"strategy\": \"filter\",\n              \"configuration\": {\n                \"field\": \"from_email\",\n                \"value\": {\n                  \"identity\": \"email\"\n                }\n              }\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"conversations\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations\",\n          \"query_params\": [\n            {\n              \"name\": \"count\",\n              \"value\": 1000\n            },\n            {\n              \"name\": \"offset\",\n              \"value\": 0\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"placeholder\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"conversations\",\n          \"pagination\": {\n            \"strategy\": \"offset\",\n            \"configuration\": {\n              \"incremental_param\": \"offset\",\n              \"increment_by\": 1000,\n              \"limit\": 10000\n            }\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"member\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/search-members\",\n          \"query_params\": [\n            {\n              \"name\": \"query\",\n              \"value\": \"<email>\"\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"email\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"exact_matches.members\"\n        },\n        \"update\": {\n          \"method\": \"PUT\",\n          \"path\": \"/3.0/lists/<list_id>/members/<subscriber_hash>\",\n          \"param_values\": [\n            {\n              \"name\": \"list_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.list_id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            },\n            {\n              \"name\": \"subscriber_hash\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{saas_key}}/validate_saas_config",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{saas_key}}",
+										"validate_saas_config"
+									]
 								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{host}}/connection/",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								""
-							]
+						{
+							"name": "Create/Update SaaS Config",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fides_key\": \"mailchimp_connector_example\",\n  \"name\": \"Mailchimp SaaS Config\",\n  \"description\": \"A sample schema representing the Mailchimp connector for Fidesops\",\n  \"version\": \"0.0.1\",\n  \"connector_params\": [\n    {\n      \"name\": \"domain\"\n    },\n    {\n      \"name\": \"username\"\n    },\n    {\n      \"name\": \"api_key\"\n    }\n  ],\n  \"client_config\": {\n    \"protocol\": \"https\",\n    \"host\": {\n      \"connector_param\": \"domain\"\n    },\n    \"authentication\": {\n      \"strategy\": \"basic_authentication\",\n      \"configuration\": {\n        \"username\": {\n          \"connector_param\": \"username\"\n        },\n        \"password\": {\n          \"connector_param\": \"api_key\"\n        }\n      }\n    }\n  },\n  \"test_request\": {\n    \"method\": \"GET\",\n    \"path\": \"/3.0/lists\"\n  },\n  \"endpoints\": [\n    {\n      \"name\": \"messages\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations/<conversation_id>/messages\",\n          \"param_values\": [\n            {\n              \"name\": \"conversation_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"conversations.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ],\n          \"data_path\": \"conversation_messages\",\n          \"postprocessors\": [\n            {\n              \"strategy\": \"filter\",\n              \"configuration\": {\n                \"field\": \"from_email\",\n                \"value\": {\n                  \"identity\": \"email\"\n                }\n              }\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"conversations\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations\",\n          \"query_params\": [\n            {\n              \"name\": \"count\",\n              \"value\": 1000\n            },\n            {\n              \"name\": \"offset\",\n              \"value\": 0\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"placeholder\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"conversations\",\n          \"pagination\": {\n            \"strategy\": \"offset\",\n            \"configuration\": {\n              \"incremental_param\": \"offset\",\n              \"increment_by\": 1000,\n              \"limit\": 10000\n            }\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"member\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/search-members\",\n          \"query_params\": [\n            {\n              \"name\": \"query\",\n              \"value\": \"<email>\"\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"email\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"exact_matches.members\"\n        },\n        \"update\": {\n          \"method\": \"PUT\",\n          \"path\": \"/3.0/lists/<list_id>/members/<subscriber_hash>\",\n          \"param_values\": [\n            {\n              \"name\": \"list_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.list_id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            },\n            {\n              \"name\": \"subscriber_hash\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{saas_key}}/saas_config",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{saas_key}}",
+										"saas_config"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Connection Secrets: SaaS",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"domain\": \"{{mailchimp_domain}}\",\n    \"username\": \"{{mailchimp_username}}\",\n    \"api_key\": \"{{mailchimp_api_key}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{saas_key}}/secret",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{saas_key}}",
+										"secret"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create/Update SaaS Dataset",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n   {\n      \"fides_key\":\"mailchimp_connector_example\",\n      \"name\":\"Mailchimp Dataset\",\n      \"description\":\"A sample dataset representing the Mailchimp connector for Fidesops\",\n      \"collections\":[\n         {\n            \"name\":\"messages\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"conversation_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_label\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_email\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"subject\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"message\",\n                  \"data_categories\":[\n                     \"user.provided.nonidentifiable\"\n                  ]\n               },\n               {\n                  \"name\":\"read\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               }\n            ]\n         },\n         {\n            \"name\":\"conversations\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"campaign_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"list_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_email\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"from_label\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"subject\",\n                  \"data_categories\":[\n                     \"user.provided.nonidentifiable\"\n                  ]\n               }\n            ]\n         },\n         {\n            \"name\":\"member\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"list_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"email_address\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"unique_email_id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"web_id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"email_type\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"status\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"merge_fields\",\n                  \"fields\":[\n                     {\n                        \"name\":\"FNAME\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.name\"\n                        ]\n                     },\n                     {\n                        \"name\":\"LNAME\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.name\"\n                        ]\n                     },\n                     {\n                        \"name\":\"ADDRESS\",\n                        \"fields\":[\n                           {\n                              \"name\":\"addr1\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.street\"\n                              ]\n                           },\n                           {\n                              \"name\":\"addr2\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.street\"\n                              ]\n                           },\n                           {\n                              \"name\":\"city\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.city\"\n                              ]\n                           },\n                           {\n                              \"name\":\"state\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.state\"\n                              ]\n                           },\n                           {\n                              \"name\":\"zip\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.postal_code\"\n                              ]\n                           },\n                           {\n                              \"name\":\"country\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.country\"\n                              ]\n                           }\n                        ]\n                     },\n                     {\n                        \"name\":\"PHONE\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.contact.phone_number\"\n                        ]\n                     },\n                     {\n                        \"name\":\"BIRTHDAY\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.date_of_birth\"\n                        ]\n                     }\n                  ]\n               },\n               {\n                  \"name\":\"ip_signup\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.device.ip_address\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp_signup\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"ip_opt\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp_opt\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"language\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"email_client\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"location\",\n                  \"fields\":[\n                     {\n                        \"name\":\"latitude\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"longitude\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"gmtoff\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"dstoff\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"country_code\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.contact.country\"\n                        ]\n                     },\n                     {\n                        \"name\":\"timezone\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     }\n                  ]\n               },\n               {\n                  \"name\":\"source\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"tags\",\n                  \"fields\":[\n                     {\n                        \"name\":\"id\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"name\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     }\n                  ]\n               }\n            ]\n         }\n      ]\n   }\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/connection/{{saas_key}}/dataset",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{saas_key}}",
+										"dataset"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Connection Test: SaaS",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{client_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/connection/{{saas_key}}/test",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"connection",
+										"{{saas_key}}",
+										"test"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Validate SaaS Config",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"fides_key\": \"mailchimp_connector_example\",\n  \"name\": \"Mailchimp SaaS Config\",\n  \"description\": \"A sample schema representing the Mailchimp connector for Fidesops\",\n  \"version\": \"0.0.1\",\n  \"connector_params\": [\n    {\n      \"name\": \"domain\"\n    },\n    {\n      \"name\": \"username\"\n    },\n    {\n      \"name\": \"api_key\"\n    }\n  ],\n  \"client_config\": {\n    \"protocol\": \"https\",\n    \"host\": {\n      \"connector_param\": \"domain\"\n    },\n    \"authentication\": {\n      \"strategy\": \"basic_authentication\",\n      \"configuration\": {\n        \"username\": {\n          \"connector_param\": \"username\"\n        },\n        \"password\": {\n          \"connector_param\": \"api_key\"\n        }\n      }\n    }\n  },\n  \"test_request\": {\n    \"method\": \"GET\",\n    \"path\": \"/3.0/lists\"\n  },\n  \"endpoints\": [\n    {\n      \"name\": \"messages\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations/<conversation_id>/messages\",\n          \"param_values\": [\n            {\n              \"name\": \"conversation_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"conversations.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ],\n          \"data_path\": \"conversation_messages\",\n          \"postprocessors\": [\n            {\n              \"strategy\": \"filter\",\n              \"configuration\": {\n                \"field\": \"from_email\",\n                \"value\": {\n                  \"identity\": \"email\"\n                }\n              }\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"conversations\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations\",\n          \"query_params\": [\n            {\n              \"name\": \"count\",\n              \"value\": 1000\n            },\n            {\n              \"name\": \"offset\",\n              \"value\": 0\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"placeholder\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"conversations\",\n          \"pagination\": {\n            \"strategy\": \"offset\",\n            \"configuration\": {\n              \"incremental_param\": \"offset\",\n              \"increment_by\": 1000,\n              \"limit\": 10000\n            }\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"member\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/search-members\",\n          \"query_params\": [\n            {\n              \"name\": \"query\",\n              \"value\": \"<email>\"\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"email\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"exact_matches.members\"\n        },\n        \"update\": {\n          \"method\": \"PUT\",\n          \"path\": \"/3.0/lists/<list_id>/members/<subscriber_hash>\",\n          \"param_values\": [\n            {\n              \"name\": \"list_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.list_id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            },\n            {\n              \"name\": \"subscriber_hash\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/{{saas_key}}/validate_saas_config",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{saas_key}}",
-								"validate_saas_config"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create/Update SaaS Config",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"fides_key\": \"mailchimp_connector_example\",\n  \"name\": \"Mailchimp SaaS Config\",\n  \"description\": \"A sample schema representing the Mailchimp connector for Fidesops\",\n  \"version\": \"0.0.1\",\n  \"connector_params\": [\n    {\n      \"name\": \"domain\"\n    },\n    {\n      \"name\": \"username\"\n    },\n    {\n      \"name\": \"api_key\"\n    }\n  ],\n  \"client_config\": {\n    \"protocol\": \"https\",\n    \"host\": {\n      \"connector_param\": \"domain\"\n    },\n    \"authentication\": {\n      \"strategy\": \"basic_authentication\",\n      \"configuration\": {\n        \"username\": {\n          \"connector_param\": \"username\"\n        },\n        \"password\": {\n          \"connector_param\": \"api_key\"\n        }\n      }\n    }\n  },\n  \"test_request\": {\n    \"method\": \"GET\",\n    \"path\": \"/3.0/lists\"\n  },\n  \"endpoints\": [\n    {\n      \"name\": \"messages\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations/<conversation_id>/messages\",\n          \"param_values\": [\n            {\n              \"name\": \"conversation_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"conversations.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ],\n          \"data_path\": \"conversation_messages\",\n          \"postprocessors\": [\n            {\n              \"strategy\": \"filter\",\n              \"configuration\": {\n                \"field\": \"from_email\",\n                \"value\": {\n                  \"identity\": \"email\"\n                }\n              }\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"conversations\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/conversations\",\n          \"query_params\": [\n            {\n              \"name\": \"count\",\n              \"value\": 1000\n            },\n            {\n              \"name\": \"offset\",\n              \"value\": 0\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"placeholder\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"conversations\",\n          \"pagination\": {\n            \"strategy\": \"offset\",\n            \"configuration\": {\n              \"incremental_param\": \"offset\",\n              \"increment_by\": 1000,\n              \"limit\": 10000\n            }\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"member\",\n      \"requests\": {\n        \"read\": {\n          \"method\": \"GET\",\n          \"path\": \"/3.0/search-members\",\n          \"query_params\": [\n            {\n              \"name\": \"query\",\n              \"value\": \"<email>\"\n            }\n          ],\n          \"param_values\": [\n            {\n              \"name\": \"email\",\n              \"identity\": \"email\"\n            }\n          ],\n          \"data_path\": \"exact_matches.members\"\n        },\n        \"update\": {\n          \"method\": \"PUT\",\n          \"path\": \"/3.0/lists/<list_id>/members/<subscriber_hash>\",\n          \"param_values\": [\n            {\n              \"name\": \"list_id\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.list_id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            },\n            {\n              \"name\": \"subscriber_hash\",\n              \"references\": [\n                {\n                  \"dataset\": \"mailchimp_connector_example\",\n                  \"field\": \"member.id\",\n                  \"direction\": \"from\"\n                }\n              ]\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/{{saas_key}}/saas_config",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{saas_key}}",
-								"saas_config"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Connection Secrets: SaaS",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"domain\": \"{{mailchimp_domain}}\",\n    \"username\": \"{{mailchimp_username}}\",\n    \"api_key\": \"{{mailchimp_api_key}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/{{saas_key}}/secret",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{saas_key}}",
-								"secret"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create/Update SaaS Dataset",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n   {\n      \"fides_key\":\"mailchimp_connector_example\",\n      \"name\":\"Mailchimp Dataset\",\n      \"description\":\"A sample dataset representing the Mailchimp connector for Fidesops\",\n      \"collections\":[\n         {\n            \"name\":\"messages\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"conversation_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_label\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_email\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"subject\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"message\",\n                  \"data_categories\":[\n                     \"user.provided.nonidentifiable\"\n                  ]\n               },\n               {\n                  \"name\":\"read\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               }\n            ]\n         },\n         {\n            \"name\":\"conversations\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"campaign_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"list_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"from_email\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"from_label\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"subject\",\n                  \"data_categories\":[\n                     \"user.provided.nonidentifiable\"\n                  ]\n               }\n            ]\n         },\n         {\n            \"name\":\"member\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"list_id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"email_address\",\n                  \"data_categories\":[\n                     \"user.provided.identifiable.contact.email\"\n                  ]\n               },\n               {\n                  \"name\":\"unique_email_id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"web_id\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.unique_id\"\n                  ]\n               },\n               {\n                  \"name\":\"email_type\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"status\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"merge_fields\",\n                  \"fields\":[\n                     {\n                        \"name\":\"FNAME\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.name\"\n                        ]\n                     },\n                     {\n                        \"name\":\"LNAME\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.name\"\n                        ]\n                     },\n                     {\n                        \"name\":\"ADDRESS\",\n                        \"fields\":[\n                           {\n                              \"name\":\"addr1\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.street\"\n                              ]\n                           },\n                           {\n                              \"name\":\"addr2\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.street\"\n                              ]\n                           },\n                           {\n                              \"name\":\"city\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.city\"\n                              ]\n                           },\n                           {\n                              \"name\":\"state\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.state\"\n                              ]\n                           },\n                           {\n                              \"name\":\"zip\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.postal_code\"\n                              ]\n                           },\n                           {\n                              \"name\":\"country\",\n                              \"data_categories\":[\n                                 \"user.provided.identifiable.contact.country\"\n                              ]\n                           }\n                        ]\n                     },\n                     {\n                        \"name\":\"PHONE\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.contact.phone_number\"\n                        ]\n                     },\n                     {\n                        \"name\":\"BIRTHDAY\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.date_of_birth\"\n                        ]\n                     }\n                  ]\n               },\n               {\n                  \"name\":\"ip_signup\",\n                  \"data_categories\":[\n                     \"user.derived.identifiable.device.ip_address\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp_signup\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"ip_opt\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"timestamp_opt\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"language\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"email_client\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"location\",\n                  \"fields\":[\n                     {\n                        \"name\":\"latitude\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"longitude\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"gmtoff\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"dstoff\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"country_code\",\n                        \"data_categories\":[\n                           \"user.provided.identifiable.contact.country\"\n                        ]\n                     },\n                     {\n                        \"name\":\"timezone\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     }\n                  ]\n               },\n               {\n                  \"name\":\"source\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ]\n               },\n               {\n                  \"name\":\"tags\",\n                  \"fields\":[\n                     {\n                        \"name\":\"id\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     },\n                     {\n                        \"name\":\"name\",\n                        \"data_categories\":[\n                           \"system.operations\"\n                        ]\n                     }\n                  ]\n               }\n            ]\n         }\n      ]\n   }\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/connection/{{saas_key}}/dataset",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{saas_key}}",
-								"dataset"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Connection Test: SaaS",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/connection/{{saas_key}}/test",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"connection",
-								"{{saas_key}}",
-								"test"
-							]
-						}
-					},
-					"response": []
+					]
 				}
 			]
 		},

@@ -45,6 +45,8 @@ jobs:
           HUBSPOT_HAPIKEY: ${{ secrets.HUBSPOT_HAPIKEY }}
           HUBSPOT_IDENTITY_EMAIL: ${{ secrets.HUBSPOT_IDENTITY_EMAIL }}
           SEGMENT_DOMAIN: ${{ secrets.SEGMENT_DOMAIN }}
+          SEGMENT_API_DOMAIN: ${{ secrets.SEGMENT_API_DOMAIN }}
+          SEGMENT_USER_TOKEN: ${{ secrets.SEGMENT_USER_TOKEN }}
           SEGMENT_PERSONAS_DOMAIN: ${{ secrets.SEGMENT_PERSONAS_DOMAIN }}
           SEGMENT_WORKSPACE: ${{ secrets.SEGMENT_WORKSPACE }}
           SEGMENT_ACCESS_TOKEN: ${{ secrets.SEGMENT_ACCESS_TOKEN }}

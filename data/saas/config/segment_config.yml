@@ -12,6 +12,7 @@ saas_config:
     - name: namespace_id
     - name: access_secret
 
+
   client_config:
     protocol: https
     host:
@@ -137,18 +138,21 @@ saas_config:
   data_protection_request:
     method: POST
     path: /v1beta/workspaces/<workspace_name>/regulations
+    headers:
+      - name: Content-Type
+        value: application/json
     param_values:
       - name: workspace_name
         connector_param: workspace
       - name: user_id
         identity: email
-    body: '{\"regulation_type\": \"Suppress_With_Delete\", \"attributes\": {\"name\": \"userId\",\"values\": [\"<user_id>\",]}}'
+    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>"]}}'
     client_config:
       protocol: https
       host:
-        connector_param: config_domain
+        connector_param: domain
       authentication:
         strategy: bearer_authentication
         configuration:
-          username:
+          token:
             connector_param: access_token
