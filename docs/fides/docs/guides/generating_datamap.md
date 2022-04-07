@@ -1,9 +1,8 @@
 # Exporting a data map using the demo resources
 
+The purpose of this guide is to detail which attributes are required and how to implement them to export an Article 30 compliant Record of Processing Activites (RoPA).
 
-the purpose of this guide is to detail which attributes are required and how to implement them to export an Article 30 compliant Record of Processing Activites (RoPA).
-
-To follow the guide, please follow [Step 1 of the Quickstart](https://github.com/ethyca/fides/#rocket-quick-start)
+To follow this guide, please go through [Step 1 of the Quickstart](https://github.com/ethyca/fides/#rocket-quick-start) first.
 
 The rest of the guide will cover the following:
 
@@ -47,19 +46,19 @@ The Dataset is primarily used to provide a list of Data Categories which populat
 
 Reviewing `demo_resources/demo_dataset.yml` will highlight the relationship between the Organization resource manifest and the data map.
 
-`data_categories` and `retention` can be set at any of  Dataset, DatasetCollection, or DatasetField. `third_country_transfers` should be set at the Dataset level.
+`data_categories` and `retention` can be set at any/all of the Dataset, DatasetCollection, and DatasetField levels. `third_country_transfers` should be set at the Dataset level.
 
-Any Datasets referenced by a system will have this information exported as rows of your data map.
+Any Datasets referenced by a System will have this information included as rows of your data map.
 
 
 ### System
 
-The system houses the remainder of the attributes on our initial data map.
+The System houses the remainder of the attributes on our initial data map.
 
 Each populated property is listed below with it's referenced property in `demo_system.yml`:
 
-* **Fides dataset**: Found under `dataset_references`, used to join dataset(s) to the system.
-* **Fides system**: The name defined at the top-level of the system.
+* **Fides Dataset**: Found under `dataset_references`, used to join dataset(s) to the system.
+* **Fides System**: The name defined at the top-level of the system.
 * **Department or Business Function**: `administering_department` set at the top-level of the system.
 * **Purpose of Processing**: The name defined for the `data_use` set in a Privacy Declaration.
 * **Categories of Individuals**: The name defined for the `data_subject` set in a Privacy Declaration.
@@ -71,9 +70,9 @@ Each populated property is listed below with it's referenced property in `demo_s
 
 ## What's missing?
 
-This next section focuses on the data map columns populated with `N/A` and how to use properties within the fides Taxonomy and Resources to replace those with value-added data required as part of a RoPA.
+This next section focuses on the data map columns populated with `N/A` and how to use properties within the fides Taxonomy and resources to replace those with value-added data required as part of a RoPA.
 
-To do this, we need to extend the default taxonomy for our particular needs. The manifeset updates can be viewed in `demo_extended_taxonomy.yml`.
+To do this, we need to extend the default taxonomy for our particular needs. The manifest updates can be viewed in `demo_extended_taxonomy.yml`.
 
 ### Data Use
 
