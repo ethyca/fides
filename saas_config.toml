@@ -34,9 +34,11 @@ issue_url = ""
 
 [segment]
 domain = ""
+api_domain = ""
 personas_domain = ""
 workspace = ""
 access_token = ""
 namespace_id = ""
 access_secret = ""
+user_token = ""
 identity_email = ""
