@@ -1,9 +1,7 @@
 import sqlalchemy
 import pytest
 import os
-from typing import List, Dict
-
-from okta.models import Application as OktaApplication
+from typing import List
 
 from fidesctl.core import dataset as _dataset, api
 from fideslang.manifests import write_manifest
@@ -31,19 +29,6 @@ def set_field_data_categories(datasets: List[Dataset], category: str):
         for collection in dataset.collections:
             for field in collection.fields:
                 field.data_categories.append(category)
-
-
-@pytest.fixture()
-def okta_list_applications():
-    okta_applications = [
-        OktaApplication(
-            config={"id": "okta_id_1", "name": "okta_id_1", "label": "okta_label_1"}
-        ),
-        OktaApplication(
-            config={"id": "okta_id_2", "name": "okta_id_2", "label": "okta_label_2"}
-        )
-    ]
-    yield okta_applications
 
 
 # Unit
@@ -243,8 +228,8 @@ def test_unsupported_dialect_error():
 
 
 @pytest.mark.unit
-def test_create_okta_datasets(okta_list_applications):
-    expected_result = [
+def test_get_dataset_resource_ids():
+    datasets = [
         Dataset(
             fides_key="okta_id_1",
             name="okta_id_1",
@@ -264,12 +249,46 @@ def test_create_okta_datasets(okta_list_applications):
             description=f"Fides Generated Description for Okta Application: okta_label_2",
             data_categories=[],
             collections=[],
-        )
+        ),
+        Dataset(
+            fides_key="other_resource",
+            name="other_resource",
+            data_categories=[],
+            collections=[],
+        ),
     ]
-    okta_datasets = _dataset.create_okta_datasets(
-        okta_applications=okta_list_applications
+    resource_ids = _dataset.get_dataset_resource_ids(datasets=datasets)
+    assert resource_ids == ["okta_id_1", "okta_id_2"]
+
+
+@pytest.mark.unit
+def test_find_missing_datasets():
+    okta_dataset_1 = Dataset(
+        fides_key="okta_id_1",
+        name="okta_id_1",
+        fidesctl_meta=DatasetMetadata(
+            resource_id="okta_id_1",
+        ),
+        description=f"Fides Generated Description for Okta Application: okta_label_1",
+        data_categories=[],
+        collections=[],
     )
-    assert okta_datasets == expected_result
+    okta_dataset_2 = Dataset(
+        fides_key="okta_id_2",
+        name="okta_id_2",
+        fidesctl_meta=DatasetMetadata(
+            resource_id="okta_id_2",
+        ),
+        description=f"Fides Generated Description for Okta Application: okta_label_2",
+        data_categories=[],
+        collections=[],
+    )
+    okta_datasets = [okta_dataset_1, okta_dataset_2]
+    existing_datasets = [okta_dataset_1]
+    actual_result = _dataset.find_missing_datasets(
+        source_datasets=okta_datasets, existing_datasets=existing_datasets
+    )
+    assert actual_result == [okta_dataset_2]
 
 
 # Generate Dataset Database Integration Tests
@@ -442,11 +461,40 @@ class TestDatabase:
             headers=test_config.user.request_headers,
         )
 
+
 @pytest.mark.external
 def test_generate_dataset_okta(tmpdir, test_config):
     actual_result = _dataset.generate_dataset_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
-        org_url="https://dev-78908748.okta.com"
+        org_url="https://dev-78908748.okta.com",
     )
     assert actual_result
+
+
+@pytest.mark.external
+def test_scan_dataset_okta_success(tmpdir, test_config):
+    file_name = f"{tmpdir}/test_file.yml"
+    _dataset.generate_dataset_okta(
+        file_name=file_name, include_null=False, org_url="https://dev-78908748.okta.com"
+    )
+    _dataset.scan_dataset_okta(
+        manifest_dir=file_name,
+        org_url="https://dev-78908748.okta.com",
+        coverage_threshold=100,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+    )
+    assert True
+
+
+@pytest.mark.external
+def test_scan_dataset_okta_fail(tmpdir, test_config):
+    with pytest.raises(SystemExit):
+        _dataset.scan_dataset_okta(
+            manifest_dir="",
+            org_url="https://dev-78908748.okta.com",
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )

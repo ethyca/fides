@@ -9,6 +9,14 @@ import click
 from fideslang import model_list
 
 
+def coverage_threshold_option(command: Callable) -> Callable:
+    "Add a flag that assumes yes."
+    command = click.option(
+        "--coverage-threshold", "-c", type=click.IntRange(0, 100), default=100
+    )(command)
+    return command
+
+
 def resource_type_argument(command: Callable) -> Callable:
     "Add the resource_type option."
     command = click.argument(
