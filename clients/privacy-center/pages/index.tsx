@@ -64,7 +64,7 @@ const Home: NextPage = () => {
               />
             </Alert>
           ) : null}
-          <Image src="/logo.svg" height="56px" width="304px" alt="Logo" />
+          <Image src={config.logo_path} height="56px" width="304px" alt="Logo" />
         </Flex>
       </header>
 
