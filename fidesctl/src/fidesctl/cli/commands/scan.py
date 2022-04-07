@@ -77,7 +77,7 @@ def scan_dataset_okta(
     under the stated threshold.
     """
     try:
-        import okta
+        import okta  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[okta]"')
         raise SystemExit
@@ -123,7 +123,7 @@ def scan_system_aws(
     """
 
     try:
-        import boto3
+        import boto3  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[aws]"')
         raise SystemExit
