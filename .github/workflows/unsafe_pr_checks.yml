@@ -31,7 +31,11 @@ jobs:
           MAILCHIMP_IDENTITY_EMAIL: ${{ secrets.MAILCHIMP_IDENTITY_EMAIL }}
           SENTRY_HOST: ${{ secrets.SENTRY_HOST }}
           SENTRY_ACCESS_TOKEN: ${{ secrets.SENTRY_ACCESS_TOKEN }}
+          SENTRY_ERASURE_TOKEN: ${{ secrets.SENTRY_ERASURE_TOKEN }}
           SENTRY_IDENTITY_EMAIL: ${{ secrets.SENTRY_IDENTITY_EMAIL }}
+          SENTRY_ERASURE_IDENTITY: ${{ secrets.SENTRY_ERASURE_IDENTITY }}
+          SENTRY_USER_ID: ${{ secrets.SENTRY_USER_ID }}
+          SENTRY_ISSUE_URL: ${{ secrets.SENTRY_ISSUE_URL }}
           STRIPE_HOST: ${{ secrets.STRIPE_HOST }}
           STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
           STRIPE_PAYMENT_TYPES: ${{ secrets.STRIPE_PAYMENT_TYPES }}
