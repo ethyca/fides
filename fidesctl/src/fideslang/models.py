@@ -28,6 +28,11 @@ no_self_reference_validator = validator("parent_key", allow_reuse=True)(
     no_self_reference
 )
 
+name_field = Field(description="Human-Readable name for this resource.")
+description_field = Field(
+    description="A detailed description of what this resource is."
+)
+
 
 # Fides Base Model
 class FidesModel(BaseModel):
@@ -40,12 +45,8 @@ class FidesModel(BaseModel):
         default="default_organization",
         description="Defines the Organization that this resource belongs to.",
     )
-    name: Optional[str] = Field(
-        description="Human-Readable string name for this resource."
-    )
-    description: Optional[str] = Field(
-        description="In-depth description of what this resource is."
-    )
+    name: Optional[str] = name_field
+    description: Optional[str] = description_field
 
     class Config:
         "Config for the FidesModel"
@@ -245,12 +246,8 @@ class DatasetField(BaseModel):
     This resource is nested within a DatasetCollection.
     """
 
-    name: str = Field(
-        description="A UI-friendly label for the field.",
-    )
-    description: Optional[str] = Field(
-        description="A human-readable description of the field.",
-    )
+    name: str = name_field
+    description: Optional[str] = description_field
     data_categories: Optional[List[FidesKey]] = Field(
         description="Arrays of Data Categories, identified by `fides_key`, that applies to this field.",
     )
@@ -273,12 +270,8 @@ class DatasetCollection(BaseModel):
     This resource is nested witin a Dataset.
     """
 
-    name: str = Field(
-        description="A UI-friendly label for the collection.",
-    )
-    description: Optional[str] = Field(
-        description="A human-readable description of the collection.",
-    )
+    name: str = name_field
+    description: Optional[str] = description_field
     data_categories: Optional[List[FidesKey]] = Field(
         description="Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection.",
     )
@@ -391,7 +384,7 @@ class ViolationAttributes(BaseModel):
 
 
 class Violation(BaseModel):
-    "The model for violations within an evaluation"
+    "The model for violations within an evaluation."
 
     violating_attributes: ViolationAttributes = Field(
         description=ViolationAttributes.__doc__
@@ -666,7 +659,7 @@ class System(FidesModel):
         description=PrivacyDeclaration.__doc__,
     )
     system_dependencies: Optional[List[FidesKey]] = Field(
-        description="A list of fideskeys to model dependencies."
+        description="A list of fides keys to model dependencies."
     )
     joint_controller: Optional[ContactDetails] = Field(
         description=ContactDetails.__doc__,
