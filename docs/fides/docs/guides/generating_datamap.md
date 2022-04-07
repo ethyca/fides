@@ -90,11 +90,11 @@ dataset:
     ...
 ```
 
-`data_categories` and `retention` can be set at the `dataset`, `collection`, or `field` level.
+`data_categories` and `retention` can be set at any/all of the Dataset, DatasetCollection, and DatasetField levels.
 
 `third_country_transfers` should be set at the `dataset` level.
 
-Any Datasets referenced by a system will have this information exported as rows of your data map.
+Any Datasets referenced by a System will have this information included as rows of your data map.
 
 ### System
 
@@ -104,8 +104,8 @@ Each populated property referenced directly from an associated label in `fides_r
 
 |Data Map Label    |Resource Label   | Description    |
 |--|----|----|
-| **Fides dataset** | `dataset_references` | Used to join dataset(s) to the system. |
-| **Fides system** | `name` | The `name` defined at the top level of the system. |
+| **Fides Dataset** | `dataset_references` | Used to join dataset(s) to the system. |
+| **Fides System** | `name` | The `name` defined at the top level of the system. |
 | **Department or Business Function** |  `administering_department` | Set at the top level of the system. | 
 | **Purpose of Processing** | `data_use` | The `data_use` defined in the `privacy_declaration`. |
 | **Categories of Individuals** | `data_subject` | A `data_subject` list defined in the `privacy_declaration`. |
