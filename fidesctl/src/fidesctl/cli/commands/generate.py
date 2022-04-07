@@ -106,6 +106,13 @@ def generate_system_aws(
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.
     """
+
+    try:
+        import boto3
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[aws]"')
+        raise SystemExit
+
     config = ctx.obj["CONFIG"]
     with_analytics(
         ctx,

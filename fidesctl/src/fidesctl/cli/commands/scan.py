@@ -121,6 +121,13 @@ def scan_system_aws(
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
+
+    try:
+        import boto3
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[aws]"')
+        raise SystemExit
+
     config = ctx.obj["CONFIG"]
     with_analytics(
         ctx,
