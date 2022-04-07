@@ -98,7 +98,7 @@ Any Datasets referenced by a system will have this information exported as rows 
 
 ### System
 
-Your System houses the remainder of the attributes on the initial data map.
+The System contains the remainder of the attributes on the initial data map.
 
 Each populated property referenced directly from an associated label in `fides_resources/demo_system.yml`:
 
@@ -112,7 +112,7 @@ Each populated property referenced directly from an associated label in `fides_r
 | **Categories of Personal Data** | `data_categories` | Any `data_categories` set as part of the `privacy_declaration` (see the output for Demo Marketing System as a clear example).|
 | **Role or Responsibility** | `data_responsibility_title` | Set at the top level of the system. |
 | **Source of the Personal Data** | `dataset_references` | The Fides dataset name, if referenced by the system.
-| **Data Protection Impact Assessment**  | `data_protection_impact_assessment` | All of the information related to a Data Protection Impact Assessment, set at the top level of the system.|
+| **Data Protection Impact Assessment**  | `data_protection_impact_assessment` | All the information related to a Data Protection Impact Assessment, set at the top level of the system.|
 
 
 ## Extend the Default Taxonomy
