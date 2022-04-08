@@ -45,18 +45,21 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     </details>
 
-2. Use the `evaluate` command to see if this project's own fides annotations comply with our policies. 
+2. Use the `evaluate` command to see if this project's demo resources comply with our demo policies. 
 
     <details>
     <summary>Run a local evaluation</summary>
-    <code>fidesctl --local evaluate fides/fidesctl/</code>
+
+    `fidesctl --local evaluate fides/fidesctl/demo_resources/`
+
     </details>
 
-    Congratulations, you've successfully run your first fidesctl `evaluate` command!
+    Congratulations, you've successfully run your first fidesctl evaluation!
 
-3. Now, take a closer look at `fidesctl/.fides/policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
+3. Now, take a closer look at `fides/fidesctl/demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
+
     <details>
-      <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
+      <summary><code>cat fides/fidesctl/demo_resources/demo_policy.yml</code></summary>
 
       ```yaml
       policy:
@@ -86,10 +89,9 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 
 4. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
-    <details>
 
-    Edit `demo_resources/demo_system.yml` and uncomment the line that adds `user.provided.identifiable.contact` to the list of `data_categories` for the `demo_marketing_system`.
-      <summary>Add User-provided contact info to the demo_marketing_system</summary>
+    <details>
+    <summary>Add User-provided contact info to the <code>demo_marketing_system</code></summary>
 
      ```diff
           privacy_declarations:
@@ -102,15 +104,13 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
               data_subjects:
      ```
 
-     </details>
+    </details>
 
     <details>
+    <summary>Run another fidesctl evaluation</summary>
 
-      <summary>Run <code>fidesctl evaluate demo_resources/</code> </summary>
 
-      Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
-
-     ```bash
+     ```sh
      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
      ...
      Executing evaluations...
@@ -122,6 +122,8 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
        "message": null
      }
      ```
+
+    Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
 
     </details>
 
