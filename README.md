@@ -22,62 +22,25 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 1. Getting fidesctl set up on your machine
 
     <details>
-    This will clone the `fidesctl` repository to your machine
-    <summary>Run <code>git clone https://github.com/ethyca/fides.git</code></summary>
+    <summary>Clone the fidesctl repo</summary>
+    <code>git clone https://github.com/ethyca/fides.git</code>
     </details>
 
     <details>
-    This will move you into the fidesctl package directory of the fides repo.
-    <summary>Run <code>cd fides/fidesctl</code></summary>
+    <summary>Move into the fidesctl directory</summary>
+    <code>cd fides/fidesctl</code>
     </details>
 
     <details>
-    This will install the local version of the fidesctl package.
-    <summary>Run <code>pip install -e .</code></summary>
+    <summary>Install fidesctl</summary>
+    <code>pip install fidesctl</code>
     </details>
-
 
 2. Use the <code>evaluate</code> command to see if this project's own fides annotations comply with our policies. 
+
     <details>
-
-    <summary>Run <code>fidesctl --local evaluate</code></summary>
-
-      ```bash
-      root@fa175a43c077:/fides/fidesctl# fidesctl --local evaluate
-      Loading resource manifests from: .fides/
-      Taxonomy successfully created.
-      ----------
-      Processing registry resources...
-      CREATED 1 registry resources.
-      UPDATED 0 registry resources.
-      SKIPPED 0 registry resources.
-      ----------
-      Processing dataset resources...
-      CREATED 1 dataset resources.
-      UPDATED 0 dataset resources.
-      SKIPPED 0 dataset resources.
-      ----------
-      Processing policy resources...
-      CREATED 1 policy resources.
-      UPDATED 0 policy resources.
-      SKIPPED 0 policy resources.
-      ----------
-      Processing system resources...
-      CREATED 2 system resources.
-      UPDATED 0 system resources.
-      SKIPPED 0 system resources.
-      ----------
-      Loading resource manifests from: demo_resources
-      Taxonomy successfully created.
-      Evaluating the following policies:
-      fidesctl_policy
-      data_sharing_policy
-      ----------
-      Checking for missing resources...
-      Executing evaluations...
-      Evaluation passed!
-      ```
-
+    <summary>Run a local evaluation</summary>
+    <code>fidesctl --local evaluate</code>
     </details>
 
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
