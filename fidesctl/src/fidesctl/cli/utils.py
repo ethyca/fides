@@ -13,9 +13,9 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsException
 from fideslog.sdk.python.utils import OPT_OUT_COPY
 
-from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import echo_red, check_response
 from fidesctl.core import api as _api
+from fidesctl.core.config.utils import get_config_from_file, update_config_file
+from fidesctl.core.utils import check_response, echo_green, echo_red
 
 
 def check_server(cli_version: str, server_url: str) -> None:
@@ -34,6 +34,10 @@ def check_server(cli_version: str, server_url: str) -> None:
     if str(server_version) != str(cli_version):
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
+        )
+    else:
+        echo_green(
+            "Server is reachable and the client/server application versions match."
         )
 
 
