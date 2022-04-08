@@ -73,4 +73,4 @@ CMD ["fidesctl", "webserver"]
 FROM dev as prod
 
 # Install without a symlink
-RUN pip install ".[all,mssql]"
+RUN python setup.py sdist
