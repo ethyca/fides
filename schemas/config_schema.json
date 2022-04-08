@@ -29,7 +29,7 @@
       "title": "Cli",
       "default": {
         "local_mode": false,
-        "analytics_id": "b692a931687bc025cc2ec73f169980ae",
+        "analytics_id": "34ad44440a3fa231b199c7d81feb974f",
         "server_protocol": "http",
         "server_host": "fidesctl",
         "server_port": 8080,
@@ -185,7 +185,7 @@
         },
         "analytics_id": {
           "title": "Analytics Id",
-          "default": "b692a931687bc025cc2ec73f169980ae",
+          "default": "34ad44440a3fa231b199c7d81feb974f",
           "env_names": [
             "fidesctl__cli__analytics_id"
           ],
