@@ -1,4 +1,3 @@
-from typing import Dict
 import time
 import random
 import requests
@@ -146,9 +145,10 @@ def _create_test_segment_email(base_email: str, timestamp: int) -> str:
 
 
 def create_segment_test_data(
-    segment_secrets: Dict[str, str], segment_identity_email: str
+    segment_connection_config, segment_identity_email: str
 ):
     """Seeds a segment user and event"""
+    segment_secrets = segment_connection_config.secrets
     if not segment_identity_email:  # Don't run unnecessarily locally
         return
 
@@ -218,13 +218,13 @@ def test_segment_saas_erasure_request_task(
     segment_connection_config,
     segment_dataset_config,
     segment_identity_email,
-    segment_secrets,
 ) -> None:
     """Full erasure request based on the Segment SaaS config"""
     config.execution.MASKING_STRICT = False  # Allow GDPR Delete
 
     # Create user for GDPR delete
-    erasure_email = create_segment_test_data(segment_secrets, segment_identity_email)
+    erasure_email = create_segment_test_data(segment_connection_config, segment_identity_email)
+    time.sleep(2)  # Pause before making access/erasure requests
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
