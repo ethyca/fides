@@ -141,7 +141,7 @@ jobs:
       - name: Run cyclomatic complexity check
         run: make xenon
 
-  Pytest:
+  Pytest-Unit:
     needs: Build
     runs-on: ubuntu-latest
     steps:
@@ -160,8 +160,40 @@ jobs:
       - name: Run unit test suite
         run: make pytest-unit
 
+  Pytest-Integration:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesctl container
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesctl image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Run integration test suite
         run: make pytest-integration
+
+  Pytest-External:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesctl container
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesctl image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Run external test suite
         run: make pytest-external
