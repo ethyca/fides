@@ -1,9 +1,9 @@
-# Make this multi-stage
-FROM --platform=linux/amd64 python:3.8-slim-buster
+FROM --platform=linux/amd64 python:3.8-slim-buster as base
 
-######################
-# Tool Installation ##
-######################
+FROM base as builder
+#######################
+## Tool Installation ##
+#######################
 
 RUN apt-get update
 RUN apt-get install -y \
@@ -16,9 +16,9 @@ RUN apt-get install -y \
     gnupg \
     gcc
 
-###########################
-## Database Dependencies ##
-###########################
+###################
+## Database Deps ##
+###################
 
 # Postgres
 RUN apt-get -y install libpq-dev
@@ -33,20 +33,27 @@ RUN apt-get -y install \
     unixodbc-dev \
     mssql-tools
 
-#######################
-## Application Setup ##
-#######################
+#################
+## Python Deps ##
+#################
 
-# Install Requirements
 RUN pip install -U pip
 
 COPY dev-requirements.txt dev-requirements.txt
-RUN pip install -r dev-requirements.txt
+RUN pip install --prefix=/install -r dev-requirements.txt
 
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --prefix=/install -r requirements.txt
 
-# Copy in the application files and install fidesctl locally
+RUN pip install --prefix=/install pyodbc
+
+############################
+## Application Dev Setup ##
+###########################
+FROM base as dev
+COPY --from=builder /install /usr/local
+
+RUN pip install -U pip
 COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
 RUN pip install -e ".[all,mssql]"
@@ -59,3 +66,11 @@ ENV RUNNING_IN_DOCKER=TRUE
 
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
+
+#############################
+## Application Prod Setup ##
+############################
+FROM dev as prod
+
+# Install without a symlink
+RUN pip install ".[all,mssql]"

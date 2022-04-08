@@ -82,10 +82,14 @@ cli-integration: build-local
 ####################
 
 build:
-	docker build --tag $(IMAGE) fidesctl/
+	docker build --target=prod --tag $(IMAGE) fidesctl/
 
 build-local:
-	docker build --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=dev --tag $(IMAGE_LOCAL) fidesctl/
+
+# The production image is used for running tests in CI
+build-local-prod:
+	docker build --target=prod --tag $(IMAGE_LOCAL) fidesctl/
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -100,7 +104,7 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
+check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan black \
 			pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
