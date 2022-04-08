@@ -8,7 +8,7 @@ import click
 
 from fidesctl.core import parse as core_parse, api_helpers
 from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.utils import get_all_level_fields
+from fidesctl.core.utils import get_all_level_fields, echo_green
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
@@ -106,9 +106,9 @@ def annotate_dataset(
     output_dataset = []
 
     # Make the user aware of the data_categories visualizer
-    click.secho(
-        "For reference, you can use the Taxonomy explorer at the '/<resource_type>/visualize/graphs/' endpoint on a running fidesctl webserver.",
-        fg="green",
+    visualization_endpoint = "/<resource_type>/visualize/graphs/"
+    echo_green(
+        f"For reference, you can use the Taxonomy explorer at the '{visualization_endpoint}' endpoint on a running fidesctl webserver."
     )
 
     datasets = core_parse.ingest_manifests(dataset_file)["dataset"]
@@ -155,6 +155,7 @@ def annotate_dataset(
                 output_dataset.append(current_dataset.dict(exclude_none=True))
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")
+    echo_green("Annotation process complete.")
 
 
 def annotate_collections(
