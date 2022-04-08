@@ -36,6 +36,7 @@ API_COMMANDS = [
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 VERSION = fidesctl.__version__
+APP = fidesctl.__name__
 
 
 @click.group(
@@ -97,8 +98,8 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
                 client_id=ctx.obj["CONFIG"].cli.analytics_id,
                 developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
                 os=system(),
-                product_name=fidesctl.__name__ + "-cli",
-                production_version=version(fidesctl.__name__),
+                product_name=APP + "-cli",
+                production_version=version(APP),
             )
 
 
