@@ -2,19 +2,18 @@
 
 We include some user-related endpoints for the Fidesops Admin UI. In this section, we'll cover:
 
-- I need permissions to be able to create a user. So how do I create the first user?
-- How do I create other users?
-- How do I log in and log out?
-
+- How to create the first user
+- How to create other users?
+- How to log in and log out?
 
 
 ## Creating the first user
 
-To create the first user, run the following `make` command:
+To create the first user:
 
-`make user`
+In the top-level `fidesops` directory, run `make user`.
 
-After supplying a name and suitable password, this will create an Admin Root UI User that you can use to login and create other users.
+Wait for a prompt to supply a username and password (password requires 8 or more characters, upper and lowercase chars, a number, and a symbol). This will create an Admin Root UI User that you can use to login and create other users.
 
 
 ## Logging in
