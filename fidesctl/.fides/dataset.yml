@@ -1,338 +1,508 @@
 dataset:
-  - fides_key: fidesctl
+  - fides_key: public
     organization_fides_key: default_organization
-    name: fidesctl
+    name: public
     description: "The dataset responsible for storing all of the data related to a fidesctl instance."
     meta: {}
     data_categories:
       - system.operations
     retention: "1 year post employment"
     collections:
-      - name: public.alembic_version
-        description: "Fides Generated Description for Table: public.alembic_version"
+      - name: alembic_version
         fields:
           - name: version_num
-            description: "Fides Generated Description for Column: version_num"
+            data_categories:
+              - system.operations
 
-      - name: public.data_categories
-        description: "Fides Generated Description for Table: public.data_categories"
+      - name: data_categories
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: parent_key
-            description: "Fides Generated Description for Column: parent_key"
+            data_categories:
+              - system.operations
 
           - name: created_at
-            description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
-            description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.data_qualifiers
-        description: "Fides Generated Description for Table: public.data_qualifiers"
+      - name: data_qualifiers
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: parent_key
-            description: "Fides Generated Description for Column: parent_key"
+            data_categories:
+              - system.operations
 
           - name: created_at
-            description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
-            description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.data_subjects
-        description: "Fides Generated Description for Table: public.data_subjects"
+      - name: data_subjects
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: created_at
-            description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
-            description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.data_uses
-        description: "Fides Generated Description for Table: public.data_uses"
+          - name: rights
+            description: "JSON structure containing a strategy and optional values for detailing data subject rights available"
+            data_categories:
+              - system.operations
+
+          - name: automated_decisions_or_profiling
+            description: "Boolean value representing if automated decisions or profiling is used for the data subject."
+            data_categories:
+              - system.operations
+
+      - name: data_uses
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
+
+          - name: legal_basis
+            data_categories:
+              - system.operations
+
+          - name: recipients
+            data_categories:
+              - system.operations
+
+          - name: special_category
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
+
+          - name: legitimate_interest
+            description: "Boolean value denoting whether or not the data use is marked as a legitimate interest"
+            data_categories:
+              - system.operations
+
+          - name: legitimate_interest_impact_assessment
+            description: "A url pointing to a legitimate interest impact assessment"
+            data_categories:
+              - system.operations
 
           - name: parent_key
-            description: "Fides Generated Description for Column: parent_key"
+            data_categories:
+              - system.operations
 
           - name: created_at
-            description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
-            description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.datasets
-        description: "Fides Generated Description for Table: public.datasets"
+      - name: datasets
         fields:
           - name: collections
-            description: "Fides Generated Description for Column: collections"
+            data_categories:
+              - system.operations
+
+          - name: legal_basis
+            description: "The legal basis for processing personal data as defined by Article 6 of the GDPR"
+            data_categories:
+              - system.operations
+
+          - name: fidesctl_meta
+            description: "Metadata specifically for the fidesctl application"
+            data_categories:
+              - system.operations
+
+          - name: special_category
+            description: "The special category as defined by Article 9 of the GDPR"
+            data_categories:
+              - system.operations
+
+          - name: recipients
+            description: "An array of recipients of the intended data use."
+            data_categories:
+              - system.operations
 
           - name: data_categories
-            description: "Fides Generated Description for Column: data_categories"
+            data_categories:
+              - system.operations
 
-          - name: data_qualifiers
-            description: "Fides Generated Description for Column: data_qualifiers"
+          - name: data_qualifier
+            data_categories:
+              - system.operations
+
+          - name: third_country_transfers
+            data_categories:
+              - system.operations
 
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: meta
-            description: "Fides Generated Description for Column: meta"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
-          
+            data_categories:
+              - system.operations
+
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
 
           - name: retention
             description: "A string representing how long the dataset is retained for. Can also be found and applied as a property within Collections and Fields."
             data_categories:
-            - system.operations
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.evaluations
-        description: "Fides Generated Description for Table: public.evaluations"
+      - name: evaluations
         fields:
           - name: details
-            description: "Fides Generated Description for Column: details"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: message
-            description: "Fides Generated Description for Column: message"
+            data_categories:
+              - system.operations
 
           - name: status
-            description: "Fides Generated Description for Column: status"
+            data_categories:
+              - system.operations
+
+          - name: violations
+            data_categories:
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.organizations
-        description: "Fides Generated Description for Table: public.organizations"
+      - name: organizations
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
+
+          - name: fidesctl_meta
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
-          - name: organiztion_parent_key
-            description: "Fides Generated Description for Column: organiztion_parent_key"
+          - name: organization_parent_key
+            data_categories:
+              - system.operations
 
           - name: controller
             description: "Encrypted contact information for the controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: data_protection_officer
             description: "Encrypted contact information for the Data Protection Officer (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: representative
             description: "Encrypted contact information for the representative (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "1 Year post-employment"
 
           - name: security_policy
             description: "A link to the Ethyca security policy"
+            data_categories:
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.policies
-        description: "Fides Generated Description for Table: public.policies"
+      - name: policies
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: rules
-            description: "Fides Generated Description for Column: rules"
+            data_categories:
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.registries
-        description: "Fides Generated Description for Table: public.registries"
+      - name: registries
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations
 
-      - name: public.systems
-        description: "Fides Generated Description for Table: public.systems"
-        data_categories: null
-        data_qualifiers:
-          - aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: systems
         fields:
           - name: description
-            description: "Fides Generated Description for Column: description"
+            data_categories:
+              - system.operations
+
+          - name: third_country_transfers
+            data_categories:
+              - system.operations
+
+          - name: administrating_department
+            data_categories:
+              - system.operations
+
+          - name: fidesctl_meta
+            data_categories:
+              - system.operations
+
+          - name: data_responsibility_title
+            data_categories:
+              - system.operations
 
           - name: fides_key
-            description: "Fides Generated Description for Column: fides_key"
+            data_categories:
+              - system.operations
 
           - name: id
-            description: "Fides Generated Description for Column: id"
+            data_categories:
+              - system.operations
 
           - name: meta
-            description: "Fides Generated Description for Column: meta"
+            data_categories:
+              - system.operations
 
           - name: name
-            description: "Fides Generated Description for Column: name"
+            data_categories:
+              - system.operations
 
           - name: organization_fides_key
-            description: "Fides Generated Description for Column: organization_fides_key"
+            data_categories:
+              - system.operations
 
           - name: privacy_declarations
-            description: "Fides Generated Description for Column: privacy_declarations"
+            data_categories:
+              - system.operations
 
           - name: registry_id
-            description: "Fides Generated Description for Column: registry_id"
+            data_categories:
+              - system.operations
 
           - name: system_dependencies
-            description: "Fides Generated Description for Column: system_dependencies"
+            data_categories:
+              - system.operations
 
           - name: system_type
-            description: "Fides Generated Description for Column: system_type"
+            data_categories:
+              - system.operations
 
           - name: joint_controller
             description: "Encrypted contact information for a joint controller (name, address, email, phone)"
             data_categories:
-            - user.provided.identifiable.contact
+              - user.provided.identifiable.contact
             retention: "End of joint controller agreement."
+
+          - name: data_protection_impact_assessment
+            description: "Properties identifying if a DPIA is required, the status of it, and a link if applicable."
+            data_categories:
+              - system.operations
 
           - name: created_at
             description: "The timestamp of when the row was created"
+            data_categories:
+              - system.operations
 
           - name: updated_at
             description: "The timestamp of when the row was last updated"
+            data_categories:
+              - system.operations

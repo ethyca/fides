@@ -5,7 +5,7 @@
 ####################
 REGISTRY := ethyca
 IMAGE_TAG := $(shell git fetch --force --tags && git describe --tags --dirty --always)
-TEST_CONFIG_PATH := tests/test_config.toml
+WITH_TEST_CONFIG := -f tests/test_config.toml
 
 # Image Names & Tags
 IMAGE_NAME := fidesctl
@@ -25,6 +25,7 @@ ANALYTICS_ID_OVERRIDE = -e FIDESCTL__CLI__ANALYTICS_ID
 # Run in Compose
 RUN = docker compose run --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
 RUN_NO_DEPS = docker compose run --no-deps --rm $(ANALYTICS_ID_OVERRIDE) $(CI_ARGS) $(IMAGE_NAME)
+START_APP = docker compose up -d $(IMAGE_NAME)
 
 .PHONY: help
 help:
@@ -35,7 +36,7 @@ help:
 	@echo ----
 	@echo build - Builds the Fidesctl Docker image.
 	@echo ----
-	@echo check-all - Run all of the available CI checks for Fidesctl locally.
+	@echo check-all - Run all of the available CI checks for Fidesctl locally except for externally dependent tests.
 	@echo ----
 	@echo reset-db - Wipes all user-created data and resets the database back to its freshly initialized state.
 	@echo ----
@@ -53,7 +54,7 @@ help:
 .PHONY: reset-db
 reset-db: build-local
 	@echo "Reset the database..."
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@$(RUN) fidesctl db reset -y
 	@make teardown
 
@@ -66,7 +67,7 @@ api: build-local
 .PHONY: cli
 cli: build-local
 	@echo "Setting up a local development shell... (press CTRL-D to exit)"
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@$(RUN) /bin/bash
 	@make teardown
 
@@ -99,17 +100,22 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: build-local check-install fidesctl black pylint \
-			mypy xenon pytest-unit pytest-integration pytest-external
+check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
+			pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl -f ${TEST_CONFIG_PATH}
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
 
 .PHONY: fidesctl
 fidesctl:
-	@$(RUN_NO_DEPS) fidesctl --local -f ${TEST_CONFIG_PATH} evaluate
+	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
+
+fidesctl-db-scan:
+	@$(START_APP)
+	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
+	"postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
 
 mypy:
 	@$(RUN_NO_DEPS) mypy
@@ -135,6 +141,7 @@ pytest-external:
 	-e AWS_ACCESS_KEY_ID \
 	-e AWS_SECRET_ACCESS_KEY \
 	-e AWS_DEFAULT_REGION \
+	-e OKTA_CLIENT_TOKEN \
 	--rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m external
 	@make teardown
@@ -145,7 +152,7 @@ xenon:
 	--max-modules B \
 	--max-average A \
 	--ignore "data, tests, docs" \
-	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py"
+	--exclude "src/fidesctl/core/annotate_dataset.py,src/fidesctl/_version.py,src/fidesctl/cli/__init__.py"
 
 ####################
 # Utils

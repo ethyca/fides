@@ -26,7 +26,9 @@ log_serialization = ""
 
 [cli]
 local_mode = False
-server_url = "http://localhost:8080"
+server_host = "localhost"
+server_port = 8080
+server_protocol = "http
 analytics_id = "test_analytics_id"
 
 [user]
@@ -43,7 +45,7 @@ To better describe the various configuration options, the following tables descr
     | database_user | String | postgres | The username of the Postgres account. |
     | database_password | String | fidesctl | The password of the Postgres account. |
     | database_host | String | fidesctl-db | The hostname of the Postgres database server. |
-    | database_post | String | 5432 | The port of the Postgres database server. |
+    | database_port | String | 5432 | The port of the Postgres database server. |
     | database_name | String | fidesctl | The name of the Postgres database. |
     | test_database_name | String | ""| Used instead of the `database_name` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
     | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
@@ -55,7 +57,9 @@ To better describe the various configuration options, the following tables descr
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
     | local_mode | Boolean | False | When set to `True`, forbids the fidesctl CLI from making calls to the fidesctl webserver. |
-    | server_url | String | "" | The base URL of the fidesctl webserver endpoints, in `host:port` format. |
+    | server_host | String | localhost | The hostname of the fidesctl webserver. |
+    | server_protocol | String | http | The protocol used by the fidesctl webserver. |
+    | server_port | Integer | | The optional port of the fidesctl webserver. |
     | analytics_id | String | "" | A fully anonymized unique identifier for the `fidesctl` CLI instance. |
 
 === "User Section"
@@ -84,5 +88,7 @@ FIDESCTL__<SECTION>__<VAR_NAME>
 For example, if we want to set the `server_url` on a Linux machine we could use:
 
 ```sh
-export FIDESCTL__CLI__SERVER_URL="http://localhost:8080"
+export FIDESCTL__CLI__SERVER_HOST="localhost"
+export FIDESCTL__CLI__SERVER_PORT="8080"
+export FIDESCTL__CLI__SERVER_PROTOCOL="http"
 ```

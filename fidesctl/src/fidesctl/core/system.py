@@ -221,6 +221,9 @@ def generate_system_aws(
     configuration and extract tracked resource to write a System manifest with.
     Tracked resources: [Redshift, RDS]
     """
+
+    _check_boto3_import()
+
     aws_systems = generate_aws_systems(organization_key=organization_key)
     organization = get_organization(
         organization_key=organization_key,
@@ -361,6 +364,9 @@ def scan_system_aws(
     configuration and compares tracked resources to existing systems.
     Tracked resources: [Redshift, RDS]
     """
+
+    _check_boto3_import()
+
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
@@ -400,3 +406,12 @@ def scan_system_aws(
         missing_resource_count=missing_resource_count,
         coverage_threshold=coverage_threshold,
     )
+
+
+def _check_boto3_import() -> None:
+    "Validates boto3 is installed and can be imported"
+    try:
+        import boto3  # pylint: disable=unused-import
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[aws]"')
+        raise SystemExit

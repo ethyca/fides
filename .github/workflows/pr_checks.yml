@@ -62,6 +62,9 @@ jobs:
       - name: Run fidesctl evaluation
         run: make fidesctl
 
+      - name: Scan fidesctl db
+        run: make fidesctl-db-scan
+
   Black:
     needs: Build
     runs-on: ubuntu-latest
@@ -167,4 +170,5 @@ jobs:
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_FIDESCTL_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FIDESCTL_ACCESS_KEY }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
           AWS_DEFAULT_REGION: us-east-1

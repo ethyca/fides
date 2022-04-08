@@ -9,6 +9,14 @@ import click
 from fideslang import model_list
 
 
+def coverage_threshold_option(command: Callable) -> Callable:
+    "Add a flag that assumes yes."
+    command = click.option(
+        "--coverage-threshold", "-c", type=click.IntRange(0, 100), default=100
+    )(command)
+    return command
+
+
 def resource_type_argument(command: Callable) -> Callable:
     "Add the resource_type option."
     command = click.argument(
@@ -51,7 +59,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
 def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
-        "--dry", is_flag=True, help="Does not send changes to the server."
+        "--dry", is_flag=True, help="Prevent the persistance of any changes."
     )(command)
     return command
 

@@ -3,6 +3,7 @@
 import click
 
 from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.options import manifests_dir_argument, coverage_threshold_option
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -26,12 +27,12 @@ def scan_dataset(ctx: click.Context) -> None:
 @scan_dataset.command(name="db")
 @click.pass_context
 @click.argument("connection_string", type=str)
-@click.option("-m", "--manifest-dir", type=str, default="")
-@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
+@manifests_dir_argument
+@coverage_threshold_option
 def scan_dataset_db(
     ctx: click.Context,
     connection_string: str,
-    manifest_dir: str,
+    manifests_dir: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -49,8 +50,40 @@ def scan_dataset_db(
         ctx,
         _dataset.scan_dataset_db,
         connection_string=connection_string,
-        manifest_dir=manifest_dir,
+        manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+    )
+
+
+@scan_dataset.command(name="okta")
+@click.pass_context
+@click.argument("org_url", type=str)
+@manifests_dir_argument
+@coverage_threshold_option
+def scan_dataset_okta(
+    ctx: click.Context,
+    org_url: str,
+    manifests_dir: str,
+    coverage_threshold: int,
+) -> None:
+    """
+    Scans your existing datasets and compares them to found Okta applications.
+    Connect to an Okta admin account by providing an organization url. Auth token
+    can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.
+
+    Outputs missing resources and has a non-zero exit if coverage is
+    under the stated threshold.
+    """
+
+    config = ctx.obj["CONFIG"]
+    with_analytics(
+        ctx,
+        _dataset.scan_dataset_okta,
+        org_url=org_url,
+        coverage_threshold=coverage_threshold,
+        manifest_dir=manifests_dir,
         url=config.cli.server_url,
         headers=config.user.request_headers,
     )
@@ -66,12 +99,12 @@ def scan_system(ctx: click.Context) -> None:
 
 @scan_system.command(name="aws")
 @click.pass_context
-@click.option("-m", "--manifest-dir", type=str, default="")
+@manifests_dir_argument
 @click.option("-o", "--organization", type=str, default="default_organization")
-@click.option("-c", "--coverage-threshold", type=click.IntRange(0, 100), default=100)
+@coverage_threshold_option
 def scan_system_aws(
     ctx: click.Context,
-    manifest_dir: str,
+    manifests_dir: str,
     organization: str,
     coverage_threshold: int,
 ) -> None:
@@ -83,11 +116,12 @@ def scan_system_aws(
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
+
     config = ctx.obj["CONFIG"]
     with_analytics(
         ctx,
         _system.scan_system_aws,
-        manifest_dir=manifest_dir,
+        manifest_dir=manifests_dir,
         organization_key=organization,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,

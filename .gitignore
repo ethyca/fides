@@ -1,5 +1,6 @@
 fidesapi/src/main/resources/application.conf
 docs/fides/docs/api/openapi.json
+docs/fides/docs/schemas/config_schema.json
 
 ## generic files to ignore
 *~

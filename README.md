@@ -1,6 +1,9 @@
 # Meet Fidesctl: Privacy Policies as Code
 
 [![Latest Release Version][release-image]][release-url]
+[![Docker][docker-workflow-image]][actions-url]
+[![Docs][docs-workflow-image]][actions-url]
+[![Package][release-workflow-image]][actions-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
@@ -23,24 +26,30 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     <details>
     <summary>Clone the fidesctl repo</summary>
-    <code>git clone https://github.com/ethyca/fides.git</code>
-    </details>
 
-    <details>
-    <summary>Move into the fidesctl directory</summary>
-    <code>cd fides/fidesctl</code>
+    `git clone https://github.com/ethyca/fides.git`
+
     </details>
 
     <details>
     <summary>Install fidesctl</summary>
-    <code>pip install fidesctl</code>
+
+    `pip install fidesctl`
+
     </details>
 
-2. Use the <code>evaluate</code> command to see if this project's own fides annotations comply with our policies. 
+    <details>
+    <summary>Initialiaze fidesctl</summary>
+
+    `fidesctl init`
+
+    </details>
+
+2. Use the `evaluate` command to see if this project's own fides annotations comply with our policies. 
 
     <details>
     <summary>Run a local evaluation</summary>
-    <code>fidesctl --local evaluate</code>
+    <code>fidesctl --local evaluate fides/fidesctl/</code>
     </details>
 
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
@@ -155,6 +164,10 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 
 [release-image]: https://img.shields.io/github/release/ethyca/fides.svg
 [release-url]: https://github.com/ethyca/fides/releases
+[docker-workflow-image]: https://github.com/ethyca/fides/workflows/Docker%20Build%20&%20Push/badge.svg
+[docs-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20Docs/badge.svg
+[release-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20fidesctl/badge.svg
+[actions-url]: https://github.com/ethyca/fides/actions
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg

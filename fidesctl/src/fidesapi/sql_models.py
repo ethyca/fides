@@ -8,6 +8,7 @@ from typing import Dict
 
 from sqlalchemy import (
     ARRAY,
+    BOOLEAN,
     JSON,
     Column,
     Integer,
@@ -121,6 +122,8 @@ class DataSubject(SqlAlchemyBase, FidesBase):
     """
 
     __tablename__ = "data_subjects"
+    rights = Column(JSON, nullable=True)
+    automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
 
 
 class DataUse(SqlAlchemyBase, FidesBase):
@@ -134,6 +137,8 @@ class DataUse(SqlAlchemyBase, FidesBase):
     legal_basis = Column(Text)
     special_category = Column(Text)
     recipients = Column(ARRAY(String))
+    legitimate_interest = Column(BOOLEAN, nullable=True)
+    legitimate_interest_impact_assessment = Column(String, nullable=True)
 
 
 # Dataset
@@ -148,6 +153,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
+    fidesctl_meta = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))
@@ -222,6 +228,7 @@ class System(SqlAlchemyBase, FidesBase):
     third_country_transfers = Column(ARRAY(String))
     privacy_declarations = Column(JSON)
     administrating_department = Column(String)
+    data_protection_impact_assessment = Column(JSON)
 
 
 sql_model_map: Dict = {

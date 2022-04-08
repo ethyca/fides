@@ -13,4 +13,4 @@ system:
           - anonymous_user
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
-          - fidesctl
+          - public
