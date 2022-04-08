@@ -110,7 +110,7 @@ check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan bla
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} --version
 
 .PHONY: fidesctl
 fidesctl:

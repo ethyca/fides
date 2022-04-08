@@ -29,6 +29,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./fidesctl
           file: ./fidesctl/Dockerfile
+          target: prod
           outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
           push: false
           tags: ${{ env.IMAGE }}
