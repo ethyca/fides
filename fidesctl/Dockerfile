@@ -1,5 +1,8 @@
 FROM --platform=linux/amd64 python:3.8-slim-buster as base
 
+# Update pip in the base image since we'll use it everywhere
+RUN pip install -U pip
+
 FROM base as builder
 #######################
 ## Tool Installation ##
@@ -37,15 +40,14 @@ RUN apt-get -y install \
 ## Python Deps ##
 #################
 
-RUN pip install -U pip
-
 COPY dev-requirements.txt dev-requirements.txt
 RUN pip install --prefix=/install -r dev-requirements.txt
 
 COPY requirements.txt requirements.txt
 RUN pip install --prefix=/install -r requirements.txt
 
-RUN pip install --prefix=/install pyodbc
+COPY optional_requirements.txt optional_requirements.txt
+RUN pip install --prefix=/install -r optional_requirements.txt
 
 ############################
 ## Application Dev Setup ##
@@ -53,7 +55,7 @@ RUN pip install --prefix=/install pyodbc
 FROM base as dev
 COPY --from=builder /install /usr/local
 
-RUN pip install -U pip
+# Copy in the application files and install fidesctl locally
 COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
 RUN pip install -e ".[all,mssql]"
@@ -73,4 +75,4 @@ CMD ["fidesctl", "webserver"]
 FROM dev as prod
 
 # Install without a symlink
-RUN python setup.py sdist
+RUN python setup.py install
