@@ -353,6 +353,9 @@ def scan_dataset_okta(
     Given an organization url, fetches Okta applications and compares them
     against existing datasets in the server and manifest supplied.
     """
+
+    _check_okta_import()
+
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
     server_datasets = get_all_server_datasets(
@@ -420,6 +423,9 @@ def generate_dataset_okta(org_url: str, file_name: str, include_null: bool) -> s
     Given an organization url, generates a dataset manifest from existing Okta
     applications.
     """
+
+    _check_okta_import()
+
     import fidesctl.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(org_url)
@@ -433,3 +439,12 @@ def generate_dataset_okta(org_url: str, file_name: str, include_null: bool) -> s
         file_name=file_name, include_null=include_null, datasets=okta_datasets
     )
     return file_name
+
+
+def _check_okta_import() -> None:
+    "Validate okta can be imported"
+    try:
+        import okta  # pylint: disable=unused-import
+    except ModuleNotFoundError:
+        echo_red('Packages not found, try: pip install "fidesctl[okta]"')
+        raise SystemExit
