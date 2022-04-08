@@ -96,7 +96,6 @@ def status(ctx: click.Context) -> None:
         cli_version=cli_version,
         server_url=server_url,
     )
-    echo_green("Server is reachable and the client/server application versions match.")
 
 
 @click.command()

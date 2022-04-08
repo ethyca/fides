@@ -81,7 +81,10 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         click.echo(cli.get_help(ctx))
 
     # Check the server health and version if an API command is invoked
-    if ctx.invoked_subcommand in [command.name for command in API_COMMANDS]:
+    if (
+        ctx.invoked_subcommand in [command.name for command in API_COMMANDS]
+        and ctx.invoked_subcommand != "status"
+    ):
         check_server(VERSION, config.cli.server_url)
 
     if ctx.invoked_subcommand != "init":  # init also handles this workflow
