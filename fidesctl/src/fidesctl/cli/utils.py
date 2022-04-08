@@ -35,7 +35,6 @@ def check_server(cli_version: str, server_url: str) -> None:
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
         )
-        raise SystemExit(1)
 
 
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
