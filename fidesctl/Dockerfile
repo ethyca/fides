@@ -80,4 +80,6 @@ CMD ["fidesctl", "webserver"]
 FROM dev as prod
 
 # Install without a symlink
-RUN python setup.py install
+RUN pip uninstall fidesctl -y
+RUN python setup.py sdist
+RUN pip install dist/fidesctl-*.tar.gz
