@@ -158,6 +158,7 @@ xenon:
 # Utils
 ####################
 
+# This only touches things prefixed with `fides_`
 .PHONY: clean
 clean:
 	@echo "Cleaning project temporary files and installed dependencies..."
