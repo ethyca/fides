@@ -20,114 +20,11 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
-## :rocket: Quick Start 
+## :rocket: Getting Started
 
-1. Getting fidesctl set up on your machine
+Visit the [official fidesctl documentation site](https://ethyca.github.io/fides/stable/) for help with [installing fidesctl](https://ethyca.github.io/fides/stable/installation/installation/) or walking through a more complete [tutorial](https://ethyca.github.io/fides/stable/tutorial/).
 
-    <details>
-    <summary>Clone the fidesctl repo</summary>
-
-    `git clone https://github.com/ethyca/fides.git`
-
-    </details>
-
-    <details>
-    <summary>Install fidesctl</summary>
-
-    `pip install fidesctl`
-
-    </details>
-
-    <details>
-    <summary>Initialiaze fidesctl</summary>
-
-    `fidesctl init`
-
-    </details>
-
-2. Use the `evaluate` command to see if this project's demo resources comply with our demo policies. 
-
-    <details>
-    <summary>Run a local evaluation</summary>
-
-    `fidesctl --local evaluate fides/fidesctl/demo_resources/`
-
-    </details>
-
-    Congratulations, you've successfully run your first fidesctl evaluation!
-
-3. Now, take a closer look at `fides/fidesctl/demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
-
-    <details>
-      <summary><code>cat fides/fidesctl/demo_resources/demo_policy.yml</code></summary>
-
-      ```yaml
-      policy:
-        - fides_key: demo_privacy_policy
-          name: Demo Privacy Policy
-          description: The main privacy policy for the organization.
-          rules:
-            - fides_key: reject_direct_marketing
-              name: Reject Direct Marketing
-              description: Disallow collecting any user contact info to use for marketing.
-              data_categories:
-                matches: ANY
-                values:
-                  - user.provided.identifiable.contact
-              data_uses:
-                matches: ANY
-                values:
-                  - advertising
-              data_subjects:
-                matches: ANY
-                values:
-                  - customer
-              data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      ```
-
-      </details>
-
-
-4. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
-
-    <details>
-    <summary>Add User-provided contact info to the <code>demo_marketing_system</code></summary>
-
-     ```diff
-          privacy_declarations:
-            - name: Collect data for marketing
-              data_categories:
-     -          #- user.provided.identifiable.contact # uncomment to add this category to the system
-     +          - user.provided.identifiable.contact # uncomment to add this category to the system
-                - user.derived.identifiable.device.cookie_id
-              data_uses: marketing_advertising_or_promotion
-              data_subjects:
-     ```
-
-    </details>
-
-    <details>
-    <summary>Run another fidesctl evaluation</summary>
-
-
-     ```sh
-     root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-     ...
-     Executing evaluations...
-     {
-       "status": "FAIL",
-       "details": [
-         "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
-       ],
-       "message": null
-     }
-     ```
-
-    Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
-
-    </details>
-
-At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
+> Note: If you're looking for documentation for the main branch, use the drop-down on the documentation site to choose `dev` as your version.
 
 ## :book: Learn More
 
