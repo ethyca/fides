@@ -94,6 +94,7 @@ theme:
   features:
     - navigation.top
     - navigation.instant
+    - toc.integrate
   custom_dir: overrides
 
 markdown_extensions:
