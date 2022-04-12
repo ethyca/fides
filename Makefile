@@ -175,6 +175,10 @@ docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	python generate_docs.py ../docs/fides/docs/
 
+.PHONY: docs-build-no-deps
+docs-build: build-local
+	@$(RUN_NO_DEPS) python generate_docs.py ../docs/fides/docs/
+
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker compose build docs
