@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - fidesctl/**
-      - .github/workflows/pr_checks.yaml
+      - .github/workflows/pr_checks.yml
 
 env:
   CONTAINER: fidesctl-local
