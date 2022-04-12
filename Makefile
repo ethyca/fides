@@ -108,6 +108,10 @@ check-install:
 	@echo "Checking that fidesctl is installed..."
 	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
 
+# A separate docs-build target that does not require build-local
+docs-build-ci:
+	@$(RUN_NO_DEPS) python generate_docs.py ../docs/fides/docs/
+
 .PHONY: fidesctl
 fidesctl:
 	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
@@ -174,10 +178,6 @@ teardown:
 docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	python generate_docs.py ../docs/fides/docs/
-
-.PHONY: docs-build-ci
-docs-build-ci:
-	@$(RUN_NO_DEPS) python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
