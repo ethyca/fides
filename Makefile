@@ -176,7 +176,7 @@ docs-build: build-local
 	python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-build-ci
-docs-build-ci: build-local
+docs-build-ci:
 	@$(RUN_NO_DEPS) python generate_docs.py ../docs/fides/docs/
 
 .PHONY: docs-serve

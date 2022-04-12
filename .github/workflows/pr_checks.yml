@@ -65,7 +65,7 @@ jobs:
       - name: Scan fidesctl db
         run: make fidesctl-db-scan
 
-      - name: Build docs
+      - name: Build docs trigger
         run: make docs-build-ci
 
   Black:
