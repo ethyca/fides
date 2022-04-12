@@ -129,7 +129,7 @@ def export_datamap_to_excel(
         joined_system_dataset_df.sort_values(
             by=[
                 "system.name",
-                "dataset.name",
+                "unioned_data_categories",
             ]
         ).to_excel(
             export_file,
