@@ -78,6 +78,8 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         config.cli.local_mode = True
 
     ctx.obj["CONFIG"] = config
+
+    # Run the help command if there isn't a subcommand
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
 
@@ -88,12 +90,12 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ):
         check_server(VERSION, config.cli.server_url)
 
-    if ctx.invoked_subcommand != "init":  # init also handles this workflow
+    # init also handles this workflow
+    if ctx.invoked_subcommand != "init":
         check_and_update_analytics_config(ctx, config_path)
 
-        if (  # requires explicit opt-in
-            ctx.obj["CONFIG"].user.analytics_opt_out is False
-        ):
+        # Analytics requires explicit opt-in
+        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
             ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
                 client_id=ctx.obj["CONFIG"].cli.analytics_id,
                 developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),

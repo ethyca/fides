@@ -41,24 +41,18 @@ RUN apt-get -y install \
 #################
 
 COPY dev-requirements.txt dev-requirements.txt
-RUN pip install --prefix=/install -r dev-requirements.txt
+RUN pip install -r dev-requirements.txt
 
 COPY requirements.txt requirements.txt
-RUN pip install --prefix=/install -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY optional_requirements.txt optional_requirements.txt
-RUN pip install --prefix=/install -r optional_requirements.txt
+RUN pip install -r optional_requirements.txt
 
 ############################
 ## Application Dev Setup ##
 ###########################
-FROM base as dev
-COPY --from=builder /install /usr/local
-
-# This is required for pyodbc
-RUN apt-get update
-RUN apt-get -y install unixodbc
-RUN apt-get clean -y
+FROM builder as dev
 
 # Copy in the application files and install fidesctl locally
 COPY . /fides/fidesctl
