@@ -1,1 +1,4 @@
-fidesctl.toml
+# Ignore existing build artifacts
+build/
+dist/
+src/fidesctl.egg-info/

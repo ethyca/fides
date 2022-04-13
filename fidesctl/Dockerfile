@@ -8,8 +8,10 @@ FROM base as builder
 ## Tool Installation ##
 #######################
 
-RUN apt-get update
-RUN apt-get install -y \
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
     curl \
     git \
     ipython \
@@ -17,24 +19,36 @@ RUN apt-get install -y \
     vim \
     g++ \
     gnupg \
-    gcc
+    gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ###################
 ## Database Deps ##
 ###################
 
 # Postgres
-RUN apt-get -y install libpq-dev
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # SQL Server (MS SQL)
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list
-RUN apt-get update
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y install \
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
     apt-transport-https \
     unixodbc-dev \
-    mssql-tools
+    mssql-tools \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 #################
 ## Python Deps ##
@@ -78,11 +92,6 @@ RUN pip install -e ".[all,mssql]"
 ## Application Prod Setup ##
 ############################
 FROM builder as prod
-
-# Remove anything that could influence the build
-RUN rm -rf src/fidesctl.egg-info/
-RUN rm -rf build/
-RUN rm -rf dist/
 
 # Install without a symlink
 RUN python setup.py sdist
