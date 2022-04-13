@@ -183,4 +183,4 @@ docs-build: build-local
 docs-serve: docs-build
 	@docker compose build docs
 	@docker compose run --rm --service-ports $(CI_ARGS) docs \
-	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"
+	/bin/bash -c "pip install -e /fidesctl[all] && mkdocs serve --dev-addr=0.0.0.0:8000"
