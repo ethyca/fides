@@ -35,8 +35,9 @@ API_COMMANDS = [
     status,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
-SERVER_CHECK_COMMAND_NAMES = [command.name for command in API_COMMANDS]
-SERVER_CHECK_COMMAND_NAMES.remove("status")
+SERVER_CHECK_COMMAND_NAMES = [
+    command.name for command in API_COMMANDS if command.name not in ["status"]
+]
 VERSION = fidesctl.__version__
 APP = fidesctl.__name__
 
