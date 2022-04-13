@@ -158,11 +158,11 @@ xenon:
 # Utils
 ####################
 
-# This only touches things prefixed with `fides_`
 .PHONY: clean
 clean:
-	@echo "Doing docker cleanup..."
-	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans -v --rmi all
+	@echo "Doing docker cleanup for this project..."
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans --volumes --rmi all
+	@docker system prune --force
 	@echo "Clean complete!"
 
 .PHONY: teardown
