@@ -161,8 +161,8 @@ xenon:
 # This only touches things prefixed with `fides_`
 .PHONY: clean
 clean:
-	@echo "Cleaning project temporary files and installed dependencies..."
-	@docker system prune -a --volumes
+	@echo "Doing docker cleanup..."
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans -v --rmi all
 	@echo "Clean complete!"
 
 .PHONY: teardown
