@@ -12,7 +12,7 @@ install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
 # Human-Readable/Reusable Extras
-# Add these to `optional_requirements.txt` as well
+# Add these to `optional-requirements.txt` as well
 psycopg_connector = "psycopg2-binary==2.9.1"
 asyncpg = "asyncpg==0.25.0"
 mysql_connector = "pymysql==1.0.0"

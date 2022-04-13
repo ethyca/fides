@@ -46,18 +46,15 @@ RUN pip install -r dev-requirements.txt
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY optional_requirements.txt optional_requirements.txt
-RUN pip install -r optional_requirements.txt
+COPY optional-requirements.txt optional-requirements.txt
+RUN pip install -r optional-requirements.txt
 
-############################
-## Application Dev Setup ##
-###########################
-FROM builder as dev
+#######################
+## Application Setup ##
+#######################
 
-# Copy in the application files and install fidesctl locally
 COPY . /fides/fidesctl
 WORKDIR /fides/fidesctl
-RUN pip install -e ".[all,mssql]"
 
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
@@ -68,12 +65,25 @@ ENV RUNNING_IN_DOCKER=TRUE
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
 
+############################
+## Application Dev Setup ##
+###########################
+FROM builder as dev
+
+# Install fidesctl as a symlink
+RUN pip install -e ".[all,mssql]"
+
+
 #############################
 ## Application Prod Setup ##
 ############################
-FROM dev as prod
+FROM builder as prod
+
+# Remove anything that could influence the build
+RUN rm -rf src/fidesctl.egg-info/
+RUN rm -rf build/
+RUN rm -rf dist/
 
 # Install without a symlink
-RUN pip uninstall fidesctl -y
 RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
