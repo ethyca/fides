@@ -82,10 +82,14 @@ cli-integration: build-local
 ####################
 
 build:
-	docker build --tag $(IMAGE) fidesctl/
+	docker build --target=prod --tag $(IMAGE) fidesctl/
 
 build-local:
-	docker build --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=dev --tag $(IMAGE_LOCAL) fidesctl/
+
+# The production image is used for running tests in CI
+build-local-prod:
+	docker build --target=prod --tag $(IMAGE_LOCAL) fidesctl/
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -100,13 +104,13 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
+check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan black \
 			pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} --version
 
 .PHONY: fidesctl
 fidesctl:
@@ -128,7 +132,7 @@ pytest-unit:
 	@$(RUN_NO_DEPS) pytest -x -m unit
 
 pytest-integration:
-	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@docker compose up -d $(IMAGE_NAME)
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m integration
 	@make teardown
