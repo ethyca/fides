@@ -82,7 +82,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     ctx.obj["CONFIG"] = config
 
-    # Run the help command if there isn't a subcommand
+    # Run the help command if no subcommand is passed
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
 
