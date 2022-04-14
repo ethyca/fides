@@ -1,16 +1,16 @@
 from os import path
 
-import pytest
 import pandas as pd
-
-from fidesctl.core import export_helpers
+import pytest
 from fideslang.models import (
+    DataProtectionImpactAssessment,
     Dataset,
     DatasetCollection,
     DatasetField,
     DataSubjectRights,
-    DataProtectionImpactAssessment,
 )
+
+from fidesctl.core import export_helpers
 
 
 @pytest.fixture()
@@ -185,3 +185,19 @@ def test_get_formatted_data_protection_impact_assessment():
     assert formatted_dict["is_required"] == False
     assert formatted_dict["progress"] == "N/A"
     assert formatted_dict["link"] == "N/A"
+
+
+@pytest.mark.parametrize(
+    "test_vals, expected",
+    [
+        (("CAN", "GBR", "USA"), "CAN, GBR, USA"),
+        (("CAN", "N/A"), "CAN"),
+        (("N/A", "N/A"), "N/A"),
+        (("N/A", ""), "N/A"),
+        (("", ""), "N/A"),
+        (("", "CAN"), "CAN"),
+    ],
+)
+@pytest.mark.unit
+def test_convert_tuple_to_string(test_vals, expected):
+    assert export_helpers.convert_tuple_to_string(test_vals) == expected

@@ -5,20 +5,20 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-
-from fideslang.models import Taxonomy, ContactDetails
+from fideslang.models import ContactDetails, Taxonomy
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.export_helpers import (
-    export_to_csv,
+    convert_tuple_to_string,
     export_datamap_to_excel,
+    export_to_csv,
     generate_data_category_rows,
+    get_datamap_fides_keys,
+    get_formatted_data_protection_impact_assessment,
     get_formatted_data_subjects,
     get_formatted_data_use,
     remove_duplicates_from_comma_separated_column,
-    get_datamap_fides_keys,
     union_data_categories_in_joined_dataframe,
-    get_formatted_data_protection_impact_assessment,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
 
@@ -348,7 +348,7 @@ def build_joined_dataframe(
     joined_df.fillna("N/A", inplace=True)
     ## create a set of third_country attrs to combine as a single entity
     joined_df["third_country_combined"] = [
-        ", ".join(i)
+        convert_tuple_to_string(i)
         for i in zip(
             joined_df["system.third_country_transfers"].map(str),
             joined_df["dataset.third_country_transfers"],
