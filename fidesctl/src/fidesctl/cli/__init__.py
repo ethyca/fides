@@ -35,6 +35,9 @@ API_COMMANDS = [
     status,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
+SERVER_CHECK_COMMAND_NAMES = [
+    command.name for command in API_COMMANDS if command.name not in ["status"]
+]
 VERSION = fidesctl.__version__
 APP = fidesctl.__name__
 
@@ -84,10 +87,8 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         click.echo(cli.get_help(ctx))
 
     # Check the server health and version if an API command is invoked
-    if (
-        ctx.invoked_subcommand in [command.name for command in API_COMMANDS]
-        and ctx.invoked_subcommand != "status"
-    ):
+
+    if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, config.cli.server_url)
 
     # init also handles this workflow
