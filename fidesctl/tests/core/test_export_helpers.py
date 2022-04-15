@@ -203,6 +203,4 @@ def test_get_formatted_data_protection_impact_assessment():
 @pytest.mark.unit
 def test_convert_tuple_to_string(test_vals, expected):
     result = export_helpers.convert_tuple_to_string(test_vals)
-    print(result)
-    print(sorted(result.split(", ")))
     assert sorted(result.split(", ")) == expected
