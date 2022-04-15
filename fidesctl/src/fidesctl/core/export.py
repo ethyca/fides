@@ -355,10 +355,6 @@ def build_joined_dataframe(
         )
     ]
 
-    joined_df["third_country_combined"] = joined_df["third_country_combined"].transform(
-        remove_duplicates_from_comma_separated_column
-    )
-
     # restructure the joined dataframe to represent system and dataset data categories appropriately
     joined_df = union_data_categories_in_joined_dataframe(joined_df)
 

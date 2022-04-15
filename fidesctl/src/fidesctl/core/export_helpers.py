@@ -245,23 +245,26 @@ def convert_tuple_to_string(values: Tuple[str, ...]) -> str:
     Takes a tuple of variable length strings and combines them into a comma seperated
     string.
 
-    During the conversion empty strings, "", are converted to "N/A", then if is checked
-    to see if all values in the tuple are "N/A" if them are the string "N/A" is returned.
-    If there are multiple strings presents and some are "N/A", the "N/A" is dropped in the
-    resulting string.
+    During the conversion empty strings, "", are converted to "N/A", duplicates are removed,
+    then if is checked to see if all values in the tuple are "N/A" if them are the string
+    "N/A" is returned. If there are multiple strings presents and some are "N/A", the
+    "N/A" is dropped in the resulting string.
 
     Example:
         - ("CAN", "GBR", "USA") returns "CAN, GBR, USA"
+        - ("CAN, GBR", "CAN", "GBR") returns "CAN GBR"
         - ("N/A", "CAN", "GBR") returns "CAN, GBR"
         - ("", "CAN") returns "CAN"
         - ("", "N/A") returns "N/A"
         - ("N/A", "N/A") returns "N/A"
     """
-    empty_replaced = ["N/A" if x == "" else x for x in values]
-    if set(empty_replaced) == {"N/A"}:
+    empty_replaced = {"N/A" if x == "" else x for x in values}
+    if empty_replaced == {"N/A"}:
         return "N/A"
 
-    return ", ".join((x for x in empty_replaced if x != "N/A"))
+    return remove_duplicates_from_comma_separated_column(
+        ", ".join((x for x in empty_replaced if x != "N/A"))
+    )
 
 
 def calculate_data_subject_rights(rights: Dict) -> str:
