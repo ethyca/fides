@@ -17,7 +17,6 @@ from fidesctl.core.export_helpers import (
     get_formatted_data_protection_impact_assessment,
     get_formatted_data_subjects,
     get_formatted_data_use,
-    remove_duplicates_from_comma_separated_column,
     union_data_categories_in_joined_dataframe,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
