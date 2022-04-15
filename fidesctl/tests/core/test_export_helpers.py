@@ -1,16 +1,16 @@
 from os import path
 
-import pytest
 import pandas as pd
-
-from fidesctl.core import export_helpers
+import pytest
 from fideslang.models import (
+    DataProtectionImpactAssessment,
     Dataset,
     DatasetCollection,
     DatasetField,
     DataSubjectRights,
-    DataProtectionImpactAssessment,
 )
+
+from fidesctl.core import export_helpers
 
 
 @pytest.fixture()
@@ -182,6 +182,6 @@ def test_get_formatted_data_protection_impact_assessment():
         DataProtectionImpactAssessment().dict()
     )
 
-    assert formatted_dict["is_required"] == False
+    assert formatted_dict["is_required"] is False
     assert formatted_dict["progress"] == "N/A"
     assert formatted_dict["link"] == "N/A"
