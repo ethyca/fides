@@ -47,7 +47,7 @@ services:
       context: docs/fides/
     volumes:
       - ./docs/fides:/docs
-      - ./fidesctl:/fidesctl
+      - ./:/fides
     expose:
       - 8000
     ports:
