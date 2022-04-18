@@ -16,7 +16,6 @@ jobs:
 
       - name: Twine Upload
         run: |
-          cd fidesctl/
           python setup.py sdist 
           twine upload dist/*
         env:
