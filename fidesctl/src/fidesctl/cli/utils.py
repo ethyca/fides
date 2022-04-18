@@ -2,7 +2,6 @@
 
 import json
 import sys
-from asyncio import run
 from datetime import datetime, timezone
 from os import getenv
 from typing import Any, Callable, Dict
@@ -10,8 +9,8 @@ from typing import Any, Callable, Dict
 import click
 import requests
 from fideslog.sdk.python.event import AnalyticsEvent
-from fideslog.sdk.python.exceptions import AnalyticsException
-from fideslog.sdk.python.utils import OPT_OUT_COPY
+from fideslog.sdk.python.exceptions import AnalyticsError
+from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 from fidesctl.core import api as _api
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
@@ -74,8 +73,9 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
 
     config_updates: Dict[str, Dict] = {}
     if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+        click.echo(OPT_OUT_COPY)
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
-            input(OPT_OUT_COPY).lower() == "n"
+            input(OPT_OUT_PROMPT).lower() == "n"
         )
 
         config_updates.update(
@@ -138,6 +138,6 @@ def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict
             )
 
             try:
-                run(ctx.meta["ANALYTICS_CLIENT"].send(event))
-            except AnalyticsException:
+                ctx.meta["ANALYTICS_CLIENT"].send(event)
+            except AnalyticsError:
                 pass  # cli analytics should fail silently
