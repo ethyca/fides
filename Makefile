@@ -178,7 +178,7 @@ teardown:
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
-	python generate_docs.py ../docs/fides/docs/
+	python generate_docs.py docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
