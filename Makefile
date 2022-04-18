@@ -77,6 +77,10 @@ cli-integration: build-local
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
+	
+.PHONY: db
+# Add a target to spin up the db
+
 ####################
 # Docker
 ####################
