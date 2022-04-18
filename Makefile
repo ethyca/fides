@@ -86,14 +86,14 @@ cli-integration: build-local
 ####################
 
 build:
-	docker build --target=prod --tag $(IMAGE) fidesctl/
+	docker build --target=prod --tag $(IMAGE) .
 
 build-local:
-	docker build --target=dev --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=dev --tag $(IMAGE_LOCAL) .
 
 # The production image is used for running tests in CI
 build-local-prod:
-	docker build --target=prod --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=prod --tag $(IMAGE_LOCAL) .
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -132,11 +132,11 @@ pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
 pytest-unit:
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@$(RUN_NO_DEPS) pytest -x -m unit
 
 pytest-integration:
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m integration
 	@make teardown
@@ -182,10 +182,10 @@ teardown:
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
-	python generate_docs.py ../docs/fides/docs/
+	python generate_docs.py docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker compose build docs
 	@docker compose run --rm --service-ports $(CI_ARGS) docs \
-	/bin/bash -c "pip install -e /fidesctl && mkdocs serve --dev-addr=0.0.0.0:8000"
+	/bin/bash -c "pip install -e /fides && mkdocs serve --dev-addr=0.0.0.0:8000"

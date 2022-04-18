@@ -68,8 +68,8 @@ RUN pip install -r optional-requirements.txt
 ## General Application Setup ##
 ###############################
 
-COPY . /fides/fidesctl
-WORKDIR /fides/fidesctl
+COPY . /fides
+WORKDIR /fides
 
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
