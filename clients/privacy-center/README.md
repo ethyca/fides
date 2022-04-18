@@ -45,7 +45,7 @@ Not exactly the most appealing color scheme – but note that wherever those var
 
 ## Development
 
-To serve this application locally, first install your local depencies by running
+To serve this application locally, first install your local dependencies by running
 
 ```bash
 npm install

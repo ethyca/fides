@@ -32,7 +32,8 @@ nav:
       - Report on Privacy Requests: guides/reporting.md
       - Configure OneTrust Integration: guides/onetrust.md  
       - Configuration Reference: guides/configuration_reference.md
-      - Admin UI: guides/users.md
+      - Admin UI: guides/admin_ui.md
+      - Postman Collection: postman/using_postman.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
