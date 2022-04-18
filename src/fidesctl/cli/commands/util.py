@@ -2,8 +2,9 @@
 import os
 
 import click
-from fideslog.sdk.python.utils import OPT_OUT_COPY
 import toml
+
+from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
 from fidesctl.cli.utils import check_server, with_analytics
@@ -62,7 +63,8 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
         config_message = f"""Created a config file at '{config_path}'. To learn more, see:
             {config_docs_url}"""
-        config.user.analytics_opt_out = bool(input(OPT_OUT_COPY).lower() == "n")
+        click.echo(OPT_OUT_COPY)
+        config.user.analytics_opt_out = bool(input(OPT_OUT_PROMPT).lower() == "n")
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)

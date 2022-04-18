@@ -1,17 +1,15 @@
 import csv
+import shutil
 from datetime import datetime
 from enum import Enum
 from os.path import dirname, join
-import shutil
-
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Set, Tuple
 
 import pandas as pd
-
 from fideslang.models import DataSubjectRightsEnum, Taxonomy
+
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
-
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
@@ -126,7 +124,12 @@ def export_datamap_to_excel(
             startcol=2,
         )
 
-        joined_system_dataset_df.to_excel(
+        joined_system_dataset_df.sort_values(
+            by=[
+                "system.name",
+                "unioned_data_categories",
+            ]
+        ).to_excel(
             export_file,
             sheet_name="sheet1",
             index=False,
@@ -242,6 +245,33 @@ def get_formatted_data_subjects(
     return formatted_data_subjects_list
 
 
+def convert_tuple_to_string(values: Tuple[str, ...]) -> str:
+    """
+    Takes a tuple of variable length strings and combines them into a comma seperated
+    string.
+
+    During the conversion empty strings, "", are converted to "N/A", duplicates are removed,
+    then if is checked to see if all values in the tuple are "N/A" if them are the string
+    "N/A" is returned. If there are multiple strings presents and some are "N/A", the
+    "N/A" is dropped in the resulting string.
+
+    Example:
+        - ("CAN", "GBR", "USA") returns "CAN, GBR, USA"
+        - ("CAN, GBR", "CAN", "GBR") returns "CAN GBR"
+        - ("N/A", "CAN", "GBR") returns "CAN, GBR"
+        - ("", "CAN") returns "CAN"
+        - ("", "N/A") returns "N/A"
+        - ("N/A", "N/A") returns "N/A"
+    """
+    empty_replaced = {"N/A" if x == "" else x for x in values}
+    if empty_replaced == {"N/A"}:
+        return "N/A"
+
+    return remove_duplicates_from_comma_separated_column(
+        ", ".join((x for x in empty_replaced if x != "N/A"))
+    )
+
+
 def calculate_data_subject_rights(rights: Dict) -> str:
     """
     Calculate and format the data subject individual rights.
@@ -301,23 +331,48 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     """
 
     # isolate the system data categories into a new dataframe and create a common column
+    joined_df = joined_df.drop(
+        [
+            "system.description",
+            "system.privacy_declaration.name",
+            "dataset.description",
+        ],
+        axis=1,
+    )
     systems_categories_df = joined_df.drop(
-        ["dataset.data_categories", "dataset.retention"], axis=1
-    ).drop_duplicates()
+        [
+            "dataset.data_categories",
+            "dataset.retention",
+            "dataset.data_qualifier",
+        ],
+        axis=1,
+    )
+    systems_categories_df["dataset.name"] = "N/A"
     systems_categories_df["unioned_data_categories"] = systems_categories_df[
         "system.privacy_declaration.data_categories"
     ]
+    systems_categories_df["unioned_data_qualifiers"] = systems_categories_df[
+        "system.privacy_declaration.data_qualifier"
+    ]
     systems_categories_df["dataset.retention"] = "N/A"
+    systems_categories_df["dataset.data_qualifier"] = "N/A"
 
     # isolate the dataset data categories into a new dataframe and create a common column
     datasets_categories_df = joined_df.drop(
-        ["system.privacy_declaration.data_categories"], axis=1
-    ).drop_duplicates()
+        [
+            "system.privacy_declaration.data_categories",
+            "system.privacy_declaration.data_qualifier",
+        ],
+        axis=1,
+    )
 
     datasets_categories_df = datasets_categories_df[
         datasets_categories_df["dataset.name"] != "N/A"
     ]
 
+    datasets_categories_df["unioned_data_qualifiers"] = datasets_categories_df[
+        "dataset.data_qualifier"
+    ]
     datasets_categories_df["unioned_data_categories"] = datasets_categories_df[
         "dataset.data_categories"
     ]
@@ -330,7 +385,7 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
             ),
             datasets_categories_df.drop(["dataset.data_categories"], axis="columns"),
         ]
-    )
+    ).drop_duplicates()
 
 
 def get_formatted_data_protection_impact_assessment(

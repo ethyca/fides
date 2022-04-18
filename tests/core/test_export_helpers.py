@@ -185,3 +185,22 @@ def test_get_formatted_data_protection_impact_assessment():
     assert formatted_dict["is_required"] is False
     assert formatted_dict["progress"] == "N/A"
     assert formatted_dict["link"] == "N/A"
+
+
+@pytest.mark.parametrize(
+    "test_vals, expected",
+    [
+        (("CAN", "GBR", "USA"), ["CAN", "GBR", "USA"]),
+        (("CAN", "N/A"), ["CAN"]),
+        (("N/A", "N/A"), ["N/A"]),
+        (("N/A", ""), ["N/A"]),
+        (("", ""), ["N/A"]),
+        (("", "CAN"), ["CAN"]),
+        (("CAN", "CAN", "GBR"), ["CAN", "GBR"]),
+        (("CAN", "GBR", "CAN", "GBR"), ["CAN", "GBR"]),
+    ],
+)
+@pytest.mark.unit
+def test_convert_tuple_to_string(test_vals, expected):
+    result = export_helpers.convert_tuple_to_string(test_vals)
+    assert sorted(result.split(", ")) == expected
