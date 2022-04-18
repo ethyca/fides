@@ -80,3 +80,6 @@ USER_DETAIL = "/user/{user_id}"
 # Login URLs
 LOGIN = "/login"
 LOGOUT = "/logout"
+
+# Health URL
+HEALTH = "/health"
