@@ -16,9 +16,6 @@ convenience (handy if you'll be running this script multiple times).
 ### Define helper methods
 
 ```python
-...
-
-
 def create_policy(key, access_token):
     """
     Create a request policy in fidesops with the given key.Returns the response JSON if successful, or throws an error otherwise.
@@ -40,9 +37,6 @@ def create_policy(key, access_token):
 ```   
 
 ```python
-...
-
-
 def create_policy_rule(
         policy_key, key, action_type, storage_destination_key, access_token
 ):
@@ -70,9 +64,6 @@ def create_policy_rule(
 ```    
 
 ```python
-...
-
-
 def create_policy_rule_target(policy_key, rule_key, data_category, access_token):
     """
     Create a Policy Rule Target that matches the given data_category.
@@ -94,7 +85,6 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
     return response.json()
 ```
 ```python
-...
 def delete_policy_rule(policy_key, key, access_token):
     """
     Deletes a Policy rule with the given key.
