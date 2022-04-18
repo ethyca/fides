@@ -357,6 +357,21 @@ def build_joined_dataframe(
     # restructure the joined dataframe to represent system and dataset data categories appropriately
     joined_df = union_data_categories_in_joined_dataframe(joined_df)
 
+    delete_df = joined_df[["system.name", "unioned_data_categories"]][
+        joined_df.groupby(["system.name", "unioned_data_categories"])[
+            "dataset.name"
+        ].transform("count")
+        > 1
+    ].drop_duplicates()
+
+    delete_df["dataset.name"] = "N/A"
+
+    joined_df = (
+        pd.merge(joined_df, delete_df, indicator=True, how="outer")
+        .query('_merge=="left_only"')
+        .drop("_merge", axis=1)
+    )
+
     # model empty columns until implemented as part of appending to template
     joined_df["system.joint_controller"] = ""
     joined_df["system.third_country_safeguards"] = ""

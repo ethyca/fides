@@ -124,7 +124,12 @@ def export_datamap_to_excel(
             startcol=2,
         )
 
-        joined_system_dataset_df.to_excel(
+        joined_system_dataset_df.sort_values(
+            by=[
+                "system.name",
+                "unioned_data_categories",
+            ]
+        ).to_excel(
             export_file,
             sheet_name="sheet1",
             index=False,
@@ -326,23 +331,48 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     """
 
     # isolate the system data categories into a new dataframe and create a common column
+    joined_df = joined_df.drop(
+        [
+            "system.description",
+            "system.privacy_declaration.name",
+            "dataset.description",
+        ],
+        axis=1,
+    )
     systems_categories_df = joined_df.drop(
-        ["dataset.data_categories", "dataset.retention"], axis=1
-    ).drop_duplicates()
+        [
+            "dataset.data_categories",
+            "dataset.retention",
+            "dataset.data_qualifier",
+        ],
+        axis=1,
+    )
+    systems_categories_df["dataset.name"] = "N/A"
     systems_categories_df["unioned_data_categories"] = systems_categories_df[
         "system.privacy_declaration.data_categories"
     ]
+    systems_categories_df["unioned_data_qualifiers"] = systems_categories_df[
+        "system.privacy_declaration.data_qualifier"
+    ]
     systems_categories_df["dataset.retention"] = "N/A"
+    systems_categories_df["dataset.data_qualifier"] = "N/A"
 
     # isolate the dataset data categories into a new dataframe and create a common column
     datasets_categories_df = joined_df.drop(
-        ["system.privacy_declaration.data_categories"], axis=1
-    ).drop_duplicates()
+        [
+            "system.privacy_declaration.data_categories",
+            "system.privacy_declaration.data_qualifier",
+        ],
+        axis=1,
+    )
 
     datasets_categories_df = datasets_categories_df[
         datasets_categories_df["dataset.name"] != "N/A"
     ]
 
+    datasets_categories_df["unioned_data_qualifiers"] = datasets_categories_df[
+        "dataset.data_qualifier"
+    ]
     datasets_categories_df["unioned_data_categories"] = datasets_categories_df[
         "dataset.data_categories"
     ]
@@ -355,7 +385,7 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
             ),
             datasets_categories_df.drop(["dataset.data_categories"], axis="columns"),
         ]
-    )
+    ).drop_duplicates()
 
 
 def get_formatted_data_protection_impact_assessment(
