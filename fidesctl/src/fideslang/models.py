@@ -52,6 +52,7 @@ class FidesModel(BaseModel):
         "Config for the FidesModel"
         extra = "ignore"
         orm_mode = True
+        use_enum_values = True
 
 
 class DataResponsibilityTitle(str, Enum):
@@ -685,10 +686,6 @@ class System(FidesModel):
     )(no_self_reference)
 
     _check_valid_country_code: classmethod = country_code_validator
-
-    class Config:
-        "Class for the System config"
-        use_enum_values = True
 
 
 # Taxonomy
