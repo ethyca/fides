@@ -82,14 +82,14 @@ cli-integration: build-local
 ####################
 
 build:
-	docker build --target=prod --tag $(IMAGE) fidesctl/
+	docker build --target=prod --tag $(IMAGE) .
 
 build-local:
-	docker build --target=dev --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=dev --tag $(IMAGE_LOCAL) .
 
 # The production image is used for running tests in CI
 build-local-prod:
-	docker build --target=prod --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=prod --tag $(IMAGE_LOCAL) .
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
