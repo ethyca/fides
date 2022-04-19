@@ -33,7 +33,7 @@ jobs:
         run: pip install -r docs/fides/requirements.txt
 
       - name: Install fidesctl
-        run: pip install -e fidesctl/
+        run: pip install -e .
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1

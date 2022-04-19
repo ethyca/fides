@@ -20,8 +20,8 @@
 		"editor.insertSpaces": true,
 		"python.formatting.provider": "black",
 		"python.linting.mypyEnabled": true,
-		"conf.fidesctl.confFilePath": "/fides/fidesctl/fidesctl.toml",
-		"conf.fidesctl.manifestFilePath": "/fides/fidesctl/fides_resources/",
+		"conf.fidesctl.confFilePath": "/fides/.fides/fidesctl.toml",
+		"conf.fidesctl.manifestFilePath": "/fides/.fides/",
 		"conf.fidesctl.parseOnSave": true
 	}
 }
