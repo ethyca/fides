@@ -79,7 +79,8 @@ cli-integration: build-local
 	@make teardown
 	
 .PHONY: db
-# Add a target to spin up the db
+db:
+	@docker compose up -d fidesctl-db
 
 ####################
 # Docker
