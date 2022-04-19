@@ -32,19 +32,23 @@ help:
 	@echo --------------------
 	@echo Development Targets:
 	@echo ----
-	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc. This will wipe out everything!
+	@echo api - Spins up the database and API, reachable on localhost:8080.
 	@echo ----
-	@echo build - Builds the Fidesctl Docker image.
+	@echo build - Builds the fidesctl Docker image.
 	@echo ----
-	@echo check-all - Run all of the available CI checks for Fidesctl locally except for externally dependent tests.
+	@echo check-all - Run all CI checks except for externally dependent ones.
 	@echo ----
-	@echo reset-db - Wipes all user-created data and resets the database back to its freshly initialized state.
+	@echo clean - Runs Docker commands to clean up the docker local environment.
 	@echo ----
-	@echo api - Spins up the database and API, reachable from the host machine at localhost.
+	@echo cli - Spins up the database, API, and starts a shell within the API container to run CLI commands.
 	@echo ----
-	@echo cli - Spins up the database, API, and starts a shell within the API container to run Fidesctl CLI commands.
+	@echo cli-integration - Spins up the CLI with additional containers needed for integration testing.
 	@echo ----
-	@echo cli-integration - Spins up the cli with additional containers needed for integration testing.
+	@echo db - Spins up the database, reachable on localhost:5432
+	@echo ----
+	@echo docs-serve - Spins up the docs server on localhost:8000
+	@echo ----
+	@echo reset-db - Resets the database back to its freshly initialized state.
 	@echo --------------------
 
 ####################
