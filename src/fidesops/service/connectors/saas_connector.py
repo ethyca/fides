@@ -1,10 +1,9 @@
 from json import JSONDecodeError
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union, Literal
+from typing import Any, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Session, Request, PreparedRequest, Response
 from fidesops.common_exceptions import FidesopsException
-from fidesops.core.config import config
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
@@ -79,7 +78,7 @@ class AuthenticatedClient:
             url=f"{self.uri}{request_params.path}",
             headers=request_params.headers,
             params=request_params.query_params,
-            json=request_params.json_body,
+            data=request_params.body,
         ).prepare()
         return self.add_authentication(req, self.client_config.authentication)
 
@@ -88,7 +87,7 @@ class AuthenticatedClient:
     ) -> Response:
         """
         Builds and executes an authenticated request.
-        The HTTP method is determined by the request_params.
+        Optionally ignores non-200 responses if ignore_errors is set to True
         """
         try:
             prepared_request = self.get_authenticated_request(request_params)
@@ -118,16 +117,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         self.saas_config = configuration.get_saas_config()
         self.client_config = self.saas_config.client_config
         self.endpoints = self.saas_config.top_level_endpoint_dict
-        self.collection_name = None
+        self.collection_name: Optional[str] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
-        """Returns the query config for a given node"""
-        collection_name = node.address.collection
-        configured_masking_request = self.get_masking_request_from_config(
-            collection_name
-        )
+        """
+        Returns the query config for a given node which includes the endpoints
+        and connector param values for the current collection.
+        """
+        # store collection_name for logging purposes
+        self.collection_name = node.address.collection
         return SaaSQueryConfig(
-            node, self.endpoints, self.secrets, configured_masking_request
+            node, self.endpoints, self.secrets, self.saas_config.data_protection_request
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -154,7 +154,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def _build_client_with_config(
         self, client_config: ClientConfig
     ) -> AuthenticatedClient:
-        """Sets the clientConfig on the SaasConnector, and also sets on the created AuthenticatedClient"""
+        """Sets the client_config on the SaasConnector, and also sets it on the created AuthenticatedClient"""
         self.client_config = client_config
         client: AuthenticatedClient = self.create_client()
         client.client_config = client_config
@@ -166,7 +166,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         Permits authentication to be overridden at the request-level.
         Use authentication on the request if specified, otherwise, just use
-        the authentication configured for the overall saas connector.
+        the authentication configured for the overall SaaS connector.
         """
         if saas_request.client_config:
             return self._build_client_with_config(saas_request.client_config)
@@ -182,14 +182,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
 
-        # get the corresponding read request for the given collection
-        self.collection_name = node.address.collection
-        read_request: SaaSRequest = self.endpoints[self.collection_name].requests[
-            "read"
-        ]
-
-        # generate initial set of requests
+        # generate initial set of requests if read request is defined, otherwise raise an exception
         query_config: SaaSQueryConfig = self.query_config(node)
+        read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
+        if not read_request:
+            raise FidesopsException(
+                f"The 'read' action is not defined for the '{self.collection_name}' "
+                f"endpoint in {self.saas_config.fides_key}"
+            )
         prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
             input_data, policy
         )
@@ -310,42 +310,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         return rows
 
-    def get_masking_request_from_config(
-        self, collection_name: str
-    ) -> Optional[SaaSRequest]:
-        """Get the configured SaaSRequest for use in masking.
-        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
-        """
-        requests: Dict[
-            Literal["read", "update", "delete"], SaaSRequest
-        ] = self.endpoints[collection_name].requests
-
-        update: Optional[SaaSRequest] = requests.get("update")
-        gdpr_delete: Optional[SaaSRequest] = None
-        delete: Optional[SaaSRequest] = None
-
-        if not config.execution.MASKING_STRICT:
-            gdpr_delete = self.saas_config.data_protection_request
-            delete = requests.get("delete")
-
-        try:
-            # Return first viable option
-            action_type: str = next(
-                action
-                for action in [
-                    "update" if update else None,
-                    "data_protection_request" if gdpr_delete else None,
-                    "delete" if delete else None,
-                ]
-                if action
-            )
-            logger.info(
-                f"Selecting '{action_type}' action to perform masking request for '{collection_name}' collection."
-            )
-            return next(request for request in [update, gdpr_delete, delete] if request)
-        except StopIteration:
-            return None
-
     def mask_data(
         self,
         node: TraversalNode,
@@ -353,21 +317,25 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated"""
+        """Execute a masking request. Return the number of rows that have been updated."""
+
         query_config = self.query_config(node)
-        if not query_config.masking_request:
+        masking_request = query_config.get_masking_request()
+        if not masking_request:
             raise Exception(
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
+
         rows_updated = 0
-        client = self.create_client_from_request(query_config.masking_request)
+        client = self.create_client_from_request(masking_request)
         for prepared_request in prepared_requests:
-            client.send(prepared_request, query_config.masking_request.ignore_errors)
+            client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
         return rows_updated
 

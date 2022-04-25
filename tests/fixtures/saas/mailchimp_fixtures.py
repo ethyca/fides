@@ -92,7 +92,9 @@ def mailchimp_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def reset_mailchimp_data(mailchimp_connection_config, mailchimp_identity_email) -> Generator:
+def reset_mailchimp_data(
+    mailchimp_connection_config, mailchimp_identity_email
+) -> Generator:
     """
     Gets the current value of the resource and restores it after the test is complete.
     Used for erasure tests.
@@ -109,7 +111,8 @@ def reset_mailchimp_data(mailchimp_connection_config, mailchimp_identity_email) 
     yield member
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.PUT,
+        headers={"Content-Type": "application/json"},
         path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
-        json_body=member,
+        body=json.dumps(member),
     )
     connector.create_client().send(request)

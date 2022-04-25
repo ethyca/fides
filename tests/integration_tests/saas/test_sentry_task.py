@@ -15,7 +15,7 @@ from tests.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_saas_access_request_task(
+def test_sentry_access_request_task(
     db,
     policy,
     sentry_connection_config,
@@ -235,7 +235,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_saas_erasure_request_task(
+def test_sentry_erasure_request_task(
     db, policy, sentry_connection_config, sentry_dataset_config
 ) -> None:
     """Full erasure request based on the Sentry SaaS config. Also verifies issue data in access request"""

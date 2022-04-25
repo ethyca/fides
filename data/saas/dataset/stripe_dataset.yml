@@ -9,9 +9,12 @@ dataset:
           data_categories: [system.operations]
           fidesops_meta:
             primary_key: True
+            read_only: True
             data_type: string
         - name: object
           data_categories: [system.operations]
+          fidesops_meta:
+            read_only: True
         - name: address
           fields:
           - name: city
@@ -44,15 +47,19 @@ dataset:
             data_type: integer
         - name: created
           data_categories: [system.operations]
+          fidesops_meta:
+            read_only: True
         - name: currency
           data_categories: [system.operations]
+          fidesops_meta:
+            read_only: True
         - name: default_source
           data_categories: [system.operations]
         - name: delinquent
           data_categories: [system.operations]
+          fidesops_meta:
+            read_only: True
         - name: description
-          data_categories: [system.operations]
-        - name: discount
           data_categories: [system.operations]
         - name: email
           data_categories: [user.provided.identifiable.contact.email]
@@ -68,6 +75,8 @@ dataset:
             data_categories: [system.operations]
         - name: livemode
           data_categories: [system.operations]
+          fidesops_meta:
+            read_only: True
         - name: name
           data_categories: [user.provided.identifiable.name]
           fidesops_meta:
@@ -120,15 +129,10 @@ dataset:
               data_type: string
         - name: tax_exempt
           data_categories: [system.operations]
-        - name: test_clock
-          data_categories: [system.operations]
       - name: charge
         fields:
         - name: id
           data_categories: [system.operations]
-          fidesops_meta:
-            primary_key: True
-            data_type: string
         - name: object
           data_categories: [system.operations]
         - name: amount
@@ -379,9 +383,6 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
-              primary_key: True
-              data_type: string
           - name: object
             data_categories: [system.operations]
           - name: amount
@@ -489,7 +490,6 @@ dataset:
         - name: id
           data_categories: [system.operations]
           fidesops_meta:
-            primary_key: True
             data_type: string
         - name: object
           data_categories: [system.operations]
@@ -823,9 +823,6 @@ dataset:
         fields:
         - name: id
           data_categories: [system.operations]
-          fidesops_meta:
-            primary_key: True
-            data_type: string
         - name: object
           data_categories: [system.operations]
         - name: amount
@@ -896,9 +893,6 @@ dataset:
         fields:
         - name: id
           data_categories: [system.operations]
-          fidesops_meta:
-            primary_key: True
-            data_type: string
         - name: object
           data_categories: [system.operations]
         - name: amount
@@ -1225,8 +1219,6 @@ dataset:
             data_type: integer
         - name: tax
           data_categories: [system.operations]
-        - name: test_clock
-          data_categories: [system.operations]
         - name: total
           data_categories: [user.provided.identifiable.financial]
           fidesops_meta:
@@ -1320,8 +1312,6 @@ dataset:
           data_categories: [system.operations]
         - name: tax_rates
           data_categories: [system.operations]
-        - name: test_clock
-          data_categories: [system.operations]
         - name: unit_amount
           data_categories: [user.provided.identifiable.financial]
           fidesops_meta:
@@ -1335,6 +1325,7 @@ dataset:
         - name: id
           data_categories: [system.operations]
           fidesops_meta:
+            primary_key: true
             data_type: string
         - name: object
           data_categories: [system.operations]
@@ -1443,8 +1434,6 @@ dataset:
         - name: start_date
           data_categories: [system.operations]
         - name: status
-          data_categories: [system.operations]
-        - name: test_clock
           data_categories: [system.operations]
         - name: transfer_data
           data_categories: [system.operations]

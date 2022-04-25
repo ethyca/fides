@@ -12,7 +12,7 @@ from tests.graph.graph_test_util import assert_rows_match, records_matching_fiel
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-def test_saas_access_request_task(
+def test_mailchimp_access_request_task(
     db,
     policy,
     mailchimp_connection_config,
@@ -24,10 +24,7 @@ def test_saas_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity_attribute = "email"
-    identity_value = mailchimp_identity_email
-    identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = PrivacyRequestIdentity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = mailchimp_connection_config.get_saas_config().fides_key
@@ -125,9 +122,10 @@ def test_saas_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-def test_saas_erasure_request_task(
+def test_mailchimp_erasure_request_task(
     db,
     policy,
+    erasure_policy_string_rewrite,
     mailchimp_connection_config,
     mailchimp_dataset_config,
     mailchimp_identity_email,
@@ -138,10 +136,7 @@ def test_saas_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity_attribute = "email"
-    identity_value = mailchimp_identity_email
-    identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = PrivacyRequestIdentity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = mailchimp_connection_config.get_saas_config().fides_key
@@ -158,7 +153,7 @@ def test_saas_erasure_request_task(
 
     v = graph_task.run_erasure(
         privacy_request,
-        policy,
+        erasure_policy_string_rewrite,
         graph,
         [mailchimp_connection_config],
         {"email": mailchimp_identity_email},

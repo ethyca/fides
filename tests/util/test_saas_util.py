@@ -253,6 +253,9 @@ def test_unflatten_dict():
     # empty dictionary
     assert unflatten_dict({}) == {}
 
+    # empty dictionary value
+    assert unflatten_dict({"A": {}}) == {"A": {}}
+
     # unflattened dictionary
     assert unflatten_dict({"A": "1"}) == {"A": "1"}
 
@@ -279,7 +282,7 @@ def test_unflatten_dict():
 
     # data passed in is not completely flattened
     with pytest.raises(FidesopsException):
-        unflatten_dict({'A.B.C': 1, 'A': {'B.D': 2}})
+        unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}})
 
     # unflatten_dict shouldn't be called with a None separator
     with pytest.raises(IndexError):
