@@ -18,3 +18,12 @@ The types of changes are:
 ### Added
 
 * CHANGELOG.md file
+
+### Changed
+
+* Published Docker image does a clean install of Fidesctl
+
+### Fixed
+
+* Third-Country formatting on Data Map
+* Potential Duplication on Data Map
