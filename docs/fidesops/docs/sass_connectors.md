@@ -1,3 +1,23 @@
+
+# Mailchimp
+
+## Implementation Summary
+You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
+
+This table summarizes whether or not each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+
+|Endpoint | Right to Access | Right to Delete |
+|----|----|----|
+|[Messages](docs/link) | Yes/No | Yes/No |
+|[Conversations](docs/link) | Yes/No | Yes/No |
+|[Members](docs/link) | Yes/No | Yes/No |
+
+
+## Connection Settings
+To retrieve 
+
+## Example SaaS Configuration
+```yaml
 saas_config:
   fides_key: mailchimp_connector_example
   name: Mailchimp SaaS Config
@@ -24,7 +44,7 @@ saas_config:
   test_request:
     method: GET
     path: /3.0/lists
-    
+
   endpoints:
   - name: messages
     requests:
@@ -90,4 +110,4 @@ saas_config:
               - dataset: mailchimp_connector_example
                 field: member.id
                 direction: from
-        body: '{<masked_object_fields>}'
+```

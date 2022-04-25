@@ -1442,52 +1442,6 @@ class TestSaasConnector:
         with pytest.raises(ConnectionException):
             connector.test_connection()
 
-    def test_get_masking_request_from_config(self, mailchimp_connection_config):
-        connector: SaaSConnector = get_connector(mailchimp_connection_config)
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("member")
-
-        # Assert we pulled the update method off of the member collection
-        assert saas_request.method == "PUT"
-        assert saas_request.path == "/3.0/lists/<list_id>/members/<subscriber_hash>"
-
-        # No update methods defined on other collections
-        assert connector.get_masking_request_from_config("conversations") is None
-        assert connector.get_masking_request_from_config("messages") is None
-
-        # Define delete request on conversations endpoint
-        conversation_endpoint = next(endpoint for endpoint in connector.saas_config.endpoints if endpoint.name =="conversations")
-        conversation_endpoint.requests["delete"] = SaaSRequest(
-            method="DELETE",
-            path="/api/0/<conversation>/<conversation_id>/"
-        )
-        # Delete endpoint not used because MASKING_STRICT is True
-        assert config.execution.MASKING_STRICT is True
-        assert connector.get_masking_request_from_config("conversations") is None
-
-        # Override MASKING_STRICT to False
-        config.execution.MASKING_STRICT = False
-
-        # Now delete endpoint is selected as conversations masking request
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
-        assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
-        assert saas_request.method == "DELETE"
-
-        # Define GDPR Delete
-        connector.saas_config.data_protection_request = SaaSRequest(
-            method="PUT",
-            path="/api/0/gdpr_delete"
-        )
-
-        # Assert GDPR Delete takes priority over Delete
-        saas_request: SaaSRequest = connector.get_masking_request_from_config("conversations")
-        assert saas_request.path == "/api/0/gdpr_delete"
-        assert saas_request.method == "PUT"
-
-        # Reset
-        config.execution.MASKING_STRICT = True
-        del conversation_endpoint.requests["delete"]
-        connector.saas_config.data_protection_request = None
-
 
 class TestSaaSConnectorMethods:
     def test_create_client_from_request(

@@ -180,3 +180,24 @@ dataset:
                 data_categories: [ user.derived.identifiable.device.ip_address ]
           - name: email
             data_categories: [ user.provided.identifiable.contact.email ]
+      - name: customer
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              read_only: True
+          - name: name
+            fields:
+              - name: first
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+              - name: last
+                data_categories: [user.provided.identifiable.name]
+                fidesops_meta:
+                  data_type: string
+          - name: created
+            data_categories: [system.operations]
+            fidesops_meta:
+              read_only: True

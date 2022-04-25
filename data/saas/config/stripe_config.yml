@@ -37,6 +37,19 @@ saas_config:
           - name: email
             identity: email
         data_path: data
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: customer.id
+                direction: from
+        body: '{<all_object_fields>}'
   - name: charge
     requests:
       read: 
@@ -142,6 +155,19 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/payment_methods/<payment_method_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: payment_method_id
+            references:
+              - dataset: stripe_connector_example
+                field: payment_method.id
+                direction: from
+        body: '{<masked_object_fields>}'
   - name: bank_account
     requests:
       read:
@@ -166,6 +192,24 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<bank_account_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.customer
+                direction: from
+          - name: bank_account_id
+            references:
+              - dataset: stripe_connector_example
+                field: bank_account.id
+                direction: from
+        body: '{<masked_object_fields>}'
   - name: card
     requests:
       read:
@@ -190,6 +234,24 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      update:
+        method: POST
+        path: /v1/customers/<customer_id>/sources/<card_id>
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.customer
+                direction: from
+          - name: card_id
+            references:
+              - dataset: stripe_connector_example
+                field: card.id
+                direction: from
+        body: '{<masked_object_fields>}'
   - name: credit_note
     requests:
       read:
@@ -258,6 +320,20 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      delete:
+        method: DELETE
+        path: /v1/customers/<customer_id>/tax_ids/<tax_id>
+        param_values:
+          - name: customer_id
+            references:
+              - dataset: stripe_connector_example
+                field: tax_id.customer
+                direction: from
+          - name: tax_id
+            references:
+              - dataset: stripe_connector_example
+                field: tax_id.id
+                direction: from
   - name: invoice
     requests:
       read:
@@ -282,6 +358,16 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      delete:
+        method: DELETE
+        ignore_errors: true # You can only delete draft invoices. You can't delete invoices created by subscriptions.
+        path: /v1/invoices/<invoice_id>
+        param_values:
+          - name: invoice_id
+            references:
+              - dataset: stripe_connector_example
+                field: invoice.id
+                direction: from
   - name: invoice_item
     requests:
       read:
@@ -306,6 +392,16 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      delete:
+        method: DELETE
+        ignore_errors: true # Can't delete an invoice item that is attached to an invoice that is no longer editable
+        path: /v1/invoiceitems/<invoice_item_id>
+        param_values:
+         - name: invoice_item_id
+           references:
+              - dataset: stripe_connector_example
+                field: invoice_item.id
+                direction: from
   - name: subscription
     requests:
       read:
@@ -330,3 +426,12 @@ saas_config:
           configuration:
             cursor_param: starting_after
             field: id
+      delete:
+        method: DELETE
+        path: /v1/subscriptions/<subscription_id>
+        param_values:
+          - name: subscription_id
+            references:
+              - dataset: stripe_connector_example
+                field: subscription.id
+                direction: from

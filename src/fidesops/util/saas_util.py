@@ -104,7 +104,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     """
     output: Dict[Any, Any] = {}
     for path, value in flat_dict.items():
-        if isinstance(value, dict):
+        if isinstance(value, dict) and len(value) > 0:
             raise FidesopsException(
                 "'unflatten_dict' expects a flattened dictionary as input."
             )

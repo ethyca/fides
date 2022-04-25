@@ -95,6 +95,7 @@ saas_config:
               - dataset: saas_connector_example
                 field: member.id
                 direction: from
+        body: '{<masked_object_fields>}'
   - name: payment_methods
     requests:
       read:
@@ -127,6 +128,7 @@ saas_config:
         param_values:
           - name: version
             connector_param: api_version
+        body: '{<masked_object_fields>}'
   - name: projects
     requests:
       read:
@@ -158,3 +160,18 @@ saas_config:
                 direction: from
           - name: query
             identity: email
+  - name: customer
+    requests:
+      read:
+        method: GET
+        path: /v1/customers/1
+        param_values:
+          - name: placeholder
+            identity: email
+      update:
+        method: POST
+        path: /v1/customers/1
+        headers:
+          - name: Content-Type
+            value: application/x-www-form-urlencoded
+        body: '{<all_object_fields>}'
