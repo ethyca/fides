@@ -275,6 +275,15 @@ class TestUserLogin:
 
         user.client.delete(db)
 
+    def test_login_updates_last_login_date(self, db, url, user, api_client):
+        body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == 200
+
+        db.refresh(user)
+        assert user.last_login_at is not None
+
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {"username": user.username, "password": "TESTdcnG@wzJeu0&%3Qe2fGo7"}
 
@@ -305,10 +314,11 @@ class TestUserLogout:
     def test_user_not_deleted_on_logout(self, db, url, api_client, user):
         user_id = user.id
         client_id = user.client.id
+        scopes = user.client.scopes
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
-            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
@@ -321,7 +331,23 @@ class TestUserLogout:
 
         # Assert user is not deleted
         user_search = FidesopsUser.get_by(db, field="id", value=user_id)
+        db.refresh(user_search)
         assert user_search is not None
+
+        # Assert user does not still have client reference
+        assert user_search.client is None
+
+        # Ensure that the client token is invalidated after logout
+        # Assert a request with the outdated client token gives a 401
+        payload = {
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 403 == response.status_code
+
 
     def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id

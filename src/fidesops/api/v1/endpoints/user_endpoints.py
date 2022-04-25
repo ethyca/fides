@@ -5,6 +5,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_403_FORBIDDEN,
 )
+from datetime import datetime
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
@@ -17,14 +18,27 @@ from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
 from fidesops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.scope_registry import (
-    USER_CREATE,
-    USER_DELETE,
-    SCOPE_REGISTRY,
-)
+from fidesops.api.v1.scope_registry import USER_CREATE, USER_DELETE, SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+
+
+def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
+    """Performs a login by updating the FidesopsUser instance and
+    creating and returning an associated ClientDetail."""
+
+    client: ClientDetail = user.client
+    if not client:
+        logger.info("Creating client for login")
+        client, _ = ClientDetail.create_client_and_secret(
+            db, SCOPE_REGISTRY, user_id=user.id
+        )
+
+    user.last_login_at = datetime.utcnow()
+    user.save(db)
+
+    return client
 
 
 @router.post(
@@ -90,7 +104,9 @@ def user_login(
     *, db: Session = Depends(deps.get_db), user_data: UserLogin
 ) -> AccessToken:
     """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
-    user = FidesopsUser.get_by(db, field="username", value=user_data.username)
+    user: FidesopsUser = FidesopsUser.get_by(
+        db, field="username", value=user_data.username
+    )
 
     if not user:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No user found.")
@@ -100,12 +116,7 @@ def user_login(
             status_code=HTTP_403_FORBIDDEN, detail="Incorrect password."
         )
 
-    client: ClientDetail = user.client
-    if not client:
-        logger.info("Creating client for login")
-        client, _ = ClientDetail.create_client_and_secret(
-            db, SCOPE_REGISTRY, user_id=user.id
-        )
+    client: ClientDetail = perform_login(db, user)
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe()
