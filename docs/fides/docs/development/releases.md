@@ -21,3 +21,17 @@ Hotfixes are an exception to this and can be added and pushed as patch versions 
 ## Branching
 
 Fidesctl uses continuous delivery with a single `main` branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.
+
+## Release Steps
+
+We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub & PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
+
+1. Open a PR that is titled the version of the release (i.e. `1.6.0`)
+    * Rename the `Unreleased` section of `CHANGELOG.md` to the new version number and put a date next to it
+    * Update the `compare` links for both the new version and for the new `Unreleased` section
+1. Once approved, merge the PR
+1. Create a new release, ensuring that the last PR to get merged is the aforementioned `CHANGELOG.md` update PR
+1. Add the new version as the tag (i.e. `1.6.0`)
+1. Make the title the version with a `v` in front of it (i.e. `v1.6.0`)
+1. Publish the release
+1. Close the accompanying project in GitHub (i.e. `1.6.0`)
