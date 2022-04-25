@@ -719,7 +719,10 @@ def user(db: Session):
     db.commit()
     db.refresh(client)
     yield user
-    client.delete(db)
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
     user.delete(db)
 
 
