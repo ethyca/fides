@@ -1,7 +1,6 @@
 import csv
 import shutil
 from datetime import datetime
-from enum import Enum
 from os.path import dirname, join
 from typing import Dict, List, Set, Tuple
 
@@ -168,8 +167,6 @@ def get_formatted_data_use(
             attribute_value = getattr(data_use, attribute)
             if attribute_value is None:
                 attribute_value = "N/A"
-            elif isinstance(attribute_value, Enum):
-                attribute_value = attribute_value.value
             elif isinstance(attribute_value, list):
                 attribute_value = ", ".join(attribute_value)
             elif attribute == "legitimate_interest":
@@ -278,16 +275,16 @@ def calculate_data_subject_rights(rights: Dict) -> str:
 
     Loads all available rights
     """
-    all_rights = [right.value for right in DataSubjectRightsEnum]
-    strategy: str = rights["strategy"].value
+    all_rights = DataSubjectRightsEnum()
+    strategy: str = rights["strategy"]
     data_subject_rights: str
     if strategy == "ALL":
         data_subject_rights = ", ".join(all_rights)
     elif strategy == "INCLUDE":
-        included_rights = [right.value for right in rights["values"]]
+        included_rights = rights["values"]
         data_subject_rights = ", ".join(included_rights)
     elif strategy == "EXCLUDE":
-        excluded_rights = [right.value for right in rights["values"]]
+        excluded_rights = rights["values"]
         included_rights = [
             right for right in all_rights if right not in excluded_rights
         ]
