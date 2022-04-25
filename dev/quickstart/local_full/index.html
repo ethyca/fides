@@ -1550,19 +1550,17 @@ You're not viewing the latest version.
 <p>See the <a href="../../installation/prerequisites_dependencies/">Prerequisites and Dependencies</a> page for more information.</p>
 <h2 id="fidesctl-installation">Fidesctl installation</h2>
 <p>The next step is to install fidesctl via pip with the required extras:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install <span class="s2">&quot;fidesctl[webserver]&quot;</span>
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip install <span class="s2">&quot;fidesctl[webserver]&quot;</span>
+</code></pre></div></td></tr></table></div>
 <p>For more information on pip installing fidesctl as well as the other potential extras, see the <a href="../../installation/pypi/">Installation from PyPI</a> guide.</p>
 <h2 id="database-installation">Database installation</h2>
 <p>Due to environmental differences, there is no specific guide on running/configuring your own Postgres database outside of the version constraints mentioned in the <code>System Requirements</code> section above.</p>
 <p>Make sure to note your database credentials and use them to generate a <a href="https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql">SQLAlchemy Connection String</a>. This will be used in the <code>database_url</code> configuration value mentioned below.</p>
 <h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
 <p>With Fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fidesctl</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl init
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1580,7 +1578,7 @@ You're not viewing the latest version.
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>No config file found. Using default configuration values.
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>No config file found. Using default configuration values.
 Initializing Fidesctl...
 
 Created a &#39;.fides&#39; directory.
@@ -1599,25 +1597,22 @@ Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:
             https://ethyca.github.io/fides/installation/configuration/
 
 Fidesctl initialization complete.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="configuring-fidesctl">Configuring Fidesctl</h2>
 <p>See our <a href="../../installation/configuration/">Configuration</a> guide for more information on how to configure fidesctl.</p>
 <h2 id="running-the-webserver">Running the webserver</h2>
 <p>Now that we've spun up our database and set our configuration values, it's time to start our webserver. In a shell, run the following command:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl webserver
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl webserver
+</code></pre></div></td></tr></table></div>
 <p>The fidesctl webserver will now be accessible at <code>localhost:8080</code>, you can test this by going to <code>localhost:8080/health</code> and <code>localhost:8080/docs</code>.</p>
 <h2 id="using-the-cli">Using the CLI</h2>
 <p>Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command <code>fidesctl status</code> to make sure that the CLI can talk to the webserver. The output should look something like this:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
 Getting server status...
 Server is reachable and the client/server application versions match.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>That's it! Your local installation of fidesctl is completely up and running.</p>
 <h2 id="next-steps">Next Steps</h2>
 <p>See the <a href="../../tutorial/">Tutorial</a> page for a step-by-step guide on setting up a Fides data privacy workflow.</p>

@@ -1512,7 +1512,7 @@ You're not viewing the latest version.
 </ul>
 <hr />
 <h2 id="github-actions">GitHub Actions</h2>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.github/workflows/fidesctl_ci.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>.github/workflows/fidesctl_ci.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1533,7 +1533,7 @@ You're not viewing the latest version.
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fidesctl CI</span><span class="w"></span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fidesctl CI</span><span class="w"></span>
 
 <span class="c1"># Only check on Pull Requests that target main</span><span class="w"></span>
 <span class="nt">on</span><span class="p">:</span><span class="w"></span>
@@ -1555,9 +1555,8 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate --dry .fides/</span><span class="w"></span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fidesctl.privacyco.com&quot;</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.github/workflows/fidesctl_cd.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>.github/workflows/fidesctl_cd.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1577,7 +1576,7 @@ You're not viewing the latest version.
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fidesctl CD</span><span class="w"></span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fidesctl CD</span><span class="w"></span>
 
 <span class="c1"># Run the check every time a new commit hits the default branch</span><span class="w"></span>
 <span class="nt">on</span><span class="p">:</span><span class="w"></span>
@@ -1598,11 +1597,10 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate .fides/</span><span class="w"></span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="nt">FIDESCTL__CLI__SERVER_HOST</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fidesctl.privacyco.com&quot;</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <hr />
 <h2 id="gitlab-ci">GitLab CI</h2>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.gitlab-ci.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>.gitlab-ci.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1627,7 +1625,7 @@ You're not viewing the latest version.
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">stages</span><span class="p">:</span><span class="w"></span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">stages</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy</span><span class="w"></span>
 
@@ -1653,11 +1651,10 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;$CI_COMMIT_BRANCH</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">$CI_DEFAULT_BRANCH&#39;</span><span class="w"></span>
 <span class="w">  </span><span class="nt">variables</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="nv">*global-variables</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <hr />
 <h2 id="jenkins">Jenkins</h2>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>Jenkinsfile</code> (Declarative Syntax)</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>Jenkinsfile</code> (Declarative Syntax)</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1691,46 +1688,45 @@ You're not viewing the latest version.
 <span class="normal">32</span>
 <span class="normal">33</span>
 <span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">pipeline</span> <span class="o">{</span>
-  <span class="n">agent</span> <span class="o">{</span>
-    <span class="n">docker</span> <span class="o">{</span>
-      <span class="n">image</span> <span class="s1">&#39;ethyca/fidesctl:latest&#39;</span>
-    <span class="o">}</span>
-  <span class="o">}</span>
-  <span class="n">stages</span> <span class="o">{</span>
-    <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;test&#39;</span><span class="o">){</span>
-      <span class="n">environment</span> <span class="o">{</span>
-          <span class="nl">FIDESCTL__CLI__SERVER_HOST:</span> <span class="s1">&#39;fidesctl.privacyco.com&#39;</span>
-      <span class="o">}</span>
-      <span class="n">steps</span> <span class="o">{</span>
-        <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate --dry .fides/&#39;</span>
-      <span class="o">}</span>
-      <span class="n">when</span> <span class="o">{</span>
-        <span class="n">anyOf</span> <span class="o">{</span>
-          <span class="n">changeset</span> <span class="s1">&#39;.fides/**&#39;</span>
-          <span class="n">changeset</span> <span class="s1">&#39;Jenkinsfile&#39;</span>
-        <span class="o">}</span>
-        <span class="n">changeRequest</span><span class="o">()</span>
-      <span class="o">}</span>
-    <span class="o">}</span>
-    <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;deploy&#39;</span><span class="o">)</span> <span class="o">{</span>
-      <span class="n">environment</span> <span class="o">{</span>
-          <span class="nl">FIDESCTL__CLI__SERVER_HOST:</span> <span class="s1">&#39;fidesctl.privacyco.com&#39;</span>
-      <span class="o">}</span>
-      <span class="n">steps</span> <span class="o">{</span>
-        <span class="n">sh</span> <span class="s1">&#39;fidesctl evaluate .fides/&#39;</span>
-      <span class="o">}</span>
-      <span class="n">when</span> <span class="o">{</span>
-        <span class="n">branch</span> <span class="s1">&#39;main&#39;</span>
-      <span class="o">}</span>
-    <span class="o">}</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-</code></pre></div>
-</td></tr></table>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">pipeline</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">agent</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">docker</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">image</span><span class="w"> </span><span class="s1">&#39;ethyca/fidesctl:latest&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="o">}</span><span class="w"></span>
+<span class="w">  </span><span class="o">}</span><span class="w"></span>
+<span class="w">  </span><span class="n">stages</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">stage</span><span class="o">(</span><span class="s1">&#39;test&#39;</span><span class="o">){</span><span class="w"></span>
+<span class="w">      </span><span class="n">environment</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">          </span><span class="nl">FIDESCTL__CLI__SERVER_HOST:</span><span class="w"> </span><span class="s1">&#39;fidesctl.privacyco.com&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">      </span><span class="n">steps</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">sh</span><span class="w"> </span><span class="s1">&#39;fidesctl evaluate --dry .fides/&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">      </span><span class="n">when</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">anyOf</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">          </span><span class="n">changeset</span><span class="w"> </span><span class="s1">&#39;.fides/**&#39;</span><span class="w"></span>
+<span class="w">          </span><span class="n">changeset</span><span class="w"> </span><span class="s1">&#39;Jenkinsfile&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="o">}</span><span class="w"></span>
+<span class="w">        </span><span class="n">changeRequest</span><span class="o">()</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">    </span><span class="o">}</span><span class="w"></span>
+<span class="w">    </span><span class="n">stage</span><span class="o">(</span><span class="s1">&#39;deploy&#39;</span><span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">environment</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">          </span><span class="nl">FIDESCTL__CLI__SERVER_HOST:</span><span class="w"> </span><span class="s1">&#39;fidesctl.privacyco.com&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">      </span><span class="n">steps</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">sh</span><span class="w"> </span><span class="s1">&#39;fidesctl evaluate .fides/&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">      </span><span class="n">when</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">branch</span><span class="w"> </span><span class="s1">&#39;main&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="o">}</span><span class="w"></span>
+<span class="w">    </span><span class="o">}</span><span class="w"></span>
+<span class="w">  </span><span class="o">}</span><span class="w"></span>
+<span class="o">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 <hr />
 <h2 id="circleci">CircleCI</h2>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.circleci/config.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>.circleci/config.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1764,7 +1760,7 @@ You're not viewing the latest version.
 <span class="normal">32</span>
 <span class="normal">33</span>
 <span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.1</span><span class="w"></span>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.1</span><span class="w"></span>
 
 <span class="nt">executors</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesctl</span><span class="p">:</span><span class="w"></span>
@@ -1799,11 +1795,10 @@ You're not viewing the latest version.
 <span class="w">          </span><span class="nt">filters</span><span class="p">:</span><span class="w"></span>
 <span class="w">            </span><span class="nt">branches</span><span class="p">:</span><span class="w"></span>
 <span class="w">              </span><span class="nt">only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <hr />
 <h2 id="azure-pipelines">Azure Pipelines</h2>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>.azure-pipelines.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>.azure-pipelines.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1832,7 +1827,7 @@ You're not viewing the latest version.
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Trigger a dry run of the evaluate job on pull requests that target main</span><span class="w"></span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Trigger a dry run of the evaluate job on pull requests that target main</span><span class="w"></span>
 <span class="nt">pr</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span><span class="w"></span>
 
@@ -1862,8 +1857,7 @@ You're not viewing the latest version.
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">checkout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fidesctl evaluate .fides/</span><span class="w"></span>
 <span class="w">        </span><span class="nt">displayName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Fidesctl</span><span class="nv"> </span><span class="s">Evaluation&quot;</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

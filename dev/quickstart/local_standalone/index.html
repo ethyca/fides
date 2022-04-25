@@ -1504,38 +1504,32 @@ You're not viewing the latest version.
 <h1 id="running-fidesctl-locally-standalone">Running Fidesctl Locally (Standalone)</h1>
 <p>This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.</p>
 <p>In standalone mode most CLI commands will not work as they require webserver connectivity for persistence, and so those commands are not available. Crucially though, the core evaluation functionality is still present. To run in standalone mode, use one of the following methods:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">CLI flag</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl --local &lt;subcommand&gt;
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">fidesctl.toml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">CLI flag</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl --local &lt;subcommand&gt;
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">fidesctl.toml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
 <span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>For more information on running a full fidesctl installation, see the <a href="../local_full/">Running Fidesctl Locally (Full Installation)</a> or <a href="../docker/">Running Fidesctl in Docker</a> pages.</p>
 <h2 id="system-requirements">System Requirements</h2>
 <p>See the Python section of the <a href="../../installation/prerequisites_dependencies/">Prerequisites and Dependencies</a> page for more information.</p>
 <h2 id="fidesctl-installation">Fidesctl Installation</h2>
 <p>The next step is to install fidesctl via pip:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install fidesctl
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip install fidesctl
+</code></pre></div></td></tr></table></div>
 <p>For more information on installing fidesctl with pip, as well as the other potential extras, see the <a href="../../installation/pypi/">Installation from PyPI</a> guide.</p>
 <h2 id="verifying-the-installation">Verifying the Installation</h2>
 <p>Now that we have fidesctl installed, let's verify the installation:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Command</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl --version
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl, version 1.0.0
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Command</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl --version
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl, version 1.0.0
+</code></pre></div></td></tr></table></div>
 <h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
 <p>With Fidesctl installed, it's time to initialize fidesctl for a project, so we have some place to start adding resource manifests and tweaking our configuration.</p>
 <p>Switch to your project's root directory, and initialize fidesctl:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fidesctl</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl init
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1553,7 +1547,7 @@ You're not viewing the latest version.
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>No config file found. Using default configuration values.
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>No config file found. Using default configuration values.
 Initializing Fidesctl...
 
 Created a &#39;.fides&#39; directory.
@@ -1572,8 +1566,7 @@ Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:
             https://ethyca.github.io/fides/installation/configuration/
 
 Fidesctl initialization complete.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>That's it! Your local standalone installation of fidesctl is up and running.</p>
 <h2 id="next-steps">Next Steps</h2>
 <p>See the <a href="../../tutorial/">Tutorial</a> page for a step-by-step guide on setting up a Fides data privacy workflow.</p>

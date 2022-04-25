@@ -1499,10 +1499,9 @@ You're not viewing the latest version.
 </ol>
 <h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
 <p>Even though we're running fidesctl in Docker, we still need to initialize fidesctl locally to then mount those files into the Docker container.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Expected Output</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fidesctl</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl init
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1520,7 +1519,7 @@ You're not viewing the latest version.
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>No config file found. Using default configuration values.
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>No config file found. Using default configuration values.
 Initializing Fidesctl...
 
 Created a &#39;.fides&#39; directory.
@@ -1539,11 +1538,10 @@ Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:
             https://ethyca.github.io/fides/installation/configuration/
 
 Fidesctl initialization complete.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="docker-setup">Docker Setup</h2>
 <p>This is a reference file that you can copy/paste into a local <code>docker-compose.yml</code> file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port <code>5432</code> or <code>8080</code> before using this file.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">docker-compose.yml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">docker-compose.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1588,7 +1586,7 @@ Fidesctl initialization complete.
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
-<span class="normal">46</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>services:
+<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code>services:
   fidesctl:
     image: ethyca/fidesctl:1.2.0
     command: fidesctl webserver
@@ -1634,21 +1632,19 @@ Fidesctl initialization complete.
 
 volumes:
   postgres-fidesctl:
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Now we can start interacting with our installation. Let's run the following commands to get going:</p>
 <ol>
 <li><code>docker-compose up -d</code> -&gt; This will spin up the docker-compose file in the background.</li>
 <li><code>docker-compose run --rm fidesctl /bin/bash</code> -&gt; This opens a shell within the fidesctl container.</li>
 <li>
 <p><code>fidesctl status</code> -&gt; This confirms that your <code>fidesctl</code> CLI can reach the server and everything is ready to go!</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
 Getting server status...
 Server is reachable and the client/server application versions match.
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 </li>
 </ol>
 <p>Now that you're up and running, you can use <code>fidesctl</code> from the shell to get a list of all the possible <a href="../../cli/">CLI commands</a>.</p>

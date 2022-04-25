@@ -1566,47 +1566,43 @@ You're not viewing the latest version.
 <h2 id="writing-tests">Writing tests</h2>
 <p>Fidesctl's tests are stored in the <code>tests</code> directory.</p>
 <p>Tests should have descriptive names that make it clear what you're testing. If necessary, add a docstring or comment to explain why you're testing this specific thing.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Good test name</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Good test name</span>
 <span class="k">def</span> <span class="nf">test_dry_evaluate_system_fail</span><span class="p">(</span><span class="n">server_url</span><span class="p">,</span> <span class="n">resources_dict</span><span class="p">):</span>
     <span class="o">...</span>
 
 <span class="c1"># Bad test name</span>
 <span class="k">def</span> <span class="nf">test_dry_evaluate</span><span class="p">():</span>
     <span class="o">...</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Fidesctl has a few <a href="https://docs.pytest.org/en/stable/fixture.html"><code>pytest</code> fixtures</a> available for testing; see <code>conftest.py</code> for details.</p>
 <h3 id="integration-tests-vs-mocked-tests">Integration tests vs. Mocked tests</h3>
 <p>Generally, tests that include mocking are discouraged. Mocking can create a false sense of security and obfuscate possible errors in the code that only present themselves when integration tested.</p>
 <h2 id="running-tests">Running tests</h2>
 <p>Fidesctl uses <code>pytest</code> for unit testing. To run tests, invoke <code>pytest</code> from the <code>/fides/fidesctl/</code> directory:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">cd</span> fidesctl
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span> fidesctl
 pytest
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="running-specific-tests">Running specific tests</h3>
 <p>To run a subset of tests, provide a filename or directory; to match a specific test name, use the <code>-k</code> flag:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># run all tests in the tests/integration directory that contain the word &quot;api&quot; in their title</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests in the tests/integration directory that contain the word &quot;api&quot; in their title</span>
 pytest tests/integration/ -k api
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The <code>--sw</code> flag will exit <code>pytest</code> the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.</p>
 <p>For more information on available Pytest invocation options, see the documentation <a href="https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations">here</a>.</p>
 <h3 id="excluding-external-tests">Excluding external tests</h3>
 <p>Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the <code>external</code> mark. </p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># run all tests except external ones</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests except external ones</span>
 pytest -m <span class="s2">&quot;not external&quot;</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="ci-workflows">CI Workflows</h2>
 <p>CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors and is generally an inefficient usage of your time!</p>
 

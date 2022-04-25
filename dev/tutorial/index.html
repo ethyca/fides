@@ -1551,21 +1551,18 @@ You're not viewing the latest version.
 <li>Clone <a href="https://github.com/ethyca/fidesdemo">the <code>ethyca/fidesdemo</code> repository</a> to your machine.</li>
 <li>
 <p>Checkout the repository's <a href="https://github.com/ethyca/fidesdemo/releases/tag/tutorial-start"><code>tutorial-start</code> tag</a>:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>git checkout tutorial-start
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git checkout tutorial-start
+</code></pre></div></td></tr></table></div>
 <p>Each step in this tutorial will explain the changes made in each commit of the fidesdemo repository. You can follow along by checking out each one, or by building everything yourself and comparing your work to each commit's changeset.</p>
 </li>
 <li>
 <p>Navigate to the repository directory in your command line, and run:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>make install
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>make install
+</code></pre></div></td></tr></table></div>
 <p>This will create the project's virtual environment, and set up all required containers, databases, and dependencies.</p>
 <p>If you prefer, you may execute the project's test suite by running:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>make <span class="nb">test</span>
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>make <span class="nb">test</span>
+</code></pre></div></td></tr></table></div>
 </li>
 </ol>
 <h2 id="about-the-example-application-flaskr">About the Example Application ("Flaskr")</h2>
@@ -1578,7 +1575,7 @@ You're not viewing the latest version.
 <li>Purchase a product (no products are actually for sale)</li>
 </ul>
 <p>The schema itself is designed to highlight a few <em>very</em> simple examples of how identifiable data might get stored in a web application like this one. The sample data below shows what this looks like:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1597,7 +1594,7 @@ You're not viewing the latest version.
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nv">flaskr</span><span class="o">=</span><span class="c1"># SELECT * FROM users;</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">flaskr</span><span class="o">=</span><span class="c1"># SELECT * FROM users;</span>
  id <span class="p">|</span>     created_at      <span class="p">|</span>       email       <span class="p">|</span>              password              <span class="p">|</span> first_name <span class="p">|</span> last_name
 ----+---------------------+-------------------+------------------------------------+------------+-----------
   <span class="m">1</span> <span class="p">|</span> <span class="m">2020</span>-01-01 <span class="m">00</span>:00:00 <span class="p">|</span> admin@example.com <span class="p">|</span> pbkdf2:sha256:260000<span class="nv">$O87nanbSkl</span>... <span class="p">|</span> Admin      <span class="p">|</span> User
@@ -1617,8 +1614,7 @@ You're not viewing the latest version.
 ----+---------------------+------------+----------+----------------+----------+-------------+-------+-------
   <span class="m">1</span> <span class="p">|</span> <span class="m">2020</span>-01-04 <span class="m">12</span>:00:00 <span class="p">|</span>          <span class="m">1</span> <span class="p">|</span>        <span class="m">2</span> <span class="p">|</span> <span class="m">123</span> Example St <span class="p">|</span> Apt <span class="m">123</span>  <span class="p">|</span> Exampletown <span class="p">|</span> NY    <span class="p">|</span> <span class="m">12345</span>
 <span class="o">(</span><span class="m">1</span> row<span class="o">)</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="check-your-progress">Check Your Progress</h2>
 <p>After running the commands outlined in the <a href="#installation">Installation</a> section, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/tutorial-start"><code>tutorial-start</code></a> tag.</p>
 <h2 id="next-add-fidesctl-to-the-app">Next: Add Fidesctl to the App</h2>

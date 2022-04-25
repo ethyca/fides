@@ -1523,19 +1523,17 @@ You're not viewing the latest version.
 <h3 id="dot-notation-and-snake_case">Dot Notation and Snake_Case</h3>
 <p>To make writing and reading Fides language as easy for humans as possible, declarations from the privacy taxonomy use <code>dot notation</code> for the keys and use <code>snake_case</code> compound labels.</p>
 <p>For example, to describe a field in a database as information provided by a user that is personally identifiable, you can write it's data category as:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># This declares that the data is provided by the user and identifies them directly</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># This declares that the data is provided by the user and identifies them directly</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>If we require greater specificity that just "identifiable", we could declare the contact type as a phone number by using a more specific sub-category:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># This declares that the is data provided by the user,</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># This declares that the is data provided by the user,</span><span class="w"></span>
 <span class="c1"># identifies them directly and is from the contact category and of type phone number.</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact.phone_number</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The diagram below shows you the structure of that statement:</p>
 <?xml version="1.0" encoding="UTF-8"?>
 <p><svg class="svg-illustration" width="459px" height="201px" viewBox="0 0 459 201" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -1576,19 +1574,18 @@ You're not viewing the latest version.
 <h3 id="key-value">Key-Value</h3>
 <p>The key-value is YAML, and Fides', basic building block. Every item in a Fides YAML document is a member of at least one dictionary. The key is always a <code>string</code>. The value is a scalar so that it can be any datatype. So the value can be a <code>string</code>, a <code>number</code>, or another <code>dictionary</code> - most commonly in Fides, this will be a <code>string</code> that may provide a description or a pointer to a reference object in the taxonomy.</p>
 <p>If we use the example of a user's contact email, to correctly declare this in valid Fides YAML as part of a Dataset, it would be:</p>
-<p><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">  </span><span class="nt">fields</span><span class="p">:</span><span class="w">                           </span><span class="c1"># Group of fields in the dataset.</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="nt">fields</span><span class="p">:</span><span class="w">                           </span><span class="c1"># Group of fields in the dataset.</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User&#39;s Email</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w">              </span><span class="c1"># Data category label(s) to assign field.</span><span class="w"></span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact.email</span><span class="w"></span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account.contact.email</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 The key for each key-value pair determines what value types are valid (for example, a resource type such as <code>data_categories</code> must use values from the Data Categories taxonomy), but many keys accept arbitrary strings as descriptive labels.</p>
 <p>Finally, as you see in the example above, keys such as <code>data_categories</code> accept a list of values for multi-labeling. In this case, the field email has been assigned the value <strong>user provided identifiable contact email</strong> as well as <strong>account related contact email</strong>, indicating that it may be either of those categories when used.</p>
 <h2 id="character-encoding">Character Encoding</h2>

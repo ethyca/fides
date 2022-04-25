@@ -1490,7 +1490,7 @@ You're not viewing the latest version.
 <p>This app contains a single Flaskr Web Application system resource. Create a <code>system</code> resource to annotate it by adding a <code>flaskr_system.yml</code> file to the <code>fides_resources</code> directory.</p>
 <p>Writing a Fides privacy declaration requires answering the questions: <em>"What data is this system processing?"</em>, <em>"Why is the system processing this data?"</em>, <em>"Whose data is involved?"</em>, and <em>"How is the data protected?"</em> Fides answers these questions with a <code>privacy_declaration</code> that describes the data categories, use, subjects, and qualifier. This application is quite simple, so it only has a single use: to provide the service to users. In order to do so, it requires some identifiable data (name, email, contact, etc.) and it derives some data as well (unique IDs).</p>
 <p>For this project, the file should contain the following configuration:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1506,7 +1506,7 @@ You're not viewing the latest version.
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_system</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Web Application</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">An example Flask web app that simulates an e-commerce application</span><span class="w"></span>
@@ -1523,8 +1523,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">        </span><span class="nt">dataset_references</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_postgres_dataset</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>Privacy Declarations can be read colloquially as "This system uses sensitive data types of <code>data_categories</code> for <code>data_subjects</code> with the purpose of <code>data_use</code> at a deidentification level of <code>data_qualifier</code>".</p>
 <p>In a production app, create as many systems as are necessary to cover all relevant business applications.</p>
 <h2 id="understanding-systems">Understanding Systems</h2>

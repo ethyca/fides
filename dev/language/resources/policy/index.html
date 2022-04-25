@@ -1503,13 +1503,12 @@ You're not viewing the latest version.
 
 <h1 id="policy">Policy</h1>
 <p>A Policy is your privacy policy as code, it lists a set of acceptable and non-acceptable rules and uses all 4 privacy attributes  (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>). The purpose of the policy is to state what types of data are allowed for certain usages.</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>organization
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>organization
   |-&gt; ** policy **
       |-&gt; rules
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="object-structure">Object Structure</h2>
 <p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
 <p>A string token of your own invention that uniquely identifies this Policy. It's your responsibility to ensure that the value is unique across all of your Policy objects. The value may only contain alphanumeric characters, underscores, and hyphens. (<code>[A-Za-z0-9_.-]</code>).</p>
@@ -1537,7 +1536,7 @@ You're not viewing the latest version.
 <p>The fides key of the <a href="/fides/language/resources/organization/">Organization</a> to which this Policy belongs.</p>
 <h2 id="examples">Examples</h2>
 <h3 id="manifest-file"><strong>Manifest File</strong></h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1557,7 +1556,7 @@ You're not viewing the latest version.
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_privacy_policy</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Privacy Policy</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">The main privacy policy for the organization.</span><span class="w"></span>
@@ -1578,11 +1577,10 @@ You're not viewing the latest version.
 <span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
 <span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p><strong>Demo manifest file:</strong> <code>/fides/fidesctl/demo_resources/demo_policy.yml</code></p>
 <h3 id="api-payload"><strong>API Payload</strong></h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1615,7 +1613,7 @@ You're not viewing the latest version.
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/policy</span><span class="w"></span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/policy</span><span class="w"></span>
 <span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo_privacy_policy&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;organization_fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_organization&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1649,8 +1647,7 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

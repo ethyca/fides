@@ -1503,15 +1503,14 @@ You're not viewing the latest version.
 
 <h1 id="system">System</h1>
 <p>A System is a model for describing anything that processes data for your organization (applications, services, 3rd party APIs, etc.) and describes how these datasets are used for business functions of instances of your data resources. It contains all 4 privacy attributes (<code>data_category</code>, <code>data_use</code>, <code>data_subject</code>, and <code>data_qualifier</code>).</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>organization
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>organization
   |-&gt; registry (optional)
       |-&gt; ** system **
           |-&gt; privacy declarations
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="object-structure">Object Structure</h2>
 <p><strong>fides_key</strong><span class="required"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>constrained string</em></p>
 <p>A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. (<code>[A-Za-z0-9_.-]</code>).</p>
@@ -1545,7 +1544,7 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <p>The fides key of the <a href="/fides/language/resources/organization/">Organization</a> to which this System belongs.</p>
 <h2 id="examples">Examples</h2>
 <h3 id="manifest-file"><strong>Manifest File</strong></h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1574,7 +1573,7 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_analytics_system</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Analytics System</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A system used for analyzing customer behaviour.</span><span class="w"></span>
@@ -1604,11 +1603,10 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">identified_data</span><span class="w"></span>
 <span class="w">        </span><span class="nt">dataset_references</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_users_dataset</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p><strong>Demo manifest file:</strong> <code>/fides/fidesctl/demo_resources/demo_system.yml</code></p>
 <h3 id="api"><strong>API</strong></h3>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1641,7 +1639,7 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/sys</span><span class="kc">te</span><span class="err">m</span><span class="w"></span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="err">POST</span><span class="w"> </span><span class="err">/sys</span><span class="kc">te</span><span class="err">m</span><span class="w"></span>
 
 <span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo_analytics_system&quot;</span><span class="p">,</span><span class="w"></span>
@@ -1675,8 +1673,7 @@ Defaults to <code>Controller</code> if not set explicitly.</p>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

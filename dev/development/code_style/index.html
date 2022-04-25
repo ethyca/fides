@@ -1586,7 +1586,7 @@ You're not viewing the latest version.
 <h2 id="general">General</h2>
 <h3 id="docstrings">Docstrings</h3>
 <p>Docstrings are required for every function, class and method. No specific style is required or encouraged, as we expect that most of the relevant information can be gleaned from both the function signature's type-hints as well as descriptive parameter names. The docstring should serve to give additional context/flavour beyond that which can be gained from the code itself.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Docstring Example</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Docstring Example</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1597,7 +1597,7 @@ You're not viewing the latest version.
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Bad</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Bad</span>
 <span class="k">def</span> <span class="nf">execute_evaluation</span><span class="p">(</span><span class="n">taxonomy</span><span class="p">:</span> <span class="n">Taxonomy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Evaluation</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Execute an evaluation. </span>
@@ -1609,11 +1609,10 @@ You're not viewing the latest version.
 <span class="sd">    Check the stated constraints of each Privacy Policy&#39;s rules against</span>
 <span class="sd">    each system&#39;s privacy declarations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="variableparameter-naming">Variable/Parameter Naming</h3>
 <p>Variable and parameter names should be as self-describing as possible. Brevity is not a concern here. Here are some common examples for writing good self-documenting code:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Single Letter Variable Names</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Single Letter Variable Names</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1625,7 +1624,7 @@ You're not viewing the latest version.
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Incorrect</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Incorrect</span>
 <span class="n">s</span> <span class="o">=</span> <span class="mi">726</span>
 
 <span class="c1"># Correct</span>
@@ -1638,16 +1637,15 @@ You're not viewing the latest version.
 <span class="c1"># Correct</span>
 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Abbreviated Variable Names</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Abbreviated Variable Names</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Incorrect</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Incorrect</span>
 <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Incorrect</span>
@@ -1655,9 +1653,8 @@ You're not viewing the latest version.
 
 <span class="c1"># Correct</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Type Ambiguous Variable Names</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Type Ambiguous Variable Names</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1673,7 +1670,7 @@ You're not viewing the latest version.
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># Incorrect</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Incorrect</span>
 <span class="n">food</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">]</span> 
 
 <span class="c1"># Incorrect</span>
@@ -1690,8 +1687,7 @@ You're not viewing the latest version.
 <span class="c1"># Correct</span>
 <span class="c1"># Both of the above styles</span>
 <span class="n">foods_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">]</span> 
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="pre-commit-hooks">Pre-Commit Hooks</h2>
 <p>Fidesctl includes a <code>.pre-commit-config.yaml</code> to facilitate running CI checks before pushing up to a PR. The <code>pre-commit</code> package is included in the <code>dev-requirements.txt</code>. Once that is installed, follow these steps to get up and running:</p>
 <ol>
@@ -1701,16 +1697,14 @@ You're not viewing the latest version.
 <p><strong>NOTE</strong>: A Python interpreter must be available from wherever the git commands are being run, as this is required to run the <code>pre-commit</code> package.</p>
 <h2 id="ci-checks">CI Checks</h2>
 <p>CI checks are stored as targets within the Makefile, and can be run from the top-level <code>fides</code> directory with the following pattern:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Pattern</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>make &lt;lowercased_name&gt;
-</code></pre></div>
-</td></tr></table>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Examples</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Pattern</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>make &lt;lowercased_name&gt;
+</code></pre></div></td></tr></table></div>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Examples</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>make black
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>make black
 make mypy
 make xenon
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="black-formatting">Black formatting</h3>
 <p>Fidesctl's code is formatted using the <a href="https://github.com/ambv/black">black</a> style. This style is checked in a CI step, and merges to master are prevented if code does not conform.</p>
 <p>A number of extensions are available for popular editors that will automatically apply black to your code.</p>

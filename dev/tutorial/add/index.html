@@ -1533,23 +1533,20 @@ You're not viewing the latest version.
 <p>In this step you will incorporate <a href="https://github.com/ethyca/fides">fidesctl</a>, which will enable you to declare your <code>system</code>, <code>dataset</code>, and <code>policy</code> resources as manifest YAML files.</p>
 <h2 id="add-the-fidesctl-dependency">Add the <code>fidesctl</code> Dependency</h2>
 <p>Open the <code>requirements.txt</code> file and add the <code>fidesctl</code> dependency by including the following line:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl&gt;=1.0.0
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl&gt;=1.0.0
+</code></pre></div></td></tr></table></div>
 <p>Then, install the dependencies by running:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -r requirements.txt
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip install -r requirements.txt
+</code></pre></div></td></tr></table></div>
 <h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
 <p>With fidesctl installed, it's time to initialize the project so we have some place to start adding resource manifests and tweaking our configuration. Run the following command and follow the prompts to get your local fidesctl instance initialized.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Initialize Fidesctl</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>fidesctl init
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fidesctl</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl init
+</code></pre></div></td></tr></table></div>
 <h2 id="configuring-fidesctl">Configuring Fidesctl</h2>
 <p>See our <a href="../../installation/configuration/">Configuration</a> guide for more information on how to configure fidesctl.</p>
 <h2 id="run-fidesctl-via-docker">Run Fidesctl via Docker</h2>
 <p>Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses <code>docker-compose</code> to orchestrate resources, so include <code>fidesctl</code> as a service by adding the following configuration after the database service:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1559,7 +1556,7 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">fidesctl</span><span class="p">:</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">fidesctl</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ethyca/fidesctl:latest</span><span class="w"></span>
 <span class="w">  </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db</span><span class="w"></span>
@@ -1570,8 +1567,7 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8080:8080&quot;</span><span class="w"></span>
 <span class="w">  </span><span class="nt">environment</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FIDESCTL__API__DATABASE_URL=postgres:postgres@db:5432/fidesctl</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <blockquote>
 <p>See <a href="../../installation/installation/">the fidesctl installation guide</a> for a more detailed fidesctl server setup walkthrough, and <a href="https://docs.docker.com/compose/compose-file/">the <code>docker-compose</code> documentation</a> for an explanation of the above configuration options.</p>
 </blockquote>
@@ -1580,7 +1576,7 @@ You're not viewing the latest version.
 <p>This step is optional, but the commands added to the <code>Makefile</code> here will be referenced later in this tutorial.</p>
 </blockquote>
 <p>The above changes will enable fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the fidesctl CLI by adding commands to the <code>Makefile</code> like the following:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1590,7 +1586,7 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nf">fidesctl-init-db</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nf">fidesctl-init-db</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
     @echo <span class="s2">&quot;Initializing fidesctl db..&quot;</span>
     ./venv/bin/fidesctl db init
 
@@ -1601,8 +1597,7 @@ You're not viewing the latest version.
 <span class="nf">fidesctl-generate-dataset</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
     @echo <span class="s2">&quot;Generating dataset with fidesctl...&quot;</span>
     ./venv/bin/fidesctl generate dataset db postgresql://postgres:postgres@localhost:5432/flaskr example.yml
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <blockquote>
 <p><strong>Note:</strong> There are additional <code>Makefile</code> changes included in the <code>fidesdemo</code> repository, but they are only intended to enable cleaner usage of this project for demonstration purposes.</p>
 </blockquote>

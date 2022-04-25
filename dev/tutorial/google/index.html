@@ -1505,16 +1505,14 @@ You're not viewing the latest version.
 <p>To better understand the behavior of the app's users, add Google Analytics to the app and a fidesctl System resource to annotate it.</p>
 <h2 id="define-the-apps-google-analytics-identifier">Define the App's Google Analytics Identifier</h2>
 <p>Open the <code>flaskr/__init__.py</code> file in your favorite editor, and define the <code>GOOGLE_ANALYTICS_ID</code> constant below line 7:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span> <span class="o">=</span> <span class="s2">&quot;UA-xxxxxxxxx-y&quot;</span>
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span> <span class="o">=</span> <span class="s2">&quot;UA-xxxxxxxxx-y&quot;</span>
+</code></pre></div></td></tr></table></div>
 <p>In the <code>create_app</code> function defined on line 11, include the Google Analytics ID value in the application's configuration by adding the following line below line 17:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span><span class="o">=</span><span class="n">GOOGLE_ANALYTICS_ID</span><span class="p">,</span>
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">GOOGLE_ANALYTICS_ID</span><span class="o">=</span><span class="n">GOOGLE_ANALYTICS_ID</span><span class="p">,</span>
+</code></pre></div></td></tr></table></div>
 <h2 id="add-the-google-analytics-script">Add the Google Analytics Script</h2>
 <p>Open the <code>flaskr/templates/base.html</code> file in your favorite editor, and include the following at the beginning of the <code>&lt;head&gt;</code> tag:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1523,18 +1521,17 @@ You're not viewing the latest version.
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>{% if config[&#39;GOOGLE_ANALYTICS_ID&#39;] %}
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>{% if config[&#39;GOOGLE_ANALYTICS_ID&#39;] %}
     <span class="cm">&lt;!-- Global site tag (gtag.js) - Google Analytics --&gt;</span>
     <span class="p">&lt;</span><span class="nt">script</span> <span class="na">async</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://www.googletagmanager.com/gtag/js?id={{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
-        <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span> <span class="o">||</span> <span class="p">[];</span>
-        <span class="kd">function</span> <span class="nx">gtag</span><span class="p">(){</span><span class="nx">dataLayer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);}</span>
-        <span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;js&quot;</span><span class="p">,</span> <span class="ow">new</span> <span class="nb">Date</span><span class="p">());</span>
-        <span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;{{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;</span><span class="p">);</span>
-    <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">dataLayer</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">[];</span><span class="w"></span>
+<span class="w">        </span><span class="kd">function</span><span class="w"> </span><span class="nx">gtag</span><span class="p">(){</span><span class="nx">dataLayer</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);}</span><span class="w"></span>
+<span class="w">        </span><span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;js&quot;</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">());</span><span class="w"></span>
+<span class="w">        </span><span class="nx">gtag</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;{{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
 {% endif %}
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="annotate-a-fidesctl-system-resource">Annotate a Fidesctl System Resource</h2>
 <p>To ensure that the app's policies can account for the data collected by Google Analytics, define a new fidesctl System resource by adding a <code>google_analytics_system.yml</code> file to the <code>fides_resources</code> directory. This System resource annotation should reflect the uses of the Google Analytics features configured in this app's implementation. Some things to think about might be:</p>
 <ul>
@@ -1542,7 +1539,7 @@ You're not viewing the latest version.
 <li>What <code>data_use</code> value would be appropriate for this app? (<code>provide</code> vs. <code>improve</code>)</li>
 </ul>
 <p>For this System resource, the file should contain the following configuration:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1574,7 +1571,7 @@ You're not viewing the latest version.
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">33</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google_analytics_system</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Google Analytics</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Hosted third party analytics to track and analyze user behaviour</span><span class="w"></span>
@@ -1607,8 +1604,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="c1"># With &quot;IP Anonymization&quot; disabled, IP Addresses will remain identifiable.</span><span class="w"></span>
 <span class="w">        </span><span class="c1"># See https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>There are two <code>privacy_declaration</code>s defined:</p>
 <ol>
 <li>The use of pseudonymized behavioral data to analyze app usage</li>
@@ -1619,14 +1615,14 @@ You're not viewing the latest version.
 <p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-add-google-analytics"><code>fidesctl-add-google-analytics</code> tag</a>.</p>
 <h2 id="next-manage-google-analytics-with-fidesctl">Next: Manage Google Analytics with Fidesctl</h2>
 <p>Google Analytics is implemented and working correctly, but - oh no! - executing <code>make fidesctl-evaluate</code> shows a failure:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4e739b1b_732e_43b1_8747_e833905dfc4c_1635789050&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FAIL&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
@@ -1634,8 +1630,7 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="p">],</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>In the final step, enable the fidesctl policy already in place to pass by <a href="../pass/">updating Google Analytics</a>.</p>
 
               
