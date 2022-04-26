@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - earmenda-build-docs-pr-checks
   release:
     types: [published]
 
