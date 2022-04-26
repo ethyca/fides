@@ -2,7 +2,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-from pydantic import ValidationError
 
 from fidesctl.core.config import APISettings, get_config
 
@@ -21,9 +20,8 @@ def test_get_config():
 def test_default_config():
     "Test building a config from default values."
     os.environ["FIDESCTL_CONFIG_PATH"] = ""
-    os.chdir("/fides")
     config = get_config()
-    os.chdir("/fides/fidesctl")
+    os.chdir("/fides")
 
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
@@ -43,7 +41,7 @@ def test_default_config():
 def test_config_from_env_vars():
     "Test building a config from env vars."
     config = get_config()
-    os.chdir("/fides/fidesctl")
+    os.chdir("/fides")
 
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"

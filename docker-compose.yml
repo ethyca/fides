@@ -23,6 +23,7 @@ services:
       FIDESCTL_TEST_MODE: "True"
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
+      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
 
   fidesctl-db:
     image: postgres:12
@@ -47,7 +48,7 @@ services:
       context: docs/fides/
     volumes:
       - ./docs/fides:/docs
-      - ./fidesctl:/fidesctl
+      - ./:/fides
     expose:
       - 8000
     ports:

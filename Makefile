@@ -32,19 +32,23 @@ help:
 	@echo --------------------
 	@echo Development Targets:
 	@echo ----
-	@echo clean - Runs various Docker commands to clean up the docker environment including containers, images, volumes, etc. This will wipe out everything!
+	@echo api - Spins up the database and API, reachable on localhost:8080.
 	@echo ----
-	@echo build - Builds the Fidesctl Docker image.
+	@echo build - Builds the fidesctl Docker image.
 	@echo ----
-	@echo check-all - Run all of the available CI checks for Fidesctl locally except for externally dependent tests.
+	@echo check-all - Run all CI checks except for externally dependent ones.
 	@echo ----
-	@echo reset-db - Wipes all user-created data and resets the database back to its freshly initialized state.
+	@echo clean - Runs Docker commands to clean up the docker local environment.
 	@echo ----
-	@echo api - Spins up the database and API, reachable from the host machine at localhost.
+	@echo cli - Spins up the database, API, and starts a shell within the API container to run CLI commands.
 	@echo ----
-	@echo cli - Spins up the database, API, and starts a shell within the API container to run Fidesctl CLI commands.
+	@echo cli-integration - Spins up the CLI with additional containers needed for integration testing.
 	@echo ----
-	@echo cli-integration - Spins up the cli with additional containers needed for integration testing.
+	@echo db - Spins up the database, reachable on localhost:5432
+	@echo ----
+	@echo docs-serve - Spins up the docs server on localhost:8000
+	@echo ----
+	@echo reset-db - Resets the database back to its freshly initialized state.
 	@echo --------------------
 
 ####################
@@ -77,15 +81,24 @@ cli-integration: build-local
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
 	@$(RUN) /bin/bash
 	@make teardown
+	
+.PHONY: db
+db:
+	@docker compose up -d fidesctl-db
+
 ####################
 # Docker
 ####################
 
 build:
-	docker build --tag $(IMAGE) fidesctl/
+	docker build --target=prod --tag $(IMAGE) .
 
 build-local:
-	docker build --tag $(IMAGE_LOCAL) fidesctl/
+	docker build --target=dev --tag $(IMAGE_LOCAL) .
+
+# The production image is used for running tests in CI
+build-local-prod:
+	docker build --target=prod --tag $(IMAGE_LOCAL) .
 
 push: build
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -100,13 +113,13 @@ black:
 	@$(RUN_NO_DEPS) black --check src/
 
 # The order of dependent targets here is intentional
-check-all: teardown build-local check-install fidesctl fidesctl-db-scan black \
+check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan black \
 			pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
 	@echo "Checking that fidesctl is installed..."
-	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG}
+	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} --version
 
 # A separate docs-build target that does not require build-local
 docs-build-ci:
@@ -128,11 +141,11 @@ pylint:
 	@$(RUN_NO_DEPS) pylint src/
 
 pytest-unit:
-	@docker compose up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@$(RUN_NO_DEPS) pytest -x -m unit
 
 pytest-integration:
-	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+	@$(START_APP)
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	pytest -x -m integration
 	@make teardown
@@ -164,8 +177,9 @@ xenon:
 
 .PHONY: clean
 clean:
-	@echo "Cleaning project temporary files and installed dependencies..."
-	@docker system prune -a --volumes
+	@echo "Doing docker cleanup for this project..."
+	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans --volumes --rmi all
+	@docker system prune --force
 	@echo "Clean complete!"
 
 .PHONY: teardown
@@ -177,10 +191,14 @@ teardown:
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
-	python generate_docs.py ../docs/fides/docs/
+	python generate_docs.py docs/fides/docs/
 
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker compose build docs
 	@docker compose run --rm --service-ports $(CI_ARGS) docs \
+<<<<<<< HEAD
 	/bin/bash -c "pip install -e /fidesctl[all] && mkdocs serve --dev-addr=0.0.0.0:8000"
+=======
+	/bin/bash -c "pip install -e /fides && mkdocs serve --dev-addr=0.0.0.0:8000"
+>>>>>>> main

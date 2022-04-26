@@ -1,0 +1,11 @@
+# Ignore existing build artifacts
+build/
+dist/
+src/fidesctl.egg-info/
+
+# Ignore the docs
+docs/
+
+# Ignore dev files
+.github/
+.devcontainer/

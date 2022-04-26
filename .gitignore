@@ -119,7 +119,7 @@ sdist/
 var/
 wheels/
 *egg-info/
-!egg-info/entry_points.txt # Required so that this works when mounted via docker-compose
+!*egg-info/entry_points.txt # Required so that this works when mounted via docker-compose
 .installed.cfg
 *.egg
 MANIFEST
