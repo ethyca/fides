@@ -28,3 +28,4 @@ The types of changes are:
 
 * Third-Country formatting on Data Map
 * Potential Duplication on Data Map
+* Exceptions are no longer raised when sending `AnalyticsEvent`s on Windows
