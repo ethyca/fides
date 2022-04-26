@@ -1246,6 +1246,13 @@ You're not viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#release-steps" class="md-nav__link">
+    Release Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1469,6 +1476,13 @@ You're not viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#release-steps" class="md-nav__link">
+    Release Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1499,6 +1513,21 @@ You're not viewing the latest version.
 <p>Hotfixes are an exception to this and can be added and pushed as patch versions when needed.</p>
 <h2 id="branching">Branching</h2>
 <p>Fidesctl uses continuous delivery with a single <code>main</code> branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.</p>
+<h2 id="release-steps">Release Steps</h2>
+<p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub &amp; PyPi via GitHub Actions pipelines. We also use a <code>CHANGELOG.md</code> to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:</p>
+<ol>
+<li>Open a PR that is titled the version of the release (i.e. <code>1.6.0</code>)<ul>
+<li>Rename the <code>Unreleased</code> section of <code>CHANGELOG.md</code> to the new version number and put a date next to it</li>
+<li>Update the <code>compare</code> links for both the new version and for the new <code>Unreleased</code> section</li>
+</ul>
+</li>
+<li>Once approved, merge the PR</li>
+<li>Create a new release, ensuring that the last PR to get merged is the aforementioned <code>CHANGELOG.md</code> update PR</li>
+<li>Add the new version as the tag (i.e. <code>1.6.0</code>)</li>
+<li>Make the title the version with a <code>v</code> in front of it (i.e. <code>v1.6.0</code>)</li>
+<li>Publish the release</li>
+<li>Close the accompanying project in GitHub (i.e. <code>1.6.0</code>)</li>
+</ol>
 
               
             </article>
