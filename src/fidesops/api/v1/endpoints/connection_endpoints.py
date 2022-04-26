@@ -82,7 +82,10 @@ def get_connections(
     logger.info(
         f"Finding all connection configurations with pagination params {params}"
     )
-    return paginate(ConnectionConfig.query(db), params=params)
+    return paginate(
+        ConnectionConfig.query(db).order_by(ConnectionConfig.created_at.desc()),
+        params=params,
+    )
 
 
 @router.get(

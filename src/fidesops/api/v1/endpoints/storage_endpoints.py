@@ -233,7 +233,9 @@ def get_configs(
     Retrieves configs for storage.
     """
     logger.info(f"Finding all storage configurations with pagination params {params}")
-    return paginate(StorageConfig.query(db), params=params)
+    return paginate(
+        StorageConfig.query(db).order_by(StorageConfig.created_at.desc()), params=params
+    )
 
 
 @router.get(
