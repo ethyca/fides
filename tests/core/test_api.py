@@ -1,11 +1,13 @@
 """Integration tests for the API module."""
 
-import pytest
-import requests
 from json import loads
 
+import pytest
+import requests
+
 from fidesctl.core import api as _api
-from fideslang import parse, model_list
+from fideslang import model_list, parse
+
 
 # Helper Functions
 def get_existing_key(test_config, resource_type: str) -> int:

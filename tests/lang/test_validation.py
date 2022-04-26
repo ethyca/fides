@@ -11,7 +11,6 @@ from fideslang.models import (
     PrivacyRule,
     System,
 )
-
 from fideslang.validation import FidesValidationError, check_valid_country_code
 
 

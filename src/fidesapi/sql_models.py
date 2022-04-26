@@ -14,9 +14,9 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    type_coerce,
     TypeDecorator,
     cast,
+    type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.ext.declarative import declarative_base

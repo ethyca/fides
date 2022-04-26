@@ -1,14 +1,14 @@
-import pytest
-
 from typing import List
+
+import pytest
 
 from fidesctl.core import filters as _filters
 from fideslang.models import (
-    System,
-    SystemMetadata,
     Organization,
     OrganizationMetadata,
     ResourceFilter,
+    System,
+    SystemMetadata,
 )
 
 

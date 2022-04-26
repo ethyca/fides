@@ -1,16 +1,17 @@
 """Module that adds functionality for generating or scanning datasets."""
-from typing import Dict, List, Tuple, Optional
-
 import asyncio
+from typing import Dict, List, Optional, Tuple
+
 import sqlalchemy
-from sqlalchemy.engine import Engine
 from pydantic import AnyHttpUrl
+from sqlalchemy.engine import Engine
 
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from .utils import get_db_engine, echo_green, echo_red
+
+from .utils import echo_green, echo_red, get_db_engine
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],

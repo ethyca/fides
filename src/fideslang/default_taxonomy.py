@@ -1,12 +1,12 @@
 """This module contains the the default resources that Fideslang ships with."""
 
-from fideslang import (
-    Taxonomy,
+from .models import (
     DataCategory,
     DataQualifier,
-    DataUse,
     DataSubject,
+    DataUse,
     Organization,
+    Taxonomy,
 )
 
 DEFAULT_TAXONOMY = Taxonomy(

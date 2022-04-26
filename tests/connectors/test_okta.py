@@ -1,5 +1,4 @@
 import pytest
-
 from okta.models import Application as OktaApplication
 
 import fidesctl.connectors.okta as okta_connector

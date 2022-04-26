@@ -1,5 +1,5 @@
 """Module that adds functionality for resource filtering."""
-from typing import List, Callable, Optional
+from typing import Callable, List, Optional
 
 from fideslang.models import Organization, System
 

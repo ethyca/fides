@@ -112,9 +112,12 @@ push: build
 black:
 	@$(RUN_NO_DEPS) black --check src/
 
+isort:
+	@$(RUN_NO_DEPS) isort src tests --check-only
+
 # The order of dependent targets here is intentional
-check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan black \
-			pylint mypy xenon pytest-unit pytest-integration
+check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan isort \
+			black pylint mypy xenon pytest-unit pytest-integration
 	@echo "Running formatter, linter, typechecker and tests..."
 
 check-install:
