@@ -8,6 +8,7 @@ The types of changes are:
 
 * `Added` for new features.
 * `Changed` for changes in existing functionality.
+* `Developer Experience` for changes in developer workflow or tooling.
 * `Deprecated` for soon-to-be removed features.
 * `Removed` for now removed features.
 * `Fixed` for any bug fixes.
