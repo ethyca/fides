@@ -14,6 +14,7 @@ Closes <issue>
 * [ ] Documentation Updated
 * [ ] Issue Requirements are Met
 * [ ] Relevant Follow-Up Issues Created
+* [ ] Update `CHANGELOG.md`
 
 ### Description Of Changes
 
