@@ -123,7 +123,7 @@ check-install:
 
 # A separate docs-build target that does not require build-local
 docs-build-ci:
-	@$(RUN_NO_DEPS) python generate_docs.py ../docs/fides/docs/
+	@$(RUN_NO_DEPS) python generate_docs.py docs/fides/docs/
 
 .PHONY: fidesctl
 fidesctl:

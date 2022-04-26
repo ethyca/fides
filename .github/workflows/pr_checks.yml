@@ -61,7 +61,7 @@ jobs:
 
       - name: Scan fidesctl db
         run: make fidesctl-db-scan
-        
+
   Black:
     needs: Build
     runs-on: ubuntu-latest
