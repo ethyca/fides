@@ -4,12 +4,6 @@ on:
   pull_request:
     branches:
       - main
-<<<<<<< HEAD
-    paths:
-      - fidesctl/**
-      - .github/workflows/pr_checks.yml
-=======
->>>>>>> main
 
 env:
   CONTAINER: fidesctl-local
