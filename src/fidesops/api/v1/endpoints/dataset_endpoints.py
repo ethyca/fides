@@ -239,7 +239,7 @@ def get_datasets(
     )
     dataset_configs = DatasetConfig.filter(
         db=db, conditions=(DatasetConfig.connection_config_id == connection_config.id)
-    )
+    ).order_by(DatasetConfig.created_at.desc())
 
     # Generate the paginated results, but don't return them as-is. Instead,
     # modify the items array to be just the FidesopsDataset instead of the full

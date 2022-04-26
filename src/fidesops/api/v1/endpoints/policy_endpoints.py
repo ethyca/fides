@@ -59,7 +59,7 @@ def get_policy_list(
     Return a paginated list of all Policy records in this system
     """
     logger.info(f"Finding all policies with pagination params '{params}'")
-    policies = Policy.query(db=db)
+    policies = Policy.query(db=db).order_by(Policy.created_at.desc())
     return paginate(policies, params=params)
 
 

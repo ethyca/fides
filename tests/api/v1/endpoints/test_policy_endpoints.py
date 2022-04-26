@@ -1,4 +1,5 @@
 import json
+from uuid import uuid4
 
 import pytest
 from starlette.testclient import TestClient
@@ -22,6 +23,7 @@ from fidesops.models.policy import (
 )
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.util.data_category import DataCategory, generate_fides_data_categories
+
 
 class TestGetPolicies:
     @pytest.fixture(scope="function")
@@ -65,6 +67,48 @@ class TestGetPolicies:
         assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
+
+    def test_pagination_ordering(
+        self,
+        db,
+        oauth_client,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        policies = []
+        POLICY_COUNT = 50
+        for _ in range(POLICY_COUNT):
+            key = str(uuid4()).replace("-", "")
+            policies.append(
+                Policy.create(
+                    db=db,
+                    data={
+                        "name": key,
+                        "key": key,
+                        "client_id": oauth_client.id,
+                    },
+                )
+            )
+
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+        assert data["total"] == POLICY_COUNT
+
+        for policy in data["items"]:
+            # The most recent policy will be that which was last added to `policies`
+            most_recent = policies.pop()
+            assert policy["key"] == most_recent.key
+            # Once we're finished we need to delete the policies, since `oauth_client` will be
+            # subsequently deleted and will cause validation errors
+            most_recent.delete(db=db)
 
 
 class TestGetPolicyDetail:
