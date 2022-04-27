@@ -104,7 +104,7 @@ jobs:
         run: pip install -e ./[all]
 
       - name: Build Generated docs
-        run: python generate_docs.py docs/fides/docs/
+        run: make docs-build-ci
 
       - name: Build docs
         run: |
