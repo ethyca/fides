@@ -97,19 +97,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Docs Requirements
-        run: pip install -r docs/fides/requirements.txt
-
-      - name: Install fidesctl
-        run: pip install -e ./[all]
-
-      - name: Build Generated docs
-        run: make docs-build-ci
-
-      - name: Build docs
-        run: |
-          cd docs/fides/
-          mkdocs build
+      - name: Check that the docs can build
+        run: make docs-check
 
   Pylint:
     needs: Build
