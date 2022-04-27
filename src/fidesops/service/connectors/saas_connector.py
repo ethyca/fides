@@ -90,7 +90,9 @@ class AuthenticatedClient:
         Optionally ignores non-200 responses if ignore_errors is set to True
         """
         try:
-            prepared_request = self.get_authenticated_request(request_params)
+            prepared_request: PreparedRequest = self.get_authenticated_request(
+                request_params
+            )
             response = self.session.send(prepared_request)
         except Exception:
             raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
@@ -326,6 +328,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+        # unwrap response using data_path
+        if masking_request.data_path and rows:
+            unwrapped = []
+            for row in rows:
+                unwrapped.extend(pydash.get(row, masking_request.data_path))
+            rows = unwrapped
+
+        # post-process access request response specific to masking request needs
+        rows = self.process_response_data(
+            rows,
+            privacy_request.get_cached_identity_data(),
+            masking_request.postprocessors,
+        )
 
         prepared_requests = [
             query_config.generate_update_stmt(row, policy, privacy_request)

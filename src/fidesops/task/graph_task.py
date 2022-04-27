@@ -539,7 +539,7 @@ def get_cached_data_for_erasures(
     """
     Fetches processed access request results to be used for erasures.
 
-    Processing may have have added indicators to not mask certain elements in array data.
+    Processing may have added indicators to not mask certain elements in array data.
     """
     cache = get_cache()
     value_dict = cache.get_encoded_objects_by_prefix(

@@ -1,10 +1,9 @@
 import logging
 import json
 import re
-from typing import Any, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
-from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import ScalarField
 from fidesops.core.config import config
@@ -15,7 +14,7 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row, merge_dicts
-from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS
+from fidesops.util.saas_util import unflatten_dict, FIDESOPS_GROUPED_INPUTS, format_body
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +149,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         )
         if path is None:
             raise ValueError(
-                f"Unable to replace placeholders in the path for the '{self.action}' request of the '{self.collection_name}' collection."
+                f"At least one param_values references an invalid field for the '{self.action}' request of the '{self.collection_name}' collection."
             )
 
         headers: Dict[str, Any] = {}
@@ -181,7 +180,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
 
         # format the body based on the content type
-        updated_headers, formatted_body = self.format_body(headers, body)
+        updated_headers, formatted_body = format_body(headers, body)
 
         return SaaSRequestParams(
             method=current_request.method,
@@ -190,44 +189,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             query_params=query_params,
             body=formatted_body,
         )
-
-    @staticmethod
-    def format_body(
-        headers: Dict[str, Any],
-        body: Optional[str],
-    ) -> Tuple[Dict[str, Any], Optional[str]]:
-        """
-        Builds the appropriately formatted body based on the content type,
-        adding application/json to the headers if a content type is not provided.
-        """
-
-        if body is None:
-            return headers, None
-
-        content_type = next(
-            (
-                value
-                for header, value in headers.items()
-                if header.lower() == "content-type"
-            ),
-            None,
-        )
-
-        # add Content-Type: application/json if a content type is not provided
-        if content_type is None:
-            content_type = "application/json"
-            headers["Content-Type"] = content_type
-
-        if content_type == "application/json":
-            output = body
-        elif content_type == "application/x-www-form-urlencoded":
-            output = multidimensional_urlencode(json.loads(body))
-        elif content_type == "text/plain":
-            output = body
-        else:
-            raise FidesopsException(f"Unsupported Content-Type: {content_type}")
-
-        return headers, output
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -274,7 +235,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     ) -> SaaSRequestParams:
         """
         This returns the method, path, header, query, and body params needed to make an API call.
-        The fields in the row are masked according the the policy and added to the request body
+        The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
         """
 

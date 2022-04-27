@@ -1,3 +1,6 @@
+import json
+import time
+
 from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -13,8 +16,14 @@ from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 from sqlalchemy.orm import Session
 
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.service.connectors import SaaSConnector
+from fidesops.util import cryptographic_util
+from fidesops.util.saas_util import format_body
 
 saas_config = load_toml("saas_config.toml")
+
+HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 
 
 @pytest.fixture(scope="function")
@@ -32,6 +41,11 @@ def hubspot_identity_email():
     return pydash.get(saas_config, "hubspot.identity_email") or os.environ.get(
         "HUBSPOT_IDENTITY_EMAIL"
     )
+
+
+@pytest.fixture(scope="session")
+def hubspot_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -85,3 +99,89 @@ def dataset_config_hubspot(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def hubspot_erasure_data(connection_config_hubspot, hubspot_erasure_identity_email) -> Generator:
+    """
+    Gets the current value of the resource and restores it after the test is complete.
+    Used for erasure tests.
+    """
+
+    connector = SaaSConnector(connection_config_hubspot)
+
+    body = json.dumps({
+        "properties": {
+            "company": "test company",
+            "email": hubspot_erasure_identity_email,
+            "firstname": HUBSPOT_FIRSTNAME,
+            "lastname": "SomeoneLastname",
+            "phone": "(123) 123-1234",
+            "website": "someone.net"
+        }
+    })
+
+    updated_headers, formatted_body = format_body({}, body)
+
+    # create contact
+    contacts_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path=f"/crm/v3/objects/contacts",
+        headers=updated_headers,
+        body=formatted_body,
+    )
+    contacts_response = connector.create_client().send(contacts_request)
+    contacts_body = contacts_response.json()
+    contact_id = contacts_body["id"]
+
+    # no need to subscribe contact, since creating a contact auto-subscribes them
+
+    # Allows contact to be propagated in Hubspot before calling access / erasure requests
+    remaining_tries = 5
+    while _contact_exists(hubspot_erasure_identity_email, connector) is False:
+        if remaining_tries < 1:
+            raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
+        time.sleep(5)
+
+    yield contact_id
+
+    # delete contact
+    delete_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.DELETE,
+        path=f"/crm/v3/objects/contacts/{contact_id}",
+    )
+    connector.create_client().send(delete_request)
+
+    # verify contact is deleted
+    remaining_tries = 5
+    while _contact_exists(hubspot_erasure_identity_email, connector) is True:
+        if remaining_tries < 1:
+            raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
+        time.sleep(5)  # Ensures contact is deleted
+
+
+def _contact_exists(hubspot_erasure_identity_email: str, connector: SaaSConnector) -> bool:
+    """
+    Confirm whether contact exists by calling search api and comparing firstname str.
+   """
+
+    body = json.dumps({
+        "filterGroups": [{
+            "filters": [{
+                "value": hubspot_erasure_identity_email,
+                "propertyName": "email",
+                "operator": "EQ"
+            }]
+        }]
+    })
+
+    updated_headers, formatted_body = format_body({}, body)
+    contact_request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/crm/v3/objects/contacts/search",
+        headers=updated_headers,
+        body=formatted_body,
+    )
+    contact_response = connector.create_client().send(contact_request)
+    contact_body = contact_response.json()
+    return bool(contact_body["results"] and contact_body["results"][0]["properties"]["firstname"] == HUBSPOT_FIRSTNAME)

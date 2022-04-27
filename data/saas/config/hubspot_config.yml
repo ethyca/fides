@@ -56,15 +56,13 @@ saas_config:
           path: /crm/v3/objects/contacts/<contactId>
           method: PATCH
           body: '{
-            "properties": {
-                <masked_object_fields>
-            }
+              <masked_object_fields>
           }'
           param_values:
             - name: contactId
               references:
                 - dataset: hubspot_connector_example
-                  field: contacts_search.id
+                  field: contacts.id
                   direction: from
     - name: owners
       requests:
@@ -140,14 +138,20 @@ saas_config:
             "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
             "legalBasisExplanation": "At users request, we opted them out"
           }'
+          data_path: subscriptionStatuses
           param_values:
             - name: email
               identity: email
             - name: subscriptionId
               references:
                 - dataset: hubspot_connector_example
-                  field: subscription.id
+                  field: subscription_preferences.id
                   direction: from
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: status
+                value: SUBSCRIBED
 #    - name: users
 #      requests:
 #        read:
