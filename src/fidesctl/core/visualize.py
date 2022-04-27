@@ -2,7 +2,7 @@
 Creates data visualizations for hierarchical Fides resource types.
 """
 
-from typing import Generator, List, Dict
+from typing import Dict, Generator, List
 
 import plotly
 import plotly.graph_objects as go

@@ -2,6 +2,8 @@ from os import path
 
 import pandas as pd
 import pytest
+
+from fidesctl.core import export_helpers
 from fideslang.models import (
     DataProtectionImpactAssessment,
     Dataset,
@@ -9,8 +11,6 @@ from fideslang.models import (
     DatasetField,
     DataSubjectRights,
 )
-
-from fidesctl.core import export_helpers
 
 
 @pytest.fixture()

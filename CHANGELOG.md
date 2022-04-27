@@ -21,6 +21,10 @@ The types of changes are:
 * CHANGELOG.md file
 * On API server startup, in-use config values are logged at the DEBUG level
 
+### Developer Experience
+
+* added isort as a CI check
+
 ### Changed
 
 * Published Docker image does a clean install of Fidesctl
@@ -29,3 +33,4 @@ The types of changes are:
 
 * Third-Country formatting on Data Map
 * Potential Duplication on Data Map
+* Exceptions are no longer raised when sending `AnalyticsEvent`s on Windows

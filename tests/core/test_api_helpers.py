@@ -1,12 +1,11 @@
 import uuid
-from typing import Optional, List
+from typing import List, Optional
 
 import pytest
 
-from fidesctl.core import api_helpers as _api_helpers
 from fidesctl.core import api as _api
-
-from fideslang import model_list, FidesModel
+from fidesctl.core import api_helpers as _api_helpers
+from fideslang import FidesModel, model_list
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work

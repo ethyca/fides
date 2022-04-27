@@ -6,8 +6,8 @@ config sections into a single config.
 import toml
 from pydantic import BaseModel
 
-from fidesctl.core.utils import echo_red
 from fidesctl.core.config.utils import get_config_path
+from fidesctl.core.utils import echo_red
 
 from .api_settings import APISettings
 from .cli_settings import CLISettings

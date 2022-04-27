@@ -1,8 +1,9 @@
-import pytest
-
 from typing import List
 
-from fidesctl.core import system as _system, api
+import pytest
+
+from fidesctl.core import api
+from fidesctl.core import system as _system
 from fideslang.models import System, SystemMetadata
 
 

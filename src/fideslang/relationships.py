@@ -5,16 +5,12 @@ by each other and building a dependency graph of relationships.
 
 import inspect
 from functools import reduce
-from typing import List, Set, Dict
+from typing import Dict, List, Set
 
 from pydantic import AnyHttpUrl
 
 from fidesctl.core.api_helpers import get_server_resources
-from fideslang.models import (
-    FidesKey,
-    Taxonomy,
-    BaseModel,
-)
+from fideslang.models import BaseModel, FidesKey, Taxonomy
 from fideslang.utils import get_resource_by_fides_key
 
 
