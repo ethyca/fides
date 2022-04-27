@@ -48,9 +48,9 @@ The `fidesops.toml` file should specify the following variables:
 | `OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period Fidesops API tokens will be valid |
 |---|---|---|---|---|---|
 |`PRIVACY_REQUEST_DELAY_TIMEOUT` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
-|`TASK_RETRY_COUNT` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 2 | The number of times a failed request will be retried
-|`TASK_RETRY_DELAY` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 5 | The delays between retries in seconds
-|`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 2 | The backoff factor for retries, to space out repeated retries.
+|`TASK_RETRY_COUNT` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
+|`TASK_RETRY_DELAY` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 1 | The delays between retries in seconds
+|`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
 
