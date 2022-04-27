@@ -19,6 +19,7 @@ The types of changes are:
 ### Added
 
 * CHANGELOG.md file
+* On API server startup, in-use config values are logged at the DEBUG level
 
 ### Changed
 
