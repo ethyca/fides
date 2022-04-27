@@ -274,14 +274,14 @@ def get_request_status(
     params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
-    created_lt: Optional[Union[date, datetime]] = None,
-    created_gt: Optional[Union[date, datetime]] = None,
-    started_lt: Optional[Union[date, datetime]] = None,
-    started_gt: Optional[Union[date, datetime]] = None,
-    completed_lt: Optional[Union[date, datetime]] = None,
-    completed_gt: Optional[Union[date, datetime]] = None,
-    errored_lt: Optional[Union[date, datetime]] = None,
-    errored_gt: Optional[Union[date, datetime]] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -298,6 +298,25 @@ def get_request_status(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Cannot specify both succeeded and failed query params.",
         )
+
+    for end, start, field_name in [
+        [created_lt, created_gt, "created"],
+        [completed_lt, completed_gt, "completed"],
+        [errored_lt, errored_gt, "errorer"],
+        [started_lt, started_gt, "started"],
+    ]:
+        if end is None or start is None:
+            continue
+        if not (isinstance(end, datetime) and isinstance(start, datetime)):
+            continue
+        else:
+            if end < start:
+                # With date fields, if the start date is after the end date, return a 400
+                # because no records will lie within this range.
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+                )
 
     query = db.query(PrivacyRequest)
 
