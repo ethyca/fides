@@ -1,12 +1,13 @@
 """Contains all of the Utility-type CLI commands for Fidesctl."""
 import os
+from datetime import datetime, timezone
 
 import click
 import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
-from fidesctl.cli.utils import check_server, with_analytics
+from fidesctl.cli.utils import check_server, send_init_analytics, with_analytics
 from fidesctl.core.utils import echo_green, echo_red
 
 
@@ -21,6 +22,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     Additionally, requests the ability to respectfully collect anonymous usage data.
     """
 
+    executed_at = datetime.now(timezone.utc)
     separate = lambda: print("-" * 10, end=None)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
@@ -79,6 +81,8 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo("For example policies and help getting started, see:")
     click.echo("\thttps://ethyca.github.io/fides/guides/policies/")
     separate()
+
+    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
 
     echo_green("Fidesctl initialization complete.")
 
