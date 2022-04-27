@@ -1,39 +1,66 @@
-minimum_pre_commit_version: "2"
-
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+    - id: check-added-large-files
+    - id: check-toml
+    - id: check-yaml
+    - id: debug-statements
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+    - id: isort
+      additional_dependencies: [toml]
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+    - id: black
+      language_version: python3
+      args: [--line-length=88]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.942
+    hooks:
+    - id: mypy
+      additional_dependencies: [
+        pydantic,
+        types-PyYAML,
+        types-requests,
+        types-toml,
+      ]
   - repo: local
     hooks:
-      - id: docker
-        name: docker
-        entry: make build-local
-        files: "^fidesctl/"
-        types_or: [file, python]
-        language: system
-
-      - id: black
-        name: black
-        entry: make black
-        files: "^fidesctl/"
-        types_or: [file, python]
-        language: system
-
-      - id: mypy
-        name: mypy
-        entry: make mypy
-        files: "^fidesctl/"
-        types_or: [file, python]
-        language: system
-
-      - id: xenon
-        name: xenon
-        entry: make xenon
-        files: "^fidesctl/"
-        types_or: [file, python]
-        language: system
-
-      - id: pylint
-        name: pylint
-        entry: make pylint
-        files: "^fidesctl/"
-        types_or: [file, python]
-        language: system
+    - id: xenon
+      name: xenon
+      entry: python -m xenon src \
+        --max-absolute B \
+        --max-modules B \
+        --max-average A \
+        --ignore "data, tests, docs" \
+        --exclude "src/fidesctl/_version.py"
+      language: system
+      types: [python]
+  - repo: https://github.com/pycqa/pylint
+    rev: v2.13.7
+    hooks:
+    - id: pylint
+      args: [
+        "-rn",
+        "-sn",
+        "--ignore-paths=^src/fidesapi/migrations/.*$",
+        "--ignore=migrations",
+        "--disable=missing-function-docstring",
+        "--disable=line-too-long",
+        "--disable=too-few-public-methods",
+        "--disable=duplicate-code",
+        "--disable=import-error",
+        "--disable=unused-argument",
+        "--disable=no-self-use",
+        "--disable=import-outside-toplevel",
+        "--disable=unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+        "--disable=too-many-arguments",
+        "--disable=missing-module-docstring",
+        "--disable=raise-missing-from",
+        "--disable=fixme"
+      ]
