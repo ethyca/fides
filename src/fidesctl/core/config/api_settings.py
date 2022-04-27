@@ -6,7 +6,7 @@ import os
 from logging import DEBUG, INFO, getLevelName
 from typing import Dict, Optional, Union
 
-from pydantic import validator
+from pydantic import Field, validator
 
 from .fides_settings import FidesSettings
 
@@ -16,14 +16,14 @@ class APISettings(FidesSettings):
 
     # Database
     database_user: str = "postgres"
-    database_password: str = "fidesctl"
+    database_password: str = Field("fidesctl", exclude=True)
     database_host: str = "fidesctl-db"
     database_port: str = "5432"
     database_name: str = "fidesctl"
     test_database_name: str = "fidesctl_test"
-    database_url: Optional[str]
-    sync_database_url: Optional[str]
-    async_database_url: Optional[str]
+    database_url: Optional[str] = Field(None, exclude=True)
+    sync_database_url: Optional[str] = Field(None, exclude=True)
+    async_database_url: Optional[str] = Field(None, exclude=True)
 
     # Logging
     log_destination: str = ""
