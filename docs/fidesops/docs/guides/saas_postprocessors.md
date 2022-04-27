@@ -28,6 +28,32 @@ endpoints:
 
 Note: Order matters as it's defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.
 
+### For Update/Delete/GDPR endpoints
+
+Post-processors can format the results of your access requests for use in subsequent update or delete statements.
+
+For example, if we need to return the following in an access request:
+
+```json
+{"recipient": "test@email.com",
+  "subscriptions": [{
+    "id": "123",
+    "subscribed": "TRUE"
+  }]}
+```
+
+And we needed to perform an update request for each item within `subscriptions`, where `subscribed` = `TRUE`, then we'd need the following config for our update request:
+
+```yaml
+update:
+    ...
+    data_path: subscriptionStatuses
+    postprocessors:
+      - strategy: filter
+        configuration:
+          field: subscribed
+          subscribed: TRUE
+```
 
 ## Supported Strategies
 - `unwrap`: Gets object at given data path.
