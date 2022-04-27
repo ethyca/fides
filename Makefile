@@ -110,7 +110,7 @@ push: build
 ####################
 
 black:
-	@$(RUN_NO_DEPS) black --check src/
+	@$(RUN_NO_DEPS) black --check src/ tests/
 
 isort:
 	@$(RUN_NO_DEPS) isort src tests --check-only

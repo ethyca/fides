@@ -20,6 +20,10 @@ The types of changes are:
 
 * CHANGELOG.md file
 
+### Developer Experience
+
+* added isort as a CI check
+
 ### Changed
 
 * Published Docker image does a clean install of Fidesctl
