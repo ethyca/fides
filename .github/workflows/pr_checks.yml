@@ -104,10 +104,12 @@ jobs:
         run: pip install -e ./[all]
 
       - name: Build Generated docs
-        run: make docs-build
+        run: python generate_docs.py docs/fides/docs/
 
       - name: Build docs
-        run: mkdocs build
+        run: |
+          cd docs/fides/
+          mkdocs build
 
   Pylint:
     needs: Build
