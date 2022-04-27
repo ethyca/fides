@@ -394,7 +394,8 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?completed_lt=2021-01-01&errored_gt=2021-01-02",
+            url
+            + f"?completed_lt=2021-01-01T00:00:00.000Z&errored_gt=2021-01-02T00:00:00.000Z",
             headers=auth_header,
         )
         assert 400 == response.status_code
@@ -434,14 +435,17 @@ class TestGetPrivacyRequests:
         mongo_execution_log,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        for date_format in ["%Y-%m-%dT00:00:00.000Z", "%Y-%m-%d"]:
+        for date_format in [
+            "%Y-%m-%dT00:00:00.000Z",
+            # "%Y-%m-%d",
+        ]:
             date_input = privacy_request.created_at.strftime(date_format)
             response = api_client.get(
                 url + f"?created_gt={date_input}",
                 headers=auth_header,
             )
 
-        assert 200 == response.status_code
+            assert 200 == response.status_code
 
     def test_get_privacy_requests_by_id(
         self,
@@ -633,18 +637,45 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?created_lt=2019-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?created_lt=2019-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
-        response = api_client.get(url + f"?created_gt=2019-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?created_gt=2019-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 3
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
         assert resp["items"][2]["id"] == privacy_request.id
+
+    def test_filter_privacy_requests_by_conflicting_date_fields(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+        succeeded_privacy_request,
+        failed_privacy_request,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        # Search for privacy requests after 2019, but before 2018. This should return an error.
+        start = "2019-01-01"
+        end = "2018-01-01"
+        response = api_client.get(
+            url + f"?created_gt={start}T00:00:00.000Z&created_lt={end}T00:00:00.000Z",
+            headers=auth_header,
+        )
+        assert 400 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Value specified for created_lt: {end} 00:00:00+00:00 must be after created_gt: {start} 00:00:00+00:00."
+        )
 
     def test_filter_privacy_requests_by_started(
         self,
@@ -656,14 +687,18 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?started_lt=2021-05-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?started_lt=2021-05-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 2
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == privacy_request.id
 
-        response = api_client.get(url + f"?started_gt=2021-05-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?started_gt=2021-05-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
@@ -680,14 +715,14 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?completed_lt=2021-10-01", headers=auth_header
+            url + f"?completed_lt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
-            url + f"?completed_gt=2021-10-01", headers=auth_header
+            url + f"?completed_gt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -704,12 +739,16 @@ class TestGetPrivacyRequests:
         url,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?errored_lt=2021-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?errored_lt=2021-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
-        response = api_client.get(url + f"?errored_gt=2021-01-01", headers=auth_header)
+        response = api_client.get(
+            url + f"?errored_gt=2021-01-01T00:00:00.000Z", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
