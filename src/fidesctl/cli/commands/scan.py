@@ -2,8 +2,8 @@
 
 import click
 
+from fidesctl.cli.options import coverage_threshold_option, manifests_dir_argument
 from fidesctl.cli.utils import with_analytics
-from fidesctl.cli.options import manifests_dir_argument, coverage_threshold_option
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 

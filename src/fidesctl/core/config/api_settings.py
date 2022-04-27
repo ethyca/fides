@@ -4,7 +4,7 @@
 
 import os
 from logging import DEBUG, INFO, getLevelName
-from typing import Dict, Union, Optional
+from typing import Dict, Optional, Union
 
 from pydantic import validator
 

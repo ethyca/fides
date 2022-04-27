@@ -1,11 +1,9 @@
 import os
 
-from fidesctl.core.config import get_config
-
 import pytest
 
 from fidesctl.core import utils
-
+from fidesctl.core.config import get_config
 from fideslang.models import DatasetCollection, DatasetField
 
 

@@ -5,7 +5,9 @@ generated programmatically for each resource.
 from typing import Dict, List, Tuple
 
 from loguru import logger as log
-from sqlalchemy import column, delete as _delete, update as _update
+from sqlalchemy import column
+from sqlalchemy import delete as _delete
+from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select

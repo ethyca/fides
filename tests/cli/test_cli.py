@@ -346,12 +346,23 @@ def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
     print(result.output)
     assert result.exit_code == 0
 
+
 @pytest.mark.external
-def test_generate_dataset_okta(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+def test_generate_dataset_okta(
+    test_config_path: str, test_cli_runner: CliRunner, tmpdir
+):
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "generate", "dataset", "okta", OKTA_URL,f"{tmp_file}"],
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "dataset",
+            "okta",
+            OKTA_URL,
+            f"{tmp_file}",
+        ],
     )
     print(result.output)
     assert result.exit_code == 0
