@@ -38,21 +38,15 @@ const useRequestFilters = () => {
   const token = useSelector(selectUserToken);
   const dispatch = useDispatch();
   const toast = useToast();
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
-  };
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
     dispatch(setRequestStatus(event.target.value as PrivacyRequestStatus));
-  };
-  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
-  };
-  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestTo(event?.target.value));
-  };
-  const handleClearAllFilters = () => {
-    dispatch(clearAllFilters());
-  };
+  const handleClearAllFilters = () => dispatch(clearAllFilters());
   const handleDownloadClick = async () => {
     let message;
     try {

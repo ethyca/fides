@@ -18,15 +18,29 @@ export const mapFiltersToSearchParams = ({
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => ({
-  include_identities: 'true',
-  ...(status ? { status } : {}),
-  ...(id ? { id } : {}),
-  ...(from ? { created_gt: from } : {}),
-  ...(to ? { created_lt: to } : {}),
-  ...(page ? { page: `${page}` } : {}),
-  ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
-});
+}: Partial<PrivacyRequestParams>) => {
+  let fromISO;
+  if (from) {
+    fromISO = new Date(from);
+    fromISO.setUTCHours(0, 0, 0);
+  }
+
+  let toISO;
+  if (to) {
+    toISO = new Date(to);
+    toISO.setUTCHours(23, 59, 59);
+  }
+
+  return {
+    include_identities: 'true',
+    ...(status ? { status } : {}),
+    ...(id ? { id } : {}),
+    ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
+    ...(toISO ? { created_lt: toISO.toISOString() } : {}),
+    ...(page ? { page: `${page}` } : {}),
+    ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+  };
+};
 
 // Subject requests API
 export const privacyRequestApi = createApi({
