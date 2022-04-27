@@ -170,9 +170,9 @@ xenon:
 	--ignore "data, tests, docs" \
 	--exclude "src/fidesctl/_version.py"
 
-####################
-# Utils
-####################
+###########
+## Utils ##
+###########
 
 .PHONY: clean
 clean:
@@ -187,13 +187,30 @@ teardown:
 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml down --remove-orphans
 	@echo "Teardown complete"
 
+##########
+## Docs ##
+##########
+
 .PHONY: docs-build
 docs-build: build-local
 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
 	python generate_docs.py docs/fides/docs/
 
+
 .PHONY: docs-serve
 docs-serve: docs-build
 	@docker compose build docs
 	@docker compose run --rm --service-ports $(CI_ARGS) docs \
-	/bin/bash -c "pip install -e /fides && mkdocs serve --dev-addr=0.0.0.0:8000"
+	/bin/bash -c "pip install -e /fides[all] && mkdocs serve --dev-addr=0.0.0.0:8000"
+
+# Used in CI Checks
+.PHONY: docs-build-ci
+docs-build-ci:
+	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
+	python generate_docs.py docs/fides/docs/
+
+.PHONY: docs-check
+docs-check: docs-build-ci
+	@docker compose build docs
+	@docker compose run --rm --service-ports $(CI_ARGS) docs \
+	/bin/bash -c "pip install -e /fides[all] && mkdocs build"

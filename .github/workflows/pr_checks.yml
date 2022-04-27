@@ -101,6 +101,25 @@ jobs:
       - name: Run formatter
         run: make black
 
+  Docs:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesctl container
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesctl image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check that the docs can build
+        run: make docs-check
+
   Pylint:
     needs: Build
     runs-on: ubuntu-latest

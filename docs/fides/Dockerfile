@@ -4,7 +4,9 @@ FROM python:3.8-slim-buster
 RUN apt-get update
 RUN apt-get install -y \
     git \
-    vim
+    vim \
+    g++ \
+    gcc
 
 # Update pip and install requirements
 RUN pip install -U pip
