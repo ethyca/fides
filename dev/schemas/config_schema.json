@@ -7,14 +7,10 @@
       "title": "Api",
       "default": {
         "database_user": "postgres",
-        "database_password": "fidesctl",
         "database_host": "fidesctl-db",
         "database_port": "5432",
         "database_name": "fidesctl",
         "test_database_name": "fidesctl_test",
-        "database_url": "postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
-        "sync_database_url": "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
-        "async_database_url": "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         "log_destination": "",
         "log_level": "DEBUG",
         "log_serialization": ""
@@ -29,7 +25,7 @@
       "title": "Cli",
       "default": {
         "local_mode": false,
-        "analytics_id": "b2eda9c86c1816510a4881f394f3a47f",
+        "analytics_id": "cc226e07b11dbc0cfb533da48b93ec59",
         "server_protocol": "http",
         "server_host": "fidesctl",
         "server_port": 8080,
@@ -185,7 +181,7 @@
         },
         "analytics_id": {
           "title": "Analytics Id",
-          "default": "b2eda9c86c1816510a4881f394f3a47f",
+          "default": "cc226e07b11dbc0cfb533da48b93ec59",
           "env_names": [
             "fidesctl__cli__analytics_id"
           ],
