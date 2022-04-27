@@ -50,6 +50,8 @@ async def setup_server() -> None:
         serialize=CONFIG.api.log_serialization,
         desination=CONFIG.api.log_destination,
     )
+
+    log.bind(api_config=CONFIG.api.json()).debug("Configuration options in use")
     await configure_db(CONFIG.api.sync_database_url)
 
 
