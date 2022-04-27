@@ -84,9 +84,15 @@ const RequestTable: React.FC<RequestTableProps> = () => {
       </Table>
       <Flex justifyContent="space-between" mt={6}>
         <Text fontSize="xs" color="gray.600">
-          Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
-          {Number.isNaN(endingItem) ? 0 : endingItem} of{' '}
-          {Number.isNaN(total) ? 0 : total} results
+          {total > 0 ? (
+            <>
+              Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
+              {Number.isNaN(endingItem) ? 0 : endingItem} of{' '}
+              {Number.isNaN(total) ? 0 : total} results
+            </>
+          ) : (
+            '0 results'
+          )}
         </Text>
         <div>
           <Button
