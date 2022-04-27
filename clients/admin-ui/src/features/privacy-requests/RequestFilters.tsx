@@ -104,7 +104,7 @@ const RequestFilters: React.FC = () => {
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <Select
-        placeholder="Status"
+        placeholder="Select status"
         size="sm"
         minWidth="144px"
         value={status || ''}
