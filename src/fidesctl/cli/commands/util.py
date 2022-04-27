@@ -16,20 +16,18 @@ from fidesctl.core.utils import echo_green, echo_red
 def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
     Initializes a Fidesctl instance, creating the default directory (`.fides/`) and
-    the configuration file (`fidesctl_config.toml`).
+    the configuration file (`fidesctl.toml`) if necessary.
 
     Additionally, requests the ability to respectfully collect anonymous usage data.
     """
 
-    # Constants
-    separate = lambda: print("-" * 10)
+    separate = lambda: print("-" * 10, end=None)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fidesctl.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
-    # List the values we want to include in the user-facing config
     included_values = {
         "api": {
             "database_user",
@@ -49,33 +47,37 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo("Initializing Fidesctl...")
     separate()
 
-    # create the dir if it doesn't exist
+    # create the .fides dir if it doesn't exist
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
         echo_green(f"Created a '{fides_dir_path}' directory.")
     else:
         click.echo(f"Directory '{fides_dir_path}' already exists.")
+
     separate()
 
-    # create a config file if it doesn't exist
+    # create a fidesctl.toml config file if it doesn't exist
     if not os.path.isfile(config_path):
-        config_docs_url = "https://ethyca.github.io/fides/installation/configuration/"
-        config_message = f"""Created a config file at '{config_path}'. To learn more, see:
-            {config_docs_url}"""
-        click.echo(OPT_OUT_COPY)
+        # request explicit consent for analytics collection
+        click.echo(OPT_OUT_COPY, nl=False)
         config.user.analytics_opt_out = bool(input(OPT_OUT_PROMPT).lower() == "n")
+
+        separate()
+
         with open(config_path, "w") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
-        echo_green(config_message)
+
+        echo_green(f"Created a fidesctl config file: {config_path}")
+        click.echo("To learn more about configuring fidesctl, see:")
+        click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
 
     else:
-        click.echo(f"Configuration file already exists at '{config_path}'.")
-    separate()
+        click.echo(f"Configuration file already exists: {config_path}")
 
-    click.echo(
-        "For example policies to help get started, see: ethyca.github.io/fides/guides/policies/"
-    )
+    separate()
+    click.echo("For example policies and help getting started, see:")
+    click.echo("\thttps://ethyca.github.io/fides/guides/policies/")
     separate()
 
     echo_green("Fidesctl initialization complete.")
