@@ -1,19 +1,19 @@
-import io
 import csv
-
+import io
 import logging
 from collections import defaultdict
 from datetime import date, datetime
-from starlette.responses import StreamingResponse
-from typing import List, Optional, Union, DefaultDict, Dict, Set, Callable, Any
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, Body, Depends, Security, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
+from starlette.responses import StreamingResponse
 from starlette.status import (
+    HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_424_FAILED_DEPENDENCY,
@@ -23,20 +23,14 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-)
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
 from fidesops.api.v1.urn_registry import (
-    REQUEST_PREVIEW,
-    PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_RESUME,
+    REQUEST_PREVIEW,
 )
-from fidesops.common_exceptions import (
-    TraversalError,
-    ValidationError,
-)
+from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
@@ -44,36 +38,32 @@ from fidesops.graph.traversal import Traversal
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import Policy, ActionType, PolicyPreWebhook
+from fidesops.models.policy import ActionType, Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.schemas.dataset import DryRunDatasetResponse, CollectionAddressResponse
-from fidesops.schemas.external_https import (
-    PrivacyRequestResumeFormat,
-)
+from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
+from fidesops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
 from fidesops.schemas.privacy_request import (
+    BulkPostPrivacyRequests,
+    BulkReviewResponse,
+    ExecutionLogDetailResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
-    ExecutionLogDetailResponse,
-    BulkPostPrivacyRequests,
-    BulkReviewResponse,
     ReviewPrivacyRequestIds,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import (
-    get_strategy,
-)
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.task.graph_task import collect_queries, EMPTY_REQUEST
+from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
-from fidesops.util.oauth_util import verify_oauth_client, verify_callback_oauth
+from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
@@ -99,7 +89,7 @@ def get_privacy_request_or_error(
 
 @router.post(
     urls.PRIVACY_REQUESTS,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
 def create_privacy_request(
@@ -435,7 +425,7 @@ def get_request_status_logs(
 
 @router.put(
     REQUEST_PREVIEW,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=List[DryRunDatasetResponse],
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
 )
@@ -507,7 +497,9 @@ def get_request_preview_queries(
 
 
 @router.post(
-    PRIVACY_REQUEST_RESUME, status_code=200, response_model=PrivacyRequestResponse
+    PRIVACY_REQUEST_RESUME,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
 )
 def resume_privacy_request(
     privacy_request_id: str,
@@ -590,7 +582,7 @@ def review_privacy_request(
 
 @router.patch(
     PRIVACY_REQUEST_APPROVE,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkReviewResponse,
 )
 def approve_privacy_request(
@@ -625,7 +617,7 @@ def approve_privacy_request(
 
 @router.patch(
     PRIVACY_REQUEST_DENY,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkReviewResponse,
 )
 def deny_privacy_request(

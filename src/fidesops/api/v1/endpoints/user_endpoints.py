@@ -1,24 +1,26 @@
 import logging
-from fastapi import Security, Depends, APIRouter, HTTPException
-from starlette.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_403_FORBIDDEN,
-)
 from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Security
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, USER_CREATE, USER_DELETE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
-
 from fidesops.util.oauth_util import verify_oauth_client
-from sqlalchemy.orm import Session
-
-from fidesops.api.v1.scope_registry import USER_CREATE, USER_DELETE, SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
@@ -44,7 +46,7 @@ def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
 @router.post(
     urls.USERS,
     dependencies=[Security(verify_oauth_client, scopes=[USER_CREATE])],
-    status_code=201,
+    status_code=HTTP_201_CREATED,
     response_model=UserCreateResponse,
 )
 def create_user(
@@ -65,7 +67,7 @@ def create_user(
 
 @router.delete(
     urls.USER_DETAIL,
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
 )
 def delete_user(
     *,
@@ -97,7 +99,7 @@ def delete_user(
 
 @router.post(
     urls.LOGIN,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=AccessToken,
 )
 def user_login(
@@ -125,7 +127,7 @@ def user_login(
 
 @router.post(
     urls.LOGOUT,
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
 )
 def user_logout(
     *,

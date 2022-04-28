@@ -1,8 +1,9 @@
 import json
-
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 import requests
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fidesops.common_exceptions import ClientUnsuccessfulException
 from fidesops.graph.traversal import TraversalNode
@@ -10,7 +11,6 @@ from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import HttpsSchema
-
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import QueryConfig
 from fidesops.util.collection_util import Row
@@ -50,7 +50,9 @@ class HTTPSConnector(BaseConnector[None]):
             response = requests.post(url=config.url, headers=headers, json=request_body)
         except requests.ConnectionError:
             logger.info("Requests connection error received.")
-            raise ClientUnsuccessfulException(status_code=500)
+            raise ClientUnsuccessfulException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         if not response_expected:
             return {}

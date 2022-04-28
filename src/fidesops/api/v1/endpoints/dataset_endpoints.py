@@ -1,30 +1,31 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND
-from fidesops.util.saas_util import merge_datasets
-from fidesops.common_exceptions import SaaSConfigNotFoundException, ValidationError
-
-from fidesops.common_exceptions import TraversalError
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
-    DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
+    DATASET_READ,
 )
 from fidesops.api.v1.urn_registry import (
+    DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
-    DATASET_BY_KEY,
     V1_URL_PREFIX,
+)
+from fidesops.common_exceptions import (
+    SaaSConfigNotFoundException,
+    TraversalError,
+    ValidationError,
 )
 from fidesops.graph.traversal import DatasetGraph, Traversal
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -33,17 +34,16 @@ from fidesops.models.datasetconfig import (
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fidesops.schemas.api import (
-    BulkUpdateFailed,
-)
+from fidesops.schemas.api import BulkUpdateFailed
 from fidesops.schemas.dataset import (
+    BulkPutDataset,
     DatasetTraversalDetails,
     FidesopsDataset,
     ValidateDatasetResponse,
-    BulkPutDataset,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
+from fidesops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
@@ -66,7 +66,7 @@ def _get_connection_config(
 @router.put(
     DATASET_VALIDATE,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=ValidateDatasetResponse,
 )
 def validate_dataset(
@@ -130,7 +130,7 @@ def validate_dataset(
 @router.patch(
     DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkPutDataset,
 )
 def patch_datasets(
@@ -285,7 +285,7 @@ def get_dataset(
 @router.delete(
     DATASET_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_DELETE])],
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
 )
 def delete_dataset(
     fides_key: FidesOpsKey,
