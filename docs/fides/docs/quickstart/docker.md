@@ -19,7 +19,7 @@ Make sure that you don't have anything else running on port `5432` or `8080` bef
 ```docker-compose title="docker-compose.yml"
 services:
   fidesctl:
-    image: ethyca/fidesctl:1.2.0
+    image: ethyca/fidesctl
     command: fidesctl webserver
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health"]
@@ -34,13 +34,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - FIDESCTL__CLI__SERVER_HOST=http://fidesctl
-      - FIDESCTL__CLI__SERVER_PORT=8080
-      - FIDESCTL__API__DATABASE_URL=postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl
+      FIDESCTL_TEST_MODE: "True"
+      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
+      FIDESCTL__CLI__SERVER_PORT: "8080"
+      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
     volumes:
       - type: bind
-        source: ./.fides/ # Update this to be the path of your .fides/ folder
-        target: /fides/.fides/
+        source: .
+        target: /fides
         read_only: False
 
   fidesctl-db:
@@ -70,13 +71,21 @@ Now you can start interacting with your installation. Run the following commands
 
 1. `docker-compose up -d` -> This will spin up the docker-compose file in the background.
 1. `docker-compose run --rm fidesctl /bin/bash` -> This opens a shell within the fidesctl container.
-1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+1. `fidesctl init` -> This will create a default configuration file at `./.fides/fidesctl.toml`.
 
     ```bash
-    root@2da501a72f8f:/fides/fidesctl# fidesctl status
-    Getting server status...
-    Server is reachable and the client/server application versions match.
+    Created a fidesctl config file: ./.fides/fidesctl.toml
+    To learn more about configuring fidesctl, see:
+      https://ethyca.github.io/fides/installation/configuration/
+    ----------
+    For example policies and help getting started, see:
+      https://ethyca.github.io/fides/guides/policies/
+    ----------
+    Fidesctl initialization complete.
+
     ```
+
+1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
    
 
 Once your installation is running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
