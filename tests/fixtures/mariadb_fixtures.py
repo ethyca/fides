@@ -1,20 +1,20 @@
 import logging
-from collections import Generator
-from typing import List, Dict
+from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
 import sqlalchemy
 from sqlalchemy.orm import Session
 
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
+    AccessLevel,
     ConnectionConfig,
     ConnectionType,
-    AccessLevel,
 )
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.service.connectors import MariaDBConnector
+
 from .application_fixtures import integration_secrets
 
 logger = logging.getLogger(__name__)
