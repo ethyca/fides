@@ -1,7 +1,13 @@
 import logging
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+
+
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -14,13 +20,25 @@ from starlette.status import (
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, USER_CREATE, USER_DELETE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.oauth import AccessToken
-from fidesops.schemas.user import UserCreate, UserCreateResponse, UserLogin
+from fidesops.schemas.user import (
+    UserCreate,
+    UserCreateResponse,
+    UserLogin,
+    UserResponse,
+)
+
 from fidesops.util.oauth_util import verify_oauth_client
+
+from fidesops.api.v1.scope_registry import (
+    USER_CREATE,
+    USER_READ,
+    USER_DELETE,
+    SCOPE_REGISTRY,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
@@ -62,6 +80,36 @@ def create_user(
 
     user = FidesopsUser.create(db=db, data=user_data.dict())
     logger.info(f"Created user with id: '{user.id}'.")
+    return user
+
+
+@router.get(
+    urls.USERS,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    response_model=Page[UserResponse],
+)
+def get_users(
+    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+) -> AbstractPage[FidesopsUser]:
+    """Returns a paginated list of all users"""
+    logger.info(f"Returned a paginated list of all users.")
+    return paginate(
+        FidesopsUser.query(db).order_by(FidesopsUser.created_at.desc()), params=params
+    )
+
+
+@router.get(
+    urls.USER_DETAIL,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    response_model=UserResponse,
+)
+def get_user(*, db: Session = Depends(deps.get_db), user_id: str) -> FidesopsUser:
+    """Returns a User based on an Id"""
+    logger.info(f"Returned a User based on Id")
+    user = FidesopsUser.get_by(db, field="id", value=user_id)
+    if user is None:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
+
     return user
 
 

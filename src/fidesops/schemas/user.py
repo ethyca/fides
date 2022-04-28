@@ -1,7 +1,6 @@
 import re
 
 from pydantic import validator
-
 from fidesops.schemas.base_class import BaseSchema
 
 
@@ -42,6 +41,13 @@ class UserLogin(BaseSchema):
 
     username: str
     password: str
+
+
+class UserResponse(BaseSchema):
+    """Response after requesting a User"""
+
+    id: str
+    username: str
 
 
 class UserCreateResponse(BaseSchema):

@@ -4,11 +4,16 @@ import json
 
 import pytest
 
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT
+from fastapi_pagination import Params
+from starlette.testclient import TestClient
+
+
+from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USERS, LOGIN, LOGOUT, USER_DETAIL
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
+    USER_READ,
     USER_DELETE,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
@@ -21,6 +26,7 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 
+page_size = Params().size
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
@@ -237,6 +243,61 @@ class TestDeleteUser:
         assert admin_client_search is not None
         admin_client_search.delete(db)
 
+
+class TestGetUsers:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_get_users_not_authenticated(self, api_client: TestClient, url: str)-> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_users_wrong_scope(self, api_client: TestClient, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[USER_DELETE])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_users_no_users(
+        self, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        response_body = json.loads(resp.text)
+        assert len(response_body["items"]) == 0
+        assert response_body["total"] == 0
+        assert response_body["page"] == 1
+        assert response_body["size"] == page_size
+
+
+class TestGetUser:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USER_DETAIL
+
+    @pytest.fixture(scope="function")
+    def url_no_id(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_user_wrong_scope(self, api_client: TestClient, generate_auth_header, url: str):
+        auth_header = generate_auth_header(scopes=[USER_DELETE])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_user_does_not_exist(
+        self, api_client: TestClient, generate_auth_header, url_no_id: str
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(
+            f"{url_no_id}/this_is_a_nonexistent_key",
+            headers=auth_header,
+        )
+        assert resp.status_code == 404
 
 class TestUserLogin:
     @pytest.fixture(scope="function")

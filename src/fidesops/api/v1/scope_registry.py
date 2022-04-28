@@ -45,6 +45,7 @@ SAAS_CONFIG_READ = "saas_config:read"
 SAAS_CONFIG_DELETE = "saas_config:delete"
 
 USER_CREATE = "user:create"
+USER_READ = "user:read"
 USER_DELETE = "user:delete"
 
 SCOPE_REGISTRY = [
@@ -81,5 +82,6 @@ SCOPE_REGISTRY = [
     SAAS_CONFIG_READ,
     SAAS_CONFIG_DELETE,
     USER_CREATE,
+    USER_READ,
     USER_DELETE,
 ]
