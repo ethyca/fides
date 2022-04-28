@@ -23,6 +23,20 @@ With fidesctl installed, it's time to initialize the project so we have some pla
 ```sh title="Initialize Fidesctl"
 fidesctl init
 ```
+```txt title="Expected Output"
+Initializing Fidesctl...
+----------
+Created a './.fides' directory.
+----------
+Created a fidesctl config file: ./.fides/fidesctl.toml
+To learn more about configuring fidesctl, see:
+    https://ethyca.github.io/fides/installation/configuration/
+----------
+For example policies and help getting started, see:
+    https://ethyca.github.io/fides/guides/policies/
+----------
+Fidesctl initialization complete.
+```
 
 ## Configuring Fidesctl
 

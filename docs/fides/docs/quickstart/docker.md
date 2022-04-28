@@ -12,36 +12,6 @@ Docker and Docker-Compose are the only requirements here.
 1. If your `docker` installation did not include `docker-compose`, make sure to get at least version `1.29.0`. Installation instructions can be found [here](https://docs.docker.com/compose/install/).
 1. In the directory from where you will run the docker compose file, create a `.fides` directory to then mount in the `fidesctl` container.
 
-## Initializing Fidesctl
-
-Even though we're running fidesctl in Docker, we still need to initialize fidesctl locally to then mount those files into the Docker container.
-
-```sh title="Initialize Fidesctl"
-fidesctl init
-```
-
-```txt title="Expected Output"
-No config file found. Using default configuration values.
-Initializing Fidesctl...
-
-Created a '.fides' directory.
-
-Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
-Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
-
-***
-Don't believe us? Check out the open-source code here:
-    https://github.com/ethyca/fideslog
-***
-
-To opt-out of all telemetry, press "n". To continue with telemetry, press any other key.
-
-Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
-            https://ethyca.github.io/fides/installation/configuration/
-
-Fidesctl initialization complete.
-```
-
 ## Docker Setup
 
 This is a reference file that you can copy/paste into a local `docker-compose.yml` file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port `5432` or `8080` before using this file.
@@ -107,7 +77,7 @@ Now we can start interacting with our installation. Let's run the following comm
     Getting server status...
     Server is reachable and the client/server application versions match.
     ```
-   
+
 
 Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
 

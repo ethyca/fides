@@ -12,7 +12,7 @@
 
 ![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
 
- _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_ 
+ _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_
 
 ## :zap: Overview
 
@@ -20,7 +20,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
-## :rocket: Quick Start 
+## :rocket: Quick Start
 
 1. Get running with Docker: First, ensure that you have `make` and `docker` installed locally, and clone the Fides repo. Then, from the fides directory, run the following commands:
 
@@ -50,16 +50,18 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 
     <summary>Run <code>fidesctl init</code></summary>
 
-    ```bash
+    ```
     Initializing Fidesctl...
-
-    Created a '.fides' directory.
-
-    ...
-
-    Created a config file at '.fides/fidesctl.toml'. To learn more, see:  
-                https://ethyca.github.io/fides/installation/configuration/
-
+    ----------
+    Created a './.fides' directory.
+    ----------
+    Created a fidesctl config file: ./.fides/fidesctl.toml
+    To learn more about configuring fidesctl, see:
+      https://ethyca.github.io/fides/installation/configuration/
+    ----------
+    For example policies and help getting started, see:
+      https://ethyca.github.io/fides/guides/policies/
+    ----------
     Fidesctl initialization complete.
     ```
 
