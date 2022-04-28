@@ -380,13 +380,6 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#initializing-fidesctl" class="md-nav__link">
-    Initializing Fidesctl
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#docker-setup" class="md-nav__link">
     Docker Setup
   </a>
@@ -1449,13 +1442,6 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#initializing-fidesctl" class="md-nav__link">
-    Initializing Fidesctl
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#docker-setup" class="md-nav__link">
     Docker Setup
   </a>
@@ -1497,48 +1483,6 @@ You're not viewing the latest version.
 <li>If your <code>docker</code> installation did not include <code>docker-compose</code>, make sure to get at least version <code>1.29.0</code>. Installation instructions can be found <a href="https://docs.docker.com/compose/install/">here</a>.</li>
 <li>In the directory from where you will run the docker compose file, create a <code>.fides</code> directory to then mount in the <code>fidesctl</code> container.</li>
 </ol>
-<h2 id="initializing-fidesctl">Initializing Fidesctl</h2>
-<p>Even though we're running fidesctl in Docker, we still need to initialize fidesctl locally to then mount those files into the Docker container.</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fidesctl</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl init
-</code></pre></div></td></tr></table></div>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>No config file found. Using default configuration values.
-Initializing Fidesctl...
-
-Created a &#39;.fides&#39; directory.
-
-Fides needs your permission to send Ethyca a limited set of anonymous usage statistics.
-Ethyca will only use this anonymous usage data to improve the product experience, and will never collect sensitive or personal data.
-
-***
-Don&#39;t believe us? Check out the open-source code here:
-    https://github.com/ethyca/fideslog
-***
-
-To opt-out of all telemetry, press &quot;n&quot;. To continue with telemetry, press any other key.
-
-Created a config file at &#39;.fides/fidesctl.toml&#39;. To learn more, see:  
-            https://ethyca.github.io/fides/installation/configuration/
-
-Fidesctl initialization complete.
-</code></pre></div></td></tr></table></div>
 <h2 id="docker-setup">Docker Setup</h2>
 <p>This is a reference file that you can copy/paste into a local <code>docker-compose.yml</code> file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port <code>5432</code> or <code>8080</code> before using this file.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">docker-compose.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
