@@ -1,7 +1,5 @@
 # Running Fidesctl in Docker
 
----
-
 The recommended way to get Fidesctl running is via Docker. The following guide will describe how to get things going, step-by-step.
 
 ## System Requirements
@@ -10,16 +8,18 @@ Docker and Docker-Compose are the only requirements here.
 
 1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation). The minimum verified Docker version is `20.10.8`
 1. If your `docker` installation did not include `docker-compose`, make sure to get at least version `1.29.0`. Installation instructions can be found [here](https://docs.docker.com/compose/install/).
-1. In the directory from where you will run the docker compose file, create a `.fides` directory to then mount in the `fidesctl` container.
+1. Create a `.fides` folder in the root directory of your project (or in the same directory as your docker compose file).
 
 ## Docker Setup
 
-This is a reference file that you can copy/paste into a local `docker-compose.yml` file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port `5432` or `8080` before using this file.
+This is a reference file that you can copy/paste into a local `docker-compose.yml` file, which should be created in your project's root folder. It will create a database and spin up the fidesctl webserver. 
+
+Make sure that you don't have anything else running on port `5432` or `8080` before using this file.
 
 ```docker-compose title="docker-compose.yml"
 services:
   fidesctl:
-    image: ethyca/fidesctl:1.2.0
+    image: ethyca/fidesctl
     command: fidesctl webserver
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health"]
@@ -34,13 +34,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - FIDESCTL__CLI__SERVER_HOST=http://fidesctl
-      - FIDESCTL__CLI__SERVER_PORT=8080
-      - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
+      FIDESCTL_TEST_MODE: "True"
+      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
+      FIDESCTL__CLI__SERVER_PORT: "8080"
+      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
     volumes:
       - type: bind
-        source: ./.fides/ # Update this to be the path of your .fides/ folder
-        target: /fides/.fides/
+        source: .
+        target: /fides
         read_only: False
 
   fidesctl-db:
@@ -66,20 +67,28 @@ volumes:
 
 ```
 
-Now we can start interacting with our installation. Let's run the following commands to get going:
+Now you can start interacting with your installation. Run the following commands to get going:
 
 1. `docker-compose up -d` -> This will spin up the docker-compose file in the background.
 1. `docker-compose run --rm fidesctl /bin/bash` -> This opens a shell within the fidesctl container.
-1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+1. `fidesctl init` -> This will create a default configuration file at `./.fides/fidesctl.toml`.
 
     ```bash
-    root@2da501a72f8f:/fides/fidesctl# fidesctl status
-    Getting server status...
-    Server is reachable and the client/server application versions match.
+    Created a fidesctl config file: ./.fides/fidesctl.toml
+    To learn more about configuring fidesctl, see:
+      https://ethyca.github.io/fides/installation/configuration/
+    ----------
+    For example policies and help getting started, see:
+      https://ethyca.github.io/fides/guides/policies/
+    ----------
+    Fidesctl initialization complete.
+
     ```
 
+1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
+   
 
-Now that you're up and running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
+Once your installation is running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
 
 ## Next Steps
 
