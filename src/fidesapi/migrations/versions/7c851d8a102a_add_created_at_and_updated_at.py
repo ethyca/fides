@@ -10,7 +10,6 @@ from sqlalchemy import Column, DateTime, text
 
 from fidesapi.sql_models import sql_model_map
 
-
 # revision identifiers, used by Alembic.
 revision = "7c851d8a102a"
 down_revision = "312aff72b275"

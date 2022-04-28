@@ -20,11 +20,6 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-python@v2
-        with:
-          # Currently limited by pandas support for python 3.10, dependency from fidesctl
-          # see  https://github.com/pandas-dev/pandas/pull/43729
-          # Remove once fidesctl 1.4.0 is released an pandas version is 1.3.4
-          python-version: "3.9.0"
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
@@ -33,7 +28,7 @@ jobs:
         run: pip install -r docs/fides/requirements.txt
 
       - name: Install fidesctl
-        run: pip install -e .
+        run: pip install -e ./[all]
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1

@@ -4,6 +4,7 @@ from functools import reduce
 from typing import Dict, List, Set, Union
 
 import yaml
+
 from fidesctl.core.utils import echo_red
 
 

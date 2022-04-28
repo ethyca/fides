@@ -3,6 +3,7 @@ Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
 from typing import Dict, List, Optional
+
 from requests import Response
 
 from fidesctl.core import api

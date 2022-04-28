@@ -1,9 +1,11 @@
-import sqlalchemy
-import pytest
 import os
 from typing import List
 
-from fidesctl.core import dataset as _dataset, api
+import pytest
+import sqlalchemy
+
+from fidesctl.core import api
+from fidesctl.core import dataset as _dataset
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 

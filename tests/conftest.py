@@ -1,13 +1,13 @@
 """Common fixtures to be used across tests."""
+import os
 from typing import Any, Dict
 
-import os
 import pytest
 import yaml
 
-from fideslang import models
-from fidesctl.core.config import get_config
 from fidesctl.core import api
+from fidesctl.core.config import get_config
+from fideslang import models
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"

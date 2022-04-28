@@ -5,7 +5,6 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from fideslang.models import ContactDetails, Taxonomy
 
 from fidesctl.core.api_helpers import get_server_resources
 from fidesctl.core.export_helpers import (
@@ -20,6 +19,7 @@ from fidesctl.core.export_helpers import (
     union_data_categories_in_joined_dataframe,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
+from fideslang.models import ContactDetails, Taxonomy
 
 
 def generate_dataset_records(
