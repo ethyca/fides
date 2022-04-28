@@ -2,41 +2,33 @@ import logging
 from typing import List, Union
 
 from fastapi import APIRouter, Body, Depends, Security
-from fastapi_pagination import (
-    Page,
-    Params,
-)
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-
-from fidesops.api.v1.endpoints.connection_endpoints import (
-    get_connection_config_or_error,
-)
-from fidesops.api.v1.endpoints.policy_endpoints import get_policy_or_error
-from fidesops.db.base_class import get_key_from_data
-from fidesops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
-from fidesops.schemas.shared_schemas import FidesOpsKey
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.common_exceptions import (
-    KeyOrNameAlreadyExists,
-    WebhookOrderException,
+from fidesops.api.v1.endpoints.connection_endpoints import (
+    get_connection_config_or_error,
 )
+from fidesops.api.v1.endpoints.policy_endpoints import get_policy_or_error
+from fidesops.common_exceptions import KeyOrNameAlreadyExists, WebhookOrderException
+from fidesops.db.base_class import get_key_from_data
 from fidesops.models.policy import (
     Policy,
-    PolicyPreWebhook,
     PolicyPostWebhook,
+    PolicyPreWebhook,
     WebhookTypes,
 )
 from fidesops.schemas import policy_webhooks as schemas
+from fidesops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
-
 
 router = APIRouter(tags=["Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 
@@ -45,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     urls.POLICY_WEBHOOKS_PRE,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=Page[schemas.PolicyWebhookResponse],
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
@@ -69,7 +61,7 @@ def get_policy_pre_execution_webhooks(
 
 @router.get(
     urls.POLICY_WEBHOOKS_POST,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=Page[schemas.PolicyWebhookResponse],
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
@@ -166,7 +158,7 @@ def put_webhooks(
 
 @router.put(
     urls.POLICY_WEBHOOKS_PRE,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
     ],
@@ -189,7 +181,7 @@ def create_or_update_pre_execution_webhooks(
 
 @router.put(
     urls.POLICY_WEBHOOKS_POST,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
     ],
@@ -239,7 +231,7 @@ def get_policy_webhook_or_error(
 
 @router.get(
     urls.POLICY_PRE_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=schemas.PolicyWebhookResponse,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
@@ -258,7 +250,7 @@ def get_policy_pre_execution_webhook(
 
 @router.get(
     urls.POLICY_POST_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=schemas.PolicyWebhookResponse,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_READ])],
 )
@@ -340,7 +332,7 @@ def _patch_webhook(
 
 @router.patch(
     urls.POLICY_PRE_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
     ],
@@ -368,7 +360,7 @@ def update_pre_execution_webhook(
 
 @router.patch(
     urls.POLICY_POST_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.WEBHOOK_CREATE_OR_UPDATE])
     ],
@@ -434,7 +426,7 @@ def delete_webhook(
 
 @router.delete(
     urls.POLICY_PRE_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
     response_model=schemas.PolicyWebhookDeleteResponse,
 )
@@ -455,7 +447,7 @@ def delete_pre_execution_webhook(
 
 @router.delete(
     urls.POLICY_POST_WEBHOOK_DETAIL,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
     response_model=schemas.PolicyWebhookDeleteResponse,
 )

@@ -1,11 +1,14 @@
 import logging
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.params import Security
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
-from sqlalchemy.orm import Session
 
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.params import Security
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
@@ -13,20 +16,20 @@ from fidesops.api.v1.scope_registry import (
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-
 from fidesops.api.v1.urn_registry import (
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
-
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
@@ -53,7 +56,7 @@ def _get_saas_connection_config(
 @router.put(
     SAAS_CONFIG_VALIDATE,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_READ])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=ValidateSaaSConfigResponse,
 )
 def validate_saas_config(
@@ -80,7 +83,7 @@ def validate_saas_config(
 @router.patch(
     SAAS_CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=SaaSConfig,
 )
 def patch_saas_config(
@@ -122,7 +125,7 @@ def get_saas_config(
 @router.delete(
     SAAS_CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_DELETE])],
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
 )
 def delete_saas_config(
     db: Session = Depends(deps.get_db),

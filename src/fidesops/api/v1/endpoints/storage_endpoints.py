@@ -1,19 +1,18 @@
 import logging
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, Security
-from fastapi_pagination import Params, Page
-
-from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
@@ -22,38 +21,36 @@ from starlette.status import (
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
-    STORAGE_READ,
     STORAGE_DELETE,
+    STORAGE_READ,
 )
 from fidesops.api.v1.urn_registry import (
-    STORAGE_CONFIG,
     STORAGE_BY_KEY,
-    STORAGE_UPLOAD,
+    STORAGE_CONFIG,
     STORAGE_SECRETS,
+    STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from fidesops.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
+from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.storage import StorageConfig, get_schema_for_secrets
 from fidesops.schemas.api import BulkUpdateFailed
 from fidesops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.storage.data_upload_location_response import DataUpload
 from fidesops.schemas.storage.storage import (
-    StorageDestinationResponse,
     BulkPutStorageConfigResponse,
     StorageDestination,
-)
-from fidesops.models.storage import (
-    StorageConfig,
-    get_schema_for_secrets,
+    StorageDestinationResponse,
 )
 from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 from fidesops.service.storage.storage_authenticator_service import secrets_are_valid
-from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.common_exceptions import StorageUploadError, KeyOrNameAlreadyExists
-from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.service.storage.storage_uploader_service import upload
-
+from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
@@ -61,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 @router.post(
     STORAGE_UPLOAD,
-    status_code=201,
+    status_code=HTTP_201_CREATED,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=DataUpload,
 )
@@ -99,7 +96,7 @@ def upload_data(
 
 @router.patch(
     STORAGE_CONFIG,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=BulkPutStorageConfigResponse,
 )
@@ -154,7 +151,7 @@ def patch_config(
 
 @router.put(
     STORAGE_SECRETS,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
 )
@@ -262,7 +259,7 @@ def get_config_by_key(
 
 @router.delete(
     STORAGE_BY_KEY,
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_DELETE])],
 )
 def delete_config_by_key(

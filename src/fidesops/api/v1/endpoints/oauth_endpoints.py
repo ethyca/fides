@@ -1,27 +1,19 @@
 import logging
-from typing import (
-    List,
-)
+from typing import List
 
-from fastapi import (
-    APIRouter,
-    Body,
-    Depends,
-    Request,
-    Security,
-    HTTPException,
-)
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fidesops.api.deps import get_db
 from fidesops.api.v1.scope_registry import (
+    CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
-    CLIENT_CREATE,
+    CLIENT_UPDATE,
     SCOPE_READ,
     SCOPE_REGISTRY,
-    CLIENT_UPDATE,
 )
 from fidesops.api.v1.urn_registry import (
     CLIENT,
@@ -34,7 +26,6 @@ from fidesops.api.v1.urn_registry import (
 from fidesops.common_exceptions import AuthenticationFailure
 from fidesops.models.client import ClientDetail
 from fidesops.schemas.client import ClientCreatedResponse
-
 from fidesops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fidesops.util.oauth_util import verify_oauth_client
 
@@ -93,7 +84,7 @@ def create_client(
     logging.info("Creating new client")
     if not all([scope in SCOPE_REGISTRY for scope in scopes]):
         raise HTTPException(
-            status_code=422,
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 
@@ -149,7 +140,7 @@ def set_client_scopes(
 
     if not all(elem in SCOPE_REGISTRY for elem in scopes):
         raise HTTPException(
-            status_code=422,
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 

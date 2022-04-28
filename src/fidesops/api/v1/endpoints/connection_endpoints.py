@@ -1,55 +1,59 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
-from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import ValidationError, conlist
-from starlette.status import HTTP_404_NOT_FOUND
 from sqlalchemy.orm import Session
-from fidesops.schemas.shared_schemas import FidesOpsKey
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
+from fidesops.api import deps
+from fidesops.api.v1.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+)
+from fidesops.api.v1.urn_registry import (
+    CONNECTION_BY_KEY,
+    CONNECTION_SECRETS,
+    CONNECTION_TEST,
+    CONNECTIONS,
+    SAAS_CONFIG,
+    V1_URL_PREFIX,
+)
 from fidesops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
     KeyOrNameAlreadyExists,
 )
-from fidesops.schemas.connection_configuration import (
-    get_connection_secrets_validator,
-    connection_secrets_schemas,
-)
-from fidesops.schemas.connection_configuration.connection_secrets import (
-    TestStatusMessage,
-    ConnectionConfigSecretsSchema,
-    ConnectionTestStatus,
-)
-
-from fidesops.service.connectors import get_connector
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.api import BulkUpdateFailed
+from fidesops.schemas.connection_configuration import (
+    connection_secrets_schemas,
+    get_connection_secrets_validator,
+)
 from fidesops.schemas.connection_configuration.connection_config import (
+    BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfiguration,
-    BulkPutConnectionConfiguration,
 )
-from fidesops.api.v1.scope_registry import (
-    CONNECTION_READ,
-    CONNECTION_DELETE,
-    CONNECTION_CREATE_OR_UPDATE,
+from fidesops.schemas.connection_configuration.connection_secrets import (
+    ConnectionConfigSecretsSchema,
+    ConnectionTestStatus,
+    TestStatusMessage,
 )
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.service.connectors import get_connector
 from fidesops.util.logger import NotPii
 from fidesops.util.oauth_util import verify_oauth_client
-from fidesops.api import deps
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.api.v1.urn_registry import (
-    CONNECTION_BY_KEY,
-    CONNECTIONS,
-    SAAS_CONFIG,
-    V1_URL_PREFIX,
-    CONNECTION_SECRETS,
-    CONNECTION_TEST,
-)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -103,7 +107,7 @@ def get_connection_detail(
 @router.patch(
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkPutConnectionConfiguration,
 )
 def patch_connections(
@@ -161,7 +165,7 @@ def patch_connections(
 @router.delete(
     CONNECTION_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_DELETE])],
-    status_code=204,
+    status_code=HTTP_204_NO_CONTENT,
 )
 def delete_connection(
     connection_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
@@ -181,7 +185,7 @@ def validate_secrets(
     saas_config = connection_config.get_saas_config()
     if connection_type == ConnectionType.saas and saas_config is None:
         raise HTTPException(
-            status_code=422,
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="A SaaS config to validate the secrets is unavailable for this "
             f"connection config, please add one via {SAAS_CONFIG}",
         )
@@ -193,7 +197,9 @@ def validate_secrets(
         )
         connection_secrets = schema.parse_obj(request_body)
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors())
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
 
     return connection_secrets
 
@@ -232,7 +238,7 @@ def connection_status(
 
 @router.put(
     CONNECTION_SECRETS,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
 )
@@ -267,7 +273,7 @@ async def put_connection_config_secrets(
 
 @router.get(
     CONNECTION_TEST,
-    status_code=200,
+    status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=TestStatusMessage,
 )
