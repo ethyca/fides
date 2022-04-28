@@ -20,6 +20,7 @@ The types of changes are:
 
 * CHANGELOG.md file
 * On API server startup, in-use config values are logged at the DEBUG level
+* Send a usage analytics event upon execution of the `fidesctl init` command
 
 ### Developer Experience
 

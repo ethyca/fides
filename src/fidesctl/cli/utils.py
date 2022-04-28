@@ -3,15 +3,24 @@
 import json
 import sys
 from datetime import datetime, timezone
+from importlib.metadata import version
 from os import getenv
+from platform import system
 from typing import Any, Callable, Dict
 
 import click
 import requests
+from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
-from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
+from fideslog.sdk.python.utils import (
+    FIDESCTL_CLI,
+    OPT_OUT_COPY,
+    OPT_OUT_PROMPT,
+    generate_client_id,
+)
 
+import fidesctl
 from fidesctl.core import api as _api
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import check_response, echo_green, echo_red
@@ -99,6 +108,40 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
             click.echo("Run 'fidesctl init' to create a configuration file.")
+
+
+def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) -> None:
+    """
+    Create a new `AnalyticsClient` and send an `AnalyticsEvent` representing
+    the execution of `fidesctl init` by a user.
+    """
+
+    if opt_out is not False:
+        return
+
+    analytics_id = get_config_from_file(config_path, "cli", "analytics_id")
+    app_name = fidesctl.__name__
+
+    try:
+        client = AnalyticsClient(
+            client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
+            developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
+            os=system(),
+            product_name=app_name + "-cli",
+            production_version=version(app_name),
+        )
+
+        event = AnalyticsEvent(
+            "cli_command_executed",
+            executed_at,
+            command="fidesctl init",
+            docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
+            resource_counts=None,  # TODO: Figure out if it's possible to capture this
+        )
+
+        client.send(event)
+    except AnalyticsError:
+        pass  # cli analytics should fail silently
 
 
 def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict) -> Any:  # type: ignore
