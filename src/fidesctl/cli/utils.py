@@ -147,14 +147,14 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
 
 def with_analytics(func: Callable) -> Callable:
     """
-    Click command wrapper which can be added to enable publishing anaytics.
+    Click command decorator which can be added to enable publishing anaytics.
     Sends an `AnalyticsEvent` with details about the executed command,
     as long as the CLI has not been configured to opt out of analytics.
 
     :param func: function to be wrapped by decorator
     """
 
-    def new_func(ctx, *args, **kwargs):
+    def new_func(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
         command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
         error = None
         executed_at = datetime.now(timezone.utc)
