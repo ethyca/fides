@@ -7,7 +7,7 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo, with_analytics
+from fidesctl.cli.utils import pretty_echo, with_analytics_decorator
 from fidesctl.core import apply as _apply
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
@@ -22,6 +22,7 @@ from fidesctl.core import parse as _parse
     help="Include any changes between server and local resources in the command output",
 )
 @manifests_dir_argument
+@with_analytics_decorator
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Validate local manifest files and persist any changes via the API server.
@@ -29,9 +30,7 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    with_analytics(
-        ctx,
-        _apply.apply,
+    _apply.apply(
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,
@@ -50,6 +49,7 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     help="A message that you can supply to describe the context of this evaluation.",
 )
 @dry_flag
+@with_analytics_decorator
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
@@ -79,9 +79,7 @@ def evaluate(
             dry=dry,
         )
 
-    with_analytics(
-        ctx,
-        _evaluate.evaluate,
+    _evaluate.evaluate(
         url=config.cli.server_url,
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
@@ -96,6 +94,7 @@ def evaluate(
 @click.pass_context
 @manifests_dir_argument
 @verbose_flag
+@with_analytics_decorator
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
     Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify
@@ -103,6 +102,6 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 
     If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.
     """
-    taxonomy = with_analytics(ctx, _parse.parse, manifests_dir=manifests_dir)
+    taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.dict(), color="green")

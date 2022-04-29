@@ -7,7 +7,11 @@ import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
-from fidesctl.cli.utils import check_server, send_init_analytics, with_analytics
+from fidesctl.cli.utils import (
+    check_server,
+    send_init_analytics,
+    with_analytics_decorator,
+)
 from fidesctl.core.utils import echo_green, echo_red
 
 
@@ -89,6 +93,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
+@with_analytics_decorator
 def status(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
@@ -97,9 +102,7 @@ def status(ctx: click.Context) -> None:
     cli_version = fidesctl.__version__
     server_url = config.cli.server_url
     click.echo("Getting server status...")
-    with_analytics(
-        ctx,
-        check_server,
+    check_server(
         cli_version=cli_version,
         server_url=server_url,
     )
@@ -107,6 +110,7 @@ def status(ctx: click.Context) -> None:
 
 @click.command()
 @click.pass_context
+@with_analytics_decorator
 def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server using Uvicorn on port 8080.
@@ -117,4 +121,4 @@ def webserver(ctx: click.Context) -> None:
         echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
         raise SystemExit
 
-    with_analytics(ctx, start_webserver)
+    start_webserver()

@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.options import include_null_flag
-from fidesctl.cli.utils import with_analytics, with_analytics_decorator
+from fidesctl.cli.utils import with_analytics_decorator
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -29,6 +29,7 @@ def generate_dataset(ctx: click.Context) -> None:
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 @include_null_flag
+@with_analytics_decorator
 def generate_dataset_db(
     ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
 ) -> None:
@@ -39,9 +40,7 @@ def generate_dataset_db(
     This is a one-time operation that does not track the state of the database.
     It will need to be run again if the database schema changes.
     """
-    with_analytics(
-        ctx,
-        _dataset.generate_dataset_db,
+    _dataset.generate_dataset_db(
         connection_string=connection_string,
         file_name=output_filename,
         include_null=include_null,
@@ -53,6 +52,7 @@ def generate_dataset_db(
 @click.argument("org_url", type=str)
 @click.argument("output_filename", type=str)
 @include_null_flag
+@with_analytics_decorator
 def generate_dataset_okta(
     ctx: click.Context, org_url: str, output_filename: str, include_null: bool
 ) -> None:
@@ -65,9 +65,7 @@ def generate_dataset_okta(
     It will need to be run again if the tracked resources change.
     """
 
-    with_analytics(
-        ctx,
-        _dataset.generate_dataset_okta,
+    _dataset.generate_dataset_okta(
         org_url=org_url,
         file_name=output_filename,
         include_null=include_null,
@@ -104,9 +102,7 @@ def generate_system_aws(
     """
 
     config = ctx.obj["CONFIG"]
-    with_analytics(
-        ctx,
-        _system.generate_system_aws,
+    _system.generate_system_aws(
         file_name=output_filename,
         include_null=include_null,
         organization_key=organization,

@@ -2,7 +2,7 @@
 
 import click
 
-from fidesctl.cli.utils import pretty_echo, with_analytics
+from fidesctl.cli.utils import pretty_echo, with_analytics_decorator
 
 
 @click.group(name="view")
@@ -20,10 +20,11 @@ def view(ctx: click.Context) -> None:
     is_flag=True,
     help="Only print configuration values explicitly set by the user.",
 )
+@with_analytics_decorator
 def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
     Prints the fidesctl configuration values.
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
-    with_analytics(ctx, pretty_echo, dict_object=config_dict, color="green")
+    pretty_echo(dict_object=config_dict, color="green")

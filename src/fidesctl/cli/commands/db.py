@@ -2,7 +2,7 @@
 import click
 
 from fidesctl.cli.options import yes_flag
-from fidesctl.cli.utils import handle_cli_response, with_analytics
+from fidesctl.cli.utils import handle_cli_response, with_analytics_decorator
 from fidesctl.core import api as _api
 from fidesctl.core.utils import echo_red
 
@@ -17,15 +17,14 @@ def database(ctx: click.Context) -> None:
 
 @database.command(name="init")
 @click.pass_context
+@with_analytics_decorator
 def db_init(ctx: click.Context) -> None:
     """
     Initialize the Fidesctl database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
-        with_analytics(
-            ctx,
-            _api.db_action,
+        _api.db_action(
             server_url=config.cli.server_url,
             action="init",
         )
@@ -35,6 +34,7 @@ def db_init(ctx: click.Context) -> None:
 @database.command(name="reset")
 @click.pass_context
 @yes_flag
+@with_analytics_decorator
 def db_reset(ctx: click.Context, yes: bool) -> None:
     """
     Wipes all user-created data and resets the database back to its freshly initialized state.
@@ -50,9 +50,7 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
 
     if are_you_sure.lower() == "y":
         handle_cli_response(
-            with_analytics(
-                ctx,
-                _api.db_action,
+            _api.db_action(
                 server_url=config.cli.server_url,
                 action="reset",
             )
