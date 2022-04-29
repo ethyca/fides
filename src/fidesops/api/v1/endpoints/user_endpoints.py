@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -9,6 +10,7 @@ from fastapi_pagination.bases import AbstractPage
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -89,13 +91,18 @@ def create_user(
     response_model=Page[UserResponse],
 )
 def get_users(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    username: Optional[str] = None,
 ) -> AbstractPage[FidesopsUser]:
     """Returns a paginated list of all users"""
     logger.info(f"Returned a paginated list of all users.")
-    return paginate(
-        FidesopsUser.query(db).order_by(FidesopsUser.created_at.desc()), params=params
-    )
+    query = FidesopsUser.query(db)
+    if username:
+        query = query.filter(FidesopsUser.username.ilike(f"%{escape_like(username)}%"))
+
+    return paginate(query.order_by(FidesopsUser.created_at.desc()), params=params)
 
 
 @router.get(
