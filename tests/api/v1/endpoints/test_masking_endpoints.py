@@ -16,7 +16,7 @@ from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite im
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
-from fidesops.schemas.masking.masking_response import MaskingAPIResponse
+from fidesops.schemas.masking.masking_api import MaskingAPIResponse
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategies
 
 
@@ -37,15 +37,18 @@ class TestMaskValues:
     def test_mask_value_string_rewrite(self, api_client: TestClient):
         value = "check"
         rewrite_val = "mate"
-        masking_strategy = {
-            "strategy": STRING_REWRITE,
-            "configuration": {"rewrite_value": rewrite_val},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {"rewrite_value": rewrite_val},
+            },
         }
-        expected_response = MaskingAPIResponse(plain=value, masked_value=rewrite_val)
-
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
+        expected_response = MaskingAPIResponse(
+            plain=[value], masked_values=[rewrite_val]
         )
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
 
         assert 200 == response.status_code
         assert expected_response == json.loads(response.text)
@@ -53,100 +56,148 @@ class TestMaskValues:
     def test_mask_value_random_string_rewrite(self, api_client: TestClient):
         value = "my email"
         length = 20
-
-        masking_strategy = {
-            "strategy": RANDOM_STRING_REWRITE,
-            "configuration": {"length": length},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": RANDOM_STRING_REWRITE,
+                "configuration": {"length": length},
+            },
         }
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
         assert 200 == response.status_code
         json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert length == len(json_response["masked_value"])
+        assert value == json_response["plain"][0]
+        assert length == len(json_response["masked_values"][0])
 
     def test_mask_value_hmac(self, api_client: TestClient):
         value = "867-5309"
-        masking_strategy = {
-            "strategy": HMAC,
-            "configuration": {},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": HMAC,
+                "configuration": {},
+            },
         }
-
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
         assert 200 == response.status_code
         json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert json_response["masked_value"] != value
+        assert value == json_response["plain"][0]
+        assert json_response["masked_values"][0] != value
 
     def test_mask_value_hash(self, api_client: TestClient):
         value = "867-5309"
-        masking_strategy = {
-            "strategy": HASH,
-            "configuration": {},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": HASH,
+                "configuration": {},
+            },
+        }
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"][0]
+        assert json_response["masked_values"][0] != value
+
+    def test_mask_value_hash_multi_value(self, api_client: TestClient):
+        value = "867-5309"
+        value2 = "844-5205"
+        request = {
+            "values": [value, value2],
+            "masking_strategy": {
+                "strategy": HASH,
+                "configuration": {},
+            },
         }
         response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
+            f"{V1_URL_PREFIX}{MASKING}",
+            json=request,
         )
         assert 200 == response.status_code
         json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert json_response["masked_value"] != value
+        assert value == json_response["plain"][0]
+        assert value2 == json_response["plain"][1]
+        assert json_response["masked_values"][0] != value
+        assert json_response["masked_values"][1] != value2
+
+    def test_mask_value_hash_multi_value_same_value(self, api_client: TestClient):
+        value = "867-5309"
+        request = {
+            "values": [value, value],
+            "masking_strategy": {
+                "strategy": HASH,
+                "configuration": {},
+            },
+        }
+        response = api_client.put(
+            f"{V1_URL_PREFIX}{MASKING}",
+            json=request,
+        )
+        assert 200 == response.status_code
+        json_response = json.loads(response.text)
+        assert value == json_response["plain"][0]
+        assert value == json_response["plain"][1]
+        assert json_response["masked_values"][0] != value
+        assert json_response["masked_values"][1] != value
 
     def test_mask_value_aes_encrypt(self, api_client: TestClient):
         value = "last name"
-        masking_strategy = {
-            "strategy": AES_ENCRYPT,
-            "configuration": {"mode": AesEncryptionMaskingConfiguration.Mode.GCM.value},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": AES_ENCRYPT,
+                "configuration": {
+                    "mode": AesEncryptionMaskingConfiguration.Mode.GCM.value
+                },
+            },
         }
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
         assert 200 == response.status_code
         json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert json_response["masked_value"] != value
+        assert value == json_response["plain"][0]
+        assert json_response["masked_values"][0] != value
 
     def test_mask_value_no_such_strategy(self, api_client: TestClient):
         value = "check"
         rewrite_val = "mate"
-        masking_strategy = {
-            "strategy": "No Such Strategy",
-            "configuration": {"rewrite_value": rewrite_val},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": "No Such Strategy",
+                "configuration": {"rewrite_value": rewrite_val},
+            },
         }
 
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
 
         assert 404 == response.status_code
 
     def test_mask_value_invalid_config(self, api_client: TestClient):
         value = "check"
-        masking_strategy = {
-            "strategy": STRING_REWRITE,
-            "configuration": {"wrong": "config"},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {"wrong": "config"},
+            },
         }
 
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value={value}", json=masking_strategy
-        )
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
 
         assert 400 == response.status_code
 
     def test_masking_value_null(self, api_client: TestClient):
         value = "my_email"
-
-        masking_strategy = {
-            "strategy": NULL_REWRITE,
-            "configuration": {},
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": NULL_REWRITE,
+                "configuration": {},
+            },
         }
-        response = api_client.put(
-            f"{V1_URL_PREFIX}{MASKING}?value=my_email", json=masking_strategy
-        )
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
         assert 200 == response.status_code
         json_response = json.loads(response.text)
-        assert value == json_response["plain"]
-        assert json_response["masked_value"] is None
+        assert value == json_response["plain"][0]
+        assert json_response["masked_values"][0] is None

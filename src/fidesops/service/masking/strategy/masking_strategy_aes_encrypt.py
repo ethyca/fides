@@ -28,7 +28,11 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         self.mode = configuration.mode
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> str:
+    def mask(
+        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+    ) -> Optional[List[str]]:
+        if values is None:
+            return None
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
             masking_meta: Dict[
                 SecretType, MaskingSecretMeta
@@ -46,14 +50,18 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
             implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
             """
-            nonce: bytes = self._generate_nonce(
-                value, key_hmac, privacy_request_id, masking_meta
-            )
-            masked: str = encrypt(value, key, nonce)
-            if self.format_preservation is not None:
-                formatter = FormatPreservation(self.format_preservation)
-                return formatter.format(masked)
-            return masked
+
+            masked_values: List[str] = []
+            for value in values:
+                nonce: bytes = self._generate_nonce(
+                    value, key_hmac, privacy_request_id, masking_meta
+                )
+                masked: str = encrypt(value, key, nonce)
+                if self.format_preservation is not None:
+                    formatter = FormatPreservation(self.format_preservation)
+                    masked = formatter.format(masked)
+                masked_values.append(masked)
+            return masked_values
         else:
             raise ValueError(f"aes_mode {self.mode} is not supported")
 

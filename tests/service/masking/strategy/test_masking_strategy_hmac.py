@@ -23,7 +23,7 @@ def test_hmac_sha_256():
     )
     cache_secret(secret_salt, request_id)
 
-    masked = masker.mask("my_data", request_id)
+    masked = masker.mask(["my_data"], request_id)[0]
     assert expected == masked
     clear_cache_secrets(request_id)
 
@@ -42,7 +42,7 @@ def test_mask_sha512():
     )
     cache_secret(secret_salt, request_id)
 
-    masked = masker.mask("my_data", request_id)
+    masked = masker.mask(["my_data"], request_id)[0]
     assert expected == masked
     clear_cache_secrets(request_id)
 
@@ -61,8 +61,29 @@ def test_mask_sha256_default():
     )
     cache_secret(secret_salt, request_id)
 
-    masked = masker.mask("my_data", request_id)
+    masked = masker.mask(["my_data"], request_id)[0]
     assert expected == masked
+    clear_cache_secrets(request_id)
+
+
+def test_mask_sha256_default_multi_value():
+    configuration = HmacMaskingConfiguration()
+    masker = HmacMaskingStrategy(configuration)
+    expected = "df1e66dc2262ae3336f36294811f795b075900287e0a1add7974eacea8a52970"
+    expected2 = "fdc1f6389fbbb07174d4f15a4bbf0c0e2226a32ef2b288aa9a490e9fb91ce4bf"
+
+    secret_key = MaskingSecretCache[str](
+        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+    )
+    cache_secret(secret_key, request_id)
+    secret_salt = MaskingSecretCache[str](
+        secret="test_salt", masking_strategy=HMAC, secret_type=SecretType.salt
+    )
+    cache_secret(secret_salt, request_id)
+
+    masked = masker.mask(["my_data", "my_other_data"], request_id)
+    assert expected == masked[0]
+    assert expected2 == masked[1]
     clear_cache_secrets(request_id)
 
 

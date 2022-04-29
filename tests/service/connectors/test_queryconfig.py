@@ -311,12 +311,12 @@ class TestSQLQueryConfig:
         assert (
             text_clause._bindparams["name"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                "John Customer", privacy_request_id=privacy_request.id
-            )[0:40]
+                ["John Customer"], privacy_request_id=privacy_request.id
+            )[0][0:40]
         )
         assert text_clause._bindparams["email"].value == HashMaskingStrategy(
             HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("customer-1@example.com", privacy_request_id=privacy_request.id)
+        ).mask(["customer-1@example.com"], privacy_request_id=privacy_request.id)[0]
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -598,7 +598,7 @@ class TestMongoQueryConfig:
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
         assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
             HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask("1988-01-10", privacy_request_id=privacy_request.id)
+        ).mask(["1988-01-10"], privacy_request_id=privacy_request.id)[0]
 
 
 @pytest.mark.unit_saas

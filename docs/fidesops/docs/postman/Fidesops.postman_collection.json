@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2ca0e37b-7b36-4b84-bce7-0536ac97df8d",
+		"_postman_id": "4a0d10fa-6f76-4395-8d9c-73dd49246e9f",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1013,7 +1013,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": " {\n    \"strategy\": \"random_string_rewrite\",\n    \"configuration\": {\n        \"length\": 20,\n        \"format_preservation\": {\n            \"suffix\": \"@masked.com\"\n        }\n        \n    }\n}\n",
+							"raw": " {\n    \"values\": [\"test@example.com\"],\n    \"masking_strategy\": {\n        \"strategy\": \"random_string_rewrite\",\n        \"configuration\": {\n            \"length\": 20,\n            \"format_preservation\": {\n                \"suffix\": \"@masked.com\"\n            }\n            \n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1021,19 +1021,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/masking/mask?value=test@example.com",
+							"raw": "{{host}}/masking/mask",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"masking",
 								"mask"
-							],
-							"query": [
-								{
-									"key": "value",
-									"value": "test@example.com"
-								}
 							]
 						}
 					},
