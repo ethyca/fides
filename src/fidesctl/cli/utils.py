@@ -3,11 +3,11 @@
 import json
 import sys
 from datetime import datetime, timezone
+from functools import update_wrapper
 from importlib.metadata import version
 from os import getenv
 from platform import system
 from typing import Any, Callable, Dict
-from functools import update_wrapper
 
 import click
 import requests
@@ -144,9 +144,10 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     except AnalyticsError:
         pass  # cli analytics should fail silently
 
+
 def with_analytics(func: Callable) -> Callable:
     """
-    Click command wrapper which can be added to enable publishing anaytics.  
+    Click command wrapper which can be added to enable publishing anaytics.
     Sends an `AnalyticsEvent` with details about the executed command,
     as long as the CLI has not been configured to opt out of analytics.
 

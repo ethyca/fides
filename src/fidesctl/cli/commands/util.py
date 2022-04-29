@@ -7,11 +7,7 @@ import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
-from fidesctl.cli.utils import (
-    check_server,
-    send_init_analytics,
-    with_analytics,
-)
+from fidesctl.cli.utils import check_server, send_init_analytics, with_analytics
 from fidesctl.core.utils import echo_green, echo_red
 
 
