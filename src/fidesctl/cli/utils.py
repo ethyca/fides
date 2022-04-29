@@ -154,7 +154,7 @@ def with_analytics(func: Callable) -> Callable:
     :param func: function to be wrapped by decorator
     """
 
-    def new_func(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
+    def wrapper_func(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
         command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
         error = None
         executed_at = datetime.now(timezone.utc)
@@ -186,4 +186,4 @@ def with_analytics(func: Callable) -> Callable:
                 except AnalyticsError:
                     pass  # cli analytics should fail silently
 
-    return update_wrapper(new_func, func)
+    return update_wrapper(wrapper_func, func)
