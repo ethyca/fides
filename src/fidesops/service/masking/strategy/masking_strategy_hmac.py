@@ -34,13 +34,13 @@ class HmacMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, value: Optional[str], privacy_request_id: Optional[str]
-    ) -> Optional[str]:
+        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+    ) -> Optional[List[str]]:
         """
-        Returns a hash using the hmac algorithm, generating a hash of the supplied value and the secret hmac_key.
+        Returns a hash using the hmac algorithm, generating a hash of each of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
         """
-        if value is None:
+        if values is None:
             return None
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
@@ -51,11 +51,14 @@ class HmacMaskingStrategy(MaskingStrategy):
         salt: str = SecretsUtil.get_or_generate_secret(
             privacy_request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
-        masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        masked_values: List[str] = []
+        for value in values:
+            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked = formatter.format(masked)
+            masked_values.append(masked)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return True

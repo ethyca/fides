@@ -47,19 +47,21 @@ Other reasons to mask instead of delete include legal requirements that have you
 ## Using fidesops as a masking service
 
 If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the 
-value you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
+value(s) you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
 
-Example: `PUT /masking/mask?value=test@example.com`
+Example: `PUT /masking/mask`
 
 ```json
      {
-        "strategy": "random_string_rewrite",
-        "configuration": {
-            "length": 20,
-            "format_preservation": {
-                "suffix": "@masked.com"
+        "values": ["test@example.com"],
+        "masking_strategy": {
+            "strategy": "random_string_rewrite",
+            "configuration": {
+                "length": 20,
+                "format_preservation": {
+                    "suffix": "@masked.com"
+                }
             }
-            
         }
     }
 ```
@@ -68,8 +70,8 @@ Example: `PUT /masking/mask?value=test@example.com`
 
 ```json
     {
-        "plain": "test@example.com",
-        "masked_value": "idkeaotbrub346ycbmpo@masked.com"
+        "plain": ["test@example.com"],
+        "masked_value": ["idkeaotbrub346ycbmpo@masked.com"]
     }
 ```
 
@@ -188,7 +190,7 @@ strategies available, along with their configuration options.
 ## Extensibility
 
 In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
-MaskingStrategy has three methods - `mask`, `get_configuration_model` and `get_description`. For more detail on these 
+MaskingStrategy has five methods - `mask`, `secrets_required`,  `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
 
@@ -214,17 +216,23 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, value: Optional[str]) -> Optional[str]:
+    def mask(self, values: Optional[List[str]], privacy_request_id: Optional[str]) -> Optional[List[str]]:
         """Replaces the value with a random lowercase string of the configured length"""
-        if value is None:
+        if values is None:
             return None
-        masked: str = "".join(
-            [choice(string.ascii_lowercase + string.digits) for _ in range(self.length)]
-        )
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(masked)
-        return masked
+        masked_values: List[str] = []
+        for _ in range(len(values)):
+            masked: str = "".join(
+                [
+                    choice(string.ascii_lowercase + string.digits)
+                    for _ in range(self.length)
+                ]
+            )
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked = formatter.format(masked)
+            masked_values.append(masked)
+        return masked_values
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
@@ -239,8 +247,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         """Not covered in this example"""
 ```
 
-The `mask` method will be called with the value to be masked and the masked value will be the output. In this case,
-if a value is supplied, we want to replace it with a random mixture of ascii lowercase letters and digits of the 
+The `mask` method will be called with the list of values to be masked and the masked values will be the output. In this case, we want to replace the supplied values with a random mixture of ascii lowercase letters and digits of the 
 specified length. If format preservation is specified, for example, we still want to know that an email was an email, 
 we might tack on an email-like suffix.
 

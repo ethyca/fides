@@ -24,7 +24,7 @@ def test_mask_gcm_happypath(mock_encrypt: Mock):
 
     cache_secrets()
 
-    masked_value = AES_STRATEGY.mask("value", request_id)
+    masked_value = AES_STRATEGY.mask(["value"], request_id)[0]
 
     mock_encrypt.assert_called_with(
         "value", b"\x94Y\xa8Z", b"\x94Y\xa8Z\xd9\x12\x83\x00\xa4~\ny"
@@ -39,7 +39,7 @@ def test_mask_all_aes_modes(mock_encrypt: Mock):
     for mode in AesEncryptionMaskingConfiguration.Mode:
         config = AesEncryptionMaskingConfiguration(mode=mode)
         strategy = AesEncryptionMaskingStrategy(configuration=config)
-        strategy.mask("arbitrary", request_id)
+        strategy.mask(["arbitrary"], request_id)
     clear_cache_secrets(request_id)
 
 

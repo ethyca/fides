@@ -205,12 +205,17 @@ class QueryConfig(Generic[T], ABC):
         null_masking: bool,
         str_field_path: str,
     ) -> T:
-        masked_val = strategy.mask(val, request_id)
+        # masking API takes and returns lists, but here we are only leveraging single elements
+        masked_val = strategy.mask([val], request_id)[0]
+
         logger.debug(
             f"Generated the following masked val for field {str_field_path}: {masked_val}"
         )
+
+        # special case for null masking
         if null_masking:
             return masked_val
+
         if masking_override.length:
             logger.warning(
                 f"Because a length has been specified for field {str_field_path}, we will truncate length "

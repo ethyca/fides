@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fidesops.schemas.masking.masking_configuration import (
     NullMaskingConfiguration,
@@ -15,7 +15,7 @@ NULL_REWRITE = "null_rewrite"
 
 
 class NullMaskingStrategy(MaskingStrategy):
-    """Masks a value with a null value."""
+    """Masks provided values each with a null value."""
 
     def __init__(
         self,
@@ -23,9 +23,16 @@ class NullMaskingStrategy(MaskingStrategy):
     ):
         """For parity with other MaskingStrategies, but for NullMaskingStrategy, nothing is pulled from the config"""
 
-    def mask(self, value: Optional[str], privacy_request_id: Optional[str]) -> None:
+    def mask(
+        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+    ) -> Optional[List[None]]:
         """Replaces the value with a null value"""
-        return None
+        if values is None:
+            return None
+        masked_values: List[None] = []
+        for _ in range(len(values)):
+            masked_values.append(None)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return False

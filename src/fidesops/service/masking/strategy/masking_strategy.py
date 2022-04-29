@@ -1,6 +1,6 @@
 # MR Note - It would be nice to enforce this at compile time
 from abc import abstractmethod, ABC
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
@@ -13,8 +13,10 @@ class MaskingStrategy(ABC):
     """Abstract base class for masking strategies"""
 
     @abstractmethod
-    def mask(self, value: Optional[str], request_id: Optional[str]) -> Optional[str]:
-        """Used to mask the provided value"""
+    def mask(
+        self, values: Optional[List[str]], request_id: Optional[str]
+    ) -> Optional[List[Any]]:
+        """Used to mask the provided values"""
 
     @abstractmethod
     def secrets_required(self) -> bool:

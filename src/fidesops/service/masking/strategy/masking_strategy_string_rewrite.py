@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fidesops.schemas.masking.masking_configuration import (
     StringRewriteMaskingConfiguration,
@@ -16,7 +16,7 @@ STRING_REWRITE = "string_rewrite"
 
 
 class StringRewriteMaskingStrategy(MaskingStrategy):
-    """Masks the value with a pre-determined value"""
+    """Masks the values with a pre-determined value"""
 
     def __init__(
         self,
@@ -26,16 +26,20 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, value: Optional[str], privacy_request_id: Optional[str]
-    ) -> Optional[str]:
+        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+    ) -> Optional[List[str]]:
         """Replaces the value with the value specified in strategy spec. Returns None if input is
         None"""
-        if value is None:
+        if values is None:
             return None
-        if self.format_preservation is not None:
-            formatter = FormatPreservation(self.format_preservation)
-            return formatter.format(self.rewrite_value)
-        return self.rewrite_value
+        masked_values: List[str] = []
+        for _ in range(len(values)):
+            if self.format_preservation is not None:
+                formatter = FormatPreservation(self.format_preservation)
+                masked_values.append(formatter.format(self.rewrite_value))
+            else:
+                masked_values.append(self.rewrite_value)
+        return masked_values
 
     def secrets_required(self) -> bool:
         return False
