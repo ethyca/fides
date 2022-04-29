@@ -144,57 +144,13 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     except AnalyticsError:
         pass  # cli analytics should fail silently
 
-
-def with_analytics(ctx: click.Context, command_handler: Callable, **kwargs: Dict) -> Any:  # type: ignore
+def with_analytics(func: Callable) -> Callable:
     """
-    Send an `AnalyticsEvent` with details about the executed command,
+    Click command wrapper which can be added to enable publishing anaytics.  
+    Sends an `AnalyticsEvent` with details about the executed command,
     as long as the CLI has not been configured to opt out of analytics.
 
-    :param ctx: The command's execution `click.Context` object
-    :param command_handler: The handler function defining the evaluation logic for the analyzed command
-    :param **kwargs: Any arguments that must be passed to the `command_handler` function
-    """
-
-    command = " ".join(filter(None, [ctx.info_name, ctx.invoked_subcommand]))
-    error = None
-    executed_at = datetime.now(timezone.utc)
-    status_code = 0
-
-    try:
-        return command_handler(**kwargs)
-    except Exception as err:
-        error = type(err).__name__
-        status_code = 1
-        raise err
-    finally:
-        if (
-            ctx.obj["CONFIG"].user.analytics_opt_out is False
-        ):  # requires explicit opt-in
-            event = AnalyticsEvent(
-                "cli_command_executed",
-                executed_at,
-                command=command,
-                docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
-                error=error,
-                flags=None,  # TODO: Figure out if it's possible to capture this
-                resource_counts=None,  # TODO: Figure out if it's possible to capture this
-                status_code=status_code,
-            )
-
-            try:
-                ctx.meta["ANALYTICS_CLIENT"].send(event)
-            except AnalyticsError:
-                pass  # cli analytics should fail silently
-
-
-def with_analytics_decorator(func) -> Any:  # type: ignore
-    """
-    Send an `AnalyticsEvent` with details about the executed command,
-    as long as the CLI has not been configured to opt out of analytics.
-
-    :param ctx: The command's execution `click.Context` object
-    :param command_handler: The handler function defining the evaluation logic for the analyzed command
-    :param **kwargs: Any arguments that must be passed to the `command_handler` function
+    :param func: function to be wrapped by decorator
     """
 
     def new_func(ctx, *args, **kwargs):

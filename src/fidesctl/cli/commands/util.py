@@ -10,7 +10,7 @@ import fidesctl
 from fidesctl.cli.utils import (
     check_server,
     send_init_analytics,
-    with_analytics_decorator,
+    with_analytics,
 )
 from fidesctl.core.utils import echo_green, echo_red
 
@@ -93,7 +93,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
-@with_analytics_decorator
+@with_analytics
 def status(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
@@ -110,7 +110,7 @@ def status(ctx: click.Context) -> None:
 
 @click.command()
 @click.pass_context
-@with_analytics_decorator
+@with_analytics
 def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server using Uvicorn on port 8080.

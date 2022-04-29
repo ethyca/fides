@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.options import coverage_threshold_option, manifests_dir_argument
-from fidesctl.cli.utils import with_analytics_decorator
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -29,7 +29,7 @@ def scan_dataset(ctx: click.Context) -> None:
 @click.argument("connection_string", type=str)
 @manifests_dir_argument
 @coverage_threshold_option
-@with_analytics_decorator
+@with_analytics
 def scan_dataset_db(
     ctx: click.Context,
     connection_string: str,
@@ -61,7 +61,7 @@ def scan_dataset_db(
 @click.argument("org_url", type=str)
 @manifests_dir_argument
 @coverage_threshold_option
-@with_analytics_decorator
+@with_analytics
 def scan_dataset_okta(
     ctx: click.Context,
     org_url: str,
@@ -100,7 +100,7 @@ def scan_system(ctx: click.Context) -> None:
 @manifests_dir_argument
 @click.option("-o", "--organization", type=str, default="default_organization")
 @coverage_threshold_option
-@with_analytics_decorator
+@with_analytics
 def scan_system_aws(
     ctx: click.Context,
     manifests_dir: str,

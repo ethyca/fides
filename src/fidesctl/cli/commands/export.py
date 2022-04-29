@@ -2,7 +2,7 @@
 import click
 
 from fidesctl.cli.options import dry_flag, manifests_dir_argument
-from fidesctl.cli.utils import with_analytics_decorator
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core import export as _export
 from fidesctl.core import parse as _parse
 
@@ -19,7 +19,7 @@ def export(ctx: click.Context) -> None:
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
-@with_analytics_decorator
+@with_analytics
 def export_system(
     ctx: click.Context,
     manifests_dir: str,
@@ -43,7 +43,7 @@ def export_system(
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
-@with_analytics_decorator
+@with_analytics
 def export_dataset(
     ctx: click.Context,
     manifests_dir: str,
@@ -67,7 +67,7 @@ def export_dataset(
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
-@with_analytics_decorator
+@with_analytics
 def export_organization(
     ctx: click.Context,
     manifests_dir: str,
@@ -96,7 +96,7 @@ def export_organization(
     is_flag=True,
     help="Export using csv format",
 )
-@with_analytics_decorator
+@with_analytics
 def export_datamap(
     ctx: click.Context,
     manifests_dir: str,

@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.options import include_null_flag
-from fidesctl.cli.utils import with_analytics_decorator
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -29,7 +29,7 @@ def generate_dataset(ctx: click.Context) -> None:
 @click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
 @include_null_flag
-@with_analytics_decorator
+@with_analytics
 def generate_dataset_db(
     ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
 ) -> None:
@@ -52,7 +52,7 @@ def generate_dataset_db(
 @click.argument("org_url", type=str)
 @click.argument("output_filename", type=str)
 @include_null_flag
-@with_analytics_decorator
+@with_analytics
 def generate_dataset_okta(
     ctx: click.Context, org_url: str, output_filename: str, include_null: bool
 ) -> None:
@@ -85,7 +85,7 @@ def generate_system(ctx: click.Context) -> None:
 @click.argument("output_filename", type=str)
 @include_null_flag
 @click.option("-o", "--organization", type=str, default="default_organization")
-@with_analytics_decorator
+@with_analytics
 def generate_system_aws(
     ctx: click.Context,
     output_filename: str,

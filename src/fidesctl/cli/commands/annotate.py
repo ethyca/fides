@@ -2,7 +2,7 @@
 
 import click
 
-from fidesctl.cli.utils import with_analytics_decorator
+from fidesctl.cli.utils import with_analytics
 from fidesctl.core import annotate_dataset as _annotate_dataset
 
 
@@ -30,7 +30,7 @@ def annotate(ctx: click.Context) -> None:
     default=False,
     help="Strictly validate annotation inputs.",
 )
-@with_analytics_decorator
+@with_analytics
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:

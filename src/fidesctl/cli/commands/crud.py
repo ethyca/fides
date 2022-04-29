@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.options import fides_key_argument, resource_type_argument
-from fidesctl.cli.utils import handle_cli_response, with_analytics_decorator
+from fidesctl.cli.utils import handle_cli_response, with_analytics
 from fidesctl.core import api as _api
 
 
@@ -11,7 +11,7 @@ from fidesctl.core import api as _api
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics_decorator
+@with_analytics
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete a resource on the server.
@@ -31,7 +31,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics_decorator
+@with_analytics
 def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View a resource from the server as a JSON object.
@@ -50,7 +50,7 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.command()
 @click.pass_context
 @resource_type_argument
-@with_analytics_decorator
+@with_analytics
 def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
     """
     Get a list of all resources of this type from the server and display them as JSON.
