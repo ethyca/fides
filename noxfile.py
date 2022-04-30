@@ -247,3 +247,78 @@ def docs_check(session: nox.Session) -> None:
         "pip install -e /fides[all] && mkdocs build",
     )
     session.run(*run_shell, external=True)
+
+
+########
+## CI ##
+########
+
+
+@nox.session()
+def black(session: nox.Session) -> None:
+    """Run the 'black' linter."""
+    run_black = (*RUN_NO_DEPS, "black", "--check", "src", "tests")
+    session.run(*run_black, external=True)
+
+
+@nox.session()
+def isort(session: nox.Session) -> None:
+    """Run the 'isort' import linter."""
+    run_isort = (*RUN_NO_DEPS, "isort", "--check-only", "src", "tests")
+    session.run(*run_isort, external=True)
+
+
+# # The order of dependent targets here is intentional
+# check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan isort \
+# 			black pylint mypy xenon pytest-unit pytest-integration
+# 	@echo "Running formatter, linter, typechecker and tests..."
+
+# check-install:
+# 	@echo "Checking that fidesctl is installed..."
+# 	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} --version
+
+# .PHONY: fidesctl
+# fidesctl:
+# 	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
+
+# fidesctl-db-scan:
+# 	@$(START_APP)
+# 	@$(RUN) fidesctl ${WITH_TEST_CONFIG} scan dataset db \
+# 	"postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+
+# mypy:
+# 	@$(RUN_NO_DEPS) mypy
+
+# pylint:
+# 	@$(RUN_NO_DEPS) pylint src/
+
+# pytest-unit:
+# 	@$(START_APP)
+# 	@$(RUN_NO_DEPS) pytest -x -m unit
+
+# pytest-integration:
+# 	@$(START_APP)
+# 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
+# 	pytest -x -m integration
+# 	@make teardown
+
+# pytest-external:
+# 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
+# 	@docker compose run \
+# 	-e SNOWFLAKE_FIDESCTL_PASSWORD \
+# 	-e REDSHIFT_FIDESCTL_PASSWORD \
+# 	-e AWS_ACCESS_KEY_ID \
+# 	-e AWS_SECRET_ACCESS_KEY \
+# 	-e AWS_DEFAULT_REGION \
+# 	-e OKTA_CLIENT_TOKEN \
+# 	--rm $(CI_ARGS) $(IMAGE_NAME) \
+# 	pytest -x -m external
+# 	@make teardown
+
+# xenon:
+# 	@$(RUN_NO_DEPS) xenon src \
+# 	--max-absolute B \
+# 	--max-modules B \
+# 	--max-average A \
+# 	--ignore "data, tests, docs" \
+# 	--exclude "src/fidesctl/_version.py"
