@@ -38,6 +38,7 @@ CI_ARGS = "--no-TTY" if getenv("CI") else "--user=root"
 
 # If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
+
 # Reusable Commands
 RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)
 RUN_NO_DEPS = (
@@ -80,7 +81,7 @@ def cli(session: nox.Session) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_shell = (*RUN, "/bin/bash")
-    session.run(*run_shell, external=True, success_codes=[0, 130])
+    session.run(*run_shell, external=True)
 
 
 @nox.session()
@@ -182,3 +183,67 @@ def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
     session.run(*COMPOSE_DOWN, external=True)
     print("Teardown complete")
+
+
+##########
+## Docs ##
+##########
+def docs_build(session: nox.Session) -> None:
+    """Build docs from the source code."""
+    run_shell = (*RUN, "python", "generate_docs.py", "docs/fides/docs/")
+    session.run(*run_shell, external=True)
+
+
+@nox.session()
+def docs_build_local(session: nox.Session) -> None:
+    """Build a new image then build docs from the source code."""
+    build_local(session)
+    session.notify("teardown")
+    docs_build(session)
+
+
+@nox.session()
+def docs_build_ci(session: nox.Session) -> None:
+    """Build docs from the source code without building a new image."""
+    session.notify("teardown")
+    docs_build(session)
+
+
+@nox.session()
+def docs_serve(session: nox.Session) -> None:
+    """Build docs from the source code."""
+    docs_build_local(session)
+    session.notify("teardown")
+    session.run("docker-compose", "build", "docs", external=True)
+    run_shell = (
+        "docker-compose",
+        "run",
+        "--rm",
+        "--service-ports",
+        CI_ARGS,
+        "docs",
+        "/bin/bash",
+        "-c",
+        "pip install -e /fides[all] && mkdocs serve --dev-addr=0.0.0.0:8000",
+    )
+    session.run(*run_shell, external=True)
+
+
+@nox.session()
+def docs_check(session: nox.Session) -> None:
+    """Build docs from the source code."""
+    docs_build_ci(session)
+    session.notify("teardown")
+    session.run("docker-compose", "build", "docs", external=True)
+    run_shell = (
+        "docker-compose",
+        "run",
+        "--rm",
+        "--service-ports",
+        CI_ARGS,
+        "docs",
+        "/bin/bash",
+        "-c",
+        "pip install -e /fides[all] && mkdocs build",
+    )
+    session.run(*run_shell, external=True)
