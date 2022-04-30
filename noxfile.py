@@ -256,35 +256,61 @@ RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 
 @nox.session()
-def black(session: nox.Session) -> None:
-    """Run the 'black' style linter."""
-    session.run("black", "--check", "src", "tests", external=True)
+def check_all(session: nox.Session) -> None:
+    """Run all of the Docker versions of the CI checks."""
+    teardown(session)
+    build_local_prod(session)
+    check_install(session)
+    fidesctl(session)
+    fidesctl_db_scan(session)
+    isort(session)
+    black(session)
+    pylint(session)
+    mypy(session)
+    xenon(session)
+    pytest_unit(session)
+    pytest_integration(session)
 
 
 @nox.session()
-def black_docker(session: nox.Session) -> None:
-    """Run the 'black' nox session in docker."""
-    run_command = (*RUN_STATIC_ANALYSIS, "black")
+def black(session: nox.Session) -> None:
+    """Run the 'black' style linter."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "black")
+    else:
+        run_command = ("black", "--check", "src", "tests")
     session.run(*run_command, external=True)
 
 
 @nox.session()
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
-    session.run("isort", "--check-only", "src", "tests", external=True)
-
-
-@nox.session()
-def isort_docker(session: nox.Session) -> None:
-    """Run the 'isort' nox session in docker."""
-    run_command = (*RUN_STATIC_ANALYSIS, "isort")
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "isort")
+    else:
+        run_command = ("isort", "--check-only", "src", "tests")
     session.run(*run_command, external=True)
 
 
-# # The order of dependent targets here is intentional
-# check-all: teardown build-local-prod check-install fidesctl fidesctl-db-scan isort \
-# 			black pylint mypy xenon pytest-unit pytest-integration
-# 	@echo "Running formatter, linter, typechecker and tests..."
+@nox.session()
+def check_install(session: nox.Session) -> None:
+    """Run the 'isort' import linter."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "check_install")
+    else:
+        run_command = ("fidesctl", *(WITH_TEST_CONFIG), "--version")
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def fidesctl(session: nox.Session) -> None:
+    """Run the 'isort' import linter."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
+    else:
+        run_command = ("fidesctl", "--local", *(WITH_TEST_CONFIG), "evaluate")
+    session.run(*run_command, external=True)
+
 
 # check-install:
 # 	@echo "Checking that fidesctl is installed..."

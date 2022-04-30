@@ -82,7 +82,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run sorter
-        run: nox -s isort_docker
+        run: nox -s isort -- docker
 
   Black:
     needs: Build
@@ -104,7 +104,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run formatter
-        run: nox -s black_docker
+        run: nox -s black -- docker
 
   Docs:
     needs: Build

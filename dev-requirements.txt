@@ -1,4 +1,4 @@
-black==20.8b1
+black==22.3.0
 ipython
 isort
 mypy==0.910
