@@ -78,10 +78,10 @@ def api(session: nox.Session) -> None:
 @nox.session()
 def cli(session: nox.Session) -> None:
     """Spin up a local development shell."""
-    session.notify("build_local")
-    session.run("docker", "compose", "up", IMAGE_NAME)
-    session.run(RUN, "/bin/bash")
-    session.notify("teardown")
+    build_local(session)
+    session.run("docker-compose", "up", IMAGE_NAME, external=True)
+    session.run(RUN, "/bin/bash", external=True)
+    teardown(session)
 
 
 @nox.session()
