@@ -252,20 +252,33 @@ def docs_check(session: nox.Session) -> None:
 ########
 ## CI ##
 ########
+RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 
 @nox.session()
 def black(session: nox.Session) -> None:
-    """Run the 'black' linter."""
-    run_black = (*RUN_NO_DEPS, "black", "--check", "src", "tests")
-    session.run(*run_black, external=True)
+    """Run the 'black' style linter."""
+    session.run("black", "--check", "src", "tests", external=True)
+
+
+@nox.session()
+def black_docker(session: nox.Session) -> None:
+    """Run the 'black' nox session in docker."""
+    run_command = (*RUN_STATIC_ANALYSIS, "black")
+    session.run(*run_command, external=True)
 
 
 @nox.session()
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
-    run_isort = (*RUN_NO_DEPS, "isort", "--check-only", "src", "tests")
-    session.run(*run_isort, external=True)
+    session.run("isort", "--check-only", "src", "tests", external=True)
+
+
+@nox.session()
+def isort_docker(session: nox.Session) -> None:
+    """Run the 'isort' nox session in docker."""
+    run_command = (*RUN_STATIC_ANALYSIS, "isort")
+    session.run(*run_command, external=True)
 
 
 # # The order of dependent targets here is intentional

@@ -78,8 +78,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run sorter
-        run: nox -s isort
+        run: nox -s isort_docker
 
   Black:
     needs: Build
@@ -97,8 +100,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run formatter
-        run: nox -s black
+        run: nox -s black_docker
 
   Docs:
     needs: Build
