@@ -22,7 +22,7 @@ def get_current_tag() -> str:
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
-WITH_TEST_CONFIG = "-f tests/test_config.toml"
+WITH_TEST_CONFIG = ("-f", "tests/test_config.toml")
 
 # Image Names & Tags
 REGISTRY = "ethyca"
@@ -294,7 +294,7 @@ def isort(session: nox.Session) -> None:
 
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Run the 'isort' import linter."""
+    """Check that fidesctl is installed."""
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "check_install")
     else:
@@ -304,7 +304,7 @@ def check_install(session: nox.Session) -> None:
 
 @nox.session()
 def fidesctl(session: nox.Session) -> None:
-    """Run the 'isort' import linter."""
+    """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
     else:
@@ -312,13 +312,22 @@ def fidesctl(session: nox.Session) -> None:
     session.run(*run_command, external=True)
 
 
-# check-install:
-# 	@echo "Checking that fidesctl is installed..."
-# 	@$(RUN_NO_DEPS) fidesctl ${WITH_TEST_CONFIG} --version
+@nox.session()
+def fidesctl_db_scan(session: nox.Session) -> None:
+    """"Scan the fidesctl application database to check for dataset discrepancies."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN,
+        "fidesctl",
+        *(WITH_TEST_CONFIG),
+        "scan",
+        "dataset",
+        "db",
+        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+    )
+    session.run(*run_command, external=True)
 
-# .PHONY: fidesctl
-# fidesctl:
-# 	@$(RUN_NO_DEPS) fidesctl --local ${WITH_TEST_CONFIG} evaluate
 
 # fidesctl-db-scan:
 # 	@$(START_APP)

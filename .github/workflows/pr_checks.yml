@@ -53,14 +53,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Check fidesctl installation
-        run: make check-install
+        run: nox -s check-install -- docker
 
       - name: Run fidesctl evaluation
-        run: make fidesctl
+        run: nox -s fidesctl -- docker
 
       - name: Scan fidesctl db
-        run: make fidesctl-db-scan
+        run: nox -s fidesctl-db-scan -- docker
 
   isort:
     needs: Build
