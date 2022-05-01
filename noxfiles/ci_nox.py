@@ -1,6 +1,8 @@
 """Contains the nox sessions used during CI checks."""
 import nox
 from constants_nox import RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from docker_nox import build_local_prod
+from utils_nox import teardown
 
 RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
@@ -83,9 +85,9 @@ def fidesctl_db_scan(session: nox.Session) -> None:
 def mypy(session: nox.Session) -> None:
     """Run the 'mypy' static type checker."""
     if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "isort")
+        run_command = (*RUN_STATIC_ANALYSIS, "mypy")
     else:
-        run_command = ("isort", "--check-only", "src", "tests")
+        run_command = ("mypy",)
     session.run(*run_command, external=True)
 
 

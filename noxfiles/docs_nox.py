@@ -27,7 +27,7 @@ def docs_build_ci(session: nox.Session) -> None:
 
 @nox.session()
 def docs_serve(session: nox.Session) -> None:
-    """Build docs from the source code."""
+    """Serve the docs."""
     docs_build_local(session)
     session.notify("teardown")
     session.run("docker-compose", "build", "docs", external=True)
@@ -47,7 +47,7 @@ def docs_serve(session: nox.Session) -> None:
 
 @nox.session()
 def docs_check(session: nox.Session) -> None:
-    """Build docs from the source code."""
+    """Build the docs."""
     docs_build_ci(session)
     session.notify("teardown")
     session.run("docker-compose", "build", "docs", external=True)
