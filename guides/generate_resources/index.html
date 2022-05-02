@@ -1657,29 +1657,27 @@ You're not viewing the latest version.
 <p>The <code>generate</code> command can connect to a database and automatically generate resource YAML file based on the database schema.</p>
 <h3 id="generating-a-dataset">Generating a Dataset</h3>
 <p>Given a database schema with a single <code>users</code> table as follows:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nv">flaskr</span><span class="o">=</span><span class="c1"># SELECT * FROM users;</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">flaskr</span><span class="o">=</span><span class="c1"># SELECT * FROM users;</span>
  id <span class="p">|</span>     created_at      <span class="p">|</span>       email       <span class="p">|</span>              password              <span class="p">|</span> first_name <span class="p">|</span> last_name
 ----+---------------------+-------------------+------------------------------------+------------+-----------
   <span class="m">1</span> <span class="p">|</span> <span class="m">2020</span>-01-01 <span class="m">00</span>:00:00 <span class="p">|</span> admin@example.com <span class="p">|</span> pbkdf2:sha256:260000<span class="nv">$O87nanbSkl</span>... <span class="p">|</span> Admin      <span class="p">|</span> User
   <span class="m">2</span> <span class="p">|</span> <span class="m">2020</span>-01-03 <span class="m">00</span>:00:00 <span class="p">|</span> user@example.com  <span class="p">|</span> pbkdf2:sha256:260000<span class="nv">$PGcBy5NzZe</span>... <span class="p">|</span> Example    <span class="p">|</span> User
 <span class="o">(</span><span class="m">2</span> rows<span class="o">)</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>We can invoke the <code>generate</code> command by providing a connection url for this database:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
   postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
   fides_resources/flaskr_postgres_dataset.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with a dataset with collections and fields to represent our schema:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1716,7 +1714,7 @@ You're not viewing the latest version.
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span><span class="w"></span>
@@ -1754,59 +1752,54 @@ You're not viewing the latest version.
 <span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">password&#39;</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 The resulting file still requires annotating the dataset with data categories to represent what is stored.</p>
 <!-- TODO: Add a section for `annotate dataset` usage below -->
 
 <h3 id="scanning-the-dataset">Scanning the Dataset</h3>
 <p>The <code>scan</code> command can then connect to your database and compare its schema to your already defined datasets:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan dataset db <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl scan dataset db <span class="se">\</span>
   postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
   fides_resources/flaskr_postgres_dataset.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our database resource is covered fully:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Loading resource manifests from: dataset.yml
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: dataset.yml
 Taxonomy successfully created.
 Successfully scanned the following datasets:
     public
 
 Annotation coverage: <span class="m">100</span>%
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-an-aws-account">Working With an AWS Account</h2>
 <p>The <code>generate</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
 <h3 id="providing-credentials">Providing Credentials</h3>
 <p>Authentication is managed through environment variable configuration defined by <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html">boto3</a>. </p>
 <p>We can define our credentials directly as environment variables:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
 <span class="nb">export</span> <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key&gt;&quot;</span>
 <span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>Or reference a profile through an environment variable:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
 <span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="required-permissions">Required Permissions</h3>
 <p>The identity which is authenticated must be allowed to invoke the following actions:
 * redshift:DescribeClusters
 * rds:DescribeDBInstances
 * rds:DescribeDBClusters</p>
 <p>These can be supplied in an IAM policy:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1819,7 +1812,7 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">        </span><span class="p">{</span><span class="w"></span>
@@ -1833,44 +1826,40 @@ Annotation coverage: <span class="m">100</span>%
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="filtering-aws-resources">Filtering AWS Resources</h3>
 <p>It is possible to filter resources at the organization level by adding a resource filter within <code>fidesctl_meta</code>. The <code>ignore_resource_arn</code> filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.</p>
 <p>The filter can be added to the organization model within your manifest file:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
 <span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:rds:us-east-1:910934740016:db:database-2&#39;</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>In the above example we explicitly ignore a single rds database but if we wanted to ignore all rds databases we could remove the partition, account id, region and database name ARN fields:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
 <span class="w">  </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn::rds:::db:&#39;</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>Any ARN field can be wildcarded by leaving it empty. </p>
 <h3 id="generating-systems">Generating Systems</h3>
 <p>Once credentials have been configured we can invoke the <code>generate system aws</code> command:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate system aws <span class="se">\</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate system aws <span class="se">\</span>
   fides_resources/aws_systems.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with a system that represents a redshift cluster defined in our account:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1880,7 +1869,7 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
@@ -1891,54 +1880,48 @@ Annotation coverage: <span class="m">100</span>%
 <span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176</span><span class="w"></span>
 <span class="w">  </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redshift_cluster</span><span class="w"></span>
 <span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="scanning-the-systems">Scanning the Systems</h3>
 <p>The <code>scan</code> command can then connect to your AWS account and compare its resources to your already defined systems:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan system aws <span class="se">\</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl scan system aws <span class="se">\</span>
   fides_resources/aws_systems.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our resources are covered fully:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Loading resource manifests from: manifest.yml
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: manifest.yml
 Taxonomy successfully created.
 Scanned <span class="m">1</span> resource and all were found <span class="k">in</span> taxonomy.
 Resource coverage: <span class="m">100</span>%
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-an-okta-account">Working With an Okta Account</h2>
 <p>The <code>generate</code> command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with. </p>
 <h3 id="providing-credentials_1">Providing Credentials</h3>
 <p>Authentication is managed through environment variable configuration defined by the Okta Python <a href="https://github.com/okta/okta-sdk-python#environment-variables">SDK</a>. </p>
 <p>The simplest way to authenticate is by using a client token:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
-</code></pre></div>
-</td></tr></table></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
+</code></pre></div></td></tr></table></div></p>
 <p>It is also possible to authenticate using OAuth 2.0:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_AUTHORIZATIONMODE</span><span class="o">=</span><span class="s2">&quot;PrivateKey&quot;</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_AUTHORIZATIONMODE</span><span class="o">=</span><span class="s2">&quot;PrivateKey&quot;</span>
 <span class="nb">export</span> <span class="nv">OKTA_CLIENT_CLIENTID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
 <span class="nb">export</span> <span class="nv">OKTA_CLIENT_SCOPES</span><span class="o">=</span><span class="s2">&quot;&lt;my_scope_1,my_scope_2&gt;&quot;</span>
 <span class="nb">export</span> <span class="nv">OKTA_CLIENT_PRIVATEKEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_jwk&gt;&quot;</span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="generating-datasets">Generating Datasets</h3>
 <p>Once credentials have been configured we can invoke the <code>generate dataset okta</code> command:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset okta <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset okta <span class="se">\</span>
   &lt;my_org_url&gt; <span class="se">\</span>
   fides_resources/okta_datasets.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with datasets that represent our application integrations:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1958,7 +1941,7 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce</span><span class="w"></span>
@@ -1979,19 +1962,17 @@ Resource coverage: <span class="m">100</span>%
 <span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span><span class="w"></span>
 <span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span><span class="w"></span>
 <span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <h3 id="scanning-the-datasets">Scanning the Datasets</h3>
 <p>The <code>scan</code> command can then connect to your Okta account and compare its applications to your already defined datasets:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl scan dataset okta <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl scan dataset okta <span class="se">\</span>
   https://dev-78908748.okta.com <span class="se">\</span>
   fides_resources/okta_datasets.yml
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our resources are covered fully:
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -2000,7 +1981,7 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Loading resource manifests from: manifest.yml
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: manifest.yml
 Taxonomy successfully created.
 Successfully scanned the following datasets:
     saasure<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lj1tcpqU6W5d7<span class="o">)</span>
@@ -2010,8 +1991,7 @@ Successfully scanned the following datasets:
     google<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4jekd00tpvn5hN5d7<span class="o">)</span>
 
 Resource coverage: <span class="m">100</span>%
-</code></pre></div>
-</td></tr></table></p>
+</code></pre></div></td></tr></table></div></p>
 
               
             </article>

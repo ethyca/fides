@@ -1625,19 +1625,17 @@ You're not viewing the latest version.
 <p>Fides is capable of exporting a data map of your <a href="../../language/resources/system/">resources</a> to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the <a href="https://github.com/ethyca/fides">Fides repository</a>.</p>
 <p>To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the <a href="https://github.com/ethyca/fides/#rocket-quick-start">Quick Start guide</a>.</p>
 <h2 id="export-the-demo-resources">Export the Demo Resources</h2>
-<p>Once fidesctl is installed, navigate to the project's <code>fidesctl</code> directory.</p>
 <p>To apply and export the provided <code>demo_resources</code>, run the following commands:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Apply and Export Defaults</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>$ fidesctl apply demo_resources/
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
 $ fidesctl <span class="nb">export</span> datamap demo_resources/
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>This will export a data map to the <code>demo_resources/</code> directory.</p>
 <h3 id="organization">Organization</h3>
 <p>The header block at the top of a data map is composed of properties found in the <a href="../../language/resources/organization/">Organization resource</a>. In a production deployment, this would be composed of publicly available information for your company/organization, but has been pre-populated here to allow exploration.</p>
 <p><img alt="Organization Contact Info" src="../../img/datamap_organization_contact.png" /></p>
 <p>The newly-generated data map is a direct result of the provided Organization resource manifest (<code>demo_resources/demo_organization.yml</code>):</p>
-<p><table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>demo_organization.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<p><div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>demo_organization.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1656,7 +1654,7 @@ $ fidesctl <span class="nb">export</span> datamap demo_resources/
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Organization</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">An e-commerce organization</span><span class="w"></span>
@@ -1676,15 +1674,14 @@ $ fidesctl <span class="nb">export</span> datamap demo_resources/
 <span class="w">      </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123 demo street, New York, NY, USA</span><span class="w"></span>
 <span class="w">      </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">representative@demo_company.com</span><span class="w"></span>
 <span class="w">      </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+1 555 555 5555</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 Each of <code>controller</code>, <code>data_protection_officer</code>, and <code>representative</code> are composed of Contact Detail properties populated in the exported data map.</p>
 <p>Additionally, the link to the security policy of an organization can be populated from the Organization resource's <code>security_policy</code> field.</p>
 <h3 id="dataset">Dataset</h3>
 <p>The Dataset is primarily used to provide a list of Data Categories which populate the data map. Additional properties can optionally be applied for <code>retention</code> and <code>third_country_transfers</code>.</p>
 <p><img alt="Demo Dataset Properties" src="../../img/demo_dataset_properties.png" /></p>
 <p>The newly-generated data map is a direct result of the provided Dataset resource manifest (<code>demo_resources/demo_dataset.yml</code>):</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename"><code>demo_dataset.yml</code></span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>demo_dataset.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1710,7 +1707,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="normal">24</span>
 <span class="normal">25</span>
 <span class="normal">26</span>
-<span class="normal">27</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">27</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_users_dataset</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Users Dataset</span><span class="w"></span>
@@ -1737,8 +1734,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p><code>data_categories</code> and <code>retention</code> can be set at any/all of the Dataset, DatasetCollection, and DatasetField levels.</p>
 <p><code>third_country_transfers</code> should be set at the <code>dataset</code> level.</p>
 <p>Any Datasets referenced by a System will have this information included as rows of your data map.</p>
@@ -1806,7 +1802,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <p>Example manifest updates are included in <code>demo_resources/demo_extended_taxonomy.yml</code>.</p>
 <h3 id="data-use">Data Use</h3>
 <p>Below is an extended <a href="../../language/taxonomy/data_uses/">Data Use</a> example. Each of these properties is responsible for populating a field on your data map.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Extended Data Use</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Extended Data Use</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1815,7 +1811,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Direct Marketing</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User information for direct marketing purposes</span><span class="w"></span>
@@ -1825,13 +1821,12 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="w">    </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Vital Interests</span><span class="w"></span>
 <span class="w">    </span><span class="nt">legitimate_interest_impact_assessment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/legitimate_interest_assessment</span><span class="w"></span>
 <span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>You can now apply this Data Use to the Demo Marketing System in <code>demo_system.yml</code>.</p>
 <p>Replace the Demo Marketing System's Data Use of <code>advertising</code> with the above fides_key of <code>third_party_sharing.personalized_advertising.direct_marketing</code> to include its information in your data map.</p>
 <h3 id="data-subject">Data Subject</h3>
 <p>A <a href="../../language/taxonomy/data_subjects/">Data Subject</a>, shown below, can also be extended to populate your data map with additional information.</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Extended Data Subject</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Extended Data Subject</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1843,7 +1838,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_subject</span><span class="p">:</span><span class="w"></span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">data_subject</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potential_customer</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Potential Customer</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A prospective individual or other organization that purchases goods or services from the organization.</span><span class="w"></span>
@@ -1856,17 +1851,15 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Erasure</span><span class="w"></span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
 <span class="w">    </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>You can now apply this Data Subject to the Demo Marketing System in <code>demo_system.yml</code>.</p>
 <p>Replace the Demo Marketing System's Data Subject of <code>customer</code> with the above fides_key of <code>potential_customer</code> to include its information in your data map.</p>
 <h2 id="generate-a-ropa">Generate a RoPA</h2>
 <p>Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">Apply and Export Defaults</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>$ fidesctl apply demo_resources/
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
 $ fidesctl <span class="nb">export</span> datamap demo_resources/
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h3 id="populated-fields">Populated Fields</h3>
 <p>Opening the new data map will show the previously <code>N/A</code> columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in <code>demo_resources/</code>.</p>
 <p>Below is a mapping of the newly populated columns with their respective values:</p>

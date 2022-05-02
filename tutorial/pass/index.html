@@ -1518,7 +1518,7 @@ You're not viewing the latest version.
 <hr />
 <h2 id="enable-ip-anonymization">Enable IP Anonymization</h2>
 <p>Open the <code>flaskr/templates/base.html</code> file in your favorite editor, and add the following line just above the closing <code>&lt;script&gt;</code> tag in the Google Analytics script:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1528,7 +1528,7 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="w">{% if config[&#39;GOOGLE_ANALYTICS_ID&#39;] %}</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">{% if config[&#39;GOOGLE_ANALYTICS_ID&#39;] %}</span>
 <span class="w"> </span>   &lt;!-- Global site tag (gtag.js) - Google Analytics --&gt;<span class="w"></span>
 <span class="w"> </span>   &lt;script async src=&quot;https://www.googletagmanager.com/gtag/js?id={{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;&gt;&lt;/script&gt;<span class="w"></span>
 <span class="w"> </span>   &lt;script&gt;<span class="w"></span>
@@ -1539,17 +1539,15 @@ You're not viewing the latest version.
 <span class="gi">+       gtag(&quot;config&quot;, &quot;{{ config[&#39;GOOGLE_ANALYTICS_ID&#39;] }}&quot;, { &#39;anonymize_ip&#39;: true });</span><span class="w"></span>
 <span class="w"> </span>   &lt;/script&gt;<span class="w"></span>
 <span class="w">{% endif %}</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="update-the-google-analytics-system-resource">Update the Google Analytics System Resource</h2>
 <p>Now that the data collection practices in the Google Analytics script have changed, the associated fidesctl System resource should be updated accordingly. Open the <code>fides_resources/google_analytics_system.yml</code> file in your favorite editor, and modify the last line (the <code>data_qualifier</code> configuration) so that it reads:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 <p>By removing the final <code>identified</code> key of the Fides taxonomy, the updated nature of the data collection practices used in this System resource now aligns with the actual behavior of the updated Google Analytics script.</p>
 <h2 id="evaluate-the-fidesctl-policies">Evaluate the Fidesctl Policies</h2>
 <p>Execute the <code>make fidesctl-evaluate</code> command one final time. You should see the following output:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1576,7 +1574,7 @@ You're not viewing the latest version.
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span>
-<span class="normal">28</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>Evaluating policy with fidesctl...
+<span class="normal">28</span></pre></div></td><td class="code"><div><pre><span></span><code>Evaluating policy with fidesctl...
 ./venv/bin/fidesctl evaluate --dry fides_resources
 Loading resource manifests from: fides_resources
 Taxonomy successfully created.
@@ -1604,8 +1602,7 @@ flaskr_policy
 Checking for missing resources...
 Executing evaluations...
 Evaluation passed!
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>The fidesctl policy evaluation passes!</p>
 <h2 id="check-your-progress">Check Your Progress</h2>
 <p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesctl-demo"><code>fidesctl-demo</code></a> tag.</p>

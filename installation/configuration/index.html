@@ -1464,7 +1464,7 @@ You're not viewing the latest version.
 <p>By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.</p>
 <h2 id="configuration-file">Configuration file</h2>
 <p>After initializing fidesctl, a default configuration file will be generated and placed within the <code>.fides</code> directory. Here's an example of a default fidesctl configuration file:</p>
-<table class="highlighttable"><tr><th colspan="2" class="filename"><div class="highlight"><span class="filename">fidesctl.toml</span></div></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">fidesctl.toml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1485,7 +1485,7 @@ You're not viewing the latest version.
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
 <span class="n">database_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
 <span class="n">database_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
 <span class="n">database_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl-db&quot;</span><span class="w"></span>
@@ -1507,8 +1507,7 @@ You're not viewing the latest version.
 <span class="s">[user]</span>
 <span class="s">encryption_key = &quot;</span><span class="n">test_encryption_key</span><span class="err">&quot;</span><span class="w"></span>
 <span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>To better describe the various configuration options, the following tables describe each available option, grouped by section:</p>
 <div class="tabbed-set" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">API Section</label><div class="tabbed-content">
 <table>
@@ -1658,17 +1657,15 @@ You're not viewing the latest version.
 </ol>
 <h2 id="environment-variables">Environment Variables</h2>
 <p>To configure environment variables for fidesctl, the following pattern is used:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>FIDESCTL__&lt;SECTION&gt;__&lt;VAR_NAME&gt;
-</code></pre></div>
-</td></tr></table>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>FIDESCTL__&lt;SECTION&gt;__&lt;VAR_NAME&gt;
+</code></pre></div></td></tr></table></div>
 <p>For example, if we want to set the <code>server_url</code> on a Linux machine we could use:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_HOST</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_HOST</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span>
 <span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_PORT</span><span class="o">=</span><span class="s2">&quot;8080&quot;</span>
 <span class="nb">export</span> <span class="nv">FIDESCTL__CLI__SERVER_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http&quot;</span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 
               
             </article>

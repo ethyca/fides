@@ -1502,7 +1502,7 @@ You're not viewing the latest version.
 <h1 id="write-a-policy">Write a Policy</h1>
 <p>Fidesctl's privacy declarations provide rich metadata about systems, the data categories they process, and the uses of that data. Policies allow you to enforce constraints on these declarations and decide what combinations to allow or reject at your company, thus providing a layer of automation to control data privacy at the source.</p>
 <p>Define a single Policy by creating a <code>flaskr_policy.yml</code> file in the <code>fides_resources</code> directory. For this project, the file should contain the following configuration:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1558,7 +1558,7 @@ You're not viewing the latest version.
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_policy</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Privacy Policy</span><span class="w"></span>
 <span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A privacy policy for the example Flask app</span><span class="w"></span>
@@ -1615,8 +1615,7 @@ You're not viewing the latest version.
 <span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
 <span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>This demo application is built without any real controls on user data, so the Fides policy is relatively restrictive. The two rules can be interpreted respectfully as:</p>
 <ol>
 <li>Do not use identifiable data for anything other than the app's primary functions (after all, it's just a demo app!).</li>

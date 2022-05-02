@@ -1508,7 +1508,7 @@ You're not viewing the latest version.
 <p>Fundamentally, the data ecosystem is built on data that is stored <em>somewhere</em>. In fidesctl, Datasets are used for granular, field-level annotations of exactly what data your systems are storing and where that data is stored. For example, an app might declare one dataset for a Postgres application database, a second dataset for a Mongo orders collection, and a third dataset for some CSV files in cloud storage. The Dataset resource provides a database-agnostic way to annotate the fields stored in these systems with Data Categories, providing a metadata layer consumable by other tooling.</p>
 <p>This app contains a single PostgreSQL dataset. Create a <code>dataset</code> resource to annotate it by adding a <code>flaskr_postgres_dataset.yml</code> file to the <code>fides_resources</code> directory. To annotate this dataset correctly, go through each column of each table and answer the question: <em>"What data categories are stored here?"</em></p>
 <p>For this project, the file should contain the following configuration:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1561,7 +1561,7 @@ You're not viewing the latest version.
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
-<span class="normal">54</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_postgres_dataset</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Example PostgreSQL Database</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Application database for Flaskr example app</span><span class="w"></span>
@@ -1615,16 +1615,14 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.provided.identifiable.credentials.password</span><span class="p p-Indicator">]</span><span class="w"></span>
 <span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <p>As an alternative to manually authoring the resource file, you can also use the <a href="../../guides/generate_resources/">generate</a> CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
   postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
   fides_resources/flaskr_postgres_dataset.yml
-</code></pre></div>
-</td></tr></table>
+</code></pre></div></td></tr></table></div>
 <h2 id="understanding-the-dataset-resource">Understanding the Dataset Resource</h2>
 <p>This YAML serves as the foundation of <a href="https://github.com/ethyca/fideslang"><code>fideslang</code></a>, the Fides language; it answers "<em>What data and kinds of data do we have?</em>" and "<em>How is our data organized?</em>". The language is built on declaring the types of data found in storage for your organization.</p>
 <p>In traditional SQL, fidesctl defines the following:</p>
