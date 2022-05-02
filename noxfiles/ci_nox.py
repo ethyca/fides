@@ -44,7 +44,7 @@ def black(session: nox.Session) -> None:
     black_command = ("black", "src", "tests", "noxfiles")
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "black")
-    if session.posargs == ["fix"]:
+    elif session.posargs == ["fix"]:
         run_command = black_command
     else:
         run_command = (*black_command, "--check")
