@@ -142,8 +142,16 @@ def fidesctl_db_scan(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
-def pytest_unit(session: nox.Session) -> None:
-    """Run all unit tests."""
+def pytest(session: nox.Session) -> None:
+    """
+    Run all unit tests. Also accepts markers as arguments.
+
+    Example:
+        nox -s pytest -- unit
+        nox -s pytest -- integration
+        nox -s pytest -- "not external"
+    """
+    test_marker = tuple(session.posargs)
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -151,22 +159,7 @@ def pytest_unit(session: nox.Session) -> None:
         "pytest",
         "-x",
         "-m",
-        "unit",
-    )
-    session.run(*run_command, external=True)
-
-
-@nox.session()
-def pytest_integration(session: nox.Session) -> None:
-    """Run all tests that rely on the application server and database."""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *RUN_NO_DEPS,
-        "pytest",
-        "-x",
-        "-m",
-        "integration",
+        *test_marker,
     )
     session.run(*run_command, external=True)
 
