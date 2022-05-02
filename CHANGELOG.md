@@ -10,11 +10,22 @@ The types of changes are:
 * `Changed` for changes in existing functionality.
 * `Developer Experience` for changes in developer workflow or tooling.
 * `Deprecated` for soon-to-be removed features.
+* `Docs` for documentation only changes.
 * `Removed` for now removed features.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.5.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
+
+### Docs
+
+* Updated `Release Steps`
+
+### Fixed
+
+* Resolved a failure with populating applicable data subject rights to a data map
+
+## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
 ### Added
 
@@ -29,9 +40,12 @@ The types of changes are:
 ### Changed
 
 * Published Docker image does a clean install of Fidesctl
+* `with_analytics` is now a decorator
 
 ### Fixed
 
 * Third-Country formatting on Data Map
 * Potential Duplication on Data Map
 * Exceptions are no longer raised when sending `AnalyticsEvent`s on Windows
+* Running `fidesctl init` now generates a `server_host` and `server_protocol`
+  rather than `server_url`
