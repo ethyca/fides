@@ -89,6 +89,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
 @click.command()
 @click.pass_context
+@with_analytics
 def status(ctx: click.Context) -> None:
     """
     Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
@@ -97,9 +98,7 @@ def status(ctx: click.Context) -> None:
     cli_version = fidesctl.__version__
     server_url = config.cli.server_url
     click.echo("Getting server status...")
-    with_analytics(
-        ctx,
-        check_server,
+    check_server(
         cli_version=cli_version,
         server_url=server_url,
     )
@@ -107,6 +106,7 @@ def status(ctx: click.Context) -> None:
 
 @click.command()
 @click.pass_context
+@with_analytics
 def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server using Uvicorn on port 8080.
@@ -117,4 +117,4 @@ def webserver(ctx: click.Context) -> None:
         echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
         raise SystemExit
 
-    with_analytics(ctx, start_webserver)
+    start_webserver()

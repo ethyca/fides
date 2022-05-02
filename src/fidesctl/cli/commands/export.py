@@ -19,6 +19,7 @@ def export(ctx: click.Context) -> None:
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
+@with_analytics
 def export_system(
     ctx: click.Context,
     manifests_dir: str,
@@ -29,9 +30,7 @@ def export_system(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    with_analytics(
-        ctx,
-        _export.export_system,
+    _export.export_system(
         url=config.cli.server_url,
         system_list=taxonomy.system,
         headers=config.user.request_headers,
@@ -44,6 +43,7 @@ def export_system(
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
+@with_analytics
 def export_dataset(
     ctx: click.Context,
     manifests_dir: str,
@@ -54,9 +54,7 @@ def export_dataset(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    with_analytics(
-        ctx,
-        _export.export_dataset,
+    _export.export_dataset(
         url=config.cli.server_url,
         dataset_list=taxonomy.dataset,
         headers=config.user.request_headers,
@@ -69,6 +67,7 @@ def export_dataset(
 @click.pass_context
 @manifests_dir_argument
 @dry_flag
+@with_analytics
 def export_organization(
     ctx: click.Context,
     manifests_dir: str,
@@ -79,9 +78,7 @@ def export_organization(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    with_analytics(
-        ctx,
-        _export.export_organization,
+    _export.export_organization(
         url=config.cli.server_url,
         organization_list=taxonomy.organization,
         headers=config.user.request_headers,
@@ -99,6 +96,7 @@ def export_organization(
     is_flag=True,
     help="Export using csv format",
 )
+@with_analytics
 def export_datamap(
     ctx: click.Context,
     manifests_dir: str,
@@ -112,9 +110,7 @@ def export_datamap(
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    with_analytics(
-        ctx,
-        _export.export_datamap,
+    _export.export_datamap(
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,

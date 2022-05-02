@@ -30,6 +30,7 @@ def annotate(ctx: click.Context) -> None:
     default=False,
     help="Strictly validate annotation inputs.",
 )
+@with_analytics
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
@@ -37,9 +38,7 @@ def annotate_dataset(
     Guided flow for annotating datasets. The dataset file will be edited in-place.
     """
     config = ctx.obj["CONFIG"]
-    with_analytics(
-        ctx,
-        _annotate_dataset.annotate_dataset,
+    _annotate_dataset.annotate_dataset(
         config=config,
         dataset_file=input_filename,
         annotate_all=all_members,
