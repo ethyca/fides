@@ -29,6 +29,7 @@ The types of changes are:
 ### Changed
 
 * Published Docker image does a clean install of Fidesctl
+* `with_analytics` is now a decorator
 
 ### Fixed
 
