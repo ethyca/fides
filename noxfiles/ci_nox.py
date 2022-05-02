@@ -18,7 +18,11 @@ RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 @nox.session()
 def check_all(session: nox.Session) -> None:
-    """Runs all of the CI checks."""
+    """
+    Runs all of the CI checks, except for 'pytest_external'.
+
+    Excludes 'pytest_external' so that no additional secrets/tooling are required.
+    """
     teardown(session)
     build_local_prod(session)
     black(session)
@@ -37,20 +41,26 @@ def check_all(session: nox.Session) -> None:
 @nox.session()
 def black(session: nox.Session) -> None:
     """Run the 'black' style linter."""
+    black_command = ("black", "src", "tests", "noxfiles", None)
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "black")
+    if session.posargs == ["fix"]:
+        run_command = black_command
     else:
-        run_command = ("black", "--check", "src", "tests", "noxfiles")
+        run_command = (*black_command, "--check")
     session.run(*run_command, external=True)
 
 
 @nox.session()
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
+    isort_command = ("isort", "src", "tests", "noxfiles")
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "isort")
+    elif session.posargs == ["fix"]:
+        run_command = isort_command
     else:
-        run_command = ("isort", "--check-only", "src", "tests", "noxfiles")
+        run_command = (*isort_command, "--check-only")
     session.run(*run_command, external=True)
 
 
