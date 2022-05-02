@@ -14,7 +14,17 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.6.1...main)
+
+## [1.6.1](https://github.com/ethyca/fides/compare/1.6.0...1.6.1)
+
+### Docs
+
+* Updated `Release Steps`
+
+### Fixed
+
+* Resolved a failure with populating applicable data subject rights to a data map
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 

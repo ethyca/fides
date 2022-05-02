@@ -164,6 +164,7 @@ def test_xlsx_export(tmpdir):
         },
     ],
 )
+@pytest.mark.unit
 def test_calculate_data_subject_rights(data_subject_rights: dict):
     """Tests different strategy options for returning data subject rights."""
     rights = DataSubjectRights(**data_subject_rights)

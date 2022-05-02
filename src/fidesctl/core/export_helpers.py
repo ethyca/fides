@@ -275,7 +275,7 @@ def calculate_data_subject_rights(rights: Dict) -> str:
 
     Loads all available rights
     """
-    all_rights = DataSubjectRightsEnum()
+    all_rights = DataSubjectRightsEnum
     strategy: str = rights["strategy"]
     data_subject_rights: str
     if strategy == "ALL":
