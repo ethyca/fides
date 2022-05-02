@@ -35,7 +35,7 @@ def build_local_prod(session: nox.Session) -> None:
 
 @nox.session()
 def push(session: nox.Session) -> None:
-    """Push the Docker container for fidesctl."""
+    """Push the fidesctl Docker image to Dockerhub."""
     session.run("docker", "tag", IMAGE, IMAGE_LATEST, external=True)
     session.run("docker", "push", IMAGE, external=True)
     session.run("docker", "push", IMAGE_LATEST, external=True)

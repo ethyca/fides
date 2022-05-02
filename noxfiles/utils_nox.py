@@ -1,4 +1,4 @@
-"""Contains the nox sessions for running development environments."""
+"""Contains various utility-related nox sessions."""
 import nox
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
 

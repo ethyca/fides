@@ -115,7 +115,7 @@ def fidesctl(session: nox.Session) -> None:
 
 @nox.session()
 def fidesctl_db_scan(session: nox.Session) -> None:
-    """ "Scan the fidesctl application database to check for dataset discrepancies."""
+    """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -200,17 +200,3 @@ def pytest_external(session: nox.Session) -> None:
         "external",
     )
     session.run(*run_command, external=True)
-
-
-# pytest-external:
-# 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
-# 	@docker compose run \
-# 	-e SNOWFLAKE_FIDESCTL_PASSWORD \
-# 	-e REDSHIFT_FIDESCTL_PASSWORD \
-# 	-e AWS_ACCESS_KEY_ID \
-# 	-e AWS_SECRET_ACCESS_KEY \
-# 	-e AWS_DEFAULT_REGION \
-# 	-e OKTA_CLIENT_TOKEN \
-# 	--rm $(CI_ARGS) $(IMAGE_NAME) \
-# 	pytest -x -m external
-# 	@make teardown

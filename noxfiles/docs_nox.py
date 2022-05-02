@@ -47,7 +47,7 @@ def docs_serve(session: nox.Session) -> None:
 
 @nox.session()
 def docs_check(session: nox.Session) -> None:
-    """Build the docs."""
+    """Check that the docs can build."""
     docs_build_ci(session)
     session.notify("teardown")
     session.run("docker-compose", "build", "docs", external=True)
