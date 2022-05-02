@@ -24,7 +24,7 @@ def get_fides_log_record_factory() -> Any:
         func: str = None,
         sinfo: str = None,
     ) -> logging.LogRecord:
-        env_log_pii: bool = os.getenv("LOG_PII") == "True"
+        env_log_pii: bool = os.getenv("FIDESOPS__LOG_PII") == "True"
         new_args = args
         if not env_log_pii:
             new_args = tuple(_mask_pii_for_logs(arg) for arg in args)

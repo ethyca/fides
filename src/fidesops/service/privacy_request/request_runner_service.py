@@ -201,8 +201,12 @@ class PrivacyRequestRunner:
                     )
 
             except BaseException as exc:  # pylint: disable=broad-except
-                logging.error(exc)
                 privacy_request.status = PrivacyRequestStatus.error
+                # If dev mode, log traceback
+                if config.dev_mode:
+                    logging.error(exc, exc_info=True)
+                else:
+                    logging.error(exc)
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(
