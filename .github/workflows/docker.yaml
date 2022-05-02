@@ -26,7 +26,7 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Build Fidesctl
-        run: make build
+        run: nox -s build
 
       - name: Push Fidesctl
-        run: make push
+        run: nox -s push

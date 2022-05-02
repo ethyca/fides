@@ -125,6 +125,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Check that the docs can build
         run: nox -s docs_check
 
@@ -143,6 +146,9 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Run linter
         run: nox -s pylint -- docker
@@ -163,6 +169,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run typechecker
         run: nox -s mypy -- docker
 
@@ -181,6 +190,9 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Run cyclomatic complexity check
         run: nox -s xenon -- docker
@@ -201,6 +213,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run unit test suite
         run: nox -s pytest_unit
 
@@ -220,6 +235,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run integration test suite
         run: nox -s pytest_integration
 
@@ -238,6 +256,9 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Run external test suite
         run: nox -s pytest_external

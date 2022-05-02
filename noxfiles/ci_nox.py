@@ -1,6 +1,15 @@
 """Contains the nox sessions used during CI checks."""
 import nox
-from constants_nox import RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from constants_nox import (
+    CI_ARGS,
+    COMPOSE_FILE,
+    IMAGE_NAME,
+    INTEGRATION_COMPOSE_FILE,
+    RUN,
+    RUN_NO_DEPS,
+    START_APP,
+    WITH_TEST_CONFIG,
+)
 from docker_nox import build_local_prod
 from utils_nox import teardown
 
@@ -9,7 +18,7 @@ RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 @nox.session()
 def check_all(session: nox.Session) -> None:
-    """Run all of the Docker versions of the CI checks."""
+    """Runs all of the CI checks."""
     teardown(session)
     build_local_prod(session)
     check_install(session)
@@ -24,13 +33,14 @@ def check_all(session: nox.Session) -> None:
     pytest_integration(session)
 
 
+# Static Checks
 @nox.session()
 def black(session: nox.Session) -> None:
     """Run the 'black' style linter."""
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "black")
     else:
-        run_command = ("black", "--check", "src", "tests")
+        run_command = ("black", "--check", "src", "tests", "noxfiles")
     session.run(*run_command, external=True)
 
 
@@ -40,10 +50,49 @@ def isort(session: nox.Session) -> None:
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "isort")
     else:
-        run_command = ("isort", "--check-only", "src", "tests")
+        run_command = ("isort", "--check-only", "src", "tests", "noxfiles")
     session.run(*run_command, external=True)
 
 
+@nox.session()
+def mypy(session: nox.Session) -> None:
+    """Run the 'mypy' static type checker."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "mypy")
+    else:
+        run_command = ("mypy",)
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def pylint(session: nox.Session) -> None:
+    """Run the 'pylint' code linter."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "pylint")
+    else:
+        run_command = ("pylint", "src", "noxfiles")
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def xenon(session: nox.Session) -> None:
+    """Run the 'pylint' code linter."""
+    if session.posargs == ["docker"]:
+        run_command = (*RUN_STATIC_ANALYSIS, "xenon")
+    else:
+        run_command = (
+            "xenon",
+            "src",
+            "--max-absolute B",
+            "--max-modules B",
+            "--max-average A",
+            "--ignore 'data, tests, docs'",
+            "--exclude src/fidesctl/_version.py",
+        )
+    session.run(*run_command, external=True)
+
+
+# Fidesctl Checks
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fidesctl is installed."""
@@ -81,31 +130,77 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     session.run(*run_command, external=True)
 
 
+# Pytest
 @nox.session()
-def mypy(session: nox.Session) -> None:
-    """Run the 'mypy' static type checker."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "mypy")
-    else:
-        run_command = ("mypy",)
+def pytest_unit(session: nox.Session) -> None:
+    """Run all unit tests."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        "-x",
+        "-m",
+        "unit",
+    )
     session.run(*run_command, external=True)
 
 
-# mypy:
-# 	@$(RUN_NO_DEPS) mypy
+@nox.session()
+def pytest_integration(session: nox.Session) -> None:
+    """Run all tests that rely on the application server and database."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        "-x",
+        "-m",
+        "integration",
+    )
+    session.run(*run_command, external=True)
 
-# pylint:
-# 	@$(RUN_NO_DEPS) pylint src/
 
-# pytest-unit:
-# 	@$(START_APP)
-# 	@$(RUN_NO_DEPS) pytest -x -m unit
+@nox.session()
+def pytest_external(session: nox.Session) -> None:
+    """Run all tests that rely on the third-party databases and services."""
+    session.notify("teardown")
+    start_command = (
+        "docker-compose",
+        "-f",
+        COMPOSE_FILE,
+        "-f",
+        INTEGRATION_COMPOSE_FILE,
+        "up",
+        "-d",
+        IMAGE_NAME,
+    )
+    session.run(*start_command, external=True)
+    run_command = (
+        "docker-compose",
+        "run",
+        "-e",
+        "SNOWFLAKE_FIDESCTL_PASSWORD",
+        "-e",
+        "REDSHIFT_FIDESCTL_PASSWORD",
+        "-e",
+        "AWS_ACCESS_KEY_ID",
+        "-e",
+        "AWS_SECRET_ACCESS_KEY",
+        "-e",
+        "AWS_DEFAULT_REGION",
+        "-e",
+        "OKTA_CLIENT_TOKEN",
+        "--rm",
+        CI_ARGS,
+        IMAGE_NAME,
+        "pytest",
+        "-x",
+        "-m",
+        "external",
+    )
+    session.run(*run_command, external=True)
 
-# pytest-integration:
-# 	@$(START_APP)
-# 	@docker compose run --rm $(CI_ARGS) $(IMAGE_NAME) \
-# 	pytest -x -m integration
-# 	@make teardown
 
 # pytest-external:
 # 	@docker compose -f docker-compose.yml -f docker-compose.integration-tests.yml up -d $(IMAGE_NAME)
@@ -119,11 +214,3 @@ def mypy(session: nox.Session) -> None:
 # 	--rm $(CI_ARGS) $(IMAGE_NAME) \
 # 	pytest -x -m external
 # 	@make teardown
-
-# xenon:
-# 	@$(RUN_NO_DEPS) xenon src \
-# 	--max-absolute B \
-# 	--max-modules B \
-# 	--max-average A \
-# 	--ignore "data, tests, docs" \
-# 	--exclude "src/fidesctl/_version.py"

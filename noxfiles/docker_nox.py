@@ -1,6 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import nox
-from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, IMAGE_NAME, get_current_tag
+from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, get_current_tag
 
 
 @nox.session()

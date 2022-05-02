@@ -1,6 +1,12 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from constants_nox import (
+    COMPOSE_FILE,
+    IMAGE_NAME,
+    INTEGRATION_COMPOSE_FILE,
+    RUN,
+    START_APP,
+)
 from docker_nox import build_local
 
 
@@ -41,9 +47,9 @@ def cli_integration(session: nox.Session) -> None:
     session.run(
         "docker-compose",
         "-f",
-        "docker-compose.yml",
+        COMPOSE_FILE,
         "-f",
-        "docker-compose.integration-tests.yml",
+        INTEGRATION_COMPOSE_FILE,
         "up",
         "-d",
         IMAGE_NAME,
@@ -54,7 +60,7 @@ def cli_integration(session: nox.Session) -> None:
 
 
 @nox.session()
-def db(session: nox.Session) -> None:
+def db_up(session: nox.Session) -> None:
     """Spin up the application database in the background."""
-    db_up = ("docker-compose", "up", "-d", "fidesctl-db")
-    session.run(*db_up, external=True)
+    run_command = ("docker-compose", "up", "-d", "fidesctl-db")
+    session.run(*run_command, external=True)
