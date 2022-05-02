@@ -16,7 +16,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
 
-## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0)
+## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
 ### Added
 
