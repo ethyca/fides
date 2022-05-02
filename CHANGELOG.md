@@ -21,6 +21,10 @@ The types of changes are:
 
 * Updated `Release Steps`
 
+### Fixed
+
+* Resolved a failure with populating applicable data subject rights to a data map
+
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
 ### Added
