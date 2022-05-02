@@ -10,11 +10,16 @@ The types of changes are:
 * `Changed` for changes in existing functionality.
 * `Developer Experience` for changes in developer workflow or tooling.
 * `Deprecated` for soon-to-be removed features.
+* `Docs` for documentation only changes.
 * `Removed` for now removed features.
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
+
+### Docs
+
+* Updated `Release Steps`
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
