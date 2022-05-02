@@ -33,15 +33,15 @@ def check_all(session: nox.Session) -> None:
     check_install(session)
     fidesctl(session)
     fidesctl_db_scan(session)
-    pytest_unit(session)
-    pytest_integration(session)
+    pytest(session, "unit")
+    pytest(session, "integration")
 
 
 # Static Checks
 @nox.session()
 def black(session: nox.Session) -> None:
     """Run the 'black' style linter."""
-    black_command = ("black", "src", "tests", "noxfiles", None)
+    black_command = ("black", "src", "tests", "noxfiles")
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "black")
     if session.posargs == ["fix"]:
@@ -142,16 +142,16 @@ def fidesctl_db_scan(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
-def pytest(session: nox.Session) -> None:
-    """
-    Run all unit tests. Also accepts markers as arguments.
-
-    Example:
-        nox -s pytest -- unit
-        nox -s pytest -- integration
-        nox -s pytest -- "not external"
-    """
-    test_marker = tuple(session.posargs)
+@nox.parametrize(
+    "mark",
+    [
+        nox.param("unit", id="unit"),
+        nox.param("integration", id="integration"),
+        nox.param("not external", id="not-external"),
+    ],
+)
+def pytest(session: nox.Session, mark: str) -> None:
+    """Runs tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -159,7 +159,7 @@ def pytest(session: nox.Session) -> None:
         "pytest",
         "-x",
         "-m",
-        *test_marker,
+        mark,
     )
     session.run(*run_command, external=True)
 

@@ -217,7 +217,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run unit test suite
-        run: nox -s pytest_unit
+        run: nox -s "pytest(unit)"
 
   Pytest-Integration:
     needs: Build
@@ -239,7 +239,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run integration test suite
-        run: nox -s pytest_integration
+        run: nox -s "pytest(integration)"
 
   Pytest-External:
     needs: Build
