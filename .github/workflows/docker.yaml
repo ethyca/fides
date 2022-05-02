@@ -25,6 +25,9 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Build Fidesctl
         run: nox -s build
 
