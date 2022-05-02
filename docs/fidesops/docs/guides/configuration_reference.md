@@ -14,7 +14,7 @@ Take me directly to [api docs](/fidesops/api#operations-tag-Config).
 
 The Fidesops application configuration variables are provided in the `fidesops.toml` file in `.toml` format. Fidesops will take the first config file it finds from the following locations:
 
-- The location according to the `FIDESOPS_CONFIG_PATH` environment variable
+- The location according to the `FIDESOPS__CONFIG_PATH` environment variable
 - The current working directory (`./fidesops.toml`)
 - The parent of the current working directory (`../fidesops.toml`)
 - The user's home directory (`~/fidesops.toml`)
@@ -94,9 +94,10 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 
  ENV Variable | Default | Description |
 |---|---|---|
-| `LOG_PII` | False | If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.|
-| `DEV_MODE` | False | If "True", the fidesops server will run with hot-reloading of files. This variable should always be set to "False" in production systems.|
-| `FIDESOPS_CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files.
+| `FIDESOPS__LOG_PII` | False | If this is set to "True", pii values will display unmasked in log output. This variable should always be set to "False" in production systems.
+| `FIDESOPS__HOT_RELOAD` | False | If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.|
+| `FIDESOPS__DEV_MODE` | False | If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
+| `FIDESOPS__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files.
 
 ## - Reporting a running application's configuration
 

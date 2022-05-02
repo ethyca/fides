@@ -94,8 +94,20 @@ class AuthenticatedClient:
                 request_params
             )
             response = self.session.send(prepared_request)
-        except Exception:
-            raise ConnectionException(f"Operational Error connecting to '{self.key}'.")
+        except Exception as exc:  # pylint: disable=W0703
+            if config.dev_mode:  # pylint: disable=R1720
+                raise ConnectionException(
+                    f"Operational Error connecting to '{self.key}' with error: {exc}"
+                )
+            else:
+                raise ConnectionException(
+                    f"Operational Error connecting to '{self.key}'."
+                )
+
+        log_request_and_response_for_debugging(
+            prepared_request, response
+        )  # Dev mode only
+
         if not response.ok:
             if ignore_errors:
                 logger.info(
@@ -108,6 +120,25 @@ class AuthenticatedClient:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
         return response
+
+
+def log_request_and_response_for_debugging(
+    prepared_request: PreparedRequest, response: Response
+) -> None:
+    """Log SaaS request and response in dev mode only"""
+    if config.dev_mode:
+        logger.info(
+            "\n\n-----------SAAS REQUEST-----------"
+            "\n%s %s"
+            "\nheaders: %s"
+            "\nbody: %s"
+            "\nresponse: %s",
+            prepared_request.method,
+            prepared_request.url,
+            prepared_request.headers,
+            prepared_request.body,
+            response._content,  # pylint: disable=W0212
+        )
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):

@@ -23,6 +23,10 @@ services:
         target: /fidesops
         read_only: False
       - /fidesops/src/fidesops.egg-info
+    environment:
+      - FIDESOPS__DEV_MODE=${FIDESOPS__DEV_MODE}
+      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
+      - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
 
   db:
     image: postgres:12

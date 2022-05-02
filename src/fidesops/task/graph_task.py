@@ -62,6 +62,9 @@ def retry(
             self = args[0]
 
             raised_ex = None
+            if config.dev_mode:
+                # If dev mode, return here so exception isn't caught
+                return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
                     # Create ExecutionLog with status in_processing or retrying
