@@ -67,7 +67,7 @@ def echo_results(action: str, resource_type: str, resource_count: int) -> None:
     echo_green(f"{action.upper()} {resource_count} {resource_type} resource(s).")
 
 
-def validate_dataset_usage(taxonomy: Taxonomy) -> List:
+def get_orphan_datasets(taxonomy: Taxonomy) -> List:
     """
     Validate all datasets are referenced at least one time
     by comparing all datasets to a set of referenced datasets
@@ -106,7 +106,7 @@ def apply(
     Apply the current manifest file state to the server.
     """
 
-    missing_datasets = validate_dataset_usage(taxonomy)
+    missing_datasets = get_orphan_datasets(taxonomy)
     if len(missing_datasets) > 0:
         echo_red(
             "Orphan Dataset Warning: The following datasets are not found referenced on a System"

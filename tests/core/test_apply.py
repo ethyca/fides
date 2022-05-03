@@ -2,7 +2,7 @@
 import pytest
 
 import fideslang as models
-from fidesctl.core.apply import sort_create_update, validate_dataset_usage
+from fidesctl.core.apply import sort_create_update, get_orphan_datasets
 
 
 # Helpers
@@ -170,5 +170,5 @@ def test_validate_dataset_usage(
     """
     taxonomies["system"] = system_with_dataset_reference
     taxonomy = models.Taxonomy.parse_obj(taxonomies)
-    missing_datasets = validate_dataset_usage(taxonomy)
+    missing_datasets = get_orphan_datasets(taxonomy)
     assert len(missing_datasets) == expected_length
