@@ -53,15 +53,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Check fidesctl installation
-        run: make check-install
+        run: nox -s check_install -- docker
 
       - name: Run fidesctl evaluation
-        run: make fidesctl
+        run: nox -s fidesctl -- docker
 
       - name: Scan fidesctl db
-        run: make fidesctl-db-scan
-
+        run: nox -s fidesctl_db_scan -- docker
 
   isort:
     needs: Build
@@ -79,8 +81,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run sorter
-        run: make isort
+        run: nox -s isort -- docker
 
   Black:
     needs: Build
@@ -98,8 +103,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run formatter
-        run: make black
+        run: nox -s black -- docker
 
   Docs:
     needs: Build
@@ -117,8 +125,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Check that the docs can build
-        run: make docs-check
+        run: nox -s docs_check
 
   Pylint:
     needs: Build
@@ -136,8 +147,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run linter
-        run: make pylint
+        run: nox -s pylint -- docker
 
   Mypy:
     needs: Build
@@ -155,8 +169,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run typechecker
-        run: make mypy
+        run: nox -s mypy -- docker
 
   Xenon:
     needs: Build
@@ -174,8 +191,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run cyclomatic complexity check
-        run: make xenon
+        run: nox -s xenon -- docker
 
   Pytest-Unit:
     needs: Build
@@ -193,8 +213,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run unit test suite
-        run: make pytest-unit
+        run: nox -s "pytest(unit)"
 
   Pytest-Integration:
     needs: Build
@@ -212,8 +235,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run integration test suite
-        run: make pytest-integration
+        run: nox -s "pytest(integration)"
 
   Pytest-External:
     needs: Build
@@ -231,8 +257,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Run external test suite
-        run: make pytest-external
+        run: nox -s pytest_external
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}

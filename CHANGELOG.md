@@ -21,6 +21,10 @@ The types of changes are:
 
 * Include a warning for any orphan datasets as part of the `apply` command.
 
+### Developer Experience
+
+* Added Nox as an alternative to Make
+
 ### Docs
 
 * Updated `Release Steps`

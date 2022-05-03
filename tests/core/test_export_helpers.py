@@ -168,8 +168,7 @@ def test_xlsx_export(tmpdir):
 def test_calculate_data_subject_rights(data_subject_rights: dict):
     """Tests different strategy options for returning data subject rights."""
     rights = DataSubjectRights(**data_subject_rights)
-    rights_dict = rights.dict()
-    return_str_value = export_helpers.calculate_data_subject_rights(rights_dict)
+    return_str_value = export_helpers.calculate_data_subject_rights(rights.dict())
 
     assert return_str_value is not None
     if data_subject_rights["strategy"] in ["INCLUDE", "EXCLUDE"]:
