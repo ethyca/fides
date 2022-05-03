@@ -4,31 +4,21 @@ from constants_nox import CI_ARGS, RUN
 from docker_nox import build_local
 
 
-def docs_build(session: nox.Session) -> None:
+@nox.session()
+@nox.parametrize("type", [nox.param("local", id="local"), nox.param("ci", id="ci")])
+def docs_build(session: nox.Session, type: str) -> None:
     """Build docs from the source code."""
+    session.notify("teardown")
+    if type == "local":
+        build_local(session)
     run_shell = (*RUN, "python", "generate_docs.py", "docs/fides/docs/")
     session.run(*run_shell, external=True)
 
 
 @nox.session()
-def docs_build_local(session: nox.Session) -> None:
-    """Build a new image then build docs from the source code."""
-    build_local(session)
-    session.notify("teardown")
-    docs_build(session)
-
-
-@nox.session()
-def docs_build_ci(session: nox.Session) -> None:
-    """Build docs from the source code without building a new image."""
-    session.notify("teardown")
-    docs_build(session)
-
-
-@nox.session()
 def docs_serve(session: nox.Session) -> None:
     """Serve the docs."""
-    docs_build_local(session)
+    docs_build(session, "local")
     session.notify("teardown")
     session.run("docker-compose", "build", "docs", external=True)
     run_shell = (
@@ -48,7 +38,7 @@ def docs_serve(session: nox.Session) -> None:
 @nox.session()
 def docs_check(session: nox.Session) -> None:
     """Check that the docs can build."""
-    docs_build_ci(session)
+    docs_build(session, "ci")
     session.notify("teardown")
     session.run("docker-compose", "build", "docs", external=True)
     run_shell = (
