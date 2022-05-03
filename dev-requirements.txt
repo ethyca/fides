@@ -1,7 +1,9 @@
-black==20.8b1
+black==22.3.0
 ipython
 isort
+GitPython==3.1
 mypy==0.910
+nox>=2022
 packaging==20.9
 pre-commit==2.9.3
 pylint==2.6.0
