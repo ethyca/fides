@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
 
+### Added
+
+* Added dependabot to keep dependencies updated
+
 ### Developer Experience
 
 * Added Nox as an alternative to Make
