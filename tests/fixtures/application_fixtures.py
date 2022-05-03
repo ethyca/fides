@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime, timedelta, timezone
-import os
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, PRIVACY_REQUEST_READ
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.util.data_category import DataCategory
@@ -14,12 +13,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
-from pymongo import MongoClient
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.core.config import load_file, load_toml
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     ConnectionConfig,
     AccessLevel,
@@ -34,13 +32,13 @@ from fidesops.models.policy import (
     PolicyPreWebhook,
     PolicyPostWebhook,
 )
-from fidesops.models.privacy_request import ExecutionLog
+
 from fidesops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
-    ExecutionLogStatus,
 )
 from fidesops.models.storage import StorageConfig, ResponseFormat
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -715,6 +713,11 @@ def user(db: Session):
         scopes=SCOPE_REGISTRY,
         user_id=user.id,
     )
+
+    FidesopsUserPermissions.create(
+            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        )
+
     db.add(client)
     db.commit()
     db.refresh(client)

@@ -25,6 +25,7 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.oauth import AccessToken
 from fidesops.schemas.user import (
     UserCreate,
@@ -37,9 +38,9 @@ from fidesops.util.oauth_util import verify_oauth_client
 
 from fidesops.api.v1.scope_registry import (
     USER_CREATE,
+    PRIVACY_REQUEST_READ,
     USER_READ,
     USER_DELETE,
-    SCOPE_REGISTRY,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ def perform_login(db: Session, user: FidesopsUser) -> ClientDetail:
     if not client:
         logger.info("Creating client for login")
         client, _ = ClientDetail.create_client_and_secret(
-            db, SCOPE_REGISTRY, user_id=user.id
+            db, user.permissions.scopes, user_id=user.id
         )
 
     user.last_login_at = datetime.utcnow()
@@ -82,6 +83,9 @@ def create_user(
 
     user = FidesopsUser.create(db=db, data=user_data.dict())
     logger.info(f"Created user with id: '{user.id}'.")
+    FidesopsUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
     return user
 
 
