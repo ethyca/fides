@@ -2,6 +2,8 @@
 import nox
 from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, get_current_tag
 
+def get_current_image() -> str:
+    return f"{IMAGE}:{get_current_tag()}"
 
 @nox.session()
 def build(session: nox.Session) -> None:
@@ -11,7 +13,7 @@ def build(session: nox.Session) -> None:
         "build",
         "--target=prod",
         "--tag",
-        f"{IMAGE}:{get_current_tag()}",
+        get_current_image(),
         ".",
         external=True,
     )
@@ -36,6 +38,6 @@ def build_local_prod(session: nox.Session) -> None:
 @nox.session()
 def push(session: nox.Session) -> None:
     """Push the fidesctl Docker image to Dockerhub."""
-    session.run("docker", "tag", IMAGE, IMAGE_LATEST, external=True)
+    session.run("docker", "tag", get_current_image(), IMAGE_LATEST, external=True)
     session.run("docker", "push", IMAGE, external=True)
     session.run("docker", "push", IMAGE_LATEST, external=True)
