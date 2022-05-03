@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
 
+### Added
+
+* Include a warning for any orphan datasets as part of the `apply` command.
+
 ### Docs
 
 * Updated `Release Steps`
