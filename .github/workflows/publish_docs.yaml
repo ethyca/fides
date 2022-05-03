@@ -24,6 +24,9 @@ jobs:
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
@@ -34,7 +37,7 @@ jobs:
         run: git fetch origin gh-pages --depth=1
 
       - name: Build docs
-        run: nox -s docs_build_local
+        run: nox -s "docs_build(local)"
 
       # This is required by "mike"
       - name: Set the Git Username & Email
