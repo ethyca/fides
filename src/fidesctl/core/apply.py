@@ -67,7 +67,7 @@ def echo_results(action: str, resource_type: str, resource_count: int) -> None:
     echo_green(f"{action.upper()} {resource_count} {resource_type} resource(s).")
 
 
-def validate_dataset_usage(taxonomy: Taxonomy) -> list:
+def validate_dataset_usage(taxonomy: Taxonomy) -> List:
     """
     Validate all datasets are referenced at least one time
     by comparing all datasets to a set of referenced datasets
