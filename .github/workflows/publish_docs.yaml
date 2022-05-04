@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
