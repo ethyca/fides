@@ -26,4 +26,22 @@ def audit_system(
     _audit.audit_systems(
         url=config.cli.server_url,
         headers=config.user.request_headers,
+        exclude_keys=[],
+    )
+
+
+@audit.command(name="organizations")
+@click.pass_context
+@with_analytics
+def audit_organizations(
+    ctx: click.Context,
+) -> None:
+    """
+    Export a system in a data map format.
+    """
+    config = ctx.obj["CONFIG"]
+    _audit.audit_organizations(
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        exclude_keys=[],
     )
