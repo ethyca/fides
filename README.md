@@ -2,7 +2,6 @@
 
 _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 
-[![Latest Version][pypi-image]][pypi-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
@@ -203,8 +202,6 @@ Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy)
 Fides is created and sponsored by [Ethyca](https://ethyca.com): a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 
 
-[pypi-image]: https://img.shields.io/pypi/v/fidesctl.svg
-[pypi-url]: https://pypi.python.org/pypi/fidesctl/
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [black-image]: https://img.shields.io/badge/code%20style-black-000000.svg
