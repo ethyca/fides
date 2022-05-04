@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import os
 
 import pytest
@@ -39,6 +40,6 @@ def test_update_config_file_new_value(test_change_config, tmpdir):
         updated_config["cli"]["analytics_id"] == "updated_id"
     ), "updated_config.cli.analytics_id should be 'updated_id'"
     assert updated_config["user"] is not None, "updated_config.user should exist"
-    assert (
-        updated_config["user"]["analytics_opt_out"] == True
-    ), "updated_config.user.analytics_opt_out should be True"
+    assert updated_config["user"][
+        "analytics_opt_out"
+    ], "updated_config.user.analytics_opt_out should be True"

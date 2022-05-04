@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
 
 from json import loads

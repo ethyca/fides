@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 """
 Tests for category visualization
 """
@@ -37,8 +38,8 @@ def sample_categories_list():
 
 @pytest.mark.unit
 def test_hierarchy_figures(sample_categories_list):
-    with open("tests/data/sample_hierarchy_figures.json", "r") as f:
-        expected_sample_hierarchy_figures = json.load(f)
+    with open("tests/data/sample_hierarchy_figures.json", "r") as sample_hierarchy:
+        expected_sample_hierarchy_figures = json.load(sample_hierarchy)
     hierarchy_figures = visualize.hierarchy_figures(
         sample_categories_list, resource_type="data_category", json_out=True
     )

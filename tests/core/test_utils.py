@@ -1,5 +1,4 @@
-import os
-
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 
 from fidesctl.core import utils

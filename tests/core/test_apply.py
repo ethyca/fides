@@ -1,8 +1,9 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 """Unit tests for the Commands module."""
 import pytest
 
 import fideslang as models
-from fidesctl.core.apply import sort_create_update, get_orphan_datasets
+from fidesctl.core.apply import get_orphan_datasets, sort_create_update
 
 
 # Helpers

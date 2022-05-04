@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import uuid
 from typing import List, Optional
 
@@ -120,7 +121,7 @@ class TestGetServerResources:
             existing_keys=resource_keys,
             headers=test_config.user.request_headers,
         )
-        assert set(resource_keys) == set([resource.fides_key for resource in result])
+        assert set(resource_keys) == set(resource.fides_key for resource in result)
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resources_missing_resources(self, test_config, resource_type):

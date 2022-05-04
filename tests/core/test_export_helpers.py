@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 from os import path
 
 import pandas as pd

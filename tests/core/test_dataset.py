@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import os
 from typing import List
 
@@ -238,7 +239,7 @@ def test_get_dataset_resource_ids():
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),
@@ -248,7 +249,7 @@ def test_get_dataset_resource_ids():
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_2",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_2",
+            description="Fides Generated Description for Okta Application: okta_label_2",
             data_categories=[],
             collections=[],
         ),
@@ -271,7 +272,7 @@ def test_find_missing_datasets():
         fidesctl_meta=DatasetMetadata(
             resource_id="okta_id_1",
         ),
-        description=f"Fides Generated Description for Okta Application: okta_label_1",
+        description="Fides Generated Description for Okta Application: okta_label_1",
         data_categories=[],
         collections=[],
     )
@@ -281,7 +282,7 @@ def test_find_missing_datasets():
         fidesctl_meta=DatasetMetadata(
             resource_id="okta_id_2",
         ),
-        description=f"Fides Generated Description for Okta Application: okta_label_2",
+        description="Fides Generated Description for Okta Application: okta_label_2",
         data_categories=[],
         collections=[],
     )

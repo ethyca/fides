@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 from pydantic import ValidationError
 
@@ -11,7 +12,7 @@ from fideslang.models import (
     PrivacyRule,
     System,
 )
-from fideslang.validation import FidesValidationError, check_valid_country_code
+from fideslang.validation import FidesValidationError
 
 
 @pytest.mark.unit

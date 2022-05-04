@@ -80,23 +80,25 @@ def pylint(session: nox.Session) -> None:
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "pylint")
     else:
-        run_command = ("pylint", "src", "noxfiles")
+        run_command = ("pylint", "src", "noxfiles", "tests")
     session.run(*run_command, external=True)
 
 
 @nox.session()
 def xenon(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
+    """Run 'xenon' code complexity monitoring."""
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "xenon")
     else:
         run_command = (
             "xenon",
+            "noxfiles",
             "src",
+            "tests",
             "--max-absolute B",
             "--max-modules B",
             "--max-average A",
-            "--ignore 'data, tests, docs'",
+            "--ignore 'data, docs'",
             "--exclude src/fidesctl/_version.py",
         )
     session.run(*run_command, external=True)

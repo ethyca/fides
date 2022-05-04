@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 from okta.models import Application as OktaApplication
 
@@ -61,7 +62,7 @@ def test_create_okta_datasets(okta_list_applications):
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),
@@ -71,7 +72,7 @@ def test_create_okta_datasets(okta_list_applications):
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_2",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_2",
+            description="Fides Generated Description for Okta Application: okta_label_2",
             data_categories=[],
             collections=[],
         ),
@@ -91,7 +92,7 @@ def test_create_okta_datasets_filters_inactive(okta_list_applications_with_inact
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),

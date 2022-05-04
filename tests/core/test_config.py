@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import os
 from unittest.mock import patch
 

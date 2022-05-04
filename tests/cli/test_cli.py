@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 from click.testing import CliRunner
 
@@ -27,7 +28,7 @@ def test_webserver():
     This is specifically meant to catch when the webserver command breaks,
     without spinning up an additional instance.
     """
-    from fidesapi.main import start_webserver
+    from fidesapi.main import start_webserver  # pylint: disable=unused-import
 
     assert True
 

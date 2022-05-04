@@ -1,5 +1,4 @@
-from typing import List
-
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 
 from fidesctl.core import filters as _filters
