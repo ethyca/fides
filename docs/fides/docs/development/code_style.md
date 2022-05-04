@@ -85,16 +85,16 @@ Fidesctl includes a `.pre-commit-config.yaml` to facilitate running CI checks be
 
 ## CI Checks
 
-CI checks are stored as targets within the Makefile, and can be run from the top-level `fides` directory with the following pattern:
+CI checks are stored as targets within the Noxfile, and can be run from the top-level `fides` directory with the following pattern:
 
 ```bash title="Pattern"
-make <lowercased_name>
+nox -s <lowercased_name>
 ```
 
 ```bash title="Examples"
-make black
-make mypy
-make xenon
+nox -s black
+nox -s mypy
+nox -s xenon
 ```
 
 ### Black formatting
