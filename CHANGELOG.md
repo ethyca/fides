@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Added dependabot to keep dependencies updated
+* Include a warning for any orphan datasets as part of the `apply` command.
 
 ### Developer Experience
 
