@@ -15,6 +15,7 @@ from fideslang.models import DatasetField
 logger = logging.getLogger("server_api")
 
 echo_red = partial(click.secho, fg="red", bold=True)
+echo_yellow = partial(click.secho, fg="yellow", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
 
 
