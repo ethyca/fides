@@ -230,7 +230,9 @@ def test_scan_aws_systems(
 
 
 @pytest.mark.integration
-def test_get_all_server_systems(test_config: FidesctlConfig) -> None:
+def test_get_all_server_systems(
+    test_config: FidesctlConfig, create_test_server_systems: Generator
+) -> None:
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,

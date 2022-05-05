@@ -7,9 +7,8 @@ import pytest
 import yaml
 
 from fidesctl.core import api
-from fidesctl.core.config import get_config
+from fidesctl.core.config import FidesctlConfig, get_config
 from fideslang import models
-from src.fidesctl.core.config import FidesctlConfig
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"

@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 
+from fidesctl.core.config import FidesctlConfig
 from fideslang import relationships
 from fideslang.models import (
     DataCategory,
@@ -14,7 +15,6 @@ from fideslang.models import (
     System,
     Taxonomy,
 )
-from src.fidesctl.core.config import FidesctlConfig
 
 
 @pytest.mark.unit
