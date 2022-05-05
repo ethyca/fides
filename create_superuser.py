@@ -10,6 +10,7 @@ from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
 
 
@@ -60,6 +61,10 @@ def create_user_and_client(db: Session) -> FidesopsUser:
 
     ClientDetail.create_client_and_secret(
         db, scopes, fides_key=ADMIN_UI_ROOT, user_id=superuser.id
+    )
+
+    FidesopsUserPermissions.create(
+        db=db, data={"user_id": superuser.id, "scopes": scopes}
     )
     print(f"Superuser '{user_data.username}' created successfully!")
     return superuser
