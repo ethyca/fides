@@ -28,7 +28,7 @@ IMAGE_LATEST = f"{IMAGE}:latest"
 # Disable TTY to perserve output within Github Actions logs
 # CI env variable is always set to true in Github Actions
 # The else statement is required due to the way commmands are structured and is arbitrary.
-CI_ARGS = "-T" if getenv("CI") else "--user=root"
+CI_ARGS = "--no-TTY" if getenv("CI") else "--user=root"
 
 # If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
