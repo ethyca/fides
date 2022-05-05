@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Common fixtures to be used across tests."""
 import os
-from typing import Any, Dict, Generator, Union
+from typing import Dict, Generator, Union
 
 import pytest
 import yaml
@@ -10,7 +10,6 @@ from fidesctl.core import api
 from fidesctl.core.config import get_config
 from fideslang import models
 from src.fidesctl.core.config import FidesctlConfig
-from src.fideslang.models import DatasetCollection
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
@@ -53,7 +52,7 @@ def resources_dict() -> Generator:
         str,
         Union[
             models.DataCategory,
-            models.DataWaulifier,
+            models.DataQualifier,
             models.Dataset,
             models.DataSubject,
             models.DataUse,

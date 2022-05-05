@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from typing import Dict, Generator
+from typing import Generator
 
 import pytest
 from okta.models import Application as OktaApplication

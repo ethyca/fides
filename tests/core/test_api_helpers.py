@@ -95,7 +95,7 @@ class TestGetServerResource:
         """
         resource_type = created_resources[0]
         resource_key = created_resources[1][0]
-        result: FidesModel = _api_helpers.p(
+        result: FidesModel = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
