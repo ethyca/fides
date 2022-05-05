@@ -242,7 +242,9 @@ def test_get_all_server_systems(
 
 
 @pytest.mark.external
-def test_scan_system_aws_passes(test_config: FidesctlConfig) -> None:
+def test_scan_system_aws_passes(
+    test_config: FidesctlConfig, create_external_server_systems: Generator
+) -> None:
     _system.scan_system_aws(
         coverage_threshold=100,
         manifest_dir="",
