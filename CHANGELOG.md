@@ -44,6 +44,7 @@ The types of changes are:
 ### Developer Experience
 
 * added isort as a CI check
+* Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
 
 ### Changed
 
