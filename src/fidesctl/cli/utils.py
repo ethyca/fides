@@ -40,9 +40,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
-    if str(server_version) == str(cli_version) or f"{server_version}.dirty" == str(
-        cli_version
-    ):
+    if str(server_version).removesuffix(".dirty") == str(cli_version):
         if not quiet:
             echo_green(
                 "Server is reachable and the client/server application versions match."
