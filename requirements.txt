@@ -2,12 +2,12 @@ alembic==1.6
 click>=8.1
 colorama>=0.4.3
 cryptography>=36
-deepdiff==5.5
+deepdiff==5.8.0
 fideslog==1.1.4
 loguru>=0.5,<0.6
 openpyxl==3.0.9
 pandas==1.4
-plotly==5.4
+plotly==5.7.0
 pydantic>=1.8.1,<2.0.0 # Required by fastapi
 PyJWT==2
 pyyaml>=5,<6
