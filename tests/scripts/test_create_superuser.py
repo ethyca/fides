@@ -8,6 +8,7 @@ from create_superuser import (
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
 from fidesops.api.v1.scope_registry import CLIENT_CREATE
 
@@ -63,6 +64,9 @@ class TestCreateSuperuserScript:
         assert superuser.client == client_detail
         assert client_detail.fides_key == ADMIN_UI_ROOT
         assert CLIENT_CREATE not in client_detail.scopes
+
+        user_permissions = FidesopsUserPermissions.get_by(db=db, field="user_id", value=superuser.id)
+        assert user_permissions is not None
 
         with pytest.raises(KeyOrNameAlreadyExists):
             create_user_and_client(db)
