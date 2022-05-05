@@ -1,4 +1,6 @@
+from datetime import datetime
 import re
+from typing import Optional
 
 from pydantic import validator
 from fidesops.schemas.base_class import BaseSchema
@@ -9,6 +11,8 @@ class UserCreate(BaseSchema):
 
     username: str
     password: str
+    first_name: Optional[str]
+    last_name: Optional[str]
 
     @validator("username")
     def validate_username(cls, username: str) -> str:
@@ -48,6 +52,9 @@ class UserResponse(BaseSchema):
 
     id: str
     username: str
+    created_at: datetime
+    first_name: Optional[str]
+    last_name: Optional[str]
 
 
 class UserCreateResponse(BaseSchema):
