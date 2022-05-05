@@ -13,6 +13,8 @@ class FidesopsUser(Base):
     """The DB ORM model for FidesopsUser"""
 
     username = Column(String, unique=True, index=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
@@ -44,6 +46,8 @@ class FidesopsUser(Base):
                 "salt": salt,
                 "hashed_password": hashed_password,
                 "username": data["username"],
+                "first_name": data.get("first_name"),
+                "last_name": data.get("last_name"),
             },
         )
 
