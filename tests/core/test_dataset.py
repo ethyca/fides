@@ -397,9 +397,7 @@ class TestDatabase:
         """
         for database_parameters in TEST_DATABASE_PARAMETERS.values():
             engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
-            with open(
-                str(database_parameters.get("init_script_path")), "r"
-            ) as query_file:
+            with open(database_parameters.get("init_script_path"), "r") as query_file:  # type: ignore
                 queries = [
                     query for query in query_file.read().splitlines() if query != ""
                 ]
