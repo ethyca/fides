@@ -1,6 +1,9 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+from typing import Generator
+
 import pytest
 from click.testing import CliRunner
+from py._path.local import LocalPath
 
 from fidesctl.cli import cli
 
@@ -8,13 +11,13 @@ OKTA_URL = "https://dev-78908748.okta.com"
 
 
 @pytest.fixture()
-def test_cli_runner() -> CliRunner:
+def test_cli_runner() -> Generator:
     runner = CliRunner()
     yield runner
 
 
 @pytest.mark.integration
-def test_init(test_cli_runner: CliRunner):
+def test_init(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["init"], env={"FIDESCTL__USER__ANALYTICS_OPT_OUT": "true"}
     )
@@ -23,7 +26,7 @@ def test_init(test_cli_runner: CliRunner):
 
 
 @pytest.mark.unit
-def test_webserver():
+def test_webserver() -> None:
     """
     This is specifically meant to catch when the webserver command breaks,
     without spinning up an additional instance.
@@ -34,7 +37,7 @@ def test_webserver():
 
 
 @pytest.mark.unit
-def test_parse(test_config_path: str, test_cli_runner: CliRunner):
+def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "parse", "demo_resources/"]
     )
@@ -43,21 +46,21 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_reset_db(test_config_path: str, test_cli_runner: CliRunner):
+def test_reset_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "reset", "-y"])
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_init_db(test_config_path: str, test_cli_runner: CliRunner):
+def test_init_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "init"])
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_apply(test_config_path: str, test_cli_runner: CliRunner):
+def test_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "apply", "demo_resources/"]
     )
@@ -66,7 +69,7 @@ def test_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
+def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "apply", "--dry", "demo_resources/"]
     )
@@ -75,7 +78,7 @@ def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
+def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "apply", "--diff", "demo_resources/"]
     )
@@ -84,7 +87,7 @@ def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
+def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "apply", "--dry", "--diff", "demo_resources/"]
     )
@@ -93,7 +96,7 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_get(test_config_path: str, test_cli_runner: CliRunner):
+def test_get(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "get", "data_category", "user.provided.identifiable"],
@@ -103,7 +106,7 @@ def test_get(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.integration
-def test_ls(test_config_path: str, test_cli_runner: CliRunner):
+def test_ls(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
     print(result.output)
     assert result.exit_code == 0
@@ -112,7 +115,7 @@ def test_ls(test_config_path: str, test_cli_runner: CliRunner):
 @pytest.mark.integration
 def test_evaluate_with_declaration_pass(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -129,7 +132,7 @@ def test_evaluate_with_declaration_pass(
 @pytest.mark.integration
 def test_evaluate_demo_resources_pass(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "demo_resources/"],
@@ -139,7 +142,9 @@ def test_evaluate_demo_resources_pass(
 
 
 @pytest.mark.integration
-def test_local_evaluate(test_invalid_config_path: str, test_cli_runner: CliRunner):
+def test_local_evaluate(
+    test_invalid_config_path: str, test_cli_runner: CliRunner
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -155,7 +160,9 @@ def test_local_evaluate(test_invalid_config_path: str, test_cli_runner: CliRunne
 
 
 @pytest.mark.integration
-def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunner):
+def test_evaluate_with_key_pass(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -174,7 +181,7 @@ def test_evaluate_with_key_pass(test_config_path: str, test_cli_runner: CliRunne
 @pytest.mark.integration
 def test_evaluate_with_declaration_failed(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -191,7 +198,7 @@ def test_evaluate_with_declaration_failed(
 @pytest.mark.integration
 def test_evaluate_with_dataset_failed(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "tests/data/failing_dataset_taxonomy.yml"],
@@ -203,7 +210,7 @@ def test_evaluate_with_dataset_failed(
 @pytest.mark.integration
 def test_evaluate_with_dataset_field_failed(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -220,7 +227,7 @@ def test_evaluate_with_dataset_field_failed(
 @pytest.mark.integration
 def test_evaluate_with_dataset_collection_failed(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -240,7 +247,7 @@ def test_evaluate_with_dataset_collection_failed(
 )
 def test_export_resources(
     test_config_path: str, test_cli_runner: CliRunner, export_resource: str
-):
+) -> None:
     """
     Tests that each resource is successfully exported
     """
@@ -262,7 +269,7 @@ def test_export_resources(
 @pytest.mark.integration
 def test_nested_field_fails_evaluation(
     test_config_path: str, test_cli_runner: CliRunner
-):
+) -> None:
     """
     Tests a taxonomy that is rigged to fail only due to
     one of the nested fields violating the policy. Test
@@ -282,7 +289,11 @@ def test_nested_field_fails_evaluation(
 
 
 @pytest.mark.integration
-def test_generate_dataset_db(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+def test_generate_dataset_db(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
         cli,
@@ -301,7 +312,7 @@ def test_generate_dataset_db(test_config_path: str, test_cli_runner: CliRunner, 
 
 
 @pytest.mark.integration
-def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner):
+def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -320,7 +331,11 @@ def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner):
 
 
 @pytest.mark.external
-def test_generate_system_aws(test_config_path: str, test_cli_runner: CliRunner, tmpdir):
+def test_generate_system_aws(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
     tmp_file = tmpdir.join("system.yml")
     result = test_cli_runner.invoke(
         cli,
@@ -331,7 +346,7 @@ def test_generate_system_aws(test_config_path: str, test_cli_runner: CliRunner, 
 
 
 @pytest.mark.external
-def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
+def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -350,8 +365,10 @@ def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner):
 
 @pytest.mark.external
 def test_generate_dataset_okta(
-    test_config_path: str, test_cli_runner: CliRunner, tmpdir
-):
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
         cli,
@@ -370,7 +387,7 @@ def test_generate_dataset_okta(
 
 
 @pytest.mark.external
-def test_scan_system_okta(test_config_path: str, test_cli_runner: CliRunner):
+def test_scan_system_okta(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
