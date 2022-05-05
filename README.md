@@ -23,8 +23,8 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 ## :rocket: Quick Start
 
 ### System Requirements
-1. Docker (20.10.8+)
-2. Python (3.9)
+1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+) 
+2. [Python](https://www.python.org/downloads/) (3.8+)
 
 ### Getting Started
 1. Ensure `nox` is installed locally.
