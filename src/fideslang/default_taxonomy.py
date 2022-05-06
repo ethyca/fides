@@ -715,13 +715,6 @@ DEFAULT_TAXONOMY = Taxonomy(
             parent_key="personalize",
         ),
         DataUse(
-            fides_key="third_party_sharing",
-            organization_fides_key="default_organization",
-            name="Third Party Sharing",
-            description="The transfer of specified data categories to third parties outside of the system/application's scope.",
-            parent_key=None,
-        ),
-        DataUse(
             fides_key="third_party_sharing.payment_processing",
             organization_fides_key="default_organization",
             name="Sharing for Processing Payments",
