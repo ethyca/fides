@@ -19,11 +19,12 @@ The types of changes are:
 
 ### Developer Experience
 
-* Added Nox as an alternative to Make
+* Replaced `make` with `nox`
 
 ### Docs
 
 * Updated `Release Steps`
+* Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 
 ### Fixed
 
