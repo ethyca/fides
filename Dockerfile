@@ -16,7 +16,6 @@ RUN : \
     curl \
     git \
     ipython \
-    make \
     vim \
     g++ \
     gnupg \

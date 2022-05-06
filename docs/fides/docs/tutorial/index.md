@@ -18,8 +18,7 @@ The app itself is the [Flask tutorial app](https://flask.palletsprojects.com/en/
 Before beginning, ensure you have the following software installed and configured to your liking:
 
 * Docker (v12+)
-* Python (v3.7+)
-* Make
+* Python (v3.8+)
 * `pg_config` (required for the Python project. Installed via Homebrew with `brew install libpq` or `brew install postgres`.)
 
 ### Installation
