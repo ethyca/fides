@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 from requests_mock import Mocker
 
@@ -5,7 +6,7 @@ import fidesctl.cli.utils as utils
 
 
 @pytest.mark.unit
-def test_check_server_bad_ping():
+def test_check_server_bad_ping() -> None:
     "Check for an exception if the server isn't up."
     with pytest.raises(SystemExit):
         utils.check_server("foo", "http://fake_address:8080")

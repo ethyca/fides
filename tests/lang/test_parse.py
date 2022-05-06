@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 
 import fideslang as models
@@ -5,7 +6,7 @@ from fideslang import parse
 
 
 @pytest.mark.unit
-def test_parse_manifest():
+def test_parse_manifest() -> None:
     expected_result = models.DataCategory(
         organization_fides_key=1,
         fides_key="some_resource",
@@ -23,7 +24,7 @@ def test_parse_manifest():
 
 
 @pytest.mark.unit
-def test_parse_manifest_no_fides_key_validation_error():
+def test_parse_manifest_no_fides_key_validation_error() -> None:
     with pytest.raises(SystemExit):
         test_dict = {
             "organization_fides_key": 1,
@@ -35,7 +36,7 @@ def test_parse_manifest_no_fides_key_validation_error():
 
 
 @pytest.mark.unit
-def test_parse_manifest_resource_type_error():
+def test_parse_manifest_resource_type_error() -> None:
     with pytest.raises(SystemExit):
         test_dict = {
             "organization_fides_key": 1,
@@ -48,7 +49,7 @@ def test_parse_manifest_resource_type_error():
 
 
 @pytest.mark.unit
-def test_load_manifests_into_taxonomy():
+def test_load_manifests_into_taxonomy() -> None:
     manifest_dict = {
         "data_category": [
             {

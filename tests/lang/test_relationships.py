@@ -1,5 +1,7 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 
+from fidesctl.core.config import FidesctlConfig
 from fideslang import relationships
 from fideslang.models import (
     DataCategory,
@@ -16,7 +18,7 @@ from fideslang.models import (
 
 
 @pytest.mark.unit
-def test_find_referenced_fides_keys_1():
+def test_find_referenced_fides_keys_1() -> None:
     test_data_category = DataCategory(
         name="test_dc",
         fides_key="key_1.test_dc",
@@ -29,7 +31,7 @@ def test_find_referenced_fides_keys_1():
 
 
 @pytest.mark.unit
-def test_find_referenced_fides_keys_2():
+def test_find_referenced_fides_keys_2() -> None:
     test_system = System.construct(
         name="test_dc",
         fides_key="test_dc",
@@ -44,7 +46,7 @@ def test_find_referenced_fides_keys_2():
 
 
 @pytest.mark.unit
-def test_get_referenced_missing_keys():
+def test_get_referenced_missing_keys() -> None:
     taxonomy = Taxonomy(
         data_category=[
             DataCategory(
@@ -77,7 +79,7 @@ def test_get_referenced_missing_keys():
 
 
 @pytest.mark.unit
-def test_get_referenced_missing_privacy_declaration_keys():
+def test_get_referenced_missing_privacy_declaration_keys() -> None:
     taxonomy = Taxonomy(
         system=[
             System(
@@ -109,7 +111,7 @@ def test_get_referenced_missing_privacy_declaration_keys():
 
 
 @pytest.mark.unit
-def test_get_referenced_missing_policy_keys():
+def test_get_referenced_missing_policy_keys() -> None:
     taxonomy = Taxonomy(
         policy=[
             Policy(
@@ -147,7 +149,7 @@ def test_get_referenced_missing_policy_keys():
 
 
 @pytest.mark.unit
-def test_get_referenced_missing_dataset_keys():
+def test_get_referenced_missing_dataset_keys() -> None:
     taxonomy = Taxonomy(
         dataset=[
             Dataset(
@@ -185,7 +187,7 @@ def test_get_referenced_missing_dataset_keys():
 
 
 @pytest.mark.integration
-def test_hydrate_missing_resources(test_config):
+def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
     dehydrated_taxonomy = Taxonomy(
         data_category=[
             DataCategory(

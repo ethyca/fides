@@ -1,13 +1,16 @@
-from typing import List
+# pylint: disable=missing-docstring, redefined-outer-name
+from typing import Generator, List
 
 import pytest
+from py._path.local import LocalPath
 
 from fidesctl.core import api
 from fidesctl.core import system as _system
+from fidesctl.core.config import FidesctlConfig
 from fideslang.models import System, SystemMetadata
 
 
-def create_server_systems(test_config, systems):
+def create_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
     for system in systems:
         api.create(
             url=test_config.cli.server_url,
@@ -17,7 +20,7 @@ def create_server_systems(test_config, systems):
         )
 
 
-def delete_server_systems(test_config, systems):
+def delete_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
     for system in systems:
         api.delete(
             url=test_config.cli.server_url,
@@ -28,7 +31,9 @@ def delete_server_systems(test_config, systems):
 
 
 @pytest.fixture(scope="function")
-def create_test_server_systems(test_config, redshift_systems):
+def create_test_server_systems(
+    test_config: FidesctlConfig, redshift_systems: List[System]
+) -> Generator:
     systems = redshift_systems
     delete_server_systems(test_config, systems)
     create_server_systems(test_config, systems)
@@ -37,7 +42,7 @@ def create_test_server_systems(test_config, redshift_systems):
 
 
 @pytest.fixture(scope="function")
-def create_external_server_systems(test_config):
+def create_external_server_systems(test_config: FidesctlConfig) -> Generator:
     systems = _system.generate_redshift_systems(
         organization_key="default_organization"
     ) + _system.generate_rds_systems(organization_key="default_organization")
@@ -48,7 +53,7 @@ def create_external_server_systems(test_config):
 
 
 @pytest.fixture()
-def redshift_describe_clusters():
+def redshift_describe_clusters() -> Generator:
     describe_clusters = {
         "Clusters": [
             {
@@ -73,7 +78,7 @@ def redshift_describe_clusters():
 
 
 @pytest.fixture()
-def redshift_systems():
+def redshift_systems() -> Generator:
     redshift_systems = [
         System(
             fides_key="redshift-cluster-1",
@@ -106,7 +111,7 @@ def redshift_systems():
 
 
 @pytest.fixture()
-def rds_systems():
+def rds_systems() -> Generator:
     rds_systems = [
         System(
             fides_key="database-2",
@@ -139,7 +144,7 @@ def rds_systems():
 
 
 @pytest.fixture()
-def rds_describe_clusters():
+def rds_describe_clusters() -> Generator:
     describe_clusters = {
         "DBClusters": [
             {
@@ -154,7 +159,7 @@ def rds_describe_clusters():
 
 
 @pytest.fixture()
-def rds_describe_instances():
+def rds_describe_instances() -> Generator:
     describe_instances = {
         "DBInstances": [
             {
@@ -171,7 +176,9 @@ def rds_describe_instances():
 
 
 @pytest.mark.unit
-def test_transform_redshift_systems(redshift_describe_clusters, redshift_systems):
+def test_transform_redshift_systems(
+    redshift_describe_clusters: Generator, redshift_systems: Generator
+) -> None:
     actual_result = _system.transform_redshift_systems(
         describe_clusters=redshift_describe_clusters,
         organization_key="default_organization",
@@ -181,8 +188,10 @@ def test_transform_redshift_systems(redshift_describe_clusters, redshift_systems
 
 @pytest.mark.unit
 def test_transform_rds_systems(
-    rds_describe_clusters, rds_describe_instances, rds_systems
-):
+    rds_describe_clusters: Generator,
+    rds_describe_instances: Generator,
+    rds_systems: Generator,
+) -> None:
     actual_result = _system.transform_rds_systems(
         describe_clusters=rds_describe_clusters,
         describe_instances=rds_describe_instances,
@@ -192,7 +201,7 @@ def test_transform_rds_systems(
 
 
 @pytest.mark.unit
-def test_get_system_arns(redshift_systems):
+def test_get_system_arns(redshift_systems: Generator) -> None:
     expected_result = [
         "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
         "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
@@ -202,7 +211,9 @@ def test_get_system_arns(redshift_systems):
 
 
 @pytest.mark.unit
-def test_scan_aws_systems(redshift_systems, rds_systems):
+def test_scan_aws_systems(
+    redshift_systems: List[System], rds_systems: List[System]
+) -> None:
     (
         scan_text_output,
         scanned_resource_count,
@@ -219,7 +230,9 @@ def test_scan_aws_systems(redshift_systems, rds_systems):
 
 
 @pytest.mark.integration
-def test_get_all_server_systems(test_config, create_test_server_systems):
+def test_get_all_server_systems(
+    test_config: FidesctlConfig, create_test_server_systems: Generator
+) -> None:
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -229,7 +242,9 @@ def test_get_all_server_systems(test_config, create_test_server_systems):
 
 
 @pytest.mark.external
-def test_scan_system_aws_passes(test_config, create_external_server_systems):
+def test_scan_system_aws_passes(
+    test_config: FidesctlConfig, create_external_server_systems: Generator
+) -> None:
     _system.scan_system_aws(
         coverage_threshold=100,
         manifest_dir="",
@@ -240,7 +255,7 @@ def test_scan_system_aws_passes(test_config, create_external_server_systems):
 
 
 @pytest.mark.external
-def test_generate_system_aws(tmpdir, test_config):
+def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
     actual_result = _system.generate_system_aws(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,

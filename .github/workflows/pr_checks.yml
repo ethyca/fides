@@ -31,7 +31,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Upload fidesctl container
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/${{ env.CONTAINER }}.tar

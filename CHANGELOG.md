@@ -24,11 +24,12 @@ The types of changes are:
 
 ### Developer Experience
 
-* Added Nox as an alternative to Make
+* Replaced `make` with `nox`
 
 ### Docs
 
 * Updated `Release Steps`
+* Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 
 ### Fixed
 
@@ -45,6 +46,7 @@ The types of changes are:
 ### Developer Experience
 
 * added isort as a CI check
+* Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
 
 ### Changed
 

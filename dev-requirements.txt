@@ -4,10 +4,10 @@ isort
 GitPython==3.1
 mypy==0.910
 nox>=2022
-packaging==20.9
-pre-commit==2.9.3
+packaging==21.3
+pre-commit==2.18.1
 pylint==2.6.0
-pytest==6.2.2
+pytest==7.1.2
 pytest-cov==2.11.1
 requests-mock==1.8.0
 sqlalchemy-stubs

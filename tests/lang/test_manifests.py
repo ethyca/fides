@@ -1,19 +1,33 @@
+# pylint: disable=missing-docstring, redefined-outer-name
+from typing import TYPE_CHECKING, Dict, Generator
+
 import pytest
 import yaml
 
 from fideslang import manifests
 
+if TYPE_CHECKING:
+
+    class FixtureRequest:
+        param: str
+
+else:
+    from typing import Any
+
+    FixtureRequest = Any
 
 # Helpers
 @pytest.fixture()
-def sample_manifest():
+def sample_manifest() -> Generator:
     yield manifests.load_yaml_into_dict("tests/data/sample_manifest.yml")
 
 
 @pytest.fixture()
 def ingestion_manifest_directory(
-    populated_manifest_dir, populated_nested_manifest_dir, request
-):
+    populated_manifest_dir: str,
+    populated_nested_manifest_dir: str,
+    request: FixtureRequest,
+) -> str:
     """
     Allows for parameterization of manifests to ingest by returning
     the corresponding fixture
@@ -26,7 +40,7 @@ def ingestion_manifest_directory(
 
 # Unit
 @pytest.mark.unit
-def test_load_yaml_into_dict(sample_manifest):
+def test_load_yaml_into_dict(sample_manifest: Dict) -> None:
     """
     Make sure that the yaml loaded from the sample manifest matches
     what is expected.
@@ -48,7 +62,7 @@ def test_load_yaml_into_dict(sample_manifest):
 
 
 @pytest.mark.unit
-def test_write_manifest(tmp_path):
+def test_write_manifest(tmp_path: str) -> None:
     test_resource = {"foo": "bar", "bar": "baz"}
     expected_result = {"test": [{"foo": "bar", "bar": "baz"}]}
     test_path = str(tmp_path) + "/test.yml"
@@ -61,7 +75,7 @@ def test_write_manifest(tmp_path):
 
 
 @pytest.mark.unit
-def test_union_manifests(test_manifests):
+def test_union_manifests(test_manifests: Dict) -> None:
     expected_result = {
         "dataset": [
             {
@@ -112,7 +126,7 @@ def test_union_manifests(test_manifests):
     ["populated_manifest_dir", "populated_nested_manifest_dir"],
     indirect=["ingestion_manifest_directory"],
 )
-def test_ingest_manifests(ingestion_manifest_directory):
+def test_ingest_manifests(ingestion_manifest_directory: GeneratorExit) -> None:
     actual_result = manifests.ingest_manifests(str(ingestion_manifest_directory))
 
     # Battery of assertions for consistency
