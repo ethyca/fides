@@ -2,8 +2,11 @@
 import nox
 from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, get_current_tag
 
+
 def get_current_image() -> str:
+    """Returns the current image tag"""
     return f"{IMAGE}:{get_current_tag()}"
+
 
 @nox.session()
 def build(session: nox.Session) -> None:

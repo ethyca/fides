@@ -6,10 +6,10 @@ from docker_nox import build_local
 
 @nox.session()
 @nox.parametrize("type", [nox.param("local", id="local"), nox.param("ci", id="ci")])
-def docs_build(session: nox.Session, type: str) -> None:
+def docs_build(session: nox.Session, build_type: str) -> None:
     """Build docs from the source code."""
     session.notify("teardown")
-    if type == "local":
+    if build_type == "local":
         build_local(session)
     run_shell = (*RUN, "python", "generate_docs.py", "docs/fides/docs/")
     session.run(*run_shell, external=True)

@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import os
 from unittest.mock import patch
 
@@ -8,7 +9,7 @@ from fidesctl.core.config import APISettings, get_config
 
 # Unit
 @pytest.mark.unit
-def test_get_config():
+def test_get_config() -> None:
     """Test that the actual config matches what the function returns."""
     config = get_config("tests/test_config.toml")
     assert config.user.user_id == "1"
@@ -17,7 +18,7 @@ def test_get_config():
 
 
 @pytest.mark.unit
-def test_default_config():
+def test_default_config() -> None:
     "Test building a config from default values."
     os.environ["FIDESCTL_CONFIG_PATH"] = ""
     config = get_config()
@@ -38,7 +39,7 @@ def test_default_config():
     clear=True,
 )
 @pytest.mark.unit
-def test_config_from_env_vars():
+def test_config_from_env_vars() -> None:
     "Test building a config from env vars."
     config = get_config()
     os.chdir("/fides")
@@ -49,7 +50,7 @@ def test_config_from_env_vars():
 
 
 @pytest.mark.unit
-def test_database_url_test_mode_disabled():
+def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "False"
     api_settings = APISettings(
         test_database_name="test_database_url", database_name="database_url"
@@ -60,7 +61,7 @@ def test_database_url_test_mode_disabled():
 
 
 @pytest.mark.unit
-def test_database_url_test_mode_enabled():
+def test_database_url_test_mode_enabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "True"
     api_settings = APISettings(
         test_database_name="test_database_url", database_name="database_url"

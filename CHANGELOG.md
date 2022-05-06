@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+* Added dependabot to keep dependencies updated
 * Include a warning for any orphan datasets as part of the `apply` command.
 
 ### Developer Experience
@@ -44,6 +45,7 @@ The types of changes are:
 ### Developer Experience
 
 * added isort as a CI check
+* Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
 
 ### Changed
 
