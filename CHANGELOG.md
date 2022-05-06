@@ -47,6 +47,7 @@ The types of changes are:
 
 * added isort as a CI check
 * Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
+* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
 
 ### Changed
 

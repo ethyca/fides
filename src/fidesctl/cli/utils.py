@@ -27,7 +27,7 @@ from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import check_response, echo_green, echo_red
 
 
-def check_server(cli_version: str, server_url: str) -> None:
+def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
     healthcheck_url = server_url + "/health"
@@ -40,10 +40,12 @@ def check_server(cli_version: str, server_url: str) -> None:
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
-    if str(server_version) == str(cli_version):
-        echo_green(
-            "Server is reachable and the client/server application versions match."
-        )
+    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
+    if normalize_version(server_version) == normalize_version(cli_version):
+        if not quiet:
+            echo_green(
+                "Server is reachable and the client/server application versions match."
+            )
     else:
         echo_red(
             f"Mismatched versions!\nServer Version: {server_version}\nCLI Version: {cli_version}"
