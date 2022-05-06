@@ -20,7 +20,7 @@ mssql_connector = "pyodbc==4.0.32"
 snowflake_connector = "snowflake-sqlalchemy==1.3.4"
 redshift_connector = "sqlalchemy-redshift==0.8.8"
 fastapi = "fastapi==0.75.2"
-uvicorn = "uvicorn==0.15"
+uvicorn = "uvicorn==0.17.6"
 aws_connector = "boto3==1.20.54"
 okta_connector = "okta==2.5.0"
 
