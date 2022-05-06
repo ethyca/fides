@@ -1,16 +1,21 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import os
-from typing import List
+from typing import Dict, Generator, List
 
 import pytest
 import sqlalchemy
+from py._path.local import LocalPath
 
 from fidesctl.core import api
 from fidesctl.core import dataset as _dataset
+from fidesctl.core.config import FidesctlConfig
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 
 
-def create_server_datasets(test_config, datasets: List[Dataset]):
+def create_server_datasets(
+    test_config: FidesctlConfig, datasets: List[Dataset]
+) -> None:
     for dataset in datasets:
         api.delete(
             url=test_config.cli.server_url,
@@ -26,7 +31,7 @@ def create_server_datasets(test_config, datasets: List[Dataset]):
         )
 
 
-def set_field_data_categories(datasets: List[Dataset], category: str):
+def set_field_data_categories(datasets: List[Dataset], category: str) -> None:
     for dataset in datasets:
         for collection in dataset.collections:
             for field in collection.fields:
@@ -35,7 +40,7 @@ def set_field_data_categories(datasets: List[Dataset], category: str):
 
 # Unit
 @pytest.mark.unit
-def test_create_db_datasets():
+def test_create_db_datasets() -> None:
     test_resource = {"ds": {"foo": ["1", "2"], "bar": ["4", "5"]}}
     expected_result = [
         Dataset(
@@ -86,7 +91,7 @@ def test_create_db_datasets():
 
 
 @pytest.mark.unit
-def test_find_uncategorized_dataset_fields_all_categorized():
+def test_find_uncategorized_dataset_fields_all_categorized() -> None:
     test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
     test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
     dataset = Dataset(
@@ -129,7 +134,7 @@ def test_find_uncategorized_dataset_fields_all_categorized():
 
 
 @pytest.mark.unit
-def test_find_uncategorized_dataset_fields_uncategorized_fields():
+def test_find_uncategorized_dataset_fields_uncategorized_fields() -> None:
     test_resource = {"foo": ["1", "2"]}
     test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
     existing_dataset = Dataset(
@@ -161,7 +166,7 @@ def test_find_uncategorized_dataset_fields_uncategorized_fields():
 
 
 @pytest.mark.unit
-def test_find_uncategorized_dataset_fields_missing_field():
+def test_find_uncategorized_dataset_fields_missing_field() -> None:
     test_resource = {"bar": ["4", "5"]}
     test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
     existing_dataset = Dataset(
@@ -190,7 +195,7 @@ def test_find_uncategorized_dataset_fields_missing_field():
 
 
 @pytest.mark.unit
-def test_find_uncategorized_dataset_fields_missing_collection():
+def test_find_uncategorized_dataset_fields_missing_collection() -> None:
     test_resource = {"foo": ["1", "2"], "bar": ["4", "5"]}
     test_resource_dataset = _dataset.create_db_dataset("ds", test_resource)
     existing_dataset = Dataset(
@@ -223,14 +228,14 @@ def test_find_uncategorized_dataset_fields_missing_collection():
 
 
 @pytest.mark.unit
-def test_unsupported_dialect_error():
+def test_unsupported_dialect_error() -> None:
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
     with pytest.raises(SystemExit):
         _dataset.generate_dataset_db(test_url, "test_file.yml", False)
 
 
 @pytest.mark.unit
-def test_get_dataset_resource_ids():
+def test_get_dataset_resource_ids() -> None:
     datasets = [
         Dataset(
             fides_key="okta_id_1",
@@ -238,7 +243,7 @@ def test_get_dataset_resource_ids():
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),
@@ -248,7 +253,7 @@ def test_get_dataset_resource_ids():
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_2",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_2",
+            description="Fides Generated Description for Okta Application: okta_label_2",
             data_categories=[],
             collections=[],
         ),
@@ -264,14 +269,14 @@ def test_get_dataset_resource_ids():
 
 
 @pytest.mark.unit
-def test_find_missing_datasets():
+def test_find_missing_datasets() -> None:
     okta_dataset_1 = Dataset(
         fides_key="okta_id_1",
         name="okta_id_1",
         fidesctl_meta=DatasetMetadata(
             resource_id="okta_id_1",
         ),
-        description=f"Fides Generated Description for Okta Application: okta_label_1",
+        description="Fides Generated Description for Okta Application: okta_label_1",
         data_categories=[],
         collections=[],
     )
@@ -281,7 +286,7 @@ def test_find_missing_datasets():
         fidesctl_meta=DatasetMetadata(
             resource_id="okta_id_2",
         ),
-        description=f"Fides Generated Description for Okta Application: okta_label_2",
+        description="Fides Generated Description for Okta Application: okta_label_2",
         data_categories=[],
         collections=[],
     )
@@ -384,7 +389,7 @@ TEST_DATABASE_PARAMETERS = {
 @pytest.mark.parametrize("database_type", TEST_DATABASE_PARAMETERS.keys())
 class TestDatabase:
     @pytest.fixture(scope="class", autouse=True)
-    def database_setup(self):
+    def database_setup(self) -> Generator:
         """
         Set up the Database for testing.
 
@@ -392,7 +397,7 @@ class TestDatabase:
         """
         for database_parameters in TEST_DATABASE_PARAMETERS.values():
             engine = sqlalchemy.create_engine(database_parameters.get("setup_url"))
-            with open(database_parameters.get("init_script_path"), "r") as query_file:
+            with open(database_parameters.get("init_script_path"), "r") as query_file:  # type: ignore
                 queries = [
                     query for query in query_file.read().splitlines() if query != ""
                 ]
@@ -401,20 +406,22 @@ class TestDatabase:
                 engine.execute(sqlalchemy.sql.text(query))
         yield
 
-    def test_get_db_tables(self, request, database_type):
+    def test_get_db_tables(self, request: Dict, database_type: str) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         engine = sqlalchemy.create_engine(database_parameters.get("url"))
         actual_result = _dataset.get_db_schemas(engine=engine)
         assert actual_result == database_parameters.get("expected_collection")
 
-    def test_generate_dataset(self, tmpdir, database_type):
+    def test_generate_dataset(self, tmpdir: LocalPath, database_type: str) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         actual_result = _dataset.generate_dataset_db(
             database_parameters.get("url"), f"{tmpdir}/test_file.yml", False
         )
         assert actual_result
 
-    def test_generate_dataset_passes_(self, test_config, database_type):
+    def test_generate_dataset_passes_(
+        self, test_config: FidesctlConfig, database_type: str
+    ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
@@ -429,7 +436,9 @@ class TestDatabase:
             headers=test_config.user.request_headers,
         )
 
-    def test_generate_dataset_coverage_failure(self, test_config, database_type):
+    def test_generate_dataset_coverage_failure(
+        self, test_config: FidesctlConfig, database_type: str
+    ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
@@ -444,7 +453,9 @@ class TestDatabase:
                 headers=test_config.user.request_headers,
             )
 
-    def test_dataset_coverage_manifest_passes(self, test_config, tmpdir, database_type):
+    def test_dataset_coverage_manifest_passes(
+        self, test_config: FidesctlConfig, tmpdir: LocalPath, database_type: str
+    ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
             database_parameters.get("expected_collection")
@@ -465,7 +476,7 @@ class TestDatabase:
 
 
 @pytest.mark.external
-def test_generate_dataset_okta(tmpdir, test_config):
+def test_generate_dataset_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
     actual_result = _dataset.generate_dataset_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
@@ -475,7 +486,9 @@ def test_generate_dataset_okta(tmpdir, test_config):
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_success(tmpdir, test_config):
+def test_scan_dataset_okta_success(
+    tmpdir: LocalPath, test_config: FidesctlConfig
+) -> None:
     file_name = f"{tmpdir}/test_file.yml"
     _dataset.generate_dataset_okta(
         file_name=file_name, include_null=False, org_url="https://dev-78908748.okta.com"
@@ -491,7 +504,7 @@ def test_scan_dataset_okta_success(tmpdir, test_config):
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_fail(tmpdir, test_config):
+def test_scan_dataset_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
     with pytest.raises(SystemExit):
         _dataset.scan_dataset_okta(
             manifest_dir="",

@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import pytest
 from pydantic import ValidationError
 
@@ -11,11 +12,11 @@ from fideslang.models import (
     PrivacyRule,
     System,
 )
-from fideslang.validation import FidesValidationError, check_valid_country_code
+from fideslang.validation import FidesValidationError
 
 
 @pytest.mark.unit
-def test_top_level_resource():
+def test_top_level_resource() -> None:
     DataCategory(
         organization_fides_key=1,
         fides_key="user",
@@ -26,7 +27,7 @@ def test_top_level_resource():
 
 
 @pytest.mark.unit
-def test_fides_key_doesnt_match_stated_parent_key():
+def test_fides_key_doesnt_match_stated_parent_key() -> None:
     with pytest.raises(FidesValidationError):
         DataCategory(
             organization_fides_key=1,
@@ -39,7 +40,7 @@ def test_fides_key_doesnt_match_stated_parent_key():
 
 
 @pytest.mark.unit
-def test_fides_key_matches_stated_parent_key():
+def test_fides_key_matches_stated_parent_key() -> None:
     DataCategory(
         organization_fides_key=1,
         fides_key="user.provided.identifiable.custom_test_data",
@@ -51,7 +52,7 @@ def test_fides_key_matches_stated_parent_key():
 
 
 @pytest.mark.unit
-def test_no_parent_key_but_fides_key_contains_parent_key():
+def test_no_parent_key_but_fides_key_contains_parent_key() -> None:
     with pytest.raises(FidesValidationError):
         DataCategory(
             organization_fides_key=1,
@@ -63,7 +64,7 @@ def test_no_parent_key_but_fides_key_contains_parent_key():
 
 
 @pytest.mark.unit
-def test_create_valid_data_category():
+def test_create_valid_data_category() -> None:
     DataCategory(
         organization_fides_key=1,
         fides_key="user.provided.identifiable.custom_test_data",
@@ -75,7 +76,7 @@ def test_create_valid_data_category():
 
 
 @pytest.mark.unit
-def test_circular_dependency_data_category():
+def test_circular_dependency_data_category() -> None:
     with pytest.raises(FidesValidationError):
         DataCategory(
             organization_fides_key=1,
@@ -88,7 +89,7 @@ def test_circular_dependency_data_category():
 
 
 @pytest.mark.unit
-def test_create_valid_data_use():
+def test_create_valid_data_use() -> None:
     DataUse(
         organization_fides_key=1,
         fides_key="provide.system",
@@ -100,7 +101,7 @@ def test_create_valid_data_use():
 
 
 @pytest.mark.unit
-def test_circular_dependency_data_use():
+def test_circular_dependency_data_use() -> None:
     with pytest.raises(FidesValidationError):
         DataUse(
             organization_fides_key=1,
@@ -114,41 +115,41 @@ def test_circular_dependency_data_use():
 
 @pytest.mark.unit
 @pytest.mark.parametrize("fides_key", ["foo_bar", "foo-bar", "foo.bar", "foo_bar_8"])
-def test_fides_model_valid(fides_key: str):
+def test_fides_model_valid(fides_key: str) -> None:
     fides_key = FidesModel(fides_key=fides_key, name="Foo Bar")
     assert fides_key
 
 
 @pytest.mark.unit
 @pytest.mark.parametrize("fides_key", ["foo/bar", "foo%bar", "foo^bar"])
-def test_fides_model_fides_key_invalid(fides_key):
+def test_fides_model_fides_key_invalid(fides_key: str) -> None:
     "Check for a bunch of different possible bad characters here."
     with pytest.raises(FidesValidationError):
         FidesModel(fides_key=fides_key)
 
 
 @pytest.mark.unit
-def test_valid_privacy_rule():
+def test_valid_privacy_rule() -> None:
     privacy_rule = PrivacyRule(matches="ANY", values=["foo_bar"])
     assert privacy_rule
 
 
 @pytest.mark.unit
-def test_invalid_fides_key_privacy_rule():
+def test_invalid_fides_key_privacy_rule() -> None:
     with pytest.raises(FidesValidationError):
         PrivacyRule(matches="ANY", values=["foo^bar"])
     assert True
 
 
 @pytest.mark.unit
-def test_invalid_matches_privacy_rule():
+def test_invalid_matches_privacy_rule() -> None:
     with pytest.raises(ValidationError):
         PrivacyRule(matches="AN", values=["foo_bar"])
     assert True
 
 
 @pytest.mark.unit
-def test_valid_policy_rule():
+def test_valid_policy_rule() -> None:
     assert PolicyRule(
         organization_fides_key=1,
         policyId=1,
@@ -163,7 +164,7 @@ def test_valid_policy_rule():
 
 
 @pytest.mark.unit
-def test_valid_policy():
+def test_valid_policy() -> None:
     Policy(
         organization_fides_key=1,
         fides_key="test_policy",
@@ -176,7 +177,7 @@ def test_valid_policy():
 
 
 @pytest.mark.unit
-def test_create_valid_system():
+def test_create_valid_system() -> None:
     System(
         organization_fides_key=1,
         registryId=1,
@@ -200,7 +201,7 @@ def test_create_valid_system():
 
 
 @pytest.mark.unit
-def test_circular_dependency_system():
+def test_circular_dependency_system() -> None:
     with pytest.raises(FidesValidationError):
         System(
             organization_fides_key=1,
@@ -226,7 +227,7 @@ def test_circular_dependency_system():
 
 @pytest.mark.unit
 @pytest.mark.parametrize("country_code", ["United States", "US", "usa"])
-def test_invalid_country_identifier(country_code: str):
+def test_invalid_country_identifier(country_code: str) -> None:
     "Validate some invalid country identifiers raise an error"
     with pytest.raises(FidesValidationError):
         System(
@@ -253,7 +254,7 @@ def test_invalid_country_identifier(country_code: str):
 
 @pytest.mark.unit
 @pytest.mark.parametrize("country_code", ["CAN", "USA", "GBR"])
-def test_valid_country_identifier(country_code: str):
+def test_valid_country_identifier(country_code: str) -> None:
     "Validates usage of alpha-3 codes per ISO 3166"
     System(
         organization_fides_key=1,
