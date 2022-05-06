@@ -118,6 +118,12 @@ class ReviewPrivacyRequestIds(BaseSchema):
     request_ids: List[str] = Field(..., max_items=50)
 
 
+class DenyPrivacyRequests(ReviewPrivacyRequestIds):
+    """Pass in a list of privacy request ids and rejection reason"""
+
+    reason: Optional[str]
+
+
 class BulkPostPrivacyRequests(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create of PrivacyRequest responses."""
 
