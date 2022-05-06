@@ -30,6 +30,7 @@ The types of changes are:
 
 * Updated `Release Steps`
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
+* Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
 
 ### Fixed
 
