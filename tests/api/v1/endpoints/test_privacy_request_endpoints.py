@@ -33,6 +33,7 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_REVIEW,
 )
 from fidesops.core.config import config
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.privacy_request import (
     PrivacyRequest,
@@ -940,6 +941,7 @@ class TestGetPrivacyRequests:
         assert first_row["Request status"] == "approved"
         assert first_row["Reviewer"] == user.id
         assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
+        assert first_row["Denial reason"] == ""
 
 
 class TestGetExecutionLogs:
@@ -1347,7 +1349,7 @@ class TestDenyPrivacyRequest:
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
     )
-    def test_deny_privacy_request(
+    def test_deny_privacy_request_without_denial_reason(
         self,
         submit_mock,
         db,
@@ -1378,6 +1380,56 @@ class TestDenyPrivacyRequest:
         assert response_body["succeeded"][0]["id"] == privacy_request.id
         assert response_body["succeeded"][0]["reviewed_at"] is not None
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
+        denial_audit_log: AuditLog = AuditLog.filter(db=db, conditions=(
+            (AuditLog.privacy_request_id == privacy_request.id) &
+            (AuditLog.user_id == user.id)
+        )).first()
+
+        assert denial_audit_log.message is None
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was denied
+
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
+    def test_deny_privacy_request_with_denial_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {"Authorization": "Bearer " + generate_jwe(json.dumps(payload))}
+        denial_reason = "Your request was denied because reasons"
+        body = {"request_ids": [privacy_request.id], "reason": denial_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "denied"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+        assert response_body["succeeded"][0]["reviewed_at"] is not None
+        assert response_body["succeeded"][0]["reviewed_by"] == user.id
+        denial_audit_log: AuditLog = AuditLog.filter(db=db, conditions=(
+            (AuditLog.privacy_request_id == privacy_request.id) &
+            (AuditLog.user_id == user.id)
+        )).first()
+
+        assert denial_audit_log.message == denial_reason
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 

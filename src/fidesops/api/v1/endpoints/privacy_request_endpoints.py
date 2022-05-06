@@ -2,7 +2,7 @@ import csv
 import io
 import logging
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
@@ -35,6 +35,7 @@ from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal
+from fidesops.models.audit_log import AuditLog, AuditLogAction
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -57,6 +58,7 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
+    DenyPrivacyRequests,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
@@ -213,7 +215,9 @@ def create_privacy_request(
     )
 
 
-def privacy_request_csv_download(privacy_request_query: Query) -> StreamingResponse:
+def privacy_request_csv_download(
+    db: Session, privacy_request_query: Query
+) -> StreamingResponse:
     """Download privacy requests as CSV for Admin UI"""
     f = io.StringIO()
     csv_file = csv.writer(f)
@@ -226,10 +230,24 @@ def privacy_request_csv_download(privacy_request_query: Query) -> StreamingRespo
             "Request status",
             "Reviewer",
             "Time approved/denied",
+            "Denial reason",
         ]
     )
+    privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
+    denial_audit_log_query: Query = db.query(AuditLog).filter(
+        AuditLog.action == AuditLogAction.denied.value,
+        AuditLog.privacy_request_id.in_(privacy_request_ids),
+    )
+    denial_audit_logs: Dict[str, str] = {
+        r.privacy_request_id: r.message for r in denial_audit_log_query
+    }
 
     for pr in privacy_request_query:
+        denial_reason = (
+            denial_audit_logs[pr.id]
+            if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
+            else None
+        )
         csv_file.writerow(
             [
                 pr.created_at,
@@ -238,6 +256,7 @@ def privacy_request_csv_download(privacy_request_query: Query) -> StreamingRespo
                 pr.status.value if pr.status else None,
                 pr.reviewed_by,
                 pr.reviewed_at,
+                denial_reason,
             ]
         )
     f.seek(0)
@@ -349,7 +368,7 @@ def get_request_status(
     if download_csv:
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
-        return privacy_request_csv_download(query)
+        return privacy_request_csv_download(db, query)
 
     # Conditionally embed execution log details in the response.
     if verbose:
@@ -628,18 +647,30 @@ def deny_privacy_request(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: DenyPrivacyRequests,
 ) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
 
-    def _process_request(privacy_request: PrivacyRequest, _: FidesopsRedis) -> None:
+    def _process_denial_request(
+        privacy_request: PrivacyRequest, _: FidesopsRedis
+    ) -> None:
         """Method for how to process requests - denied"""
+
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": user_id,
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.denied,
+                "message": privacy_requests.reason,
+            },
+        )
         privacy_request.status = PrivacyRequestStatus.denied
         privacy_request.reviewed_at = datetime.utcnow()
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
     return review_privacy_request(
-        db, cache, privacy_requests.request_ids, _process_request
+        db, cache, privacy_requests.request_ids, _process_denial_request
     )

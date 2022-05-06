@@ -880,7 +880,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"request_ids\": [\"{{privacy_request_id}}\", \"bad_id\"]}",
+							"raw": "{\"request_ids\": [\"{{privacy_request_id}}\", \"bad_id\"], \"reason\": \"{{denial_reason}}\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3412,6 +3412,10 @@
 		},
 		{
 			"key": "privacy_request_id",
+			"value": ""
+		},
+		{
+			"key": "denial_reason",
 			"value": ""
 		},
 		{

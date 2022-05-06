@@ -131,6 +131,16 @@ class PrivacyRequest(Base):
         primaryjoin="foreign(ExecutionLog.privacy_request_id)==PrivacyRequest.id",
     )
 
+    # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
+    # a privacy_request is deleted.  We want to retain for record-keeping.
+    audit_logs = relationship(
+        "AuditLog",
+        backref="privacy_request",
+        lazy="dynamic",
+        passive_deletes="all",
+        primaryjoin="foreign(AuditLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
     reviewer = relationship(
         "FidesopsUser", backref=backref("privacy_request", passive_deletes=True)
     )

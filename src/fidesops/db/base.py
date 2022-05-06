@@ -9,4 +9,5 @@ from fidesops.models.policy import Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
 from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
