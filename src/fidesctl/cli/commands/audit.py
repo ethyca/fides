@@ -1,4 +1,4 @@
-# """Contains the export group of CLI commands for Fidesctl."""
+# """Contains the audit group of CLI commands for Fidesctl."""
 import click
 
 from fidesctl.cli.utils import with_analytics

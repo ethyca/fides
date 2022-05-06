@@ -29,7 +29,7 @@ def audit_systems(
         audit_findings = audit_findings + new_findings
 
     if audit_findings > 0:
-        print(f"{audit_findings} issues were detected in auditing system completeness.")
+        print(f"{audit_findings} issue(s) were detected in auditing system completeness.")
     else:
         echo_green("All systems go!")
 
