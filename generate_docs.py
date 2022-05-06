@@ -5,8 +5,6 @@ import json
 import sys
 
 from fidesapi.main import app
-from fidesctl.core.config import get_config
-
 
 def generate_openapi(outfile_dir: str) -> None:
     "Write out an openapi.json file for the API."
