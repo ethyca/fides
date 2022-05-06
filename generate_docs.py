@@ -19,19 +19,6 @@ def generate_openapi(outfile_dir: str) -> None:
         print(f"Exported OpenAPI JSON from fidesapi to '{outfile_path}'")
 
 
-def generate_config_docs(outfile_dir: str) -> None:
-    "Write out a json schema for the fidesctl config."
-
-    outfile_name = "schemas/config_schema.json"
-    outfile_path = f"{outfile_dir}/{outfile_name}"
-    print(f"Generating Config JSON Schema and writing to '{outfile_path}'...")
-    with open(outfile_path, "w") as outfile:
-        config_schema = get_config().schema_json(indent=2)
-        outfile.write(config_schema)
-        print(f"Exported Config JSON Schema '{outfile_path}'")
-
-
 if __name__ == "__main__":
     outfile_dir = sys.argv[1]
     generate_openapi(outfile_dir)
-    generate_config_docs(outfile_dir)
