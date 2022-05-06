@@ -20,7 +20,7 @@ def audit_system(
     ctx: click.Context,
 ) -> None:
     """
-    Export a system in a data map format.
+    Audit Systems for attributes that are required for a complete data map.
     """
     config = ctx.obj["CONFIG"]
     _audit.audit_systems(
@@ -37,7 +37,7 @@ def audit_organizations(
     ctx: click.Context,
 ) -> None:
     """
-    Export a system in a data map format.
+    Audit Organizations for attributes required for a complete data map.
     """
     config = ctx.obj["CONFIG"]
     _audit.audit_organizations(
