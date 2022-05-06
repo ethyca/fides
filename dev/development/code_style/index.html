@@ -1696,14 +1696,14 @@ You're not viewing the latest version.
 </ol>
 <p><strong>NOTE</strong>: A Python interpreter must be available from wherever the git commands are being run, as this is required to run the <code>pre-commit</code> package.</p>
 <h2 id="ci-checks">CI Checks</h2>
-<p>CI checks are stored as targets within the Makefile, and can be run from the top-level <code>fides</code> directory with the following pattern:</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Pattern</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>make &lt;lowercased_name&gt;
+<p>CI checks are stored as targets within the Noxfile, and can be run from the top-level <code>fides</code> directory with the following pattern:</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Pattern</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox -s &lt;lowercased_name&gt;
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Examples</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>make black
-make mypy
-make xenon
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>nox -s black
+nox -s mypy
+nox -s xenon
 </code></pre></div></td></tr></table></div>
 <h3 id="black-formatting">Black formatting</h3>
 <p>Fidesctl's code is formatted using the <a href="https://github.com/ambv/black">black</a> style. This style is checked in a CI step, and merges to master are prevented if code does not conform.</p>

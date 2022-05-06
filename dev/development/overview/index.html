@@ -1533,9 +1533,9 @@ You're not viewing the latest version.
 <li>When you open a new VS Code shell, it will be inside of the <code>fidesctl</code> container, and you'll have access to all of the <code>fidesctl</code> commands as well as any Python commands like <code>pytest</code>, <code>black</code>, <code>mypy</code>, etc.</li>
 </ol>
 </li>
-<li>If you're using an editor besides VS Code, then the next best way to work on Fidesctl is by utilizing the <code>Makefile</code> commands:<ol>
-<li>Make sure that you have <code>docker</code>, <code>docker-compose</code> and <code>make</code> installed.</li>
-<li>Once you have everything set up, run <code>make cli</code> to spin up a shell within the <code>fidesctl</code> container.</li>
+<li>If you're using an editor besides VS Code, then the next best way to work on Fidesctl is by utilizing the <code>Noxfile</code> commands:<ol>
+<li>Make sure that you have <code>docker</code>, <code>docker-compose</code> and <code>nox</code> (<code>pip install nox</code>) installed.</li>
+<li>Once you have everything set up, run <code>nox -s cli</code> to spin up a shell within the <code>fidesctl</code> container.</li>
 <li>You can and should run all of your various development commands from within this shell, such as <code>pytest</code>, <code>black</code>, etc.</li>
 </ol>
 </li>

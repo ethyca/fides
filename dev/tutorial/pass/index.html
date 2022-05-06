@@ -1505,7 +1505,7 @@ You're not viewing the latest version.
 <p>By default, Google Analytics disables "IP Anonymization" (see <a href="https://developers.google.com/analytics/devguides/collection/gtagjs/ip-anonymization">the documentation</a> for more information). The "Minimize User Identifiable Data" fidesctl Policy resource created earlier in this tutorial is configured to reject data collection of this nature.</p>
 <hr />
 <h2 id="pop-quiz">POP QUIZ</h2>
-<p>There are two options to remedy this situation, and to get the <code>make fidesctl-evaluate</code> command to pass. Which option is best?</p>
+<p>There are two options to remedy this situation, and to get the <code>nox -s fidesctl</code> command to pass. Which option is best?</p>
 <ol>
 <li>Modify the "Minimize User Identifiable Data" policy resource to accept data collection of this nature</li>
 <li>Modify the Google Analytics implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy</li>
@@ -1546,7 +1546,7 @@ You're not viewing the latest version.
 </code></pre></div></td></tr></table></div>
 <p>By removing the final <code>identified</code> key of the Fides taxonomy, the updated nature of the data collection practices used in this System resource now aligns with the actual behavior of the updated Google Analytics script.</p>
 <h2 id="evaluate-the-fidesctl-policies">Evaluate the Fidesctl Policies</h2>
-<p>Execute the <code>make fidesctl-evaluate</code> command one final time. You should see the following output:</p>
+<p>Execute the <code>nox -s fidesctl</code> command one final time. You should see the following output:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
