@@ -715,13 +715,6 @@ DEFAULT_TAXONOMY = Taxonomy(
             parent_key="personalize",
         ),
         DataUse(
-            fides_key="advertising.third_party",
-            organization_fides_key="default_organization",
-            name="Third Party Advertising",
-            description="The promotion of products or services targeting users based on processing of specific categories of data acquired from third party sources.",
-            parent_key="advertising",
-        ),
-        DataUse(
             fides_key="advertising.first_party.contextual",
             organization_fides_key="default_organization",
             name="First Party Contextual Advertising",
