@@ -34,7 +34,7 @@ def test_check_server_version_comparisons(
     cli_version: str,
     expected_output: str,
     quiet: bool,
-):
+) -> None:
     """Check that comparing versions works"""
     fake_url = "http://fake_address:8080"
     requests_mock.get(f"{fake_url}/health", json={"version": server_version})
