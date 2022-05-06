@@ -40,7 +40,8 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
-    if str(server_version) == str(cli_version).replace(".dirty", "", 1):
+    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
+    if normalize_version(server_version) == normalize_version(cli_version):
         if not quiet:
             echo_green(
                 "Server is reachable and the client/server application versions match."

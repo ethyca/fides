@@ -24,6 +24,12 @@ def test_check_server_bad_ping() -> None:
             "application versions match",
             False,
         ),
+        (
+            "1.6.0+7.ge953df5.dirty",
+            "1.6.0+7.ge953df5",
+            "application versions match",
+            False,
+        ),
         ("1.6.0+7.ge953df5", "1.6.0+7.ge953df5.dirty", None, True),
     ],
 )
