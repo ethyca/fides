@@ -1,4 +1,6 @@
 """Contains the nox sessions used during CI checks."""
+from time import sleep
+
 import nox
 from constants_nox import (
     CI_ARGS,
@@ -130,7 +132,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    session.run("/bin/sleep", "10", external=True)
+    sleep(10)
     run_command = (
         *RUN,
         "fidesctl",
