@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from fidesctl.core.api_helpers import get_server_resource, list_server_resources
 from fidesctl.core.utils import echo_green, echo_red
-from fideslang.models import System
+from fideslang.models import DataSubject, DataUse, System
 
 
 def audit_systems(
@@ -22,6 +22,7 @@ def audit_systems(
     system_resources = list_server_resources(
         url, headers, "system", exclude_keys=exclude_keys
     )
+
     audit_findings = 0
     for system in system_resources:
         print(f"Auditing System: {system.name}")
@@ -29,7 +30,9 @@ def audit_systems(
         audit_findings = audit_findings + new_findings
 
     if audit_findings > 0:
-        print(f"{audit_findings} issue(s) were detected in auditing system completeness.")
+        print(
+            f"{audit_findings} issue(s) were detected in auditing system completeness."
+        )
     else:
         echo_green("All systems go!")
 
@@ -43,10 +46,6 @@ def validate_system_attributes(
     Validates one or multiple attributes are set on a system
     """
 
-    # data_protection_impacts = ["is_required", "progress", "link"]
-    data_use_list = ["recipients", "legal_basis", "special_category"]
-    data_subject_list = ["rights", "automated_decisions_or_profiling"]
-
     new_findings = 0
     if system.administrating_department == "Not defined":
         echo_red(
@@ -58,22 +57,43 @@ def validate_system_attributes(
         data_use = get_server_resource(
             url, "data_use", privacy_declaration.data_use, headers
         )
-        for attribute in data_use_list:
-            if getattr(data_use, attribute) is None:
-                echo_red(f"{data_use.fides_key} missing {attribute} in {system.name}.")
-                new_findings += 1
+        data_use_findings = audit_data_use_attributes(data_use, system.name)
+        new_findings = new_findings + data_use_findings
         for data_subject_fides_key in privacy_declaration.data_subjects:
             data_subject = get_server_resource(
                 url, "data_subject", data_subject_fides_key, headers
             )
-            for attribute in data_subject_list:
-                if getattr(data_subject, attribute) is None:
-                    echo_red(
-                        f"{data_subject.fides_key} missing {attribute} in {system.name}."
-                    )
-                    new_findings += 1
-
+            data_subject_findings = audit_data_subject_attributes(
+                data_subject, system.name
+            )
+            new_findings = new_findings + data_subject_findings
     return new_findings
+
+
+def audit_data_use_attributes(data_use: DataUse, system_name: str) -> int:
+    """
+    Audits the extended attributes for a DataUse
+    """
+    data_use_list = ["recipients", "legal_basis", "special_category"]
+    findings = 0
+    for attribute in data_use_list:
+        if getattr(data_use, attribute) is None:
+            echo_red(f"{data_use.fides_key} missing {attribute} in {system_name}.")
+            findings += 1
+    return findings
+
+
+def audit_data_subject_attributes(data_subject: DataSubject, system_name: str) -> int:
+    """
+    Audits the extended attributes for a DataSubject
+    """
+    data_subject_list = ["rights", "automated_decisions_or_profiling"]
+    findings = 0
+    for attribute in data_subject_list:
+        if getattr(data_subject, attribute) is None:
+            echo_red(f"{data_subject.fides_key} missing {attribute} in {system_name}.")
+            findings += 1
+    return findings
 
 
 def audit_organizations(
@@ -95,7 +115,15 @@ def audit_organizations(
         "representative",
         "security_policy",
     ]
+    audit_findings = 0
     for organization in organization_resources:
         for attribute in organization_attributes:
             if getattr(organization, attribute) is None:
                 echo_red(f"{organization.name} missing {attribute}.")
+                audit_findings += 1
+    if audit_findings > 0:
+        print(
+            f"{audit_findings} issue(s) were detected in auditing organization completeness."
+        )
+    else:
+        echo_green("All organizations fully compliant!")
