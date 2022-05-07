@@ -20,6 +20,7 @@ from fidesops.common_exceptions import (
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
+    DrpActionValidationError,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
@@ -114,9 +115,14 @@ def create_or_update_policies(
                     "name": policy_data["name"],
                     "key": policy_data.get("key"),
                     "client_id": client.id,
+                    "drp_action": policy_data.get("drp_action"),
                 },
             )
-        except KeyOrNameAlreadyExists as exc:
+        except (
+            KeyOrNameAlreadyExists,
+            DrpActionValidationError,
+            IntegrityError,
+        ) as exc:
             logger.warning("Create/update failed for policy: %s", exc)
             failure = {
                 "message": exc.args[0],

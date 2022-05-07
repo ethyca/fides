@@ -176,6 +176,20 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         return cls.persist_obj(db, db_obj)
 
     @classmethod
+    def get_by_key_or_id(
+        cls, db: Session, *, data: Dict[str, Any]
+    ) -> Optional[FidesopsBase]:
+        """Retrieves db object by id, if provided, otherwise attempts by key"""
+        db_obj = None
+        if data.get("id") is not None:
+            # If `id` has been included in `data`, preference that
+            db_obj = cls.get(db=db, id=data["id"])
+        elif data.get("key") is not None:
+            # Otherwise, try with `key`
+            db_obj = cls.get_by(db=db, field="key", value=data["key"])
+        return db_obj
+
+    @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
         """
         Create an object, or update the existing version. There's an edge case where
@@ -184,19 +198,11 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         and a `KeyOrNameAlreadyExists` error will be thrown. If neither `key`, nor `id` are
         passed in, leave `db_obj` as None and assume we are creating a new object.
         """
-        db_obj = None
-        if data.get("id") is not None:
-            # If `id` has been included in `data`, preference that
-            db_obj = cls.get(db=db, id=data["id"])
-        elif data.get("key") is not None:
-            # Otherwise, try with `key`
-            db_obj = cls.get_by(db=db, field="key", value=data["key"])
-
+        db_obj: FidesopsBase = cls.get_by_key_or_id(db=db, data=data)
         if db_obj:
             db_obj.update(db=db, data=data)
         else:
             db_obj = cls.create(db=db, data=data)
-
         return db_obj
 
     @classmethod
