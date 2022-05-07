@@ -60,6 +60,21 @@ class ActionType(EnumType):
     update = "update"
 
 
+class DrpAction(EnumType):
+    """
+    Enum to hold valid DRP actions. For more details, see:
+    https://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions
+    """
+
+    access = "access"
+    deletion = "deletion"
+    # below are not supported
+    sale_opt_out = "sale:opt_out"
+    sale_opt_in = "sale:opt_in"
+    access_categories = "access:categories"
+    access_specific = "access:specific"
+
+
 PseudonymizationPolicy = SupportedMaskingStrategies
 """
 *Deprecated*: The method by which to pseudonymize data.
@@ -70,6 +85,21 @@ when project migrations are consolidated.
 """
 
 
+def _validate_drp_action(drp_action: Optional[str]) -> None:
+    """Check that DRP action is supported"""
+    if not drp_action:
+        return
+    if drp_action in [
+        DrpAction.sale_opt_in.value,
+        DrpAction.sale_opt_out.value,
+        DrpAction.access_categories.value,
+        DrpAction.access_specific.value,
+    ]:
+        raise common_exceptions.DrpActionValidationError(
+            f"{drp_action} action is not supported at this time."
+        )
+
+
 def _validate_rule(
     action_type: Optional[str],
     storage_destination_id: Optional[str],
@@ -78,22 +108,20 @@ def _validate_rule(
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
         raise common_exceptions.RuleValidationError("action_type is required.")
-
-    if action_type == ActionType.erasure.value and storage_destination_id is not None:
-        raise common_exceptions.RuleValidationError(
-            "Erasure Rules cannot have storage destinations."
-        )
-
-    if action_type == ActionType.erasure.value and masking_strategy is None:
-        raise common_exceptions.RuleValidationError(
-            "Erasure Rules must have masking strategies."
-        )
-
-    if action_type == ActionType.access.value and storage_destination_id is None:
-        raise common_exceptions.RuleValidationError(
-            "Access Rules must have a storage destination."
-        )
-
+    if action_type == ActionType.erasure.value:
+        if storage_destination_id is not None:
+            raise common_exceptions.RuleValidationError(
+                "Erasure Rules cannot have storage destinations."
+            )
+        if masking_strategy is None:
+            raise common_exceptions.RuleValidationError(
+                "Erasure Rules must have masking strategies."
+            )
+    if action_type == ActionType.access.value:
+        if storage_destination_id is None:
+            raise common_exceptions.RuleValidationError(
+                "Access Rules must have a storage destination."
+            )
     if action_type in [ActionType.consent.value, ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
             f"{action_type} Rules are not supported at this time."
@@ -105,6 +133,7 @@ class Policy(Base):
 
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
+    drp_action = Column(EnumColumn(DrpAction), index=True, unique=True, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -114,6 +143,19 @@ class Policy(Base):
         ClientDetail,
         backref="policies",
     )  # Which client created the Policy
+
+    @classmethod
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+        """Overrides base create or update to add custom error for drp action already exists"""
+        db_obj = cls.get_by_key_or_id(db=db, data=data)
+        if hasattr(cls, "drp_action"):
+            data["drp_action"] = data.get("drp_action", None)
+            _validate_drp_action(data["drp_action"])
+        if db_obj:
+            db_obj.update(db=db, data=data)
+        else:
+            db_obj = cls.create(db=db, data=data)
+        return db_obj
 
     def delete(self, db: Session) -> Optional[FidesopsBase]:
         """Cascade delete all rules on deletion of a Policy."""
@@ -419,7 +461,7 @@ class RuleTarget(Base):
         """Validate data_category on object update."""
         updated_data_category = data.get("data_category")
         if data.get("name") is None:
-            # Don't pass explciit `None` through for `name` because the field
+            # Don't pass explcit `None` through for `name` because the field
             # is non-nullable
             del data["name"]
 

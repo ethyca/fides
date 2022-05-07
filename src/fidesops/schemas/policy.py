@@ -3,6 +3,7 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.models.policy import (
     ActionType,
+    DrpAction,
 )
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
@@ -86,12 +87,20 @@ class Policy(BaseSchema):
 
     name: str
     key: Optional[FidesOpsKey]
+    drp_action: Optional[DrpAction]
+
+    class Config:
+        """Populate models with the raw value of enum fields, rather than the enum itself"""
+
+        use_enum_values = True
+        orm_mode = True
 
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
     rules: Optional[List[RuleResponse]]
+    drp_action: Optional[DrpAction]
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
