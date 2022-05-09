@@ -84,6 +84,9 @@ ENV PYTHONUNBUFFERED=TRUE
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=TRUE
 
+# Make a static files directory
+RUN mkdir -p src/fidesapi/build/static
+
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
 
@@ -107,5 +110,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
 
 # Copy frontend build over
-RUN mkdir -p src/fidesapi/build/static
 COPY --from=frontend /tmp/index.html src/fidesapi/build/static/
