@@ -112,10 +112,8 @@ class AuthenticatedClient:
         if not response.ok:
             if ignore_errors:
                 logger.info(
-                    f"Ignoring response with status code {response.status_code}."
+                    f"Ignoring errors on response with status code {response.status_code} as configured."
                 )
-                response = Response()
-                response._content = b"{}"  # pylint: disable=W0212
                 return response
 
             raise ClientUnsuccessfulException(status_code=response.status_code)
@@ -253,19 +251,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
-        response: Response = client.send(prepared_request, saas_request.ignore_errors)
-
-        # unwrap response using data_path
-        try:
-            response_data = (
-                pydash.get(response.json(), saas_request.data_path)
-                if saas_request.data_path
-                else response.json()
-            )
-        except JSONDecodeError:
-            raise FidesopsException(
-                f"Unable to parse JSON response from {saas_request.path}"
-            )
+        response: Response = client.send(prepared_request, saas_request)
+        response = self._handle_errored_response(saas_request, response)
+        response_data = self._unwrap_response_data(saas_request, response)
 
         # process response and add to rows
         rows = self.process_response_data(
@@ -388,3 +376,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def close(self) -> None:
         """Not required for this type"""
+
+    @staticmethod
+    def _handle_errored_response(
+        saas_request: SaaSRequest, response: Response
+    ) -> Response:
+        """
+        Checks if given Response is an error and if SaasRequest is configured to ignore errors.
+        If so, replaces given Response with empty dictionary.
+        """
+        if saas_request.ignore_errors and not response.ok:
+            logger.info(
+                f"Ignoring and clearing errored response with status code {response.status_code}."
+            )
+            response = Response()
+            response._content = b"{}"  # pylint: disable=W0212
+        return response
+
+    @staticmethod
+    def _unwrap_response_data(saas_request: SaaSRequest, response: Response) -> Any:
+        """
+        Unwrap given Response using data_path in the given SaasRequest
+        """
+        try:
+            return (
+                pydash.get(response.json(), saas_request.data_path)
+                if saas_request.data_path
+                else response.json()
+            )
+        except JSONDecodeError:
+            raise FidesopsException(
+                f"Unable to parse JSON response from {saas_request.path}"
+            )
