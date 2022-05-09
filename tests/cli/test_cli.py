@@ -96,6 +96,22 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 
 
 @pytest.mark.integration
+def test_audit_organizations(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "audit", "organizations"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_audit_systems(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "audit", "systems"])
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_get(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,

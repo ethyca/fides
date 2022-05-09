@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from fidesctl.core.api_helpers import get_server_resource, list_server_resources
 from fidesctl.core.utils import echo_green, echo_red
-from fideslang.models import DataSubject, DataUse, System
+from fideslang.models import DataSubject, DataUse, Organization, System
 
 
 def audit_systems(
@@ -66,7 +66,7 @@ def validate_system_attributes(
             data_subject_findings = audit_data_subject_attributes(
                 data_subject, system.name
             )
-            new_findings = new_findings + data_subject_findings
+            new_findings += data_subject_findings
     return new_findings
 
 
@@ -109,6 +109,24 @@ def audit_organizations(
         url, headers, "organization", exclude_keys=exclude_keys
     )
 
+    audit_findings = 0
+    for organization in organization_resources:
+        new_findings = audit_organization_attributes(organization)
+        audit_findings += new_findings
+    if audit_findings > 0:
+        print(
+            f"{audit_findings} issue(s) were detected in auditing organization completeness."
+        )
+    else:
+        echo_green("All organizations fully compliant!")
+
+
+def audit_organization_attributes(organization: Organization) -> int:
+    """
+    Audits the list of specified attributes is set properly on the Organization.
+    returns the count of findings
+    """
+
     organization_attributes = [
         "controller",
         "data_protection_officer",
@@ -116,14 +134,9 @@ def audit_organizations(
         "security_policy",
     ]
     audit_findings = 0
-    for organization in organization_resources:
-        for attribute in organization_attributes:
-            if getattr(organization, attribute) is None:
-                echo_red(f"{organization.name} missing {attribute}.")
-                audit_findings += 1
-    if audit_findings > 0:
-        print(
-            f"{audit_findings} issue(s) were detected in auditing organization completeness."
-        )
-    else:
-        echo_green("All organizations fully compliant!")
+    for attribute in organization_attributes:
+        if getattr(organization, attribute) is None:
+            echo_red(f"{organization.name} missing {attribute}.")
+            audit_findings += 1
+
+    return audit_findings
