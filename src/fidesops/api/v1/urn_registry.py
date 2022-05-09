@@ -76,6 +76,7 @@ SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 # User URLs
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
+USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

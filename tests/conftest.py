@@ -115,8 +115,22 @@ def oauth_client(db: Session) -> Generator:
     client.delete(db)
 
 
+def generate_auth_header_for_user(user, scopes):
+    payload = {
+        JWE_PAYLOAD_SCOPES: scopes,
+        JWE_PAYLOAD_CLIENT_ID: user.client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload))
+    return {"Authorization": "Bearer " + jwe}
+
+
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client):
+    return _generate_auth_header(oauth_client)
+
+
+def _generate_auth_header(oauth_client):
     client_id = oauth_client.id
 
     def _build_jwt(scopes: List[str]):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.mime import application
 from typing import List
 import json
 
@@ -29,7 +30,9 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
     USER_READ,
+    USER_UPDATE,
     USER_DELETE,
+    USER_PASSWORD_RESET,
     SCOPE_REGISTRY,
     PRIVACY_REQUEST_READ,
 )
@@ -41,6 +44,8 @@ from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_ISSUED_AT,
 )
+
+from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
 
@@ -471,6 +476,170 @@ class TestGetUser:
         assert user_data["created_at"] == application_user.created_at.isoformat()
         assert user_data["first_name"] == application_user.first_name
         assert user_data["last_name"] == application_user.last_name
+
+
+class TestUpdateUser:
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_different_users_names(
+        self,
+        api_client,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == user.username
+        assert user_data["id"] == user.id
+        assert user_data["created_at"] == user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
+
+    def test_update_user_names(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_UPDATE],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{application_user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
+
+
+class TestUpdateUserPassword:
+    @pytest.fixture(scope="function")
+    def url_no_id(self) -> str:
+        return V1_URL_PREFIX + USERS
+
+    def test_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            resp.json()["detail"]
+            == "You are only authorised to update your own user data."
+        )
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password_invalid(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": "mismatching password",
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+        assert resp.json()["detail"] == "Incorrect password."
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=OLD_PASSWORD)
+
+    def test_update_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        application_user,
+    ) -> None:
+        OLD_PASSWORD = "oldpassword"
+        NEW_PASSWORD = "newpassword"
+        application_user.update_password(db=db, new_password=OLD_PASSWORD)
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[USER_PASSWORD_RESET],
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{application_user.id}/reset-password",
+            headers=auth_header,
+            json={
+                "old_password": OLD_PASSWORD,
+                "new_password": NEW_PASSWORD,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+
+        db.expunge(application_user)
+        application_user = application_user.refresh_from_db(db=db)
+        assert application_user.credentials_valid(password=NEW_PASSWORD)
 
 
 class TestUserLogin:
