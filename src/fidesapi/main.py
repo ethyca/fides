@@ -5,9 +5,12 @@ Contains the code that sets up the API.
 from datetime import datetime
 from enum import Enum
 from logging import WARNING
+from pathlib import Path
 from typing import Callable, Dict
 
 from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -18,7 +21,10 @@ from fidesapi.routes import crud, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
+WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
+
 app = FastAPI(title="fidesctl")
+app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
 CONFIG: FidesctlConfig = get_config()
 
 
@@ -112,6 +118,24 @@ async def db_action(action: DBActions) -> Dict:
         action_text = DBActions.reset
     await configure_db(CONFIG.api.sync_database_url)
     return {"data": {"message": f"Fidesctl database {action_text}"}}
+
+
+@app.get("/")
+def read_index(request: Request) -> Response:
+    path = WEBAPP_DIRECTORY / "index.html"
+    return FileResponse(path)
+
+
+@app.get("/{catchall:path}", response_class=FileResponse)
+def read_other_paths(request: Request) -> FileResponse:
+    # check first if requested file exists
+    path = request.path_params["catchall"]
+    file = WEBAPP_DIRECTORY / Path(path)
+    if file.exists():
+        return FileResponse(file)
+
+    # otherwise return the index
+    return FileResponse(WEBAPP_DIRECTORY / "index.html")
 
 
 def start_webserver() -> None:
