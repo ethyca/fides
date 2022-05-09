@@ -25,6 +25,7 @@ from fidesops.db.base_class import (
     Base,
     FidesopsBase,
 )
+from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
@@ -134,7 +135,7 @@ class PrivacyRequest(Base):
     # passive_deletes="all" prevents audit logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
     audit_logs = relationship(
-        "AuditLog",
+        AuditLog,
         backref="privacy_request",
         lazy="dynamic",
         passive_deletes="all",
