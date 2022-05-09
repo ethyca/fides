@@ -9,7 +9,8 @@ from fidesctl.core import audit as _audit
 @click.pass_context
 def audit(ctx: click.Context) -> None:
     """
-    Audit fidesctl resources for compliance
+    Audits fidesctl resources for compliance to build a compliant
+    data map with full attribution.
     """
 
 
@@ -20,7 +21,13 @@ def audit_system(
     ctx: click.Context,
 ) -> None:
     """
-    Audit Systems for attributes that are required for a complete data map.
+    Audits Systems for attributes that are required for a complete data map.
+
+    Resources are validated from the server, so in work manifests are not
+    considered as part of the audit.
+
+    Findings from these audits should be evaluated by an organization and
+    addressed according to the goals of the organization.
     """
     config = ctx.obj["CONFIG"]
     _audit.audit_systems(
@@ -37,7 +44,13 @@ def audit_organizations(
     ctx: click.Context,
 ) -> None:
     """
-    Audit Organizations for attributes required for a complete data map.
+    Audits Organizations for attributes required for a complete data map.
+
+    Resources are validated from the server, so in work manifests are not
+    considered as part of the audit.
+
+    Findings from these audits should be evaluated by an organization and
+    addressed according to the goals of the organization.
     """
     config = ctx.obj["CONFIG"]
     _audit.audit_organizations(
