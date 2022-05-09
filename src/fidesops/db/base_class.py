@@ -240,6 +240,10 @@ class OrmWrappedFidesopsBase(FidesopsBase):
         deleted_count = db.query(cls).delete()
         return deleted_count
 
+    def refresh_from_db(self, db: Session) -> FidesopsBase:
+        """Returns a current version of this object from the database"""
+        return db.query(self.__class__).get(self.id)
+
     def update(self, db: Session, *, data: Dict[str, Any]):
         """Update specific row with supplied values"""
         # Set self.key where applicable

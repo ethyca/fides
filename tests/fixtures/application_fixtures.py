@@ -982,7 +982,10 @@ def sample_data():
 
 
 @pytest.fixture(scope="function")
-def application_user(db) -> FidesopsUser:
+def application_user(
+    db,
+    oauth_client,
+) -> FidesopsUser:
     unique_username = f"user-{uuid4()}"
     user = FidesopsUser.create(
         db=db,
@@ -993,5 +996,7 @@ def application_user(db) -> FidesopsUser:
             "last_name": "User",
         },
     )
+    oauth_client.user_id = user.id
+    oauth_client.save(db=db)
     yield user
     user.delete(db=db)
