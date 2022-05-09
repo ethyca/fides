@@ -2,12 +2,12 @@
 from typing import Generator
 
 import pytest
+from fideslang.models import Dataset, DatasetMetadata
 from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
 import fidesctl.connectors.okta as okta_connector
 from fidesctl.core.config import FidesctlConfig
-from fideslang.models import Dataset, DatasetMetadata
 
 
 @pytest.fixture()

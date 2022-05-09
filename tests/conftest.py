@@ -5,10 +5,10 @@ from typing import Dict, Generator, Union
 
 import pytest
 import yaml
+from fideslang import models
 
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
-from fideslang import models
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"

@@ -2,9 +2,6 @@
 from typing import Generator
 
 import pytest
-
-from fidesctl.core import export
-from fidesctl.core.config import FidesctlConfig
 from fideslang.models import (
     Dataset,
     DatasetCollection,
@@ -13,6 +10,9 @@ from fideslang.models import (
     PrivacyDeclaration,
     System,
 )
+
+from fidesctl.core import export
+from fidesctl.core.config import FidesctlConfig
 
 
 @pytest.fixture()
