@@ -2,8 +2,6 @@
 from typing import Generator
 
 import pytest
-
-from fidesctl.core import filters as _filters
 from fideslang.models import (
     Organization,
     OrganizationMetadata,
@@ -11,6 +9,8 @@ from fideslang.models import (
     System,
     SystemMetadata,
 )
+
+from fidesctl.core import filters as _filters
 
 
 @pytest.fixture()

@@ -2,9 +2,9 @@
 """Unit tests for the Commands module."""
 from typing import Dict, Generator, List
 
+import fideslang as models
 import pytest
 
-import fideslang as models
 from fidesctl.core.apply import get_orphan_datasets, sort_create_update
 
 
