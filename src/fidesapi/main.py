@@ -120,16 +120,21 @@ async def db_action(action: DBActions) -> Dict:
     return {"data": {"message": f"Fidesctl database {action_text}"}}
 
 
-# Configure the static file sink, adapted from https://github.com/tiangolo/fastapi/issues/130
-# Do this last since otherwise it will take over all paths
+# Configure the static file paths last since otherwise it will take over all paths
 @app.get("/")
 def read_index() -> Response:
+    """
+    Return an index.html at the root path
+    """
     path = WEBAPP_DIRECTORY / "index.html"
     return FileResponse(path)
 
 
 @app.get("/{catchall:path}", response_class=FileResponse)
 def read_other_paths(request: Request) -> FileResponse:
+    """
+    Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
+    """
     # check first if requested file exists
     path = request.path_params["catchall"]
     file = WEBAPP_DIRECTORY / Path(path)
