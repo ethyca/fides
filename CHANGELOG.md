@@ -24,15 +24,17 @@ The types of changes are:
 
 ### Developer Experience
 
-* Added Nox as an alternative to Make
+* Replaced `make` with `nox`
 
 ### Docs
 
 * Updated `Release Steps`
+* Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 
 ### Fixed
 
 * Resolved a failure with populating applicable data subject rights to a data map
+* Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
@@ -46,6 +48,7 @@ The types of changes are:
 
 * added isort as a CI check
 * Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
+* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
 
 ### Changed
 

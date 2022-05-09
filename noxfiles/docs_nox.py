@@ -5,7 +5,9 @@ from docker_nox import build_local
 
 
 @nox.session()
-@nox.parametrize("type", [nox.param("local", id="local"), nox.param("ci", id="ci")])
+@nox.parametrize(
+    "build_type", [nox.param("local", id="local"), nox.param("ci", id="ci")]
+)
 def docs_build(session: nox.Session, build_type: str) -> None:
     """Build docs from the source code."""
     session.notify("teardown")
