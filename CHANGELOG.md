@@ -21,6 +21,7 @@ The types of changes are:
 
 * Added dependabot to keep dependencies updated
 * Include a warning for any orphan datasets as part of the `apply` command.
+* New `audit` command for `system` and `organization` resources, checking data map attribute compliance.
 
 ### Developer Experience
 
