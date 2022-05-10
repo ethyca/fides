@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum as EnumType
 from typing import List, Optional, Dict
 
 from pydantic import Field, validator
@@ -13,6 +14,35 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.user import PrivacyRequestReviewer
 from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
 from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+
+
+class PrivacyRequestDRPStatus(EnumType):
+    """A list of privacy request statuses specified by the Data Rights Protocol."""
+
+    open = "open"
+    in_progress = "in_progress"
+    fulfilled = "fulfilled"
+    revoked = "revoked"
+    denied = "denied"
+    expired = "expired"
+
+
+class PrivacyRequestDRPStatusResponse(BaseSchema):
+    """A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."""
+
+    request_id: str
+    received_at: datetime
+    expected_by: Optional[datetime]
+    processing_details: Optional[str]
+    status: PrivacyRequestDRPStatus
+    reason: Optional[str]
+    user_verification_url: Optional[str]
+
+    class Config:
+        """Set orm_mode and use_enum_values"""
+
+        orm_mode = True
+        use_enum_values = True
 
 
 class PrivacyRequestCreate(BaseSchema):

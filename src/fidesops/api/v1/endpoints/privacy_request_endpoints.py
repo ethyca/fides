@@ -56,6 +56,8 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     DenyPrivacyRequests,
+    PrivacyRequestDRPStatusResponse,
+    PrivacyRequestDRPStatus,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
@@ -244,20 +246,32 @@ def privacy_request_csv_download(
     return response
 
 
-@router.get(
-    urls.PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=Page[
-        Union[
-            PrivacyRequestVerboseResponse,
-            PrivacyRequestResponse,
-        ]
-    ],
-)
-def get_request_status(
-    *,
+def execution_logs_by_dataset_name(
+    self: PrivacyRequest,
+) -> DefaultDict[str, List["ExecutionLog"]]:
+    """
+    Returns a truncated list of ExecutionLogs for each dataset name associated with
+    a PrivacyRequest. Added as a conditional property to the PrivacyRequest class at runtime to
+    show optionally embedded execution logs.
+
+    An example response might include your execution logs from your mongo db in one group, and execution logs from
+    your postgres db in a different group.
+    """
+
+    execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
+
+    for log in self.execution_logs.order_by(
+        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
+    ):
+        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+            continue
+        execution_logs[log.dataset_name].append(log)
+    return execution_logs
+
+
+def _filter_privacy_request_queryset(
+    query: Query,
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
     id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -269,16 +283,10 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
-    verbose: Optional[bool] = False,
-    include_identities: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
-) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the id query param `?id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
+) -> Query:
     """
-
+    Utility method to apply filters to our privacy request query
+    """
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -303,8 +311,6 @@ def get_request_status(
                     status_code=HTTP_400_BAD_REQUEST,
                     detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
                 )
-
-    query = db.query(PrivacyRequest)
 
     # Further restrict all PrivacyRequests by query params
     if id:
@@ -342,6 +348,62 @@ def get_request_status(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
+    return query.order_by(PrivacyRequest.created_at.desc())
+
+
+@router.get(
+    urls.PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+)
+def get_request_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    id: Optional[str] = None,
+    status: Optional[PrivacyRequestStatus] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """Returns PrivacyRequest information. Supports a variety of optional query params.
+
+    To fetch a single privacy request, use the id query param `?id=`.
+    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+
+    logger.info(f"Finding all request statuses with pagination params {params}")
+    query = db.query(PrivacyRequest)
+    query = _filter_privacy_request_queryset(
+        query,
+        db,
+        id,
+        status,
+        created_lt,
+        created_gt,
+        started_lt,
+        started_gt,
+        completed_lt,
+        completed_gt,
+        errored_lt,
+        errored_gt,
+        external_id,
+    )
+
     if download_csv:
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
@@ -356,8 +418,6 @@ def get_request_status(
     else:
         PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
 
-    query = query.order_by(PrivacyRequest.created_at.desc())
-
     paginated = paginate(query, params)
     if include_identities:
         # Conditionally include the cached identity data in the response if
@@ -365,31 +425,63 @@ def get_request_status(
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
 
-    logger.info(f"Finding all request statuses with pagination params {params}")
     return paginated
 
 
-def execution_logs_by_dataset_name(
-    self: PrivacyRequest,
-) -> DefaultDict[str, List["ExecutionLog"]]:
+def _map_fidesops_status_to_drp_status(
+    status: PrivacyRequestStatus,
+) -> PrivacyRequestDRPStatus:
+    PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING: Dict[
+        PrivacyRequestStatus, PrivacyRequestDRPStatus
+    ] = {
+        PrivacyRequestStatus.pending: PrivacyRequestDRPStatus.open,
+        PrivacyRequestStatus.approved: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.denied: PrivacyRequestDRPStatus.denied,
+        PrivacyRequestStatus.in_processing: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.complete: PrivacyRequestDRPStatus.fulfilled,
+        PrivacyRequestStatus.paused: PrivacyRequestDRPStatus.in_progress,
+        PrivacyRequestStatus.error: PrivacyRequestDRPStatus.expired,
+    }
+    try:
+        return PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING[status]
+    except KeyError:
+        raise ValueError(f"Request has invalid DRP request status: {status.value}")
+
+
+@router.get(
+    urls.REQUEST_STATUS_DRP,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    response_model=PrivacyRequestDRPStatusResponse,
+)
+def get_request_status_drp(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestDRPStatusResponse:
     """
-    Returns a truncated list of ExecutionLogs for each dataset name associated with
-    a PrivacyRequest. Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution logs.
-
-    An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group.
+    Returns PrivacyRequest information where the respective privacy request is associated with
+    a policy that implements a Data Rights Protocol action.
     """
 
-    execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
+    logger.info(f"Finding request for DRP with ID: {privacy_request_id}")
+    request = PrivacyRequest.get(
+        db=db,
+        id=privacy_request_id,
+    )
+    if not request or not request.policy or not request.policy.drp_action:
+        # If no request is found with this ID, or that request has no policy,
+        # or that request's policy has no associated drp_action.
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action.",
+        )
 
-    for log in self.execution_logs.order_by(
-        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
-    ):
-        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
-            continue
-        execution_logs[log.dataset_name].append(log)
-    return execution_logs
+    logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
+    return PrivacyRequestDRPStatusResponse(
+        request_id=request.id,
+        received_at=request.requested_at,
+        status=_map_fidesops_status_to_drp_status(request.status),
+    )
 
 
 @router.get(
