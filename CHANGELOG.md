@@ -22,6 +22,10 @@ The types of changes are:
 * Added dependabot to keep dependencies updated
 * Include a warning for any orphan datasets as part of the `apply` command.
 
+### Changed
+
+* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
+
 ### Developer Experience
 
 * Replaced `make` with `nox`
@@ -35,6 +39,7 @@ The types of changes are:
 
 * Resolved a failure with populating applicable data subject rights to a data map
 * Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
+* Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
@@ -43,13 +48,11 @@ The types of changes are:
 * CHANGELOG.md file
 * On API server startup, in-use config values are logged at the DEBUG level
 * Send a usage analytics event upon execution of the `fidesctl init` command
-* Host static files via fidesapi
 
 ### Developer Experience
 
 * added isort as a CI check
 * Include `tests/` in all static code checks (e.g. `mypy`, `pylint`)
-* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
 
 ### Changed
 
