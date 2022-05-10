@@ -179,3 +179,10 @@ def test_visualize(test_config: FidesctlConfig, resource_type: str) -> None:
         f"{test_config.cli.server_url}/{resource_type}/visualize/graphs"
     )
     assert response.status_code == 200
+
+
+@pytest.mark.integration
+def test_static_sink(test_config: FidesctlConfig) -> None:
+    """Make sure we are hosting something at / and not getting a 404"""
+    response = requests.get(f"{test_config.cli.server_url}")
+    assert response.status_code == 200
