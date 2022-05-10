@@ -3517,6 +3517,35 @@
           }
         }
       }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Index",
+        "description": "Return an index.html at the root path",
+        "operationId": "read_index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{catchall}": {
+      "get": {
+        "summary": "Read Other Paths",
+        "description": "Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130",
+        "operationId": "read_other_paths__catchall__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
     }
   },
   "components": {
