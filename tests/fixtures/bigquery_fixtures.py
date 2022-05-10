@@ -8,13 +8,18 @@ import pytest
 
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import AccessLevel, ConnectionType, ConnectionConfig
+from fidesops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionType,
+    ConnectionConfig,
+)
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.connection_configuration import BigQuerySchema
 from fidesops.service.connectors import BigQueryConnector, get_connector
 from .application_fixtures import integration_config
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope="function")
 def bigquery_connection_config_without_secrets(db: Session) -> Generator:
@@ -43,12 +48,12 @@ def bigquery_connection_config(db: Session) -> Generator:
         },
     )
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or ast.literal_eval(os.environ.get(
-        "BIGQUERY_KEYFILE_CREDS"
-    ))
-    dataset = integration_config.get("bigquery", {}).get(
-        "dataset"
-    ) or os.environ.get("BIGQUERY_DATASET")
+    keyfile_creds = integration_config.get("bigquery", {}).get(
+        "keyfile_creds"
+    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
+    dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
+        "BIGQUERY_DATASET"
+    )
     if keyfile_creds:
         schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.dict()
@@ -60,9 +65,9 @@ def bigquery_connection_config(db: Session) -> Generator:
 
 @pytest.fixture
 def bigquery_example_test_dataset_config(
-        bigquery_connection_config: ConnectionConfig,
-        db: Session,
-        example_datasets: List[Dict],
+    bigquery_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
 ) -> Generator:
     bigquery_dataset = example_datasets[7]
     fides_key = bigquery_dataset["fides_key"]
@@ -83,7 +88,7 @@ def bigquery_example_test_dataset_config(
 
 @pytest.fixture(scope="function")
 def bigquery_resources(
-        bigquery_example_test_dataset_config,
+    bigquery_example_test_dataset_config,
 ):
     bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
     connector = BigQueryConnector(bigquery_connection_config)
@@ -129,7 +134,7 @@ def bigquery_resources(
         stmt = f"delete from customer where email = '{customer_email}';"
         connection.execute(stmt)
 
-        stmt = f'delete from address where id = {address_id};'
+        stmt = f"delete from address where id = {address_id};"
         connection.execute(stmt)
 
 
@@ -144,12 +149,12 @@ def bigquery_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds") or ast.literal_eval(os.environ.get(
-        "BIGQUERY_KEYFILE_CREDS"
-    ))
-    dataset = integration_config.get("bigquery", {}).get(
-        "dataset"
-    ) or os.environ.get("BIGQUERY_DATASET")
+    keyfile_creds = integration_config.get("bigquery", {}).get(
+        "keyfile_creds"
+    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
+    dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
+        "BIGQUERY_DATASET"
+    )
     if keyfile_creds:
         schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.dict()

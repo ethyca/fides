@@ -1383,15 +1383,17 @@ class TestDenyPrivacyRequest:
         assert response_body["succeeded"][0]["id"] == privacy_request.id
         assert response_body["succeeded"][0]["reviewed_at"] is not None
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
-        denial_audit_log: AuditLog = AuditLog.filter(db=db, conditions=(
-            (AuditLog.privacy_request_id == privacy_request.id) &
-            (AuditLog.user_id == user.id)
-        )).first()
+        denial_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.user_id == user.id)
+            ),
+        ).first()
 
         assert denial_audit_log.message is None
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
-
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
@@ -1427,10 +1429,13 @@ class TestDenyPrivacyRequest:
         assert response_body["succeeded"][0]["id"] == privacy_request.id
         assert response_body["succeeded"][0]["reviewed_at"] is not None
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
-        denial_audit_log: AuditLog = AuditLog.filter(db=db, conditions=(
-            (AuditLog.privacy_request_id == privacy_request.id) &
-            (AuditLog.user_id == user.id)
-        )).first()
+        denial_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.user_id == user.id)
+            ),
+        ).first()
 
         assert denial_audit_log.message == denial_reason
 

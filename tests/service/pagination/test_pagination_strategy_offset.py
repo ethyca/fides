@@ -155,7 +155,9 @@ def test_validate_request():
             "limit": 10,
         },
     }
-    SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
+    SaaSRequest(
+        method="GET", path="/test", query_params=query_params, pagination=pagination
+    )
 
 
 def test_validate_request_missing_param():
@@ -169,5 +171,7 @@ def test_validate_request_missing_param():
         },
     }
     with pytest.raises(ValueError) as exc:
-        SaaSRequest(method="GET", path="/test", query_params=query_params, pagination=pagination)
+        SaaSRequest(
+            method="GET", path="/test", query_params=query_params, pagination=pagination
+        )
     assert "Query param 'page' not found." in str(exc.value)

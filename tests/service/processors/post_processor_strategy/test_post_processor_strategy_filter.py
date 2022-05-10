@@ -153,6 +153,7 @@ def test_filter_by_nonexistent_identity_reference():
     result = processor.process(data)
     assert result == []
 
+
 def test_filter_by_identity_reference_with_no_identity_data():
     identity_data = None
     config = FilterPostProcessorConfiguration(

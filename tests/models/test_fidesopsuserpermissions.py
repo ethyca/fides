@@ -15,7 +15,7 @@ class TestFidesopsUserPermissions:
             data={"username": "user_1", "password": "test_password"},
         )
 
-        permissions:FidesopsUserPermissions = FidesopsUserPermissions.create(
+        permissions: FidesopsUserPermissions = FidesopsUserPermissions.create(
             db=db,
             data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]},
         )

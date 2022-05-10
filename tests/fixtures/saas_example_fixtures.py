@@ -14,12 +14,15 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 
+
 def load_config(filename: str) -> Dict:
     yaml_file = load_file(filename)
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file).get("saas_config", [])
 
+
 saas_config = load_toml("saas_config.toml")
+
 
 @pytest.fixture(scope="function")
 def saas_example_secrets():
@@ -30,6 +33,7 @@ def saas_example_secrets():
         "api_version": pydash.get(saas_config, "saas_example.api_version"),
         "page_limit": pydash.get(saas_config, "saas_example.page_limit"),
     }
+
 
 @pytest.fixture
 def saas_example_config() -> Dict:
