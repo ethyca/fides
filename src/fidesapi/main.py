@@ -22,7 +22,7 @@ from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
 WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
-WEBAPP_INDEX = Path(WEBAPP_DIRECTORY / "index.html")
+WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -138,8 +138,7 @@ def read_index() -> Response:
     """
     Return an index.html at the root path
     """
-    path = WEBAPP_DIRECTORY / "index.html"
-    return FileResponse(path)
+    return FileResponse(WEBAPP_INDEX)
 
 
 @app.get("/{catchall:path}", response_class=FileResponse)
