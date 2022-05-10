@@ -35,6 +35,7 @@ from fidesops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
+from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.external_https import (
     SecondPartyRequestFormat,
     SecondPartyResponseFormat,
@@ -49,6 +50,7 @@ from fidesops.util.cache import (
     FidesopsRedis,
     get_encryption_cache_key,
     get_masking_secret_cache_key,
+    get_drp_request_body_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
 
@@ -175,6 +177,17 @@ class PrivacyRequest(Base):
             if value is not None:
                 cache.set_with_autoexpire(
                     get_identity_cache_key(self.id, key),
+                    value,
+                )
+
+    def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
+        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        cache: FidesopsRedis = get_cache()
+        drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
+        for key, value in drp_request_body_dict.items():
+            if value is not None:
+                cache.set_with_autoexpire(
+                    get_drp_request_body_cache_key(self.id, key),
                     value,
                 )
 
