@@ -22,9 +22,9 @@ from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
 WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
+WEBAPP_INDEX = Path(WEBAPP_DIRECTORY / "index.html")
 
 app = FastAPI(title="fidesctl")
-app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
 CONFIG: FidesctlConfig = get_config()
 
 
@@ -46,6 +46,18 @@ async def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
     database.create_db_if_not_exists(database_url)
     await database.init_db(database_url)
+
+
+@app.on_event("startup")
+async def create_webapp_dir_if_not_exists() -> None:
+    """Creates the webapp directory if it doesn't exist."""
+
+    if not WEBAPP_INDEX.is_file():
+        WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+            index_file.write("<h1>Privacy is a Human Right!</h1>")
+
+    app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
 
 
 @app.on_event("startup")
