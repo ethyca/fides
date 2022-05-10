@@ -155,6 +155,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
         nox.param("not external", id="not-external"),
     ],
 )
+@nox.parametrize("python", ["3.8", "3.9", "3.10"])
 def pytest(session: nox.Session, mark: str) -> None:
     """Runs tests."""
     session.notify("teardown")
@@ -169,7 +170,7 @@ def pytest(session: nox.Session, mark: str) -> None:
     session.run(*run_command, external=True)
 
 
-@nox.session()
+@nox.session(python=["3.8", "3.9", "3.10"])
 def pytest_external(session: nox.Session) -> None:
     """Run all tests that rely on the third-party databases and services."""
     session.notify("teardown")

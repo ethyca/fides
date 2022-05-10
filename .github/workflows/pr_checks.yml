@@ -200,6 +200,9 @@ jobs:
   Pytest-Unit:
     needs: Build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v3
@@ -212,16 +215,24 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Nox
         run: pip install nox>=2022
 
       - name: Run unit test suite
-        run: nox -s "pytest(unit)"
+        run: nox -s "pytest(python='${{ matrix.python-version }}', unit)"
 
   Pytest-Integration:
     needs: Build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v3
@@ -234,16 +245,24 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Nox
         run: pip install nox>=2022
 
       - name: Run integration test suite
-        run: nox -s "pytest(integration)"
+        run: nox -s "pytest(python='${{ matrix.python-version }}', integration)"
 
   Pytest-External:
     needs: Build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - name: Download fidesctl container
         uses: actions/download-artifact@v3
@@ -257,11 +276,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Install Nox
         run: pip install nox>=2022
 
       - name: Run external test suite
-        run: nox -s pytest_external
+        run: nox -s pytest_external-${{ matrix.python-version }}
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
