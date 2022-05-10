@@ -1,14 +1,15 @@
-import requests
-
-from fidesops.task.filter_results import filter_data_categories
-import pytest
 import random
+import time
+from typing import Any, Dict, List, Optional
+
+import pytest
+import requests
 
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-
 from fidesops.task import graph_task
+from fidesops.task.filter_results import filter_data_categories
 from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
@@ -205,12 +206,26 @@ def test_sentry_access_request_task(
     )
 
 
+def _get_issues(
+    project: Dict[str, Any],
+    secrets: Dict[str, Any],
+    headers: Dict[str, Any],
+) -> Optional[List[Dict[str, Any]]]:
+    response = requests.get(
+        f"https://{secrets['host']}/api/0/projects/{project['organization']['slug']}/{project['slug']}/issues/",
+        headers=headers,
+    )
+    json = response.json()
+    return json if response.ok and len(json) else None
+
+
 def sentry_erasure_test_prep(sentry_connection_config, db):
     sentry_secrets = sentry_connection_config.secrets
     # Set the assignedTo field on a sentry issue to a given employee
     token = sentry_secrets.get("erasure_access_token")
     issue_url = sentry_secrets.get("issue_url")
     sentry_user_id = sentry_secrets.get("user_id_erasure")
+    host = sentry_secrets.get("host")
 
     if not token or not issue_url or not sentry_user_id:
         # Exit early if these haven't been set locally
@@ -218,9 +233,24 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 
     headers = {"Authorization": f"Bearer {token}"}
     data = {"assignedTo": f"user:{sentry_user_id}"}
-    resp = requests.put(issue_url, json=data, headers=headers)
-    assert resp.status_code == 200
-    assert resp.json()["assignedTo"]["id"] == sentry_user_id
+    response = requests.put(issue_url, json=data, headers=headers)
+    assert response.ok
+    assert response.json().get("assignedTo", {}).get("id") == sentry_user_id
+
+    # Get projects
+    response = requests.get(f"https://{host}/api/0/projects/", headers=headers)
+    assert response.ok
+    project = response.json()[0]
+
+    # Wait until issues returns data
+    retries = 10
+    while _get_issues(project, sentry_secrets, headers) is None:
+        if not retries:
+            raise Exception(
+                "The issues endpoint did not return the required data for testing during the time limit"
+            )
+        retries -= 1
+        time.sleep(5)
 
     # Temporarily sets the access token to one that works for erasures
     sentry_connection_config.secrets["access_token"] = sentry_secrets[

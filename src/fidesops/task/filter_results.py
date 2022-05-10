@@ -98,7 +98,7 @@ def select_and_save_field(saved: Any, row: Row, target_path: FieldPath) -> Dict:
 
     elif isinstance(row, dict):
         for key in row:
-            if key == target_path.levels[0]:
+            if target_path.levels and key == target_path.levels[0]:
                 if key not in saved:
                     saved[key] = _defaultdict_or_array(row[key])
                 saved[key] = select_and_save_field(
