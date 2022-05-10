@@ -642,7 +642,7 @@ def test_return_all_elements_config_access_request(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
-    integration_mongodb_connector
+    integration_mongodb_connector,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections
@@ -1073,7 +1073,9 @@ class TestRetrievingDataMongo:
                 FieldAddress("mongo_test", "customer_details", "customer_id"),
             )
         }
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"customer_id": []})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"customer_id": []}
+        )
         assert results == []
 
         results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {})
@@ -1084,10 +1086,14 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": [None]})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": [None]}
+        )
         assert results == []
 
-        results = connector.retrieve_data(traversal_node, Policy(), privacy_request, {"email": None})
+        results = connector.retrieve_data(
+            traversal_node, Policy(), privacy_request, {"email": None}
+        )
         assert results == []
 
     @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")

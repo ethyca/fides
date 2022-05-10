@@ -107,6 +107,7 @@ def test_snowflake_example_data(snowflake_test_engine):
         "visit",
     ]
 
+
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_bigquery_example_data(bigquery_test_engine):

@@ -2,7 +2,8 @@ from fidesops.graph.config import FieldPath
 from fidesops.task.refine_target_path import (
     refine_target_path,
     build_refined_target_paths,
-    join_detailed_path, _match_found,
+    join_detailed_path,
+    _match_found,
 )
 from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 

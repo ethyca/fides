@@ -20,15 +20,22 @@ saas_config = load_toml("saas_config.toml")
 @pytest.fixture(scope="function")
 def segment_secrets():
     return {
-        "domain": pydash.get(saas_config, "segment.domain") or os.environ.get("SEGMENT_DOMAIN"),
+        "domain": pydash.get(saas_config, "segment.domain")
+        or os.environ.get("SEGMENT_DOMAIN"),
         "personas_domain": pydash.get(saas_config, "segment.personas_domain")
         or os.environ.get("SEGMENT_PERSONAS_DOMAIN"),
-        "workspace": pydash.get(saas_config, "segment.workspace") or os.environ.get("SEGMENT_WORKSPACE"),
-        "access_token": pydash.get(saas_config, "segment.access_token") or os.environ.get("SEGMENT_ACCESS_TOKEN"),
-        "namespace_id": pydash.get(saas_config, "segment.namespace_id") or os.environ.get("SEGMENT_NAMESPACE_ID"),
-        "access_secret": pydash.get(saas_config, "segment.access_secret") or os.environ.get("SEGMENT_ACCESS_SECRET"),
-        "api_domain": pydash.get(saas_config, "segment.api_domain") or os.environ.get("SEGMENT_API_DOMAIN"),
-        "user_token": pydash.get(saas_config, "segment.user_token") or os.environ.get("SEGMENT_USER_TOKEN"),
+        "workspace": pydash.get(saas_config, "segment.workspace")
+        or os.environ.get("SEGMENT_WORKSPACE"),
+        "access_token": pydash.get(saas_config, "segment.access_token")
+        or os.environ.get("SEGMENT_ACCESS_TOKEN"),
+        "namespace_id": pydash.get(saas_config, "segment.namespace_id")
+        or os.environ.get("SEGMENT_NAMESPACE_ID"),
+        "access_secret": pydash.get(saas_config, "segment.access_secret")
+        or os.environ.get("SEGMENT_ACCESS_SECRET"),
+        "api_domain": pydash.get(saas_config, "segment.api_domain")
+        or os.environ.get("SEGMENT_API_DOMAIN"),
+        "user_token": pydash.get(saas_config, "segment.user_token")
+        or os.environ.get("SEGMENT_USER_TOKEN"),
     }
 
 

@@ -515,9 +515,9 @@ def policy(
 
 @pytest.fixture(scope="function")
 def policy_drp_action(
-        db: Session,
-        oauth_client: ClientDetail,
-        storage_config: StorageConfig,
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,

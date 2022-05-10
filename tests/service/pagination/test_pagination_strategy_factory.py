@@ -9,6 +9,7 @@ from fidesops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 
+
 def test_get_strategy_offset():
     config = {
         "incremental_param": "page",

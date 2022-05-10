@@ -250,13 +250,15 @@ class TestPreProcessInputData:
 
     def test_pre_process_input_data_group_dependent_fields(self):
         """Test processing inputs where several reference fields and an identity field have
-         been marked as dependent.
+        been marked as dependent.
         """
         traversal_with_grouped_inputs = traversal_paired_dependency()
         n = traversal_with_grouped_inputs.traversal_node_dict[
             CollectionAddress("mysql", "User")
         ]
-        task = MockSqlTask(n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs))
+        task = MockSqlTask(
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+        )
 
         project_output = [
             {

@@ -676,7 +676,9 @@ class TestPutDatasets:
         generate_auth_header,
     ):
         path = V1_URL_PREFIX + DATASETS
-        path_params = {"connection_key": saas_example_connection_config_without_saas_config.key}
+        path_params = {
+            "connection_key": saas_example_connection_config_without_saas_config.key
+        }
         datasets_url = path.format(**path_params)
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])

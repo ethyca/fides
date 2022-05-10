@@ -36,7 +36,9 @@ def test_mariadb_connector_build_uri(connection_config_mariadb, db: Session):
         "host": "host.docker.internal",
     }
     connection_config_mariadb.save(db)
-    assert connector.build_uri() == "mariadb+pymysql://mariadb_user@host.docker.internal"
+    assert (
+        connector.build_uri() == "mariadb+pymysql://mariadb_user@host.docker.internal"
+    )
 
     connection_config_mariadb.secrets = {
         "host": "host.docker.internal",

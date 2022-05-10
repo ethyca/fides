@@ -74,23 +74,29 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            },
-        ) == {"id", "customer_id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id", "customer_id"}
+        )
         # with no values OR an empty set, these are omitted
-        assert found_query_keys(
-            payment_card_node,
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            },
-        ) == {"id"}
+        assert (
+            found_query_keys(
+                payment_card_node,
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                },
+            )
+            == {"id"}
+        )
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -98,21 +104,27 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": ["V"],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"], "customer_id": ["V"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": ["V"],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"], "customer_id": ["V"]}
+        )
 
-        assert payment_card_node.typed_filtered_values(
-            {
-                "id": ["A"],
-                "customer_id": [],
-                "ignore_me": ["X"],
-            }
-        ) == {"id": ["A"]}
+        assert (
+            payment_card_node.typed_filtered_values(
+                {
+                    "id": ["A"],
+                    "customer_id": [],
+                    "ignore_me": ["X"],
+                }
+            )
+            == {"id": ["A"]}
+        )
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
@@ -314,9 +326,12 @@ class TestSQLQueryConfig:
                 ["John Customer"], privacy_request_id=privacy_request.id
             )[0][0:40]
         )
-        assert text_clause._bindparams["email"].value == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask(["customer-1@example.com"], privacy_request_id=privacy_request.id)[0]
+        assert (
+            text_clause._bindparams["email"].value
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["customer-1@example.com"], privacy_request_id=privacy_request.id
+            )[0]
+        )
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -596,9 +611,12 @@ class TestMongoQueryConfig:
         )
         assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
-        assert mongo_statement[1]["$set"]["birthday"] == HashMaskingStrategy(
-            HashMaskingConfiguration(algorithm="SHA-512")
-        ).mask(["1988-01-10"], privacy_request_id=privacy_request.id)[0]
+        assert (
+            mongo_statement[1]["$set"]["birthday"]
+            == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
+                ["1988-01-10"], privacy_request_id=privacy_request.id
+            )[0]
+        )
 
 
 @pytest.mark.unit_saas
@@ -881,8 +899,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {}
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
 
-
-    def test_get_masking_request(self, combined_traversal, saas_example_connection_config):
+    def test_get_masking_request(
+        self, combined_traversal, saas_example_connection_config
+    ):
         saas_config: Optional[
             SaaSConfig
         ] = saas_example_connection_config.get_saas_config()
@@ -916,8 +935,7 @@ class TestSaaSQueryConfig:
 
         # Define delete request on conversations endpoint
         endpoints["conversations"].requests["delete"] = SaaSRequest(
-            method="DELETE",
-            path="/api/0/<conversation>/<conversation_id>/"
+            method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
         # Delete endpoint not used because MASKING_STRICT is True
         assert config.execution.MASKING_STRICT is True
@@ -935,11 +953,10 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "DELETE"
 
         # Define GDPR Delete
-        data_protection_request = SaaSRequest(
-            method="PUT",
-            path="/api/0/gdpr_delete"
+        data_protection_request = SaaSRequest(method="PUT", path="/api/0/gdpr_delete")
+        query_config = SaaSQueryConfig(
+            conversations, endpoints, {}, data_protection_request
         )
-        query_config = SaaSQueryConfig(conversations, endpoints, {}, data_protection_request)
 
         # Assert GDPR Delete takes priority over Delete
         saas_request: SaaSRequest = query_config.get_masking_request()

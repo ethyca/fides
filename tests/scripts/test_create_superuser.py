@@ -65,7 +65,9 @@ class TestCreateSuperuserScript:
         assert client_detail.fides_key == ADMIN_UI_ROOT
         assert CLIENT_CREATE not in client_detail.scopes
 
-        user_permissions = FidesopsUserPermissions.get_by(db=db, field="user_id", value=superuser.id)
+        user_permissions = FidesopsUserPermissions.get_by(
+            db=db, field="user_id", value=superuser.id
+        )
         assert user_permissions is not None
 
         with pytest.raises(KeyOrNameAlreadyExists):

@@ -6,7 +6,8 @@ from bson import ObjectId
 from fidesops.graph.config import FieldPath, CollectionAddress
 from fidesops.task.filter_results import (
     select_and_save_field,
-    remove_empty_containers, filter_data_categories,
+    remove_empty_containers,
+    filter_data_categories,
 )
 
 
@@ -419,9 +420,7 @@ def test_remove_empty_containers():
     orig = {"A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]}
     results = copy.deepcopy(orig)
     remove_empty_containers(results)
-    assert results == {
-        "A": [[{"B": "C"}, {"B": "D"}, {"B": "G"}]]
-    }
+    assert results == {"A": [[{"B": "C"}, {"B": "D"}, {"B": "G"}]]}
 
 
 def test_filter_data_categories():

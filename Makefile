@@ -139,9 +139,9 @@ pytest-saas: compose-build
 
 .PHONY: black
 black: compose-build
-	@echo "Running black formatting against the src/ directory..."
-	@docker-compose run $(IMAGE_NAME) \
-	black src/
+	@echo "Running black formatting against the src/ and tests/ directories..."
+	@docker-compose run $(IMAGE_NAME) black tests/ && black src/
+	@echo "Fin"
 
 .PHONY: clean
 clean:

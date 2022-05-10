@@ -1,6 +1,4 @@
-
 import pytest
-
 
 
 @pytest.mark.integration_mongodb
