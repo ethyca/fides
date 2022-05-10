@@ -119,6 +119,17 @@ In your initial export, several data map columns are populated with `N/A`. The d
 
 Example manifest updates are included in `demo_resources/demo_extended_taxonomy.yml`.
 
+### Auditing Resources for Data Map Compliance
+
+As of `v1.7.0`, a new command is included to `audit` resources for compliance of your data map.
+
+Currently the two commands are:
+1. `fidesctl audit systems`
+1. `fidesctl audit organizations`
+
+The output of these commands will alert a user to any shortcomings which potentially leave valuable information off of a data map.
+Feel free to run them now for a preview of what still needs to be added!
+
 ### Data Use
 Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
 
