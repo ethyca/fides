@@ -2,8 +2,6 @@
 from typing import Generator, List
 
 import pytest
-
-from fidesctl.core import audit
 from fideslang.models import (
     ContactDetails,
     DataSubject,
@@ -11,6 +9,8 @@ from fideslang.models import (
     DataUse,
     Organization,
 )
+
+from fidesctl.core import audit
 
 
 @pytest.fixture
