@@ -9,6 +9,7 @@ generated programmatically for each resource.
 from typing import Dict, List
 
 from fastapi import APIRouter, Response, status
+from fideslang import model_map
 
 from fidesapi.database.crud import (
     create_resource,
@@ -19,7 +20,6 @@ from fidesapi.database.crud import (
     upsert_resources,
 )
 from fidesapi.sql_models import sql_model_map
-from fideslang import model_map
 
 
 def get_resource_type(router: APIRouter) -> str:

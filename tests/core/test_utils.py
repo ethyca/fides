@@ -2,10 +2,10 @@
 from typing import Generator
 
 import pytest
+from fideslang.models import DatasetCollection, DatasetField
 
 from fidesctl.core import utils
 from fidesctl.core.config import get_config
-from fideslang.models import DatasetCollection, DatasetField
 
 
 @pytest.fixture()

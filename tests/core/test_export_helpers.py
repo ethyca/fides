@@ -4,9 +4,6 @@ from typing import Generator, List
 
 import pandas as pd
 import pytest
-from py._path.local import LocalPath
-
-from fidesctl.core import export_helpers
 from fideslang.models import (
     DataProtectionImpactAssessment,
     Dataset,
@@ -14,6 +11,9 @@ from fideslang.models import (
     DatasetField,
     DataSubjectRights,
 )
+from py._path.local import LocalPath
+
+from fidesctl.core import export_helpers
 
 
 @pytest.fixture()

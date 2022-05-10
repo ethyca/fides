@@ -2,12 +2,12 @@
 from typing import Generator, List
 
 import pytest
+from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
 from fidesctl.core import api
 from fidesctl.core import system as _system
 from fidesctl.core.config import FidesctlConfig
-from fideslang.models import System, SystemMetadata
 
 
 def create_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:

@@ -4,13 +4,13 @@ from typing import Dict, Generator, List
 
 import pytest
 import sqlalchemy
+from fideslang.manifests import write_manifest
+from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 from py._path.local import LocalPath
 
 from fidesctl.core import api
 from fidesctl.core import dataset as _dataset
 from fidesctl.core.config import FidesctlConfig
-from fideslang.manifests import write_manifest
-from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 
 
 def create_server_datasets(

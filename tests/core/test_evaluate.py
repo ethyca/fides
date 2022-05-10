@@ -3,9 +3,6 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from fidesctl.core import evaluate
-from fidesctl.core.config import FidesctlConfig
 from fideslang.models import (
     DataCategory,
     DataQualifier,
@@ -20,6 +17,9 @@ from fideslang.models import (
     System,
     Taxonomy,
 )
+
+from fidesctl.core import evaluate
+from fidesctl.core.config import FidesctlConfig
 
 
 # Helpers
@@ -178,6 +178,40 @@ def test_populate_referenced_keys_fails_missing_keys(
             headers=test_config.user.request_headers,
             last_keys=[],
         )
+
+
+@pytest.mark.integration
+def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
+    dehydrated_taxonomy = Taxonomy(
+        data_category=[
+            DataCategory(
+                name="test_dc",
+                fides_key="key_1.test_dc",
+                description="test description",
+                parent_key="key_1",
+            ),
+        ],
+        system=[
+            System.construct(
+                name="test_dc",
+                fides_key="test_dc",
+                description="test description",
+                system_dependencies=["key_3", "key_4"],
+                system_type="test",
+                privacy_declarations=None,
+            )
+        ],
+    )
+    actual_hydrated_taxonomy = evaluate.hydrate_missing_resources(
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+        dehydrated_taxonomy=dehydrated_taxonomy,
+        missing_resource_keys={
+            "user.provided.identifiable.credentials",
+            "user.provided",
+        },
+    )
+    assert len(actual_hydrated_taxonomy.data_category) == 3
 
 
 @pytest.mark.unit

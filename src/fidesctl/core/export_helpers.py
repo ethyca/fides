@@ -5,10 +5,10 @@ from os.path import dirname, join
 from typing import Dict, List, Set, Tuple
 
 import pandas as pd
+from fideslang.models import DataSubjectRightsEnum, Taxonomy
 
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
-from fideslang.models import DataSubjectRightsEnum, Taxonomy
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),

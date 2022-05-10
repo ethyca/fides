@@ -5,10 +5,10 @@ from typing import Dict
 
 import pytest
 import requests
+from fideslang import model_list, parse
 
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
-from fideslang import model_list, parse
 
 
 # Helper Functions

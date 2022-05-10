@@ -26,11 +26,13 @@ The types of changes are:
 ### Developer Experience
 
 * Replaced `make` with `nox`
+* Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
 
 ### Docs
 
 * Updated `Release Steps`
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
+* Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
 
 ### Fixed
 
