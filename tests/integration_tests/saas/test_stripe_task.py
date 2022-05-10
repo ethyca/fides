@@ -1,14 +1,16 @@
-import pytest
 import random
+from typing import List
+
+import pytest
 import requests
+
 from fidesops.core.config import config
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.task import graph_task
-from fidesops.task.graph_task import get_cached_data_for_erasures
 from fidesops.task.filter_results import filter_data_categories
-from tests.fixtures.saas.stripe_fixtures import stripe_secrets
+from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
 
@@ -94,7 +96,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=2,
+        min_size=3,
         keys=[
             "amount",
             "amount_captured",
@@ -338,7 +340,7 @@ def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=4,
+        min_size=5,
         keys=[
             "amount",
             "amount_capturable",
@@ -454,8 +456,6 @@ def test_stripe_access_request_task(
     # verify we only returned data for our identity email
     assert v[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
     customer_id: str = v[f"{dataset_name}:customer"][0]["id"]
-    charge_id: str = v[f"{dataset_name}:charge"][0]["id"]
-    payment_intent_id: str = v[f"{dataset_name}:payment_intent"][0]["id"]
 
     for bank_account in v[f"{dataset_name}:bank_account"]:
         assert bank_account["customer"] == customer_id
@@ -463,8 +463,15 @@ def test_stripe_access_request_task(
     for card in v[f"{dataset_name}:card"]:
         assert card["customer"] == customer_id
 
+    charge_ids: List[str] = []
     for charge in v[f"{dataset_name}:charge"]:
         assert charge["customer"] == customer_id
+        charge_ids.append(charge["id"])
+
+    payment_intent_ids: List[str] = []
+    for payment_intent in v[f"{dataset_name}:payment_intent"]:
+        assert payment_intent["customer"] == customer_id
+        payment_intent_ids.append(payment_intent["id"])
 
     for credit_note in v[f"{dataset_name}:credit_note"]:
         assert credit_note["customer"] == customer_id
@@ -480,8 +487,8 @@ def test_stripe_access_request_task(
     # disputes are retrieved by charge.id or payment_intent.id
     for dispute in v[f"{dataset_name}:dispute"]:
         assert (
-            dispute["charge"] == charge_id
-            or dispute["payment_intent_id"] == payment_intent_id
+            dispute["charge"] in charge_ids
+            or dispute["payment_intent"] in payment_intent_ids
         )
 
     for invoice in v[f"{dataset_name}:invoice"]:
@@ -489,9 +496,6 @@ def test_stripe_access_request_task(
 
     for invoice_item in v[f"{dataset_name}:invoice_item"]:
         assert invoice_item["customer"] == customer_id
-
-    for payment_intent in v[f"{dataset_name}:payment_intent"]:
-        assert payment_intent["customer"] == customer_id
 
     for payment_method in v[f"{dataset_name}:payment_method"]:
         assert payment_method["customer"] == customer_id

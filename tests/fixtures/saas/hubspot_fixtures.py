@@ -1,5 +1,11 @@
 import json
+import os
 import time
+from typing import Any, Dict, Generator
+
+import pydash
+import pytest
+from sqlalchemy.orm import Session
 
 from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import (
@@ -8,18 +14,12 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-import pytest
-import pydash
-import os
-from typing import Any, Dict, Generator
-from tests.fixtures.application_fixtures import load_dataset
-from tests.fixtures.saas_example_fixtures import load_config
-from sqlalchemy.orm import Session
-
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors import SaaSConnector
 from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import format_body
+from tests.fixtures.application_fixtures import load_dataset
+from tests.fixtures.saas_example_fixtures import load_config
 
 saas_config = load_toml("saas_config.toml")
 
@@ -143,12 +143,11 @@ def hubspot_erasure_data(
     # no need to subscribe contact, since creating a contact auto-subscribes them
 
     # Allows contact to be propagated in Hubspot before calling access / erasure requests
-    remaining_tries = 5
+    retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is False:
-        if remaining_tries < 1:
-            raise Exception(
-                f"Contact with contact id {contact_id} could not be added to Hubspot"
-            )
+        if not retries:
+            raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
+        retries -= 1
         time.sleep(5)
 
     yield contact_id
@@ -161,12 +160,11 @@ def hubspot_erasure_data(
     connector.create_client().send(delete_request)
 
     # verify contact is deleted
-    remaining_tries = 5
+    retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is True:
-        if remaining_tries < 1:
-            raise Exception(
-                f"Contact with contact id {contact_id} could not be deleted from Hubspot"
-            )
+        if not retries:
+            raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
+        retries -= 1
         time.sleep(5)  # Ensures contact is deleted
 
 

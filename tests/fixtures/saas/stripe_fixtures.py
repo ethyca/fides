@@ -1,6 +1,11 @@
 import os
-from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from typing import Any, Dict, Generator
+
+import pydash
+import pytest
+import requests
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
+from sqlalchemy.orm import Session
 
 from fidesops.core.config import load_toml
 from fidesops.db import session
@@ -10,12 +15,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-import pytest
-import pydash
-import requests
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
-from sqlalchemy.orm import Session
 
 saas_config = load_toml("saas_config.toml")
 
