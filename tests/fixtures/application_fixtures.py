@@ -692,9 +692,11 @@ def privacy_requests(db: Session, policy: Policy) -> Generator:
         pr.delete(db)
 
 
-@pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = PrivacyRequest.create(
+def _create_privacy_request_for_policy(
+    db: Session,
+    policy: Policy,
+) -> PrivacyRequest:
+    return PrivacyRequest.create(
         db=db,
         data={
             "external_id": f"ext-{str(uuid4())}",
@@ -723,6 +725,23 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
+    )
+
+
+@pytest.fixture(scope="function")
+def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(db, policy)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_drp_action(
+    db: Session, policy_drp_action: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy_drp_action,
     )
     yield privacy_request
     privacy_request.delete(db)

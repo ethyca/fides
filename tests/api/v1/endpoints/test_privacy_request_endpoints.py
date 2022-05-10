@@ -6,12 +6,13 @@ import io
 import json
 from datetime import datetime
 from dateutil.parser import parse
-from typing import List
+from typing import Callable, List
 from unittest import mock
 
 from fastapi_pagination import Params
 import pytest
 from starlette.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
@@ -24,6 +25,7 @@ from fidesops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    REQUEST_STATUS_DRP,
 )
 from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
@@ -49,6 +51,7 @@ from fidesops.schemas.jwt import (
     JWE_ISSUED_AT,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
+from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import (
     get_identity_cache_key,
     get_encryption_cache_key,
@@ -372,6 +375,109 @@ class TestCreatePrivacyRequest:
         assert len(response_data) == 0
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
+
+
+class TestGetPrivacyRequestDRP:
+    """
+    Tests for the endpoint retrieving privacy requests specific to the DRP.
+    """
+
+    @pytest.fixture(scope="function")
+    def url_for_privacy_request(
+        self,
+        privacy_request: PrivacyRequest,
+    ) -> str:
+        return V1_URL_PREFIX + REQUEST_STATUS_DRP.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    @pytest.fixture(scope="function")
+    def url_for_privacy_request_with_drp_action(
+        self,
+        privacy_request_with_drp_action: PrivacyRequest,
+    ) -> str:
+        return V1_URL_PREFIX + REQUEST_STATUS_DRP.format(
+            privacy_request_id=privacy_request_with_drp_action.id
+        )
+
+    def test_get_privacy_requests_unauthenticated(
+        self,
+        api_client: TestClient,
+        url_for_privacy_request: str,
+    ):
+        response = api_client.get(
+            url_for_privacy_request,
+            headers={},
+        )
+        assert 401 == response.status_code
+
+    def test_get_privacy_requests_wrong_scope(
+        self,
+        api_client: TestClient,
+        generate_auth_header: Callable,
+        url_for_privacy_request: str,
+    ):
+        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
+        response = api_client.get(
+            url_for_privacy_request,
+            headers=auth_header,
+        )
+        assert 403 == response.status_code
+
+    def test_get_non_drp_privacy_request(
+        self,
+        api_client: TestClient,
+        generate_auth_header: Callable,
+        url_for_privacy_request: str,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url_for_privacy_request,
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+        privacy_request_id = url_for_privacy_request.split("/")[-2]
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action."
+        )
+
+    @pytest.mark.parametrize(
+        "privacy_request_status,expected_drp_status",
+        [
+            (PrivacyRequestStatus.pending, PrivacyRequestDRPStatus.open),
+            (PrivacyRequestStatus.approved, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.denied, PrivacyRequestDRPStatus.denied),
+            (PrivacyRequestStatus.in_processing, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.complete, PrivacyRequestDRPStatus.fulfilled),
+            (PrivacyRequestStatus.paused, PrivacyRequestDRPStatus.in_progress),
+            (PrivacyRequestStatus.error, PrivacyRequestDRPStatus.expired),
+        ],
+    )
+    def test_get_privacy_request_with_drp_action(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header: Callable,
+        url_for_privacy_request_with_drp_action: str,
+        privacy_request_with_drp_action: PrivacyRequest,
+        privacy_request_status: PrivacyRequestStatus,
+        expected_drp_status: PrivacyRequestDRPStatus,
+    ):
+        privacy_request_with_drp_action.status = privacy_request_status
+        privacy_request_with_drp_action.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url_for_privacy_request_with_drp_action,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        assert expected_drp_status.value == response.json()["status"]
+        assert privacy_request_with_drp_action.id == response.json()["request_id"]
+        assert (
+            privacy_request_with_drp_action.requested_at.isoformat()
+            == response.json()["received_at"]
+        )
 
 
 class TestGetPrivacyRequests:

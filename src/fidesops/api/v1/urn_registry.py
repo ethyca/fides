@@ -37,6 +37,7 @@ PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 REQUEST_PREVIEW = "/privacy-request/preview"
+REQUEST_STATUS_DRP = "/privacy-request/{privacy_request_id}/drp"
 
 # Rule URLs
 RULE_LIST = "/policy/{policy_key}/rule"
