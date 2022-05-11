@@ -20,12 +20,7 @@ from fidesapi.database.crud import (
     upsert_resources,
 )
 from fidesapi.sql_models import sql_model_map
-
-
-def get_resource_type(router: APIRouter) -> str:
-    "Extracts the name of the resource type from the prefix."
-    return router.prefix[1:]
-
+from fidesapi.utils.helpers import get_resource_type
 
 # CRUD Endpoints
 routers = []

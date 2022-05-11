@@ -14,7 +14,7 @@ from uvicorn import Config, Server
 import fidesctl
 from fidesapi import view
 from fidesapi.database import database
-from fidesapi.routes import crud, visualize
+from fidesapi.routes import crud, scan, visualize
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -24,7 +24,7 @@ CONFIG: FidesctlConfig = get_config()
 
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."
-    routers = crud.routers + visualize.routers
+    routers = crud.routers + visualize.routers + scan.routers
     for router in routers:
         log.debug(f'Adding router to fidesctl: {" ".join(router.tags)}')
         app.include_router(router)
