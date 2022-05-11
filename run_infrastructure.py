@@ -35,6 +35,7 @@ def run_infrastructure(
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_superuser: bool = False,  # Should we run the create_superuser command?
+    run_create_test_data: bool = False,  # Should we run the create_test_data command?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -94,6 +95,9 @@ def run_infrastructure(
 
     elif run_create_superuser:
         return _run_create_superuser(path, IMAGE_NAME)
+
+    elif run_create_test_data:
+        return _run_create_test_data(path, IMAGE_NAME)
 
 
 def seed_initial_data(
@@ -164,6 +168,18 @@ def _run_create_superuser(
     _run_cmd_or_err(f'echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
+
+
+def _run_create_test_data(
+    path: str,
+    image_name: str,
+) -> None:
+    """
+    Invokes the Fidesops create_user_and_client command
+    """
+    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker exec -it {image_name} python create_test_data.py")
 
 
 def _open_shell(
@@ -274,6 +290,12 @@ if __name__ == "__main__":
         action="store_true",
     )
 
+    parser.add_argument(
+        "-td",
+        "--run_create_test_data",
+        action="store_true",
+    )
+
     config_args = parser.parse_args()
 
     run_infrastructure(
@@ -283,5 +305,6 @@ if __name__ == "__main__":
         run_application=config_args.run_application,
         run_quickstart=config_args.run_quickstart,
         run_tests=config_args.run_tests,
-        run_create_superuser=config_args.run_create_superuser
+        run_create_superuser=config_args.run_create_superuser,
+        run_create_test_data=config_args.run_create_test_data,
     )

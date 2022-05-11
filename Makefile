@@ -173,10 +173,15 @@ docs-serve: docs-build
 
 
 ####################
-# User Creation
+# Test Data Creation
 ####################
 
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
 		python run_infrastructure.py --datastores postgres --run_create_superuser
+
+test-data:
+	@virtualenv -p python3 fidesops_test_dispatch; \
+		source fidesops_test_dispatch/bin/activate; \
+		python run_infrastructure.py --datastores postgres --run_create_test_data
