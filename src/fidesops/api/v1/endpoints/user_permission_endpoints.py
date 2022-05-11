@@ -74,7 +74,7 @@ def update_user_permissions(
     logger.info("Updated FidesopsUserPermission record")
     if user.client:
         user.client.update(db=db, data={"scopes": permissions.scopes})
-    return FidesopsUserPermissions.create_or_update(
+    return user.permissions.update(
         db=db,
         data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},
     )
