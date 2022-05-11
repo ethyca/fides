@@ -147,6 +147,18 @@ def fidesctl_db_scan(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
+def pytest_prints(session: nox.Session):
+    """
+    Tests commands
+    """
+    if session.posargs == ["3.9"]:
+        print(session.posargs)
+    else:
+        print("using 3.8")
+        print(session.posargs)
+
+
+@nox.session()
 @nox.parametrize(
     "mark",
     [
@@ -155,9 +167,20 @@ def fidesctl_db_scan(session: nox.Session) -> None:
         nox.param("not external", id="not-external"),
     ],
 )
-@nox.parametrize("python", ["3.8", "3.9", "3.10"])
+@nox.parametrize(
+    "python_version",
+    [
+        nox.param("3.8", id="3.8"),
+        nox.param("3.9", id="3.9"),
+        nox.param("3.10", id="3.10"),
+    ],
+)
 def pytest(session: nox.Session, mark: str) -> None:
     """Runs tests."""
+    if session.posargs == ["3.9"]:
+        print(session.posargs)
+    else:
+        print("using 3.8")
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (

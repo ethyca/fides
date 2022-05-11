@@ -1,4 +1,6 @@
-FROM --platform=linux/amd64 python:3.8-slim-buster as base
+ARG PYTHON_VERSION=3.8
+
+FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-buster as base
 
 # Update pip in the base image since we'll use it everywhere
 RUN pip install -U pip
