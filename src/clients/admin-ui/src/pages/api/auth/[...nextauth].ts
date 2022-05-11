@@ -17,7 +17,7 @@ export default NextAuth({
         let res;
 
         try {
-          res = await fetch(`${process.env.NEXT_PUBLIC_FIDESOPS_API!}/login`, {
+          res = await fetch(`${process.env.NEXT_PUBLIC_FIDESCTL_API!}/login`, {
             method: 'POST',
             body: JSON.stringify({
               username: credentials!.email,

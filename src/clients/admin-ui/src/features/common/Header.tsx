@@ -1,21 +1,14 @@
-import React from 'react';
 import {
-  Flex,
-  Link,
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Text,
-  MenuDivider,
-  Stack,
+  Button, Flex,
+  Link, Menu,
+  MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text
 } from '@fidesui/react';
 import { signOut } from 'next-auth/react';
-import NextLink from 'next/link';
 import Image from 'next/image';
-
+import NextLink from 'next/link';
+import React from 'react';
 import { UserIcon } from './Icon';
+
 
 interface HeaderProps {
   username: string;
@@ -34,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
       <NextLink href="/" passHref>
         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <Link display="flex">
-          <Image src="/logo.svg" width={83} height={26} alt="FidesOps Logo" />
+          <Image src="/logo.svg" width={83} height={26} alt="Fidesctl Logo" />
         </Link>
       </NextLink>
       <Flex alignItems="center">
