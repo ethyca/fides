@@ -123,4 +123,4 @@ def db_action(server_url: str, action: str) -> requests.Response:
     """
     Tell the API to perform a database action.
     """
-    return requests.post(f"{server_url}/admin/db/{action}")
+    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}")

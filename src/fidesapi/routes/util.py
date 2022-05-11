@@ -16,4 +16,4 @@ def get_resource_type(router: APIRouter) -> str:
     Returns:
         The router's resource type
     """
-    return router.prefix.strip(API_PREFIX)
+    return router.prefix.replace(f"{API_PREFIX}/", "", 1)
