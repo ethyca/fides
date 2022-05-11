@@ -5,11 +5,11 @@ from typing import Dict
 
 import pytest
 import requests
+from fideslang import model_list, parse
 
 from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
-from fideslang import model_list, parse
 
 
 # Helper Functions
@@ -182,7 +182,7 @@ def test_api_delete(
 )
 def test_visualize(test_config: FidesctlConfig, resource_type: str) -> None:
     response = requests.get(
-        f"{test_config.cli.server_url}/{resource_type}/visualize/graphs"
+        f"{test_config.cli.server_url}{API_PREFIX}/{resource_type}/visualize/graphs"
     )
     assert response.status_code == 200
 
@@ -192,3 +192,12 @@ def test_static_sink(test_config: FidesctlConfig) -> None:
     """Make sure we are hosting something at / and not getting a 404"""
     response = requests.get(f"{test_config.cli.server_url}")
     assert response.status_code == 200
+
+
+@pytest.mark.integration
+def test_404_on_api_routes(test_config: FidesctlConfig) -> None:
+    """Should get a 404 on routes that start with API_PREFIX but do not exist"""
+    response = requests.get(
+        f"{test_config.cli.server_url}{API_PREFIX}/path/that/does/not/exist"
+    )
+    assert response.status_code == 404

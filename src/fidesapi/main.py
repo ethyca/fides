@@ -8,7 +8,7 @@ from logging import WARNING
 from pathlib import Path
 from typing import Callable, Dict
 
-from fastapi import FastAPI, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger as log
@@ -144,13 +144,15 @@ def read_other_paths(request: Request) -> FileResponse:
     """
     Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
     """
-    # check first if requested file exists
+    # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
     file = WEBAPP_DIRECTORY / Path(path)
     if file.exists():
         return FileResponse(file)
 
-    # TODO 404
+    # raise 404 for anything that should be backend endpoint but we can't find it
+    if path.startswith(API_PREFIX[1:]):
+        raise HTTPException(status_code=404, detail="Item not found")
 
     # otherwise return the index
     return FileResponse(WEBAPP_INDEX)
