@@ -18,11 +18,9 @@ import fidesctl
 from fidesapi import view
 from fidesapi.database import database
 from fidesapi.routes import crud, visualize
+from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
-
-WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
-WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -89,7 +87,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 
 
 @app.get(
-    "/health",
+    f"{API_PREFIX}/health",
     response_model=Dict[str, str],
     responses={
         status.HTTP_200_OK: {
@@ -119,7 +117,7 @@ class DBActions(str, Enum):
     reset = "reset"
 
 
-@app.post("/admin/db/{action}", tags=["Admin"])
+@app.post(API_PREFIX + "/admin/db/{action}", tags=["Admin"])
 async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
@@ -152,8 +150,10 @@ def read_other_paths(request: Request) -> FileResponse:
     if file.exists():
         return FileResponse(file)
 
+    # TODO 404
+
     # otherwise return the index
-    return FileResponse(WEBAPP_DIRECTORY / "index.html")
+    return FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:

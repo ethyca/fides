@@ -5,10 +5,11 @@ from typing import Dict
 
 import pytest
 import requests
-from fideslang import model_list, parse
 
+from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
+from fideslang import model_list, parse
 
 
 # Helper Functions
@@ -25,8 +26,9 @@ def test_generate_resource_urls_no_id(test_config: FidesctlConfig) -> None:
     """
     Test that the URL generator works as intended.
     """
-    expected_url = f"{test_config}/test/"
-    result_url = _api.generate_resource_url(url=test_config, resource_type="test")
+    server_url = test_config.cli.server_url
+    expected_url = f"{server_url}{API_PREFIX}/test/"
+    result_url = _api.generate_resource_url(url=server_url, resource_type="test")
     assert expected_url == result_url
 
 
@@ -35,9 +37,10 @@ def test_generate_resource_urls_with_id(test_config: FidesctlConfig) -> None:
     """
     Test that the URL generator works as intended.
     """
-    expected_url = f"{test_config}/test/1"
+    server_url = test_config.cli.server_url
+    expected_url = f"{server_url}{API_PREFIX}/test/1"
     result_url = _api.generate_resource_url(
-        url=test_config,
+        url=server_url,
         resource_type="test",
         resource_id="1",
     )
@@ -47,7 +50,10 @@ def test_generate_resource_urls_with_id(test_config: FidesctlConfig) -> None:
 # Integration Tests
 @pytest.mark.integration
 def test_api_ping(test_config: FidesctlConfig) -> None:
-    assert _api.ping(test_config.cli.server_url + "/health").status_code == 200
+    assert (
+        _api.ping(test_config.cli.server_url + API_PREFIX + "/health").status_code
+        == 200
+    )
 
 
 @pytest.mark.integration
