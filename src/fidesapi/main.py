@@ -131,7 +131,7 @@ async def db_action(action: DBActions) -> Dict:
 
 
 # Configure the static file paths last since otherwise it will take over all paths
-@app.get("/")
+@app.get("/", tags=["Default"])
 def read_index() -> Response:
     """
     Return an index.html at the root path
@@ -139,7 +139,7 @@ def read_index() -> Response:
     return FileResponse(WEBAPP_INDEX)
 
 
-@app.get("/{catchall:path}", response_class=FileResponse)
+@app.get("/{catchall:path}", response_class=FileResponse, tags=["Default"])
 def read_other_paths(request: Request) -> FileResponse:
     """
     Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
