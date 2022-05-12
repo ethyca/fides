@@ -669,13 +669,16 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json().keys()) == ["access_token"]
-        token = response.json()["access_token"]
-
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
         token_data = json.loads(extract_payload(token))
-
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [PRIVACY_REQUEST_READ]
+        assert token_data["scopes"] == [
+            PRIVACY_REQUEST_READ
+        ]  # Uses scopes on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
 
         user.client.delete(db)
 
@@ -699,15 +702,16 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.client is not None
-        assert list(response.json().keys()) == ["access_token"]
-        token = response.json()["access_token"]
-
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
         token_data = json.loads(extract_payload(token))
-
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
             PRIVACY_REQUEST_READ
         ]  # Uses scopes on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
 
 
 class TestUserLogout:
