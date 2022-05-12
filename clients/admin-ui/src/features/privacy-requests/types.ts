@@ -1,3 +1,5 @@
+import {string} from "prop-types";
+
 export type PrivacyRequestStatus =
   | 'approved'
   | 'complete'
@@ -6,6 +8,12 @@ export type PrivacyRequestStatus =
   | 'in_processing'
   | 'paused'
   | 'pending';
+
+
+export interface DenyPrivacyRequest{
+  id:string,
+  reason: string
+}
 
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
