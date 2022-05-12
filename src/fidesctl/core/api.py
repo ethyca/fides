@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import requests
 
+from fidesapi.routes.util import API_PREFIX
+
 
 def generate_resource_url(
     url: str,
@@ -13,7 +15,7 @@ def generate_resource_url(
     Generate a resource's URL using a base url, the resource type,
     and [optionally] the resource's ID.
     """
-    return f"{url}/{resource_type}/{resource_id}"
+    return f"{url}{API_PREFIX}/{resource_type}/{resource_id}"
 
 
 def get(
@@ -121,4 +123,4 @@ def db_action(server_url: str, action: str) -> requests.Response:
     """
     Tell the API to perform a database action.
     """
-    return requests.post(f"{server_url}/admin/db/{action}")
+    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}")

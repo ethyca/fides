@@ -25,6 +25,7 @@ The types of changes are:
 ### Changed
 
 * Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
+* Migrate all endpoints to be prefixed by `/api/v1` [#623](https://github.com/ethyca/fides/issues/623)
 
 ### Developer Experience
 
