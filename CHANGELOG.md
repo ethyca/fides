@@ -21,6 +21,7 @@ The types of changes are:
 
 * Added dependabot to keep dependencies updated
 * Include a warning for any orphan datasets as part of the `apply` command.
+* Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
 
 ### Developer Experience
 
