@@ -101,7 +101,7 @@ pylint: compose-build
 mypy: compose-build
 	@echo "Running mypy checks..."
 	@docker-compose run $(IMAGE_NAME) \
-		mypy --ignore-missing-imports src/
+		mypy src/
 
 pytest: compose-build
 	@echo "Running pytest unit tests..."

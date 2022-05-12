@@ -143,7 +143,7 @@ def test_segment_saas_erasure_request_task(
     segment_connection_config,
     segment_dataset_config,
     segment_erasure_identity_email,
-    segment_erasure_data
+    segment_erasure_data,
 ) -> None:
     """Full erasure request based on the Segment SaaS config"""
     config.execution.MASKING_STRICT = False  # Allow GDPR Delete

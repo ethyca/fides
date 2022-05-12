@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4a0d10fa-6f76-4395-8d9c-73dd49246e9f",
+		"_postman_id": "4cf21904-951b-45f2-9e0a-bab994b5d534",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3315,6 +3315,67 @@
 							],
 							"path": [
 								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "DRP",
+			"item": [
+				{
+					"name": "Exercise",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"meta\": {\"version\": \"0.5\"},\n    \"regime\": \"ccpa\",\n    \"exercise\": [\n        \"access\"\n    ],\n    \"identity\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI\",\n}"
+						},
+						"url": {
+							"raw": "{{host}}/drp/exercise",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"exercise"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/drp/status?request_id={{privacy_request_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"status"
+							],
+							"query": [
+								{
+									"key": "request_id",
+									"value": "{{privacy_request_id}}"
+								}
 							]
 						}
 					},
