@@ -16,23 +16,42 @@ from fidesops.api.v1.scope_registry import CLIENT_CREATE
 class TestCreateSuperuserScript:
     @mock.patch("create_superuser.get_username")
     @mock.patch("create_superuser.get_password")
-    def test_collect_username_and_password(self, mock_pass, mock_user, db):
+    @mock.patch("create_superuser.get_input")
+    def test_collect_username_and_password(
+        self,
+        mock_input,
+        mock_pass,
+        mock_user,
+        db,
+    ):
+        GENERIC_INPUT = "some_input"
         mock_pass.return_value = "TESTP@ssword9"
         mock_user.return_value = "test_user"
+        mock_input.return_value = GENERIC_INPUT
         user: UserCreate = collect_username_and_password(db)
 
         assert user.username == "test_user"
         assert user.password == "TESTP@ssword9"
+        assert user.first_name == GENERIC_INPUT
+        assert user.last_name == GENERIC_INPUT
 
     @mock.patch("create_superuser.get_username")
     @mock.patch("create_superuser.get_password")
-    def test_collect_username_and_password_user_exists(self, mock_pass, mock_user, db):
+    @mock.patch("create_superuser.get_input")
+    def test_collect_username_and_password_user_exists(
+        self,
+        mock_input,
+        mock_pass,
+        mock_user,
+        db,
+    ):
         user = FidesopsUser.create(
             db=db,
             data={"username": "test_user", "password": "test_password"},
         )
         mock_pass.return_value = "TESTP@ssword9"
         mock_user.return_value = "test_user"
+        mock_input.return_value = "some_input"
 
         with pytest.raises(Exception):
             collect_username_and_password(db)
@@ -41,18 +60,34 @@ class TestCreateSuperuserScript:
 
     @mock.patch("create_superuser.get_username")
     @mock.patch("create_superuser.get_password")
-    def test_collect_username_and_password_bad_data(self, mock_pass, mock_user, db):
+    @mock.patch("create_superuser.get_input")
+    def test_collect_username_and_password_bad_data(
+        self,
+        mock_input,
+        mock_pass,
+        mock_user,
+        db,
+    ):
         mock_pass.return_value = "bad_password"
         mock_user.return_value = "test_user"
+        mock_input.return_value = "some_input"
 
         with pytest.raises(ValueError):
             collect_username_and_password(db)
 
     @mock.patch("create_superuser.get_username")
     @mock.patch("create_superuser.get_password")
-    def test_create_user_and_client(self, mock_pass, mock_user, db):
+    @mock.patch("create_superuser.get_input")
+    def test_create_user_and_client(
+        self,
+        mock_input,
+        mock_pass,
+        mock_user,
+        db,
+    ):
         mock_pass.return_value = "TESTP@ssword9"
         mock_user.return_value = "test_user"
+        mock_input.return_value = "some_input"
 
         superuser = create_user_and_client(db)
         assert superuser.username == "test_user"
