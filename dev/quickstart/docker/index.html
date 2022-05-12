@@ -1488,7 +1488,7 @@ You're not viewing the latest version.
     image: ethyca/fidesctl
     command: fidesctl webserver
     healthcheck:
-      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://0.0.0.0:8000/health&quot;]
+      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://0.0.0.0:8000/api/v1/health&quot;]
       interval: 5s
       timeout: 5s
       retries: 5
