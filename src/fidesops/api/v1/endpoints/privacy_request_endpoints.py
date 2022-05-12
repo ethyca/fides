@@ -3,7 +3,7 @@ import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -56,8 +56,6 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     DenyPrivacyRequests,
-    PrivacyRequestDRPStatusResponse,
-    PrivacyRequestDRPStatus,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
@@ -426,62 +424,6 @@ def get_request_status(
             item.identity = item.get_cached_identity_data()
 
     return paginated
-
-
-def _map_fidesops_status_to_drp_status(
-    status: PrivacyRequestStatus,
-) -> PrivacyRequestDRPStatus:
-    PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING: Dict[
-        PrivacyRequestStatus, PrivacyRequestDRPStatus
-    ] = {
-        PrivacyRequestStatus.pending: PrivacyRequestDRPStatus.open,
-        PrivacyRequestStatus.approved: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.denied: PrivacyRequestDRPStatus.denied,
-        PrivacyRequestStatus.in_processing: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.complete: PrivacyRequestDRPStatus.fulfilled,
-        PrivacyRequestStatus.paused: PrivacyRequestDRPStatus.in_progress,
-        PrivacyRequestStatus.error: PrivacyRequestDRPStatus.expired,
-    }
-    try:
-        return PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING[status]
-    except KeyError:
-        raise ValueError(f"Request has invalid DRP request status: {status.value}")
-
-
-@router.get(
-    urls.REQUEST_STATUS_DRP,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
-    response_model=PrivacyRequestDRPStatusResponse,
-)
-def get_request_status_drp(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-) -> PrivacyRequestDRPStatusResponse:
-    """
-    Returns PrivacyRequest information where the respective privacy request is associated with
-    a policy that implements a Data Rights Protocol action.
-    """
-
-    logger.info(f"Finding request for DRP with ID: {privacy_request_id}")
-    request = PrivacyRequest.get(
-        db=db,
-        id=privacy_request_id,
-    )
-    if not request or not request.policy or not request.policy.drp_action:
-        # If no request is found with this ID, or that request has no policy,
-        # or that request's policy has no associated drp_action.
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Privacy request with ID {privacy_request_id} does not exist, or is not associated with a data rights protocol action.",
-        )
-
-    logger.info(f"Privacy request with ID: {privacy_request_id} found for DRP status.")
-    return PrivacyRequestDRPStatusResponse(
-        request_id=request.id,
-        received_at=request.requested_at,
-        status=_map_fidesops_status_to_drp_status(request.status),
-    )
 
 
 @router.get(

@@ -186,10 +186,17 @@ class PrivacyRequest(Base):
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
         for key, value in drp_request_body_dict.items():
             if value is not None:
-                cache.set_with_autoexpire(
-                    get_drp_request_body_cache_key(self.id, key),
-                    value,
-                )
+                # handle nested dict/objects
+                if not isinstance(value, (bytes, str, int, float)):
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        repr(value),
+                    )
+                else:
+                    cache.set_with_autoexpire(
+                        get_drp_request_body_cache_key(self.id, key),
+                        value,
+                    )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fidesops app cache if provided"""

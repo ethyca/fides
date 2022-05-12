@@ -120,6 +120,7 @@ class SecuritySettings(FidesSettings):
     AES_ENCRYPTION_KEY_LENGTH: int = 16
     AES_GCM_NONCE_LENGTH: int = 12
     APP_ENCRYPTION_KEY: str
+    DRP_JWT_SECRET: str
 
     @validator("APP_ENCRYPTION_KEY")
     def validate_encryption_key_length(

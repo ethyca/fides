@@ -146,7 +146,9 @@ def hubspot_erasure_data(
     retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is False:
         if not retries:
-            raise Exception(f"Contact with contact id {contact_id} could not be added to Hubspot")
+            raise Exception(
+                f"Contact with contact id {contact_id} could not be added to Hubspot"
+            )
         retries -= 1
         time.sleep(5)
 
@@ -163,7 +165,9 @@ def hubspot_erasure_data(
     retries = 10
     while _contact_exists(hubspot_erasure_identity_email, connector) is True:
         if not retries:
-            raise Exception(f"Contact with contact id {contact_id} could not be deleted from Hubspot")
+            raise Exception(
+                f"Contact with contact id {contact_id} could not be deleted from Hubspot"
+            )
         retries -= 1
         time.sleep(5)  # Ensures contact is deleted
 
