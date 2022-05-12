@@ -35,6 +35,7 @@ from fidesops.schemas.user import (
     UserLogin,
     UserPasswordReset,
     UserResponse,
+    UserLoginResponse,
 )
 
 from fidesops.util.oauth_util import (
@@ -238,11 +239,11 @@ def delete_user(
 @router.post(
     urls.LOGIN,
     status_code=HTTP_200_OK,
-    response_model=AccessToken,
+    response_model=UserLoginResponse,
 )
 def user_login(
     *, db: Session = Depends(deps.get_db), user_data: UserLogin
-) -> AccessToken:
+) -> UserLoginResponse:
     """Login the user by creating a client if it doesn't exist, and have that client generate a token"""
     user: FidesopsUser = FidesopsUser.get_by(
         db, field="username", value=user_data.username
@@ -260,7 +261,10 @@ def user_login(
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe()
-    return AccessToken(access_token=access_code)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(access_token=access_code),
+    )
 
 
 @router.post(
