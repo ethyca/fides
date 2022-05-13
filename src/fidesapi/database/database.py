@@ -9,6 +9,7 @@ from alembic.migration import MigrationContext
 from alembic.runtime import migration
 from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
+from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
@@ -118,7 +119,7 @@ def reset_db(database_url: str) -> None:
 def get_db_health(database_url: str) -> str:
     """Checks if the db is reachable and up to date in alembic migrations"""
     try:
-        engine = get_db_engine(database_url)
+        engine = create_engine(database_url)
         alembic_config = get_alembic_config(database_url)
         alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
         with engine.begin() as conn:
