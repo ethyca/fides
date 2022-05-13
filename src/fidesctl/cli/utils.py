@@ -22,6 +22,7 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
+from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import check_response, echo_green, echo_red
@@ -30,7 +31,7 @@ from fidesctl.core.utils import check_response, echo_green, echo_red
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    healthcheck_url = server_url + "/health"
+    healthcheck_url = server_url + API_PREFIX + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:

@@ -59,7 +59,7 @@ Now that we've spun up our database and set our configuration values, it's time 
 fidesctl webserver
 ```
 
-The fidesctl webserver will now be accessible at `localhost:8080`, you can test this by going to `localhost:8080/health` and `localhost:8080/docs`.
+The fidesctl webserver will now be accessible at `localhost:8080`, you can test this by going to `localhost:8080/api/v1/health` and `localhost:8080/docs`.
 
 ## Using the CLI
 

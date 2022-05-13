@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 from fideslang import model_map
 
 from fidesapi.routes.crud import list_resource
+from fidesapi.routes.util import API_PREFIX, get_resource_type
 from fidesapi.sql_models import sql_model_map
 from fidesapi.utils.helpers import get_resource_type
 from fidesctl.core import visualize
@@ -34,7 +35,7 @@ for resource_type in VISUALIZABLE_RESOURCE_TYPES:
     RESOURCE_MODEL_NAME = model_map[resource_type].__name__
     router = APIRouter(
         tags=["Visualize", RESOURCE_MODEL_NAME],
-        prefix=f"/{resource_type}",
+        prefix=f"{API_PREFIX}/{resource_type}",
     )
 
     @router.get("/visualize/{figure_type}")
