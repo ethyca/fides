@@ -54,3 +54,13 @@ class QueryError(HTTPException):
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "a database query failed"},
         )
+
+
+def get_full_exception_name(exception: Exception) -> str:
+    """Get the full exception name
+    i.e. get sqlalchemy.exc.IntegrityError instead of just IntegrityError
+    """
+    module = exception.__class__.__module__
+    if module is None or module == str.__class__.__module__:
+        return exception.__class__.__name__
+    return module + "." + exception.__class__.__name__

@@ -108,3 +108,12 @@ def reset_db(database_url: str) -> None:
     version = migration_context._version  # pylint: disable=protected-access
     if version.exists(connection):
         version.drop(connection)
+
+
+def check_db_health(database_url: str) -> str:
+    """Checks if the db is reachable and up to date in migrations"""
+    alembic_config = get_alembic_config(database_url)
+    current = command.current(alembic_config)
+    if "(head)" in current:
+        return "healthy"
+    return "needs migration"

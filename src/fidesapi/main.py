@@ -2,6 +2,7 @@
 Contains the code that sets up the API.
 """
 
+
 from datetime import datetime
 from enum import Enum
 from logging import WARNING
@@ -19,6 +20,7 @@ from fidesapi import view
 from fidesapi.database import database
 from fidesapi.routes import crud, visualize
 from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fidesapi.utils.errors import get_full_exception_name
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -42,8 +44,12 @@ configure_routes()
 
 async def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
-    database.create_db_if_not_exists(database_url)
-    await database.init_db(database_url)
+    try:
+        database.create_db_if_not_exists(database_url)
+        await database.init_db(database_url)
+    except Exception as error:
+        error_type = get_full_exception_name(error)
+        log.error(f"Unable to configure database: {error_type}: {error}")
 
 
 @app.on_event("startup")
