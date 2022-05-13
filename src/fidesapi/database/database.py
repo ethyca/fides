@@ -11,7 +11,11 @@ from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
-from fidesapi.utils.errors import AlreadyExistsError, QueryError
+from fidesapi.utils.errors import (
+    AlreadyExistsError,
+    QueryError,
+    get_full_exception_name,
+)
 from fidesctl.core.utils import get_db_engine
 
 from .crud import create_resource, upsert_resources
@@ -110,10 +114,15 @@ def reset_db(database_url: str) -> None:
         version.drop(connection)
 
 
-def check_db_health(database_url: str) -> str:
+def get_db_health(database_url: str) -> str:
     """Checks if the db is reachable and up to date in migrations"""
-    alembic_config = get_alembic_config(database_url)
-    current = command.current(alembic_config)
-    if "(head)" in current:
-        return "healthy"
-    return "needs migration"
+    try:
+        alembic_config = get_alembic_config(database_url)
+        current = command.current(alembic_config)
+        if "(head)" in current:
+            return "healthy"
+        return "needs migration"
+    except Exception as error:
+        error_type = get_full_exception_name(error)
+        log.error(f"Unable to reach the database: {error_type}: {error}")
+        return "unhealthy"

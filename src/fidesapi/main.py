@@ -102,18 +102,46 @@ async def log_request(request: Request, call_next: Callable) -> Response:
                     "example": {
                         "status": "healthy",
                         "version": "1.0.0",
+                        "database": "healthy",
                     }
                 }
             }
-        }
+        },
+        status.HTTP_503_SERVICE_UNAVAILABLE: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "status": "healthy",
+                            "version": "1.0.0",
+                            "database": "unhealthy",
+                        }
+                    }
+                }
+            }
+        },
     },
     tags=["Health"],
 )
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
+    database_health = database.get_db_health(CONFIG.api.sync_database_url)
+    response = {
+        "status": "healthy",
+        "version": str(fidesctl.__version__),
+        "database": database_health,
+    }
+
+    for key in response:
+        if response[key] == "unhealthy":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
+            )
+
     return {
         "status": "healthy",
         "version": str(fidesctl.__version__),
+        "database": database.get_db_health(CONFIG.api.sync_database_url),
     }
 
 
@@ -158,7 +186,9 @@ def read_other_paths(request: Request) -> FileResponse:
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
 
     # otherwise return the index
     return FileResponse(WEBAPP_INDEX)
