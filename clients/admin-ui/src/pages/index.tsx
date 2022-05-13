@@ -1,17 +1,14 @@
-import React from 'react';
+import { Box, Button, Flex, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { getSession } from 'next-auth/react';
-import { Flex, Heading, Button, Box } from '@fidesui/react';
+import React from 'react';
+
 import { wrapper } from '../app/store';
-
 import Header from '../features/common/Header';
-
 import { ArrowDownLineIcon } from '../features/common/Icon';
-
-import RequestTable from '../features/privacy-requests/RequestTable';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
-
+import RequestTable from '../features/privacy-requests/RequestTable';
 import { assignToken } from '../features/user/user.slice';
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (

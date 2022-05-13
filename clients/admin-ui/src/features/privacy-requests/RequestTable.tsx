@@ -1,26 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
 import {
-  Table,
-  Text,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
   Button,
   Flex,
+  Table,
+  Tbody,
+  Text,
+  Th,
+  Thead,
+  Tr,
 } from '@fidesui/react';
+import debounce from 'lodash.debounce';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import debounce from 'lodash.debounce';
-
-import { PrivacyRequest } from './types';
 import {
   selectPrivacyRequestFilters,
-  useGetAllPrivacyRequestsQuery,
   setPage,
+  useGetAllPrivacyRequestsQuery,
 } from './privacy-requests.slice';
-
 import RequestRow from './RequestRow';
+import { PrivacyRequest } from './types';
 
 interface RequestTableProps {
   requests?: PrivacyRequest[];

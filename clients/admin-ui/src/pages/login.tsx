@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  chakra,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  Stack,
+  useToast,
+} from '@fidesui/react';
+import { useFormik } from 'formik';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useFormik } from 'formik';
-import { signIn } from 'next-auth/react';
-
-import {
-  Flex,
-  Stack,
-  Heading,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  FormErrorMessage,
-  chakra,
-  useToast,
-} from '@fidesui/react';
 import { useRouter } from 'next/router';
+import { signIn } from 'next-auth/react';
+import React, { useState } from 'react';
 
 const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
