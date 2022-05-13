@@ -6,7 +6,9 @@ from typing import Dict
 import pytest
 import requests
 from fideslang import model_list, parse
+from pytest import MonkeyPatch
 
+from fidesapi import main
 from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
@@ -49,11 +51,23 @@ def test_generate_resource_urls_with_id(test_config: FidesctlConfig) -> None:
 
 # Integration Tests
 @pytest.mark.integration
-def test_api_ping(test_config: FidesctlConfig) -> None:
-    assert (
-        _api.ping(test_config.cli.server_url + API_PREFIX + "/health").status_code
-        == 200
-    )
+@pytest.mark.parametrize(
+    "database_health, expected_status_code",
+    [("healthy", 200), ("needs migration", 200), ("unhealthy", 503)],
+)
+def test_api_ping(
+    test_config: FidesctlConfig,
+    database_health: str,
+    expected_status_code: int,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    def mock_get_db_health() -> str:
+        return database_health
+
+    # not working :(
+    monkeypatch.setattr(main, "get_db_health", mock_get_db_health)
+    response = _api.ping(test_config.cli.server_url + API_PREFIX + "/health")
+    assert response.status_code == expected_status_code
 
 
 @pytest.mark.integration

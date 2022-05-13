@@ -3,9 +3,10 @@ Contains all of the logic related to the database including connections, setup, 
 """
 from os import path
 
-from alembic import command
+from alembic import command, script
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from alembic.runtime import migration
 from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
@@ -115,13 +116,19 @@ def reset_db(database_url: str) -> None:
 
 
 def get_db_health(database_url: str) -> str:
-    """Checks if the db is reachable and up to date in migrations"""
+    """Checks if the db is reachable and up to date in alembic migrations"""
     try:
+        engine = get_db_engine(database_url)
         alembic_config = get_alembic_config(database_url)
-        current = command.current(alembic_config)
-        if "(head)" in current:
-            return "healthy"
-        return "needs migration"
+        alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
+        with engine.begin() as conn:
+            context = migration.MigrationContext.configure(conn)
+            if (
+                context.get_current_revision()
+                != alembic_script_directory.get_current_head()
+            ):
+                return "needs migration"
+        return "healthy"
     except Exception as error:
         error_type = get_full_exception_name(error)
         log.error(f"Unable to reach the database: {error_type}: {error}")

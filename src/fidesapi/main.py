@@ -18,6 +18,7 @@ from uvicorn import Config, Server
 import fidesctl
 from fidesapi import view
 from fidesapi.database import database
+from fidesapi.database.database import get_db_health
 from fidesapi.routes import crud, visualize
 from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
 from fidesapi.utils.errors import get_full_exception_name
@@ -125,7 +126,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 )
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    database_health = database.get_db_health(CONFIG.api.sync_database_url)
+    database_health = get_db_health(CONFIG.api.sync_database_url)
     response = {
         "status": "healthy",
         "version": str(fidesctl.__version__),
@@ -138,11 +139,7 @@ async def health() -> Dict:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
             )
 
-    return {
-        "status": "healthy",
-        "version": str(fidesctl.__version__),
-        "database": database.get_db_health(CONFIG.api.sync_database_url),
-    }
+    return response
 
 
 class DBActions(str, Enum):
