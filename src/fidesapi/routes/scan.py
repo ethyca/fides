@@ -8,8 +8,8 @@ from fastapi import APIRouter, Response, status
 from pydantic import BaseModel
 
 from fidesapi.routes.crud import get_resource
+from fidesapi.routes.util import API_PREFIX, unobscure
 from fidesapi.sql_models import sql_model_map
-from fidesapi.utils.helpers import unobscure
 from fidesctl.core.system import filter_aws_systems, generate_aws_systems
 
 
@@ -34,7 +34,7 @@ class Scan(BaseModel):
     scan_config: Dict[str, str]
 
 
-router = APIRouter(tags=["scan"], prefix="/scan")
+router = APIRouter(tags=["scan"], prefix=f"{API_PREFIX}/scan")
 
 routers = [router]
 
