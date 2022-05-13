@@ -1,5 +1,6 @@
 """Module that adds functionality for generating or scanning systems."""
 from collections import defaultdict
+from json import dumps
 from typing import Dict, List, Optional, Tuple
 
 from fideslang import manifests
@@ -15,7 +16,7 @@ from .filters import filter_aws_systems
 from .utils import echo_green, echo_red
 
 
-def describe_redshift_clusters() -> Dict[str, List[Dict]]:
+def describe_redshift_clusters(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
     """
     Creates boto3 redshift client and returns describe_clusters response.
     """
@@ -23,6 +24,7 @@ def describe_redshift_clusters() -> Dict[str, List[Dict]]:
 
     redshift_client = boto3.client(
         "redshift",
+        **aws_config,
     )
     describe_clusters = redshift_client.describe_clusters()
     return describe_clusters
@@ -58,18 +60,20 @@ def transform_redshift_systems(
     return redshift_systems
 
 
-def generate_redshift_systems(organization_key: str) -> List[System]:
+def generate_redshift_systems(
+    organization_key: str, aws_config: Dict[str, str]
+) -> List[System]:
     """
     Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
     """
-    describe_clusters = describe_redshift_clusters()
+    describe_clusters = describe_redshift_clusters(aws_config)
     redshift_systems = transform_redshift_systems(
         describe_clusters=describe_clusters, organization_key=organization_key
     )
     return redshift_systems
 
 
-def describe_rds_clusters() -> Dict[str, List[Dict]]:
+def describe_rds_clusters(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
     """
     Creates boto3 rds client and returns describe_db_clusters response.
     """
@@ -77,12 +81,13 @@ def describe_rds_clusters() -> Dict[str, List[Dict]]:
 
     rds_client = boto3.client(
         "rds",
+        **aws_config,
     )
     describe_clusters = rds_client.describe_db_clusters()
     return describe_clusters
 
 
-def describe_rds_instances() -> Dict[str, List[Dict]]:
+def describe_rds_instances(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
     """
     Creates boto3 rds client and returns describe_db_instances response.
     """
@@ -90,6 +95,7 @@ def describe_rds_instances() -> Dict[str, List[Dict]]:
 
     rds_client = boto3.client(
         "rds",
+        **aws_config,
     )
     describe_instances = rds_client.describe_db_instances()
     return describe_instances
@@ -147,12 +153,14 @@ def transform_rds_systems(
     return rds_cluster_systems + rds_instances_systems
 
 
-def generate_rds_systems(organization_key: str) -> List[System]:
+def generate_rds_systems(
+    organization_key: str, aws_config: Dict[str, str]
+) -> List[System]:
     """
     Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
     """
-    describe_clusters = describe_rds_clusters()
-    describe_instances = describe_rds_instances()
+    describe_clusters = describe_rds_clusters(aws_config)
+    describe_instances = describe_rds_instances(aws_config)
     rds_systems = transform_rds_systems(
         describe_clusters=describe_clusters,
         describe_instances=describe_instances,
@@ -196,7 +204,9 @@ def get_organization(
     return server_organization
 
 
-def generate_aws_systems(organization_key: str) -> List[System]:
+def generate_aws_systems(
+    organization_key: str, aws_config: Dict[str, str]
+) -> List[System]:
     """
     Calls each generate system function for aws resources
     """
@@ -204,7 +214,7 @@ def generate_aws_systems(organization_key: str) -> List[System]:
     aws_systems = [
         found_system
         for generate_function in generate_system_functions
-        for found_system in generate_function(organization_key)
+        for found_system in generate_function(organization_key, aws_config)
     ]
     return aws_systems
 
@@ -215,16 +225,19 @@ def generate_system_aws(
     organization_key: str,
     url: AnyHttpUrl,
     headers: Dict[str, str],
+    aws_config: Dict[str, str],  # set this as an empty aws_config model?
+    from_api: bool = False,
 ) -> str:
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and extract tracked resource to write a System manifest with.
     Tracked resources: [Redshift, RDS]
     """
-
     _check_boto3_import()
 
-    aws_systems = generate_aws_systems(organization_key=organization_key)
+    aws_systems = generate_aws_systems(
+        organization_key=organization_key, aws_config=aws_config
+    )
     organization = get_organization(
         organization_key=organization_key,
         manifest_organizations=[],
@@ -234,13 +247,20 @@ def generate_system_aws(
     filtered_aws_systems = filter_aws_systems(
         systems=aws_systems, organization=organization
     )
-    manifests.write_manifest(
-        file_name,
-        [i.dict(exclude_none=not include_null) for i in filtered_aws_systems],
-        "system",
-    )
-    echo_green(f"Generated system manifest written to {file_name}")
-    return file_name
+    output_list_of_dicts = [
+        i.dict(exclude_none=not include_null) for i in filtered_aws_systems
+    ]
+    if not from_api:
+        manifests.write_manifest(
+            file_name,
+            output_list_of_dicts,
+            "system",
+        )
+        echo_green(f"Generated system manifest written to {file_name}")
+        return_value = file_name
+    else:
+        return_value = dumps({"systems": output_list_of_dicts})
+    return return_value
 
 
 def get_system_arns(systems: List[System]) -> List[str]:
@@ -374,7 +394,7 @@ def scan_system_aws(
     )
     existing_system_arns = get_system_arns(systems=manifest_systems + server_systems)
 
-    aws_systems = generate_aws_systems(organization_key=organization_key)
+    aws_systems = generate_aws_systems(organization_key=organization_key, aws_config={})
     organization = get_organization(
         organization_key=organization_key,
         manifest_organizations=manifest_taxonomy.organization
