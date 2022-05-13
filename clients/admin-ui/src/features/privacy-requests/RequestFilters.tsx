@@ -1,37 +1,36 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
-  Flex,
-  Text,
   Button,
-  Select,
+  Flex,
   Input,
   InputGroup,
-  InputLeftElement,
   InputLeftAddon,
+  InputLeftElement,
+  Select,
   Stack,
+  Text,
   useToast,
 } from '@fidesui/react';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import PIIToggle from './PIIToggle';
 import {
-  DownloadSolidIcon,
   CloseSolidIcon,
+  DownloadSolidIcon,
   SearchLineIcon,
 } from '../common/Icon';
-import { statusPropMap } from './RequestBadge';
-
-import { PrivacyRequestStatus } from './types';
-import {
-  setRequestStatus,
-  setRequestId,
-  setRequestFrom,
-  setRequestTo,
-  clearAllFilters,
-  selectPrivacyRequestFilters,
-  requestCSVDownload,
-} from './privacy-requests.slice';
 import { selectUserToken } from '../user/user.slice';
+import PIIToggle from './PIIToggle';
+import {
+  clearAllFilters,
+  requestCSVDownload,
+  selectPrivacyRequestFilters,
+  setRequestFrom,
+  setRequestId,
+  setRequestStatus,
+  setRequestTo,
+} from './privacy-requests.slice';
+import { statusPropMap } from './RequestBadge';
+import { PrivacyRequestStatus } from './types';
 
 const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
