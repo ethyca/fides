@@ -108,5 +108,4 @@ def generate_system_aws(
         organization_key=organization,
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        aws_config={},  # unused via the CLI currently
     )

@@ -81,26 +81,6 @@ def redshift_describe_clusters() -> Generator:
     yield describe_clusters
 
 
-list_of_dicts = [
-    {
-        "ClusterIdentifier": "redshift-cluster-1",
-        "Endpoint": {
-            "Address": "redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
-            "Port": 5439,
-        },
-        "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
-    },
-    {
-        "ClusterIdentifier": "redshift-cluster-2",
-        "Endpoint": {
-            "Address": "redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
-            "Port": 5439,
-        },
-        "ClusterNamespaceArn": "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
-    },
-]
-
-
 @pytest.fixture()
 def redshift_systems() -> Generator:
     redshift_systems = [
@@ -286,6 +266,5 @@ def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> 
         organization_key="default_organization",
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
-        aws_config={},
     )
     assert actual_result

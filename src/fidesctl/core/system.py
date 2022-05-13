@@ -1,6 +1,5 @@
 """Module that adds functionality for generating or scanning systems."""
 from collections import defaultdict
-from json import dumps
 from typing import Dict, List, Optional, Tuple
 
 from fideslang import manifests
@@ -225,8 +224,6 @@ def generate_system_aws(
     organization_key: str,
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    aws_config: Dict[str, str],  # set this as an empty aws_config model?
-    from_api: bool = False,
 ) -> str:
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
@@ -235,8 +232,9 @@ def generate_system_aws(
     """
     _check_boto3_import()
 
+    empty_aws_config_dict: Dict = {}  # not used via CLI
     aws_systems = generate_aws_systems(
-        organization_key=organization_key, aws_config=aws_config
+        organization_key=organization_key, aws_config=empty_aws_config_dict
     )
     organization = get_organization(
         organization_key=organization_key,
@@ -250,17 +248,13 @@ def generate_system_aws(
     output_list_of_dicts = [
         i.dict(exclude_none=not include_null) for i in filtered_aws_systems
     ]
-    if not from_api:
-        manifests.write_manifest(
-            file_name,
-            output_list_of_dicts,
-            "system",
-        )
-        echo_green(f"Generated system manifest written to {file_name}")
-        return_value = file_name
-    else:
-        return_value = dumps({"systems": output_list_of_dicts})
-    return return_value
+    manifests.write_manifest(
+        file_name,
+        output_list_of_dicts,
+        "system",
+    )
+    echo_green(f"Generated system manifest written to {file_name}")
+    return file_name
 
 
 def get_system_arns(systems: List[System]) -> List[str]:
