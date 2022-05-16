@@ -19,13 +19,8 @@ from fidesapi.database.crud import (
     update_resource,
     upsert_resources,
 )
+from fidesapi.routes.util import API_PREFIX, get_resource_type
 from fidesapi.sql_models import sql_model_map
-
-
-def get_resource_type(router: APIRouter) -> str:
-    "Extracts the name of the resource type from the prefix."
-    return router.prefix[1:]
-
 
 # CRUD Endpoints
 routers = []
@@ -33,7 +28,7 @@ for resource_type, resource_model in model_map.items():
     # Programmatically define routers for each resource type
     router = APIRouter(
         tags=[resource_model.__name__],
-        prefix=f"/{resource_type}",
+        prefix=f"{API_PREFIX}/{resource_type}",
     )
 
     @router.post(

@@ -8,7 +8,7 @@ from logging import WARNING
 from pathlib import Path
 from typing import Callable, Dict
 
-from fastapi import FastAPI, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger as log
@@ -18,11 +18,9 @@ import fidesctl
 from fidesapi import view
 from fidesapi.database import database
 from fidesapi.routes import crud, visualize
+from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
-
-WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
-WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
@@ -89,7 +87,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
 
 
 @app.get(
-    "/health",
+    f"{API_PREFIX}/health",
     response_model=Dict[str, str],
     responses={
         status.HTTP_200_OK: {
@@ -119,7 +117,7 @@ class DBActions(str, Enum):
     reset = "reset"
 
 
-@app.post("/admin/db/{action}", tags=["Admin"])
+@app.post(API_PREFIX + "/admin/db/{action}", tags=["Admin"])
 async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
@@ -133,7 +131,7 @@ async def db_action(action: DBActions) -> Dict:
 
 
 # Configure the static file paths last since otherwise it will take over all paths
-@app.get("/")
+@app.get("/", tags=["Default"])
 def read_index() -> Response:
     """
     Return an index.html at the root path
@@ -141,19 +139,23 @@ def read_index() -> Response:
     return FileResponse(WEBAPP_INDEX)
 
 
-@app.get("/{catchall:path}", response_class=FileResponse)
+@app.get("/{catchall:path}", response_class=FileResponse, tags=["Default"])
 def read_other_paths(request: Request) -> FileResponse:
     """
     Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
     """
-    # check first if requested file exists
+    # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
     file = WEBAPP_DIRECTORY / Path(path)
     if file.exists():
         return FileResponse(file)
 
+    # raise 404 for anything that should be backend endpoint but we can't find it
+    if path.startswith(API_PREFIX[1:]):
+        raise HTTPException(status_code=404, detail="Item not found")
+
     # otherwise return the index
-    return FileResponse(WEBAPP_DIRECTORY / "index.html")
+    return FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:
