@@ -1,57 +1,56 @@
 import ast
-
 import csv
 import io
-
 import json
 from datetime import datetime
-from dateutil.parser import parse
 from typing import List
 from unittest import mock
 
-from fastapi_pagination import Params
 import pytest
+from dateutil.parser import parse
+from fastapi import status
+from fastapi_pagination import Params
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
 )
+from fidesops.api.v1.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+    STORAGE_CREATE_OR_UPDATE,
+)
 from fidesops.api.v1.urn_registry import (
-    PRIVACY_REQUESTS,
-    V1_URL_PREFIX,
-    REQUEST_PREVIEW,
-    PRIVACY_REQUEST_RESUME,
     DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
-)
-from fidesops.api.v1.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    DATASET_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUESTS,
+    REQUEST_PREVIEW,
+    V1_URL_PREFIX,
 )
 from fidesops.core.config import config
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
+from fidesops.models.policy import ActionType
 from fidesops.models.privacy_request import (
-    PrivacyRequest,
     ExecutionLog,
     ExecutionLogStatus,
+    PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.models.policy import ActionType
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.schemas.jwt import (
-    JWE_PAYLOAD_SCOPES,
-    JWE_PAYLOAD_CLIENT_ID,
     JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
 from fidesops.util.cache import (
-    get_identity_cache_key,
     get_encryption_cache_key,
+    get_identity_cache_key,
     get_masking_secret_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
@@ -416,7 +415,7 @@ class TestGetPrivacyRequests:
         privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -459,7 +458,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -504,7 +503,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?id={privacy_request.id[:5]}", headers=auth_header
+            url + f"?request_id={privacy_request.id[:5]}", headers=auth_header
         )
         assert 200 == response.status_code
 
@@ -600,6 +599,34 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
+
+    def test_filter_privacy_requests_by_internal_id(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        new_request_id = "test_internal_id_1"
+        response = api_client.get(
+            url + f"?request_id={new_request_id}", headers=auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
+        privacy_request.id = new_request_id
+        privacy_request.save(db)
+
+        response = api_client.get(
+            url + f"?request_id={new_request_id}", headers=auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
 
     def test_filter_privacy_requests_by_external_id(
         self,

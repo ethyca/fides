@@ -5,15 +5,14 @@ from botocore.exceptions import ClientError
 from requests import RequestException
 
 from fidesops.schemas.storage.storage import (
-    StorageType,
-    StorageSecrets,
+    SUPPORTED_STORAGE_SECRETS,
     StorageSecretsOnetrust,
     StorageSecretsS3,
-    SUPPORTED_STORAGE_SECRETS,
+    StorageType,
 )
 from fidesops.util.storage_authenticator import (
-    get_s3_session,
     get_onetrust_access_token,
+    get_s3_session,
 )
 
 logger = logging.getLogger(__name__)

@@ -1,18 +1,17 @@
 import string
-from typing import Optional, List
 from secrets import choice
+from typing import List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    RandomStringMaskingConfiguration,
     MaskingConfiguration,
+    RandomStringMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
 
 RANDOM_STRING_REWRITE = "random_string_rewrite"
 
@@ -28,7 +27,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         """Replaces the value with a random lowercase string of the configured length"""
         if values is None:

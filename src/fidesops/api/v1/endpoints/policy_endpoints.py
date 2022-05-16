@@ -16,11 +16,11 @@ from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.common_exceptions import (
     DataCategoryNotSupported,
+    DrpActionValidationError,
     KeyOrNameAlreadyExists,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
-    DrpActionValidationError,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
@@ -180,7 +180,7 @@ def create_or_update_rules(
     for schema in input_data:
         # Validate all FKs in the input data exist
         associated_storage_config_id = None
-        if schema.action_type == ActionType.access.value:
+        if schema.action_type == ActionType.access:
             # Only validate the associated StorageConfig on access rules
             storage_destination_key = schema.storage_destination_key
             associated_storage_config: StorageConfig = StorageConfig.get_by(
@@ -200,8 +200,8 @@ def create_or_update_rules(
                 }
                 failed.append(BulkUpdateFailed(**failure))
                 continue
-            else:
-                associated_storage_config_id = associated_storage_config.id
+
+            associated_storage_config_id = associated_storage_config.id
 
         masking_strategy_data = None
         if schema.masking_strategy:

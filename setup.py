@@ -1,5 +1,8 @@
 import pathlib
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
+
+import versioneer
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
@@ -10,6 +13,8 @@ dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
 setup(
     name="fidesops",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Automation engine for privacy requests",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -18,6 +23,7 @@ setup(
     python_requires=">=3.7, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    package_data={"fidesops": ["alembic.ini"]},
     include_package_data=True,
     author="Ethyca, Inc.",
     author_email="fidesteam@ethyca.com",

@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
+
 from requests import Response
+
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.util.collection_util import Row
 
 
 class PaginationStrategy(ABC):

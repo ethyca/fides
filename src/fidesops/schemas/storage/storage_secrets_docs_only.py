@@ -1,11 +1,7 @@
 from typing import Union
 
 from fidesops.schemas.base_class import NoValidationSchema
-from fidesops.schemas.storage.storage import (
-    StorageSecretsLocal,
-    StorageSecretsS3,
-    StorageSecretsOnetrust,
-)
+from fidesops.schemas.storage.storage import StorageSecretsOnetrust, StorageSecretsS3
 
 
 class StorageSecretsS3Docs(StorageSecretsS3, NoValidationSchema):

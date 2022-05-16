@@ -45,7 +45,7 @@ Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_requ
 
 Use the `id` query param to view the high level status of a single privacy request.
 
-`GET api/v1/privacy-request?id=<privacy_request_id>`
+`GET api/v1/privacy-request?request_id=<privacy_request_id>`
 
 If an `external_id` was provided at request creation, we can also track the privacy request using:
 
@@ -98,7 +98,7 @@ logs for `my-postgres-db` (when the `order` collection is starting and finishing
 that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
 are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
 
-`GET api/v1/privacy-request?id={privacy_request_id}&verbose=True`
+`GET api/v1/privacy-request?request_id={privacy_request_id}&verbose=True`
 
 ```json
 {

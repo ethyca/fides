@@ -1,13 +1,13 @@
 import logging
 import secrets
-from typing import TypeVar, Optional, List, Dict
+from typing import Dict, List, Optional, TypeVar
 
 from fidesops.schemas.masking.masking_secrets import (
-    MaskingSecretMeta,
     MaskingSecretCache,
+    MaskingSecretMeta,
     SecretType,
 )
-from fidesops.util.cache import get_masking_secret_cache_key, get_cache
+from fidesops.util.cache import get_cache, get_masking_secret_cache_key
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -29,11 +29,11 @@ class SecretsUtil:
                     f"Secret type {secret_type} expected from cache but was not present for masking strategy {masking_secret_meta.masking_strategy}"
                 )
             return secret
-        else:
-            # expected for standalone masking service
-            return masking_secret_meta.generate_secret_func(
-                masking_secret_meta.secret_length
-            )
+
+        # expected for standalone masking service
+        return masking_secret_meta.generate_secret_func(
+            masking_secret_meta.secret_length
+        )
 
     @staticmethod
     def _get_secret_from_cache(

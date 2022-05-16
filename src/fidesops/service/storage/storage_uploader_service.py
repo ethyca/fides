@@ -1,20 +1,19 @@
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
-from fidesops.schemas.shared_schemas import FidesOpsKey
-
-from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.storage.storage import (
-    StorageType,
-    FileNaming,
-    StorageDetails,
-    ResponseFormat,
-)
 from sqlalchemy.orm import Session
-from fidesops.models.storage import StorageConfig
-from fidesops.tasks.storage import upload_to_s3, upload_to_onetrust, upload_to_local
-from fidesops.common_exceptions import StorageUploadError
 
+from fidesops.common_exceptions import StorageUploadError
+from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.storage import StorageConfig
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.schemas.storage.storage import (
+    FileNaming,
+    ResponseFormat,
+    StorageDetails,
+    StorageType,
+)
+from fidesops.tasks.storage import upload_to_local, upload_to_onetrust, upload_to_s3
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ def upload(
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     if config.secrets is None and config.type != StorageType.local:
         logger.warning(f"Storage secrets not found: {storage_key}")
-        raise StorageUploadError(f"Storage secrets not found")
+        raise StorageUploadError("Storage secrets not found")
     uploader: Any = _get_uploader_from_config_type(config.type)
     return uploader(db, config, data, request_id)
 
@@ -59,8 +58,8 @@ def _construct_file_key(request_id: str, config: StorageConfig) -> str:
     )
     if naming != FileNaming.request_id.value:
         raise ValueError(f"File naming of {naming} not supported")
-    else:
-        return f"{request_id}.{get_extension(config.format)}"
+
+    return f"{request_id}.{get_extension(config.format)}"
 
 
 def _get_uploader_from_config_type(storage_type: StorageType) -> Any:

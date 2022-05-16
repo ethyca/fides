@@ -89,7 +89,7 @@ An optional denial reason can be provided when denying a Privacy Request:
 ## How do I monitor Privacy Requests as they execute?
 Privacy Requests can be monitored at any time throughout their execution by submitting any of the following requests:
 
-`GET api/v1/privacy-request?id=<privacy_request_id>`
+`GET api/v1/privacy-request?request_id=<privacy_request_id>`
 
 `GET api/v1/privacy-request?external_id=<external_id>`
 

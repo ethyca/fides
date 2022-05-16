@@ -39,22 +39,28 @@ exclude = '''
 [tool.pylint.messages_control]
 disable=[
     "bad-option-value",
-    "line-too-long",
-    "invalid-name",
-    "too-few-public-methods",
-    "no-self-argument",
+    "broad-except",
     "dangerous-default-value",
     "duplicate-code",
-    "logging-fstring-interpolation",
+    "fixme",
     "import-error",
-    "unused-argument",
-    "no-self-use",
     "import-outside-toplevel",
-    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "invalid-name",
+    "line-too-long",
+    "logging-fstring-interpolation",
+    "missing-class-docstring",
+    "missing-function-docstring",
     "missing-module-docstring",
+    "no-self-argument",
+    "no-self-use",
     "raise-missing-from",
+    "too-few-public-methods",
     "too-many-ancestors",
-    "fixme"]
+    "too-many-arguments",
+    "unnecessary-comprehension",
+    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "unused-argument",
+]
 
 [tool.pylint.reports]
 reports="no"

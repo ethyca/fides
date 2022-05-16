@@ -1,15 +1,13 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
-    NullMaskingConfiguration,
     MaskingConfiguration,
+    NullMaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
-    MaskingStrategyConfigurationDescription,
 )
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-
 
 NULL_REWRITE = "null_rewrite"
 
@@ -24,7 +22,7 @@ class NullMaskingStrategy(MaskingStrategy):
         """For parity with other MaskingStrategies, but for NullMaskingStrategy, nothing is pulled from the config"""
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[None]]:
         """Replaces the value with a null value"""
         if values is None:

@@ -135,7 +135,7 @@ def patch_config(
             failed.append(
                 BulkUpdateFailed(
                     **{
-                        "message": f"Error creating or updating storage config.",
+                        "message": "Error creating or updating storage config.",
                         "data": destination.dict(),
                     }
                 )

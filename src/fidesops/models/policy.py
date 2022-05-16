@@ -51,7 +51,7 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 from fidesops.util.data_category import _validate_data_category
 
 
-class ActionType(EnumType):
+class ActionType(str, EnumType):
     """The purpose of a particular privacy request"""
 
     access = "access"

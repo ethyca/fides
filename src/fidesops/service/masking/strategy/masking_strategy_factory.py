@@ -3,6 +3,13 @@ from typing import Dict, List, Union
 
 from pydantic import ValidationError
 
+from fidesops.common_exceptions import NoSuchStrategyException
+from fidesops.common_exceptions import ValidationError as FidesopsValidationError
+from fidesops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+    MaskingConfiguration,
+)
+from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
@@ -14,18 +21,8 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import (
 from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RandomStringRewriteMaskingStrategy,
 )
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
-)
-from fidesops.common_exceptions import (
-    ValidationError as FidesopsValidationError,
-    NoSuchStrategyException,
-)
-
-from fidesops.schemas.masking.masking_configuration import (
-    FormatPreservationConfig,
-    MaskingConfiguration,
 )
 
 
@@ -41,6 +38,15 @@ class SupportedMaskingStrategies(Enum):
     aes_encrypt = AesEncryptionMaskingStrategy
     hmac = HmacMaskingStrategy
 
+    @classmethod
+    def __contains__(cls, item: str) -> bool:
+        try:
+            cls[item]
+        except KeyError:
+            return False
+
+        return True
+
 
 def get_strategy(
     strategy_name: str,
@@ -53,7 +59,7 @@ def get_strategy(
     Returns the strategy given the name and configuration.
     Raises NoSuchStrategyException if the strategy does not exist
     """
-    if strategy_name not in SupportedMaskingStrategies.__members__:
+    if not SupportedMaskingStrategies.__contains__(strategy_name):
         valid_strategies = ", ".join([s.name for s in SupportedMaskingStrategies])
         raise NoSuchStrategyException(
             f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"

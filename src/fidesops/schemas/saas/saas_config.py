@@ -1,20 +1,20 @@
-from typing import Any, Dict, List, Literal, Optional, Union, Set
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from fidesops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
-from pydantic import BaseModel, validator, root_validator, Extra
-from fidesops.schemas.base_class import BaseSchema
-from fidesops.schemas.dataset import FidesopsDatasetReference, FidesCollectionKey
+from pydantic import BaseModel, Extra, root_validator, validator
+
 from fidesops.graph.config import (
     Collection,
+    CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
-    CollectionAddress,
-    Field,
 )
+from fidesops.schemas.base_class import BaseSchema
+from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
+from fidesops.schemas.saas.shared_schemas import HTTPMethod
 from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 
 
 class ParamValue(BaseModel):
@@ -149,7 +149,7 @@ class SaaSRequest(BaseModel):
                         collect = param.references[0].field.split(".")[0]
                         referenced_collections.append(collect)
 
-            if not len(set(referenced_collections)) == 1:
+            if len(set(referenced_collections)) != 1:
                 raise ValueError(
                     "Grouped input fields must all reference the same collection."
                 )

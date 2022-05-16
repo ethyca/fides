@@ -1,24 +1,21 @@
 import logging
 from enum import Enum
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from pydantic import ValidationError
 
-from fidesops.common_exceptions import (
-    NoSuchStrategyException,
-    ValidationError as FidesopsValidationError,
-)
+from fidesops.common_exceptions import NoSuchStrategyException
+from fidesops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
+    PostProcessorStrategy,
+)
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
     UnwrapPostProcessorStrategy,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
-    PostProcessorStrategy,
-)
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +28,15 @@ class SupportedPostProcessorStrategies(Enum):
     unwrap = UnwrapPostProcessorStrategy
     filter = FilterPostProcessorStrategy
 
+    @classmethod
+    def __contains__(cls, item: str) -> bool:
+        try:
+            cls[item]
+        except KeyError:
+            return False
+
+        return True
+
 
 def get_strategy(
     strategy_name: str,
@@ -40,7 +46,7 @@ def get_strategy(
     Returns the strategy given the name and configuration.
     Raises NoSuchStrategyException if the strategy does not exist
     """
-    if strategy_name not in SupportedPostProcessorStrategies.__members__:
+    if not SupportedPostProcessorStrategies.__contains__(strategy_name):
         valid_strategies = ", ".join([s.name for s in SupportedPostProcessorStrategies])
         raise NoSuchStrategyException(
             f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"

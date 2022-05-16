@@ -1,16 +1,14 @@
 import logging
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, Dict, List, Union
 
-import pydash as pydash
-
+import pydash
 from fidesops.schemas.saas.strategy_configuration import (
-    UnwrapPostProcessorConfiguration,
     StrategyConfiguration,
+    UnwrapPostProcessorConfiguration,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-
 
 STRATEGY_NAME = "unwrap"
 

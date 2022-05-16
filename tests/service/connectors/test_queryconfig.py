@@ -323,13 +323,13 @@ class TestSQLQueryConfig:
         assert (
             text_clause._bindparams["name"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                ["John Customer"], privacy_request_id=privacy_request.id
+                ["John Customer"], request_id=privacy_request.id
             )[0][0:40]
         )
         assert (
             text_clause._bindparams["email"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                ["customer-1@example.com"], privacy_request_id=privacy_request.id
+                ["customer-1@example.com"], request_id=privacy_request.id
             )[0]
         )
         clear_cache_secrets(privacy_request.id)
@@ -614,7 +614,7 @@ class TestMongoQueryConfig:
         assert (
             mongo_statement[1]["$set"]["birthday"]
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
-                ["1988-01-10"], privacy_request_id=privacy_request.id
+                ["1988-01-10"], request_id=privacy_request.id
             )[0]
         )
 
