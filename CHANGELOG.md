@@ -31,6 +31,7 @@ The types of changes are:
 * DRP status endpoint [#485](https://github.com/ethyca/fidesops/pull/485)
 * DRP exerise endpoint [#496](https://github.com/ethyca/fidesops/pull/496)
 * Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
+* Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 
 
 ### Changed 
