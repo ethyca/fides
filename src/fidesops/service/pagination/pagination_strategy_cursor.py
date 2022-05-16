@@ -1,6 +1,8 @@
-import pydash
 from typing import Any, Dict, Optional
+
+import pydash
 from requests import Response
+
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import (
     CursorPaginationConfiguration,

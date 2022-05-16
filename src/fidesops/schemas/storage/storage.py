@@ -1,23 +1,12 @@
 import logging
 from enum import Enum
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Union
 
-from fidesops.schemas.shared_schemas import FidesOpsKey
-from pydantic import (
-    Extra,
-    ValidationError,
-    root_validator,
-    validator,
-)
+from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
 
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 

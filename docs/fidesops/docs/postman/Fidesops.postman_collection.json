@@ -774,7 +774,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
+							"raw": "{{host}}/privacy-request/?request_id={{privacy_request_id}}&verbose=True",
 							"host": [
 								"{{host}}"
 							],
@@ -784,7 +784,7 @@
 							],
 							"query": [
 								{
-									"key": "id",
+									"key": "request_id",
 									"value": "{{privacy_request_id}}"
 								},
 								{

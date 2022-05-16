@@ -57,7 +57,7 @@ from fidesops.util.oauth_util import generate_jwe
 logger = logging.getLogger(__name__)
 
 
-class PrivacyRequestStatus(EnumType):
+class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
     pending = "pending"

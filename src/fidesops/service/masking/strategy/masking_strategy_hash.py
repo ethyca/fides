@@ -1,5 +1,5 @@
 import hashlib
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import (
@@ -8,12 +8,12 @@ from fidesops.schemas.masking.masking_configuration import (
 )
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.schemas.masking.masking_strategy_description import (
-    MaskingStrategyDescription,
     MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
@@ -37,7 +37,7 @@ class HashMaskingStrategy(MaskingStrategy):
         self.format_preservation = configuration.format_preservation
 
     def mask(
-        self, values: Optional[List[str]], privacy_request_id: Optional[str]
+        self, values: Optional[List[str]], request_id: Optional[str]
     ) -> Optional[List[str]]:
         """Returns the hashed version of the provided values. Returns None if the provided value
         is None"""
@@ -47,7 +47,7 @@ class HashMaskingStrategy(MaskingStrategy):
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
         salt: str = SecretsUtil.get_or_generate_secret(
-            privacy_request_id,
+            request_id,
             SecretType.salt,
             masking_meta[SecretType.salt],
         )

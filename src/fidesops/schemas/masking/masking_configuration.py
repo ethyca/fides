@@ -7,8 +7,6 @@ from pydantic import BaseModel
 class MaskingConfiguration(BaseModel):
     """Base class for masking configuration"""
 
-    pass
-
 
 class FormatPreservationConfig(BaseModel):
     """option to preserve format in masking"""

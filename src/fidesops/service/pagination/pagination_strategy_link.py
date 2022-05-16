@@ -1,16 +1,17 @@
 import logging
-
-import pydash
 from typing import Any, Dict, Optional
 from urllib import parse
 from urllib.parse import urlsplit
+
+import pydash
 from requests import Response
+
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
     LinkSource,
     StrategyConfiguration,
 )
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 
 STRATEGY_NAME = "link"

@@ -1,0 +1,30 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+env:
+  TWINE_USERNAME: __token__
+
+jobs:
+  publish_to_pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Twine
+        run: pip install twine
+
+      - name: Create Source Distribution
+        run: python setup.py sdist
+
+      - name: Test Twine Upload
+        run: twine upload --repository testpypi dist/*
+        env:
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_TOKEN }}
+
+      - name: Production Twine Upload
+        run: twine upload dist/*
+        env:
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}

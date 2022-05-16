@@ -1,25 +1,25 @@
 import logging
-from fastapi import Security, Depends, APIRouter, HTTPException
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+
+from fastapi import APIRouter, Depends, HTTPException, Security
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
+from fidesops.api.v1.scope_registry import (
+    USER_PERMISSION_CREATE,
+    USER_PERMISSION_READ,
+    USER_PERMISSION_UPDATE,
+)
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
-from fidesops.schemas.oauth import AccessToken
-from fidesops.util.oauth_util import verify_oauth_client
-from sqlalchemy.orm import Session
-from fidesops.api.v1.scope_registry import (
-    USER_PERMISSION_CREATE,
-    USER_PERMISSION_UPDATE,
-    USER_PERMISSION_READ,
-)
 from fidesops.schemas.user_permission import (
-    UserPermissionsResponse,
     UserPermissionsCreate,
     UserPermissionsEdit,
+    UserPermissionsResponse,
 )
+from fidesops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
@@ -51,7 +51,7 @@ def create_user_permissions(
     if user.permissions is not None:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"This user already has permissions set.",
+            detail="This user already has permissions set.",
         )
     logger.info("Created FidesopsUserPermission record")
     return FidesopsUserPermissions.create(
