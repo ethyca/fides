@@ -159,13 +159,13 @@ const Login: NextPage = () => {
                       isInvalid={touched.email && Boolean(errors.email)}
                     >
                       <FormLabel htmlFor="email" fontWeight="medium">
-                        Email address
+                        Username
                       </FormLabel>
                       <Input
                         id="email"
                         name="email"
                         focusBorderColor="primary.500"
-                        placeholder="you@yourdomain.com"
+                        placeholder="username"
                         onChange={handleChange}
                         onBlur={handleBlur}
                         value={values.email}

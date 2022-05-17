@@ -45,9 +45,10 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
           <MenuList shadow="xl">
             <Stack px={3} py={2} spacing={0}>
               <Text fontWeight="medium">{username}</Text>
-              <Text fontSize="sm" color="gray.600">
+              {/* This text should only show if actually an admin */}
+              {/* <Text fontSize="sm" color="gray.600">
                 Administrator
-              </Text>
+              </Text> */}
             </Stack>
             <MenuDivider />
             <MenuItem
