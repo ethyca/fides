@@ -9,6 +9,7 @@ from fidesctl.cli.options import (
 )
 from fidesctl.cli.utils import pretty_echo, with_analytics
 from fidesctl.core import apply as _apply
+from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
 
@@ -36,6 +37,28 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
+    )
+
+
+@click.command()
+@click.pass_context
+@with_analytics
+def audit(ctx: click.Context) -> None:
+    """
+    Audits fidesctl resources for compliance to build a compliant
+    data map with full attribution.
+    """
+
+    config = ctx.obj["CONFIG"]
+    _audit.audit_systems(
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        exclude_keys=[],
+    )
+    _audit.audit_organizations(
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
+        exclude_keys=[],
     )
 
 

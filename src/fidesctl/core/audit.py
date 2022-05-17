@@ -112,6 +112,7 @@ def audit_organizations(
 
     audit_findings = 0
     for organization in organization_resources:
+        print(f"Auditing Organization: {organization.name}")
         new_findings = audit_organization_attributes(organization)
         audit_findings += new_findings
     if audit_findings > 0:

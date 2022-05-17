@@ -125,12 +125,11 @@ Example manifest updates are included in `demo_resources/demo_extended_taxonomy.
 
 Your Organization and System datasets can be assessed using the `audit` command, which will identify how your resources could be extended to generate a compliant data map.
 
-1. `fidesctl audit systems`
-2. `fidesctl audit organizations`
+1. `fidesctl audit`
 
-The output of these commands will highlight any missing information:
+The output of this command will highlight any missing information:
 
-```bash title="Example Output: <code>fidesctl audit systems</code>"
+```bash title="Example Output: <code>fidesctl audit</code>"
 ...
 Auditing System: Demo Analytics System
 improve.system missing recipients in Demo Analytics System.
@@ -145,6 +144,8 @@ advertising missing special_category in Demo Marketing System.
 customer missing rights in Demo Marketing System.
 customer missing automated_decisions_or_profiling in Demo Marketing System.
 10 issue(s) were detected in auditing system completeness.
+Auditing Organization: Demo Organization
+All organizations fully compliant!
 ```
 ### Data Use
 Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
@@ -163,7 +164,7 @@ data_use:
 ```
 
 
-Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`. 
+Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Use of `advertising` with the above fides_key of `third_party_sharing.personalized_advertising.direct_marketing` to include its information in your data map.
 
@@ -187,7 +188,7 @@ data_subject:
     automated_decisions_or_profiling: true
 ```
 
-Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`. 
+Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Subject of `customer` with the above fides_key of `potential_customer` to include its information in your data map.
 
@@ -261,9 +262,9 @@ system:
         automated_decisions_or_profiling: true
 ```
 
-Running `fidesctl apply demo_resources/` will apply your changes. 
+Running `fidesctl apply demo_resources/` will apply your changes.
 
-Now, auditing this resource with `fidesctl audit systems` will show the Demo Marketing System issues are resolved:
+Now, auditing this resource with `fidesctl audit` will show the Demo Marketing System issues are resolved:
 ```bash
 Auditing System: Demo Analytics System
 improve.system missing recipients in Demo Analytics System.
@@ -273,6 +274,8 @@ customer missing rights in Demo Analytics System.
 customer missing automated_decisions_or_profiling in Demo Analytics System.
 Auditing System: Demo Marketing System
 5 issue(s) were detected in auditing system completeness.
+Auditing Organization: Demo Organization
+All organizations fully compliant!
 ```
 
 
