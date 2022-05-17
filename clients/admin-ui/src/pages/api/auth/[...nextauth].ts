@@ -9,7 +9,7 @@ export default NextAuth({
         email: {
           label: 'Email',
           type: 'text',
-          placeholder: 'you@yourdomain.com',
+          placeholder: 'username',
         },
         password: { label: 'Password', type: 'password' },
       },
@@ -37,10 +37,7 @@ export default NextAuth({
 
         // If no error and we have user data, return it
         if (res.ok && user) {
-          return {
-            ...user,
-            username: credentials!.email,
-          };
+          return user;
         }
 
         // Return null if user data could not be retrieved
@@ -50,10 +47,10 @@ export default NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.access_token) {
+      if (user?.token_data?.access_token) {
         Object.assign(token, {
-          token: user.access_token,
-          username: user.username,
+          token: user.token_data.access_token,
+          user: user.user_data,
         });
       }
 
@@ -62,7 +59,7 @@ export default NextAuth({
     async session({ session, token }) {
       Object.assign(session, {
         accessToken: token.token,
-        username: token.username,
+        user: token.user,
       });
       return session;
     },
