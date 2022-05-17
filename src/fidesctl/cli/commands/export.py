@@ -1,7 +1,11 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import dry_flag, manifests_dir_argument
+from fidesctl.cli.options import (
+    dry_flag,
+    manifests_dir_argument,
+    organization_fides_key_argument,
+)
 from fidesctl.cli.utils import with_analytics
 from fidesctl.core import export as _export
 from fidesctl.core import parse as _parse
@@ -90,6 +94,7 @@ def export_organization(
 @export.command(name="datamap")
 @click.pass_context
 @manifests_dir_argument
+@organization_fides_key_argument
 @dry_flag
 @click.option(
     "--csv",
@@ -100,6 +105,7 @@ def export_organization(
 def export_datamap(
     ctx: click.Context,
     manifests_dir: str,
+    organization_fides_key: str,
     dry: bool,
     csv: bool,
 ) -> None:
@@ -109,11 +115,10 @@ def export_datamap(
     The csv flag can be used to output data as csv instead
     """
     config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
     _export.export_datamap(
         url=config.cli.server_url,
-        taxonomy=taxonomy,
         headers=config.user.request_headers,
+        organization_fides_key=organization_fides_key,
         manifests_dir=manifests_dir,
         dry=dry,
         to_csv=csv,

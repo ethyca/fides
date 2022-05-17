@@ -93,3 +93,13 @@ def include_null_flag(command: Callable) -> Callable:
         help="Includes attributes that would otherwise be null.",
     )(command)
     return command
+
+
+def organization_fides_key_argument(command: Callable) -> Callable:
+    "Add the optional argument to provide an organization fides key."
+    command = click.argument(
+        "organization_fides_key",
+        default="default_organization",
+        type=str,
+    )(command)
+    return command

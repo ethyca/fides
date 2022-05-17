@@ -5,7 +5,7 @@ from os.path import dirname, join
 from typing import Dict, List, Set, Tuple
 
 import pandas as pd
-from fideslang.models import DataSubjectRightsEnum, Taxonomy
+from fideslang.models import DataSubjectRightsEnum
 
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.utils import echo_red
@@ -293,23 +293,6 @@ def calculate_data_subject_rights(rights: Dict) -> str:
         data_subject_rights = "No data subject rights listed"
 
     return data_subject_rights
-
-
-def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
-    """
-    Gathers all fides keys for an organization, systems,
-    and datasets based on the resources found in the
-    provided taxonomy built from manifests.
-    """
-    taxonomy_keys_dict = {}
-    taxonomy_keys_dict["organization"] = [
-        resource.fides_key for resource in taxonomy.organization
-    ]
-    taxonomy_keys_dict["system"] = [resource.fides_key for resource in taxonomy.system]
-    taxonomy_keys_dict["dataset"] = [
-        resource.fides_key for resource in taxonomy.dataset
-    ]
-    return taxonomy_keys_dict
 
 
 def remove_duplicates_from_comma_separated_column(comma_separated_string: str) -> str:

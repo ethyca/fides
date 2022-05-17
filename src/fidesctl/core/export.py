@@ -5,15 +5,18 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from fideslang.models import ContactDetails, Taxonomy
+from fideslang.models import ContactDetails
 
-from fidesctl.core.api_helpers import get_server_resources
+from fidesctl.core.api_helpers import (
+    get_server_resource,
+    get_server_resources,
+    list_server_resources,
+)
 from fidesctl.core.export_helpers import (
     convert_tuple_to_string,
     export_datamap_to_excel,
     export_to_csv,
     generate_data_category_rows,
-    get_datamap_fides_keys,
     get_formatted_data_protection_impact_assessment,
     get_formatted_data_subjects,
     get_formatted_data_use,
@@ -386,8 +389,8 @@ def build_joined_dataframe(
 
 def export_datamap(
     url: str,
-    taxonomy: Taxonomy,
     headers: Dict[str, str],
+    organization_fides_key: str,
     manifests_dir: str,
     dry: bool,
     to_csv: bool,
@@ -400,28 +403,28 @@ def export_datamap(
     """
 
     # load resources from server
-
-    fides_keys_dict = get_datamap_fides_keys(taxonomy)
-
-    server_resource_dict = {}
-    for resource_type in ["organization", "system", "dataset"]:
-
-        server_resource_dict[resource_type] = get_server_resources(
+    server_resource_dict = {
+        "organization": [
+            get_server_resource(url, "organization", organization_fides_key, headers)
+        ]
+    }
+    for resource_type in ["system", "dataset"]:
+        server_resource_dict[resource_type] = list_server_resources(
             url,
-            resource_type,
-            fides_keys_dict[resource_type],
             headers,
+            resource_type,
+            exclude_keys=[],
         )
 
+    # transform the resources to join a system and referenced datasets
     joined_system_dataset_df = build_joined_dataframe(
         server_resource_dict, url, headers
     )
 
     if not dry and not to_csv:
-
         # build an organization dataframe if exporting to excel
         organization_df = pd.DataFrame.from_records(
-            generate_contact_records(server_resource_dict["organization"])
+            generate_contact_records([server_resource_dict["organization"]])
         )
         organization_df.columns = organization_df.iloc[0]
         organization_df = organization_df[1:]
