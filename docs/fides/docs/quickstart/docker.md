@@ -22,7 +22,7 @@ services:
     image: ethyca/fidesctl
     command: fidesctl webserver
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health"]
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/api/v1/health"]
       interval: 5s
       timeout: 5s
       retries: 5

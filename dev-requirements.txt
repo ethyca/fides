@@ -8,8 +8,8 @@ packaging==21.3
 pre-commit==2.18.1
 pylint==2.6.0
 pytest==7.1.2
-pytest-cov==2.11.1
-requests-mock==1.8.0
+pytest-cov==3.0.0
+requests-mock==1.9.3
 sqlalchemy-stubs
 types-PyYAML
 types-requests

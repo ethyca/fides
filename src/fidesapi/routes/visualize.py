@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 from fideslang import model_map
 
 from fidesapi.routes.crud import list_resource
+from fidesapi.routes.util import API_PREFIX, get_resource_type
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core import visualize
 
@@ -27,25 +28,13 @@ class FigureTypeEnum(str, Enum):
     TEXT = "text"
 
 
-def get_resource_type(router: APIRouter) -> str:
-    """
-    Get the resource type from the prefix of an API router
-    Args:
-        router: Api router from which to extract the resource type
-
-    Returns:
-        The router's resource type
-    """
-    return router.prefix[1:]
-
-
 routers = []
 for resource_type in VISUALIZABLE_RESOURCE_TYPES:
     # Programmatically define routers for each resource type
     RESOURCE_MODEL_NAME = model_map[resource_type].__name__
     router = APIRouter(
         tags=["Visualize", RESOURCE_MODEL_NAME],
-        prefix=f"/{resource_type}",
+        prefix=f"{API_PREFIX}/{resource_type}",
     )
 
     @router.get("/visualize/{figure_type}")

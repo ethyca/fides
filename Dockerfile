@@ -3,6 +3,14 @@ FROM --platform=linux/amd64 python:3.8-slim-buster as base
 # Update pip in the base image since we'll use it everywhere
 RUN pip install -U pip
 
+####################
+## Build frontend ##
+####################
+FROM base as frontend
+# Placeholder until we have a frontend app scaffolded
+RUN echo "<h1>Hello world!</h1>" > /tmp/index.html
+
+
 #######################
 ## Tool Installation ##
 #######################
@@ -76,6 +84,9 @@ ENV PYTHONUNBUFFERED=TRUE
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=TRUE
 
+# Make a static files directory
+RUN mkdir -p src/fidesapi/build/static
+
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
 
@@ -97,3 +108,6 @@ FROM builder as prod
 # Install without a symlink
 RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
+
+# Copy frontend build over
+COPY --from=frontend /tmp/index.html src/fidesapi/build/static/
