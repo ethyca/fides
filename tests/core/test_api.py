@@ -1,17 +1,25 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
 from json import loads
-from typing import Dict
+from typing import Dict, Generator
 
 import pytest
 import requests
 from fideslang import model_list, parse
 from pytest import MonkeyPatch
+from starlette.testclient import TestClient
 
 from fidesapi import main
 from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
+
+
+@pytest.fixture()
+def test_client() -> Generator:
+    """Starlette test client fixture. Easier to use mocks with when testing out API calls"""
+    with TestClient(main.app) as test_client:
+        yield test_client
 
 
 # Helper Functions
@@ -60,13 +68,13 @@ def test_api_ping(
     database_health: str,
     expected_status_code: int,
     monkeypatch: MonkeyPatch,
+    test_client: TestClient,
 ) -> None:
-    def mock_get_db_health() -> str:
+    def mock_get_db_health(*args, **kwargs) -> str:
         return database_health
 
-    # not working :(
     monkeypatch.setattr(main, "get_db_health", mock_get_db_health)
-    response = _api.ping(test_config.cli.server_url + API_PREFIX + "/health")
+    response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
     assert response.status_code == expected_status_code
 
 
