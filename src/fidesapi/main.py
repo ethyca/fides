@@ -48,7 +48,7 @@ async def configure_db(database_url: str) -> None:
     try:
         database.create_db_if_not_exists(database_url)
         await database.init_db(database_url)
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error(f"Unable to configure database: {error_type}: {error}")
 

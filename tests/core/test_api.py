@@ -70,7 +70,7 @@ def test_api_ping(
     monkeypatch: MonkeyPatch,
     test_client: TestClient,
 ) -> None:
-    def mock_get_db_health(*args, **kwargs) -> str:
+    def mock_get_db_health(url: str) -> str:
         return database_health
 
     monkeypatch.setattr(main, "get_db_health", mock_get_db_health)

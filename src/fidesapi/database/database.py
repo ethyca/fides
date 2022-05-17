@@ -130,7 +130,7 @@ def get_db_health(database_url: str) -> str:
             ):
                 return "needs migration"
         return "healthy"
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error(f"Unable to reach the database: {error_type}: {error}")
         return "unhealthy"
