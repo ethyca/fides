@@ -402,19 +402,25 @@ def export_datamap(
     flattened as needed for exporting.
     """
 
-    # load resources from server
+    # load resources from server, filtered by organization
     server_resource_dict = {
         "organization": [
             get_server_resource(url, "organization", organization_fides_key, headers)
         ]
     }
     for resource_type in ["system", "dataset"]:
-        server_resource_dict[resource_type] = list_server_resources(
+        server_resources = list_server_resources(
             url,
             headers,
             resource_type,
             exclude_keys=[],
         )
+        filtered_server_resources = [
+            resource
+            for resource in server_resources
+            if resource.organization_fides_key == organization_fides_key
+        ]
+        server_resource_dict[resource_type] = filtered_server_resources
 
     # transform the resources to join a system and referenced datasets
     joined_system_dataset_df = build_joined_dataframe(
@@ -424,7 +430,7 @@ def export_datamap(
     if not dry and not to_csv:
         # build an organization dataframe if exporting to excel
         organization_df = pd.DataFrame.from_records(
-            generate_contact_records([server_resource_dict["organization"]])
+            generate_contact_records(server_resource_dict["organization"])
         )
         organization_df.columns = organization_df.iloc[0]
         organization_df = organization_df[1:]
