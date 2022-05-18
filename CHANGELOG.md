@@ -45,6 +45,8 @@ The types of changes are:
 * Resolved a failure with populating applicable data subject rights to a data map
 * Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
+* Handle complex characters in external tests  [#661](https://github.com/ethyca/fides/pull/661)
+
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
