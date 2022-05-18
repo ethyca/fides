@@ -204,18 +204,25 @@ def get_organization(
 
 
 def generate_aws_systems(
-    organization_key: str, aws_config: Dict[str, str]
+    organization: Organization, aws_config: Dict[str, str]
 ) -> List[System]:
     """
     Calls each generate system function for aws resources
+
+    Returns a list of systems with any filters applied
     """
     generate_system_functions = [generate_redshift_systems, generate_rds_systems]
+
     aws_systems = [
         found_system
         for generate_function in generate_system_functions
-        for found_system in generate_function(organization_key, aws_config)
+        for found_system in generate_function(organization.fides_key, aws_config)
     ]
-    return aws_systems
+
+    filtered_aws_systems = filter_aws_systems(
+        systems=aws_systems, organization=organization
+    )
+    return filtered_aws_systems
 
 
 def generate_system_aws(
@@ -232,22 +239,17 @@ def generate_system_aws(
     """
     _check_boto3_import()
 
-    empty_aws_config_dict: Dict = {}  # not used via CLI
-    aws_systems = generate_aws_systems(
-        organization_key=organization_key, aws_config=empty_aws_config_dict
-    )
+    empty_aws_config_dict: Dict = {}  # not used via CLI today
+
     organization = get_organization(
         organization_key=organization_key,
         manifest_organizations=[],
         url=url,
         headers=headers,
     )
-    filtered_aws_systems = filter_aws_systems(
-        systems=aws_systems, organization=organization
-    )
-    output_list_of_dicts = [
-        i.dict(exclude_none=not include_null) for i in filtered_aws_systems
-    ]
+    aws_systems = generate_aws_systems(organization, aws_config=empty_aws_config_dict)
+
+    output_list_of_dicts = [i.dict(exclude_none=not include_null) for i in aws_systems]
     manifests.write_manifest(
         file_name,
         output_list_of_dicts,
@@ -388,7 +390,6 @@ def scan_system_aws(
     )
     existing_system_arns = get_system_arns(systems=manifest_systems + server_systems)
 
-    aws_systems = generate_aws_systems(organization_key=organization_key, aws_config={})
     organization = get_organization(
         organization_key=organization_key,
         manifest_organizations=manifest_taxonomy.organization
@@ -397,16 +398,15 @@ def scan_system_aws(
         url=url,
         headers=headers,
     )
-    filtered_aws_systems = filter_aws_systems(
-        systems=aws_systems, organization=organization
-    )
+
+    aws_systems = generate_aws_systems(organization=organization, aws_config={})
 
     (
         scan_text_output,
         scanned_resource_count,
         missing_resource_count,
     ) = scan_aws_systems(
-        aws_systems=filtered_aws_systems,
+        aws_systems=aws_systems,
         existing_system_arns=existing_system_arns,
     )
 
