@@ -27,7 +27,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         borderColor="gray.100"
       >
         <Button variant="ghost" mr={4} colorScheme="complimentary">
-          Subject Requests!!
+          Subject Requests
         </Button>
         <Button variant="ghost" disabled mr={4}>
           Datastore Connections
