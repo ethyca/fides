@@ -221,11 +221,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/dev/schemas/config/</loc>
-         <lastmod>2022-05-18</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/dev/tutorial/</loc>
          <lastmod>2022-05-18</lastmod>
          <changefreq>daily</changefreq>

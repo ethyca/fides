@@ -5,14 +5,14 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/data_category/": {
+    "/api/v1/data_category/": {
       "get": {
         "tags": [
           "DataCategory"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_data_category__get",
+        "operationId": "List_api_v1_data_category__get",
         "parameters": [
           {
             "required": false,
@@ -31,7 +31,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Data Category  Get",
+                  "title": "Response List Api V1 Data Category  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataCategory"
@@ -58,7 +58,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_category__put",
+        "operationId": "update_api_v1_data_category__put",
         "parameters": [
           {
             "required": false,
@@ -110,7 +110,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_data_category__post",
+        "operationId": "create_api_v1_data_category__post",
         "parameters": [
           {
             "required": false,
@@ -157,14 +157,14 @@
         }
       }
     },
-    "/data_category/{fides_key}": {
+    "/api/v1/data_category/{fides_key}": {
       "get": {
         "tags": [
           "DataCategory"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_data_category__fides_key__get",
+        "operationId": "get_api_v1_data_category__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -215,7 +215,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_data_category__fides_key__delete",
+        "operationId": "delete_api_v1_data_category__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -259,14 +259,14 @@
         }
       }
     },
-    "/data_category/upsert": {
+    "/api/v1/data_category/upsert": {
       "post": {
         "tags": [
           "DataCategory"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_data_category_upsert_post",
+        "operationId": "upsert_api_v1_data_category_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -332,14 +332,14 @@
         }
       }
     },
-    "/data_qualifier/": {
+    "/api/v1/data_qualifier/": {
       "get": {
         "tags": [
           "DataQualifier"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_data_qualifier__get",
+        "operationId": "List_api_v1_data_qualifier__get",
         "parameters": [
           {
             "required": false,
@@ -358,7 +358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Data Qualifier  Get",
+                  "title": "Response List Api V1 Data Qualifier  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataQualifier"
@@ -385,7 +385,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_qualifier__put",
+        "operationId": "update_api_v1_data_qualifier__put",
         "parameters": [
           {
             "required": false,
@@ -437,7 +437,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_data_qualifier__post",
+        "operationId": "create_api_v1_data_qualifier__post",
         "parameters": [
           {
             "required": false,
@@ -484,14 +484,14 @@
         }
       }
     },
-    "/data_qualifier/{fides_key}": {
+    "/api/v1/data_qualifier/{fides_key}": {
       "get": {
         "tags": [
           "DataQualifier"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_data_qualifier__fides_key__get",
+        "operationId": "get_api_v1_data_qualifier__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -542,7 +542,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_data_qualifier__fides_key__delete",
+        "operationId": "delete_api_v1_data_qualifier__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -586,14 +586,14 @@
         }
       }
     },
-    "/data_qualifier/upsert": {
+    "/api/v1/data_qualifier/upsert": {
       "post": {
         "tags": [
           "DataQualifier"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_data_qualifier_upsert_post",
+        "operationId": "upsert_api_v1_data_qualifier_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -659,14 +659,14 @@
         }
       }
     },
-    "/data_subject/": {
+    "/api/v1/data_subject/": {
       "get": {
         "tags": [
           "DataSubject"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_data_subject__get",
+        "operationId": "List_api_v1_data_subject__get",
         "parameters": [
           {
             "required": false,
@@ -685,7 +685,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Data Subject  Get",
+                  "title": "Response List Api V1 Data Subject  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataSubject"
@@ -712,7 +712,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_subject__put",
+        "operationId": "update_api_v1_data_subject__put",
         "parameters": [
           {
             "required": false,
@@ -764,7 +764,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_data_subject__post",
+        "operationId": "create_api_v1_data_subject__post",
         "parameters": [
           {
             "required": false,
@@ -811,14 +811,14 @@
         }
       }
     },
-    "/data_subject/{fides_key}": {
+    "/api/v1/data_subject/{fides_key}": {
       "get": {
         "tags": [
           "DataSubject"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_data_subject__fides_key__get",
+        "operationId": "get_api_v1_data_subject__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -869,7 +869,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_data_subject__fides_key__delete",
+        "operationId": "delete_api_v1_data_subject__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -913,14 +913,14 @@
         }
       }
     },
-    "/data_subject/upsert": {
+    "/api/v1/data_subject/upsert": {
       "post": {
         "tags": [
           "DataSubject"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_data_subject_upsert_post",
+        "operationId": "upsert_api_v1_data_subject_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -986,14 +986,14 @@
         }
       }
     },
-    "/data_use/": {
+    "/api/v1/data_use/": {
       "get": {
         "tags": [
           "DataUse"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_data_use__get",
+        "operationId": "List_api_v1_data_use__get",
         "parameters": [
           {
             "required": false,
@@ -1012,7 +1012,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Data Use  Get",
+                  "title": "Response List Api V1 Data Use  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataUse"
@@ -1039,7 +1039,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_data_use__put",
+        "operationId": "update_api_v1_data_use__put",
         "parameters": [
           {
             "required": false,
@@ -1091,7 +1091,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_data_use__post",
+        "operationId": "create_api_v1_data_use__post",
         "parameters": [
           {
             "required": false,
@@ -1138,14 +1138,14 @@
         }
       }
     },
-    "/data_use/{fides_key}": {
+    "/api/v1/data_use/{fides_key}": {
       "get": {
         "tags": [
           "DataUse"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_data_use__fides_key__get",
+        "operationId": "get_api_v1_data_use__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -1196,7 +1196,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_data_use__fides_key__delete",
+        "operationId": "delete_api_v1_data_use__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -1240,14 +1240,14 @@
         }
       }
     },
-    "/data_use/upsert": {
+    "/api/v1/data_use/upsert": {
       "post": {
         "tags": [
           "DataUse"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_data_use_upsert_post",
+        "operationId": "upsert_api_v1_data_use_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -1313,14 +1313,14 @@
         }
       }
     },
-    "/dataset/": {
+    "/api/v1/dataset/": {
       "get": {
         "tags": [
           "Dataset"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_dataset__get",
+        "operationId": "List_api_v1_dataset__get",
         "parameters": [
           {
             "required": false,
@@ -1339,7 +1339,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Dataset  Get",
+                  "title": "Response List Api V1 Dataset  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Dataset"
@@ -1366,7 +1366,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_dataset__put",
+        "operationId": "update_api_v1_dataset__put",
         "parameters": [
           {
             "required": false,
@@ -1418,7 +1418,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_dataset__post",
+        "operationId": "create_api_v1_dataset__post",
         "parameters": [
           {
             "required": false,
@@ -1465,14 +1465,14 @@
         }
       }
     },
-    "/dataset/{fides_key}": {
+    "/api/v1/dataset/{fides_key}": {
       "get": {
         "tags": [
           "Dataset"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_dataset__fides_key__get",
+        "operationId": "get_api_v1_dataset__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -1523,7 +1523,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_dataset__fides_key__delete",
+        "operationId": "delete_api_v1_dataset__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -1567,14 +1567,14 @@
         }
       }
     },
-    "/dataset/upsert": {
+    "/api/v1/dataset/upsert": {
       "post": {
         "tags": [
           "Dataset"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_dataset_upsert_post",
+        "operationId": "upsert_api_v1_dataset_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -1640,14 +1640,14 @@
         }
       }
     },
-    "/organization/": {
+    "/api/v1/organization/": {
       "get": {
         "tags": [
           "Organization"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_organization__get",
+        "operationId": "List_api_v1_organization__get",
         "parameters": [
           {
             "required": false,
@@ -1666,7 +1666,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Organization  Get",
+                  "title": "Response List Api V1 Organization  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Organization"
@@ -1693,7 +1693,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_organization__put",
+        "operationId": "update_api_v1_organization__put",
         "parameters": [
           {
             "required": false,
@@ -1745,7 +1745,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_organization__post",
+        "operationId": "create_api_v1_organization__post",
         "parameters": [
           {
             "required": false,
@@ -1792,14 +1792,14 @@
         }
       }
     },
-    "/organization/{fides_key}": {
+    "/api/v1/organization/{fides_key}": {
       "get": {
         "tags": [
           "Organization"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_organization__fides_key__get",
+        "operationId": "get_api_v1_organization__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -1850,7 +1850,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_organization__fides_key__delete",
+        "operationId": "delete_api_v1_organization__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -1894,14 +1894,14 @@
         }
       }
     },
-    "/organization/upsert": {
+    "/api/v1/organization/upsert": {
       "post": {
         "tags": [
           "Organization"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_organization_upsert_post",
+        "operationId": "upsert_api_v1_organization_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -1967,14 +1967,14 @@
         }
       }
     },
-    "/policy/": {
+    "/api/v1/policy/": {
       "get": {
         "tags": [
           "Policy"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_policy__get",
+        "operationId": "List_api_v1_policy__get",
         "parameters": [
           {
             "required": false,
@@ -1993,7 +1993,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Policy  Get",
+                  "title": "Response List Api V1 Policy  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Policy"
@@ -2020,7 +2020,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_policy__put",
+        "operationId": "update_api_v1_policy__put",
         "parameters": [
           {
             "required": false,
@@ -2072,7 +2072,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_policy__post",
+        "operationId": "create_api_v1_policy__post",
         "parameters": [
           {
             "required": false,
@@ -2119,14 +2119,14 @@
         }
       }
     },
-    "/policy/{fides_key}": {
+    "/api/v1/policy/{fides_key}": {
       "get": {
         "tags": [
           "Policy"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_policy__fides_key__get",
+        "operationId": "get_api_v1_policy__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -2177,7 +2177,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_policy__fides_key__delete",
+        "operationId": "delete_api_v1_policy__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -2221,14 +2221,14 @@
         }
       }
     },
-    "/policy/upsert": {
+    "/api/v1/policy/upsert": {
       "post": {
         "tags": [
           "Policy"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_policy_upsert_post",
+        "operationId": "upsert_api_v1_policy_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -2294,14 +2294,14 @@
         }
       }
     },
-    "/registry/": {
+    "/api/v1/registry/": {
       "get": {
         "tags": [
           "Registry"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_registry__get",
+        "operationId": "List_api_v1_registry__get",
         "parameters": [
           {
             "required": false,
@@ -2320,7 +2320,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Registry  Get",
+                  "title": "Response List Api V1 Registry  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Registry"
@@ -2347,7 +2347,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_registry__put",
+        "operationId": "update_api_v1_registry__put",
         "parameters": [
           {
             "required": false,
@@ -2399,7 +2399,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_registry__post",
+        "operationId": "create_api_v1_registry__post",
         "parameters": [
           {
             "required": false,
@@ -2446,14 +2446,14 @@
         }
       }
     },
-    "/registry/{fides_key}": {
+    "/api/v1/registry/{fides_key}": {
       "get": {
         "tags": [
           "Registry"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_registry__fides_key__get",
+        "operationId": "get_api_v1_registry__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -2504,7 +2504,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_registry__fides_key__delete",
+        "operationId": "delete_api_v1_registry__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -2548,14 +2548,14 @@
         }
       }
     },
-    "/registry/upsert": {
+    "/api/v1/registry/upsert": {
       "post": {
         "tags": [
           "Registry"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_registry_upsert_post",
+        "operationId": "upsert_api_v1_registry_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -2621,14 +2621,14 @@
         }
       }
     },
-    "/system/": {
+    "/api/v1/system/": {
       "get": {
         "tags": [
           "System"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_system__get",
+        "operationId": "List_api_v1_system__get",
         "parameters": [
           {
             "required": false,
@@ -2647,7 +2647,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List System  Get",
+                  "title": "Response List Api V1 System  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/System"
@@ -2674,7 +2674,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_system__put",
+        "operationId": "update_api_v1_system__put",
         "parameters": [
           {
             "required": false,
@@ -2726,7 +2726,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_system__post",
+        "operationId": "create_api_v1_system__post",
         "parameters": [
           {
             "required": false,
@@ -2773,14 +2773,14 @@
         }
       }
     },
-    "/system/{fides_key}": {
+    "/api/v1/system/{fides_key}": {
       "get": {
         "tags": [
           "System"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_system__fides_key__get",
+        "operationId": "get_api_v1_system__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -2831,7 +2831,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_system__fides_key__delete",
+        "operationId": "delete_api_v1_system__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -2875,14 +2875,14 @@
         }
       }
     },
-    "/system/upsert": {
+    "/api/v1/system/upsert": {
       "post": {
         "tags": [
           "System"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_system_upsert_post",
+        "operationId": "upsert_api_v1_system_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -2948,14 +2948,14 @@
         }
       }
     },
-    "/evaluation/": {
+    "/api/v1/evaluation/": {
       "get": {
         "tags": [
           "Evaluation"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_evaluation__get",
+        "operationId": "List_api_v1_evaluation__get",
         "parameters": [
           {
             "required": false,
@@ -2974,7 +2974,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Evaluation  Get",
+                  "title": "Response List Api V1 Evaluation  Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Evaluation"
@@ -3001,7 +3001,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_evaluation__put",
+        "operationId": "update_api_v1_evaluation__put",
         "parameters": [
           {
             "required": false,
@@ -3053,7 +3053,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_evaluation__post",
+        "operationId": "create_api_v1_evaluation__post",
         "parameters": [
           {
             "required": false,
@@ -3100,14 +3100,14 @@
         }
       }
     },
-    "/evaluation/{fides_key}": {
+    "/api/v1/evaluation/{fides_key}": {
       "get": {
         "tags": [
           "Evaluation"
         ],
         "summary": "Get",
         "description": "Get a resource by its fides_key.",
-        "operationId": "get_evaluation__fides_key__get",
+        "operationId": "get_api_v1_evaluation__fides_key__get",
         "parameters": [
           {
             "required": true,
@@ -3158,7 +3158,7 @@
         ],
         "summary": "Delete",
         "description": "Delete a resource by its fides_key.",
-        "operationId": "delete_evaluation__fides_key__delete",
+        "operationId": "delete_api_v1_evaluation__fides_key__delete",
         "parameters": [
           {
             "required": true,
@@ -3202,14 +3202,14 @@
         }
       }
     },
-    "/evaluation/upsert": {
+    "/api/v1/evaluation/upsert": {
       "post": {
         "tags": [
           "Evaluation"
         ],
         "summary": "Upsert",
         "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
-        "operationId": "upsert_evaluation_upsert_post",
+        "operationId": "upsert_api_v1_evaluation_upsert_post",
         "parameters": [
           {
             "required": false,
@@ -3275,7 +3275,7 @@
         }
       }
     },
-    "/data_category/visualize/{figure_type}": {
+    "/api/v1/data_category/visualize/{figure_type}": {
       "get": {
         "tags": [
           "Visualize",
@@ -3283,7 +3283,7 @@
         ],
         "summary": "Get Chart",
         "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_chart_data_category_visualize__figure_type__get",
+        "operationId": "get_chart_api_v1_data_category_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -3326,7 +3326,7 @@
         }
       }
     },
-    "/data_qualifier/visualize/{figure_type}": {
+    "/api/v1/data_qualifier/visualize/{figure_type}": {
       "get": {
         "tags": [
           "Visualize",
@@ -3334,7 +3334,7 @@
         ],
         "summary": "Get Chart",
         "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_chart_data_qualifier_visualize__figure_type__get",
+        "operationId": "get_chart_api_v1_data_qualifier_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -3377,7 +3377,7 @@
         }
       }
     },
-    "/data_use/visualize/{figure_type}": {
+    "/api/v1/data_use/visualize/{figure_type}": {
       "get": {
         "tags": [
           "Visualize",
@@ -3385,7 +3385,7 @@
         ],
         "summary": "Get Chart",
         "description": "    Visualize the hierarchy of a supported resource type.\nArgs:\n    figure_type: type of figure, by name, to generate\n    resource_type: hierarchy source. one of [\"data_category\", \"data_qualifier\", \"data_use\"]\nReturns:\n    Html for the requested figure. Response with status code 400 when invalid figure type is provided",
-        "operationId": "get_chart_data_use_visualize__figure_type__get",
+        "operationId": "get_chart_api_v1_data_use_visualize__figure_type__get",
         "parameters": [
           {
             "required": true,
@@ -3448,21 +3448,21 @@
         }
       }
     },
-    "/health": {
+    "/api/v1/health": {
       "get": {
         "tags": [
           "Health"
         ],
         "summary": "Health",
         "description": "Confirm that the API is running and healthy.",
-        "operationId": "health_health_get",
+        "operationId": "health_api_v1_health_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Health Health Get",
+                  "title": "Response Health Api V1 Health Get",
                   "type": "object",
                   "additionalProperties": {
                     "type": "string"
@@ -3478,14 +3478,14 @@
         }
       }
     },
-    "/admin/db/{action}": {
+    "/api/v1/admin/db/{action}": {
       "post": {
         "tags": [
           "Admin"
         ],
         "summary": "Db Action",
         "description": "Initiate one of the enumerated DBActions.",
-        "operationId": "db_action_admin_db__action__post",
+        "operationId": "db_action_api_v1_admin_db__action__post",
         "parameters": [
           {
             "required": true,
@@ -3514,6 +3514,41 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Default"
+        ],
+        "summary": "Read Index",
+        "description": "Return an index.html at the root path",
+        "operationId": "read_index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{catchall}": {
+      "get": {
+        "tags": [
+          "Default"
+        ],
+        "summary": "Read Other Paths",
+        "description": "Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130",
+        "operationId": "read_other_paths__catchall__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
           }
         }
       }
@@ -4655,7 +4690,14 @@
             "title": "Location",
             "type": "array",
             "items": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
             }
           },
           "msg": {
