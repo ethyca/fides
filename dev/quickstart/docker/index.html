@@ -1360,6 +1360,54 @@ You're not viewing the latest version.
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_14">
+          Schemas
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1426,17 +1474,17 @@ You're not viewing the latest version.
 
 
 <h1 id="running-fidesctl-in-docker">Running Fidesctl in Docker</h1>
+<hr />
 <p>The recommended way to get Fidesctl running is via Docker. The following guide will describe how to get things going, step-by-step.</p>
 <h2 id="system-requirements">System Requirements</h2>
 <p>Docker and Docker-Compose are the only requirements here.</p>
 <ol>
 <li>Install <code>docker</code> locally (see <a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a> or your preferred installation). The minimum verified Docker version is <code>20.10.8</code></li>
 <li>If your <code>docker</code> installation did not include <code>docker-compose</code>, make sure to get at least version <code>1.29.0</code>. Installation instructions can be found <a href="https://docs.docker.com/compose/install/">here</a>.</li>
-<li>Create a <code>.fides</code> folder in the root directory of your project (or in the same directory as your docker compose file).</li>
+<li>In the directory from where you will run the docker compose file, create a <code>.fides</code> directory to then mount in the <code>fidesctl</code> container.</li>
 </ol>
 <h2 id="docker-setup">Docker Setup</h2>
-<p>This is a reference file that you can copy/paste into a local <code>docker-compose.yml</code> file, which should be created in your project's root folder. It will create a database and spin up the fidesctl webserver. </p>
-<p>Make sure that you don't have anything else running on port <code>5432</code> or <code>8080</code> before using this file.</p>
+<p>This is a reference file that you can copy/paste into a local <code>docker-compose.yml</code> file. It will create a database and spin up the fidesctl webserver. Make sure that you don't have anything else running on port <code>5432</code> or <code>8080</code> before using this file.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">docker-compose.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1482,13 +1530,12 @@ You're not viewing the latest version.
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code>services:
+<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code>services:
   fidesctl:
-    image: ethyca/fidesctl
+    image: ethyca/fidesctl:1.2.0
     command: fidesctl webserver
     healthcheck:
-      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://0.0.0.0:8000/api/v1/health&quot;]
+      test: [&quot;CMD&quot;, &quot;curl&quot;, &quot;-f&quot;, &quot;http://0.0.0.0:8000/health&quot;]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -1500,14 +1547,13 @@ You're not viewing the latest version.
     ports:
       - &quot;8080:8080&quot;
     environment:
-      FIDESCTL_TEST_MODE: &quot;True&quot;
-      FIDESCTL__CLI__SERVER_HOST: &quot;fidesctl&quot;
-      FIDESCTL__CLI__SERVER_PORT: &quot;8080&quot;
-      FIDESCTL__API__DATABASE_HOST: &quot;fidesctl-db&quot;
+      - FIDESCTL__CLI__SERVER_HOST=http://fidesctl
+      - FIDESCTL__CLI__SERVER_PORT=8080
+      - FIDESCTL__API__DATABASE_URL=postgres:fidesctl@fidesctl-db:5432/fidesctl
     volumes:
       - type: bind
-        source: .
-        target: /fides
+        source: ./.fides/ # Update this to be the path of your .fides/ folder
+        target: /fides/.fides/
         read_only: False
 
   fidesctl-db:
@@ -1531,34 +1577,21 @@ You're not viewing the latest version.
 volumes:
   postgres-fidesctl:
 </code></pre></div></td></tr></table></div>
-<p>Now you can start interacting with your installation. Run the following commands to get going:</p>
+<p>Now we can start interacting with our installation. Let's run the following commands to get going:</p>
 <ol>
 <li><code>docker-compose up -d</code> -&gt; This will spin up the docker-compose file in the background.</li>
 <li><code>docker-compose run --rm fidesctl /bin/bash</code> -&gt; This opens a shell within the fidesctl container.</li>
 <li>
-<p><code>fidesctl init</code> -&gt; This will create a default configuration file at <code>./.fides/fidesctl.toml</code>.</p>
+<p><code>fidesctl status</code> -&gt; This confirms that your <code>fidesctl</code> CLI can reach the server and everything is ready to go!</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Created a fidesctl config file: ./.fides/fidesctl.toml
-To learn more about configuring fidesctl, see:
-  https://ethyca.github.io/fides/installation/configuration/
-----------
-For example policies and <span class="nb">help</span> getting started, see:
-  https://ethyca.github.io/fides/guides/policies/
-----------
-Fidesctl initialization complete.
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>root@2da501a72f8f:/fides/fidesctl# fidesctl status
+Getting server status...
+Server is reachable and the client/server application versions match.
 </code></pre></div></td></tr></table></div>
 </li>
-<li>
-<p><code>fidesctl status</code> -&gt; This confirms that your <code>fidesctl</code> CLI can reach the server and everything is ready to go!</p>
-</li>
 </ol>
-<p>Once your installation is running, you can use <code>fidesctl</code> from the shell to get a list of all the possible <a href="../../cli/">CLI commands</a>.</p>
+<p>Now that you're up and running, you can use <code>fidesctl</code> from the shell to get a list of all the possible <a href="../../cli/">CLI commands</a>.</p>
 <h2 id="next-steps">Next Steps</h2>
 <p>You're now ready to start enforcing privacy with Fidesctl!</p>
 <p>See the <a href="../../tutorial/">Tutorial</a> page for a step-by-step guide on setting up a Fidesctl data privacy workflow.</p>

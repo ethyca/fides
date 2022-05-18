@@ -229,7 +229,7 @@ li code {
 
 .highlight .filename > code{
     background-color: transparent;
-    color: var(--md-typeset-color);
+    color: #2A2F45 ;
 }
 
 /***  API Page Dark Mode Compatibility ***/

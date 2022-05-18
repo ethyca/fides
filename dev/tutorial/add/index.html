@@ -581,6 +581,13 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#add-makefile-commands" class="md-nav__link">
+    Add Makefile Commands
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#check-your-progress" class="md-nav__link">
     Check Your Progress
   </a>
@@ -1381,6 +1388,54 @@ You're not viewing the latest version.
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_14">
+          Schemas
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1431,6 +1486,13 @@ You're not viewing the latest version.
         <li class="md-nav__item">
   <a href="#run-fidesctl-via-docker" class="md-nav__link">
     Run Fidesctl via Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-makefile-commands" class="md-nav__link">
+    Add Makefile Commands
   </a>
   
 </li>
@@ -1532,6 +1594,36 @@ Fidesctl initialization complete.
 </code></pre></div></td></tr></table></div>
 <blockquote>
 <p>See <a href="../../installation/installation/">the fidesctl installation guide</a> for a more detailed fidesctl server setup walkthrough, and <a href="https://docs.docker.com/compose/compose-file/">the <code>docker-compose</code> documentation</a> for an explanation of the above configuration options.</p>
+</blockquote>
+<h2 id="add-makefile-commands">Add <code>Makefile</code> Commands</h2>
+<blockquote>
+<p>This step is optional, but the commands added to the <code>Makefile</code> here will be referenced later in this tutorial.</p>
+</blockquote>
+<p>The above changes will enable fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the fidesctl CLI by adding commands to the <code>Makefile</code> like the following:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nf">fidesctl-init-db</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Initializing fidesctl db..&quot;</span>
+    ./venv/bin/fidesctl db init
+
+<span class="nf">fidesctl-evaluate</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Evaluating policy with fidesctl...&quot;</span>
+    ./venv/bin/fidesctl evaluate --dry fides_resources
+
+<span class="nf">fidesctl-generate-dataset</span><span class="o">:</span> <span class="n">compose</span>-<span class="n">up</span>
+    @echo <span class="s2">&quot;Generating dataset with fidesctl...&quot;</span>
+    ./venv/bin/fidesctl generate dataset db postgresql://postgres:postgres@localhost:5432/flaskr example.yml
+</code></pre></div></td></tr></table></div>
+<blockquote>
+<p><strong>Note:</strong> There are additional <code>Makefile</code> changes included in the <code>fidesdemo</code> repository, but they are only intended to enable cleaner usage of this project for demonstration purposes.</p>
 </blockquote>
 <h2 id="check-your-progress">Check Your Progress</h2>
 <p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesops-start"><code>fidesops-start</code></a> tag.</p>

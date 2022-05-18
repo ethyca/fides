@@ -1395,6 +1395,54 @@ You're not viewing the latest version.
   
 
     
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_14" type="checkbox" id="__nav_14" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_14">
+          Schemas
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Schemas" data-md-level="1">
+        <label class="md-nav__title" for="__nav_14">
+          <span class="md-nav__icon md-icon"></span>
+          Schemas
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/config/" class="md-nav__link">
+        Config
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1542,7 +1590,7 @@ Fidesctl initialization complete.
 <p>Now that we've spun up our database and set our configuration values, it's time to start our webserver. In a shell, run the following command:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl webserver
 </code></pre></div></td></tr></table></div>
-<p>The fidesctl webserver will now be accessible at <code>localhost:8080</code>, you can test this by going to <code>localhost:8080/api/v1/health</code> and <code>localhost:8080/docs</code>.</p>
+<p>The fidesctl webserver will now be accessible at <code>localhost:8080</code>, you can test this by going to <code>localhost:8080/health</code> and <code>localhost:8080/docs</code>.</p>
 <h2 id="using-the-cli">Using the CLI</h2>
 <p>Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command <code>fidesctl status</code> to make sure that the CLI can talk to the webserver. The output should look something like this:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
