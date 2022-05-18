@@ -1,8 +1,7 @@
-from os import path
+# pylint: disable=missing-docstring, redefined-outer-name
+from typing import Generator
 
 import pytest
-
-from fidesctl.core import export
 from fideslang.models import (
     Dataset,
     DatasetCollection,
@@ -12,9 +11,12 @@ from fideslang.models import (
     System,
 )
 
+from fidesctl.core import export
+from fidesctl.core.config import FidesctlConfig
+
 
 @pytest.fixture()
-def test_sample_system_taxonomy():
+def test_sample_system_taxonomy() -> Generator:
     yield [
         System(
             fides_key="test_system",
@@ -36,7 +38,7 @@ def test_sample_system_taxonomy():
 
 
 @pytest.fixture()
-def test_sample_dataset_taxonomy():
+def test_sample_dataset_taxonomy() -> Generator:
     yield [
         Dataset(
             fides_key="test_dataset",
@@ -77,7 +79,9 @@ def test_sample_dataset_taxonomy():
 
 
 @pytest.mark.unit
-def test_system_records_to_export(test_sample_system_taxonomy, test_config):
+def test_system_records_to_export(
+    test_sample_system_taxonomy: Generator, test_config: FidesctlConfig
+) -> None:
     """
     Asserts that unique records are returned properly (including
     the header row)
@@ -92,7 +96,7 @@ def test_system_records_to_export(test_sample_system_taxonomy, test_config):
 
 
 @pytest.mark.unit
-def test_dataset_records_to_export(test_sample_dataset_taxonomy):
+def test_dataset_records_to_export(test_sample_dataset_taxonomy: Generator) -> None:
     """
     Asserts that unique records are returned properly (including
     the header row)
@@ -104,7 +108,7 @@ def test_dataset_records_to_export(test_sample_dataset_taxonomy):
 
 
 @pytest.mark.unit
-def test_organization_records_to_export():
+def test_organization_records_to_export() -> None:
     """
     Asserts the default organization is successfully exported
     """

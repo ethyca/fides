@@ -1,11 +1,11 @@
 """Module that adds interactions with okta"""
 from typing import List
 
+from fideslang.models import Dataset, DatasetMetadata
 from okta.client import Client as OktaClient
 from okta.models import Application as OktaApplication
 
 from fidesctl.core.utils import echo_red
-from fideslang.models import Dataset, DatasetMetadata
 
 
 def get_okta_client(org_url: str) -> OktaClient:

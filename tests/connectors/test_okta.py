@@ -1,12 +1,17 @@
+# pylint: disable=missing-docstring, redefined-outer-name
+from typing import Generator
+
 import pytest
+from fideslang.models import Dataset, DatasetMetadata
 from okta.models import Application as OktaApplication
+from py._path.local import LocalPath
 
 import fidesctl.connectors.okta as okta_connector
-from fideslang.models import Dataset, DatasetMetadata
+from fidesctl.core.config import FidesctlConfig
 
 
 @pytest.fixture()
-def okta_list_applications():
+def okta_list_applications() -> Generator:
     okta_applications = [
         OktaApplication(
             config={
@@ -29,7 +34,7 @@ def okta_list_applications():
 
 
 @pytest.fixture()
-def okta_list_applications_with_inactive():
+def okta_list_applications_with_inactive() -> Generator:
     okta_applications = [
         OktaApplication(
             config={
@@ -53,7 +58,7 @@ def okta_list_applications_with_inactive():
 
 # Unit
 @pytest.mark.unit
-def test_create_okta_datasets(okta_list_applications):
+def test_create_okta_datasets(okta_list_applications: Generator) -> None:
     expected_result = [
         Dataset(
             fides_key="okta_id_1",
@@ -61,7 +66,7 @@ def test_create_okta_datasets(okta_list_applications):
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),
@@ -71,7 +76,7 @@ def test_create_okta_datasets(okta_list_applications):
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_2",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_2",
+            description="Fides Generated Description for Okta Application: okta_label_2",
             data_categories=[],
             collections=[],
         ),
@@ -83,7 +88,9 @@ def test_create_okta_datasets(okta_list_applications):
 
 
 @pytest.mark.unit
-def test_create_okta_datasets_filters_inactive(okta_list_applications_with_inactive):
+def test_create_okta_datasets_filters_inactive(
+    okta_list_applications_with_inactive: Generator,
+) -> None:
     expected_result = [
         Dataset(
             fides_key="okta_id_1",
@@ -91,7 +98,7 @@ def test_create_okta_datasets_filters_inactive(okta_list_applications_with_inact
             fidesctl_meta=DatasetMetadata(
                 resource_id="okta_id_1",
             ),
-            description=f"Fides Generated Description for Okta Application: okta_label_1",
+            description="Fides Generated Description for Okta Application: okta_label_1",
             data_categories=[],
             collections=[],
         ),
@@ -104,7 +111,7 @@ def test_create_okta_datasets_filters_inactive(okta_list_applications_with_inact
 
 # Integration
 @pytest.mark.external
-def test_list_okta_applications(tmpdir, test_config):
+def test_list_okta_applications(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
     client = okta_connector.get_okta_client(org_url="https://dev-78908748.okta.com")
     actual_result = okta_connector.list_okta_applications(okta_client=client)
     assert actual_result

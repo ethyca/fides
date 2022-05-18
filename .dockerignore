@@ -9,3 +9,5 @@ docs/
 # Ignore dev files
 .github/
 .devcontainer/
+
+node_modules/

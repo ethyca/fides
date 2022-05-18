@@ -8,9 +8,8 @@ import click
 import jwt
 import requests
 import sqlalchemy
-from sqlalchemy.engine import Engine
-
 from fideslang.models import DatasetField
+from sqlalchemy.engine import Engine
 
 logger = logging.getLogger("server_api")
 

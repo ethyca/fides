@@ -62,28 +62,6 @@ fidesctl:
 
 > See [the fidesctl installation guide](../installation/installation.md) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
 
-## Add `Makefile` Commands
-
-> This step is optional, but the commands added to the `Makefile` here will be referenced later in this tutorial.
-
-The above changes will enable fidesctl CLI commands to be run within the project's virtual environment. You can simplify usage of the fidesctl CLI by adding commands to the `Makefile` like the following:
-
-```makefile
-fidesctl-init-db: compose-up
-	@echo "Initializing fidesctl db.."
-	./venv/bin/fidesctl db init
-
-fidesctl-evaluate: compose-up
-	@echo "Evaluating policy with fidesctl..."
-	./venv/bin/fidesctl evaluate --dry fides_resources
-
-fidesctl-generate-dataset: compose-up
-	@echo "Generating dataset with fidesctl..."
-	./venv/bin/fidesctl generate dataset db postgresql://postgres:postgres@localhost:5432/flaskr example.yml
-```
-
-> **Note:** There are additional `Makefile` changes included in the `fidesdemo` repository, but they are only intended to enable cleaner usage of this project for demonstration purposes.
-
 ## Check Your Progress
 
 After making the above changes, your app should resemble the state of the [`ethyca/fidesdemo` repository](https://github.com/ethyca/fidesdemo) at the [`fidesops-start`](https://github.com/ethyca/fidesdemo/releases/tag/fidesops-start) tag.

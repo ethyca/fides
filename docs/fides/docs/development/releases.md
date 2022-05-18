@@ -33,5 +33,6 @@ We use GitHub’s `release` feature to tag releases that then get automatically 
 1. Create a new release, ensuring that the last PR to get merged is the aforementioned `CHANGELOG.md` update PR
 1. Add the new version as the tag (i.e. `1.6.0`)
 1. Make the title the version with a `v` in front of it (i.e. `v1.6.0`)
+1. Add a link to the `CHANGELOG.md`
+1. Auto-populate the release notes
 1. Publish the release
-1. Close the accompanying project in GitHub (i.e. `1.6.0`)

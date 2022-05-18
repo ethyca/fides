@@ -1,14 +1,15 @@
-import os
+# pylint: disable=missing-docstring, redefined-outer-name
+from typing import Generator
 
 import pytest
+from fideslang.models import DatasetCollection, DatasetField
 
 from fidesctl.core import utils
 from fidesctl.core.config import get_config
-from fideslang.models import DatasetCollection, DatasetField
 
 
 @pytest.fixture()
-def test_nested_collection_fields():
+def test_nested_collection_fields() -> Generator:
     nested_collection_fields = DatasetCollection(
         name="test_collection",
         fields=[
@@ -36,14 +37,16 @@ def test_nested_collection_fields():
 
 
 @pytest.mark.unit
-def test_get_db_engine():
+def test_get_db_engine() -> None:
     conn_str = get_config().api.sync_database_url
     engine = utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 
 
 @pytest.mark.unit
-def test_nested_fields_unpacked(test_nested_collection_fields):
+def test_nested_fields_unpacked(
+    test_nested_collection_fields: DatasetCollection,
+) -> None:
     """
     Tests unpacking fields from a data collection results in the
     correct number of fields being returned to be evaluated.

@@ -69,8 +69,6 @@ nav:
       - Code of Conduct: community/code_of_conduct.md
   - About Ethyca: ethyca.md
   - License: license.md
-  - Schemas:
-      - schemas/config.md
 
 # Theme
 theme:
