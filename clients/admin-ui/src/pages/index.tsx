@@ -1,15 +1,15 @@
-import React from 'react';
+import { Box, Button, Flex, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import { getSession } from 'next-auth/react';
-import { Flex, Heading, Button, Box } from '@fidesui/react';
+import Head from 'next/head';
+import React from 'react';
 import { wrapper } from '../app/store';
-
 import Header from '../features/common/Header';
-
 import { ArrowDownLineIcon } from '../features/common/Icon';
-
 import { assignToken } from '../features/user/user.slice';
+
+
+
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -62,6 +62,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
     // TODO: once user login is implemented in fides-ctl, re-enable this to make
     // sure the home page is login-protected
     return {
+      props: { session }
       //   redirect: {
       //     destination: '/login',
       //     permanent: false,
