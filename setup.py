@@ -1,6 +1,7 @@
 import pathlib
-from setuptools import setup, find_packages
+
 import versioneer
+from setuptools import find_packages, setup
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()

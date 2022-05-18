@@ -19,7 +19,7 @@ def test_cli_runner() -> Generator:
 @pytest.mark.integration
 def test_init(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
-        cli, ["init"], env={"FIDESCTL__USER__ANALYTICS_OPT_OUT": "true"}
+        cli, ["init"], env={"FIDESCTL_USER__ANALYTICS_OPT_OUT": "true"}
     )
     print(result.output)
     assert result.exit_code == 0
@@ -289,7 +289,7 @@ def test_nested_field_fails_evaluation(
 
 
 @pytest.mark.integration
-def test_generate_dataset_db(
+def test_generate_dataset_db_with_connection_string(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
@@ -303,8 +303,9 @@ def test_generate_dataset_db(
             "generate",
             "dataset",
             "db",
-            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
             f"{tmp_file}",
+            "--connection-string",
+            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
         ],
     )
     print(result.output)
@@ -312,7 +313,33 @@ def test_generate_dataset_db(
 
 
 @pytest.mark.integration
-def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_generate_dataset_db_with_credentials_id(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
+    tmp_file = tmpdir.join("dataset.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "dataset",
+            "db",
+            f"{tmp_file}",
+            "--credentials-id",
+            "my_postgres",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_scan_dataset_db_with_connection_string(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -321,7 +348,30 @@ def test_scan_dataset_db(test_config_path: str, test_cli_runner: CliRunner) -> N
             "scan",
             "dataset",
             "db",
+            "--connection-string",
             "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+            "--coverage-threshold",
+            "0",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_scan_dataset_db_with_credentials_id(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "dataset",
+            "db",
+            "--credentials-id",
+            "my_postgres",
             "--coverage-threshold",
             "0",
         ],

@@ -41,6 +41,3 @@ class CLISettings(FidesSettings):
         Validate that the `analytics_id` is not `""`.
         """
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
-
-    class Config:
-        env_prefix = "FIDESCTL__CLI__"

@@ -6,6 +6,7 @@ import sys
 
 from fidesapi.main import app
 
+
 def generate_openapi(outfile_dir: str) -> None:
     "Write out an openapi.json file for the API."
 

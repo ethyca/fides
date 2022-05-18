@@ -11,3 +11,6 @@ test_database_name = "fidesctl_test"
 
 [user]
 analytics_opt_out = true
+
+[credentials.database]
+my_postgres = {connection_string="postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"}

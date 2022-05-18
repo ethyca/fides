@@ -32,9 +32,9 @@ def test_default_config() -> None:
     os.environ,
     {
         "FIDESCTL_CONFIG_PATH": "",
-        "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_HOST": "test",
-        "FIDESCTL__CLI__SERVER_PORT": "8080",
+        "FIDESCTL_USER__USER_ID": "2",
+        "FIDESCTL_CLI__SERVER_HOST": "test",
+        "FIDESCTL_CLI__SERVER_PORT": "8080",
     },
     clear=True,
 )

@@ -85,6 +85,3 @@ class APISettings(FidesSettings):
         """
         value = value.lower()
         return value if value == "json" else ""
-
-    class Config:
-        env_prefix = "FIDESCTL__API__"

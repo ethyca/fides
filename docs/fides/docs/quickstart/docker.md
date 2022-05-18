@@ -35,9 +35,9 @@ services:
       - "8080:8080"
     environment:
       FIDESCTL_TEST_MODE: "True"
-      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
-      FIDESCTL__CLI__SERVER_PORT: "8080"
-      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
+      FIDESCTL_CLI__SERVER_HOST: "fidesctl"
+      FIDESCTL_CLI__SERVER_PORT: "8080"
+      FIDESCTL_API__DATABASE_HOST: "fidesctl-db"
     volumes:
       - type: bind
         source: .

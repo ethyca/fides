@@ -30,8 +30,8 @@ IMAGE_LATEST = f"{IMAGE}:latest"
 # The else statement is required due to the way commmands are structured and is arbitrary.
 CI_ARGS = "-T" if getenv("CI") else "--user=root"
 
-# If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
-ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
+# If FIDESCTL_CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
+ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL_CLI__ANALYTICS_ID")
 
 # Reusable Commands
 RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)

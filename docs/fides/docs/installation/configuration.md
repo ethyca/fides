@@ -82,13 +82,13 @@ By default fidesctl will look for a `fidesctl.toml` configuration file in the fo
 To configure environment variables for fidesctl, the following pattern is used:
 
 ```sh
-FIDESCTL__<SECTION>__<VAR_NAME>
+FIDESCTL_<SECTION>__<VAR_NAME>
 ```
 
 For example, if we want to set the `server_url` on a Linux machine we could use:
 
 ```sh
-export FIDESCTL__CLI__SERVER_HOST="localhost"
-export FIDESCTL__CLI__SERVER_PORT="8080"
-export FIDESCTL__CLI__SERVER_PROTOCOL="http"
+export FIDESCTL_CLI__SERVER_HOST="localhost"
+export FIDESCTL_CLI__SERVER_PORT="8080"
+export FIDESCTL_CLI__SERVER_PROTOCOL="http"
 ```

@@ -2,8 +2,12 @@
 
 import click
 
-from fidesctl.cli.options import include_null_flag
-from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.options import (
+    connection_string_option,
+    credentials_id_option,
+    include_null_flag,
+)
+from fidesctl.cli.utils import handle_database_connection_options, with_analytics
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -26,12 +30,17 @@ def generate_dataset(ctx: click.Context) -> None:
 
 @generate_dataset.command(name="db")
 @click.pass_context
-@click.argument("connection_string", type=str)
 @click.argument("output_filename", type=str)
+@credentials_id_option
+@connection_string_option
 @include_null_flag
 @with_analytics
 def generate_dataset_db(
-    ctx: click.Context, connection_string: str, output_filename: str, include_null: bool
+    ctx: click.Context,
+    output_filename: str,
+    connection_string: str,
+    credentials_id: str,
+    include_null: bool,
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-style connection string and
@@ -40,8 +49,12 @@ def generate_dataset_db(
     This is a one-time operation that does not track the state of the database.
     It will need to be run again if the database schema changes.
     """
+    actual_connection_string = handle_database_connection_options(
+        ctx=ctx, connection_string=connection_string, credentials_id=credentials_id
+    )
+
     _dataset.generate_dataset_db(
-        connection_string=connection_string,
+        connection_string=actual_connection_string,
         file_name=output_filename,
         include_null=include_null,
     )

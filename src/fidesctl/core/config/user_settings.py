@@ -26,6 +26,3 @@ class UserSettings(FidesSettings):
         cls: BaseModel, value: Optional[Dict], values: Dict
     ) -> Dict[str, str]:
         return generate_request_headers(values["user_id"], values["api_key"])
-
-    class Config:
-        env_prefix = "FIDESCTL__USER__"
