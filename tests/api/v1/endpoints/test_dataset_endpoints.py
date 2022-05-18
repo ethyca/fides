@@ -21,6 +21,7 @@ from fidesops.api.v1.scope_registry import (
 from fidesops.api.v1.urn_registry import (
     DATASET_VALIDATE,
     DATASETS,
+    YAML_DATASETS,
     DATASET_BY_KEY,
     V1_URL_PREFIX,
 )
@@ -824,6 +825,152 @@ class TestPutDatasets:
 
         for index, failed in enumerate(response_body["failed"]):
             assert failed["data"]["fides_key"] == example_datasets[index]["fides_key"]
+
+
+class TestPutYamlDatasets:
+    @pytest.fixture
+    def dataset_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + YAML_DATASETS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    def test_patch_dataset_not_authenticated(
+        self, example_yaml_dataset: str, dataset_url, api_client
+    ) -> None:
+        response = api_client.patch(dataset_url, headers={}, data=example_yaml_dataset)
+        assert response.status_code == 401
+
+    def test_patch_datasets_wrong_scope(
+        self,
+        example_yaml_dataset: str,
+        dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.patch(
+            dataset_url, headers=auth_header, data=example_yaml_dataset
+        )
+        assert response.status_code == 403
+
+    def test_patch_dataset_invalid_connection_key(
+        self, example_yaml_dataset: str, api_client: TestClient, generate_auth_header
+    ) -> None:
+        path = V1_URL_PREFIX + YAML_DATASETS
+        path_params = {"connection_key": "nonexistent_key"}
+        dataset_url = path.format(**path_params)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            dataset_url, headers=auth_header, data=example_yaml_dataset
+        )
+        assert response.status_code == 404
+
+    def test_patch_dataset_invalid_content_type(
+        self,
+        dataset_url: str,
+        example_datasets: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            dataset_url, headers=auth_header, json=example_datasets
+        )
+        assert response.status_code == 415
+
+    def test_patch_dataset_invalid_content(
+        self,
+        dataset_url: str,
+        example_invalid_yaml_dataset: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_invalid_yaml_dataset
+        )
+        assert response.status_code == 400
+
+    @mock.patch("fidesops.models.datasetconfig.DatasetConfig.create_or_update")
+    def test_patch_datasets_failed_response(
+        self,
+        mock_create: Mock,
+        example_yaml_dataset: str,
+        dataset_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_yaml_dataset
+        )
+        assert response.status_code == 200  # Returns 200 regardless
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+
+        for failed_response in response_body["failed"]:
+            assert "Dataset create/update failed" in failed_response["message"]
+            assert set(failed_response.keys()) == {"message", "data"}
+
+    def test_patch_dataset_create(
+        self,
+        example_yaml_dataset: List,
+        dataset_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_yaml_dataset
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+
+        # Confirm that postgres dataset matches the values we provided
+        postgres_dataset = response_body["succeeded"][0]
+        postgres_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="postgres_example_test_dataset"
+        )
+        assert postgres_config is not None
+        assert postgres_dataset["fides_key"] == "postgres_example_test_dataset"
+        assert postgres_dataset["name"] == "Postgres Example Test Dataset"
+        assert "Example of a Postgres dataset" in postgres_dataset["description"]
+        assert len(postgres_dataset["collections"]) == 11
+
+        postgres_config.delete(db)
+
+    def test_patch_datasets_create(
+        self,
+        example_yaml_datasets: List,
+        dataset_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        headers = {"Content-type": "application/x-yaml"}
+        headers.update(auth_header)
+        response = api_client.patch(
+            dataset_url, headers=headers, data=example_yaml_datasets
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["failed"]) == 0
 
 
 class TestGetDatasets:

@@ -908,6 +908,12 @@ def load_dataset(filename: str) -> Dict:
         return yaml.safe_load(file).get("dataset", [])
 
 
+def load_dataset_as_string(filename: str) -> str:
+    yaml_file = load_file(filename)
+    with open(yaml_file, "r") as file:
+        return file.read()
+
+
 @pytest.fixture
 def example_datasets() -> List[Dict]:
     example_datasets = []
@@ -924,6 +930,24 @@ def example_datasets() -> List[Dict]:
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
     return example_datasets
+
+
+@pytest.fixture
+def example_yaml_datasets() -> str:
+    example_filename = "data/dataset/example_test_datasets.yml"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
+def example_yaml_dataset() -> str:
+    example_filename = "data/dataset/postgres_example_test_dataset.yml"
+    return load_dataset_as_string(example_filename)
+
+
+@pytest.fixture
+def example_invalid_yaml_dataset() -> str:
+    example_filename = "data/dataset/example_test_dataset.invalid"
+    return load_dataset_as_string(example_filename)
 
 
 @pytest.fixture
