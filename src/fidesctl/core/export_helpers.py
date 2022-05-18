@@ -300,11 +300,18 @@ def get_datamap_fides_keys(taxonomy: Taxonomy) -> Dict:
     Gathers all fides keys for an organization, systems,
     and datasets based on the resources found in the
     provided taxonomy built from manifests.
+
+    If no Organization is found, ensure the 'default_organization'
+    is applied. This is a temporary measure put in place until a
+    more thorough change is made to pull all resources from the
+    server.
     """
     taxonomy_keys_dict = {}
     taxonomy_keys_dict["organization"] = [
         resource.fides_key for resource in taxonomy.organization
     ]
+    if not taxonomy_keys_dict["organization"]:
+        taxonomy_keys_dict["organization"] = ["default_organization"]
     taxonomy_keys_dict["system"] = [resource.fides_key for resource in taxonomy.system]
     taxonomy_keys_dict["dataset"] = [
         resource.fides_key for resource in taxonomy.dataset

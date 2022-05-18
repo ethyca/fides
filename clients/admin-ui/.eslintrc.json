@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "airbnb",
+    "airbnb-typescript/base",
+    "prettier",
+    "next/core-web-vitals"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
+    "react/jsx-props-no-spreading": [0],
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function"
+      }
+    ],
+    // causes bug in re-exporting default exports, see
+    // https://github.com/eslint/eslint/issues/15617
+    "no-restricted-exports": [0]
+  }
+}
