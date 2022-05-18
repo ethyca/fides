@@ -1,5 +1,6 @@
 # Prefixes
 V1_URL_PREFIX = "/api/v1"
+YAML = "/yml"
 
 # Config URLs
 CONFIG = "/config"
@@ -67,6 +68,9 @@ CONNECTION_TEST = "/connection/{connection_key}/test"
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
+
+# YAML Collection URLs
+YAML_DATASETS = YAML + DATASETS
 
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"

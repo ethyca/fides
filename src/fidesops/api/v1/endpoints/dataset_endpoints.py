@@ -1,14 +1,21 @@
 import logging
 from typing import List
+import yaml
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+)
 
 from fidesops.api import deps
 from fidesops.api.v1.scope_registry import (
@@ -20,6 +27,7 @@ from fidesops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
+    YAML_DATASETS,
     V1_URL_PREFIX,
 )
 from fidesops.common_exceptions import (
@@ -44,6 +52,8 @@ from fidesops.schemas.dataset import (
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.util.saas_util import merge_datasets
+
+X_YAML = "application/x-yaml"
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
@@ -166,33 +176,97 @@ def patch_datasets(
             "fides_key": dataset.fides_key,
             "dataset": dataset.dict(),
         }
-        try:
-            if connection_config.connection_type == ConnectionType.saas:
-                _validate_saas_dataset(connection_config, dataset)
-            # Try to find an existing DatasetConfig matching the given connection & key
-            dataset_config = DatasetConfig.create_or_update(db, data=data)
-            created_or_updated.append(dataset_config.dataset)
-        except (SaaSConfigNotFoundException, ValidationError) as exception:
-            logger.warning(exception.message)
-            failed.append(
-                BulkUpdateFailed(
-                    message=exception.message,
-                    data=data,
-                )
-            )
-        except Exception:
-            logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
-            failed.append(
-                BulkUpdateFailed(
-                    message="Dataset create/update failed.",
-                    data=data,
-                )
-            )
-
+        create_or_update_dataset(
+            connection_config, created_or_updated, data, dataset, db, failed
+        )
     return BulkPutDataset(
         succeeded=created_or_updated,
         failed=failed,
     )
+
+
+@router.patch(
+    YAML_DATASETS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
+    status_code=200,
+    response_model=BulkPutDataset,
+    include_in_schema=False  # Not including this path in the schema.
+    # Since this yaml function needs to access the request, the open api spec will not be generated correctly.
+    # To include this path, extend open api: https://fastapi.tiangolo.com/advanced/extending-openapi/
+)
+async def patch_yaml_datasets(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> BulkPutDataset:
+    if request.headers.get("content-type") != X_YAML:
+        raise HTTPException(
+            status_code=HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Supported type: " + X_YAML,
+        )
+    body = await request.body()
+    try:
+        yaml_request_body: dict = yaml.safe_load(body)
+    except yaml.MarkedYAMLError as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML: " + str(e)
+        )
+    datasets = (
+        yaml_request_body.get("dataset") if isinstance(yaml_request_body, dict) else []
+    )
+    created_or_updated: List[FidesopsDataset] = []
+    failed: List[BulkUpdateFailed] = []
+    if isinstance(datasets, list):
+        for dataset in datasets:  # type: ignore
+            data: dict = {
+                "connection_config_id": connection_config.id,
+                "fides_key": dataset["fides_key"],
+                "dataset": dataset,
+            }
+            create_or_update_dataset(
+                connection_config,
+                created_or_updated,
+                data,
+                yaml_request_body,
+                db,
+                failed,
+            )
+    return BulkPutDataset(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
+
+
+def create_or_update_dataset(
+    connection_config: ConnectionConfig,
+    created_or_updated: List[FidesopsDataset],
+    data: dict,
+    dataset: dict,
+    db: Session,
+    failed: List[BulkUpdateFailed],
+) -> None:
+    try:
+        if connection_config.connection_type == ConnectionType.saas:
+            _validate_saas_dataset(connection_config, dataset)
+        # Try to find an existing DatasetConfig matching the given connection & key
+        dataset_config = DatasetConfig.create_or_update(db, data=data)
+        created_or_updated.append(dataset_config.dataset)
+    except (SaaSConfigNotFoundException, ValidationError) as exception:
+        logger.warning(exception.message)
+        failed.append(
+            BulkUpdateFailed(
+                message=exception.message,
+                data=data,
+            )
+        )
+    except Exception:
+        logger.warning(f"Create/update failed for dataset '{data['fides_key']}'.")
+        failed.append(
+            BulkUpdateFailed(
+                message="Dataset create/update failed.",
+                data=data,
+            )
+        )
 
 
 def _validate_saas_dataset(
