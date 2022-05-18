@@ -44,8 +44,12 @@ def create_test_server_systems(
 @pytest.fixture(scope="function")
 def create_external_server_systems(test_config: FidesctlConfig) -> Generator:
     systems = _system.generate_redshift_systems(
-        organization_key="default_organization"
-    ) + _system.generate_rds_systems(organization_key="default_organization")
+        organization_key="default_organization",
+        aws_config={},
+    ) + _system.generate_rds_systems(
+        organization_key="default_organization",
+        aws_config={},
+    )
     delete_server_systems(test_config, systems)
     create_server_systems(test_config, systems)
     yield
