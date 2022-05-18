@@ -5,7 +5,7 @@ cryptography>=36
 deepdiff==5.8.0
 fideslang==0.9.0
 fideslog==1.1.5
-loguru>=0.5,<0.6
+loguru>=0.5,<0.7
 openpyxl==3.0.9
 pandas==1.4
 plotly==5.4
