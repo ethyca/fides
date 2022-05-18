@@ -16,7 +16,29 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.4.1...main)
+
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
+* 
+
+## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
+
+### Added
+
+* ESLint configuration changes [#514](https://github.com/ethyca/fidesops/pull/514)
+* User creation, update and permissions in the Admin UI [#511](https://github.com/ethyca/fidesops/pull/511)
+* Yaml support for dataset upload [#284](https://github.com/ethyca/fidesops/pull/284)
+
+
+### Breaking Changes
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443
+
+
+### Docs
+
+* DRP feature documentation [#520](https://github.com/ethyca/fidesops/pull/520)
+
+
+## [1.4.2](https://github.com/ethyca/fidesops/compare/1.4.1...1.4.2) - 2022-05-12
 
 ### Added
 
