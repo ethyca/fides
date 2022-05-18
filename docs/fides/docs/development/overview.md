@@ -26,9 +26,9 @@ There are a few different ways to develop Fidesctl, they are listed below _in or
     1. Click "Open", without having selected any specific folder.
     1. The containers will now spin up and VS Code will be running inside of the containers. The bottom left of the IDE will now say `Dev Container: Fidesctl`.
     1. When you open a new VS Code shell, it will be inside of the `fidesctl` container, and you'll have access to all of the `fidesctl` commands as well as any Python commands like `pytest`, `black`, `mypy`, etc.
-1. If you're using an editor besides VS Code, then the next best way to work on Fidesctl is by utilizing the `Noxfile` commands:
-    1. Make sure that you have `docker`, `docker-compose` and `nox` (`pip install nox`) installed.
-    1. Once you have everything set up, run `nox -s cli` to spin up a shell within the `fidesctl` container.
+1. If you're using an editor besides VS Code, then the next best way to work on Fidesctl is by utilizing the `Makefile` commands:
+    1. Make sure that you have `docker`, `docker-compose` and `make` installed.
+    1. Once you have everything set up, run `make cli` to spin up a shell within the `fidesctl` container.
     1. You can and should run all of your various development commands from within this shell, such as `pytest`, `black`, etc.
 1. Finally, the least-recommended method would be to install the project in your local environment and develop directly.
 

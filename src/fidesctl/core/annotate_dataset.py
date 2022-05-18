@@ -5,14 +5,14 @@ This script is a utility for interactively annotating data categories in the dat
 from typing import List, Union
 
 import click
-from fideslang import manifests
-from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
-from fideslang.validation import FidesValidationError
 
 from fidesctl.core import api_helpers
 from fidesctl.core import parse as core_parse
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import echo_green, get_all_level_fields
+from fideslang import manifests
+from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
+from fideslang.validation import FidesValidationError
 
 
 class AnnotationAbortError(Exception):

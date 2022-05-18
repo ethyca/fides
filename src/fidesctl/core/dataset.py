@@ -3,13 +3,13 @@ import asyncio
 from typing import Dict, List, Optional, Tuple
 
 import sqlalchemy
-from fideslang import manifests
-from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
+from fideslang import manifests
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 
 from .utils import echo_green, echo_red, get_db_engine
 

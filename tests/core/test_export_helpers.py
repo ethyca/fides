@@ -1,9 +1,9 @@
-# pylint: disable=missing-docstring, redefined-outer-name
 from os import path
-from typing import Generator, List
 
 import pandas as pd
 import pytest
+
+from fidesctl.core import export_helpers
 from fideslang.models import (
     DataProtectionImpactAssessment,
     Dataset,
@@ -11,13 +11,10 @@ from fideslang.models import (
     DatasetField,
     DataSubjectRights,
 )
-from py._path.local import LocalPath
-
-from fidesctl.core import export_helpers
 
 
 @pytest.fixture()
-def test_sample_dataset_taxonomy() -> Generator:
+def test_sample_dataset_taxonomy():
     yield [
         Dataset(
             fides_key="test_dataset",
@@ -58,9 +55,7 @@ def test_sample_dataset_taxonomy() -> Generator:
 
 
 @pytest.mark.unit
-def test_dataset_data_category_rows(
-    test_sample_dataset_taxonomy: List[Dataset],
-) -> None:
+def test_dataset_data_category_rows(test_sample_dataset_taxonomy):
 
     dataset_name = test_sample_dataset_taxonomy[0].name
     dataset_description = test_sample_dataset_taxonomy[0].description
@@ -84,7 +79,7 @@ def test_dataset_data_category_rows(
 
 
 @pytest.mark.unit
-def test_csv_export(tmpdir: LocalPath) -> None:
+def test_csv_export(tmpdir):
     """
     Asserts that the csv is successfully created
     """
@@ -104,7 +99,7 @@ def test_csv_export(tmpdir: LocalPath) -> None:
 
 
 @pytest.mark.unit
-def test_xlsx_export(tmpdir: LocalPath) -> None:
+def test_xlsx_export(tmpdir):
     """
     Asserts that the xlsx template is successfully copied and appended to
     """
@@ -169,11 +164,11 @@ def test_xlsx_export(tmpdir: LocalPath) -> None:
         },
     ],
 )
-@pytest.mark.unit
-def test_calculate_data_subject_rights(data_subject_rights: dict) -> None:
+def test_calculate_data_subject_rights(data_subject_rights: dict):
     """Tests different strategy options for returning data subject rights."""
     rights = DataSubjectRights(**data_subject_rights)
-    return_str_value = export_helpers.calculate_data_subject_rights(rights.dict())
+    rights_dict = rights.dict()
+    return_str_value = export_helpers.calculate_data_subject_rights(rights_dict)
 
     assert return_str_value is not None
     if data_subject_rights["strategy"] in ["INCLUDE", "EXCLUDE"]:
@@ -181,7 +176,7 @@ def test_calculate_data_subject_rights(data_subject_rights: dict) -> None:
 
 
 @pytest.mark.unit
-def test_get_formatted_data_protection_impact_assessment() -> None:
+def test_get_formatted_data_protection_impact_assessment():
     "Tests that only optional None values are formatted as N/A for exporting."
     formatted_dict = export_helpers.get_formatted_data_protection_impact_assessment(
         DataProtectionImpactAssessment().dict()
@@ -206,6 +201,6 @@ def test_get_formatted_data_protection_impact_assessment() -> None:
     ],
 )
 @pytest.mark.unit
-def test_convert_tuple_to_string(test_vals: set, expected: set) -> None:
+def test_convert_tuple_to_string(test_vals, expected):
     result = export_helpers.convert_tuple_to_string(test_vals)
     assert sorted(result.split(", ")) == expected

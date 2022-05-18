@@ -91,7 +91,7 @@ After making the above changes, your app should resemble the state of the [`ethy
 
 ## Next: Manage Google Analytics with Fidesctl
 
-Google Analytics is implemented and working correctly, but - oh no! - executing `nox -s fidesctl` shows a failure:
+Google Analytics is implemented and working correctly, but - oh no! - executing `make fidesctl-evaluate` shows a failure:
 
 ```json
 {

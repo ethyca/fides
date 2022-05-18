@@ -1,26 +1,20 @@
-# pylint: disable=missing-docstring, redefined-outer-name
 import os
-from typing import Generator
 
 import pytest
-from py._path.local import LocalPath
 from toml import dump, load
 
-from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.utils import update_config_file
 
 
 @pytest.fixture
-def test_change_config() -> Generator:
+def test_change_config():
     """Create a dictionary to be used as an example config file"""
 
     yield {"cli": {"analytics_id": "initial_id"}}
 
 
 @pytest.mark.unit
-def test_update_config_file_new_value(
-    test_change_config: FidesctlConfig, tmpdir: LocalPath
-) -> None:
+def test_update_config_file_new_value(test_change_config, tmpdir):
     """
     Create an example config.toml and validate both updating an
     existing config setting and adding a new section and setting.
@@ -45,6 +39,6 @@ def test_update_config_file_new_value(
         updated_config["cli"]["analytics_id"] == "updated_id"
     ), "updated_config.cli.analytics_id should be 'updated_id'"
     assert updated_config["user"] is not None, "updated_config.user should exist"
-    assert updated_config["user"][
-        "analytics_opt_out"
-    ], "updated_config.user.analytics_opt_out should be True"
+    assert (
+        updated_config["user"]["analytics_opt_out"] == True
+    ), "updated_config.user.analytics_opt_out should be True"

@@ -6,7 +6,7 @@ By default, Google Analytics disables "IP Anonymization" (see [the documentation
 
 ## POP QUIZ
 
-There are two options to remedy this situation, and to get the `nox -s fidesctl` command to pass. Which option is best?
+There are two options to remedy this situation, and to get the `make fidesctl-evaluate` command to pass. Which option is best?
 
 1. Modify the "Minimize User Identifiable Data" policy resource to accept data collection of this nature
 1. Modify the Google Analytics implementation such that it becomes compliant with the "Minimize User Identifiable Data" policy
@@ -48,7 +48,7 @@ By removing the final `identified` key of the Fides taxonomy, the updated nature
 
 ## Evaluate the Fidesctl Policies
 
-Execute the `nox -s fidesctl` command one final time. You should see the following output:
+Execute the `make fidesctl-evaluate` command one final time. You should see the following output:
 
 ```
 Evaluating policy with fidesctl...

@@ -83,7 +83,8 @@ policy:
 
 ### **API Payload**
 
-```json title="<code>POST /api/v1/policy</code>"
+```json
+POST /policy
 {
   "fides_key": "demo_privacy_policy",
   "organization_fides_key": "default_organization",

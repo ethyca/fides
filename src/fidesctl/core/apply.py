@@ -4,12 +4,12 @@ from pprint import pprint
 from typing import Dict, List, Tuple
 
 from deepdiff import DeepDiff
-from fideslang import FidesModel, Taxonomy
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resources
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.core.utils import echo_green
+from fideslang import FidesModel, Taxonomy
 
 
 def sort_create_update(
@@ -67,34 +67,6 @@ def echo_results(action: str, resource_type: str, resource_count: int) -> None:
     echo_green(f"{action.upper()} {resource_count} {resource_type} resource(s).")
 
 
-def get_orphan_datasets(taxonomy: Taxonomy) -> List:
-    """
-    Validate all datasets are referenced at least one time
-    by comparing all datasets to a set of referenced datasets
-    within a privacy declaration.
-
-    Returns a list containing any orphan datasets.
-    """
-    referenced_datasets = set()
-    datasets = set()
-
-    referenced_datasets.update(
-        [
-            dataset_reference
-            for resource in taxonomy.system
-            for privacy_declaration in resource.privacy_declarations
-            if privacy_declaration.dataset_references is not None
-            for dataset_reference in privacy_declaration.dataset_references
-        ]
-    )
-
-    datasets.update([resource.fides_key for resource in taxonomy.dataset])
-
-    missing_datasets = list(datasets - referenced_datasets)
-
-    return missing_datasets
-
-
 def apply(
     url: str,
     taxonomy: Taxonomy,
@@ -105,14 +77,6 @@ def apply(
     """
     Apply the current manifest file state to the server.
     """
-
-    missing_datasets = get_orphan_datasets(taxonomy)
-    if len(missing_datasets) > 0:
-        echo_red(
-            "Orphan Dataset Warning: The following datasets are not found referenced on a System"
-        )
-        for dataset in missing_datasets:
-            print(dataset)
 
     for resource_type in taxonomy.__fields_set__:
         print("-" * 10)

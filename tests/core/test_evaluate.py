@@ -1,8 +1,9 @@
-# pylint: disable=missing-docstring, redefined-outer-name
 from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+from fidesctl.core import evaluate
 from fideslang.models import (
     DataCategory,
     DataQualifier,
@@ -18,13 +19,10 @@ from fideslang.models import (
     Taxonomy,
 )
 
-from fidesctl.core import evaluate
-from fidesctl.core.config import FidesctlConfig
-
 
 # Helpers
 @pytest.fixture()
-def evaluation_key_validation_basic_taxonomy() -> Taxonomy:
+def evaluation_key_validation_basic_taxonomy():
     yield Taxonomy(
         data_subject=[
             DataSubject(fides_key="data_subject_1"),
@@ -43,7 +41,7 @@ def evaluation_key_validation_basic_taxonomy() -> Taxonomy:
 
 
 @pytest.fixture()
-def evaluation_hierarchical_key_basic_taxonomy() -> Taxonomy:
+def evaluation_hierarchical_key_basic_taxonomy():
     yield Taxonomy(
         data_category=[
             DataCategory(
@@ -86,7 +84,7 @@ def create_policy_rule_with_keys(
 
 
 @pytest.mark.integration
-def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
+def test_get_all_server_policies(test_config):
     result = evaluate.get_all_server_policies(
         url=test_config.cli.server_url, headers=test_config.user.request_headers
     )
@@ -94,7 +92,7 @@ def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
 
 
 @pytest.mark.integration
-def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> None:
+def test_populate_referenced_keys_recursively(test_config):
     """
     Test that populate_referenced_keys works recursively. It should be able to
     find the keys in the declaration and also populate any keys which those reference.
@@ -148,9 +146,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
 
 
 @pytest.mark.integration
-def test_populate_referenced_keys_fails_missing_keys(
-    test_config: FidesctlConfig,
-) -> None:
+def test_populate_referenced_keys_fails_missing_keys(test_config):
     """
     Test that populate_referenced_keys will fail if missing keys
     are referenced in taxonomy
@@ -180,42 +176,8 @@ def test_populate_referenced_keys_fails_missing_keys(
         )
 
 
-@pytest.mark.integration
-def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
-    dehydrated_taxonomy = Taxonomy(
-        data_category=[
-            DataCategory(
-                name="test_dc",
-                fides_key="key_1.test_dc",
-                description="test description",
-                parent_key="key_1",
-            ),
-        ],
-        system=[
-            System.construct(
-                name="test_dc",
-                fides_key="test_dc",
-                description="test description",
-                system_dependencies=["key_3", "key_4"],
-                system_type="test",
-                privacy_declarations=None,
-            )
-        ],
-    )
-    actual_hydrated_taxonomy = evaluate.hydrate_missing_resources(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        dehydrated_taxonomy=dehydrated_taxonomy,
-        missing_resource_keys={
-            "user.provided.identifiable.credentials",
-            "user.provided",
-        },
-    )
-    assert len(actual_hydrated_taxonomy.data_category) == 3
-
-
 @pytest.mark.unit
-def test_get_evaluation_policies_with_key_found_local() -> None:
+def test_get_evaluation_policies_with_key_found_local():
     """
     Test that when a fides key is supplied the local policy is returned when found
     """
@@ -236,7 +198,7 @@ def test_get_evaluation_policies_with_key_found_local() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_key_found_remote() -> None:
+def test_get_evaluation_policies_with_key_found_remote():
     """
     Test that when a fides key is supplied and not found locally, it will be
     fetched from the server
@@ -260,7 +222,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> None:
+def test_get_evaluation_policies_with_no_key(test_config):
     """
     Test that when no fides key is supplied all local and server policies are
     returned.
@@ -289,13 +251,13 @@ def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> Non
 
 
 @pytest.mark.unit
-def test_validate_policies_exist_throws_with_empty() -> None:
+def test_validate_policies_exist_throws_with_empty():
     with pytest.raises(SystemExit):
         evaluate.validate_policies_exist(policies=[], evaluate_fides_key="fides_key")
 
 
 @pytest.mark.unit
-def test_validate_policies_exist_with_policies() -> None:
+def test_validate_policies_exist_with_policies():
     evaluate.validate_policies_exist(
         policies=[Policy(fides_key="fides_key_1", rules=[])],
         evaluate_fides_key="fides_key",
@@ -303,7 +265,7 @@ def test_validate_policies_exist_with_policies() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_any_true() -> None:
+def test_compare_rule_to_declaration_any_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
@@ -313,7 +275,7 @@ def test_compare_rule_to_declaration_any_true() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_any_true_hierarchical() -> None:
+def test_compare_rule_to_declaration_any_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
@@ -323,7 +285,7 @@ def test_compare_rule_to_declaration_any_true_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_any_false() -> None:
+def test_compare_rule_to_declaration_any_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
@@ -333,7 +295,7 @@ def test_compare_rule_to_declaration_any_false() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_any_false_hierarchical() -> None:
+def test_compare_rule_to_declaration_any_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
@@ -343,7 +305,7 @@ def test_compare_rule_to_declaration_any_false_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_all_true() -> None:
+def test_compare_rule_to_declaration_all_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_3"], ["key_1"]],
@@ -353,7 +315,7 @@ def test_compare_rule_to_declaration_all_true() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_all_true_hierarchical() -> None:
+def test_compare_rule_to_declaration_all_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent", "key_3_parent"],
         declaration_type_hierarchies=[
@@ -366,7 +328,7 @@ def test_compare_rule_to_declaration_all_true_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_all_false() -> None:
+def test_compare_rule_to_declaration_all_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
@@ -376,7 +338,7 @@ def test_compare_rule_to_declaration_all_false() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_all_false_hierarchical() -> None:
+def test_compare_rule_to_declaration_all_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_1_parent", "key_3"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
@@ -386,7 +348,7 @@ def test_compare_rule_to_declaration_all_false_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_none_true() -> None:
+def test_compare_rule_to_declaration_none_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"]],
@@ -396,7 +358,7 @@ def test_compare_rule_to_declaration_none_true() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_none_true_hierarchical() -> None:
+def test_compare_rule_to_declaration_none_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2", "key_2_parent"], ["key_3"]],
@@ -406,7 +368,7 @@ def test_compare_rule_to_declaration_none_true_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_none_false() -> None:
+def test_compare_rule_to_declaration_none_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1"]],
@@ -416,7 +378,7 @@ def test_compare_rule_to_declaration_none_false() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_none_false_hierarchical() -> None:
+def test_compare_rule_to_declaration_none_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_3"], ["key_1", "key_1_parent"]],
@@ -426,7 +388,7 @@ def test_compare_rule_to_declaration_none_false_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_other_true() -> None:
+def test_compare_rule_to_declaration_other_true():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1"],
         declaration_type_hierarchies=[["key_2"], ["key_1"]],
@@ -436,7 +398,7 @@ def test_compare_rule_to_declaration_other_true() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_other_true_hierarchical() -> None:
+def test_compare_rule_to_declaration_other_true_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1_parent"],
         declaration_type_hierarchies=[["key_2"], ["key_1", "key_1_parent"]],
@@ -446,7 +408,7 @@ def test_compare_rule_to_declaration_other_true_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_other_false() -> None:
+def test_compare_rule_to_declaration_other_false():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3"],
         declaration_type_hierarchies=[["key_1"], ["key_3"]],
@@ -456,7 +418,7 @@ def test_compare_rule_to_declaration_other_false() -> None:
 
 
 @pytest.mark.unit
-def test_compare_rule_to_declaration_other_false_hierarchical() -> None:
+def test_compare_rule_to_declaration_other_false_hierarchical():
     result = evaluate.compare_rule_to_declaration(
         rule_types=["key_1", "key_3_parent"],
         declaration_type_hierarchies=[["key_1"], ["key_3", "key_3_parent"]],
@@ -466,7 +428,7 @@ def test_compare_rule_to_declaration_other_false_hierarchical() -> None:
 
 
 @pytest.mark.unit
-def test_get_dataset_by_fides_key_exists() -> None:
+def test_get_dataset_by_fides_key_exists():
     dataset_1 = Dataset(
         fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
     )
@@ -480,7 +442,7 @@ def test_get_dataset_by_fides_key_exists() -> None:
 
 
 @pytest.mark.unit
-def test_get_dataset_by_fides_key_does_not_exist() -> None:
+def test_get_dataset_by_fides_key_does_not_exist():
     dataset1 = Dataset(
         fides_key="dataset_1", collections=[DatasetCollection(name="", fields=[])]
     )
@@ -495,8 +457,8 @@ def test_get_dataset_by_fides_key_does_not_exist() -> None:
 
 @pytest.mark.unit
 def test_get_fides_key_parent_hierarchy_child(
-    evaluation_hierarchical_key_basic_taxonomy: Taxonomy,
-) -> None:
+    evaluation_hierarchical_key_basic_taxonomy,
+):
     result = evaluate.get_fides_key_parent_hierarchy(
         taxonomy=evaluation_hierarchical_key_basic_taxonomy,
         fides_key="data_category.parent.child",
@@ -510,8 +472,8 @@ def test_get_fides_key_parent_hierarchy_child(
 
 @pytest.mark.unit
 def test_get_fides_key_parent_hierarchy_parent(
-    evaluation_hierarchical_key_basic_taxonomy: Taxonomy,
-) -> None:
+    evaluation_hierarchical_key_basic_taxonomy,
+):
     result = evaluate.get_fides_key_parent_hierarchy(
         taxonomy=evaluation_hierarchical_key_basic_taxonomy,
         fides_key="data_category.parent",
@@ -521,8 +483,8 @@ def test_get_fides_key_parent_hierarchy_parent(
 
 @pytest.mark.unit
 def test_get_fides_key_parent_hierarchy_top_level(
-    evaluation_hierarchical_key_basic_taxonomy: Taxonomy,
-) -> None:
+    evaluation_hierarchical_key_basic_taxonomy,
+):
     result = evaluate.get_fides_key_parent_hierarchy(
         taxonomy=evaluation_hierarchical_key_basic_taxonomy, fides_key="data_category"
     )
@@ -531,8 +493,8 @@ def test_get_fides_key_parent_hierarchy_top_level(
 
 @pytest.mark.unit
 def test_get_fides_key_parent_hierarchy_missing_key(
-    evaluation_hierarchical_key_basic_taxonomy: Taxonomy,
-) -> None:
+    evaluation_hierarchical_key_basic_taxonomy,
+):
     with pytest.raises(SystemExit):
         evaluate.get_fides_key_parent_hierarchy(
             taxonomy=evaluation_hierarchical_key_basic_taxonomy,
@@ -541,7 +503,7 @@ def test_get_fides_key_parent_hierarchy_missing_key(
 
 
 @pytest.mark.unit
-def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
+def test_get_fides_key_parent_hierarchy_missing_parent():
     with pytest.raises(SystemExit):
         evaluate.get_fides_key_parent_hierarchy(
             taxonomy=Taxonomy(

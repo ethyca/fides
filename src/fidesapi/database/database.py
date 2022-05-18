@@ -6,13 +6,13 @@ from os import path
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
-from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
 from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
 from fidesapi.utils.errors import AlreadyExistsError, QueryError
 from fidesctl.core.utils import get_db_engine
+from fideslang import DEFAULT_TAXONOMY
 
 from .crud import create_resource, upsert_resources
 

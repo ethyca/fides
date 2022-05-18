@@ -5,6 +5,7 @@ Contains all of the options/arguments used by the CLI commands.
 from typing import Callable
 
 import click
+
 from fideslang import model_list
 
 

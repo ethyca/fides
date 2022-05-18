@@ -2,14 +2,14 @@
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-from fideslang import manifests
-from fideslang.models import Organization, System, SystemMetadata
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.parse import parse
+from fideslang import manifests
+from fideslang.models import Organization, System, SystemMetadata
 
 from .filters import filter_aws_systems
 from .utils import echo_green, echo_red

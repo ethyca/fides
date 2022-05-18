@@ -105,7 +105,8 @@ system:
 
 ### **API**
 
-```json title="<code>POST /api/v1/system</code>"
+```json
+POST /system
 
 {
   "fides_key": "demo_analytics_system",

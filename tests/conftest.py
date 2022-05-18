@@ -1,26 +1,25 @@
-# pylint: disable=missing-docstring, redefined-outer-name
 """Common fixtures to be used across tests."""
 import os
-from typing import Dict, Generator, Union
+from typing import Any, Dict
 
 import pytest
 import yaml
-from fideslang import models
 
 from fidesctl.core import api
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.core.config import get_config
+from fideslang import models
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
 
 @pytest.fixture(scope="session")
-def test_config_path() -> Generator:
+def test_config_path():
     yield TEST_CONFIG_PATH
 
 
 @pytest.fixture(scope="session")
-def test_invalid_config_path() -> Generator:
+def test_invalid_config_path():
     """
     This config file contains url/connection strings that are invalid.
 
@@ -31,38 +30,23 @@ def test_invalid_config_path() -> Generator:
 
 
 @pytest.fixture(scope="session")
-def test_config(test_config_path: str) -> Generator:
+def test_config(test_config_path):
     yield get_config(test_config_path)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesctlConfig) -> Generator:
+def setup_db(test_config):
     "Sets up the database for testing."
     yield api.db_action(test_config.cli.server_url, "reset")
 
 
 @pytest.fixture(scope="session")
-def resources_dict() -> Generator:
+def resources_dict():
     """
     Yields a resource containing sample representations of different
     Fides resources.
     """
-    resources_dict: Dict[
-        str,
-        Union[
-            models.DataCategory,
-            models.DataQualifier,
-            models.Dataset,
-            models.DataSubject,
-            models.DataUse,
-            models.Evaluation,
-            models.Organization,
-            models.Policy,
-            models.PolicyRule,
-            models.Registry,
-            models.System,
-        ],
-    ] = {
+    resources_dict: Dict[str, Any] = {
         "data_category": models.DataCategory(
             organization_fides_key=1,
             fides_key="user.provided.identifiable.custom",
@@ -176,7 +160,7 @@ def resources_dict() -> Generator:
 
 
 @pytest.fixture()
-def test_manifests() -> Generator:
+def test_manifests():
     test_manifests = {
         "manifest_1": {
             "dataset": [
@@ -227,7 +211,7 @@ def test_manifests() -> Generator:
 
 
 @pytest.fixture()
-def populated_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
+def populated_manifest_dir(test_manifests, tmp_path):
     manifest_dir = f"{tmp_path}/populated_manifest"
     os.mkdir(manifest_dir)
     for manifest in test_manifests.keys():
@@ -237,7 +221,7 @@ def populated_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 
 
 @pytest.fixture()
-def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
+def populated_nested_manifest_dir(test_manifests, tmp_path):
     manifest_dir = f"{tmp_path}/populated_nested_manifest"
     os.mkdir(manifest_dir)
     for manifest in test_manifests.keys():

@@ -2,6 +2,13 @@
 import uuid
 from typing import Callable, Dict, List, Optional, Set, cast
 
+from pydantic import AnyHttpUrl
+
+from fidesctl.cli.utils import handle_cli_response, pretty_echo
+from fidesctl.core import api
+from fidesctl.core.api_helpers import get_server_resource, get_server_resources
+from fidesctl.core.parse import parse
+from fidesctl.core.utils import echo_green, echo_red, get_all_level_fields
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import (
     Dataset,
@@ -16,16 +23,12 @@ from fideslang.models import (
     Violation,
     ViolationAttributes,
 )
-from fideslang.relationships import get_referenced_missing_keys
+from fideslang.relationships import (
+    get_referenced_missing_keys,
+    hydrate_missing_resources,
+)
 from fideslang.utils import get_resource_by_fides_key
 from fideslang.validation import FidesKey
-from pydantic import AnyHttpUrl
-
-from fidesctl.cli.utils import handle_cli_response, pretty_echo
-from fidesctl.core import api
-from fidesctl.core.api_helpers import get_server_resource, get_server_resources
-from fidesctl.core.parse import parse
-from fidesctl.core.utils import echo_green, echo_red, get_all_level_fields
 
 
 def get_evaluation_policies(
@@ -433,31 +436,6 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         violations=evaluation_violation_list,
     )
     return evaluation
-
-
-def hydrate_missing_resources(
-    url: AnyHttpUrl,
-    headers: Dict[str, str],
-    missing_resource_keys: List[FidesKey],
-    dehydrated_taxonomy: Taxonomy,
-) -> Taxonomy:
-    """
-    Query the server for all of the missing resource keys and
-    hydrate a copy of the dehydrated taxonomy with them.
-    """
-
-    for resource_name in dehydrated_taxonomy.__fields__:
-        server_resources = get_server_resources(
-            url=url,
-            resource_type=resource_name,
-            headers=headers,
-            existing_keys=missing_resource_keys,
-        )
-        dehydrated_taxonomy.__setattr__(
-            resource_name,
-            getattr(dehydrated_taxonomy, resource_name) + server_resources,
-        )
-    return dehydrated_taxonomy
 
 
 def populate_referenced_keys(

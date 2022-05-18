@@ -1,7 +1,8 @@
-# pylint: disable=missing-docstring, redefined-outer-name
-from typing import Generator
+from typing import List
 
 import pytest
+
+from fidesctl.core import filters as _filters
 from fideslang.models import (
     Organization,
     OrganizationMetadata,
@@ -10,19 +11,15 @@ from fideslang.models import (
     SystemMetadata,
 )
 
-from fidesctl.core import filters as _filters
-
 
 @pytest.fixture()
-def filter_systems(
-    system_with_arn1: Generator, system_with_arn2: Generator
-) -> Generator:
+def filter_systems(system_with_arn1, system_with_arn2):
     systems = [system_with_arn1, system_with_arn2]
     yield systems
 
 
 @pytest.fixture()
-def system_with_arn1() -> Generator:
+def system_with_arn1():
     system = System(
         fides_key="database-2",
         organization_fides_key="default_organization",
@@ -37,7 +34,7 @@ def system_with_arn1() -> Generator:
 
 
 @pytest.fixture()
-def system_with_arn2() -> Generator:
+def system_with_arn2():
     system = System(
         fides_key="database-3",
         organization_fides_key="default_organization",
@@ -52,7 +49,7 @@ def system_with_arn2() -> Generator:
 
 
 @pytest.fixture()
-def system_with_no_arn() -> Generator:
+def system_with_no_arn():
     system = System(
         fides_key="database-2",
         organization_fides_key="default_organization",
@@ -64,7 +61,7 @@ def system_with_no_arn() -> Generator:
 
 
 @pytest.fixture()
-def organization_with_filter() -> Generator:
+def organization_with_filter():
     system = Organization(
         fides_key="organization_with_filter",
         name="organization_with_filter",
@@ -81,7 +78,7 @@ def organization_with_filter() -> Generator:
 
 
 @pytest.fixture()
-def organization_with_no_filter() -> Generator:
+def organization_with_no_filter():
     system = Organization(
         fides_key="organization_with_no_filter",
         name="organization_with_no_filter",
@@ -90,26 +87,26 @@ def organization_with_no_filter() -> Generator:
 
 
 @pytest.mark.unit
-def test_get_system_arn(system_with_arn1: Generator) -> None:
+def test_get_system_arn(system_with_arn1):
     actual_result = _filters.get_system_arn(system=system_with_arn1)
     assert actual_result == "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
 
 
 @pytest.mark.unit
-def test_get_system_arn_no_arn(system_with_no_arn: Generator) -> None:
+def test_get_system_arn_no_arn(system_with_no_arn):
     actual_result = _filters.get_system_arn(system=system_with_no_arn)
     assert not actual_result
 
 
 @pytest.mark.unit
-def test_is_arn_filter_match_exact_match() -> None:
+def test_is_arn_filter_match_exact_match():
     arn = "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
     actual_result = _filters.is_arn_filter_match(arn=arn, filter_arn=arn)
     assert actual_result
 
 
 @pytest.mark.unit
-def test_is_arn_filter_match_wildcard_match() -> None:
+def test_is_arn_filter_match_wildcard_match():
     arn = "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
     filter_arn = "arn:aws:rds:us-east-1:910934740016:cluster:"
     actual_result = _filters.is_arn_filter_match(arn=arn, filter_arn=filter_arn)
@@ -117,7 +114,7 @@ def test_is_arn_filter_match_wildcard_match() -> None:
 
 
 @pytest.mark.unit
-def test_is_arn_filter_match_mismatch() -> None:
+def test_is_arn_filter_match_mismatch():
     arn = "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
     filter_arn = "arn:aws:rds:us-east-1:12345678:cluster:database-2"
     actual_result = _filters.is_arn_filter_match(arn=arn, filter_arn=filter_arn)
@@ -125,9 +122,7 @@ def test_is_arn_filter_match_mismatch() -> None:
 
 
 @pytest.mark.unit
-def test_ignore_resource_arn(
-    filter_systems: Generator, system_with_arn2: Generator
-) -> None:
+def test_ignore_resource_arn(filter_systems, system_with_arn2):
     filter_value = "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
     actual_result = _filters.ignore_resource_arn(
         systems=filter_systems, filter_value=filter_value
@@ -137,7 +132,7 @@ def test_ignore_resource_arn(
 
 
 @pytest.mark.unit
-def test_ignore_resource_arn_missing_arn(system_with_no_arn: Generator) -> None:
+def test_ignore_resource_arn_missing_arn(system_with_no_arn):
     filter_value = "arn:aws:rds:us-east-1:910934740016:cluster:database-2"
     actual_result = _filters.ignore_resource_arn(
         systems=[system_with_no_arn], filter_value=filter_value
@@ -148,10 +143,8 @@ def test_ignore_resource_arn_missing_arn(system_with_no_arn: Generator) -> None:
 
 @pytest.mark.unit
 def test_filter_aws_systems_arn_filter(
-    filter_systems: Generator,
-    system_with_arn2: Generator,
-    organization_with_filter: Generator,
-) -> None:
+    filter_systems, system_with_arn2, organization_with_filter
+):
     actual_result = _filters.filter_aws_systems(
         systems=filter_systems, organization=organization_with_filter
     )
@@ -160,9 +153,7 @@ def test_filter_aws_systems_arn_filter(
 
 
 @pytest.mark.unit
-def test_filter_aws_systems_no_filter(
-    filter_systems: Generator, organization_with_no_filter: Generator
-) -> None:
+def test_filter_aws_systems_no_filter(filter_systems, organization_with_no_filter):
     actual_result = _filters.filter_aws_systems(
         systems=filter_systems, organization=organization_with_no_filter
     )

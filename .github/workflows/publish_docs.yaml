@@ -15,17 +15,14 @@ jobs:
   publish_docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v2
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
 
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
@@ -37,7 +34,7 @@ jobs:
         run: git fetch origin gh-pages --depth=1
 
       - name: Build docs
-        run: nox -s "docs_build(local)"
+        run: make docs-build
 
       # This is required by "mike"
       - name: Set the Git Username & Email

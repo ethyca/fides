@@ -29,7 +29,6 @@ def scan_dataset(ctx: click.Context) -> None:
 @click.argument("connection_string", type=str)
 @manifests_dir_argument
 @coverage_threshold_option
-@with_analytics
 def scan_dataset_db(
     ctx: click.Context,
     connection_string: str,
@@ -47,7 +46,9 @@ def scan_dataset_db(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    _dataset.scan_dataset_db(
+    with_analytics(
+        ctx,
+        _dataset.scan_dataset_db,
         connection_string=connection_string,
         manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
@@ -61,7 +62,6 @@ def scan_dataset_db(
 @click.argument("org_url", type=str)
 @manifests_dir_argument
 @coverage_threshold_option
-@with_analytics
 def scan_dataset_okta(
     ctx: click.Context,
     org_url: str,
@@ -78,7 +78,9 @@ def scan_dataset_okta(
     """
 
     config = ctx.obj["CONFIG"]
-    _dataset.scan_dataset_okta(
+    with_analytics(
+        ctx,
+        _dataset.scan_dataset_okta,
         org_url=org_url,
         coverage_threshold=coverage_threshold,
         manifest_dir=manifests_dir,
@@ -100,7 +102,6 @@ def scan_system(ctx: click.Context) -> None:
 @manifests_dir_argument
 @click.option("-o", "--organization", type=str, default="default_organization")
 @coverage_threshold_option
-@with_analytics
 def scan_system_aws(
     ctx: click.Context,
     manifests_dir: str,
@@ -117,7 +118,9 @@ def scan_system_aws(
     """
 
     config = ctx.obj["CONFIG"]
-    _system.scan_system_aws(
+    with_analytics(
+        ctx,
+        _system.scan_system_aws,
         manifest_dir=manifests_dir,
         organization_key=organization,
         coverage_threshold=coverage_threshold,

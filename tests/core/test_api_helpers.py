@@ -1,13 +1,11 @@
-# pylint: disable=missing-docstring, redefined-outer-name
 import uuid
-from typing import TYPE_CHECKING, Dict, Generator, List, Optional
+from typing import List, Optional
 
 import pytest
-from fideslang import FidesModel, model_list
 
 from fidesctl.core import api as _api
 from fidesctl.core import api_helpers as _api_helpers
-from fidesctl.core.config import FidesctlConfig
+from fideslang import FidesModel, model_list
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work
@@ -16,21 +14,9 @@ PARAM_MODEL_LIST = [
     model for model in model_list if model not in EXCLUDED_RESOURCE_TYPES
 ]
 
-if TYPE_CHECKING:
-
-    class FixtureRequest:
-        param: str
-
-else:
-    from typing import Any
-
-    FixtureRequest = Any
-
 # Fixtures
 @pytest.fixture
-def created_resources(
-    test_config: FidesctlConfig, resources_dict: Dict, request: FixtureRequest
-) -> Generator:
+def created_resources(test_config, resources_dict, request):
     """
     Fixture that creates and tears down a set of resources for each test run.
     Only creates resources for a given type based on test parameter
@@ -62,7 +48,7 @@ def created_resources(
         )
 
 
-def delete_resource_type(test_config: FidesctlConfig, resource_type: str) -> None:
+def delete_resource_type(test_config, resource_type):
     """Deletes all of the resources of a certain type."""
     url = test_config.cli.server_url
     fides_keys = [
@@ -87,15 +73,13 @@ class TestGetServerResource:
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
-    def test_get_server_resource_found_resource(
-        self, test_config: FidesctlConfig, created_resources: List
-    ) -> None:
+    def test_get_server_resource_found_resource(self, test_config, created_resources):
         """
         Tests that an existing resource is returned by helper
         """
         resource_type = created_resources[0]
         resource_key = created_resources[1][0]
-        result: FidesModel = _api_helpers.get_server_resource(
+        result: Optional[FidesModel] = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
@@ -104,9 +88,7 @@ class TestGetServerResource:
         assert result.fides_key == resource_key
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
-    def test_get_server_resource_missing_resource(
-        self, test_config: FidesctlConfig, resource_type: str
-    ) -> None:
+    def test_get_server_resource_missing_resource(self, test_config, resource_type):
         """
         Tests that a missing resource returns None
         """
@@ -126,9 +108,7 @@ class TestGetServerResources:
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
-    def test_get_server_resources_found_resources(
-        self, test_config: FidesctlConfig, created_resources: List
-    ) -> None:
+    def test_get_server_resources_found_resources(self, test_config, created_resources):
         """
         Tests that existing resources are returned by helper
         """
@@ -140,12 +120,10 @@ class TestGetServerResources:
             existing_keys=resource_keys,
             headers=test_config.user.request_headers,
         )
-        assert set(resource_keys) == set(resource.fides_key for resource in result)
+        assert set(resource_keys) == set([resource.fides_key for resource in result])
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
-    def test_get_server_resources_missing_resources(
-        self, test_config: FidesctlConfig, resource_type: str
-    ) -> None:
+    def test_get_server_resources_missing_resources(self, test_config, resource_type):
         """
         Tests that a missing resource returns an empty list
         """
@@ -161,7 +139,7 @@ class TestGetServerResources:
 
 @pytest.mark.integration
 class TestListServerResources:
-    def test_list_server_resources_passing(self, test_config: FidesctlConfig) -> None:
+    def test_list_server_resources_passing(self, test_config):
         resource_type = "data_category"
         result: List[FidesModel] = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
@@ -171,7 +149,7 @@ class TestListServerResources:
         )
         assert len(result) > 1
 
-    def test_list_server_resources_none(self, test_config: FidesctlConfig) -> None:
+    def test_list_server_resources_none(self, test_config):
         resource_type = "system"
         delete_resource_type(test_config, resource_type)
         result: List[FidesModel] = _api_helpers.list_server_resources(
