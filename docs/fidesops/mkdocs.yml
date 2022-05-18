@@ -34,6 +34,7 @@ nav:
       - Configuration Reference: guides/configuration_reference.md
       - Admin UI: guides/admin_ui.md
       - Postman Collection: postman/using_postman.md
+      - Data Rights Protocol: guides/data_rights_protocol.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md

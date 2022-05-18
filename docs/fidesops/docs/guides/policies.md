@@ -42,7 +42,7 @@ PATCH /api/v1/policy
 [
   {
     "name": "User Email Address",
-    "key": "user_email_address_polcy",
+    "key": "user_email_address_policy",
     "drp_action": "access" // optional
   }
 ]
@@ -54,7 +54,7 @@ This policy is subtly different from the concept of a Policy in [Fidesctl](https
 |---|---|
 | `Policy.name` | User-friendly name for your Policy. |
 | `Policy.key` | Unique key by which to reference the Policy. |
-| `Policy.drp_action` | <b>Optional.</b> A [Data Rights Protocol](https://github.com/consumer-reports-digital-lab/data-rights-protocol) action to associate to this policy. |
+| `Policy.drp_action` | <b>Optional.</b> A [Data Rights Protocol](./data_rights_protocol.md) action to associate to this policy. |
 | `access` | A data subject access request. Should be used with an `access` Rule. |
 | `deletion` | A data subject erasure request. Should be used with an `erasure` Rule. |
 
