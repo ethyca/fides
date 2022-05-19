@@ -2,6 +2,7 @@
 Contains the code that sets up the API.
 """
 
+
 from datetime import datetime
 from enum import Enum
 from logging import WARNING
@@ -17,8 +18,10 @@ from uvicorn import Config, Server
 import fidesctl
 from fidesapi import view
 from fidesapi.database import database
+from fidesapi.database.database import get_db_health
 from fidesapi.routes import crud, visualize
 from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fidesapi.utils.errors import get_full_exception_name
 from fidesapi.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -42,8 +45,12 @@ configure_routes()
 
 async def configure_db(database_url: str) -> None:
     "Set up the db to be used by the app."
-    database.create_db_if_not_exists(database_url)
-    await database.init_db(database_url)
+    try:
+        database.create_db_if_not_exists(database_url)
+        await database.init_db(database_url)
+    except Exception as error:  # pylint: disable=broad-except
+        error_type = get_full_exception_name(error)
+        log.error(f"Unable to configure database: {error_type}: {error}")
 
 
 @app.on_event("startup")
@@ -96,19 +103,43 @@ async def log_request(request: Request, call_next: Callable) -> Response:
                     "example": {
                         "status": "healthy",
                         "version": "1.0.0",
+                        "database": "healthy",
                     }
                 }
             }
-        }
+        },
+        status.HTTP_503_SERVICE_UNAVAILABLE: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": {
+                            "status": "healthy",
+                            "version": "1.0.0",
+                            "database": "unhealthy",
+                        }
+                    }
+                }
+            }
+        },
     },
     tags=["Health"],
 )
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    return {
+    database_health = get_db_health(CONFIG.api.sync_database_url)
+    response = {
         "status": "healthy",
         "version": str(fidesctl.__version__),
+        "database": database_health,
     }
+
+    for key in response:
+        if response[key] == "unhealthy":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
+            )
+
+    return response
 
 
 class DBActions(str, Enum):
@@ -152,7 +183,9 @@ def read_other_paths(request: Request) -> FileResponse:
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
 
     # otherwise return the index
     return FileResponse(WEBAPP_INDEX)

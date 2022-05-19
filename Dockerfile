@@ -6,10 +6,16 @@ RUN pip install -U pip
 ####################
 ## Build frontend ##
 ####################
-FROM base as frontend
-# Placeholder until we have a frontend app scaffolded
-RUN echo "<h1>Hello world!</h1>" > /tmp/index.html
+FROM node:16 as frontend
 
+WORKDIR /fides/clients/admin-ui
+
+# install node modules
+COPY clients/admin-ui/ .
+RUN npm install
+
+# Build the frontend static files
+RUN npm run export
 
 #######################
 ## Tool Installation ##
@@ -110,4 +116,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /tmp/index.html src/fidesapi/build/static/
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesapi/build/static/
