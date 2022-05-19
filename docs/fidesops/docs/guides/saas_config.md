@@ -30,15 +30,12 @@ saas_config:
 
   client_config:
     protocol: https
-    host:
-      connector_param: domain
+    host: <domain>
     authentication:
-      strategy: basic_authentication
+      strategy: basic
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: api_key
+        username: <username>
+        password: <api_key>
 
   test_request:
     method: GET
@@ -143,24 +140,20 @@ The `client_config` describes the necessary information to be able to create a b
 ```yaml
 client_config:
   protocol: https
-  host:
-    connector_param: host
+  host: <host>
   authentication:
-    strategy: basic_authentication
+    strategy: basic
     configuration:
-      username:
-        connector_param: username
-      password:
-        connector_param: password
+      username: <username>
+      password: <password>
 ```
 
-The authentication strategies are swappable. In this example we used the `basic_authentication` strategy which uses a `username` and `password` in the configuration. An alternative to this is to use `bearer_authentication` which looks like this:
+The authentication strategies are swappable. In this example we used the `basic` authentication strategy which uses a `username` and `password` in the configuration. An alternative to this is to use `bearer` authentication which looks like this:
 ```yaml
 authentication:
-  strategy: bearer_authentication
+  strategy: bearer
   configuration:
-    token:
-      connector_param: api_key
+    token: <api_key>
 ```
 
 #### Test request
@@ -185,13 +178,11 @@ If your third party integration supports something like a GDPR delete endpoint, 
     body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
     client_config:
       protocol: https
-      host:
-        connector_param: config_domain
+      host: <config_domain>
       authentication:
-        strategy: bearer_authentication
+        strategy: bearer
         configuration:
-          username:
-            connector_param: access_token
+          username: <access_token>
 
 ```
 #### Endpoints
@@ -204,11 +195,11 @@ This is where we define how we are going to access and update each collection in
     - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `param_values`.
     - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
         - `name` the value to use for the header or query param name.
-        - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `request_param` with a matching name.
+        - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `param_value` with a matching name.
     - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `param_values`.
     - `param_values`
         - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
-        - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given request_param.
+        - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given param_value.
         - `identity` Used to access the identity values passed into the privacy request such as email or phone number.
         - `connector_param` Used to access the user-configured secrets for the connection.
     - `ignore_errors` A boolean. If true, we will ignore non-200 status codes.
@@ -420,7 +411,7 @@ endpoints:
           - name: email
             identity: email
 ```
-In this example, the placeholder in the `query` query param would be replaced with the value of the `request_param` with a name of `email`, which is the `email` identity. The result would look like this:
+In this example, the placeholder in the `query` query param would be replaced with the value of the `param_value` with a name of `email`, which is the `email` identity. The result would look like this:
 ```
 GET /3.0/search-members?query=name@email.com
 ```
@@ -606,4 +597,4 @@ endpoints:
           - name: placeholder
             identity: email
 ```
-Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `request_param` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the request_param name is not relevant, we just chose placeholder for this example).
+Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `param_value` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the param_value name is not relevant, we just chose placeholder for this example).

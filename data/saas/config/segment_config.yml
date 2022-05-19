@@ -15,13 +15,11 @@ saas_config:
 
   client_config:
     protocol: https
-    host:
-      connector_param: domain
+    host: <domain>
     authentication:
-      strategy: bearer_authentication
+      strategy: bearer
       configuration:
-        token:
-          connector_param: access_token
+        token: <access_token>
 
   test_request:
     method: GET
@@ -40,13 +38,11 @@ saas_config:
             identity: email
         client_config:
           protocol: https
-          host:
-            connector_param: personas_domain
+          host: <personas_domain>
           authentication:
-            strategy: basic_authentication
+            strategy: basic
             configuration:
-              username:
-                connector_param: access_secret
+              username: <access_secret>
   - name: track_events
     requests:
       read:
@@ -68,13 +64,11 @@ saas_config:
             path: cursor.url
         client_config:
           protocol: https
-          host:
-            connector_param: personas_domain
+          host: <personas_domain>
           authentication:
-            strategy: basic_authentication
+            strategy: basic
             configuration:
-              username:
-                connector_param: access_secret
+              username: <access_secret>
   - name: traits
     requests:
       read:
@@ -99,13 +93,11 @@ saas_config:
             path: cursor.url
         client_config:
           protocol: https
-          host:
-            connector_param: personas_domain
+          host: <personas_domain>
           authentication:
-            strategy: basic_authentication
+            strategy: basic
             configuration:
-              username:
-                connector_param: access_secret
+              username: <access_secret>
   - name: external_ids
     requests:
       read:
@@ -127,13 +119,11 @@ saas_config:
             path: cursor.url
         client_config:
           protocol: https
-          host:
-            connector_param: personas_domain
+          host: <personas_domain>
           authentication:
-            strategy: basic_authentication
+            strategy: basic
             configuration:
-              username:
-                connector_param: access_secret
+              username: <access_secret>
 
   data_protection_request:
     method: POST
@@ -149,10 +139,8 @@ saas_config:
     body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>"]}}'
     client_config:
       protocol: https
-      host:
-        connector_param: domain
+      host: <domain>
       authentication:
-        strategy: bearer_authentication
+        strategy: bearer
         configuration:
-          token:
-            connector_param: access_token
+          token: <access_token>

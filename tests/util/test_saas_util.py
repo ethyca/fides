@@ -9,7 +9,7 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.util.saas_util import unflatten_dict, merge_datasets
+from fidesops.util.saas_util import assign_placeholders, unflatten_dict, merge_datasets
 
 
 class TestMergeDatasets:
@@ -247,6 +247,73 @@ class TestMergeDatasets:
         assert isinstance(name_field, ObjectField)
         assert len(name_field.fields) == 2
         assert name_field.identity == "email"
+
+
+class TestAssignPlaceholders:
+    def test_string_value(self):
+        assert assign_placeholders("domain", {}) == "domain"
+
+    def test_int_value(self):
+        assert assign_placeholders(100, {}) == 100
+
+    def test_none_value(self):
+        assert assign_placeholders(None, {}) == None
+
+    def test_single_placeholder_with_string_value(self):
+        assert assign_placeholders("<access_key>", {"access_key": "123"}) == "123"
+
+    def test_single_placeholder_with_int_value(self):
+        assert assign_placeholders("<page_limit>", {"page_limit": 10}) == "10"
+
+    def test_multiple_string_placeholders(self):
+        assert (
+            assign_placeholders("/v1/<org>/<project>", {"org": "abc", "project": "123"})
+            == "/v1/abc/123"
+        )
+
+    def test_multiple_int_placeholders(self):
+        assert (
+            assign_placeholders(
+                "/user/<user_id>/order/<order_id>", {"user_id": 1, "order_id": 2}
+            )
+            == "/user/1/order/2"
+        )
+
+    def test_multiple_mixed_placeholders(self):
+        assert (
+            assign_placeholders(
+                "/user/<user_id>/order/<order_id>", {"user_id": "abc", "order_id": 1}
+            )
+            == "/user/abc/order/1"
+        )
+        assert (
+            assign_placeholders(
+                "/user/<user_id>/order/<order_id>", {"user_id": 1, "order_id": "abc"}
+            )
+            == "/user/1/order/abc"
+        )
+
+    def test_placeholder_value_not_found(self):
+        # we return null if any placeholder cannot be found,
+        # we let the caller decide if this is allowed or should be considered an error
+        assert assign_placeholders("<access_key>", {}) == None
+
+    def test_second_placeholder_not_found(self):
+        # verify that the original value is not mutated if we are only able to do a partial replacement
+        value = "/user/<user_id>/order/<order_id>"
+        assert assign_placeholders(value, {"user_id": 1}) == None
+        assert value == "/user/<user_id>/order/<order_id>"
+
+    def test_regex_is_not_greedy(self):
+        assert assign_placeholders("<<access>>", {"access": "letmein"}) == "<letmein>"
+        assert assign_placeholders("<access>>>", {"access": "letmein"}) == "letmein>>"
+        assert assign_placeholders("<<<access>", {"access": "letmein"}) == "<<letmein"
+        assert (
+            assign_placeholders(
+                "<outer>leaveithere<placeholders>", {"outer": "|", "placeholders": "|"}
+            )
+            == "|leaveithere|"
+        )
 
 
 def test_unflatten_dict():

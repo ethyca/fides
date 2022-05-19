@@ -1,35 +1,39 @@
-from json import JSONDecodeError
 import logging
+from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import pydash
-from requests import Session, Request, PreparedRequest, Response
-from fidesops.common_exceptions import FidesopsException
-from fidesops.core.config import config
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesops.service.connectors.base_connector import BaseConnector
-from fidesops.graph.traversal import Row, TraversalNode
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from requests import PreparedRequest, Request, Response, Session
+
 from fidesops.common_exceptions import (
-    ConnectionException,
     ClientUnsuccessfulException,
+    ConnectionException,
+    FidesopsException,
     PostProcessingException,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import Strategy, SaaSRequest, ClientConfig
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    get_strategy as get_postprocessor_strategy,
+from fidesops.core.config import config
+from fidesops.graph.traversal import Row, TraversalNode
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fidesops.models.policy import Policy
+from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesops.service.authentication.authentication_strategy_factory import (
+    get_strategy as get_authentication_strategy,
 )
+from fidesops.service.connectors.base_connector import BaseConnector
+from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
+from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.service.pagination.pagination_strategy_factory import (
     get_strategy as get_pagination_strategy,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.util.url_util import set_query_parameter
+from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+    get_strategy as get_postprocessor_strategy,
+)
+from fidesops.util.saas_util import assign_placeholders
 
 logger = logging.getLogger(__name__)
 
@@ -47,26 +51,6 @@ class AuthenticatedClient:
         self.client_config = configuration.get_saas_config().client_config
         self.secrets = configuration.secrets
 
-    def add_authentication(
-        self, req: PreparedRequest, authentication: Strategy
-    ) -> PreparedRequest:
-        """Uses the incoming strategy to add the appropriate authentication method to the base request."""
-        strategy = authentication.strategy
-        configuration = authentication.configuration
-        if strategy == "basic_authentication":
-            username_key = pydash.get(configuration, "username.connector_param")
-            password_key = pydash.get(configuration, "password.connector_param")
-            req.prepare_auth(
-                auth=(self.secrets[username_key], self.secrets.get(password_key))
-            )
-        elif strategy == "bearer_authentication":
-            token_key = pydash.get(configuration, "token.connector_param")
-            req.headers["Authorization"] = "Bearer " + self.secrets[token_key]
-        elif strategy == "query_param":
-            token_key = pydash.get(configuration, "token.connector_param")
-            req.url = set_query_parameter(req.url, token_key, self.secrets[token_key])
-        return req
-
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
     ) -> PreparedRequest:
@@ -81,7 +65,13 @@ class AuthenticatedClient:
             params=request_params.query_params,
             data=request_params.body,
         ).prepare()
-        return self.add_authentication(req, self.client_config.authentication)
+
+        auth_strategy = get_authentication_strategy(
+            self.client_config.authentication.strategy,
+            self.client_config.authentication.configuration,
+        )
+
+        return auth_strategy.add_authentication(req, self.secrets)
 
     def send(
         self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
@@ -174,8 +164,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def build_uri(self) -> str:
         """Build base URI for the given connector"""
-        host_key = self.client_config.host.connector_param
-        return f"{self.client_config.protocol}://{self.secrets[host_key]}"
+        host = self.client_config.host
+        return (
+            f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"
+        )
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""

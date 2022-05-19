@@ -31,15 +31,12 @@ saas_config:
 
   client_config:
     protocol: https
-    host:
-      connector_param: domain
+    host: <domain>
     authentication:
-      strategy: basic_authentication
+      strategy: basic
       configuration:
-        username:
-          connector_param: username
-        password:
-          connector_param: api_key
+        username: <username>
+        password: <api_key>
 
   test_request:
     method: GET
