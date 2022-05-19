@@ -1,22 +1,21 @@
-
 # Mailchimp
 
 ## Implementation Summary
-You may use the following endpoints in Mailchimp to retrieve and delete Personally Identifiable Information (PII) when a user submits a Data Subject Request (DSR).
-
-This table summarizes whether or not each available endpoint supports Right to Access and Right to Delete/Right to Forget 
+Fidesops uses the following Mailchimp endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
-|[Messages](docs/link) | Yes/No | Yes/No |
-|[Conversations](docs/link) | Yes/No | Yes/No |
-|[Members](docs/link) | Yes/No | Yes/No |
+|[Messages](https://mailchimp.com/developer/marketing/api/conversation-messages/list-messages/) | Yes | No |
+|[Conversations](https://mailchimp.com/developer/marketing/api/conversation-messages/) | Yes | No |
+|[Members](https://mailchimp.com/developer/marketing/api/list-members/get-member-info/) | Yes | Yes |
 
 
 ## Connection Settings
-To retrieve 
+Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
 
-## Example SaaS Configuration
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
+
+## Example Mailchimp Configuration
 ```yaml
 saas_config:
   fides_key: mailchimp_connector_example

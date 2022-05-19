@@ -2,7 +2,7 @@
 
 ## What is a SaaS connection?
 
-A SaaS (Software as a Service) connection is a connection type within Fidesops that allows a user to connect to a SaaS application (e.g., Mailchimp, Stripe, Slack, etc.) and execute data access and erasure requests against that application. These connections use functionality introduced in earlier sections ([ConnectionConfigs](database_connectors.md#creating-a-connectionconfig-object) and [Datasets](datasets.md)) but also use a new [SaaS configuration](saas_config.md) specification to define how to connect to specific SaaS applications.
+A SaaS (Software as a Service) connection is a connection type within Fidesops that allows a user to connect to a SaaS application (e.g., Mailchimp, Stripe, Slack, etc.) and execute data access and erasure requests against that application. These connections use functionality introduced in earlier sections ([ConnectionConfigs](/guides/database_connectors.md#creating-a-connectionconfig-object) and [Datasets](/guides/datasets.md)) but also use a new [SaaS configuration](saas_config.md) specification to define how to connect to specific SaaS applications.
 
 ## Supported SaaS applications
 

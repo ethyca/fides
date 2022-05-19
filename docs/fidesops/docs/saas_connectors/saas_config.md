@@ -1,6 +1,6 @@
 ## What is a SaaS configuration schema?
 
-A SaaS connector is defined in two parts, the [Dataset](datasets.md) and the SaaS config. The Dataset describes the data that is available from the connector and the SaaS config describes how to connect and retrieve/update the data in the connector. If you contrast this to a [database connector](database_connectors.md), the ways to retrieve/update data conform to a specification (such as SQL) and are consistent. When accessing data from APIs, each application or even different endpoints within the same application can follow different patterns. It was necessary to have a flexible configuration to be able to define the different access/update patterns. Keep in mind that SaaS configs are only applicable to SaaS connectors, not database connectors.
+A SaaS connector is defined in two parts, the [Dataset](../guides/datasets.md) and the SaaS config. The Dataset describes the data that is available from the connector and the SaaS config describes how to connect and retrieve/update the data in the connector. If you contrast this to a [database connector](../guides/database_connectors.md), the ways to retrieve/update data conform to a specification (such as SQL) and are consistent. When accessing data from APIs, each application or even different endpoints within the same application can follow different patterns. It was necessary to have a flexible configuration to be able to define the different access/update patterns. Keep in mind that SaaS configs are only applicable to SaaS connectors, not database connectors.
 
 In short, you can think of the Dataset as the "what" (what data is available from this API) and the SaaS config as the "how" (how to access and update the data).
 #### An example SaaS config
@@ -125,7 +125,7 @@ And the following complex fields which we will cover in detail below:
 - `data_protection_request`
 
 #### Connector params
-The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](database_connectors.md#set-the-connectionconfigs-secrets).
+The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets).
 
 ```yaml
 connector_params:
@@ -157,8 +157,7 @@ authentication:
 ```
 
 #### Test request
-Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](database_connectors.md#testing-your-connection).
-```yaml
+Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](../guides/database_connectors.md#testing-your-connection).
 test_request:
   method: GET
   path: /3.0/lists
@@ -460,7 +459,7 @@ PUT /3.0/lists/123/members/456
     }
 }
 ```
-and the contents of the body would be masked according to the configured [policy](policies.md).
+and the contents of the body would be masked according to the configured [policy](../guides/policies.md).
 
 
 #### Data update with a dynamic HTTP body
@@ -502,7 +501,7 @@ PUT /crm/v3/objects/contacts
 
 ## How does this relate to graph traversal?
 
-Fidesops uses the available Datasets to [generate a graph](query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `param_values`, therefore we must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example the Dataset collection and SaaS config endpoints for `messages` looks like this:
+Fidesops uses the available Datasets to [generate a graph](../guides/query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `param_values`, therefore we must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example the Dataset collection and SaaS config endpoints for `messages` looks like this:
 
 ```yaml
 collections:
@@ -597,4 +596,4 @@ endpoints:
           - name: placeholder
             identity: email
 ```
-Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `param_value` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the param_value name is not relevant, we just chose placeholder for this example).
+Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fidesops [graph traversal](../guides/query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `param_value` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the param_value name is not relevant, we just chose placeholder for this example).
