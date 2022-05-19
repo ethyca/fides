@@ -1,22 +1,16 @@
 import logging
-import pytest
 from typing import Dict, Generator, List
 from uuid import uuid4
 
-from sqlalchemy.orm import (
-    Session,
-)
+import pytest
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sqlalchemy_utils.functions import (
-    create_database,
-    database_exists,
-    drop_database,
-)
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig

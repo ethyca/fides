@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import Any, Mapping, Union
 from numbers import Number
+from typing import Any, Mapping, Union
 
 MASKED = "MASKED"
 

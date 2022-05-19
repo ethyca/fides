@@ -1,8 +1,8 @@
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError, OperationFailure
+from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -12,10 +12,8 @@ from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
-from fidesops.service.connectors.base_connector import (
-    BaseConnector,
-)
-from fidesops.service.connectors.query_config import QueryConfig, MongoQueryConfig
+from fidesops.service.connectors.base_connector import BaseConnector
+from fidesops.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fidesops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)

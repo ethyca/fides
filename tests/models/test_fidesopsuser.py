@@ -1,6 +1,6 @@
 import pytest
-
 from sqlalchemy.orm import Session
+
 from fidesops.models.fidesops_user import FidesopsUser
 
 

@@ -77,7 +77,7 @@ docker-push:
 # CI
 ####################
 
-check-all: black-ci pylint mypy check-migrations pytest pytest-integration
+check-all: isort-ci black-ci pylint mypy check-migrations pytest pytest-integration
 
 black-ci: compose-build
 	@echo "Running black checks..."
@@ -92,6 +92,11 @@ check-migrations: compose-build
 	from fidesops.db.database import check_missing_migrations; \
 	from fidesops.core.config import config; \
 	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
+
+isort-ci:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests --check-only
 
 pylint: compose-build
 	@echo "Running pylint checks..."
@@ -154,6 +159,12 @@ compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
 	@docker-compose build --build-arg REQUIRE_MSSQL="true"
+
+.PHONY: isort
+isort:
+	@echo "Running isort checks..."
+	@docker-compose run $(IMAGE_NAME) \
+		isort src tests
 
 .PHONY: teardown
 teardown:

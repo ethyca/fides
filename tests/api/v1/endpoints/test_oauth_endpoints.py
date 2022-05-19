@@ -1,31 +1,31 @@
-from datetime import datetime
 import json
-import pytest
+from datetime import datetime
 
+import pytest
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
+    CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
-    STORAGE_READ,
-    CLIENT_CREATE,
-    SCOPE_READ,
     CLIENT_UPDATE,
+    SCOPE_READ,
+    SCOPE_REGISTRY,
+    STORAGE_READ,
 )
 from fidesops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
+    SCOPE,
     TOKEN,
     V1_URL_PREFIX,
-    SCOPE,
 )
 from fidesops.models.client import ClientDetail
 from fidesops.schemas.jwt import (
+    JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
 )
 from fidesops.util.oauth_util import extract_payload, generate_jwe
 

@@ -2,35 +2,32 @@ import json
 import os
 from datetime import datetime
 from io import BytesIO
-from typing import Dict, Any, Generator
+from typing import Any, Dict, Generator
 from unittest import mock
 from unittest.mock import Mock
 from zipfile import ZipFile
-import pandas as pd
 
+import pandas as pd
 import pytest
 from sqlalchemy.orm import Session
 
+from fidesops.common_exceptions import StorageUploadError
 from fidesops.core.config import config
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import (
     FileNaming,
-    StorageType,
+    ResponseFormat,
     StorageDetails,
     StorageSecrets,
-    ResponseFormat,
+    StorageType,
 )
-from fidesops.service.storage.storage_uploader_service import (
-    upload,
-    get_extension,
-)
+from fidesops.service.storage.storage_uploader_service import get_extension, upload
 from fidesops.tasks.storage import (
-    write_to_in_memory_buffer,
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
+    write_to_in_memory_buffer,
 )
-from fidesops.common_exceptions import StorageUploadError
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,

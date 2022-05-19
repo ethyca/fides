@@ -1,21 +1,21 @@
 import ast
 import logging
 import os
-from typing import Generator, List, Dict
+from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
-
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
     AccessLevel,
-    ConnectionType,
     ConnectionConfig,
+    ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.connection_configuration import BigQuerySchema
 from fidesops.service.connectors import BigQueryConnector, get_connector
+
 from .application_fixtures import integration_config
 
 logger = logging.getLogger(__name__)

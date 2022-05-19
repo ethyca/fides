@@ -1,12 +1,12 @@
-import pytest
 from typing import Generator
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.policy import ActionType

@@ -1,10 +1,11 @@
+from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.service.masking.strategy.masking_strategy_hmac import (
-    HmacMaskingStrategy,
     HMAC,
+    HmacMaskingStrategy,
 )
-from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
-from ....test_helpers.cache_secrets_helper import clear_cache_secrets, cache_secret
+
+from ....test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 request_id = "1345134"
 

@@ -1,6 +1,6 @@
+import json
 from unittest import mock
 from unittest.mock import Mock
-import json
 
 import pytest
 from starlette.testclient import TestClient
@@ -8,8 +8,8 @@ from starlette.testclient import TestClient
 from fidesops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
 from fidesops.api.v1.urn_registry import (
     DECRYPT_AES,
-    ENCRYPTION_KEY,
     ENCRYPT_AES,
+    ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config

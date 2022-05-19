@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
-from typing import List, Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
-from sqlalchemy import Column, String, ARRAY, ForeignKey
+from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
@@ -11,14 +11,14 @@ from fidesops.core.config import config
 from fidesops.db.base_class import Base
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.schemas.jwt import (
-    JWE_PAYLOAD_SCOPES,
-    JWE_PAYLOAD_CLIENT_ID,
     JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
 )
 from fidesops.util.cryptographic_util import (
     generate_salt,
-    hash_with_salt,
     generate_secure_random_string,
+    hash_with_salt,
 )
 
 DEFAULT_SCOPES: List[str] = []

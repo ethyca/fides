@@ -1,9 +1,9 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
-    SecretType,
     MaskingSecretMeta,
+    SecretType,
 )
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
 from fidesops.service.masking.strategy.masking_strategy_hmac import (
@@ -11,6 +11,7 @@ from fidesops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
 from fidesops.util.encryption.secrets_util import SecretsUtil
+
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 request_id = "12345"

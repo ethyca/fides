@@ -4,27 +4,27 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pydash
+import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from pydash import filter_
-from starlette.testclient import TestClient
 from sqlalchemy.orm import Session
-import pytest
+from starlette.testclient import TestClient
 
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
-    DATASET_READ,
     DATASET_DELETE,
+    DATASET_READ,
 )
 from fidesops.api.v1.urn_registry import (
+    DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
-    YAML_DATASETS,
-    DATASET_BY_KEY,
     V1_URL_PREFIX,
+    YAML_DATASETS,
 )
+from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:

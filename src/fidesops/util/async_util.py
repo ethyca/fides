@@ -1,9 +1,8 @@
 import asyncio
+import logging
 from asyncio import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
-from typing import TypeVar, Callable, Any, Awaitable, Optional
-import logging
-
+from typing import Any, Awaitable, Callable, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")

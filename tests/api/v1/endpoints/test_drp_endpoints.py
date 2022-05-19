@@ -10,17 +10,9 @@ from fidesops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fidesops.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-    DRP_EXERCISE,
-    DRP_STATUS,
-)
+from fidesops.api.v1.urn_registry import DRP_EXERCISE, DRP_STATUS, V1_URL_PREFIX
 from fidesops.core.config import config
-
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.util.cache import get_drp_request_body_cache_key, get_identity_cache_key
 

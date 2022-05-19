@@ -1,49 +1,42 @@
 import json
 import logging
-import pytest
-
 from typing import Generator
 
+import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy_utils.functions import (
-    create_database,
-    database_exists,
-    drop_database,
-)
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.core.config import (
-    config,
-)
+from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.db.session import get_db_session, get_db_engine, Session
+from fidesops.db.session import Session, get_db_engine, get_db_session
 from fidesops.main import app
 from fidesops.models.privacy_request import generate_request_callback_jwe
 from fidesops.schemas.jwt import (
+    JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
-    JWE_ISSUED_AT,
 )
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import get_cache
 from fidesops.util.oauth_util import generate_jwe
 
 from .fixtures.application_fixtures import *
+from .fixtures.bigquery_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.mariadb_fixtures import *
 from .fixtures.mongodb_fixtures import *
-from .fixtures.mysql_fixtures import *
 from .fixtures.mssql_fixtures import *
+from .fixtures.mysql_fixtures import *
 from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
-from .fixtures.snowflake_fixtures import *
-from .fixtures.bigquery_fixtures import *
-from .fixtures.saas_example_fixtures import *
+from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
+from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
-from .fixtures.saas.hubspot_fixtures import *
-from .fixtures.saas.segment_fixtures import *
+from .fixtures.saas_example_fixtures import *
+from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
 

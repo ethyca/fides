@@ -2,19 +2,19 @@ import logging
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
+from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
 from sqlalchemy.engine import (
     URL,
-    Engine,
-    create_engine,
-    CursorResult,
-    LegacyCursorResult,
     Connection,
+    CursorResult,
+    Engine,
+    LegacyCursorResult,
+    create_engine,
 )
-from sqlalchemy.exc import OperationalError, InternalError
+from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.sql import Executable
 from sqlalchemy.sql.elements import TextClause
-from snowflake.sqlalchemy import URL as Snowflake_URL
 
 from fidesops.common_exceptions import ConnectionException
 from fidesops.graph.traversal import Row, TraversalNode
@@ -22,27 +22,27 @@ from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.connection_configuration import (
+    MicrosoftSQLServerSchema,
     PostgreSQLSchema,
     RedshiftSchema,
     SnowflakeSchema,
-    MicrosoftSQLServerSchema,
-)
-from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
-    MariaDBSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
+)
+from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.service.connectors.query_config import (
+    BigQueryQueryConfig,
+    MicrosoftSQLServerQueryConfig,
+    RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
-    RedshiftQueryConfig,
-    MicrosoftSQLServerQueryConfig,
-    BigQueryQueryConfig,
 )
 
 logger = logging.getLogger(__name__)

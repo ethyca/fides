@@ -1,4 +1,5 @@
 from fidesops.graph.traversal import *
+
 from .test_graph_traversal import generate_node
 
 

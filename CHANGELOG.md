@@ -18,7 +18,13 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.0...main)
+
+### Developer Experience
+
+* Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+
 ### Docs
+
 * Updated documentation for the user management ui [#530](https://github.com/ethyca/fidesops/pull/530)
 
 ## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
@@ -57,10 +63,10 @@ The types of changes are:
 * Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
 
 
-### Changed 
+### Changed
 * Converted HTTP Status Codes to Starlette constant values [#438](https://github.com/ethyca/fidesops/pull/438)
 * SaasConnector.send behavior on ignore_errors now returns raw response [#462](https://github.com/ethyca/fidesops/pull/462)
-* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468) 
+* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468)
 * User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
 * Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
 * Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)

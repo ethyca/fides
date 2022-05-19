@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar, Generic, Callable
-
+from typing import Callable, Generic, TypeVar
 
 T = TypeVar("T")
 

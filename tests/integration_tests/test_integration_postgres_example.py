@@ -1,4 +1,5 @@
 import logging
+
 import pytest
 from sqlalchemy import func, select, table
 

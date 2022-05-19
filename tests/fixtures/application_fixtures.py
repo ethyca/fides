@@ -4,11 +4,6 @@ from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, PRIVACY_REQUEST_READ
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
-from fidesops.util.data_category import DataCategory
-
 import pydash
 import pytest
 import yaml
@@ -16,41 +11,41 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
+from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.models.fidesops_user import FidesopsUser
+from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
+    PolicyPostWebhook,
+    PolicyPreWebhook,
     Rule,
     RuleTarget,
-    PolicyPreWebhook,
-    PolicyPostWebhook,
 )
-
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
-from fidesops.models.storage import StorageConfig, ResponseFormat
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.models.storage import ResponseFormat, StorageConfig
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging

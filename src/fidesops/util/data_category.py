@@ -1,6 +1,8 @@
 from enum import Enum as EnumType
 from typing import Type
+
 from fideslang import DEFAULT_TAXONOMY
+
 from fidesops import common_exceptions
 
 

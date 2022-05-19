@@ -1,24 +1,24 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Any, Tuple, Set, Dict, Callable, cast
+from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
 
 from fidesops.common_exceptions import TraversalError
 from fidesops.graph.config import (
-    CollectionAddress,
-    FieldAddress,
-    Dataset,
-    Collection,
     ROOT_COLLECTION_ADDRESS,
-    FieldPath,
+    Collection,
+    CollectionAddress,
+    Dataset,
     Field,
+    FieldAddress,
+    FieldPath,
 )
-from fidesops.graph.graph import Node, Edge, DatasetGraph
+from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.util.collection_util import Row, append
 from fidesops.util.logger import NotPii
 from fidesops.util.matching_queue import MatchingQueue
-from fidesops.util.collection_util import append, Row
 
 logger = logging.getLogger(__name__)
 

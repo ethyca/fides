@@ -6,20 +6,18 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    CONNECTION_READ,
     CONNECTION_DELETE,
+    CONNECTION_READ,
+    STORAGE_DELETE,
 )
-
-from sqlalchemy.orm import Session
-
 from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
 

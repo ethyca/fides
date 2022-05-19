@@ -5,28 +5,23 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
+    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
-    AuthenticationException,
 )
 from fidesops.models.client import ClientDetail
-from fidesops.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget,
-)
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
+from fidesops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fidesops.schemas.third_party.onetrust import (
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.schemas.storage.storage import StorageSecrets, StorageDetails
 from fidesops.service.privacy_request.onetrust_service import (
-    ONETRUST_POLICY_KEY,
     FIDES_TASK,
+    ONETRUST_POLICY_KEY,
     OneTrustService,
 )
 from fidesops.util.data_category import DataCategory

@@ -1,7 +1,6 @@
 import random
 from typing import Iterable
 
-
 from sqlalchemy.engine import Engine
 
 from fidesops.db.base_class import FidesopsBase
@@ -11,15 +10,15 @@ from fidesops.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.policy import Policy, RuleTarget, Rule, ActionType
+from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors import BaseConnector, MongoDBConnector
 from fidesops.service.connectors.sql_connector import SQLConnector
-
 from fidesops.task.graph_task import GraphTask
 from fidesops.task.task_resources import TaskResources
-from ..fixtures.application_fixtures import faker
 from fidesops.util.collection_util import Row
+
+from ..fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):

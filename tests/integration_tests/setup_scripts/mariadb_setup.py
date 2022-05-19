@@ -5,10 +5,10 @@ import pydash
 import sqlalchemy
 
 from fidesops.core.config import load_toml
-from fidesops.db.session import get_db_session, get_db_engine
+from fidesops.db.session import get_db_engine, get_db_session
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.service.connectors.sql_connector import MariaDBConnector

@@ -1,10 +1,11 @@
 import pytest
 from pydantic import ValidationError
-from fidesops.schemas.saas.saas_config import SaaSConfig
+
 from fidesops.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema,
     SaaSSchemaFactory,
 )
+from fidesops.schemas.saas.saas_config import SaaSConfig
 
 
 @pytest.mark.unit_saas

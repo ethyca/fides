@@ -12,12 +12,11 @@ from fidesops.api.v1.endpoints import (
     policy_endpoints,
     policy_webhook_endpoints,
     privacy_request_endpoints,
-    storage_endpoints,
     saas_config_endpoints,
+    storage_endpoints,
     user_endpoints,
     user_permission_endpoints,
 )
-
 
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)

@@ -1,6 +1,7 @@
+from uuid import uuid4
+
 import pytest
 from sqlalchemy.orm import Session
-from uuid import uuid4
 
 from fidesops.common_exceptions import WebhookOrderException
 from fidesops.models.policy import PolicyPostWebhook

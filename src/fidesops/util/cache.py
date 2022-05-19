@@ -1,14 +1,7 @@
 import base64
 import logging
 import pickle
-from typing import (
-    Any,
-    List,
-    Optional,
-    Set,
-    Union,
-    Dict,
-)
+from typing import Any, Dict, List, Optional, Set, Union
 
 from redis import Redis
 from redis.client import Script

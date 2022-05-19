@@ -1,7 +1,7 @@
 import logging
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Generic, Optional, Any, TypeVar, Dict, Tuple, Set
+from typing import Any, Dict, Generic, Optional, Set, Tuple, TypeVar
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId

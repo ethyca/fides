@@ -1,12 +1,13 @@
 import logging
+
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.api.v1.api import api_router
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.db.database import init_db
 from fidesops.core.config import config
+from fidesops.db.database import init_db
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory

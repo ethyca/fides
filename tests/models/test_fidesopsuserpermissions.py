@@ -1,8 +1,7 @@
+import psycopg2.errors as db_errors
 import pytest
-
 from sqlalchemy.orm import Session
 
-import psycopg2.errors as db_errors
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions

@@ -3,10 +3,10 @@ from bson import ObjectId
 from fidesops.graph.data_type import (
     DataType,
     NoOpTypeConverter,
-    get_data_type_converter,
     StringTypeConverter,
-    parse_data_type_string,
+    get_data_type_converter,
     is_valid_data_type,
+    parse_data_type_string,
 )
 
 

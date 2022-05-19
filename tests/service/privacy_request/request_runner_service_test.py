@@ -1,4 +1,3 @@
-import pytest
 import time
 from typing import Any, Dict, List, Set
 from unittest import mock
@@ -6,32 +5,32 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pydash
-from sqlalchemy import (
-    column,
-    table,
-    select,
-)
-from sqlalchemy.orm import Session
+import pytest
 from pydantic import ValidationError
+from sqlalchemy import column, select, table
+from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import PrivacyRequestPaused, ClientUnsuccessfulException
+from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.models.policy import PolicyPreWebhook, ActionType
-from fidesops.models.privacy_request import PrivacyRequestStatus
-from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.db.session import get_db_session
-from fidesops.models.privacy_request import PrivacyRequest, ExecutionLog
+from fidesops.models.policy import ActionType, PolicyPreWebhook
+from fidesops.models.privacy_request import (
+    ExecutionLog,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
+from fidesops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.policy import Rule
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.service.connectors.sql_connector import (
-    SnowflakeConnector,
     RedshiftConnector,
+    SnowflakeConnector,
 )
 from fidesops.service.masking.strategy.masking_strategy_factory import get_strategy
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy

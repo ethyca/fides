@@ -80,14 +80,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple, Set, Dict, Any, Callable
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+
 from pydantic import BaseModel, validator
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.data_type import (
+    DataType,
     DataTypeConverter,
     get_data_type_converter,
-    DataType,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.collection_util import merge_dicts

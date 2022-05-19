@@ -1,5 +1,7 @@
+from typing import Any, Dict
+
 import pytest
-from typing import Dict, Any
+
 from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,

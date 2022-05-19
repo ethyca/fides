@@ -1,17 +1,17 @@
+import json
 from typing import Dict
 from unittest import mock
 from unittest.mock import Mock
-import json
 
 import pytest
+from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
-from fastapi_pagination import Params
 
 from fidesops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
-    STORAGE_READ,
     STORAGE_DELETE,
+    STORAGE_READ,
 )
 from fidesops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
@@ -24,11 +24,11 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.data_upload_location_response import DataUpload
 from fidesops.schemas.storage.storage import (
-    StorageSecrets,
-    ResponseFormat,
-    StorageType,
-    StorageDetails,
     FileNaming,
+    ResponseFormat,
+    StorageDetails,
+    StorageSecrets,
+    StorageType,
 )
 
 PAGE_SIZE = Params().size

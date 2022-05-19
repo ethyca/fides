@@ -1,47 +1,47 @@
-from typing import Dict, Any, Union
+from typing import Any, Dict, Union
 
-from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
-    MariaDBSchema,
-    MariaDBDocsSchema,
-)
-from fidesops.schemas.connection_configuration.connection_secrets_bigquery import (
-    BigQuerySchema,
-    BigQueryDocsSchema,
-)
-from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
-    MongoDBSchema,
-    MongoDBDocsSchema,
-)
+from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
+)
+from fidesops.schemas.connection_configuration.connection_secrets_bigquery import (
+    BigQueryDocsSchema,
+    BigQuerySchema,
+)
+from fidesops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBDocsSchema,
+    MariaDBSchema,
+)
+from fidesops.schemas.connection_configuration.connection_secrets_mongodb import (
+    MongoDBDocsSchema,
+    MongoDBSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mssql import (
     MicrosoftSQLServerSchema,
     MSSQLDocsSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_mysql import (
-    MySQLSchema,
     MySQLDocsSchema,
+    MySQLSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_postgres import (
-    PostgreSQLSchema,
     PostgreSQLDocsSchema,
+    PostgreSQLSchema,
 )
-from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connection_secrets_redshift import (
-    RedshiftSchema,
     RedshiftDocsSchema,
-)
-from fidesops.schemas.connection_configuration.connection_secrets_snowflake import (
-    SnowflakeSchema,
-    SnowflakeDocsSchema,
-)
-from fidesops.schemas.connection_configuration.connections_secrets_https import (
-    HttpsSchema,
+    RedshiftSchema,
 )
 from fidesops.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema,
     SaaSSchemaFactory,
+)
+from fidesops.schemas.connection_configuration.connection_secrets_snowflake import (
+    SnowflakeDocsSchema,
+    SnowflakeSchema,
+)
+from fidesops.schemas.connection_configuration.connections_secrets_https import (
+    HttpsSchema,
 )
 from fidesops.schemas.saas.saas_config import SaaSConfig
 

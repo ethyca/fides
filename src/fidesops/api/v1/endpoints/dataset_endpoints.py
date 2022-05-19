@@ -1,7 +1,7 @@
 import logging
 from typing import List
-import yaml
 
+import yaml
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
@@ -27,8 +27,8 @@ from fidesops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
-    YAML_DATASETS,
     V1_URL_PREFIX,
+    YAML_DATASETS,
 )
 from fidesops.common_exceptions import (
     SaaSConfigNotFoundException,

@@ -1,6 +1,6 @@
 import logging
-from abc import abstractmethod, ABC
-from typing import Any, Dict, List, Optional, TypeVar, Generic
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from fidesops.core.config import config
 from fidesops.graph.traversal import TraversalNode

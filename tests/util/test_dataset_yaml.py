@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytest
 import yaml
@@ -6,14 +6,15 @@ from pydantic import ValidationError
 
 from fidesops.graph.config import (
     CollectionAddress,
-    ScalarField,
-    ObjectField,
     FieldAddress,
     FieldPath,
+    ObjectField,
+    ScalarField,
 )
 from fidesops.graph.graph import DatasetGraph, Edge
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
+
 from ..graph.graph_test_util import field
 
 example_dataset_yaml = """dataset:

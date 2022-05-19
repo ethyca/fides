@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import List, Dict, TypeVar, Iterable, Callable, Any, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 
 T = TypeVar("T")
 U = TypeVar("U")
