@@ -24,6 +24,7 @@ The types of changes are:
 * Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
   * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
+* Minimal page for displaying datasets
 
 ### Changed
 
