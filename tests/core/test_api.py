@@ -79,130 +79,119 @@ def test_api_ping(
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_create(
-    test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
-) -> None:
-    manifest = resources_dict[endpoint]
-    print(manifest.json(exclude_none=True))
-    result = _api.create(
-        url=test_config.cli.server_url,
-        resource_type=endpoint,
-        json_resource=manifest.json(exclude_none=True),
-        headers=test_config.user.request_headers,
-    )
-    print(result.text)
-    assert result.status_code == 201
+class TestCrud:
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_create(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        print(manifest.json(exclude_none=True))
+        result = _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+        print(result.text)
+        assert result.status_code == 201
 
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_ls(self, test_config: FidesctlConfig, endpoint: str) -> None:
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            headers=test_config.user.request_headers,
+        )
+        print(result.text)
+        assert result.status_code == 200
 
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_ls(test_config: FidesctlConfig, endpoint: str) -> None:
-    result = _api.ls(
-        url=test_config.cli.server_url,
-        resource_type=endpoint,
-        headers=test_config.user.request_headers,
-    )
-    print(result.text)
-    assert result.status_code == 200
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_get(self, test_config: FidesctlConfig, endpoint: str) -> None:
+        existing_id = get_existing_key(test_config, endpoint)
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resource_id=existing_id,
+        )
+        print(result.text)
+        assert result.status_code == 200
 
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_sent_is_received(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        """
+        Confirm that the resource and values that we send are the
+        same as the resource that the server returns.
+        """
+        manifest = resources_dict[endpoint]
+        resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_get(test_config: FidesctlConfig, endpoint: str) -> None:
-    existing_id = get_existing_key(test_config, endpoint)
-    result = _api.get(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        resource_type=endpoint,
-        resource_id=existing_id,
-    )
-    print(result.text)
-    assert result.status_code == 200
+        print(manifest.json(exclude_none=True))
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resource_id=resource_key,
+        )
+        print(result.text)
+        assert result.status_code == 200
+        parsed_result = parse.parse_dict(endpoint, result.json())
 
+        assert parsed_result == manifest
 
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_sent_is_received(
-    test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
-) -> None:
-    """
-    Confirm that the resource and values that we send are the
-    same as the resource that the server returns.
-    """
-    manifest = resources_dict[endpoint]
-    resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_update(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+        )
+        print(result.text)
+        assert result.status_code == 200
 
-    print(manifest.json(exclude_none=True))
-    result = _api.get(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        resource_type=endpoint,
-        resource_id=resource_key,
-    )
-    print(result.text)
-    assert result.status_code == 200
-    parsed_result = parse.parse_dict(endpoint, result.json())
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_upsert(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[loads(manifest.json())],
+        )
+        assert result.status_code == 200
 
-    assert parsed_result == manifest
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_delete(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
-
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_update(
-    test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
-) -> None:
-
-    manifest = resources_dict[endpoint]
-    result = _api.update(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        resource_type=endpoint,
-        json_resource=manifest.json(exclude_none=True),
-    )
-    print(result.text)
-    assert result.status_code == 200
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_upsert(
-    test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
-) -> None:
-    manifest = resources_dict[endpoint]
-    result = _api.upsert(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        resource_type=endpoint,
-        resources=[loads(manifest.json())],
-    )
-
-    assert result.status_code == 200
-
-
-@pytest.mark.integration
-@pytest.mark.parametrize("endpoint", model_list)
-def test_api_delete(
-    test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
-) -> None:
-    manifest = resources_dict[endpoint]
-    resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
-
-    result = _api.delete(
-        url=test_config.cli.server_url,
-        resource_type=endpoint,
-        resource_id=resource_key,
-        headers=test_config.user.request_headers,
-    )
-    print(result.text)
-    assert result.status_code == 200
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resource_key,
+            headers=test_config.user.request_headers,
+        )
+        print(result.text)
+        assert result.status_code == 200
 
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "resource_type", ["data_category", "data_use", "data_qualifier"]
 )
-def test_visualize(test_config: FidesctlConfig, resource_type: str) -> None:
+def test_visualize(
+    setup_db: str, test_config: FidesctlConfig, resource_type: str
+) -> None:
     response = requests.get(
         f"{test_config.cli.server_url}{API_PREFIX}/{resource_type}/visualize/graphs"
     )
