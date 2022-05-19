@@ -1,24 +1,13 @@
-import React, { useState } from 'react';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import Image from 'next/image';
-import { useFormik } from 'formik';
-import { signIn } from 'next-auth/react';
-
 import {
-  Flex,
-  Stack,
-  Heading,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  FormErrorMessage,
-  chakra,
-  useToast,
+  Box, Button, chakra, Flex, FormControl, FormErrorMessage, FormLabel, Heading, Input, Stack, useToast
 } from '@fidesui/react';
+import { useFormik } from 'formik';
+import type { NextPage } from 'next';
+import { signIn } from 'next-auth/react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+
 
 const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +96,7 @@ const Login: NextPage = () => {
           justify="center"
         >
           <Box display={['none', 'none', 'block']}>
-            <Image
+            <img
               src="/logo.svg"
               alt="FidesUI logo"
               width="156px"
@@ -138,7 +127,7 @@ const Login: NextPage = () => {
               <Stack align="center" justify="center" spacing={8}>
                 <Stack display={['block', 'block', 'none']} spacing={12}>
                   <Flex justifyContent="center">
-                    <Image
+                    <img
                       src="/logo.svg"
                       alt="FidesUI logo"
                       width="156px"
