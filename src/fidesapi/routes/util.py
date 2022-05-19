@@ -22,11 +22,12 @@ def get_resource_type(router: APIRouter) -> str:
     return router.prefix.replace(f"{API_PREFIX}/", "", 1)
 
 
-def obscure(data: bytes) -> bytes:
-    "obscures data as a minor security measure"
-    return b64e(zlib.compress(data, 9))
+def obscure_string(plaintext_string: str) -> str:
+    "obscures a string as a minor security measure"
+
+    return b64e(zlib.compress(plaintext_string.encode(), 9)).decode()
 
 
-def unobscure(obscured: bytes) -> bytes:
-    "unobscures data as a minor security measure"
-    return zlib.decompress(b64d(obscured))
+def unobscure_string(obscured_string: str) -> str:
+    "unobscures a string as a minor security measure"
+    return zlib.decompress(b64d(obscured_string.encode())).decode()

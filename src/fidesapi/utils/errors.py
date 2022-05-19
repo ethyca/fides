@@ -54,3 +54,17 @@ class QueryError(HTTPException):
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "a database query failed"},
         )
+
+
+class FailedConnectionError(HTTPException):
+    """
+    To be raised when a connection fails for any reason.
+    Due to the potential for import errors, keeping this
+    generic seems to be a shrewd option at this time.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "unable to successfully connect"},
+        )
