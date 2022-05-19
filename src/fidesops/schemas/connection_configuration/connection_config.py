@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
-from pydantic import Extra, BaseModel
+from pydantic import BaseModel, Extra
 
+from fidesops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.models.connectionconfig import ConnectionType, AccessLevel
 
 
 class CreateConnectionConfiguration(BaseModel):

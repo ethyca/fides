@@ -1,31 +1,32 @@
-from fidesops.service.connectors.saas_connector import AuthenticatedClient
-import pytest
 import json
 
+import pytest
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.models.client import ClientDetail
-from fidesops.models.connectionconfig import ConnectionTestStatus
-from fidesops.service.connectors import MongoDBConnector
-from fidesops.service.connectors.sql_connector import (
-    MySQLConnector,
-    MicrosoftSQLServerConnector,
-    MariaDBConnector,
-)
-from fidesops.common_exceptions import ConnectionException
-from fidesops.service.connectors import PostgreSQLConnector
-from fidesops.service.connectors import SaaSConnector
-from fidesops.service.connectors import get_connector
 from fidesops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
-
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fidesops.common_exceptions import ConnectionException
+from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionTestStatus
+from fidesops.service.connectors import (
+    MongoDBConnector,
+    PostgreSQLConnector,
+    SaaSConnector,
+    get_connector,
+)
+from fidesops.service.connectors.saas_connector import AuthenticatedClient
+from fidesops.service.connectors.sql_connector import (
+    MariaDBConnector,
+    MicrosoftSQLServerConnector,
+    MySQLConnector,
+)
 
 
 @pytest.mark.integration_postgres

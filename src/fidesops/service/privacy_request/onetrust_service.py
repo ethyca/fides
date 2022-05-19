@@ -1,32 +1,31 @@
 import logging
 import urllib.parse
-from datetime import timedelta, datetime
-from typing import Optional, Final, List, Dict, Union
+from datetime import datetime, timedelta
+from typing import Dict, Final, List, Optional, Union
 
 import requests
 from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
+    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
-    AuthenticationException,
 )
 from fidesops.db.session import get_db_session
 from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-)
+from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.privacy_request import PrivacyRequestIdentity
-from fidesops.schemas.third_party.onetrust import (
-    OneTrustGetSubtasksResponse,
-    OneTrustSubtask,
-    OneTrustGetRequestsResponse,
-    OneTrustRequest,
-)
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fidesops.schemas.third_party.onetrust import (
+    OneTrustGetRequestsResponse,
+    OneTrustGetSubtasksResponse,
+    OneTrustRequest,
+    OneTrustSubtask,
+    OneTrustSubtaskStatus,
+)
 from fidesops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
@@ -35,7 +34,6 @@ from fidesops.service.outbound_urn_registry import (
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import get_cache
 from fidesops.util.storage_authenticator import get_onetrust_access_token
-from fidesops.schemas.third_party.onetrust import OneTrustSubtaskStatus
 
 logger = logging.getLogger(__name__)
 

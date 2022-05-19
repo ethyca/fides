@@ -1,9 +1,11 @@
 from typing import List
-from pydantic import validator
+
 from fastapi import HTTPException
+from pydantic import validator
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-from fidesops.schemas.base_class import BaseSchema
+
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesops.schemas.base_class import BaseSchema
 
 
 class UserPermissionsCreate(BaseSchema):

@@ -1,36 +1,26 @@
 # pylint: disable=R0401
+import json
 import logging
 from datetime import datetime
-
-import json
-
+from enum import Enum as EnumType
 from typing import Any, Dict, Optional
 
-from enum import Enum as EnumType
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Enum as EnumColumn,
-    ForeignKey,
-    String,
-)
-
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import relationship, Session, backref
+from sqlalchemy.orm import Session, backref, relationship
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
-from fidesops.db.base_class import (
-    Base,
-    FidesopsBase,
-)
+from fidesops.db.base_class import Base, FidesopsBase
 from fidesops.models.audit_log import AuditLog
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
-    Policy,
     ActionType,
+    Policy,
     PolicyPreWebhook,
     WebhookDirection,
     WebhookTypes,
@@ -44,13 +34,13 @@ from fidesops.schemas.external_https import (
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
+    FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_cache,
-    get_identity_cache_key,
-    FidesopsRedis,
-    get_encryption_cache_key,
-    get_masking_secret_cache_key,
     get_drp_request_body_cache_key,
+    get_encryption_cache_key,
+    get_identity_cache_key,
+    get_masking_secret_cache_key,
 )
 from fidesops.util.oauth_util import generate_jwe
 

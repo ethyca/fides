@@ -1,10 +1,8 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fidesops.api.v1 import (
-    scope_registry as scopes,
-    urn_registry as urls,
-)
+from fidesops.api.v1 import scope_registry as scopes
+from fidesops.api.v1 import urn_registry as urls
 
 
 class TestGetConnections:

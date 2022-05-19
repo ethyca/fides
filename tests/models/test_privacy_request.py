@@ -1,22 +1,15 @@
-import pytest
-import requests_mock
-from datetime import (
-    datetime,
-    timedelta,
-    timezone,
-)
-from pydantic import ValidationError
+from datetime import datetime, timedelta, timezone
 from typing import List
 from uuid import uuid4
 
+import pytest
+import requests_mock
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.models.policy import Policy
-from fidesops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
 

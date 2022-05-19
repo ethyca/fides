@@ -1,8 +1,7 @@
-from base64 import b64encode, b64decode
-
-
 import hashlib
 import secrets
+from base64 import b64decode, b64encode
+
 import bcrypt
 
 from fidesops.core.config import config

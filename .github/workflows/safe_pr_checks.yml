@@ -18,6 +18,9 @@ jobs:
       - name: Format
         run: make black-ci
 
+      - name: Import Sorting
+        run: make isort-ci
+
       - name: Lint
         run: make pylint
 

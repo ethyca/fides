@@ -3,10 +3,12 @@ import json
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fidesops.schemas.masking.masking_api import MaskingAPIResponse
 from fidesops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
 from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
+from fidesops.service.masking.strategy.masking_strategy_factory import get_strategies
 from fidesops.service.masking.strategy.masking_strategy_hash import HASH
 from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
 from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
@@ -16,8 +18,6 @@ from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite im
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE,
 )
-from fidesops.schemas.masking.masking_api import MaskingAPIResponse
-from fidesops.service.masking.strategy.masking_strategy_factory import get_strategies
 
 
 class TestGetMaskingStrategies:

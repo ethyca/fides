@@ -6,11 +6,11 @@ from sqlalchemy.orm import Session
 from fidesops.db.base_class import KeyOrNameAlreadyExists
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.storage import (
-    StorageDestination,
-    StorageType,
-    StorageDetails,
     ResponseFormat,
+    StorageDestination,
+    StorageDetails,
     StorageSecrets,
+    StorageType,
 )
 
 

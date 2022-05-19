@@ -1,7 +1,8 @@
 import pytest
-from fidesops.graph.graph import *
-from .graph_test_util import *
 
+from fidesops.graph.graph import *
+
+from .graph_test_util import *
 
 #  -------------------------------------------
 #   graph object tests

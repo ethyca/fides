@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from fidesops.schemas.base_class import NoValidationSchema
 from fidesops.schemas.connection_configuration.connection_secrets import (

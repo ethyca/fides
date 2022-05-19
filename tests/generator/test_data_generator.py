@@ -2,15 +2,14 @@ import yaml
 
 from fidesops.graph.graph import *
 
-
 #  -------------------------------------------
 #   graph object tests
 #  -------------------------------------------
 from fidesops.graph.traversal import Traversal
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.schemas.dataset import FidesopsDataset
-from . import sql_data_generator
 
+from . import sql_data_generator
 
 f = """dataset:
   - fides_key: db

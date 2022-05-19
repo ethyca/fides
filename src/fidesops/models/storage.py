@@ -1,31 +1,24 @@
 import logging
 
 from pydantic import ValidationError
-from sqlalchemy import (
-    Column,
-    String,
-    Enum,
-)
+from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
-
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
 
-from fidesops.db.base_class import Base
-from fidesops.schemas.storage.storage import (
-    StorageType,
-    StorageSecretsS3,
-    StorageSecretsOnetrust,
-    ResponseFormat,
-    SUPPORTED_STORAGE_SECRETS,
-)
-
 from fidesops.core.config import config
-from fidesops.db.base_class import JSONTypeOverride
+from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.schemas.storage.storage import (
+    SUPPORTED_STORAGE_SECRETS,
+    ResponseFormat,
+    StorageSecretsOnetrust,
+    StorageSecretsS3,
+    StorageType,
+)
 from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
 
 logger = logging.getLogger(__name__)

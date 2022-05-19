@@ -1,9 +1,9 @@
-import pytest
-import pydash
-import yaml
-
-from sqlalchemy.orm import Session
 from typing import Any, Dict, Generator
+
+import pydash
+import pytest
+import yaml
+from sqlalchemy.orm import Session
 
 from fidesops.core.config import load_file, load_toml
 from fidesops.models.connectionconfig import (

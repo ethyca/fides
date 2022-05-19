@@ -1,6 +1,6 @@
 # MR Note - It would be nice to enforce this at compile time
-from abc import abstractmethod, ABC
-from typing import Optional, List, Any
+from abc import ABC, abstractmethod
+from typing import Any, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration
 from fidesops.schemas.masking.masking_secrets import MaskingSecretCache

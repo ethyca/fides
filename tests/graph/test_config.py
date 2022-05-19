@@ -4,11 +4,11 @@ import pytest
 from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import *
 from fidesops.graph.data_type import (
-    IntTypeConverter,
-    StringTypeConverter,
     BooleanTypeConverter,
+    IntTypeConverter,
     NoOpTypeConverter,
     ObjectTypeConverter,
+    StringTypeConverter,
 )
 
 

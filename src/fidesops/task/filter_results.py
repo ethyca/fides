@@ -1,10 +1,9 @@
-from collections import defaultdict
-
 import itertools
 import logging
-from typing import List, Dict, Any, Union, Set, Optional
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set, Union
 
-from fidesops.graph.config import FieldPath, CollectionAddress
+from fidesops.graph.config import CollectionAddress, FieldPath
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.collection_util import Row
 

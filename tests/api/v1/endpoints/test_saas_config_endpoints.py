@@ -1,6 +1,10 @@
 import json
-import pytest
 from typing import Optional
+
+import pytest
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesops.api.v1.scope_registry import (
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -16,8 +20,6 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from starlette.testclient import TestClient
-from sqlalchemy.orm import Session
 from tests.api.v1.endpoints.test_dataset_endpoints import _reject_key
 
 

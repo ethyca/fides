@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from typing import Tuple, Set, Dict, Optional, List, Callable
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from fidesops.common_exceptions import ValidationError
 from fidesops.graph.config import (
-    EdgeDirection,
-    FieldAddress,
-    CollectionAddress,
-    SeedAddress,
     Collection,
+    CollectionAddress,
     Dataset,
+    EdgeDirection,
     Field,
+    FieldAddress,
     FieldPath,
+    SeedAddress,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
 

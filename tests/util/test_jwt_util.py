@@ -4,11 +4,11 @@ from unittest import mock
 from unittest.mock import Mock
 
 from fidesops.schemas.jwt import (
-    JWE_PAYLOAD_CLIENT_ID,
     JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fidesops.util.oauth_util import generate_jwe, extract_payload, is_token_expired
+from fidesops.util.oauth_util import extract_payload, generate_jwe, is_token_expired
 
 
 def test_jwe_create_and_extract() -> None:

@@ -1,17 +1,17 @@
-import os
-
 import logging
+import os
+from typing import Generator
+
 import pytest
 from sqlalchemy import inspect
-from typing import Generator
 
 from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
 from fidesops.service.connectors import (
-    get_connector,
     RedshiftConnector,
     SnowflakeConnector,
+    get_connector,
 )
 
 logger = logging.getLogger(__name__)

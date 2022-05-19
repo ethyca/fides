@@ -1,14 +1,14 @@
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, validator, ConstrainedStr
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fidesops.graph.config import EdgeDirection
+from pydantic import BaseModel, ConstrainedStr, validator
 
 from fidesops.common_exceptions import (
     InvalidDataLengthValidationError,
+    InvalidDataTypeValidationError,
 )
-from fidesops.common_exceptions import InvalidDataTypeValidationError
-from fidesops.graph.data_type import parse_data_type_string, is_valid_data_type
+from fidesops.graph.config import EdgeDirection
+from fidesops.graph.data_type import is_valid_data_type, parse_data_type_string
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.shared_schemas import FidesOpsKey

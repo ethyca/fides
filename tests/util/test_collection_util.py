@@ -2,9 +2,9 @@ from typing import Dict, List
 
 from fidesops.util.collection_util import (
     append,
-    partition,
     filter_nonempty_values,
     merge_dicts,
+    partition,
 )
 
 

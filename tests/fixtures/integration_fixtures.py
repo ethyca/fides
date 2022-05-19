@@ -1,7 +1,7 @@
 import logging
 import random
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
@@ -10,11 +10,12 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from fidesops.models.connectionconfig import (
+    AccessLevel,
     ConnectionConfig,
     ConnectionType,
-    AccessLevel,
 )
-from fidesops.service.connectors import PostgreSQLConnector, MongoDBConnector
+from fidesops.service.connectors import MongoDBConnector, PostgreSQLConnector
+
 from .application_fixtures import faker, integration_secrets
 
 logger = logging.getLogger(__name__)

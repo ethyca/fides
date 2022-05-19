@@ -1,33 +1,27 @@
-import secrets
-
-from datetime import datetime
-
-import os
-
+import json
 import logging
+import os
+import secrets
+import zipfile
+from datetime import datetime
+from io import BytesIO
 from typing import Any, Dict, Union
 
-import json
-import zipfile
-from io import BytesIO
-import requests
-
 import pandas as pd
-
+import requests
 from botocore.exceptions import ClientError, ParamValidationError
 
 from fidesops.core.config import config
 from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
-from fidesops.util.cache import get_encryption_cache_key, get_cache
+from fidesops.util.cache import get_cache, get_encryption_cache_key
 from fidesops.util.cryptographic_util import bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
-
 from fidesops.util.storage_authenticator import (
-    get_s3_session,
     get_onetrust_access_token,
+    get_s3_session,
 )
 
 logger = logging.getLogger(__name__)

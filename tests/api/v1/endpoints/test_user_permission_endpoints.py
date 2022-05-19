@@ -1,22 +1,23 @@
-import pytest
 import json
+
+import pytest
 from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_201_CREATED,
     HTTP_404_NOT_FOUND,
-    HTTP_200_OK,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesops.api.v1.urn_registry import V1_URL_PREFIX, USER_PERMISSIONS
 from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    SAAS_CONFIG_READ,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
-    SAAS_CONFIG_READ,
-    PRIVACY_REQUEST_READ,
 )
+from fidesops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions

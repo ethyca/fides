@@ -3,17 +3,11 @@
 import hashlib
 import logging
 import os
-from typing import Dict, List, Optional, Union, Tuple, Any, MutableMapping
+from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
-from pydantic import (
-    AnyHttpUrl,
-    BaseSettings,
-    PostgresDsn,
-    ValidationError,
-    validator,
-)
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
 from fidesops.common_exceptions import MissingConfig

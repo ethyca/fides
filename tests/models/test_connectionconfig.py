@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.db.base_class import KeyValidationError, KeyOrNameAlreadyExists
+from fidesops.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
 from fidesops.models.connectionconfig import (
+    AccessLevel,
     ConnectionConfig,
     ConnectionType,
-    AccessLevel,
 )
 from fidesops.util.text import to_snake_case
 

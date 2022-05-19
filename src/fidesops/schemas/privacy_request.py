@@ -1,18 +1,18 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from pydantic import Field, validator
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
+from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.policy import Policy as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.user import PrivacyRequestReviewer
-from fidesops.models.privacy_request import PrivacyRequestStatus, ExecutionLogStatus
 from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
 

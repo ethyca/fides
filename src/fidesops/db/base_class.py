@@ -7,14 +7,10 @@ from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import six
-
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import (
-    Session,
-    Query,
-)
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql import func
 from sqlalchemy_utils import JSONType
 

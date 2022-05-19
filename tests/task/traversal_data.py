@@ -2,19 +2,19 @@ from typing import Optional, Tuple
 
 from fidesops.graph.config import (
     Collection,
-    ScalarField,
-    FieldAddress,
     CollectionAddress,
     Dataset,
+    FieldAddress,
     ObjectField,
+    ScalarField,
 )
 from fidesops.graph.data_type import (
     DataType,
     IntTypeConverter,
-    StringTypeConverter,
+    NoOpTypeConverter,
     ObjectIdTypeConverter,
     ObjectTypeConverter,
-    NoOpTypeConverter,
+    StringTypeConverter,
 )
 from fidesops.graph.graph import DatasetGraph
 from fidesops.graph.traversal import Traversal

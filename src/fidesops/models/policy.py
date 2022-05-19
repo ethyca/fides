@@ -1,33 +1,14 @@
 # pylint: disable=E1101
 from enum import Enum as EnumType
-
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from sqlalchemy import (
-    Column,
-    Enum as EnumColumn,
-    ForeignKey,
-    String,
-    UniqueConstraint,
-    Integer,
-)
+from sqlalchemy import Column
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import (
-    relationship,
-    Session,
-    declared_attr,
-    backref,
-)
-
+from sqlalchemy.orm import Session, backref, declared_attr, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -36,11 +17,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops import common_exceptions
 from fidesops.common_exceptions import WebhookOrderException
 from fidesops.core.config import config
-from fidesops.db.base_class import (
-    Base,
-    FidesopsBase,
-    JSONTypeOverride,
-)
+from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig

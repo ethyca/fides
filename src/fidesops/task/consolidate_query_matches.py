@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Any, List, Optional
 
 from fidesops.graph.config import FieldPath
 from fidesops.util.collection_util import Row

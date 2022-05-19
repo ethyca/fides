@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Optional, Any, Dict, Set, List
+from typing import Any, Dict, List, Optional, Set
 
-from fidesops.models.policy import Policy, ActionType
+from fidesops.models.policy import ActionType, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.schemas.masking.masking_configuration import MaskingConfiguration

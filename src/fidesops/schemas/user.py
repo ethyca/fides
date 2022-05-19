@@ -1,8 +1,9 @@
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Optional
 
 from pydantic import validator
+
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.oauth import AccessToken
 

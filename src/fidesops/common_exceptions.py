@@ -1,10 +1,9 @@
 from typing import List
 
 from fastapi import HTTPException
-
 from starlette.status import (
-    HTTP_401_UNAUTHORIZED,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )

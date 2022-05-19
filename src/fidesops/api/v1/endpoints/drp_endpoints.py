@@ -1,14 +1,14 @@
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 import jwt
-from fastapi import HTTPException, Depends, APIRouter, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from starlette.status import (
+    HTTP_200_OK,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
-    HTTP_200_OK,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -19,7 +19,7 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.core.config import config
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.drp_privacy_request import DrpPrivacyRequestCreate, DrpIdentity
+from fidesops.schemas.drp_privacy_request import DrpIdentity, DrpPrivacyRequestCreate
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper

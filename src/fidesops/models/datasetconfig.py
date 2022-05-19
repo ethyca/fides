@@ -1,28 +1,23 @@
 import logging
-from typing import Dict, Any, Set, Optional
+from typing import Any, Dict, Optional, Set
 
 from boto3 import Session
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    String,
-)
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from fidesops.models.connectionconfig import ConnectionType
 
 from fidesops.db.base_class import Base
 from fidesops.graph.config import (
     Collection,
+    CollectionAddress,
+    Dataset,
     Field,
     FieldAddress,
-    Dataset,
-    CollectionAddress,
     generate_field,
 )
 from fidesops.graph.data_type import parse_data_type_string
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.logger import NotPii

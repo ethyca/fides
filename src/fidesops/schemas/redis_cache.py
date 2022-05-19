@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import Extra
 
 from fidesops.schemas.base_class import BaseSchema

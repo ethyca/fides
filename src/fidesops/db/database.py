@@ -2,13 +2,14 @@
 Contains all of the logic for spinning up/tearing down the database.
 """
 import os
-from pydantic import PostgresDsn
 
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from pydantic import PostgresDsn
 
 from fidesops.db.session import get_db_engine
+
 from .base import Base
 
 

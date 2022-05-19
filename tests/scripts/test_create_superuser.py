@@ -1,16 +1,14 @@
-import pytest
 from unittest import mock
 
-from create_superuser import (
-    collect_username_and_password,
-    create_user_and_client,
-)
+import pytest
+from create_superuser import collect_username_and_password, create_user_and_client
+
+from fidesops.api.v1.scope_registry import CLIENT_CREATE
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
-from fidesops.api.v1.scope_registry import CLIENT_CREATE
 
 
 class TestCreateSuperuserScript:

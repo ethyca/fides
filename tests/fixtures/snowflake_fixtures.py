@@ -1,13 +1,13 @@
 import os
-import pytest
 from typing import Dict, Generator, List
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig

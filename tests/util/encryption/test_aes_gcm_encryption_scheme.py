@@ -2,8 +2,8 @@ import pytest
 
 from fidesops.util import cryptographic_util
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
-    encrypt_verify_secret_length,
     decrypt,
+    encrypt_verify_secret_length,
 )
 
 NONCE = b"B\xab\x93&\x99u\x0c\xea\xe9\xb7\x8dU"

@@ -2,11 +2,11 @@ import logging
 from typing import Optional
 
 from apscheduler.jobstores.base import JobLookupError
-from fidesops.schemas.shared_schemas import FidesOpsKey
 
 from fidesops.db.session import get_db_session
 from fidesops.models.storage import StorageConfig
-from fidesops.schemas.storage.storage import StorageType, StorageDetails
+from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.schemas.storage.storage import StorageDetails, StorageType
 from fidesops.service.privacy_request.onetrust_service import OneTrustService
 from fidesops.tasks.scheduled.scheduler import scheduler
 

@@ -1,13 +1,10 @@
 from typing import Dict, List, Optional, Union
-from fidesops.schemas.shared_schemas import FidesOpsKey
 
-from fidesops.models.policy import (
-    ActionType,
-    DrpAction,
-)
+from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
+from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.storage.storage import StorageDestinationResponse
 from fidesops.util.data_category import DataCategory
 

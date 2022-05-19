@@ -5,8 +5,8 @@ import pytest
 from fidesops.graph.config import FieldPath
 from fidesops.task.filter_element_match import (
     _expand_array_paths_to_preserve,
-    filter_element_match,
     _remove_paths_from_row,
+    filter_element_match,
 )
 from fidesops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX
 

@@ -1,24 +1,23 @@
 import json
-
 from typing import Dict
 
 import pytest
 
 from fidesops.api.v1.scope_registry import (
-    WEBHOOK_READ,
-    WEBHOOK_CREATE_OR_UPDATE,
     POLICY_READ,
+    WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
+    WEBHOOK_READ,
 )
 from fidesops.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-    POLICY_WEBHOOKS_PRE,
-    POLICY_WEBHOOKS_POST,
-    POLICY_PRE_WEBHOOK_DETAIL,
     POLICY_POST_WEBHOOK_DETAIL,
+    POLICY_PRE_WEBHOOK_DETAIL,
+    POLICY_WEBHOOKS_POST,
+    POLICY_WEBHOOKS_PRE,
+    V1_URL_PREFIX,
 )
 from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.policy import PolicyPreWebhook, PolicyPostWebhook
+from fidesops.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from tests.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 

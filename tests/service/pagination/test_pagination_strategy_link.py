@@ -3,8 +3,9 @@ from typing import Optional
 
 import pytest
 from requests import Response
+
+from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.schemas.saas.strategy_configuration import LinkPaginationConfiguration
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams, HTTPMethod
 from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
 
 

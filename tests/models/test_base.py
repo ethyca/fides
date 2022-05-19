@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import KeyValidationError
-from fidesops.models.storage import StorageConfig
 from fidesops.db.base_class import get_key_from_data
+from fidesops.models.storage import StorageConfig
 
 
 def test_get_key_from_data_method() -> None:
