@@ -14,11 +14,11 @@ services:
       - 8080
     ports:
       - "8080:8080"
-    # volumes:
-    #   - type: bind
-    #     source: .
-    #     target: /fides
-    #     read_only: False
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
     environment:
       FIDESCTL_TEST_MODE: "True"
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
