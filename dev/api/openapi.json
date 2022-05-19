@@ -3470,7 +3470,22 @@
                 },
                 "example": {
                   "status": "healthy",
-                  "version": "1.0.0"
+                  "version": "1.0.0",
+                  "database": "healthy"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "status": "healthy",
+                    "version": "1.0.0",
+                    "database": "unhealthy"
+                  }
                 }
               }
             }
