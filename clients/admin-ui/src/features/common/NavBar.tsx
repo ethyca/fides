@@ -33,6 +33,7 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
         colorScheme={isActive ? "complimentary" : "ghost"}
         rightIcon={rightIcon}
         data-testid={`nav-link-${title}`}
+        isActive={isActive}
       >
         {title}
       </Button>
@@ -54,17 +55,19 @@ const NavBar = () => {
         py={1}
         borderColor="gray.100"
       >
-        <NavLink title="Systems" href="/systems" disabled />
-        <NavLink title="Datasets" href="/datasets" />
-        <NavLink title="Policies" href="/policies" disabled />
-        <NavLink title="Taxonomy" href="/taxonomy" disabled />
-        <NavLink title="User Management" href="/user-management" disabled />
-        <NavLink
-          title="More"
-          href="#"
-          rightIcon={<ArrowDownLineIcon />}
-          disabled
-        />
+        <nav>
+          <NavLink title="Systems" href="/systems" disabled />
+          <NavLink title="Datasets" href="/datasets" />
+          <NavLink title="Policies" href="/policies" disabled />
+          <NavLink title="Taxonomy" href="/taxonomy" disabled />
+          <NavLink title="User Management" href="/user-management" disabled />
+          <NavLink
+            title="More"
+            href="#"
+            rightIcon={<ArrowDownLineIcon />}
+            disabled
+          />
+        </nav>
       </Flex>
     </>
   );

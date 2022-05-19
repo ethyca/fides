@@ -5,9 +5,7 @@
     "prettier",
     "next/core-web-vitals"
   ],
-  "plugins": [
-    "simple-import-sort"
-  ],
+  "plugins": ["simple-import-sort"],
   "root": true,
   "parserOptions": {
     "project": "./tsconfig.json"
@@ -15,9 +13,7 @@
   "rules": {
     // causes bug in re-exporting default exports, see
     // https://github.com/eslint/eslint/issues/15617
-    "no-restricted-exports": [
-      0
-    ],
+    "no-restricted-exports": [0],
     "react/function-component-definition": [
       2,
       {
@@ -27,17 +23,15 @@
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [
-          ".tsx"
-        ]
+        "extensions": [".tsx"]
       }
     ],
-    "react/jsx-props-no-spreading": [
-      0
-    ],
+    "react/jsx-props-no-spreading": [0],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     // since we are using static site export
-    "@next/next/no-img-element": "off"
+    "@next/next/no-img-element": "off",
+    // since defaultProps are deprecated for function components
+    "react/require-default-props": "off"
   }
 }
