@@ -10,13 +10,11 @@ saas_config:
 
   client_config:
     protocol: https
-    host:
-      connector_param: host
+    host: <host>
     authentication:
-      strategy: bearer_authentication
+      strategy: bearer
       configuration:
-        token:
-          connector_param: access_token
+        token: <access_token>
 
   test_request:
     method: GET

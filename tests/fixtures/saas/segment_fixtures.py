@@ -203,7 +203,7 @@ def segment_erasure_data(
                 "The user endpoint did not return the required data for testing during the time limit"
             )
         retries -= 1
-        time.sleep(5)
+        time.sleep(10)
 
     # Create event
     body = {

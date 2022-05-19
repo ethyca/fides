@@ -52,7 +52,7 @@ update:
       - strategy: filter
         configuration:
           field: subscribed
-          subscribed: TRUE
+          value: TRUE
 ```
 
 ## Supported Strategies

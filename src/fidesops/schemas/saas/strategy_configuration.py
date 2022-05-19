@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
-from pydantic import BaseModel, validator, root_validator
+
+from pydantic import BaseModel, root_validator, validator
 
 
 class StrategyConfiguration(BaseModel):
@@ -91,3 +92,29 @@ class CursorPaginationConfiguration(StrategyConfiguration):
 
     cursor_param: str
     field: str
+
+
+class BasicAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Username and password to add basic authentication to HTTP requests
+    """
+
+    username: str
+    password: Optional[str]
+
+
+class BearerAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Token to add as bearer authentication for HTTP requests
+    """
+
+    token: str
+
+
+class QueryParamAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Value to add as query param for HTTP requests
+    """
+
+    name: str
+    value: str
