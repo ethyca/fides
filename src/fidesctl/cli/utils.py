@@ -95,15 +95,11 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
             user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
         )
 
-    if (
-        ctx.obj["CONFIG"].user.analytics_opt_out is False
-        and get_config_from_file(
-            config_path,
-            "cli",
-            "analytics_id",
-        )
-        in ("", None)
-    ):
+    if ctx.obj["CONFIG"].user.analytics_opt_out is False and get_config_from_file(
+        config_path,
+        "cli",
+        "analytics_id",
+    ) in ("", None):
         config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
 
     if len(config_updates) > 0:
