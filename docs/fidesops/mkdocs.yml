@@ -32,9 +32,10 @@ nav:
       - Report on Privacy Requests: guides/reporting.md
       - Configure OneTrust Integration: guides/onetrust.md  
       - Configuration Reference: guides/configuration_reference.md
-      - Admin UI: guides/admin_ui.md
-      - Postman Collection: postman/using_postman.md
       - Data Rights Protocol: guides/data_rights_protocol.md
+  - Fidesops UI:
+      - Admin UI: guides/admin_ui.md
+      - User Management: guides/user_management.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
@@ -46,6 +47,7 @@ nav:
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
+      - Postman Collection: postman/using_postman.md
   - Community:
       - GitHub: community/github.md
       - Code of Conduct: community/code_of_conduct.md
