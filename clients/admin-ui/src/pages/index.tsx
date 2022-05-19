@@ -2,6 +2,7 @@ import { Box, Button, Flex, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import React from 'react';
+
 import Header from '../features/common/Header';
 import { ArrowDownLineIcon } from '../features/common/Icon';
 

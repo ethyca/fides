@@ -3,10 +3,12 @@ import {
   Link, Menu,
   MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text
 } from '@fidesui/react';
-import { signOut } from 'next-auth/react';
 import NextLink from 'next/link';
+import { signOut } from 'next-auth/react';
 import React from 'react';
+
 import { UserIcon } from './Icon';
+
 
 
 interface HeaderProps {
