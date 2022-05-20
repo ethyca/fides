@@ -16,7 +16,7 @@ from fidesapi.utils import errors
 from fidesctl.core.system import generate_aws_systems
 
 
-class ScanTypeEnum(str, Enum):
+class ScanTypes(str, Enum):
     """
     Scan Type Enum to capture the discrete possible values
     for a valid scan type
@@ -46,16 +46,24 @@ class OktaConfig(BaseModel):
 
 class Scan(BaseModel):
     """
+    Defines attributes of the scan included in a request.
+    """
+    
+    config: Union[AWSConfig, OktaConfig]
+    target: str
+    type: ScanTypeEnum
+    
+    
+class ScanRequestPayload(BaseModel):
+    """
     The model for the request body housing scan information.
     """
 
     organization_key: str
-    scan_type: ScanTypeEnum
-    scan_target: str
-    scan_config: Union[AWSConfig, OktaConfig]
+    scan: Scan
 
 
-router = APIRouter(tags=["scan"], prefix=f"{API_PREFIX}/scan")
+router = APIRouter(tags=["Scan"], prefix=f"{API_PREFIX}/scan")
 
 routers = [router]
 
@@ -78,8 +86,8 @@ async def generate_scan(scan_resource: Scan, response: Response) -> Dict:
     )
     if scan_resource.scan_target.lower() == "aws":
         log.info("Setting config for AWS")
-        output_list_of_dicts = generate_aws(
-            aws_config=cast(AWSConfig, scan_resource.scan_config),
+        aws_systems = generate_aws(
+            aws_config=AWSConfig(**scan_resource.scan_config),
             organization=organization,
         )
 
@@ -110,8 +118,7 @@ def generate_aws(
         log.bind(error=error.detail["error"]).error("Failed to scan AWS")
         raise error
 
-    output_list_of_dicts = [i.dict(exclude_none=True) for i in aws_systems]
-    return output_list_of_dicts
+    return [i.dict(exclude_none=True) for i in aws_systems]
 
 
 # def generate_okta() -> List[Dict[str, str]]:
