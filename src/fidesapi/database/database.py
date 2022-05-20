@@ -3,15 +3,21 @@ Contains all of the logic related to the database including connections, setup, 
 """
 from os import path
 
-from alembic import command
+from alembic import command, script
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from alembic.runtime import migration
 from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
+from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
 from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
-from fidesapi.utils.errors import AlreadyExistsError, QueryError
+from fidesapi.utils.errors import (
+    AlreadyExistsError,
+    QueryError,
+    get_full_exception_name,
+)
 from fidesctl.core.utils import get_db_engine
 
 from .crud import create_resource, upsert_resources
@@ -108,3 +114,23 @@ def reset_db(database_url: str) -> None:
     version = migration_context._version  # pylint: disable=protected-access
     if version.exists(connection):
         version.drop(connection)
+
+
+def get_db_health(database_url: str) -> str:
+    """Checks if the db is reachable and up to date in alembic migrations"""
+    try:
+        engine = create_engine(database_url)
+        alembic_config = get_alembic_config(database_url)
+        alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
+        with engine.begin() as conn:
+            context = migration.MigrationContext.configure(conn)
+            if (
+                context.get_current_revision()
+                != alembic_script_directory.get_current_head()
+            ):
+                return "needs migration"
+        return "healthy"
+    except Exception as error:  # pylint: disable=broad-except
+        error_type = get_full_exception_name(error)
+        log.error(f"Unable to reach the database: {error_type}: {error}")
+        return "unhealthy"

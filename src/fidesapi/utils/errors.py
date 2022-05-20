@@ -68,3 +68,13 @@ class FailedConnectionError(HTTPException):
             status.HTTP_401_UNAUTHORIZED,
             detail={"error": "unable to successfully connect"},
         )
+
+
+def get_full_exception_name(exception: Exception) -> str:
+    """Get the full exception name
+    i.e. get sqlalchemy.exc.IntegrityError instead of just IntegrityError
+    """
+    module = exception.__class__.__module__
+    if module is None or module == str.__class__.__module__:
+        return exception.__class__.__name__
+    return module + "." + exception.__class__.__name__
