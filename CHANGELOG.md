@@ -25,6 +25,7 @@ The types of changes are:
   - UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 - Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 - Navigation bar for management UI
+- Dataset backend integration for management UI
 
 ### Changed
 
