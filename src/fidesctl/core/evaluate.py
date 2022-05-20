@@ -512,8 +512,8 @@ def evaluate(
     user_taxonomy = parse(manifests_dir)
     taxonomy = Taxonomy.parse_obj(
         {
-            **DEFAULT_TAXONOMY.dict(exclude_unset=True),
             **user_taxonomy.dict(exclude_unset=True),
+            **DEFAULT_TAXONOMY.dict(exclude_unset=True),
         }
     )
 
