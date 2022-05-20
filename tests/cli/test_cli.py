@@ -160,6 +160,24 @@ def test_local_evaluate(
 
 
 @pytest.mark.integration
+def test_local_evaluate_demo_resources(
+    test_invalid_config_path: str, test_cli_runner: CliRunner
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "--local",
+            "-f",
+            test_invalid_config_path,
+            "evaluate",
+            "demo_resources/",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_evaluate_with_key_pass(
     test_config_path: str, test_cli_runner: CliRunner
 ) -> None:

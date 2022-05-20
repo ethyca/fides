@@ -491,6 +491,30 @@ def populate_referenced_keys(
     return taxonomy
 
 
+def merge_taxonomies(
+    primary_taxonomy: Taxonomy, secondary_taxonomy: Taxonomy
+) -> Taxonomy:
+    """
+    Merges the secondary_taxonomy into the primary_taxonomy while
+    preserving all of the existing keys within the primary_taxonomy.
+    """
+    for resource_name in primary_taxonomy.__fields__:
+        # Get the unique set of keys we want to include in the merged taxonomy
+        primary_keys = [
+            resource.fides_key for resource in getattr(primary_taxonomy, resource_name)
+        ]
+        secondary_resources = [
+            resource
+            for resource in getattr(secondary_taxonomy, resource_name)
+            if resource.fides_key not in primary_keys
+        ]
+        # Create a list of all of the resources to go in the merged taxonomy
+        resource_list = getattr(primary_taxonomy, resource_name) + secondary_resources
+        setattr(primary_taxonomy, resource_name, resource_list)
+
+    return primary_taxonomy
+
+
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
@@ -510,12 +534,7 @@ def evaluate(
 
     # Merge the User-defined taxonomy & Default Taxonomy
     user_taxonomy = parse(manifests_dir)
-    taxonomy = Taxonomy.parse_obj(
-        {
-            **user_taxonomy.dict(exclude_unset=True),
-            **DEFAULT_TAXONOMY.dict(exclude_unset=True),
-        }
-    )
+    taxonomy = merge_taxonomies(user_taxonomy, DEFAULT_TAXONOMY)
 
     # Determine which Policies will be evaluated
     policies = taxonomy.policy
