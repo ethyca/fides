@@ -20,7 +20,7 @@ export const datasetApi = createApi({
   tagTypes: ["Dataset"],
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
-      query: () => ({ url: `dataset` }),
+      query: () => ({ url: `dataset/` }),
       providesTags: () => ["Dataset"],
     }),
   }),
