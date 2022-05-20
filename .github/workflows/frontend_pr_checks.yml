@@ -37,3 +37,6 @@ jobs:
 
       - name: Jest test
         run: npm run test:ci
+
+      - name: Build
+        run: npm run export
