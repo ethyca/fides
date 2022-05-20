@@ -1,10 +1,10 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import (
+from fidesctl.cli.options import (  # organization_fides_key_argument,
     dry_flag,
     manifests_dir_argument,
-    organization_fides_key_argument,
+    organization_fides_key_option,
 )
 from fidesctl.cli.utils import with_analytics
 from fidesctl.core import export as _export
@@ -94,7 +94,7 @@ def export_organization(
 @export.command(name="datamap")
 @click.pass_context
 @manifests_dir_argument
-@organization_fides_key_argument
+@organization_fides_key_option
 @dry_flag
 @click.option(
     "--csv",
@@ -105,20 +105,28 @@ def export_organization(
 def export_datamap(
     ctx: click.Context,
     manifests_dir: str,
-    organization_fides_key: str,
+    organization: str,
     dry: bool,
     csv: bool,
 ) -> None:
     """
-    Export a formatted data map to excel using template
+    Export a formatted data map to excel using the fides template.
 
-    The csv flag can be used to output data as csv instead
+    The data map is comprised of an Organization, Systems, and Datasets.
+
+    The default organization is used, however a custom one can be
+    passed if required.
+
+    A custom manifest directory can be provided for the output location.
+
+    The csv flag can be used to output data as csv, while the dry
+    flag can be used to return data to the console instead.
     """
     config = ctx.obj["CONFIG"]
     _export.export_datamap(
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        organization_fides_key=organization_fides_key,
+        organization_fides_key=organization,
         manifests_dir=manifests_dir,
         dry=dry,
         to_csv=csv,
