@@ -13,13 +13,17 @@ const DatasetsTable = ({ datasets }: Props) => {
     <Table size="sm">
       <Thead>
         <Tr>
-          <Th pl={0}>Name</Th>
+          <Th>Name</Th>
+          <Th>Description</Th>
         </Tr>
       </Thead>
       <Tbody>
-        <Tr>
-          <Td>hi</Td>
-        </Tr>
+        {datasets.map((dataset) => (
+          <Tr key={dataset.fides_key}>
+            <Td>{dataset.name}</Td>
+            <Td>{dataset.description}</Td>
+          </Tr>
+        ))}
       </Tbody>
     </Table>
   );
