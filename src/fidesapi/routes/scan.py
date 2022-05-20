@@ -2,17 +2,16 @@
 Contains all of the endpoints required to manage a scan of your resources.
 """
 from enum import Enum
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, Response, status
-from fideslang.models import Organization
+from fastapi import APIRouter, HTTPException, Response, status
+from fideslang.models import Organization, System
 from loguru import logger as log
 from pydantic import BaseModel
 
 from fidesapi.routes.crud import get_resource
 from fidesapi.routes.util import API_PREFIX, unobscure_string
 from fidesapi.sql_models import sql_model_map
-from fidesapi.utils import errors
 from fidesctl.core.system import generate_aws_systems
 
 
@@ -22,8 +21,8 @@ class ScanTypes(str, Enum):
     for a valid scan type
     """
 
-    SYSTEM = "system"
-    DATASET = "dataset"
+    SYSTEM = "systems"
+    DATASET = "datasets"
 
 
 class AWSConfig(BaseModel):
@@ -63,37 +62,62 @@ class ScanRequestPayload(BaseModel):
     scan: Scan
 
 
+class ScannedResponse(BaseModel):
+    """
+    The model to hous the response for scanned infrastructure.
+    """
+
+    scan_results: Optional[List[System]]
+
+
 router = APIRouter(tags=["Scan"], prefix=f"{API_PREFIX}/scan")
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_model=ScannedResponse,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "content": {
+                "application/json": {"example": {"detail": "Unable to perform scan."}}
+            }
+        },
+    },
+)
 async def generate_scan(
     scan_request_payload: ScanRequestPayload, response: Response
 ) -> Dict:
     """
     Kicks off a generate command for fidesctl.
 
-    Starting off, this will only take 'generate system aws'
+    Starting off, this will only generate systems from AWS
 
-    Debate is still up for if one endpoint makes sense or many, might be more
-    difficult to document etc. with all of the config options.
+    Initial plan is to have one endpoint handle scanning different
+    infrastructure (e.g. aws, okta) with separate config options.
 
     Currently follows the same logic as `generate_system_aws` in `system.py`
+
+    Config secrets should be encoded as a minor security precaution.
+    All production deployments should implement HTTPS
     """
     organization = await get_resource(
         sql_model_map["organization"], scan_request_payload.organization_key
     )
     if scan_request_payload.scan.target.lower() == "aws":
+        try:
+            import boto3  # pylint: disable=unused-import
+        except ModuleNotFoundError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Packages not found, ensure aws is included: fidesctl[aws]",
+            )
         log.info("Setting config for AWS")
         generated_systems = generate_aws(
             aws_config=AWSConfig(**scan_request_payload.scan.config.dict()),
             organization=organization,
         )
-
-    response.status_code = (
-        status.HTTP_200_OK if len(generated_systems) > 0 else status.HTTP_204_NO_CONTENT
-    )
-    return {"systems": generated_systems}
+    return {"scan_results": generated_systems}
 
 
 def generate_aws(
@@ -102,6 +126,8 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
+    from botocore.exceptions import ClientError
+
     config = {
         "region_name": aws_config.region_name,
         "aws_access_key_id": unobscure_string(aws_config.aws_access_key_id),
@@ -110,9 +136,11 @@ def generate_aws(
     try:
         log.info("Generating systems from AWS")
         aws_systems = generate_aws_systems(organization=organization, aws_config=config)
+    except ClientError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     except:
-        error = errors.FailedConnectionError()
-        log.bind(error=error.detail["error"]).error("Failed to scan AWS")
-        raise error
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Unable to complete scan"
+        )
 
     return [i.dict(exclude_none=True) for i in aws_systems]

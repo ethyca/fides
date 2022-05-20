@@ -56,20 +56,6 @@ class QueryError(HTTPException):
         )
 
 
-class FailedConnectionError(HTTPException):
-    """
-    To be raised when a connection fails for any reason.
-    Due to the potential for import errors, keeping this
-    generic seems to be a shrewd option at this time.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(
-            status.HTTP_401_UNAUTHORIZED,
-            detail={"error": "unable to successfully connect"},
-        )
-
-
 def get_full_exception_name(exception: Exception) -> str:
     """Get the full exception name
     i.e. get sqlalchemy.exc.IntegrityError instead of just IntegrityError
