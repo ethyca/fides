@@ -25,9 +25,9 @@ def get_resource_type(router: APIRouter) -> str:
 def obscure_string(plaintext: str) -> str:
     "obscures a string as a minor security measure"
 
-    return b64e(zlib.compress(plaintext_string.encode())).decode()
+    return b64e(zlib.compress(plaintext.encode())).decode()
 
 
 def unobscure_string(obscured: str) -> str:
     "unobscures a string as a minor security measure"
-    return zlib.decompress(b64d(obscured_string.encode())).decode()
+    return zlib.decompress(b64d(obscured.encode())).decode()

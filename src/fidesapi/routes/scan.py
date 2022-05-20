@@ -2,7 +2,7 @@
 Contains all of the endpoints required to manage a scan of your resources.
 """
 from enum import Enum
-from typing import Dict, List, Union, cast
+from typing import Dict, List, Union
 
 from fastapi import APIRouter, Response, status
 from fideslang.models import Organization
@@ -48,12 +48,12 @@ class Scan(BaseModel):
     """
     Defines attributes of the scan included in a request.
     """
-    
+
     config: Union[AWSConfig, OktaConfig]
     target: str
-    type: ScanTypeEnum
-    
-    
+    type: ScanTypes
+
+
 class ScanRequestPayload(BaseModel):
     """
     The model for the request body housing scan information.
@@ -65,11 +65,11 @@ class ScanRequestPayload(BaseModel):
 
 router = APIRouter(tags=["Scan"], prefix=f"{API_PREFIX}/scan")
 
-routers = [router]
-
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def generate_scan(scan_resource: Scan, response: Response) -> Dict:
+async def generate_scan(
+    scan_request_payload: ScanRequestPayload, response: Response
+) -> Dict:
     """
     Kicks off a generate command for fidesctl.
 
@@ -80,23 +80,20 @@ async def generate_scan(scan_resource: Scan, response: Response) -> Dict:
 
     Currently follows the same logic as `generate_system_aws` in `system.py`
     """
-
     organization = await get_resource(
-        sql_model_map["organization"], scan_resource.organization_key
+        sql_model_map["organization"], scan_request_payload.organization_key
     )
-    if scan_resource.scan_target.lower() == "aws":
+    if scan_request_payload.scan.target.lower() == "aws":
         log.info("Setting config for AWS")
-        aws_systems = generate_aws(
-            aws_config=AWSConfig(**scan_resource.scan_config),
+        generated_systems = generate_aws(
+            aws_config=AWSConfig(**scan_request_payload.scan.config.dict()),
             organization=organization,
         )
 
     response.status_code = (
-        status.HTTP_200_OK
-        if len(output_list_of_dicts) > 0
-        else status.HTTP_204_NO_CONTENT
+        status.HTTP_200_OK if len(generated_systems) > 0 else status.HTTP_204_NO_CONTENT
     )
-    return {"systems": output_list_of_dicts}
+    return {"systems": generated_systems}
 
 
 def generate_aws(
@@ -119,11 +116,3 @@ def generate_aws(
         raise error
 
     return [i.dict(exclude_none=True) for i in aws_systems]
-
-
-# def generate_okta() -> List[Dict[str, str]]:
-#     return None
-
-
-# def generate_okta() -> List[Dict[str, str]]:
-#     return None

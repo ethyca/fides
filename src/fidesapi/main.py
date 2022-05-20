@@ -31,12 +31,13 @@ CONFIG: FidesctlConfig = get_config()
 
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."
-    routers = crud.routers + visualize.routers + scan.routers
+    routers = crud.routers + visualize.routers
     for router in routers:
         log.debug(f'Adding router to fidesctl: {" ".join(router.tags)}')
         app.include_router(router)
 
     app.include_router(view.router)
+    app.include_router(scan.router)
 
 
 # Configure the routes here so we can generate the openapi json file
