@@ -98,8 +98,8 @@ def include_null_flag(command: Callable) -> Callable:
 def organization_fides_key_option(command: Callable) -> Callable:
     "Add the organization_fides_key option."
     command = click.option(
-        "-o",
-        "--organization",
+        "--org-key",
+        "-k",
         default="default_organization",
         help="The organization_fides_key you wish to export resources for.",
     )(command)

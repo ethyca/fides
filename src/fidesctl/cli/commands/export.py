@@ -1,7 +1,7 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import (  # organization_fides_key_argument,
+from fidesctl.cli.options import (
     dry_flag,
     manifests_dir_argument,
     organization_fides_key_option,
@@ -93,7 +93,12 @@ def export_organization(
 
 @export.command(name="datamap")
 @click.pass_context
-@manifests_dir_argument
+@click.option(
+    "--output-dir",
+    "-d",
+    default=".fides/",
+    help="The output directory for the data map to be exported to.",
+)
 @organization_fides_key_option
 @dry_flag
 @click.option(
@@ -104,8 +109,8 @@ def export_organization(
 @with_analytics
 def export_datamap(
     ctx: click.Context,
-    manifests_dir: str,
-    organization: str,
+    output_dir: str,
+    org_key: str,
     dry: bool,
     csv: bool,
 ) -> None:
@@ -126,8 +131,8 @@ def export_datamap(
     _export.export_datamap(
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        organization_fides_key=organization,
-        manifests_dir=manifests_dir,
+        organization_fides_key=org_key,
+        output_directory=output_dir,
         dry=dry,
         to_csv=csv,
     )

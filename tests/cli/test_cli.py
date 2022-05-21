@@ -245,15 +245,10 @@ def test_evaluate_with_dataset_collection_failed(
 @pytest.mark.parametrize(
     "export_resource", ["system", "dataset", "organization", "datamap"]
 )
-@pytest.mark.parametrize(
-    "manifest_dir",
-    ["demo_resources/", ".fides/"],
-)
 def test_export_resources(
     test_config_path: str,
     test_cli_runner: CliRunner,
     export_resource: str,
-    manifest_dir: str,
 ) -> None:
     """
     Tests that each resource is successfully exported
@@ -266,7 +261,6 @@ def test_export_resources(
             test_config_path,
             "export",
             export_resource,
-            manifest_dir,
             "--dry",
         ],
     )

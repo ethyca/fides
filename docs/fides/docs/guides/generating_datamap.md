@@ -9,7 +9,7 @@ To apply and export the provided `demo_resources`, run the following commands:
 
 ```sh title="Apply and Export Defaults"
 $ fidesctl apply demo_resources/
-$ fidesctl export datamap demo_resources/
+$ fidesctl export datamap --output-dir demo_resources/
 ```
 
 This will export a data map to the `demo_resources/` directory.
@@ -170,7 +170,7 @@ Now that you have added the additional information around privacy notices and da
 
 ```sh title="Apply and Export Defaults"
 $ fidesctl apply demo_resources/
-$ fidesctl export datamap demo_resources/
+$ fidesctl export datamap --output_dir demo_resources/
 ```
 
 ### Populated Fields

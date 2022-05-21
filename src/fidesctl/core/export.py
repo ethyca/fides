@@ -391,7 +391,7 @@ def export_datamap(
     url: str,
     headers: Dict[str, str],
     organization_fides_key: str,
-    manifests_dir: str,
+    output_directory: str,
     dry: bool,
     to_csv: bool,
 ) -> None:
@@ -436,7 +436,7 @@ def export_datamap(
         organization_df = organization_df[1:]
 
         exported_filename = export_datamap_to_excel(
-            organization_df, joined_system_dataset_df, manifests_dir
+            organization_df, joined_system_dataset_df, output_directory
         )
         echo_green(exported_filename + " successfully exported.")
     else:
@@ -448,5 +448,5 @@ def export_datamap(
             for record in output_list:
                 print(record)
         else:
-            exported_filename = export_to_csv(output_list, "datamap", manifests_dir)
+            exported_filename = export_to_csv(output_list, "datamap", output_directory)
             echo_green(exported_filename + " successfully exported.")
