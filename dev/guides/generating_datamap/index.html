@@ -1580,7 +1580,7 @@ You're not viewing the latest version.
 <p>To apply and export the provided <code>demo_resources</code>, run the following commands:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
-$ fidesctl <span class="nb">export</span> datamap demo_resources/
+$ fidesctl <span class="nb">export</span> datamap --output-dir demo_resources/
 </code></pre></div></td></tr></table></div>
 <p>This will export a data map to the <code>demo_resources/</code> directory.</p>
 <h3 id="organization">Organization</h3>
@@ -1810,7 +1810,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <p>Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
-$ fidesctl <span class="nb">export</span> datamap demo_resources/
+$ fidesctl <span class="nb">export</span> datamap --output_dir demo_resources/
 </code></pre></div></td></tr></table></div>
 <h3 id="populated-fields">Populated Fields</h3>
 <p>Opening the new data map will show the previously <code>N/A</code> columns are now populated, resulting in an Article 30-compliant RoPA for one of the two systems defined in <code>demo_resources/</code>.</p>
