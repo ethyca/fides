@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
-from json import loads
+from json import dumps, loads
+from os import getenv
 from typing import Dict, Generator
 
 import pytest
@@ -10,7 +11,7 @@ from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
 from fidesapi import main
-from fidesapi.routes.util import API_PREFIX
+from fidesapi.routes.util import API_PREFIX, obscure_string, unobscure_string
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 
@@ -214,3 +215,47 @@ def test_api_ping(
     monkeypatch.setattr(main, "get_db_health", mock_get_db_health)
     response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
     assert response.status_code == expected_status_code
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "sample_string", ["test1:'as?/<>.,", "!@#$%^&*()-_+=", "1a2b3c4d5e6F7G8H9I0J"]
+)
+def test_obscure_string(sample_string: str) -> None:
+    obscured_string = obscure_string(sample_string)
+    assert sample_string == unobscure_string(obscured_string)
+
+
+EXTERNAL_CONFIG_BODY = {
+    "aws": {
+        "region_name": getenv("AWS_DEFAULT_REGION", ""),
+        "aws_access_key_id": obscure_string(getenv("AWS_ACCESS_KEY_ID", "")),
+        "aws_secret_access_key": obscure_string(getenv("AWS_SECRET_ACCESS_KEY", "")),
+    }
+}
+
+
+@pytest.mark.external
+@pytest.mark.parametrize("scan_type, scan_target", [("systems", "aws")])
+def test_scan(
+    test_config: FidesctlConfig,
+    scan_type: str,
+    scan_target: str,
+    test_client: TestClient,
+) -> None:
+
+    data = {
+        "organization_key": "default_organization",
+        "scan": {
+            "config": EXTERNAL_CONFIG_BODY[scan_target],
+            "target": scan_target,
+            "type": scan_type,
+        },
+    }
+
+    response = test_client.post(
+        test_config.cli.server_url + API_PREFIX + "/scan/",
+        headers=test_config.user.request_headers,
+        data=dumps(data),
+    )
+    assert response.status_code == 200
