@@ -104,3 +104,14 @@ def organization_fides_key_option(command: Callable) -> Callable:
         help="The organization_fides_key you wish to export resources for.",
     )(command)
     return command
+
+
+def output_directory_option(command: Callable) -> Callable:
+    "Add the output directory option"
+    command = click.option(
+        "--output-dir",
+        "-d",
+        default=".fides/",
+        help="The output directory for the data map to be exported to.",
+    )(command)
+    return command

@@ -5,6 +5,7 @@ from fidesctl.cli.options import (
     dry_flag,
     manifests_dir_argument,
     organization_fides_key_option,
+    output_directory_option,
 )
 from fidesctl.cli.utils import with_analytics
 from fidesctl.core import export as _export
@@ -93,12 +94,7 @@ def export_organization(
 
 @export.command(name="datamap")
 @click.pass_context
-@click.option(
-    "--output-dir",
-    "-d",
-    default=".fides/",
-    help="The output directory for the data map to be exported to.",
-)
+@output_directory_option
 @organization_fides_key_option
 @dry_flag
 @click.option(
