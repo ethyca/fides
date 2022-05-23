@@ -236,25 +236,25 @@ EXTERNAL_CONFIG_BODY = {
 
 
 @pytest.mark.external
-@pytest.mark.parametrize("scan_type, scan_target", [("systems", "aws")])
-def test_scan(
+@pytest.mark.parametrize("generate_type, generate_target", [("systems", "aws")])
+def test_generate(
     test_config: FidesctlConfig,
-    scan_type: str,
-    scan_target: str,
+    generate_type: str,
+    generate_target: str,
     test_client: TestClient,
 ) -> None:
 
     data = {
         "organization_key": "default_organization",
-        "scan": {
-            "config": EXTERNAL_CONFIG_BODY[scan_target],
-            "target": scan_target,
-            "type": scan_type,
+        "generate": {
+            "config": EXTERNAL_CONFIG_BODY[generate_target],
+            "target": generate_target,
+            "type": generate_type,
         },
     }
 
     response = test_client.post(
-        test_config.cli.server_url + API_PREFIX + "/scan/",
+        test_config.cli.server_url + API_PREFIX + "/generate/",
         headers=test_config.user.request_headers,
         data=dumps(data),
     )

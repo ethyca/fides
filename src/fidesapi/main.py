@@ -19,7 +19,7 @@ import fidesctl
 from fidesapi import view
 from fidesapi.database import database
 from fidesapi.database.database import get_db_health
-from fidesapi.routes import crud, scan, visualize
+from fidesapi.routes import crud, generate, visualize
 from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
 from fidesapi.utils.errors import get_full_exception_name
 from fidesapi.utils.logger import setup as setup_logging
@@ -37,7 +37,7 @@ def configure_routes() -> None:
         app.include_router(router)
 
     app.include_router(view.router)
-    app.include_router(scan.router)
+    app.include_router(generate.router)
 
 
 # Configure the routes here so we can generate the openapi json file

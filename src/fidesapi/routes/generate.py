@@ -1,5 +1,5 @@
 """
-Contains all of the endpoints required to manage a scan of your resources.
+Contains all of the endpoints required to manage generating resources.
 """
 from enum import Enum
 from typing import Dict, List, Optional, Union
@@ -15,10 +15,10 @@ from fidesapi.sql_models import sql_model_map
 from fidesctl.core.system import generate_aws_systems
 
 
-class ScanTypes(str, Enum):
+class GenerateTypes(str, Enum):
     """
-    Scan Type Enum to capture the discrete possible values
-    for a valid scan type
+    Generate Type Enum to capture the discrete possible values
+    for a valid type of resource to generate.
     """
 
     SYSTEM = "systems"
@@ -43,59 +43,61 @@ class OktaConfig(BaseModel):
     okta_client_token: str
 
 
-class Scan(BaseModel):
+class Generate(BaseModel):
     """
-    Defines attributes of the scan included in a request.
+    Defines attributes for generating resources included in a request.
     """
 
     config: Union[AWSConfig, OktaConfig]
     target: str
-    type: ScanTypes
+    type: GenerateTypes
 
 
-class ScanRequestPayload(BaseModel):
+class GenerateRequestPayload(BaseModel):
     """
-    The model for the request body housing scan information.
+    The model for the request body housing generate information.
     """
 
     organization_key: str
-    scan: Scan
+    generate: Generate
 
 
-class ScannedResponse(BaseModel):
+class GeneratedResponse(BaseModel):
     """
-    The model to hous the response for scanned infrastructure.
+    The model to hous the response for generated infrastructure.
     """
 
-    scan_results: Optional[List[System]]
+    generate_results: Optional[List[System]]
 
 
-router = APIRouter(tags=["Scan"], prefix=f"{API_PREFIX}/scan")
+router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 
 @router.post(
     "/",
     status_code=status.HTTP_200_OK,
-    response_model=ScannedResponse,
+    response_model=GeneratedResponse,
     responses={
         status.HTTP_400_BAD_REQUEST: {
             "content": {
-                "application/json": {"example": {"detail": "Unable to perform scan."}}
+                "application/json": {
+                    "example": {"detail": "Unable to generate resources."}
+                }
             }
         },
     },
 )
-async def generate_scan(
-    scan_request_payload: ScanRequestPayload, response: Response
+async def generate(
+    generate_request_payload: GenerateRequestPayload, response: Response
 ) -> Dict:
     """
-    A multi-purpose endpoint to scan infrastructure and generate Fides
-    resources
+    A multi-purpose endpoint to generate Fides resources based on existing
+    infrastructure
 
     Currently generates Fides resources for the following:
     * AWS: Systems
 
-    In the future, this will be able to scan for other Systems & Datasets,
+    In the future, this will include options for other Systems & Datasets,
     examples include:
     * Okta: Systems
     * Snowflake: Datasets
@@ -103,12 +105,12 @@ async def generate_scan(
     All config secrets should be encoded as a minor security precaution, using the
     `obscure_string` function in `fidesapi.routes.util`
 
-    All production deployments should implement HTTPS for true security
+    All production deployments should implement HTTPS for security purposes
     """
     organization = await get_resource(
-        sql_model_map["organization"], scan_request_payload.organization_key
+        sql_model_map["organization"], generate_request_payload.organization_key
     )
-    if scan_request_payload.scan.target.lower() == "aws":
+    if generate_request_payload.generate.target.lower() == "aws":
         try:
             import boto3  # pylint: disable=unused-import
         except ModuleNotFoundError:
@@ -118,10 +120,10 @@ async def generate_scan(
             )
         log.info("Setting config for AWS")
         generated_systems = generate_aws(
-            aws_config=AWSConfig(**scan_request_payload.scan.config.dict()),
+            aws_config=AWSConfig(**generate_request_payload.generate.config.dict()),
             organization=organization,
         )
-    return {"scan_results": generated_systems}
+    return {"generate_results": generated_systems}
 
 
 def generate_aws(
@@ -144,7 +146,8 @@ def generate_aws(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     except:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Unable to complete scan"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to generate resources",
         )
 
     return [i.dict(exclude_none=True) for i in aws_systems]
