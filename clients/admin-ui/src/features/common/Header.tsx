@@ -1,13 +1,19 @@
 import {
-  Button, Flex,
-  Link, Menu,
-  MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text
+  Button,
+  Flex,
+  Link,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  Stack,
+  Text,
 } from '@fidesui/react';
 import { signOut } from 'next-auth/react';
 import NextLink from 'next/link';
 import React from 'react';
 import { UserIcon } from './Icon';
-
 
 interface HeaderProps {
   username: string;
@@ -29,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
           <img src="/logo.svg" width={83} height={26} alt="Fidesctl Logo" />
         </Link>
       </NextLink>
+      {/* Show this dropdown if not on setup page, otherwise show the "get help from community" cta */}
       <Flex alignItems="center">
         <Menu>
           <MenuButton as={Button} size="sm" variant="ghost">

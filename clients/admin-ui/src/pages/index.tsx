@@ -3,10 +3,8 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import React from 'react';
 import Header from '../features/common/Header';
+import Setup from './setup';
 import { ArrowDownLineIcon } from '../features/common/Icon';
-
-
-
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -19,6 +17,11 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
     <Header username={session && session.username} />
 
     <main>
+      {/* On initial log-in, display setup, otherwise display the below
+      or if they skip display the below */}
+      {/* Redirecting to setup on initial login? */}
+      <Setup />
+
       <Flex
         borderBottom="1px"
         borderTop="1px"
