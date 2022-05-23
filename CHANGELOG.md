@@ -30,6 +30,7 @@ The types of changes are:
 * Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
 * Migrate all endpoints to be prefixed by `/api/v1` [#623](https://github.com/ethyca/fides/issues/623)
 * Allow credentials to be passed to the generate systems from aws functionality via the API [#645](https://github.com/ethyca/fides/pull/645)
+* Noxfiles now use `docker compose` instead of `docker-compose`
 
 ### Developer Experience
 
