@@ -34,9 +34,10 @@ CI_ARGS = "-T" if getenv("CI") else "--user=root"
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
 
 # Reusable Commands
-RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)
+RUN = ("docker", "compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)
 RUN_NO_DEPS = (
-    "docker-compose",
+    "docker",
+    "compose",
     "run",
     "--no-deps",
     "--rm",
@@ -44,4 +45,4 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", IMAGE_NAME)
+START_APP = ("docker", "compose", "up", "-d", IMAGE_NAME)
