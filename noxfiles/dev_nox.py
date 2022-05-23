@@ -28,6 +28,14 @@ def api(session: nox.Session) -> None:
     run_in_background = ("docker-compose", "up", IMAGE_NAME)
     session.run(*run_in_background, external=True)
 
+@nox.session()
+def ui(session: nox.Session) -> None:
+    """Spin up the frontend server in development mode"""
+    npm_install = ("npm", "install")
+    npm_run = ("npm","run", "dev")
+    with session.chdir("clients/admin-ui"):
+        session.run(*npm_install, external=True)
+        session.run(*npm_run, external=True)
 
 @nox.session()
 def cli(session: nox.Session) -> None:

@@ -35,6 +35,7 @@ The types of changes are:
 
 * Replaced `make` with `nox`
 * Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
+* Added starting up the frontend server to `nox`
 
 ### Docs
 
