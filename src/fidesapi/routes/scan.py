@@ -89,17 +89,21 @@ async def generate_scan(
     scan_request_payload: ScanRequestPayload, response: Response
 ) -> Dict:
     """
-    Kicks off a generate command for fidesctl.
+    A multi-purpose endpoint to scan infrastructure and generate Fides
+    resources
 
-    Starting off, this will only generate systems from AWS
+    Currently generates Fides resources for the following:
+    * AWS: Systems
 
-    Initial plan is to have one endpoint handle scanning different
-    infrastructure (e.g. aws, okta) with separate config options.
+    In the future, this will be able to scan for other Systems & Datasets,
+    examples include:
+    * Okta: Systems
+    * Snowflake: Datasets
 
-    Currently follows the same logic as `generate_system_aws` in `system.py`
+    All config secrets should be encoded as a minor security precaution, using the
+    `obscure_string` function in `fidesapi.routes.util`
 
-    Config secrets should be encoded as a minor security precaution.
-    All production deployments should implement HTTPS
+    All production deployments should implement HTTPS for true security
     """
     organization = await get_resource(
         sql_model_map["organization"], scan_request_payload.organization_key
