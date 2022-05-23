@@ -1,28 +1,11 @@
-/**
- * This file is an adaptation of the Fideslang and Fidesctl models.py files
- */
-
-type FidesKey = string;
-
-interface FidesBase {
-  fides_key: FidesKey;
-  organization_fides_key: string;
-  name: string;
-  description: string;
-  // TODO: what date library should we use? once we decide, change this type
-  created_at: string;
-  updated_at: string;
-}
+import {
+  ContactDetails,
+  FidesBase,
+  FidesKey,
+} from "@/features/common/fides-types";
 
 interface DatasetMetadata {
   resource_id?: string;
-}
-
-interface ContactDetails {
-  name: string;
-  address: string;
-  email: string;
-  phone: string;
 }
 
 export interface Dataset extends FidesBase {
@@ -46,6 +29,20 @@ export interface FidesLangBase {
   fields: DatasetField[];
 }
 
-export interface DatasetCollection extends FidesLangBase {}
+export interface DatasetField {
+  name: string;
+  description?: string;
+  data_categories?: FidesKey[];
+  data_qualifier: FidesKey;
+  retention?: string;
+  fields?: DatasetField[];
+}
 
-export interface DatasetField extends FidesLangBase {}
+export interface DatasetCollection {
+  name: string;
+  description?: string;
+  data_categories?: FidesKey[];
+  data_qualifier: FidesKey;
+  retention?: string;
+  fields: DatasetField[];
+}
