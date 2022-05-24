@@ -5,6 +5,7 @@ import { Dataset } from "./types";
 interface Props {
   datasets: Dataset[] | undefined;
 }
+
 const DatasetsTable = ({ datasets }: Props) => {
   if (!datasets) {
     return <div>Empty state</div>;
