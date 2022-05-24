@@ -5,6 +5,7 @@ config sections into a single config.
 
 import toml
 from pydantic import BaseModel
+from typing import Dict
 
 from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
@@ -12,6 +13,7 @@ from fidesctl.core.utils import echo_red
 from .api_settings import APISettings
 from .cli_settings import CLISettings
 from .user_settings import UserSettings
+from .credentials_settings import merge_credentials_environment
 
 
 class FidesctlConfig(BaseModel):
@@ -20,6 +22,7 @@ class FidesctlConfig(BaseModel):
     api: APISettings = APISettings()
     cli: CLISettings = CLISettings()
     user: UserSettings = UserSettings()
+    credentials: Dict[str, Dict] = dict()
 
 
 def get_config(config_path: str = "") -> FidesctlConfig:
@@ -34,6 +37,14 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     try:
         file_location = get_config_path(config_path)
         settings = toml.load(file_location)
+        print(settings)
+
+        # credentials specific logic for populating environment variable configs.
+        # this is done to allow overrides without hard typed pydantic models
+        config_environment_dict = settings.get("credentials", dict())
+        settings["credentials"] = config_environment_dict
+        merge_credentials_environment(credentials_dict=config_environment_dict)
+
         fidesctl_config = FidesctlConfig.parse_obj(settings)
         return fidesctl_config
     except FileNotFoundError:

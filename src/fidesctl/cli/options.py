@@ -93,3 +93,23 @@ def include_null_flag(command: Callable) -> Callable:
         help="Includes attributes that would otherwise be null.",
     )(command)
     return command
+
+
+def credentials_id_option(command: Callable) -> Callable:
+    "Use credentials defined within fidesctl config."
+    command = click.option(
+        "--credentials-id",
+        type=str,
+        help="Use credentials defined within fidesctl config",
+    )(command)
+    return command
+
+
+def connection_string_option(command: Callable) -> Callable:
+    "Use connection string to connect to a database"
+    command = click.option(
+        "--connection-string",
+        type=str,
+        help="Use connection string to connect to a database",
+    )(command)
+    return command

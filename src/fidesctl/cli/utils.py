@@ -186,3 +186,26 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
+
+
+def handle_database_connection_options(
+    ctx: click.Context, connection_string: str, credentials_id: str
+) -> str:
+    """
+    Handles the mutually exclusive database connections options connetion-string and credentials-id.
+    Raises errors if neither or both options are provided
+    """
+    actual_connection_string = connection_string
+    if connection_string and credentials_id:
+        raise click.UsageError(
+            "Illegal usage: connection-string and credentials-id cannot be used together"
+        )
+    if not connection_string and not credentials_id:
+        raise click.UsageError(
+            "Illegal usage: connection-string or credentials-id are required"
+        )
+    if credentials_id:
+        config = ctx.obj["CONFIG"]
+        found_credentials = getattr(config.credentials.database, credentials_id)
+        actual_connection_string = found_credentials.connection_string
+    return actual_connection_string

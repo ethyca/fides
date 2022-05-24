@@ -11,3 +11,7 @@ test_database_name = "fidesctl_test"
 
 [user]
 analytics_opt_out = true
+
+
+[credentials]
+postgres_1 = {connection_string="postgresql+psycopg2://fidesctl:fidesctl@my_cluster.com:5439/fidesctl_test"}
