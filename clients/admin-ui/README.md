@@ -7,7 +7,7 @@ Admin UI for managing Fidesctl.
 1. Run `nox -s api` in top-level `fides` directory
 2. In a new shell, `cd` into `clients/admin-ui`, install via `npm install`, then run `npm run dev`.
 
-   - Alternatively, can just run `nox -s admin_ui` to do both the install and run steps.
+   - Alternatively, can run `nox -s admin_ui` to do both the install and run steps.
 
 3. Navigate to `http://localhost:3000/`.
 
