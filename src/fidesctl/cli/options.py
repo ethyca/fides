@@ -95,6 +95,27 @@ def include_null_flag(command: Callable) -> Callable:
     return command
 
 
+def organization_fides_key_option(command: Callable) -> Callable:
+    "Add the organization_fides_key option."
+    command = click.option(
+        "--org-key",
+        "-k",
+        default="default_organization",
+        help="The organization_fides_key you wish to export resources for.",
+    )(command)
+    return command
+
+
+def output_directory_option(command: Callable) -> Callable:
+    "Add the output directory option"
+    command = click.option(
+        "--output-dir",
+        "-d",
+        default=".fides/",
+        help="The output directory for the data map to be exported to.",
+    )(command)
+    return command
+
 def credentials_id_option(command: Callable) -> Callable:
     "Use credentials defined within fidesctl config."
     command = click.option(
