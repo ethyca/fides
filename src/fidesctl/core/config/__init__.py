@@ -3,17 +3,18 @@ This module is responsible for combining all of the different
 config sections into a single config.
 """
 
+from typing import Dict
+
 import toml
 from pydantic import BaseModel
-from typing import Dict
 
 from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
 
 from .api_settings import APISettings
 from .cli_settings import CLISettings
-from .user_settings import UserSettings
 from .credentials_settings import merge_credentials_environment
+from .user_settings import UserSettings
 
 
 class FidesctlConfig(BaseModel):

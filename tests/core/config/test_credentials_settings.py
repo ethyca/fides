@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from typing import Dict
 from unittest.mock import patch
 
 import pytest
@@ -20,7 +21,7 @@ from fidesctl.core.config.credentials_settings import merge_credentials_environm
 @pytest.mark.unit
 def test_merge_credentials_environment() -> None:
     "Test merging environment variables into a settings dict."
-    credentials_dict = dict()
+    credentials_dict: Dict = dict()
     merge_credentials_environment(credentials_dict)
 
     assert credentials_dict == {
