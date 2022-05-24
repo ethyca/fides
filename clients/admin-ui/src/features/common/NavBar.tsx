@@ -43,7 +43,8 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
 
 const NavBar = () => {
   const { data: session } = useSession();
-  const username: string | any = session?.username;
+  // TODO: what should be displayed if there is no user name?
+  const username = session?.user?.name ?? "";
 
   return (
     <>
