@@ -41,6 +41,7 @@ class DatabaseSettings(FidesSettings):
     DB: str
     PORT: str = "5432"
     TEST_DB: str = "test"
+    ENABLED: bool = True
 
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
     SQLALCHEMY_TEST_DATABASE_URI: Optional[PostgresDsn] = None
@@ -103,6 +104,7 @@ class RedisSettings(FidesSettings):
     DECODE_RESPONSES: bool = True
     DEFAULT_TTL_SECONDS: int = 604800
     DB_INDEX: int
+    ENABLED: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
