@@ -7,7 +7,7 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo, with_analytics
+from fidesctl.cli.utils import pretty_echo, print_divider, with_analytics
 from fidesctl.core import apply as _apply
 from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
@@ -71,6 +71,12 @@ def audit(ctx: click.Context) -> None:
     "--message",
     help="A message that you can supply to describe the context of this evaluation.",
 )
+@click.option(
+    "-a",
+    "--include-audits",
+    is_flag=True,
+    help="Include optional audits for data map attribute compliance.",
+)
 @dry_flag
 @with_analytics
 def evaluate(
@@ -78,6 +84,7 @@ def evaluate(
     manifests_dir: str,
     fides_key: str,
     message: str,
+    include_audits: bool,
     dry: bool,
 ) -> None:
     """
@@ -111,6 +118,22 @@ def evaluate(
         local=config.cli.local_mode,
         dry=dry,
     )
+
+    if include_audits:
+        print_divider()
+        pretty_echo("Auditing Organization Resource Compliance")
+        _audit.audit_organizations(
+            url=config.cli.server_url,
+            headers=config.user.request_headers,
+            exclude_keys=[],
+        )
+        print_divider()
+        pretty_echo("Auditing System Resource Compliance")
+        _audit.audit_systems(
+            url=config.cli.server_url,
+            headers=config.user.request_headers,
+            exclude_keys=[],
+        )
 
 
 @click.command()

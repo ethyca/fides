@@ -186,3 +186,13 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
+
+
+def print_divider(character: str = "-", character_length: int = 10) -> None:
+    """
+    Returns a consistent divider to print to the console for use within fidesctl
+
+    Defaults to using a hyphen of length 10, however this can optionally be
+    overridden as required.
+    """
+    print(character * character_length)
