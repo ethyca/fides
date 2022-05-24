@@ -156,3 +156,7 @@ class NoSuchStrategyException(ValueError):
 
 class MissingConfig(Exception):
     """Custom exception for when no valid configuration file is provided."""
+
+
+class FunctionalityNotConfigured(Exception):
+    """Custom exception for when invoked functionality is unavailable due to configuration."""

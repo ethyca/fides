@@ -1,0 +1,38 @@
+services:
+  fidesops:
+    container_name: fidesops
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 8080
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fidesops
+        read_only: False
+      - /fidesops/src/fidesops.egg-info
+    environment:
+      - FIDESOPS__DEV_MODE=${FIDESOPS__DEV_MODE}
+      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
+      - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
+      - FIDESOPS__DATABASE__ENABLED=false
+      - FIDESOPS__REDIS__ENABLED=false
+  docs:
+    build:
+      context: docs/fidesops/
+      dockerfile: Dockerfile
+    volumes:
+      - ./docs/fidesops:/docs
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"

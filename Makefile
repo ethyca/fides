@@ -43,6 +43,9 @@ reset-db:
 server: compose-build
 	@docker-compose up
 
+server-no-db: compose-build
+	@docker-compose -f docker-compose.no-db.yml up
+
 server-shell: compose-build
 	@docker-compose run $(IMAGE_NAME) /bin/bash
 

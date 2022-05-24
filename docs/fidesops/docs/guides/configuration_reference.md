@@ -30,16 +30,18 @@ The `fidesops.toml` file should specify the following variables:
 | TOML Variable | ENV Variable | Type | Example | Default | Description |
 |---|---|---|---|---|---|
 | `SERVER` | `FIDESOPS__DATABASE__SERVER` | string | postgres.internal | N/A | The networking address for the Fideops Postgres database server |
-| `USER` | `FIDESOPS__DATABASE_USER` | string | postgres | N/A | The database user with which to login to the Fidesops application database |
-| `PASSWORD` | `FIDESOPS__DATABASE_PASSWORD` | string | apassword | N/A | The password with which to login to the Fidesops application database |
+| `USER` | `FIDESOPS__DATABASE__USER` | string | postgres | N/A | The database user with which to login to the Fidesops application database |
+| `PASSWORD` | `FIDESOPS__DATABASE__PASSWORD` | string | apassword | N/A | The password with which to login to the Fidesops application database |
 | `PORT` | `FIDESOPS__DATABASE__PORT` | int | 5432 | 5432 | The port at which the Fidesops application database will be accessible |
-| `DB` | `FIDESOPS__DATABASE_DB` | string | db | N/A | The name of the database to use in the Fidesops application database |
+| `DB` | `FIDESOPS__DATABASE__DB` | string | db | N/A | The name of the database to use in the Fidesops application database |
+| `ENABLED` | `FIDESOPS__DATABASE__ENABLED` | bool | True | True | Whether the application database should be enabled. Only set to false for certain narrow uses of the application that do not require a backing application database. |
 |---|---|---|---|---|---|
 | `HOST` | `FIDESOPS__REDIS__HOST` | string | redis.internal | N/A | The networking address for the Fidesops application Redis cache |
 | `PORT` | `FIDESOPS__REDIS__PORT` | int | 6379 | 6379 | The port at which the Fidesops application cache will be accessible |
 | `PASSWORD` | `FIDESOPS__REDIS__PASSWORD` | string | anotherpassword | N/A | The password with which to login to the Fidesops application cache |
 | `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | 0 | The Fidesops application will use this index in the Redis cache to cache data |
 | `DEFAULT_TTL_SECONDS` | `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` | int | 3600 | 604800 | The number of seconds for which data will live in Redis before automatically expiring |
+| `ENABLED` | `FIDESOPS__REDIS__ENABLED` | bool | True | True | Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache. |
 |---|---|---|---|---|---|
 | `APP_ENCRYPTION_KEY` | `FIDESOPS__SECURITY__APP_ENCRYPTION_KEY` | string | OLMkv91j8DHiDAULnK5Lxx3kSCov30b3 | N/A | The key used to sign Fidesops API access tokens |
 | `CORS_ORIGINS` | `FIDESOPS__SECURITY__CORS_ORIGINS` | List[AnyHttpUrl] | ["https://a-client.com/", "https://another-client.com"/] | N/A | A list of pre-approved addresses of clients allowed to communicate with the Fidesops application server |
@@ -64,6 +66,7 @@ USER="postgres"
 PASSWORD="a-password"
 DB="app"
 TEST_DB="test"
+ENABLED=true
 
 [redis]
 HOST="redis"
@@ -72,6 +75,7 @@ PORT=6379
 CHARSET="utf8"
 DEFAULT_TTL_SECONDS=3600
 DB_INDEX=0
+ENABLED=true
 
 [security]
 APP_ENCRYPTION_KEY="OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
@@ -84,8 +88,8 @@ OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
 TASK_RETRY_COUNT=3
 TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
-REQUIRE_MANUAL_REQUEST_APPROVAL=True
-MASKING_STRICT=True
+REQUIRE_MANUAL_REQUEST_APPROVAL=true
+MASKING_STRICT=true
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.

@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from fidesops.api.v1.api import api_router
+from fidesops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesops.common_exceptions import FunctionalityNotConfigured
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.tasks.scheduled.scheduler import scheduler
@@ -29,21 +31,28 @@ if config.security.CORS_ORIGINS:
     )
 
 app.include_router(api_router)
+for handler in ExceptionHandlers.get_handlers():
+    app.add_exception_handler(FunctionalityNotConfigured, handler)
 
 
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("****************fidesops****************")
-    logger.info("Running any pending DB migrations...")
-    init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    if config.database.ENABLED:
+        # don't run db migrations if database is disabled
+        logger.info("Running any pending DB migrations...")
+        init_db(config.database.SQLALCHEMY_DATABASE_URI)
+
     scheduler.start()
 
-    logger.info("Starting scheduled request intake...")
-    initiate_scheduled_request_intake()
+    if config.database.ENABLED:
+        # don't schedule request intake if database is disabled
+        logger.info("Starting scheduled request intake...")
+        initiate_scheduled_request_intake()
 
     logger.info("Starting web server...")
     uvicorn.run(
-        "src.fidesops.main:app",
+        "fidesops.main:app",
         host="0.0.0.0",
         port=8080,
         log_config=None,
