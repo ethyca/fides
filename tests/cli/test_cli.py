@@ -167,6 +167,24 @@ def test_local_evaluate(
 
 
 @pytest.mark.integration
+def test_local_evaluate_demo_resources(
+    test_invalid_config_path: str, test_cli_runner: CliRunner
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "--local",
+            "-f",
+            test_invalid_config_path,
+            "evaluate",
+            "demo_resources/",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 def test_evaluate_with_key_pass(
     test_config_path: str, test_cli_runner: CliRunner
 ) -> None:
@@ -253,7 +271,9 @@ def test_evaluate_with_dataset_collection_failed(
     "export_resource", ["system", "dataset", "organization", "datamap"]
 )
 def test_export_resources(
-    test_config_path: str, test_cli_runner: CliRunner, export_resource: str
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    export_resource: str,
 ) -> None:
     """
     Tests that each resource is successfully exported
@@ -266,7 +286,6 @@ def test_export_resources(
             test_config_path,
             "export",
             export_resource,
-            "demo_resources/",
             "--dry",
         ],
     )

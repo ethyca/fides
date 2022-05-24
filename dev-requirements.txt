@@ -14,4 +14,4 @@ sqlalchemy-stubs
 types-PyYAML
 types-requests
 types-toml
-xenon==0.7.3
+xenon==0.9.0
