@@ -116,6 +116,7 @@ def output_directory_option(command: Callable) -> Callable:
     )(command)
     return command
 
+
 def credentials_id_option(command: Callable) -> Callable:
     "Use credentials defined within fidesctl config."
     command = click.option(
