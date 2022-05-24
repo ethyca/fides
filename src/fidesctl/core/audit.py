@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from fideslang.models import DataSubject, DataUse, Organization, System
 
+from fidesctl.cli.utils import pretty_echo
 from fidesctl.core.api_helpers import get_server_resource, list_server_resources
 from fidesctl.core.utils import echo_green, echo_red
 
@@ -23,10 +24,10 @@ def audit_systems(
     system_resources = list_server_resources(
         url, headers, "system", exclude_keys=exclude_keys
     )
-
+    print(f"Found {len(system_resources)} System resource(s) to audit...")
     audit_findings = 0
     for system in system_resources:
-        print(f"Auditing System: {system.name}")
+        pretty_echo(f"Auditing System: {system.name}")
         new_findings = validate_system_attributes(system, url, headers)
         audit_findings = audit_findings + new_findings
 
@@ -35,7 +36,7 @@ def audit_systems(
             f"{audit_findings} issue(s) were detected in auditing system completeness."
         )
     else:
-        echo_green("All systems go!")
+        echo_green("All audited system resource(s) compliant!")
 
 
 def validate_system_attributes(
@@ -78,8 +79,11 @@ def audit_data_use_attributes(data_use: DataUse, system_name: str) -> int:
     data_use_list = ["recipients", "legal_basis", "special_category"]
     findings = 0
     for attribute in data_use_list:
-        if getattr(data_use, attribute) is None:
-            echo_red(f"{data_use.fides_key} missing {attribute} in {system_name}.")
+        attribute_is_set = getattr(data_use, attribute) is not None
+        compliance_messaging(
+            attribute_is_set, data_use.fides_key, attribute, system_name
+        )
+        if not attribute_is_set:
             findings += 1
     return findings
 
@@ -91,10 +95,25 @@ def audit_data_subject_attributes(data_subject: DataSubject, system_name: str) -
     data_subject_list = ["rights", "automated_decisions_or_profiling"]
     findings = 0
     for attribute in data_subject_list:
-        if getattr(data_subject, attribute) is None:
-            echo_red(f"{data_subject.fides_key} missing {attribute} in {system_name}.")
+        attribute_is_set = getattr(data_subject, attribute) is not None
+        compliance_messaging(
+            attribute_is_set, data_subject.fides_key, attribute, system_name
+        )
+        if not attribute_is_set:
             findings += 1
     return findings
+
+
+def compliance_messaging(
+    compliant: bool, fides_key: str, attribute: str, resource_name: str
+) -> None:
+    """
+    Prints the positive confirmation message for a data map compliant attribute.
+    """
+    if compliant:
+        print(f"{attribute} for {fides_key} in {resource_name} is compliant")
+    else:
+        echo_red(f"{fides_key} missing {attribute} in {resource_name}.")
 
 
 def audit_organizations(
@@ -109,7 +128,7 @@ def audit_organizations(
     organization_resources = list_server_resources(
         url, headers, "organization", exclude_keys=exclude_keys
     )
-
+    print(f"Found {len(organization_resources)} Organization resource(s) to audit...")
     audit_findings = 0
     for organization in organization_resources:
         print(f"Auditing Organization: {organization.name}")
@@ -120,7 +139,7 @@ def audit_organizations(
             f"{audit_findings} issue(s) were detected in auditing organization completeness."
         )
     else:
-        echo_green("All organizations fully compliant!")
+        echo_green("All audited organization resource(s) compliant!")
 
 
 def audit_organization_attributes(organization: Organization) -> int:
@@ -137,8 +156,11 @@ def audit_organization_attributes(organization: Organization) -> int:
     ]
     audit_findings = 0
     for attribute in organization_attributes:
-        if getattr(organization, attribute) is None:
-            echo_red(f"{organization.name} missing {attribute}.")
+        attribute_is_set = getattr(organization, attribute) is not None
+        compliance_messaging(
+            attribute_is_set, organization.fides_key, attribute, organization.name
+        )
+        if not attribute_is_set:
             audit_findings += 1
 
     return audit_findings
