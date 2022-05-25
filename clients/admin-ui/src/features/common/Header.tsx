@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
             <MenuDivider />
             <MenuItem
               px={3}
-              _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+              _focus={{ color: "complimentary.500", bg: "gray.100" }}
               onClick={() => signOut()}
             >
               Sign out

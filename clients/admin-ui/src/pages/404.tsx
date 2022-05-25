@@ -1,6 +1,6 @@
-import { Box, Button, Heading, Stack, Text } from '@fidesui/react';
-import Head from 'next/head';
-import NextLink from 'next/link';
+import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
+import Head from "next/head";
+import NextLink from "next/link";
 
 const Custom404 = () => (
   <div>
@@ -16,9 +16,9 @@ const Custom404 = () => (
           bg="white"
           py={16}
           px={[0, 0, 35]}
-          width={['100%', '100%', 640]}
+          width={["100%", "100%", 640]}
           borderRadius={4}
-          position={['absolute', 'absolute', 'inherit']}
+          position={["absolute", "absolute", "inherit"]}
           top={0}
           bottom={0}
           left={0}
@@ -43,15 +43,15 @@ const Custom404 = () => (
                   width={320}
                   as="a"
                   bg="primary.800"
-                  _hover={{ bg: 'primary.400' }}
-                  _active={{ bg: 'primary.500' }}
+                  _hover={{ bg: "primary.400" }}
+                  _active={{ bg: "primary.500" }}
                   colorScheme="primary"
                 >
                   Return to homepage
                 </Button>
               </NextLink>
             </Stack>
-            <Box display={[null, null, 'none']}>
+            <Box display={[null, null, "none"]}>
               <img
                 src="/logo.svg"
                 alt="FidesUI logo"
@@ -61,13 +61,8 @@ const Custom404 = () => (
             </Box>
           </Stack>
         </Box>
-        <Box display={['none', 'none', 'inherit']}>
-          <img
-            src="/logo.svg"
-            alt="FidesUI logo"
-            width="124px"
-            height="38px"
-          />
+        <Box display={["none", "none", "inherit"]}>
+          <img src="/logo.svg" alt="FidesUI logo" width="124px" height="38px" />
         </Box>
       </Stack>
     </main>

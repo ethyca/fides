@@ -54,7 +54,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         </Heading>
       </Box>
     </main>
-  </div>
+  </Layout>
 );
 
 // TODO: replace auth https://github.com/ethyca/fidesui/issues/2
