@@ -2,9 +2,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
-import { datasetApi } from "@/features/dataset";
-import { systemApi } from "@/features/system";
-import { reducer as userReducer } from "@/features/user";
+import { datasetApi } from "~/features/dataset";
+import { systemApi } from "~/features/system";
+import { reducer as userReducer } from "~/features/user";
 
 const makeStore = () => {
   const store = configureStore({
