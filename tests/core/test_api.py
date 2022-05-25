@@ -11,7 +11,7 @@ from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
 from fidesapi import main
-from fidesapi.routes.util import API_PREFIX, obscure_string, unobscure_string
+from fidesapi.routes.util import API_PREFIX, obscure_string
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 
@@ -217,15 +217,6 @@ def test_api_ping(
     assert response.status_code == expected_status_code
 
 
-@pytest.mark.unit
-@pytest.mark.parametrize(
-    "sample_string", ["test1:'as?/<>.,", "!@#$%^&*()-_+=", "1a2b3c4d5e6F7G8H9I0J"]
-)
-def test_obscure_string(sample_string: str) -> None:
-    obscured_string = obscure_string(sample_string)
-    assert sample_string == unobscure_string(obscured_string)
-
-
 EXTERNAL_CONFIG_BODY = {
     "aws": {
         "region_name": getenv("AWS_DEFAULT_REGION", ""),
@@ -258,4 +249,5 @@ def test_generate(
         headers=test_config.user.request_headers,
         data=dumps(data),
     )
+    assert len(loads(response.text)["generate_results"]) > 0
     assert response.status_code == 200
