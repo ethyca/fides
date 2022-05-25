@@ -28,6 +28,7 @@ const Home: NextPage = () => {
       const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
       return () => clearTimeout(closeAlertTimer)
     }
+    return () => false
   }, [alert])
   
   return (
