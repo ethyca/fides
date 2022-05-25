@@ -5,14 +5,22 @@ from enum import Enum
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Response, status
-from fideslang.models import Organization, System
+from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 from fidesapi.routes.crud import get_resource
 from fidesapi.routes.util import API_PREFIX, unobscure_string
 from fidesapi.sql_models import sql_model_map
 from fidesctl.core.system import generate_aws_systems
+
+
+class ValidTargets(str, Enum):
+    """
+    Validation of targets attempted to generate resources from
+    """
+
+    AWS = "aws"
 
 
 class GenerateTypes(str, Enum):
@@ -49,8 +57,21 @@ class Generate(BaseModel):
     """
 
     config: Union[AWSConfig, OktaConfig]
-    target: str
+    target: ValidTargets
     type: GenerateTypes
+
+    @root_validator()
+    @classmethod
+    def target_matches_type(cls, values: Dict) -> Dict:
+        """
+        Ensures that both of the target and type attributes are a valid
+        pair (returning an error on an ('aws', 'dataset') as an example).
+        """
+        target_type = (values.get("target"), values.get("type"))
+        valid_target_types = [("aws", "systems")]
+        if target_type not in valid_target_types:
+            raise ValueError("Target and Type are not a valid match")
+        return values
 
 
 class GenerateRequestPayload(BaseModel):
@@ -64,10 +85,10 @@ class GenerateRequestPayload(BaseModel):
 
 class GeneratedResponse(BaseModel):
     """
-    The model to hous the response for generated infrastructure.
+    The model to house the response for generated infrastructure.
     """
 
-    generate_results: Optional[List[System]]
+    generate_results: Optional[List[Union[Dataset, System]]]
 
 
 router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
