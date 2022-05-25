@@ -95,3 +95,4 @@ HEALTH = "/health"
 # DRP
 DRP_EXERCISE = "/drp/exercise"
 DRP_STATUS = "/drp/status"
+DRP_DATA_RIGHTS = "/drp/data-rights"

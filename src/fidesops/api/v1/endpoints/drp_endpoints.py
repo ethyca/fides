@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Security
@@ -17,9 +17,14 @@ from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.core.config import config
-from fidesops.models.policy import Policy
+from fidesops.models.policy import DrpAction, Policy
 from fidesops.models.privacy_request import PrivacyRequest
-from fidesops.schemas.drp_privacy_request import DrpIdentity, DrpPrivacyRequestCreate
+from fidesops.schemas.drp_privacy_request import (
+    DRP_VERSION,
+    DrpDataRightsResponse,
+    DrpIdentity,
+    DrpPrivacyRequestCreate,
+)
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
@@ -150,4 +155,25 @@ def get_request_status_drp(
         request_id=request.id,
         received_at=request.requested_at,
         status=DrpFidesopsMapper.map_status(request.status),
+    )
+
+
+@router.get(
+    urls.DRP_DATA_RIGHTS,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.POLICY_READ])],
+    response_model=DrpDataRightsResponse,
+)
+def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsResponse:
+    """
+    Query all policies and determine the list of DRP actions that are attached to existing policies.
+    """
+
+    logger.info("Fetching available DRP data rights")
+    actions: List[DrpAction] = [
+        item.drp_action
+        for item in db.query(Policy.drp_action).filter(Policy.drp_action.isnot(None))
+    ]
+
+    return DrpDataRightsResponse(
+        version=DRP_VERSION, api_base=None, actions=actions, user_relationships=None
     )
