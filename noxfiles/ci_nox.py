@@ -140,6 +140,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
         "scan",
         "dataset",
         "db",
+        "--connection-string"
         "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
     )
     session.run(*run_command, external=True)
