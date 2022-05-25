@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "clients"
+      - "clients/**"
       - ".github/workflows/frontend_pr_checks.yml"
 
 env:
