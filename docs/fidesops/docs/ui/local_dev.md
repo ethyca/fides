@@ -1,10 +1,7 @@
-# Admin UI
 
-Instructions on running the Admin UI and generating users for local development.
+## Local Development
 
-## Running Locally
-
-To get started locally, clone the [FidesOps repository](https://github.com/ethyca/fidesops/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
+To test the UI locally, clone the [FidesOps repository](https://github.com/ethyca/fidesops/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
 ### Creating the root user
 
 In the top-level `fidesops` directory, run `make user`.
@@ -24,6 +21,14 @@ From the root `fidesops` directory, run the following:
 
 This will navigate you to the `admin-ui` directory, and run the development environment.
 
-Visit `http://localhost:3000/` in your browser, and provide user credentials to log in. 
+Visit `http://localhost:3000/` in your browser, and provide your user credentials to log in. 
 
-!!! tip "While your [Root Account](#creating-the-root-user) can be used to access the UI, additional [endpoints](#managing-users) are available to create and manage individual users for production-grade deployments."
+## Authentication
+
+To enable stable authentication you must supply a `NEXTAUTH_SECRET` environment
+variable. The best way to do this is by creating a `.env.local` file, which Next
+will automatically pick up:
+
+```bash
+echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
+```

@@ -29,6 +29,7 @@ The types of changes are:
 ### Docs
 
 * Updated documentation for the user management ui [#530](https://github.com/ethyca/fidesops/pull/530)
+* Added documentation for the privacy center [#549](https://github.com/ethyca/fidesops/pull/549)
 
 ## [1.5.0](https://github.com/ethyca/fidesops/compare/1.4.2...1.5.0) - 2022-05-18
 

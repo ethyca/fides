@@ -41,8 +41,10 @@ nav:
         - Sentry: saas_connectors/example_configs/sentry.md
         - Stripe: saas_connectors/example_configs/stripe.md
   - Fidesops UI:
-      - Admin UI: guides/admin_ui.md
-      - User Management: guides/user_management.md
+      - Overview: ui/overview.md
+      - Privacy Center: ui/privacy_center.md
+      - Admin UI: 
+        - User Management: ui/user_management.md
   - Deployment Guide: deployment.md
   - Glossary: glossary.md
   - API: api/index.md
