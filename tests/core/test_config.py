@@ -22,7 +22,7 @@ def test_get_config() -> None:
     assert config.cli.server_url == "http://fidesctl:8080"
     assert (
         config.credentials["postgres_1"]["connection_string"]
-        == "postgresql+psycopg2://fidesctl:fidesctl@my_cluster.com:5439/fidesctl_test"
+        == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     )
 
 

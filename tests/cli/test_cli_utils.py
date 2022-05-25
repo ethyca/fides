@@ -126,5 +126,5 @@ def test_handle_database_credentials_returns_connection_string(
     )
     assert (
         connection_string
-        == "postgresql+psycopg2://fidesctl:fidesctl@my_cluster.com:5439/fidesctl_test"
+        == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     )
