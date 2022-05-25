@@ -3,6 +3,9 @@
 import click
 
 from fidesctl.cli.options import (
+    aws_access_key_id_option,
+    aws_region_option,
+    aws_secret_access_key_option,
     connection_string_option,
     coverage_threshold_option,
     credentials_id_option,
@@ -11,6 +14,7 @@ from fidesctl.cli.options import (
     okta_token_option,
 )
 from fidesctl.cli.utils import (
+    handle_aws_credentials_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
     with_analytics,
@@ -127,12 +131,20 @@ def scan_system(ctx: click.Context) -> None:
 @scan_system.command(name="aws")
 @click.pass_context
 @manifests_dir_argument
+@credentials_id_option
+@aws_access_key_id_option
+@aws_secret_access_key_option
+@aws_region_option
 @click.option("-o", "--organization", type=str, default="default_organization")
 @coverage_threshold_option
 @with_analytics
 def scan_system_aws(
     ctx: click.Context,
     manifests_dir: str,
+    credentials_id: str,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
     organization: str,
     coverage_threshold: int,
 ) -> None:
@@ -144,11 +156,19 @@ def scan_system_aws(
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
-
     config = ctx.obj["CONFIG"]
+    aws_config = handle_aws_credentials_options(
+        fides_config=config,
+        access_key_id=access_key_id,
+        secret_access_key=secret_access_key,
+        region=region,
+        credentials_id=credentials_id,
+    )
+
     _system.scan_system_aws(
         manifest_dir=manifests_dir,
         organization_key=organization,
+        aws_config=aws_config,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,

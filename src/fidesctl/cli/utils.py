@@ -26,6 +26,7 @@ from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.credentials_settings import (
+    get_config_aws_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
@@ -251,3 +252,43 @@ def handle_okta_credentials_options(
             )
         okta_config = okta_credentials.dict()
     return okta_config
+
+
+def handle_aws_credentials_options(
+    fides_config: FidesctlConfig,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
+    credentials_id: str,
+) -> Dict[str, str]:
+    """
+    Handles the mutually exclusive aws connections options access-key/access-key-id/region
+    and credentials-id. It is allowed to provide neither as there is support for environment
+    variables.
+    """
+    aws_config = dict()
+    if access_key_id or secret_access_key or region:
+        if not access_key_id or not secret_access_key or not region:
+            raise click.UsageError(
+                "Illegal usage: access-key-id, secret_access_key and region must be used together"
+            )
+        if credentials_id:
+            raise click.UsageError(
+                "Illegal usage: access-key-id/secret_access_key/region and credentials-id cannot be used together"
+            )
+        aws_config = {
+            "aws_access_key_id": access_key_id,
+            "aws_secret_access_key": secret_access_key,
+            "region_name": region,
+        }
+    if credentials_id:
+        aws_credentials = get_config_aws_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not aws_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        aws_config = aws_credentials.dict()
+    return aws_config

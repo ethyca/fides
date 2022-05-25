@@ -3,6 +3,9 @@
 import click
 
 from fidesctl.cli.options import (
+    aws_access_key_id_option,
+    aws_region_option,
+    aws_secret_access_key_option,
     connection_string_option,
     credentials_id_option,
     include_null_flag,
@@ -10,6 +13,7 @@ from fidesctl.cli.options import (
     okta_token_option,
 )
 from fidesctl.cli.utils import (
+    handle_aws_credentials_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
     with_analytics,
@@ -118,6 +122,10 @@ def generate_system(ctx: click.Context) -> None:
 @generate_system.command(name="aws")
 @click.pass_context
 @click.argument("output_filename", type=str)
+@credentials_id_option
+@aws_access_key_id_option
+@aws_secret_access_key_option
+@aws_region_option
 @include_null_flag
 @click.option("-o", "--organization", type=str, default="default_organization")
 @with_analytics
@@ -126,6 +134,10 @@ def generate_system_aws(
     output_filename: str,
     include_null: bool,
     organization: str,
+    credentials_id: str,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
 ) -> None:
     """
     Connect to an aws account by leveraging a boto3 environment variable
@@ -135,12 +147,20 @@ def generate_system_aws(
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.
     """
-
     config = ctx.obj["CONFIG"]
+    aws_config = handle_aws_credentials_options(
+        fides_config=config,
+        access_key_id=access_key_id,
+        secret_access_key=secret_access_key,
+        region=region,
+        credentials_id=credentials_id,
+    )
+
     _system.generate_system_aws(
         file_name=output_filename,
         include_null=include_null,
         organization_key=organization,
+        aws_config=aws_config,
         url=config.cli.server_url,
         headers=config.user.request_headers,
     )

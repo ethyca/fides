@@ -100,21 +100,54 @@ The `generate` command can connect to an AWS account and automatically generate 
 
 ### Providing Credentials
 
-Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
+AWS credentials can be provided through command options, environment variables or the fides config. 
 
-We can define our credentials directly as environment variables:
+#### Command Options
+Credentials can be directly supplied in your command using the `access_key_id`, `secret_access_key`, and `region` options. 
+```sh
+...
+--access_key_id "<my_access_key_id>"
+--secret_access_key "<my_secret_access_key>"
+--region "us-east-1"
+...
+```
+
+#### Environment Variables
+Credentials environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
+
+The simplest way to authenticate through environment variables is to set access key and access key id:
 ```sh
 export AWS_ACCESS_KEY_ID="<my_access_key_id>"
 export AWS_SECRET_ACCESS_KEY="<my_access_key>"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-Or reference a profile through an environment variable:
+It is also possible to reference a profile:
 ```sh
 export AWS_PROFILE="my_profile_1"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
+#### Fides Config
+Credentials can be defined within your fides config under the credentials section.
+
+```sh
+[credentials]
+my_aws_credentials = {aws_access_key_id="<my_aws_access_key_id>", aws_secret_access_key="<my_aws_secret_access_key>", region_name="us-east-1"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_aws_credentials"
+...
+```
+
+It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the token above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
+```
 ### Required Permissions
 
 The identity which is authenticated must be allowed to invoke the following actions:
@@ -250,7 +283,7 @@ Your command can then reference the key defined in your config.
 
 It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the token above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="my_okta_client_token"
+export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
 ```
 
 ### Generating Datasets
@@ -290,7 +323,6 @@ dataset:
 The `scan` command can then connect to your Okta account and compare its applications to your already defined datasets:
 ```sh
 ./venv/bin/fidesctl scan dataset okta \
-  https://dev-78908748.okta.com \
   fides_resources/okta_datasets.yml
 ```
 

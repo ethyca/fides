@@ -401,7 +401,7 @@ def test_scan_dataset_db_input_credentials_id(
 
 
 @pytest.mark.external
-def test_generate_system_aws(
+def test_generate_system_aws_environment_credentials(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
@@ -416,7 +416,9 @@ def test_generate_system_aws(
 
 
 @pytest.mark.external
-def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_scan_system_aws_environment_credentials(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
     result = test_cli_runner.invoke(
         cli,
         [
@@ -434,7 +436,120 @@ def test_scan_system_aws(test_config_path: str, test_cli_runner: CliRunner) -> N
 
 
 @pytest.mark.external
-def test_generate_dataset_okta_input_credentials(
+def test_generate_system_aws_input_credential_options(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
+    tmp_file = tmpdir.join("system.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "system",
+            "aws",
+            f"{tmp_file}",
+            "--access_key_id",
+            os.environ["AWS_ACCESS_KEY_ID"],
+            "--secret_access_key",
+            os.environ["AWS_SECRET_ACCESS_KEY"],
+            "--region",
+            os.environ["AWS_DEFAULT_REGION"],
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_scan_system_aws_input_credential_options(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "system",
+            "aws",
+            "--coverage-threshold",
+            "0",
+            "--access_key_id",
+            os.environ["AWS_ACCESS_KEY_ID"],
+            "--secret_access_key",
+            os.environ["AWS_SECRET_ACCESS_KEY"],
+            "--region",
+            os.environ["AWS_DEFAULT_REGION"],
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_generate_system_aws_input_credentials_id(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
+    os.environ["FIDESCTL__CREDENTIALS__AWS_1__AWS_ACCESS_KEY_ID"] = os.environ[
+        "AWS_ACCESS_KEY_ID"
+    ]
+    os.environ["FIDESCTL__CREDENTIALS__AWS_1__AWS_SECRET_ACCESS_KEY"] = os.environ[
+        "AWS_SECRET_ACCESS_KEY"
+    ]
+    tmp_file = tmpdir.join("system.yml")
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "system",
+            "aws",
+            f"{tmp_file}",
+            "--credentials-id",
+            "aws_1",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_scan_system_aws_input_credentials_id(
+    test_config_path: str, test_cli_runner: CliRunner
+) -> None:
+    os.environ["FIDESCTL__CREDENTIALS__AWS_1__AWS_ACCESS_KEY_ID"] = os.environ[
+        "AWS_ACCESS_KEY_ID"
+    ]
+    os.environ["FIDESCTL__CREDENTIALS__AWS_1__AWS_SECRET_ACCESS_KEY"] = os.environ[
+        "AWS_SECRET_ACCESS_KEY"
+    ]
+
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "scan",
+            "system",
+            "aws",
+            "--coverage-threshold",
+            "0",
+            "--credentials-id",
+            "aws_1",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_generate_dataset_okta_input_credential_options(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
@@ -461,7 +576,7 @@ def test_generate_dataset_okta_input_credentials(
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_input_credentials(
+def test_scan_dataset_okta_input_credential_options(
     test_config_path: str, test_cli_runner: CliRunner
 ) -> None:
     token = os.environ["OKTA_CLIENT_TOKEN"]

@@ -195,3 +195,84 @@ def test_handle_okta_credentials_options_returns_input_dict(
         credentials_id=input_credentials_id,
     )
     assert okta_config == {"orgUrl": input_org_url, "token": input_token}
+
+
+def test_handle_aws_credentials_options_both_raises(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if both credentials options are supplied."
+    with pytest.raises(click.UsageError):
+        input_access_key = "access_key"
+        input_access_key_id = "access_key_id"
+        input_region = "us-east-1"
+        input_credentials_id = "aws_1"
+        utils.handle_aws_credentials_options(
+            fides_config=test_config,
+            access_key_id=input_access_key_id,
+            secret_access_key=input_access_key,
+            region=input_region,
+            credentials_id=input_credentials_id,
+        )
+
+
+def test_handle_aws_credentials_options_config_dne_raises(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if credentials dont exist"
+    with pytest.raises(click.UsageError):
+        input_access_key = ""
+        input_access_key_id = ""
+        input_region = ""
+        input_credentials_id = "UNKNOWN"
+        utils.handle_aws_credentials_options(
+            fides_config=test_config,
+            access_key_id=input_access_key_id,
+            secret_access_key=input_access_key,
+            region=input_region,
+            credentials_id=input_credentials_id,
+        )
+
+
+def test_handle_aws_credentials_options_returns_config_dict(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if credentials dont exist"
+    input_access_key = ""
+    input_access_key_id = ""
+    input_region = ""
+    input_credentials_id = "aws_1"
+    aws_config = utils.handle_aws_credentials_options(
+        fides_config=test_config,
+        access_key_id=input_access_key_id,
+        secret_access_key=input_access_key,
+        region=input_region,
+        credentials_id=input_credentials_id,
+    )
+
+    assert aws_config == {
+        "aws_access_key_id": "redacted_id_override_in_tests",
+        "aws_secret_access_key": "redacted_override_in_tests",
+        "region_name": "us-east-1",
+    }
+
+
+def test_handle_aws_credentials_options_returns_input_dict(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if credentials dont exist"
+    input_access_key = "access_key"
+    input_access_key_id = "access_key_id"
+    input_region = "us-east-1"
+    input_credentials_id = ""
+    aws_config = utils.handle_aws_credentials_options(
+        fides_config=test_config,
+        access_key_id=input_access_key_id,
+        secret_access_key=input_access_key,
+        region=input_region,
+        credentials_id=input_credentials_id,
+    )
+    assert aws_config == {
+        "aws_access_key_id": input_access_key_id,
+        "aws_secret_access_key": input_access_key,
+        "region_name": input_region,
+    }

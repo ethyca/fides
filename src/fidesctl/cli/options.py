@@ -138,20 +138,50 @@ def connection_string_option(command: Callable) -> Callable:
 
 
 def okta_org_url_option(command: Callable) -> Callable:
-    "Use org url option to connect to okta. Requires include --org-url and --token"
+    "Use org url option to connect to okta. Requires options --org-url and --token"
     command = click.option(
         "--org-url",
         type=str,
-        help="Use org url option to connect to okta. Requires include --org-url and --token",
+        help="Use org url option to connect to okta. Requires options --org-url and --token",
     )(command)
     return command
 
 
 def okta_token_option(command: Callable) -> Callable:
-    "Use token option to connect to okta. Requires include --org-url and --token"
+    "Use token option to connect to okta. Requires options --org-url and --token"
     command = click.option(
         "--token",
         type=str,
-        help="Use token option to connect to okta. Requires include --org-url and --token",
+        help="Use token option to connect to okta. Requires options --org-url and --token",
+    )(command)
+    return command
+
+
+def aws_access_key_id_option(command: Callable) -> Callable:
+    "Use access key id option to connect to aws. Requires options --access_key_id, access_key and --region"
+    command = click.option(
+        "--access_key_id",
+        type=str,
+        help="Use access key id option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
+    )(command)
+    return command
+
+
+def aws_secret_access_key_option(command: Callable) -> Callable:
+    "Use access key option to connect to aws. Requires options --access_key_id, --secret_access_key and --region"
+    command = click.option(
+        "--secret_access_key",
+        type=str,
+        help="Use access key option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
+    )(command)
+    return command
+
+
+def aws_region_option(command: Callable) -> Callable:
+    "Use region option to connect to aws. Requires options --access_key_id, access_key and --region"
+    command = click.option(
+        "--region",
+        type=str,
+        help="Use region option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
     )(command)
     return command
