@@ -206,7 +206,19 @@ The `generate` command can connect to an Okta admin account and automatically ge
 
 ### Providing Credentials
 
-Authentication is managed through environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
+Okta credentials can be provided through command options, environment variables or the fides config. 
+
+#### Command Options
+Credentials can be directly supplied in your command using the `org-url` and `token` options. 
+```sh
+...
+--token "<my_okta_client_token>"
+--org-url "<my_okta_org_url>"
+...
+```
+
+#### Environment Variables
+Credentials environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
 
 The simplest way to authenticate is by using a client token:
 ```sh
@@ -221,12 +233,31 @@ export OKTA_CLIENT_SCOPES="<my_scope_1,my_scope_2>"
 export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
 ```
 
+#### Fides Config
+Credentials can be defined within your fides config under the credentials section.
+
+```sh
+[credentials]
+my_okta_credentials = {orgUrl="<my_okta_org_url>" token="<my_okta_client_token>"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_okta_credentials"
+...
+```
+
+It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the token above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="my_okta_client_token"
+```
+
 ### Generating Datasets
 
 Once credentials have been configured we can invoke the `generate dataset okta` command:
 ```sh
-./venv/bin/fidesctl generate dataset okta \
-  <my_org_url> \
+./venv/bin/fidesctl generate dataset okta 
   fides_resources/okta_datasets.yml
 ```
 

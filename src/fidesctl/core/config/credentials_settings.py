@@ -17,15 +17,18 @@ class DatabaseCredentials(BaseModel):
 class OktaCredentials(BaseModel):
     """Class used to validate okta credentials fields when retrieved from config"""
 
-    client_token: str
+    # camel case matches okta client config model
+    orgUrl: str
+    token: str
 
 
 class AwsCredentials(BaseModel):
     """Class used to validate aws credentials fields when retrieved from config"""
 
-    access_key_id: str
-    secret_access_key: str
-    region: str
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    aws_session_token: str = ""
+    region_name: str = ""
 
 
 CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
@@ -85,5 +88,25 @@ def get_config_database_credentials(
     credentials_dict = credentials_config.get(credentials_id, None)
     parsed_config = (
         DatabaseCredentials.parse_obj(credentials_dict) if credentials_dict else None
+    )
+    return parsed_config
+
+
+def get_config_okta_credentials(
+    credentials_config: Dict[str, Dict], credentials_id: str
+) -> Optional[OktaCredentials]:
+    credentials_dict = credentials_config.get(credentials_id, None)
+    parsed_config = (
+        OktaCredentials.parse_obj(credentials_dict) if credentials_dict else None
+    )
+    return parsed_config
+
+
+def get_config_aws_credentials(
+    credentials_config: Dict[str, Dict], credentials_id: str
+) -> Optional[AwsCredentials]:
+    credentials_dict = credentials_config.get(credentials_id, None)
+    parsed_config = (
+        AwsCredentials.parse_obj(credentials_dict) if credentials_dict else None
     )
     return parsed_config

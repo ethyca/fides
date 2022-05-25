@@ -112,6 +112,6 @@ def test_create_okta_datasets_filters_inactive(
 # Integration
 @pytest.mark.external
 def test_list_okta_applications(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
-    client = okta_connector.get_okta_client(org_url="https://dev-78908748.okta.com")
+    client = okta_connector.get_okta_client({"orgUrl": "https://dev-78908748.okta.com"})
     actual_result = okta_connector.list_okta_applications(okta_client=client)
     assert actual_result

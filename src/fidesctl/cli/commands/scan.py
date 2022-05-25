@@ -7,8 +7,14 @@ from fidesctl.cli.options import (
     coverage_threshold_option,
     credentials_id_option,
     manifests_dir_argument,
+    okta_org_url_option,
+    okta_token_option,
 )
-from fidesctl.cli.utils import handle_database_credentials_options, with_analytics
+from fidesctl.cli.utils import (
+    handle_database_credentials_options,
+    handle_okta_credentials_options,
+    with_analytics,
+)
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -71,28 +77,38 @@ def scan_dataset_db(
 
 @scan_dataset.command(name="okta")
 @click.pass_context
-@click.argument("org_url", type=str)
 @manifests_dir_argument
+@credentials_id_option
+@okta_org_url_option
+@okta_token_option
 @coverage_threshold_option
 @with_analytics
 def scan_dataset_okta(
     ctx: click.Context,
-    org_url: str,
     manifests_dir: str,
+    credentials_id: str,
+    org_url: str,
+    token: str,
     coverage_threshold: int,
 ) -> None:
     """
     Scans your existing datasets and compares them to found Okta applications.
-    Connect to an Okta admin account by providing an organization url. Auth token
-    can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.
+    Connect to an Okta admin account by providing an organization url and
+    auth token or a credentials reference to fidesctl config. Auth token and
+    organization url can also be supplied by setting environment variables
+    as defined by the okta python sdk.
 
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
 
     config = ctx.obj["CONFIG"]
+    okta_config = handle_okta_credentials_options(
+        fides_config=config, token=token, org_url=org_url, credentials_id=credentials_id
+    )
+
     _dataset.scan_dataset_okta(
-        org_url=org_url,
+        okta_config=okta_config,
         coverage_threshold=coverage_threshold,
         manifest_dir=manifests_dir,
         url=config.cli.server_url,

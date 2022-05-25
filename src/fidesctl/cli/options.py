@@ -128,10 +128,30 @@ def credentials_id_option(command: Callable) -> Callable:
 
 
 def connection_string_option(command: Callable) -> Callable:
-    "Use connection string to connect to a database"
+    "Use connection string option to connect to a database"
     command = click.option(
         "--connection-string",
         type=str,
-        help="Use connection string to connect to a database",
+        help="Use connection string option to connect to a database",
+    )(command)
+    return command
+
+
+def okta_org_url_option(command: Callable) -> Callable:
+    "Use org url option to connect to okta. Requires include --org-url and --token"
+    command = click.option(
+        "--org-url",
+        type=str,
+        help="Use org url option to connect to okta. Requires include --org-url and --token",
+    )(command)
+    return command
+
+
+def okta_token_option(command: Callable) -> Callable:
+    "Use token option to connect to okta. Requires include --org-url and --token"
+    command = click.option(
+        "--token",
+        type=str,
+        help="Use token option to connect to okta. Requires include --org-url and --token",
     )(command)
     return command

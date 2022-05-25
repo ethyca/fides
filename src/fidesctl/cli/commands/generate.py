@@ -6,8 +6,14 @@ from fidesctl.cli.options import (
     connection_string_option,
     credentials_id_option,
     include_null_flag,
+    okta_org_url_option,
+    okta_token_option,
 )
-from fidesctl.cli.utils import handle_database_credentials_options, with_analytics
+from fidesctl.cli.utils import (
+    handle_database_credentials_options,
+    handle_okta_credentials_options,
+    with_analytics,
+)
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -64,24 +70,38 @@ def generate_dataset_db(
 
 @generate_dataset.command(name="okta")
 @click.pass_context
-@click.argument("org_url", type=str)
 @click.argument("output_filename", type=str)
+@credentials_id_option
+@okta_org_url_option
+@okta_token_option
 @include_null_flag
 @with_analytics
 def generate_dataset_okta(
-    ctx: click.Context, org_url: str, output_filename: str, include_null: bool
+    ctx: click.Context,
+    output_filename: str,
+    credentials_id: str,
+    token: str,
+    org_url: str,
+    include_null: bool,
 ) -> None:
     """
     Generates datasets for your Okta applications. Connect to an Okta admin
-    account by providing an organization url. Auth token can be supplied by
-    setting the environment variable OKTA_CLIENT_TOKEN.
+    account by providing an organization url and auth token or a credentials
+    reference to fidesctl config. Auth token and organization url can also
+    be supplied by setting environment variables as defined by the okta python sdk.
 
     This is a one-time operation that does not track the state of the okta resources.
     It will need to be run again if the tracked resources change.
     """
+    okta_config = handle_okta_credentials_options(
+        fides_config=ctx.obj["CONFIG"],
+        token=token,
+        org_url=org_url,
+        credentials_id=credentials_id,
+    )
 
     _dataset.generate_dataset_okta(
-        org_url=org_url,
+        okta_config=okta_config,
         file_name=output_filename,
         include_null=include_null,
     )

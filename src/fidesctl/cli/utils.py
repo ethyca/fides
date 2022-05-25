@@ -25,7 +25,10 @@ import fidesctl
 from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.config.credentials_settings import get_config_database_credentials
+from fidesctl.core.config.credentials_settings import (
+    get_config_database_credentials,
+    get_config_okta_credentials,
+)
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import check_response, echo_green, echo_red
 
@@ -217,3 +220,34 @@ def handle_database_credentials_options(
             )
         actual_connection_string = database_credentials.connection_string
     return actual_connection_string
+
+
+def handle_okta_credentials_options(
+    fides_config: FidesctlConfig, token: str, org_url: str, credentials_id: str
+) -> Dict[str, str]:
+    """
+    Handles the mutually exclusive okta connections options org-url/token and credentials-id.
+    It is allowed to provide neither as there is support for environment variables
+    """
+    okta_config = dict()
+    if token or org_url:
+        if not token or not org_url:
+            raise click.UsageError(
+                "Illegal usage: token and org-url must be used together"
+            )
+        if credentials_id:
+            raise click.UsageError(
+                "Illegal usage: token/org-url and credentials-id cannot be used together"
+            )
+        okta_config = {"orgUrl": org_url, "token": token}
+    if credentials_id:
+        okta_credentials = get_config_okta_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not okta_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        okta_config = okta_credentials.dict()
+    return okta_config
