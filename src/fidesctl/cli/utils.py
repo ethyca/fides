@@ -24,8 +24,10 @@ from fideslog.sdk.python.utils import (
 import fidesctl
 from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
+from fidesctl.core.config.credentials_settings import get_config_database_credentials
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import check_response, echo_green, echo_red
+from src.fidesctl.core.config import FidesctlConfig
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
@@ -188,8 +190,8 @@ def with_analytics(func: Callable) -> Callable:
     return update_wrapper(wrapper_func, func)
 
 
-def handle_database_connection_options(
-    ctx: click.Context, connection_string: str, credentials_id: str
+def handle_database_credentials_options(
+    fides_config: FidesctlConfig, connection_string: str, credentials_id: str
 ) -> str:
     """
     Handles the mutually exclusive database connections options connetion-string and credentials-id.
@@ -205,7 +207,13 @@ def handle_database_connection_options(
             "Illegal usage: connection-string or credentials-id are required"
         )
     if credentials_id:
-        config = ctx.obj["CONFIG"]
-        found_credentials = getattr(config.credentials.database, credentials_id)
-        actual_connection_string = found_credentials.connection_string
+        database_credentials = get_config_database_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not database_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        actual_connection_string = database_credentials.connection_string
     return actual_connection_string

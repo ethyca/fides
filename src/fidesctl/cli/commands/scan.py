@@ -2,8 +2,13 @@
 
 import click
 
-from fidesctl.cli.options import coverage_threshold_option, manifests_dir_argument
-from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.options import (
+    connection_string_option,
+    coverage_threshold_option,
+    credentials_id_option,
+    manifests_dir_argument,
+)
+from fidesctl.cli.utils import handle_database_credentials_options, with_analytics
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -26,14 +31,16 @@ def scan_dataset(ctx: click.Context) -> None:
 
 @scan_dataset.command(name="db")
 @click.pass_context
-@click.argument("connection_string", type=str)
 @manifests_dir_argument
+@credentials_id_option
+@connection_string_option
 @coverage_threshold_option
 @with_analytics
 def scan_dataset_db(
     ctx: click.Context,
-    connection_string: str,
     manifests_dir: str,
+    connection_string: str,
+    credentials_id: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -47,8 +54,14 @@ def scan_dataset_db(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    _dataset.scan_dataset_db(
+    actual_connection_string = handle_database_credentials_options(
+        fides_config=config,
         connection_string=connection_string,
+        credentials_id=credentials_id,
+    )
+
+    _dataset.scan_dataset_db(
+        connection_string=actual_connection_string,
         manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,

@@ -26,8 +26,8 @@ flaskr=# SELECT * FROM users;
 We can invoke the `generate` command by providing a connection url for this database:
 ```sh
 ./venv/bin/fidesctl generate dataset db \
-  postgresql://postgres:postgres@localhost:5432/flaskr \
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml \
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
 
 The result is a resource file with a dataset with collections and fields to represent our schema:
@@ -80,8 +80,8 @@ The resulting file still requires annotating the dataset with data categories to
 The `scan` command can then connect to your database and compare its schema to your already defined datasets:
 ```sh
 ./venv/bin/fidesctl scan dataset db \
-  postgresql://postgres:postgres@localhost:5432/flaskr \
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml \
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
 
 The command output confirms our database resource is covered fully:

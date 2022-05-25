@@ -2,7 +2,31 @@
 
 # pylint: disable=C0115,C0116, E0213
 import os
-from typing import Dict
+from typing import Dict, Optional
+
+from pydantic import BaseModel
+
+
+# TODO: These credentials objects could be shared with api code being written in fides#642
+class DatabaseCredentials(BaseModel):
+    """Class used to validate database credentials fields when retrieved from config"""
+
+    connection_string: str
+
+
+class OktaCredentials(BaseModel):
+    """Class used to validate okta credentials fields when retrieved from config"""
+
+    client_token: str
+
+
+class AwsCredentials(BaseModel):
+    """Class used to validate aws credentials fields when retrieved from config"""
+
+    access_key_id: str
+    secret_access_key: str
+    region: str
+
 
 CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
 NESTED_KEY_DELIMITER = "__"
@@ -53,3 +77,13 @@ def insert_environment(current_dict: Dict, env_key: str, env_val: str) -> None:
     # if an environment variable has a suffix of __
     elif env_key:
         current_dict[env_key] = env_val
+
+
+def get_config_database_credentials(
+    credentials_config: Dict[str, Dict], credentials_id: str
+) -> Optional[DatabaseCredentials]:
+    credentials_dict = credentials_config.get(credentials_id, None)
+    parsed_config = (
+        DatabaseCredentials.parse_obj(credentials_dict) if credentials_dict else None
+    )
+    return parsed_config

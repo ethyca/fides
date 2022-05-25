@@ -38,7 +38,6 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     try:
         file_location = get_config_path(config_path)
         settings = toml.load(file_location)
-        print(settings)
 
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models

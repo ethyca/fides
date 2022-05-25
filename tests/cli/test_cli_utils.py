@@ -1,9 +1,11 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import click
 import pytest
 from requests_mock import Mocker
 
 import fidesctl.cli.utils as utils
 from fidesapi.routes.util import API_PREFIX
+from fidesctl.core.config import FidesctlConfig
 
 
 @pytest.mark.unit
@@ -53,3 +55,76 @@ def test_check_server_version_comparisons(
         assert captured.out == ""
     else:
         assert expected_output in captured.out
+
+
+def test_handle_database_credentials_options_neither_raises(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if neither option is supplied."
+    with pytest.raises(click.UsageError):
+        input_connection_string = ""
+        input_credentials_id = ""
+        utils.handle_database_credentials_options(
+            fides_config=test_config,
+            connection_string=input_connection_string,
+            credentials_id=input_credentials_id,
+        )
+
+
+def test_handle_database_credentials_options_both_raises(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if both options are supplied."
+    with pytest.raises(click.UsageError):
+        input_connection_string = "my_connection_string"
+        input_credentials_id = "postgres_1"
+        utils.handle_database_credentials_options(
+            fides_config=test_config,
+            connection_string=input_connection_string,
+            credentials_id=input_credentials_id,
+        )
+
+
+def test_handle_database_credentials_options_credentials_dne_raises(
+    test_config: FidesctlConfig,
+) -> None:
+    "Check for an exception if credentials dont exist"
+    with pytest.raises(click.UsageError):
+        input_connection_string = ""
+        input_credentials_id = "UNKNOWN"
+        utils.handle_database_credentials_options(
+            fides_config=test_config,
+            connection_string=input_connection_string,
+            credentials_id=input_credentials_id,
+        )
+
+
+def test_handle_database_credentials_options_returns_connection_string(
+    test_config: FidesctlConfig,
+) -> None:
+    "Checks if expected connection string is returned from input"
+    input_connection_string = "my_connection_string"
+    input_credentials_id = ""
+    connection_string = utils.handle_database_credentials_options(
+        fides_config=test_config,
+        connection_string=input_connection_string,
+        credentials_id=input_credentials_id,
+    )
+    assert connection_string == input_connection_string
+
+
+def test_handle_database_credentials_returns_connection_string(
+    test_config: FidesctlConfig,
+) -> None:
+    "Checks if expected connection string is returned from config"
+    input_connection_string = ""
+    input_credentials_id = "postgres_1"
+    connection_string = utils.handle_database_credentials_options(
+        fides_config=test_config,
+        connection_string=input_connection_string,
+        credentials_id=input_credentials_id,
+    )
+    assert (
+        connection_string
+        == "postgresql+psycopg2://fidesctl:fidesctl@my_cluster.com:5439/fidesctl_test"
+    )

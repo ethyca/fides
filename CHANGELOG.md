@@ -24,7 +24,7 @@ The types of changes are:
 * Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
   * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
-
+* Okta, aws and database credentials can now come from fides conig [#694](https://github.com/ethyca/fides/pull/694)
 ### Changed
 
 * Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
