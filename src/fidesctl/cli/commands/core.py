@@ -42,26 +42,6 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 
 @click.command()
 @click.pass_context
-@with_analytics
-def audit(ctx: click.Context) -> None:
-    """
-    Audits fidesctl resources for compliance to build a compliant
-    data map with full attribution.
-    """
-
-    config = ctx.obj["CONFIG"]
-    _audit.audit_systems(
-        url=config.cli.server_url,
-        headers=config.user.request_headers,
-    )
-    _audit.audit_organizations(
-        url=config.cli.server_url,
-        headers=config.user.request_headers,
-    )
-
-
-@click.command()
-@click.pass_context
 @manifests_dir_argument
 @fides_key_option
 @click.option(
