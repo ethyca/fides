@@ -3,6 +3,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import NextLink from "next/link";
 import React from "react";
+
 import Header from "../features/common/Header";
 // import Setup from './setup';
 import { ArrowDownLineIcon } from "../features/common/Icon";

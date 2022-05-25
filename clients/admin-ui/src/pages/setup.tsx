@@ -30,10 +30,10 @@ const Setup: NextPage = () => (
           legal and data engineering terminology - fear not; Fides is here to
           simplify this. This wizard will help you to very quickly configure
           Fidesctl and in doing so build your first data map. Along the way
-          you'll learn the basic resources and concepts of privacy engineering
-          with Fides so you can quickly apply in all your work.
+          you&apos;ll learn the basic resources and concepts of privacy
+          engineering with Fides so you can quickly apply in all your work.
         </div>
-        <div>Let's get started!</div>
+        <div>Let&apos;s get started!</div>
         <Stack direction={["column", "row"]} spacing="24px">
           <Button
             bg="primary.800"
