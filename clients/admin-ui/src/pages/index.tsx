@@ -3,8 +3,9 @@ import type { NextPage } from 'next';
 import Head from 'next/head';
 import React from 'react';
 import Header from '../features/common/Header';
-import Setup from './setup';
+// import Setup from './setup';
 import { ArrowDownLineIcon } from '../features/common/Icon';
+import NextLink from 'next/link';
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -17,10 +18,9 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
     <Header username={session && session.username} />
 
     <main>
-      {/* On initial log-in, display setup, otherwise display the below
-      or if they skip display the below */}
-      {/* Redirecting to setup on initial login? */}
-      <Setup />
+      {/* NEED TO FLAG BEFORE RELEASE
+      Show Setup when the user is an admin and there are zero systems registered in the database*/}
+      {/* <Setup /> */}
 
       <Flex
         borderBottom="1px"
@@ -38,6 +38,12 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         <Button variant="ghost" disabled mr={4}>
           User Management
         </Button>
+        {/* This is a temporary link to the config wizard while it's still in progress */}
+        <NextLink href="/config-wizard" passHref>
+          <Button variant="ghost" disabled mr={4}>
+            Config Wizard
+          </Button>
+        </NextLink>
         <Button variant="ghost" disabled rightIcon={<ArrowDownLineIcon />}>
           More
         </Button>
