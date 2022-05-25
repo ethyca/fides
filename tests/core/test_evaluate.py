@@ -554,3 +554,40 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
             ),
             fides_key="data_category.parent",
         )
+
+
+@pytest.mark.unit
+class TestMergeTaxonomies:
+    def test_no_key_conflicts(self) -> None:
+        taxonomy_1 = Taxonomy(data_subject=[DataSubject(fides_key="foo", name="bar")])
+        taxonomy_2 = Taxonomy(data_subject=[DataSubject(fides_key="bar", name="baz")])
+        taxonomy_3 = Taxonomy(
+            data_subject=[
+                DataSubject(fides_key="foo", name="bar"),
+                DataSubject(fides_key="bar", name="baz"),
+            ]
+        )
+        assert evaluate.merge_taxonomies(taxonomy_1, taxonomy_2) == taxonomy_3
+
+    def test_key_conflicts(self) -> None:
+        taxonomy_1 = Taxonomy(data_subject=[DataSubject(fides_key="foo", name="bar")])
+        taxonomy_2 = Taxonomy(data_subject=[DataSubject(fides_key="foo", name="baz")])
+        taxonomy_3 = Taxonomy(
+            data_subject=[
+                DataSubject(fides_key="foo", name="bar"),
+            ]
+        )
+        assert evaluate.merge_taxonomies(taxonomy_1, taxonomy_2) == taxonomy_3
+
+    def test_no_same_resources(self) -> None:
+        taxonomy_1 = Taxonomy(data_subject=[DataSubject(fides_key="foo", name="bar")])
+        taxonomy_2 = Taxonomy(data_category=[DataCategory(fides_key="foo", name="bar")])
+        taxonomy_3 = Taxonomy(
+            data_subject=[
+                DataSubject(fides_key="foo", name="bar"),
+            ],
+            data_category=[
+                DataCategory(fides_key="foo", name="bar"),
+            ],
+        )
+        assert evaluate.merge_taxonomies(taxonomy_1, taxonomy_2) == taxonomy_3

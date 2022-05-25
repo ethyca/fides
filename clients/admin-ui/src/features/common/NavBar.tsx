@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import React, { ReactElement } from "react";
 
-import { ArrowDownLineIcon } from "@/features/common/Icon";
+import { ArrowDownLineIcon } from "~/features/common/Icon";
 
 import Header from "./Header";
 
@@ -43,7 +43,8 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
 
 const NavBar = () => {
   const { data: session } = useSession();
-  const username: string | any = session?.username;
+  // TODO: what should be displayed if there is no user name?
+  const username = session?.user?.name ?? "";
 
   return (
     <>

@@ -7,8 +7,8 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
 
-import { wrapper } from "@/app/store";
-import theme from "@/theme";
+import { wrapper } from "~/app/store";
+import theme from "~/theme";
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require

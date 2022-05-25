@@ -19,7 +19,7 @@ module.exports = {
 
     // Handle module aliases
     "^@/components/(.*)$": "<rootDir>/components/$1",
-    "^@/(.*)$": "<rootDir>/src/$1",
+    "^~/(.*)$": "<rootDir>/src/$1",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
