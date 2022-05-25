@@ -1,8 +1,6 @@
 # Admin UI
 
-Fidesctl provides a built-in control panel for managing policies, system users, and datastore connections.
-
-[admin ui]
+Fides provides a built-in control panel for managing policies, system users, and datastore connections.
 
 ## Developing Locally
 
@@ -18,7 +16,7 @@ This will create an Admin UI Root User that can be used to access the local UI, 
 
 ### Accessing the Control Panel
 
-From the root `fidesops` directory, run the following:
+From the root `fides` directory, run the following:
 ``` sh
     cd clients/admin-ui
     npm install
@@ -30,6 +28,3 @@ This will navigate you to the `admin-ui` directory, and run the development envi
 Visit `http://localhost:3000/` in your browser, and provide user credentials to log in. 
 
 !!! tip "While your [Root Account](#creating-the-root-user) can be used to access the UI, additional [endpoints](#managing-users) are available to create and manage individual users for production-grade deployments."
-
-
-## Production Deployments 

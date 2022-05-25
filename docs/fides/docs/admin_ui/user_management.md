@@ -3,16 +3,12 @@ Fides users can be easily managed from both the built-in control panel, and a se
 ## Managing Users from the UI
 The User Management panel displays a view of all users within the system, and provides a search bar for retrieving users by username. 
 
-[user panel]
-
 
 ### Creating New Users
-The `Add New User` button will walk through creating a new user:
-
-[new user]
+The `Add New User` button will walk through creating a new user.
 
 ### Managing User Privileges
-New users can be created with a series of privileges, or permissions, to allow or restrict their access to individual parts of your fidesctl configuration. 
+New users can be created with a series of privileges, or permissions, to allow or restrict their access to individual parts of your Fides configuration. 
 
 #### Privileges
 Privileges represent individual user permissions. Ensure each user is created with the permissions applicable for their role.
@@ -31,8 +27,6 @@ Privileges represent individual user permissions. Ensure each user is created wi
 
 ### Editing Existing Users
 Existing users can be edited by selecting the "Edit" button from the side of the user row. Users may also be deleted from this drop-down menu. Note that an individual's username may not be changed.
-
-[edit user]
 
 
 ## Managing Users from the API 
