@@ -1,16 +1,20 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from fideslang.models import DataSubject, DataUse, Organization, System
 
 from fidesctl.cli.utils import pretty_echo
-from fidesctl.core.api_helpers import get_server_resource, list_server_resources
+from fidesctl.core.api_helpers import (
+    get_server_resource,
+    get_server_resources,
+    list_server_resources,
+)
 from fidesctl.core.utils import echo_green, echo_red
 
 
 def audit_systems(
     url: str,
     headers: Dict[str, str],
-    exclude_keys: List,
+    include_keys: Optional[List] = None,
 ) -> None:
     """
     Audits the system resources from the server for compliance.
@@ -19,11 +23,13 @@ def audit_systems(
     the future and return them as well as being called from other
     audit functions.
     """
-
     # get the server resources for systems
-    system_resources = list_server_resources(
-        url, headers, "system", exclude_keys=exclude_keys
-    )
+    if include_keys:
+        system_resources = get_server_resources(url, "system", include_keys, headers)
+    else:
+        system_resources = list_server_resources(
+            url, headers, "system", exclude_keys=[]
+        )
     print(f"Found {len(system_resources)} System resource(s) to audit...")
     audit_findings = 0
     for system in system_resources:
@@ -119,15 +125,21 @@ def compliance_messaging(
 def audit_organizations(
     url: str,
     headers: Dict[str, str],
-    exclude_keys: List,
+    include_keys: Optional[List] = None,
 ) -> None:
     """
     Validates the extra attributes for an Organization are
     correctly populated
     """
-    organization_resources = list_server_resources(
-        url, headers, "organization", exclude_keys=exclude_keys
-    )
+
+    if include_keys:
+        organization_resources = get_server_resources(
+            url, "organization", include_keys, headers
+        )
+    else:
+        organization_resources = list_server_resources(
+            url, headers, "organization", exclude_keys=[]
+        )
     print(f"Found {len(organization_resources)} Organization resource(s) to audit...")
     audit_findings = 0
     for organization in organization_resources:

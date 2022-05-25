@@ -53,12 +53,10 @@ def audit(ctx: click.Context) -> None:
     _audit.audit_systems(
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        exclude_keys=[],
     )
     _audit.audit_organizations(
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        exclude_keys=[],
     )
 
 
@@ -125,14 +123,16 @@ def evaluate(
         _audit.audit_organizations(
             url=config.cli.server_url,
             headers=config.user.request_headers,
-            exclude_keys=[],
+            include_keys=[
+                organization.fides_key for organization in taxonomy.organization
+            ],
         )
         print_divider()
         pretty_echo("Auditing System Resource Compliance")
         _audit.audit_systems(
             url=config.cli.server_url,
             headers=config.user.request_headers,
-            exclude_keys=[],
+            include_keys=[system.fides_key for system in taxonomy.system],
         )
 
 
