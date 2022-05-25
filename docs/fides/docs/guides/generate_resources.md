@@ -143,7 +143,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the token above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the secret access key and id above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
