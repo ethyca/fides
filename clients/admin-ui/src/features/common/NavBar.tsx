@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import React, { ReactElement } from "react";
 
-import { ArrowDownLineIcon } from "@/features/common/Icon";
+import { ArrowDownLineIcon } from "~/features/common/Icon";
 
 import Header from "./Header";
 
