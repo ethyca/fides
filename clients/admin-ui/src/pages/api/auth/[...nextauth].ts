@@ -1,36 +1,36 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export default NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         email: {
-          label: 'Email',
-          type: 'text',
-          placeholder: 'you@yourdomain.com',
+          label: "Email",
+          type: "text",
+          placeholder: "you@yourdomain.com",
         },
-        password: { label: 'Password', type: 'password' },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         let res;
 
         try {
           res = await fetch(`${process.env.NEXT_PUBLIC_FIDESCTL_API!}/login`, {
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify({
               username: credentials!.email,
               password: credentials!.password,
             }),
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
           });
         } catch (error) {
-          throw new Error('Failed to authenticate');
+          throw new Error("Failed to authenticate");
         }
 
         if (!res || !res.ok) {
-          throw new Error('Failed to authenticate');
+          throw new Error("Failed to authenticate");
         }
 
         const user = await res.json();

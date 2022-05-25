@@ -1,8 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query/react';
-import { createWrapper } from 'next-redux-wrapper';
+import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query/react";
+import { createWrapper } from "next-redux-wrapper";
 
-import { reducer as userReducer } from '../features/user';
+import { reducer as userReducer } from "../features/user";
 
 const makeStore = () => {
   const store = configureStore({
@@ -16,6 +16,6 @@ const makeStore = () => {
 };
 
 export type AppStore = ReturnType<typeof makeStore>;
-export type AppState = ReturnType<AppStore['getState']>;
+export type AppState = ReturnType<AppStore["getState"]>;
 
 export const wrapper = createWrapper<AppStore>(makeStore);
