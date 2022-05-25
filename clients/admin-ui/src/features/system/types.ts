@@ -2,7 +2,7 @@ import {
   ContactDetails,
   FidesBase,
   FidesKey,
-} from "@/features/common/fides-types";
+} from "~/features/common/fides-types";
 
 export interface System extends FidesBase {
   registry_id?: number;

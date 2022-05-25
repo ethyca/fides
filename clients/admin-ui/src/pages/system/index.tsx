@@ -2,9 +2,9 @@ import { Heading, Spinner } from "@fidesui/react";
 import type { NextPage } from "next";
 import React from "react";
 
-import Layout from "@/features/common/Layout";
-import { useGetAllSystemsQuery } from "@/features/system";
-import SystemsTable from "@/features/system/SystemTable";
+import Layout from "~/features/common/Layout";
+import { useGetAllSystemsQuery } from "~/features/system";
+import SystemsTable from "~/features/system/SystemTable";
 
 const useSystemsTable = () => {
   const { data, isLoading } = useGetAllSystemsQuery();

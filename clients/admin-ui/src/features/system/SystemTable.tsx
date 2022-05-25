@@ -6,11 +6,11 @@ interface Props {
   systems: System[] | undefined;
 }
 const SystemsTable = ({ systems }: Props) => {
-  if (!systems) {
-    return <div>Empty state</div>;
+  if (!systems || !systems.length) {
+    return <div data-testid="empty-state">Empty state</div>;
   }
   return (
-    <Table size="sm">
+    <Table size="sm" data-testid="systems-table">
       <Thead>
         <Tr>
           <Th>Name</Th>
@@ -19,7 +19,7 @@ const SystemsTable = ({ systems }: Props) => {
       </Thead>
       <Tbody>
         {systems.map((system) => (
-          <Tr key={system.fides_key}>
+          <Tr key={system.fides_key} data-testid="systems-row">
             <Td>{system.name}</Td>
             <Td>{system.description}</Td>
           </Tr>
