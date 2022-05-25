@@ -1,17 +1,10 @@
 // @ts-nocheck
-import React from 'react';
-import { useSelector } from 'react-redux';
-import type { NextPage } from 'next';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { useFormik } from 'formik';
 import {
   Button,
   chakra,
   Checkbox,
   Divider,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Heading,
   Input,
@@ -19,29 +12,29 @@ import {
   Text,
   useToast,
 } from '@fidesui/react';
-import config from './config/config.json';
+import { useFormik } from 'formik';
+import type { NextPage } from 'next';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import React from 'react';
+
+import { User,userPrivilegesArray } from '../user/types';
 import {
-  selectUserToken,
   useEditUserMutation,
-  useUpdateUserPasswordMutation,
-  useUpdateUserPermissionsMutation,
   useGetUserByIdQuery,
   useGetUserPermissionsQuery,
+  useUpdateUserPermissionsMutation,
 } from '../user/user.slice';
-import { userPrivilegesArray, User } from '../user/types';
 import UpdatePasswordModal from './UpdatePasswordModal';
 
 const useUserForm = () => {
-  const token = useSelector(selectUserToken);
   const router = useRouter();
   const { id } = router.query;
-  const [updateUserPermissions, updateUserPermissionsResult] =
+  const [updateUserPermissions, ] =
     useUpdateUserPermissionsMutation();
-  const [updateUserPassword, updateUserPasswordResult] =
-    useUpdateUserPasswordMutation();
-  const [editUser, editUserResult] = useEditUserMutation(id as string);
+  const [editUser, ] = useEditUserMutation(id as string);
   const { data: existingUser } = useGetUserByIdQuery(id as string);
-  const { data: existingScopes, isLoading: scopesLoading } =
+  const { data: existingScopes } =
     useGetUserPermissionsQuery(id as string);
   const toast = useToast();
 
@@ -56,10 +49,6 @@ const useUserForm = () => {
     },
     enableReinitialize: true,
     onSubmit: async (values) => {
-      const host =
-        process.env.NODE_ENV === 'development'
-          ? config.fidesops_host_development
-          : config.fidesops_host_production;
 
       const userBody = {
         username: values.username ? values.username : existingUser?.username,
@@ -85,7 +74,7 @@ const useUserForm = () => {
         return;
       }
 
-      if (editUserError && editUserError.status == 422) {
+      if (editUserError && editUserError.status === 422) {
         toast({
           status: 'error',
           description: editUserError.data.detail.length
@@ -107,7 +96,7 @@ const useUserForm = () => {
         router.push('/user-management');
       }
     },
-    validate: (values) => {
+    validate: () => {
       const errors: {
         username?: string;
         first_name?: string;
@@ -128,24 +117,22 @@ const useUserForm = () => {
 };
 
 const EditUserForm: NextPage<{
-  existingUser?: User;
-}> = (user) => {
+  user?: User;
+}> = ({user}) => {
   const {
     dirty,
-    errors,
     existingUser,
     id,
     handleBlur,
     handleChange,
     handleSubmit,
     isValid,
-    touched,
     values,
     setFieldValue,
   } = useUserForm();
 
-  const { data: loggedInUser, isLoading: loggedInUserLoading } =
-    useGetUserPermissionsQuery(user.user.id as string);
+  const { data: loggedInUser } =
+    useGetUserPermissionsQuery(user.id as string);
 
   const hasAdminPermission = loggedInUser?.scopes?.includes('user:update');
 
@@ -166,18 +153,17 @@ const EditUserForm: NextPage<{
               <FormLabel htmlFor="username" fontWeight="medium">
                 Username
               </FormLabel>
-              <button href="#" />
               <Input
                 id="username"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="username"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
-                isReadOnly={true}
-                isDisabled={true}
+                isReadOnly
+                isDisabled
               />
             </FormControl>
 
@@ -187,7 +173,7 @@ const EditUserForm: NextPage<{
               </FormLabel>
               <Input
                 id="first_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="first_name"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.first_name}
@@ -205,7 +191,7 @@ const EditUserForm: NextPage<{
               </FormLabel>
               <Input
                 id="last_name"
-                maxWidth={'40%'}
+                maxWidth="40%"
                 name="last_name"
                 focusBorderColor="primary.500"
                 placeholder={existingUser?.last_name}
@@ -218,7 +204,7 @@ const EditUserForm: NextPage<{
             </FormControl>
 
             {/* Only the associated user can change their own password */}
-            {id === user.user.id && <UpdatePasswordModal id={id} />}
+            {id === user.id && <UpdatePasswordModal id={id} />}
 
             <Divider mb={7} mt={7} />
 
@@ -228,8 +214,8 @@ const EditUserForm: NextPage<{
             <Text>Edit privileges assigned to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction={'column'}>
-              {userPrivilegesArray.map((policy, idx) => {
+            <Stack spacing={[1, 5]} direction="column">
+              {userPrivilegesArray.map(policy => {
                 const isChecked = values.scopes
                   ? values.scopes.indexOf(policy.scope) >= 0
                   : false;
@@ -238,7 +224,7 @@ const EditUserForm: NextPage<{
                     colorScheme="purple"
                     isChecked={isChecked}
                     key={`${policy.privilege}`}
-                    onChange={(e) => {
+                    onChange={() => {
                       if (!isChecked) {
                         setFieldValue(`scopes`, [
                           ...values.scopes,

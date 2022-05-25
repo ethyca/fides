@@ -1,6 +1,3 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import NextLink from 'next/link';
 import {
   Button,
   Input,
@@ -8,9 +5,11 @@ import {
   InputLeftElement,
   Stack,
 } from '@fidesui/react';
+import NextLink from 'next/link';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { SearchLineIcon } from '../common/Icon';
-
 import { selectUserFilters, setUser } from '../user/user.slice';
 
 const useUserManagementTableActions = () => {

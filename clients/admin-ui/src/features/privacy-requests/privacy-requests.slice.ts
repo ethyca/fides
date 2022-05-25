@@ -4,11 +4,11 @@ import { HYDRATE } from 'next-redux-wrapper';
 
 import type { AppState } from '../../app/store';
 import {
+  DenyPrivacyRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
-  DenyPrivacyRequest,
 } from './types';
 
 // Helpers

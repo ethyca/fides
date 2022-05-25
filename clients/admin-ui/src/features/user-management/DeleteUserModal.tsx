@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Button,
   FormControl,
@@ -15,15 +14,16 @@ import {
   Text,
   useDisclosure,
 } from '@fidesui/react';
+import React, { useState } from 'react';
 
 import { User } from '../user/types';
 import { useDeleteUserMutation } from '../user/user.slice';
 
-function DeleteUserModal(user: User) {
+const DeleteUserModal = (user: User) => {
   const [usernameValue, setUsernameValue] = useState('');
   const [confirmValue, setConfirmValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deleteUser, deleteUserResult] = useDeleteUserMutation();
+  const [deleteUser,] = useDeleteUserMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name === 'username') {
@@ -32,19 +32,18 @@ function DeleteUserModal(user: User) {
       setConfirmValue(event.target.value);
     }
   };
+  const {id: userId, username} = user;
 
   const deletionValidation =
-    user.id &&
+    !!(userId &&
     confirmValue &&
     usernameValue &&
-    user.username === usernameValue &&
-    user.username === confirmValue
-      ? true
-      : false;
+    username === usernameValue &&
+    username === confirmValue);
 
   const handleDeleteUser = () => {
-    if (deletionValidation && user.id) {
-      deleteUser(user.id);
+    if (deletionValidation && userId) {
+      deleteUser(userId);
       onClose();
     }
   };
@@ -63,7 +62,7 @@ function DeleteUserModal(user: User) {
           <ModalHeader>Delete User</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction={'column'} spacing="15px">
+            <Stack direction="column" spacing="15px">
               <FormControl>
                 <Input
                   isRequired
@@ -88,11 +87,11 @@ function DeleteUserModal(user: User) {
           <ModalFooter>
             <Button
               onClick={onClose}
-              marginRight={'10px'}
-              size={'sm'}
-              variant={'solid'}
+              marginRight="10px"
+              size="sm"
+              variant="solid"
               bg="white"
-              width={'50%'}
+              width="50%"
             >
               Cancel
             </Button>
@@ -100,11 +99,11 @@ function DeleteUserModal(user: User) {
               disabled={!deletionValidation}
               onClick={handleDeleteUser}
               mr={3}
-              size={'sm'}
+              size="sm"
               variant="solid"
               bg="primary.800"
               color="white"
-              width={'50%'}
+              width="50%"
             >
               Delete User
             </Button>
