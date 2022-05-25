@@ -9,11 +9,11 @@ import {
   MenuList,
   Stack,
   Text,
-} from '@fidesui/react';
-import { signOut } from 'next-auth/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { UserIcon } from './Icon';
+} from "@fidesui/react";
+import { signOut } from "next-auth/react";
+import NextLink from "next/link";
+import React from "react";
+import { UserIcon } from "./Icon";
 
 interface HeaderProps {
   username: string;

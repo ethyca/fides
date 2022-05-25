@@ -1,11 +1,11 @@
-import { Box, Button, Flex, Heading } from '@fidesui/react';
-import type { NextPage } from 'next';
-import Head from 'next/head';
-import React from 'react';
-import Header from '../features/common/Header';
+import { Box, Button, Flex, Heading } from "@fidesui/react";
+import type { NextPage } from "next";
+import Head from "next/head";
+import NextLink from "next/link";
+import React from "react";
+import Header from "../features/common/Header";
 // import Setup from './setup';
-import { ArrowDownLineIcon } from '../features/common/Icon';
-import NextLink from 'next/link';
+import { ArrowDownLineIcon } from "../features/common/Icon";
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
   <div>
@@ -19,7 +19,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
 
     <main>
       {/* NEED TO FLAG BEFORE RELEASE
-      Show Setup when the user is an admin and there are zero systems registered in the database*/}
+      Show Setup when the user is an admin and there are zero systems registered in the database */}
       {/* <Setup /> */}
 
       <Flex

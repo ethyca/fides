@@ -1,6 +1,6 @@
-import { Box, Button, Container, Heading, Image, Stack } from '@fidesui/react';
-import type { NextPage } from 'next';
-import React from 'react';
+import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
+import type { NextPage } from "next";
+import React from "react";
 
 const Setup: NextPage = () => (
   <Stack>
@@ -34,11 +34,11 @@ const Setup: NextPage = () => (
           with Fides so you can quickly apply in all your work.
         </div>
         <div>Let's get started!</div>
-        <Stack direction={['column', 'row']} spacing="24px">
+        <Stack direction={["column", "row"]} spacing="24px">
           <Button
             bg="primary.800"
-            _hover={{ bg: 'primary.400' }}
-            _active={{ bg: 'primary.500' }}
+            _hover={{ bg: "primary.400" }}
+            _active={{ bg: "primary.500" }}
             colorScheme="primary"
           >
             Guided Setup (Recommended)

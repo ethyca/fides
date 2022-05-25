@@ -1,9 +1,6 @@
-import type { NextPage } from 'next';
+import type { NextPage } from "next";
+import Setup from "./setup";
 
-import Setup from './setup';
-
-const ConfigWizard: NextPage = () => {
-  return <Setup />;
-};
+const ConfigWizard: NextPage = () => <Setup />;
 
 export default ConfigWizard;
