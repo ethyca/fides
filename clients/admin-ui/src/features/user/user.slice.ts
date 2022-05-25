@@ -1,16 +1,15 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { HYDRATE } from 'next-redux-wrapper';
 
 import type { AppState } from '../../app/store';
-
 import {
   User,
-  UsersListParams,
   UserPasswordUpdate,
-  UserPermissionsUpdate,
   UserPermissionsResponse,
+  UserPermissionsUpdate,
   UserResponse,
+  UsersListParams,
   UsersResponse,
 } from './types';
 
@@ -70,9 +69,7 @@ export const userApi = createApi({
       providesTags: () => ['User'],
     }),
     getUserById: build.query<object, string>({
-      query: (id) => {
-        return { url: `user/${id}` };
-      },
+      query: (id) => ({ url: `user/${id}` }),
       providesTags: ['User'],
     }),
     getUserPermissions: build.query<object, string>({
@@ -130,7 +127,7 @@ export const userApi = createApi({
       Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, 'id'>
     >({
       query: ({ id, old_password, new_password }) => ({
-        url: `user/${id?.id}/reset-password`,
+        url: `user/${id}/reset-password`,
         method: 'POST',
         body: { old_password, new_password },
       }),

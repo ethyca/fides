@@ -1,18 +1,16 @@
-import React from 'react';
+import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { Box, Heading } from '@fidesui/react';
 import { getSession } from 'next-auth/react';
+import React from 'react';
 
 import { wrapper } from '../../app/store';
-import { assignToken, setUser } from '../../features/user/user.slice';
-import { User } from '../../features/user/types';
 import NavBar from '../../features/common/NavBar';
+import { assignToken } from '../../features/user/user.slice';
 import UserManagementTable from '../../features/user-management/UserManagementTable';
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
-const UserManagement: NextPage<{ session: { user: User } }> = ({ session }) => {
-  return (
+const UserManagement: NextPage = () => (
     <div>
       <Head>
         <title>Fides Admin UI - User Management</title>
@@ -33,7 +31,6 @@ const UserManagement: NextPage<{ session: { user: User } }> = ({ session }) => {
       </main>
     </div>
   );
-};
 
 export default UserManagement;
 

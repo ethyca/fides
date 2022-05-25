@@ -1,18 +1,18 @@
 // __tests__/index.test.tsx
-import { render, screen } from '@testing-library/react';
 import { SessionProvider } from 'next-auth/react';
 
 import Home from '../src/pages/index';
+import { render, screen } from './test-utils';
 
 describe('Home', () => {
-  it('renders a logged out notification when no session is present', () => {
+  it('renders the Subject Requests page by default', () => {
     render(
       <SessionProvider>
-        <Home session={null} />
+        <Home />
       </SessionProvider>
     );
 
-    const message = screen.getByText('You are not logged in.');
+    const message = screen.getAllByText('Subject Requests')[0];
     expect(message).toBeInTheDocument();
   });
 });

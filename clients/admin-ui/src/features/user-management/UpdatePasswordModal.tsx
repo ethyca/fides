@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Button,
   FormControl,
@@ -13,14 +12,15 @@ import {
   Stack,
   useDisclosure,
 } from '@fidesui/react';
+import React, { useState } from 'react';
 
 import { useUpdateUserPasswordMutation } from '../user/user.slice';
 
-function UpdatePasswordModal(id: string) {
+const UpdatePasswordModal = ({ id } : { id: string }) => {
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [changePassword, changePasswordResult] =
+  const [changePassword, ] =
     useUpdateUserPasswordMutation();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,7 @@ function UpdatePasswordModal(id: string) {
   };
 
   const changePasswordValidation =
-    id && newPasswordValue && oldPasswordValue ? true : false;
+    !!(id && newPasswordValue && oldPasswordValue);
 
   const handleChangePassword = () => {
     if (changePasswordValidation) {
@@ -67,7 +67,7 @@ function UpdatePasswordModal(id: string) {
           <ModalHeader>Update Password</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Stack direction={'column'} spacing="15px">
+            <Stack direction="column" spacing="15px">
               <FormControl>
                 <Input
                   isRequired
@@ -94,11 +94,11 @@ function UpdatePasswordModal(id: string) {
           <ModalFooter>
             <Button
               onClick={onClose}
-              marginRight={'10px'}
-              size={'sm'}
-              variant={'solid'}
+              marginRight="10px"
+              size="sm"
+              variant="solid"
               bg="white"
-              width={'50%'}
+              width="50%"
             >
               Cancel
             </Button>
@@ -106,11 +106,11 @@ function UpdatePasswordModal(id: string) {
               disabled={!changePasswordValidation}
               onClick={handleChangePassword}
               mr={3}
-              size={'sm'}
+              size="sm"
               variant="solid"
               bg="primary.800"
               color="white"
-              width={'50%'}
+              width="50%"
             >
               Change Password
             </Button>

@@ -8,7 +8,7 @@ import {
 } from '../features/privacy-requests';
 import { reducer as userReducer, userApi } from '../features/user';
 
-const makeStore = () => {
+export const makeStore = (preloadedState = {}) => {
   const store = configureStore({
     reducer: {
       [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
@@ -22,6 +22,7 @@ const makeStore = () => {
         userApi.middleware
       ),
     devTools: true,
+    preloadedState,
   });
   setupListeners(store.dispatch);
   return store;

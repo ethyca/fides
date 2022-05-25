@@ -1,23 +1,23 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Button,
   Flex,
   Table,
   Tbody,
   Text,
+  Th,
   Thead,
   Tr,
-  Th,
 } from '@fidesui/react';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import UserManagementRow from './UserManagementRow';
+import { User } from '../user/types';
 import {
   selectUserFilters,
   setPage,
   useGetAllUsersQuery,
 } from '../user/user.slice';
-import { User } from '../user/types';
+import UserManagementRow from './UserManagementRow';
 
 interface UsersTableProps {
   users?: User[];
