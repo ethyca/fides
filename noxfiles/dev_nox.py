@@ -30,6 +30,16 @@ def api(session: nox.Session) -> None:
 
 
 @nox.session()
+def admin_ui(session: nox.Session) -> None:
+    """Spin up the frontend server in development mode"""
+    npm_install = ("npm", "install")
+    npm_run = ("npm", "run", "dev")
+    with session.chdir("clients/admin-ui"):
+        session.run(*npm_install, external=True)
+        session.run(*npm_run, external=True)
+
+
+@nox.session()
 def cli(session: nox.Session) -> None:
     """Spin up a local development shell."""
     build_local(session)
