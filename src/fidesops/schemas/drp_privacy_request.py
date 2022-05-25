@@ -6,6 +6,8 @@ from pydantic import validator
 from fidesops.models.policy import DrpAction
 from fidesops.schemas.base_class import BaseSchema
 
+DRP_VERSION = "0.5"
+
 
 class DrpMeta(BaseSchema):
     """Enum to hold Drp metadata. Only version is supported at this time"""
@@ -55,3 +57,12 @@ class DrpIdentity(BaseSchema):
     address: Optional[str]
     address_verified: Optional[bool]
     owner_of_attorney: Optional[str]
+
+
+class DrpDataRightsResponse(BaseSchema):
+    """Drp data rights response"""
+
+    version: str
+    api_base: Optional[str]
+    actions: List[DrpAction]
+    user_relationships: Optional[List[str]]

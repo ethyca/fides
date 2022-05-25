@@ -559,6 +559,58 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
+def policy_drp_action_erasure(
+    db: Session,
+    oauth_client: ClientDetail
+) -> Generator:
+    erasure_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure request policy drp",
+            "key": "example_erasure_request_policy_drp",
+            "drp_action": "deletion",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Request Rule DRP",
+            "policy_id": erasure_request_policy.id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.provided.identifiable").value,
+            "rule_id": erasure_request_rule.id,
+        },
+    )
+    yield erasure_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
