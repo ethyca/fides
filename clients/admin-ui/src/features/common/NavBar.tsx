@@ -15,6 +15,7 @@ interface NavLinkProps {
   rightIcon?: ReactElement;
   exact?: boolean;
 }
+
 const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
   const router = useRouter();
   let isActive = false;

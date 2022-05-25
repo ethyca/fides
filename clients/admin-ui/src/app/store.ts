@@ -2,14 +2,17 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
-import { reducer as userReducer } from "../features/user";
+import { datasetApi } from "~/features/dataset";
+import { reducer as userReducer } from "~/features/user";
 
 const makeStore = () => {
   const store = configureStore({
     reducer: {
       user: userReducer,
+      [datasetApi.reducerPath]: datasetApi.reducer,
     },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(datasetApi.middleware),
   });
   setupListeners(store.dispatch);
   return store;
