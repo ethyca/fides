@@ -2,9 +2,9 @@ import { Heading, Spinner } from "@fidesui/react";
 import type { NextPage } from "next";
 import React from "react";
 
-import Layout from "@/features/common/Layout";
-import { useGetAllDatasetsQuery } from "@/features/dataset/dataset.slice";
-import DatasetsTable from "@/features/dataset/DatasetTable";
+import Layout from "~/features/common/Layout";
+import { useGetAllDatasetsQuery } from "~/features/dataset/dataset.slice";
+import DatasetsTable from "~/features/dataset/DatasetTable";
 
 const useDatasetsTable = () => {
   const { data, isLoading } = useGetAllDatasetsQuery();

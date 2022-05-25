@@ -2,7 +2,7 @@ import {
   ContactDetails,
   FidesBase,
   FidesKey,
-} from "@/features/common/fides-types";
+} from "~/features/common/fides-types";
 
 interface DatasetMetadata {
   resource_id?: string;
