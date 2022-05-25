@@ -1,0 +1,42 @@
+name: Frontend PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "clients"
+      - ".github/workflows/frontend_pr_checks.yml"
+
+env:
+  CI: true
+
+jobs:
+  Admin-UI-Unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: clients/admin-ui
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Jest test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run export
