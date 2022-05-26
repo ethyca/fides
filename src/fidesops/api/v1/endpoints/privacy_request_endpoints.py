@@ -18,6 +18,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
 )
 
@@ -25,23 +26,28 @@ from fidesops import common_exceptions
 from fidesops.api import deps
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
+from fidesops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
+)
 from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     REQUEST_PREVIEW,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
 from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
-from fidesops.graph.graph import DatasetGraph
+from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
 from fidesops.models.audit_log import AuditLog, AuditLogAction
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.policy import Policy, PolicyPreWebhook
+from fidesops.models.policy import ActionType, Policy, PolicyPreWebhook
 from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -67,6 +73,7 @@ from fidesops.service.privacy_request.request_service import (
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -565,6 +572,94 @@ def resume_privacy_request(
         cache=cache,
         privacy_request=privacy_request,
     ).submit(from_webhook=webhook)
+
+    return privacy_request
+
+
+def validate_manual_input(
+    manual_rows: List[Row], collection: CollectionAddress, db: Session
+) -> None:
+    """Validate manually-added data for a collection.
+
+    The specified collection must exist and all fields must be previously defined.
+    """
+    datasets = DatasetConfig.all(db=db)
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    dataset_graph = DatasetGraph(*dataset_graphs)
+
+    node: Optional[Node] = dataset_graph.nodes.get(collection)
+    if not node:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cannot save manual rows. No collection in graph with name: '{collection.value}'.",
+        )
+
+    for row in manual_rows:
+        for field_name in row:
+            if not dataset_graph.nodes[collection].contains_field(
+                lambda f: f.name == field_name  # pylint: disable=W0640
+            ):
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{collection.value}' collection.",
+                )
+
+
+@router.post(
+    PRIVACY_REQUEST_MANUAL_INPUT,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def resume_with_manual_input(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+    manual_rows: List[Optional[Row]],
+) -> PrivacyRequestResponse:
+    """Resume a privacy request by passing in manual input for the paused collection.
+
+    If there's no manual data to submit, pass in an empty list to resume the privacy request.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    if privacy_request.status != PrivacyRequestStatus.paused:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
+            f"status = {privacy_request.status.value}. Privacy request is not paused.",
+        )
+
+    paused_step: Optional[ActionType]
+    paused_collection: Optional[CollectionAddress]
+    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
+    if not paused_collection:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection.",
+        )
+
+    validate_manual_input(manual_rows, paused_collection, db)
+    logger.info(
+        f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+    )
+    privacy_request.cache_manual_input(paused_collection, manual_rows)
+
+    logger.info(
+        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection '{paused_collection.value}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_step=paused_step)
 
     return privacy_request
 

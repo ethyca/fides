@@ -41,6 +41,7 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
+    manual = "manual"
 
 
 class AccessLevel(enum.Enum):

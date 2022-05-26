@@ -21,8 +21,6 @@ from .traversal_data import (
     traversal_paired_dependency,
 )
 
-dask.config.set(scheduler="processes")
-
 connection_configs = [
     ConnectionConfig(key="mysql", connection_type=ConnectionType.postgres),
     ConnectionConfig(key="postgres", connection_type=ConnectionType.postgres),

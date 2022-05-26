@@ -24,6 +24,7 @@ from fidesops.util.oauth_util import generate_jwe
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
 from .fixtures.integration_fixtures import *
+from .fixtures.manual_fixtures import *
 from .fixtures.mariadb_fixtures import *
 from .fixtures.mongodb_fixtures import *
 from .fixtures.mssql_fixtures import *

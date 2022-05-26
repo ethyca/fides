@@ -56,3 +56,19 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
         return parameter
 
     return MASKED
+
+
+def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:
+    """If dev mode, log the entire traceback"""
+    if dev_mode:
+        logging.error(exc, exc_info=True)
+    else:
+        logging.error(exc)
+
+
+def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
+    """If dev mode, log the entire traceback"""
+    if dev_mode:
+        logging.warning(exc, exc_info=True)
+    else:
+        logging.warning(exc)

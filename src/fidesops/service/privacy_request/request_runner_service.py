@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Awaitable, Optional, Set
+from typing import Awaitable, Dict, List, Optional, Set
 
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -14,6 +14,7 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
+    Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
     WebhookTypes,
@@ -29,6 +30,8 @@ from fidesops.task.graph_task import (
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.async_util import run_async
 from fidesops.util.cache import FidesopsRedis
+from fidesops.util.collection_util import Row
+from fidesops.util.logger import _log_exception, _log_warning
 
 logger = logging.getLogger(__name__)
 
@@ -93,14 +96,19 @@ class PrivacyRequestRunner:
         return True
 
     def submit(
-        self, from_webhook: Optional[PolicyPreWebhook] = None
+        self,
+        from_webhook: Optional[PolicyPreWebhook] = None,
+        from_step: Optional[ActionType] = None,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
-        return run_async(self.run, self.privacy_request.id, from_webhook_id)
+        return run_async(self.run, self.privacy_request.id, from_webhook_id, from_step)
 
     def run(
-        self, privacy_request_id: str, from_webhook_id: Optional[str] = None
+        self,
+        privacy_request_id: str,
+        from_webhook_id: Optional[str] = None,
+        from_step: Optional[ActionType] = None,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -117,16 +125,17 @@ class PrivacyRequestRunner:
             logging.info(f"Dispatching privacy request {privacy_request.id}")
             privacy_request.start_processing(session)
 
-            # Run pre-execution webhooks
-            proceed = self.run_webhooks_and_report_status(
-                session,
-                privacy_request=privacy_request,
-                webhook_cls=PolicyPreWebhook,
-                after_webhook_id=from_webhook_id,
-            )
-            if not proceed:
-                session.close()
-                return
+            if not from_step:  # Skip if we're resuming from the access or erasure step.
+                # Run pre-execution webhooks
+                proceed = self.run_webhooks_and_report_status(
+                    session,
+                    privacy_request=privacy_request,
+                    webhook_cls=PolicyPreWebhook,
+                    after_webhook_id=from_webhook_id,
+                )
+                if not proceed:
+                    session.close()
+                    return
 
             policy = privacy_request.policy
             try:
@@ -145,47 +154,20 @@ class PrivacyRequestRunner:
                 identity_data = privacy_request.get_cached_identity_data()
                 connection_configs = ConnectionConfig.all(db=session)
 
-                access_result = run_access_request(
-                    privacy_request=privacy_request,
-                    policy=policy,
-                    graph=dataset_graph,
-                    connection_configs=connection_configs,
-                    identity=identity_data,
-                )
-                if not access_result:
-                    logging.info(
-                        f"No results returned for access request {privacy_request.id}"
+                if (
+                    not from_step == ActionType.erasure
+                ):  # Skip if we're resuming from erasure step
+                    access_result: Dict[str, List[Row]] = run_access_request(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=dataset_graph,
+                        connection_configs=connection_configs,
+                        identity=identity_data,
                     )
 
-                # Once the access request is complete, process the data uploads
-                for rule in policy.get_rules_for_action(action_type=ActionType.access):
-                    if not rule.storage_destination:
-                        raise common_exceptions.RuleValidationError(
-                            f"No storage destination configured on rule {rule.key}"
-                        )
-                    target_categories: Set[str] = {
-                        target.data_category for target in rule.targets
-                    }
-                    filtered_results = filter_data_categories(
-                        access_result,
-                        target_categories,
-                        dataset_graph.data_category_field_mapping,
+                    self.upload_access_results(
+                        session, policy, access_result, dataset_graph, privacy_request
                     )
-                    logging.info(
-                        f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"
-                    )
-                    try:
-                        upload(
-                            db=session,
-                            request_id=privacy_request.id,
-                            data=filtered_results,
-                            storage_key=rule.storage_destination.key,
-                        )
-                    except common_exceptions.StorageUploadError as exc:
-                        logging.error(
-                            f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
-                        )
-                        privacy_request.status = PrivacyRequestStatus.error
 
                 if policy.get_rules_for_action(action_type=ActionType.erasure):
                     # We only need to run the erasure once until masking strategies are handled
@@ -200,13 +182,17 @@ class PrivacyRequestRunner:
                         ),
                     )
 
+            except PrivacyRequestPaused as exc:
+                privacy_request.status = PrivacyRequestStatus.paused
+                privacy_request.save(db=session)
+                _log_warning(exc, config.dev_mode)
+                session.close()
+                return
+
             except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.status = PrivacyRequestStatus.error
                 # If dev mode, log traceback
-                if config.dev_mode:
-                    logging.error(exc, exc_info=True)
-                else:
-                    logging.error(exc)
+                _log_exception(exc, config.dev_mode)
 
             # Run post-execution webhooks
             proceed = self.run_webhooks_and_report_status(
@@ -224,6 +210,47 @@ class PrivacyRequestRunner:
             privacy_request.save(db=session)
             logging.info(f"Privacy request {privacy_request.id} run completed.")
             session.close()
+
+    @staticmethod
+    def upload_access_results(
+        session: Session,
+        policy: Policy,
+        access_result: Dict[str, List[Row]],
+        dataset_graph: DatasetGraph,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Process the data uploads after the access portion of the privacy request has completed"""
+        if not access_result:
+            logging.info(f"No results returned for access request {privacy_request.id}")
+
+        for rule in policy.get_rules_for_action(action_type=ActionType.access):
+            if not rule.storage_destination:
+                raise common_exceptions.RuleValidationError(
+                    f"No storage destination configured on rule {rule.key}"
+                )
+            target_categories: Set[str] = {
+                target.data_category for target in rule.targets
+            }
+            filtered_results = filter_data_categories(
+                access_result,
+                target_categories,
+                dataset_graph.data_category_field_mapping,
+            )
+            logging.info(
+                f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"
+            )
+            try:
+                upload(
+                    db=session,
+                    request_id=privacy_request.id,
+                    data=filtered_results,
+                    storage_key=rule.storage_destination.key,
+                )
+            except common_exceptions.StorageUploadError as exc:
+                logging.error(
+                    f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
+                )
+                privacy_request.status = PrivacyRequestStatus.error
 
     def dry_run(self, privacy_request: PrivacyRequest) -> None:
         """Pretend to dispatch privacy_request into the execution layer, return the query plan"""

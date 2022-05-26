@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d844ce1b-d545-41dd-b2f6-d33801ab8fbb",
+		"_postman_id": "336250bf-42b1-49d2-8b9f-d82706f6f4b4",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -830,7 +830,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/privacy-request/?request_id={{privacy_request_id}}&verbose=True",
+							"raw": "{{host}}/privacy-request/?id={{privacy_request_id}}&verbose=True",
 							"host": [
 								"{{host}}"
 							],
@@ -840,7 +840,7 @@
 							],
 							"query": [
 								{
-									"key": "request_id",
+									"key": "id",
 									"value": "{{privacy_request_id}}"
 								},
 								{
@@ -3505,6 +3505,200 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Manual Graph Nodes",
+			"item": [
+				{
+					"name": "Add Manual Connection Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Manual connector\",\n    \"key\": \"{{manual_connector}}\",\n    \"connection_type\": \"manual\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Manual Dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"fides_key\": \"manual_key\",\n    \"name\": \"Manual Dataset\",\n    \"description\": \"Example of a Manual dataset with a node waiting on postgres input\",\n    \"collections\": [\n        {\n            \"name\": \"filing_cabinet\",\n            \"fields\": [\n                {\n                    \"name\": \"id\",\n                    \"data_categories\": [\n                        \"system.operations\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"primary_key\": true\n                    }\n                },\n                {\n                    \"name\": \"authorized_user\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\"\n                    }\n                },\n                {\n                    \"name\": \"customer_id\",\n                    \"data_categories\": [\n                        \"user.derived.identifiable.unique_id\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"references\": [\n                            {\n                                \"dataset\": \"postgres_example\",\n                                \"field\": \"customer.id\",\n                                \"direction\": \"from\"\n                            }\n                        ]\n                    }\n                },\n                {\n                    \"name\": \"payment_card_id\",\n                    \"data_categories\": [\n                        \"system.operations\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"references\": [\n                            {\n                                \"dataset\": \"postgres_example\",\n                                \"field\": \"payment_card.id\",\n                                \"direction\": \"to\"\n                            }\n                        ]\n                    }\n                }\n            ]\n        },\n        {\n            \"name\": \"storage_unit\",\n            \"fields\": [\n                {\n                    \"name\": \"box_id\",\n                    \"data_categories\": [\n                        \"user.provided\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"primary_key\": true\n                    }\n                },\n                {\n                    \"name\": \"email\",\n                    \"data_categories\": [\n                        \"user.provided.identifiable.contact.email\"\n                    ],\n                    \"fidesops_meta\": {\n                        \"data_type\": \"string\",\n                        \"identity\": \"email\"\n                    }\n                }\n            ]\n        }\n    ]\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{manual_connector}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_connector}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/?request_id={{privacy_request_id}}&verbose=True",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								""
+							],
+							"query": [
+								{
+									"key": "request_id",
+									"value": "{{privacy_request_id}}"
+								},
+								{
+									"key": "verbose",
+									"value": "True"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Privacy Request with Manual Filing Cabinet Input",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"id\": 2,\n    \"authorized_user\": \"Jiminy Customer\",\n    \"customer_id\": 1,\n    \"payment_card_id\": \"pay_bbb-bbb\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/manual_input",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"manual_input"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Privacy Request with Manual Storage Unit Input",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n    \"box_id\": 5,\n    \"email\": \"customer-1@example.com\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/manual_input",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"manual_input"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -3737,6 +3931,10 @@
 		{
 			"key": "segment_access_secret",
 			"value": ""
+		},
+		{
+			"key": "manual_connector",
+			"value": "manual_key"
 		}
 	]
 }

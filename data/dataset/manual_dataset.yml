@@ -1,0 +1,40 @@
+dataset:
+  - fides_key: manual_input
+    name: Manual Dataset
+    description: Example of a Manual dataset with a node waiting on postgres input
+    collections:
+      - name: filing_cabinet
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: true
+          - name: authorized_user
+            data_categories: [ user.derived.identifiable ]
+            fidesops_meta:
+              data_type: string
+          - name: customer_id
+            data_categories: [ user.derived.identifiable.unique_id ]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: payment_card_id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              references:
+                - dataset: postgres_example_test_dataset
+                  field: payment_card.id
+                  direction: to
+      - name: storage_unit
+        fields:
+          - name: box_id
+            data_categories: [ user.provided ]
+            fidesops_meta:
+              primary_key: true
+          - name: email
+            data_categories: [ user.provided.identifiable.contact.email ]
+            fidesops_meta:
+              identity: email
+              data_type: string

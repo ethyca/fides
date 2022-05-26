@@ -15,6 +15,7 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
+    ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -25,6 +26,7 @@ from fidesops.service.connectors import (
     SnowflakeConnector,
 )
 from fidesops.util.cache import get_cache
+from fidesops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +69,8 @@ class Connections:
             return BigQueryConnector(connection_config)
         if connection_config.connection_type == ConnectionType.saas:
             return SaaSConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.manual:
+            return ManualConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -120,7 +124,7 @@ class TaskResources:
         """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
-    def get_all_cached_objects(self) -> Dict[str, Optional[Any]]:
+    def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
         """Retrieve the results of all steps (cache_object)"""
         value_dict = self.cache.get_encoded_objects_by_prefix(self.request.id)
         # extract request id to return a map of address:value
