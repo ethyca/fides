@@ -55,6 +55,8 @@ def generate_dataset_db(
     """
     Connect to a database directly via a SQLAlchemy-style connection string and
     generate a dataset manifest file that consists of every schema/table/field.
+    Connection string can be supplied as an option or a credentials reference 
+    to fidesctl config.
 
     This is a one-time operation that does not track the state of the database.
     It will need to be run again if the database schema changes.
@@ -140,9 +142,11 @@ def generate_system_aws(
     region: str,
 ) -> None:
     """
-    Connect to an aws account by leveraging a boto3 environment variable
-    configuration and generate a system manifest file that consists of every
-    tracked resource. Tracked resources: [Redshift, RDS]
+    Connect to an aws account and generate a system manifest file that consists of every
+    tracked resource. 
+    Credentials can be supplied as options, a credentials
+    reference to fidesctl config, or boto3 environment configuration. 
+    Tracked resources: [Redshift, RDS]
 
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.

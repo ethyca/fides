@@ -55,7 +55,8 @@ def scan_dataset_db(
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-style connection string and
-    compare the database objects to existing datasets.
+    compare the database objects to existing datasets. Connection string can be
+    supplied as an option or a credentials reference to fidesctl config.
 
     If there are fields within the database that aren't listed and categorized
     within one of the datasets, this counts as lacking coverage.
@@ -149,8 +150,9 @@ def scan_system_aws(
     coverage_threshold: int,
 ) -> None:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
-    configuration and compares tracked resources to existing systems.
+    Connect to an aws account and compares tracked resources to existing systems.
+    Credentials can be supplied as options, a credentials reference to fidesctl 
+    config, or boto3 environment configuration. 
     Tracked resources: [Redshift, RDS]
 
     Outputs missing resources and has a non-zero exit if coverage is
