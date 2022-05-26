@@ -1,7 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
-from json import dumps, loads
-from os import getenv
+from json import loads
 from typing import Dict, Generator
 
 import pytest
@@ -11,7 +10,7 @@ from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
 from fidesapi import main
-from fidesapi.routes.util import API_PREFIX, obscure_string
+from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 
@@ -215,39 +214,3 @@ def test_api_ping(
     monkeypatch.setattr(main, "get_db_health", mock_get_db_health)
     response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
     assert response.status_code == expected_status_code
-
-
-EXTERNAL_CONFIG_BODY = {
-    "aws": {
-        "region_name": getenv("AWS_DEFAULT_REGION", ""),
-        "aws_access_key_id": obscure_string(getenv("AWS_ACCESS_KEY_ID", "")),
-        "aws_secret_access_key": obscure_string(getenv("AWS_SECRET_ACCESS_KEY", "")),
-    }
-}
-
-
-@pytest.mark.external
-@pytest.mark.parametrize("generate_type, generate_target", [("systems", "aws")])
-def test_generate(
-    test_config: FidesctlConfig,
-    generate_type: str,
-    generate_target: str,
-    test_client: TestClient,
-) -> None:
-
-    data = {
-        "organization_key": "default_organization",
-        "generate": {
-            "config": EXTERNAL_CONFIG_BODY[generate_target],
-            "target": generate_target,
-            "type": generate_type,
-        },
-    }
-
-    response = test_client.post(
-        test_config.cli.server_url + API_PREFIX + "/generate/",
-        headers=test_config.user.request_headers,
-        data=dumps(data),
-    )
-    assert len(loads(response.text)["generate_results"]) > 0
-    assert response.status_code == 200
