@@ -10,6 +10,39 @@ The `scan` and `generate` commands work best when used in tandem as they follow 
 
 The `generate` command can connect to a database and automatically generate resource YAML file based on the database schema.
 
+### Providing Credentials
+
+Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config. 
+
+#### Command Options
+A connection string can be suppplied using the `connection-string` option:
+```sh
+...
+--connection-string <my_connection_string>
+...
+```
+
+
+#### Fides Config
+A connection string can also be defined within your fides config under the credentials section.
+
+```sh
+[credentials]
+my_database_credentials = {connection-string="<my_connection_string>"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_database_credentials"
+...
+```
+
+It is possible to use an environment varialble to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING="<my_database_credentials>"
+```
+
 ### Generating a Dataset
 
 Given a database schema with a single `users` table as follows:
@@ -143,7 +176,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the secret access key and id above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment varialble to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
@@ -281,7 +314,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set the token above you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set a token you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
 ```
