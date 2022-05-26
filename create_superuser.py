@@ -1,20 +1,19 @@
+"""One-time script to create the root user for the Admin UI"""
+
 import getpass
 from typing import List
 
 from sqlalchemy.orm import Session
 
-from fidesops.api.v1.scope_registry import SCOPE_REGISTRY, CLIENT_CREATE
+from fidesops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesops.common_exceptions import KeyOrNameAlreadyExists
 from fidesops.core.config import config
 from fidesops.db.database import init_db
 from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail, ADMIN_UI_ROOT
+from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
-
-
-"""One-time script to create the root user for the Admin UI"""
 
 
 def get_username(prompt: str) -> str:

@@ -1,8 +1,10 @@
+"""Script to create test data for the Admin UI"""
+
+import string
 from datetime import datetime, timedelta
 from uuid import uuid4
 
 from sqlalchemy import orm
-import string
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
@@ -11,16 +13,9 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.models.storage import StorageConfig, ResponseFormat
-from fidesops.schemas.storage.storage import (
-    FileNaming,
-    StorageDetails,
-    StorageType,
-)
+from fidesops.models.storage import ResponseFormat, StorageConfig
+from fidesops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
 from fidesops.util.data_category import DataCategory
-
-
-"""Script to create test data for the Admin UI"""
 
 
 def _create_policy(
@@ -98,7 +93,7 @@ def _create_policy(
 
 def create_test_data(db: orm.Session) -> FidesopsUser:
     """Script to create test data for the Admin UI"""
-    print(f"Seeding database with privacy requests")
+    print("Seeding database with privacy requests")
     _, client = ClientDetail.get_or_create(
         db=db,
         data={
@@ -142,7 +137,7 @@ def create_test_data(db: orm.Session) -> FidesopsUser:
                 },
             )
 
-    print(f"Data seeding complete!")
+    print("Data seeding complete!")
 
 
 if __name__ == "__main__":

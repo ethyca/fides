@@ -39,14 +39,12 @@ def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("****************fidesops****************")
     if config.database.ENABLED:
-        # don't run db migrations if database is disabled
         logger.info("Running any pending DB migrations...")
-        init_db(config.database.SQLALCHEMY_DATABASE_URI)
+        init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
 
     scheduler.start()
 
     if config.database.ENABLED:
-        # don't schedule request intake if database is disabled
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
