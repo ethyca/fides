@@ -62,7 +62,7 @@ def evaluate(
     manifests_dir: str,
     fides_key: str,
     message: str,
-    include_audits: bool,
+    audit: bool,
     dry: bool,
 ) -> None:
     """
@@ -97,7 +97,7 @@ def evaluate(
         dry=dry,
     )
 
-    if include_audits:
+    if audit:
         print_divider()
         pretty_echo("Auditing Organization Resource Compliance")
         _audit.audit_organizations(

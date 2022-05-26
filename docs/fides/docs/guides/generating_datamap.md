@@ -123,29 +123,38 @@ Example manifest updates are included in `demo_resources/demo_extended_taxonomy.
 
 ### Auditing Resources
 
-Your Organization and System datasets can be assessed using the `audit` command, which will identify how your resources could be extended to generate a compliant data map.
+Your Organization and System datasets can also be assessed using the `--audit` flag as part of the `evaluate` command, which will identify how your resources could be extended to generate a compliant data map.
 
-1. `fidesctl audit`
+1. `fidesctl evaluate demo_resources/ --audit`
 
 The output of this command will highlight any missing information:
 
 ```bash title="Example Output: <code>fidesctl audit</code>"
 ...
-Auditing System: Demo Analytics System
+"Auditing Organization Resource Compliance"
+Found 1 Organization resource(s) to audit...
+Auditing Organization: Demo Organization
+controller for default_organization in Demo Organization is compliant
+data_protection_officer for default_organization in Demo Organization is compliant
+representative for default_organization in Demo Organization is compliant
+security_policy for default_organization in Demo Organization is compliant
+All audited organization resource(s) compliant!
+----------
+"Auditing System Resource Compliance"
+Found 2 System resource(s) to audit...
+"Auditing System: Demo Analytics System"
 improve.system missing recipients in Demo Analytics System.
 improve.system missing legal_basis in Demo Analytics System.
 improve.system missing special_category in Demo Analytics System.
 customer missing rights in Demo Analytics System.
 customer missing automated_decisions_or_profiling in Demo Analytics System.
-Auditing System: Demo Marketing System
+"Auditing System: Demo Marketing System"
 advertising missing recipients in Demo Marketing System.
 advertising missing legal_basis in Demo Marketing System.
 advertising missing special_category in Demo Marketing System.
 customer missing rights in Demo Marketing System.
 customer missing automated_decisions_or_profiling in Demo Marketing System.
 10 issue(s) were detected in auditing system completeness.
-Auditing Organization: Demo Organization
-All organizations fully compliant!
 ```
 ### Data Use
 Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
@@ -264,18 +273,33 @@ system:
 
 Running `fidesctl apply demo_resources/` will apply your changes.
 
-Now, auditing this resource with `fidesctl audit` will show the Demo Marketing System issues are resolved:
+Now, auditing this resource with `fidesctl evaluate demo_resources --audit` will show the Demo Marketing System issues are resolved:
 ```bash
-Auditing System: Demo Analytics System
+...
+"Auditing Organization Resource Compliance"
+Found 1 Organization resource(s) to audit...
+Auditing Organization: Demo Organization
+controller for default_organization in Demo Organization is compliant
+data_protection_officer for default_organization in Demo Organization is compliant
+representative for default_organization in Demo Organization is compliant
+security_policy for default_organization in Demo Organization is compliant
+All audited organization resource(s) compliant!
+----------
+"Auditing System Resource Compliance"
+Found 2 System resource(s) to audit...
+"Auditing System: Demo Analytics System"
 improve.system missing recipients in Demo Analytics System.
 improve.system missing legal_basis in Demo Analytics System.
 improve.system missing special_category in Demo Analytics System.
 customer missing rights in Demo Analytics System.
 customer missing automated_decisions_or_profiling in Demo Analytics System.
-Auditing System: Demo Marketing System
+"Auditing System: Demo Marketing System"
+recipients for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+legal_basis for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+special_category for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+rights for potential_customer in Demo Marketing System is compliant
+automated_decisions_or_profiling for potential_customer in Demo Marketing System is compliant
 5 issue(s) were detected in auditing system completeness.
-Auditing Organization: Demo Organization
-All organizations fully compliant!
 ```
 
 
