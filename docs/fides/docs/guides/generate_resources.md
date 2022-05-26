@@ -28,7 +28,7 @@ A connection string can also be defined within your fides config under the crede
 
 ```sh
 [credentials]
-my_database_credentials = {connection-string="<my_connection_string>"}
+my_database_credentials = {connection_string="<my_connection_string>"}
 ```
 
 Your command can then reference the key defined in your config. 
