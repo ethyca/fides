@@ -22,9 +22,6 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.masking.strategy.masking_strategy_factory import (
-    SupportedMaskingStrategies,
-)
 from fidesops.util.data_category import _validate_data_category
 
 
@@ -50,16 +47,6 @@ class DrpAction(EnumType):
     sale_opt_in = "sale:opt_in"
     access_categories = "access:categories"
     access_specific = "access:specific"
-
-
-PseudonymizationPolicy = SupportedMaskingStrategies
-"""
-*Deprecated*: The method by which to pseudonymize data.
-
-As of 10/20/2021 this class is deprecated. We cannot remove this currently as the
-class is referenced in multiple database migrations. This class is to be removed
-when project migrations are consolidated.
-"""
 
 
 def _validate_drp_action(drp_action: Optional[str]) -> None:

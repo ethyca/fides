@@ -38,10 +38,12 @@ from fidesops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC
-from fidesops.service.masking.strategy.masking_strategy_nullify import NULL_REWRITE
+from fidesops.service.masking.strategy.masking_strategy_hmac import HMAC_STRATEGY_NAME
+from fidesops.service.masking.strategy.masking_strategy_nullify import (
+    NULL_REWRITE_STRATEGY_NAME,
+)
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE,
+    STRING_REWRITE_STRATEGY_NAME,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.util.cache import FidesopsRedis
@@ -381,7 +383,7 @@ def erasure_policy_string_rewrite_long(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {
                     "rewrite_value": "some rewrite value that is very long and goes on and on"
                 },
@@ -424,13 +426,16 @@ def erasure_policy_two_rules(
             "client_id": oauth_client.id,
             "name": "Second Erasure Rule",
             "policy_id": erasure_policy.id,
-            "masking_strategy": {"strategy": NULL_REWRITE, "configuration": {}},
+            "masking_strategy": {
+                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "configuration": {},
+            },
         },
     )
 
     # TODO set masking strategy in Rule.create() call above, once more masking strategies beyond NULL_REWRITE are supported.
     second_erasure_rule.masking_strategy = {
-        "strategy": STRING_REWRITE,
+        "strategy": STRING_REWRITE_STRATEGY_NAME,
         "configuration": {"rewrite_value": "*****"},
     }
 
@@ -581,7 +586,7 @@ def policy_drp_action_erasure(
             "name": "Erasure Request Rule DRP",
             "policy_id": erasure_request_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
@@ -633,7 +638,7 @@ def erasure_policy_string_rewrite(
             "name": "string rewrite erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": STRING_REWRITE,
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
                 "configuration": {"rewrite_value": "MASKED"},
             },
         },
@@ -686,7 +691,7 @@ def erasure_policy_hmac(
             "name": "hmac erasure rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": HMAC,
+                "strategy": HMAC_STRATEGY_NAME,
                 "configuration": {},
             },
         },

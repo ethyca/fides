@@ -1,79 +1,63 @@
-from enum import Enum
-from typing import Dict, List, Union
+import logging
+from typing import Callable, Dict, Type, Union, ValuesView
 
 from pydantic import ValidationError
 
 from fidesops.common_exceptions import NoSuchStrategyException
 from fidesops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.schemas.masking.masking_configuration import (
-    FormatPreservationConfig,
-    MaskingConfiguration,
-)
+from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RandomStringRewriteMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    StringRewriteMaskingStrategy,
-)
+
+logger = logging.getLogger(__name__)
 
 
-class SupportedMaskingStrategies(Enum):
-    """
-    The supported methods by which Fidesops can pseudonymize data.
-    """
-
-    string_rewrite = StringRewriteMaskingStrategy
-    random_string_rewrite = RandomStringRewriteMaskingStrategy
-    null_rewrite = NullMaskingStrategy
-    hash = HashMaskingStrategy
-    aes_encrypt = AesEncryptionMaskingStrategy
-    hmac = HmacMaskingStrategy
+class MaskingStrategyFactory:
+    registry: Dict[str, Type[MaskingStrategy]] = {}
+    valid_strategies: str = ""
 
     @classmethod
-    def __contains__(cls, item: str) -> bool:
+    def register(
+        cls, name: str
+    ) -> Callable[[Type[MaskingStrategy]], Type[MaskingStrategy]]:
+        def wrapper(strategy_class: Type[MaskingStrategy]) -> Type[MaskingStrategy]:
+            logger.debug(
+                f"Registering new masking strategy '{strategy_class}' under name '{name}'"
+            )
+
+            if name in cls.registry:
+                logger.warning(
+                    f"Masking strategy with name '{name}' already exists. It previously referred to class '{cls.registry[name]}', but will now refer to '{strategy_class}'"
+                )
+
+            cls.registry[name] = strategy_class
+            cls.valid_strategies = ", ".join(cls.registry.keys())
+            return cls.registry[name]
+
+        return wrapper
+
+    @classmethod
+    def get_strategy(
+        cls,
+        strategy_name: str,
+        configuration: Dict[str, Union[str, FormatPreservationConfig]],
+    ) -> MaskingStrategy:
+        """
+        Returns the strategy given the name and configuration.
+        Raises NoSuchStrategyException if the strategy does not exist
+        """
         try:
-            cls[item]
+            strategy = cls.registry[strategy_name]
         except KeyError:
-            return False
-
-        return True
-
-
-def get_strategy(
-    strategy_name: str,
-    configuration: Dict[
-        str,
-        Union[str, FormatPreservationConfig],
-    ],
-) -> MaskingStrategy:
-    """
-    Returns the strategy given the name and configuration.
-    Raises NoSuchStrategyException if the strategy does not exist
-    """
-    if not SupportedMaskingStrategies.__contains__(strategy_name):
-        valid_strategies = ", ".join([s.name for s in SupportedMaskingStrategies])
-        raise NoSuchStrategyException(
-            f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"
-        )
-    strategy = SupportedMaskingStrategies[strategy_name].value
-    try:
-        strategy_config: MaskingConfiguration = strategy.get_configuration_model()(
-            **configuration
-        )
+            raise NoSuchStrategyException(
+                f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies}]"
+            )
+        try:
+            strategy_config = strategy.get_configuration_model()(**configuration)
+        except ValidationError as e:
+            raise FidesopsValidationError(message=str(e))
         return strategy(configuration=strategy_config)
-    except ValidationError as e:
-        raise FidesopsValidationError(message=str(e))
 
-
-def get_strategies() -> List[MaskingStrategy]:
-    """Returns all supported masking strategies"""
-    return [e.value for e in SupportedMaskingStrategies]
+    @classmethod
+    def get_strategies(cls) -> ValuesView[MaskingStrategy]:
+        """Returns all supported masking strategies"""
+        return cls.registry.values()

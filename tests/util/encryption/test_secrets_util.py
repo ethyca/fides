@@ -5,9 +5,11 @@ from fidesops.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import AES_ENCRYPT
+from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+    AES_ENCRYPT_STRATEGY_NAME,
+)
 from fidesops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC,
+    HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
 )
 from fidesops.util.encryption.secrets_util import SecretsUtil
@@ -21,14 +23,16 @@ def test_get_secret_from_cache_str() -> None:
     # build masking secret meta for HMAC key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[str](
-            masking_strategy=HMAC,
+            masking_strategy=HMAC_STRATEGY_NAME,
             generate_secret_func=SecretsUtil.generate_secret_string,
         )
     }
 
     # cache secrets for HMAC
     secret_key = MaskingSecretCache[str](
-        secret="test_key", masking_strategy=HMAC, secret_type=SecretType.key
+        secret="test_key",
+        masking_strategy=HMAC_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
 
@@ -43,14 +47,16 @@ def test_get_secret_from_cache_bytes() -> None:
     # build masking secret meta for AES key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[bytes](
-            masking_strategy=AES_ENCRYPT,
+            masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
             generate_secret_func=SecretsUtil.generate_secret_bytes,
         )
     }
 
     # cache secret AES key
     secret_key = MaskingSecretCache[str](
-        secret=b"\x94Y\xa8Z", masking_strategy=AES_ENCRYPT, secret_type=SecretType.key
+        secret=b"\x94Y\xa8Z",
+        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
 
@@ -65,7 +71,7 @@ def test_generate_secret() -> None:
     # build masking secret meta for HMAC key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[str](
-            masking_strategy=HMAC,
+            masking_strategy=HMAC_STRATEGY_NAME,
             generate_secret_func=SecretsUtil.generate_secret_string,
         )
     }
