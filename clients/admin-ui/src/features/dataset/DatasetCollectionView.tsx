@@ -1,4 +1,4 @@
-import { Box, Button, Select, Spinner } from "@fidesui/react";
+import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 
 import { FidesKey } from "../common/fides-types";
