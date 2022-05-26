@@ -1,6 +1,8 @@
+# pylint: disable=unused-wildcard-import, wildcard-import
+
 import json
 import logging
-from typing import Generator
+from typing import Any, Callable, Dict, Generator, List, MutableMapping
 
 import pytest
 from fastapi.testclient import TestClient
@@ -110,7 +112,7 @@ def oauth_client(db: Session) -> Generator:
     client.delete(db)
 
 
-def generate_auth_header_for_user(user, scopes):
+def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -121,14 +123,14 @@ def generate_auth_header_for_user(user, scopes):
 
 
 @pytest.fixture(scope="function")
-def generate_auth_header(oauth_client):
+def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
     return _generate_auth_header(oauth_client)
 
 
-def _generate_auth_header(oauth_client):
+def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
     client_id = oauth_client.id
 
-    def _build_jwt(scopes: List[str]):
+    def _build_jwt(scopes: List[str]) -> Dict[str, str]:
         payload = {
             JWE_PAYLOAD_SCOPES: scopes,
             JWE_PAYLOAD_CLIENT_ID: client_id,
@@ -141,8 +143,8 @@ def _generate_auth_header(oauth_client):
 
 
 @pytest.fixture(scope="function")
-def generate_webhook_auth_header():
-    def _build_jwt(webhook: PolicyPreWebhook):
+def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
+    def _build_jwt(webhook: PolicyPreWebhook) -> Dict[str, str]:
         jwe = generate_request_callback_jwe(webhook)
         return {"Authorization": "Bearer " + jwe}
 
@@ -150,5 +152,5 @@ def generate_webhook_auth_header():
 
 
 @pytest.fixture(scope="session")
-def integration_config():
+def integration_config() -> MutableMapping[str, Any]:
     yield load_toml("fidesops-integration.toml")
