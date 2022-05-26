@@ -51,9 +51,9 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
 )
 @click.option(
     "-a",
-    "--include-audits",
+    "--audit",
     is_flag=True,
-    help="Include optional audits for data map attribute compliance.",
+    help="Raise errors if resources are missing attributes required for building a data map.",
 )
 @dry_flag
 @with_analytics
