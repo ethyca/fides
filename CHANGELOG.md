@@ -25,6 +25,7 @@ The types of changes are:
 ### Developer Experience
 
 * Import ordering is now enforced using [isort](https://pycqa.github.io/isort/) in CI [#533](https://github.com/ethyca/fidesops/pull/533)
+* [Teardown all Docker infra once it's finished with](https://github.com/ethyca/fidesops/pull/498/)
 * Update PR checklist for [`CHANGELOG.md`](https://github.com/ethyca/fidesops/blob/main/CHANGELOG.md) file [#558](https://github.com/ethyca/fidesops/pull/558)
 
 ### Docs
