@@ -1,6 +1,5 @@
 import type { NextPage } from "next";
-
-import Setup from "./setup";
+import Setup from "../features/config-wizard/setup";
 
 const ConfigWizard: NextPage = () => <Setup />;
 
