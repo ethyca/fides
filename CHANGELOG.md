@@ -26,6 +26,7 @@ The types of changes are:
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * Navigation bar for management UI
 * Dataset backend integration for management UI
+* Initial dataset collection UI view
 
 ### Changed
 
