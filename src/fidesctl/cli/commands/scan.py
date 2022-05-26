@@ -151,8 +151,8 @@ def scan_system_aws(
 ) -> None:
     """
     Connect to an aws account and compares tracked resources to existing systems.
-    Credentials can be supplied as options, a credentials reference to fidesctl 
-    config, or boto3 environment configuration. 
+    Credentials can be supplied as options, a credentials reference to fidesctl
+    config, or boto3 environment configuration.
     Tracked resources: [Redshift, RDS]
 
     Outputs missing resources and has a non-zero exit if coverage is
