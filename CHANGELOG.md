@@ -26,7 +26,7 @@ The types of changes are:
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * Navigation bar for management UI
 * Dataset backend integration for management UI
-* Okta, aws and database credentials can now come from fides conig [#694](https://github.com/ethyca/fides/pull/694)
+* Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 
 ### Changed
 
