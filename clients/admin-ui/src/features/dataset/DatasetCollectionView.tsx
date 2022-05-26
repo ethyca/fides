@@ -1,4 +1,4 @@
-import { Box, Button, Select } from "@fidesui/react";
+import { Box, Button, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 
 import { FidesKey } from "../common/fides-types";
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
-  const { dataset } = useDataset(fidesKey);
+  const { dataset, isLoading } = useDataset(fidesKey);
   const [activeCollection, setActiveCollection] = useState<
     DatasetCollection | undefined
   >();
@@ -46,17 +46,20 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     setActiveCollection(collection);
   };
 
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   return (
     <Box>
-      <Box mb={4} display="flex" width="auto">
-        <Select onChange={handleChangeCollection} mr={2}>
+      <Box mb={4} display="flex">
+        <Select onChange={handleChangeCollection} mr={2} width="auto">
           {collections.map((collection) => (
             <option key={collection.name} value={collection.name}>
               {collection.name}
             </option>
           ))}
         </Select>
-        <Button>Modify collection</Button>
       </Box>
       {activeCollection && (
         <DatasetFieldsTable fields={activeCollection.fields} />
