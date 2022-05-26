@@ -1,15 +1,14 @@
 import type { NextPage } from "next";
-import Setup from "../features/config-wizard/setup";
-// import ConfigWizardModal from "./config-wizard-modal"
 
-const ConfigWizard: NextPage = () => {
-  return (
+import Setup from "../features/config-wizard/Setup";
+// import ConfigWizardModal from "../features/config-wizard/ConfigWizardModal"
+
+const ConfigWizard: NextPage = () => (
     // step 0
     <Setup />
 
     // wizard initiated
     // <ConfigWizardModal />
   );
-};
 
 export default ConfigWizard;
