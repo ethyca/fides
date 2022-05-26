@@ -107,6 +107,7 @@ def xenon(session: nox.Session) -> None:
 
 
 # Fidesctl Checks
+# Make sure that this installs fidesctl in an isolated environment
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fidesctl is installed."""
