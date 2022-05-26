@@ -1,8 +1,7 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
-import type { NextPage } from "next";
 import React from "react";
 
-const Setup: NextPage = () => (
+const Setup = () => (
   <Stack>
     <Container
       height="35vh"
