@@ -15,7 +15,7 @@ The `generate` command can connect to a database and automatically generate reso
 Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config. 
 
 #### Command Options
-A connection string can be suppplied using the `connection-string` option:
+A connection string can be supplied using the `connection-string` option:
 ```sh
 ...
 --connection-string <my_connection_string>
@@ -38,7 +38,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING="<my_database_credentials>"
 ```
@@ -146,9 +146,7 @@ Credentials can be directly supplied in your command using the `access_key_id`, 
 ```
 
 #### Environment Variables
-Credentials environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
-
-The simplest way to authenticate through environment variables is to set access key and access key id:
+The simplest way to authenticate through environment variables is to set an `SECRET_ACCESS_KEY` and `ACCESS_KEY_ID`, as defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables):
 ```sh
 export AWS_ACCESS_KEY_ID="<my_access_key_id>"
 export AWS_SECRET_ACCESS_KEY="<my_access_key>"
@@ -162,7 +160,7 @@ export AWS_DEFAULT_REGION="us-east-1"
 ```
 
 #### Fides Config
-Credentials can be defined within your fides config under the credentials section.
+Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
 
 ```sh
 [credentials]
@@ -176,7 +174,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
 export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
@@ -284,9 +282,7 @@ Credentials can be directly supplied in your command using the `org-url` and `to
 ```
 
 #### Environment Variables
-Credentials environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
-
-The simplest way to authenticate is by using a client token:
+The simplest way to authenticate is by using a client token, defined by the [Okta Python SDK](https://github.com/okta/okta-sdk-python#environment-variables):
 ```sh
 export OKTA_CLIENT_TOKEN="<my_okta_client_token>"
 ```
@@ -300,7 +296,7 @@ export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
 ```
 
 #### Fides Config
-Credentials can be defined within your fides config under the credentials section.
+Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
 
 ```sh
 [credentials]
@@ -314,7 +310,7 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment varialble to set credentials config values if persisting your token to a file is problematic. To set a token you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
 export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
 ```
