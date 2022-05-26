@@ -164,11 +164,14 @@ def generate_aws(
         log.info("Generating systems from AWS")
         aws_systems = generate_aws_systems(organization=organization, aws_config=config)
     except ClientError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unable to generate resources",
-        )
+        if error.response["Error"]["Code"] in [
+            "InvalidClientTokenId",
+            "SignatureDoesNotMatch",
+        ]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=error.response["Error"]["Message"],
+            )
+        raise error
 
     return [i.dict(exclude_none=True) for i in aws_systems]
