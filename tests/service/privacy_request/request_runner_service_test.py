@@ -13,9 +13,11 @@ from sqlalchemy.orm import Session
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.db.session import get_db_session
-from fidesops.models.policy import ActionType, PolicyPreWebhook
+from fidesops.models.policy import PolicyPostWebhook
 from fidesops.models.privacy_request import (
+    ActionType,
     ExecutionLog,
+    PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
@@ -75,6 +77,29 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
     wait_for(privacy_request_runner.submit())
     privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
     assert privacy_request.started_processing_at == before
+
+
+@mock.patch(
+    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run_webhooks_and_report_status"
+)
+def test_from_graph_resume_does_not_run_pre_webhooks(
+    run_webhooks,
+    db: Session,
+    privacy_request: PrivacyRequest,
+    privacy_request_runner: PrivacyRequestRunner,
+) -> None:
+    privacy_request.started_processing_at = None
+    wait_for(privacy_request_runner.submit(from_step=ActionType.access))
+
+    _sessionmaker = get_db_session()
+    db = _sessionmaker()
+
+    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    assert privacy_request.started_processing_at is not None
+
+    # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
+    assert run_webhooks.call_count == 1
+    assert run_webhooks.call_args[1]["webhook_cls"] == PolicyPostWebhook
 
 
 def get_privacy_request_results(

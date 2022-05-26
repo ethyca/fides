@@ -978,6 +978,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mysql_example_test_dataset.yml",
         "data/dataset/mariadb_example_test_dataset.yml",
         "data/dataset/bigquery_example_test_dataset.yml",
+        "data/dataset/manual_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

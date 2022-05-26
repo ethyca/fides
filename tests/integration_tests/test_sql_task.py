@@ -5,7 +5,6 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
 
-import dask
 import pytest
 
 from fidesops.core.config import config
@@ -31,7 +30,6 @@ from ..graph.graph_test_util import (
 )
 from ..task.traversal_data import integration_db_dataset, integration_db_graph
 
-dask.config.set(scheduler="processes")
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -199,6 +197,7 @@ def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
+    privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
     access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,

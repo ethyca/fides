@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import dask
 from dask.threaded import get
 
+from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -35,7 +36,7 @@ from fidesops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
-dask.config.set(scheduler="processes")
+dask.config.set(scheduler="threads")
 
 EMPTY_REQUEST = PrivacyRequest()
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -72,6 +73,13 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except PrivacyRequestPaused as ex:
+                    logger.warning(
+                        f"Privacy request {method_name} paused {self.traversal_node.address}"
+                    )
+                    self.log_paused(action_type, ex)
+                    # Re-raise to stop privacy request execution.
+                    raise
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -314,6 +322,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
+    def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
+        """On paused activities"""
+        logger.info(f"Pausing {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
+
     def log_end(
         self, action_type: ActionType, ex: Optional[BaseException] = None
     ) -> None:
@@ -486,6 +500,26 @@ def collect_queries(
     return env
 
 
+def update_mapping_from_cache(
+    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    resources: TaskResources,
+    start_fn: Callable,
+) -> None:
+    """When resuming a privacy request from a paused or failed state, update the `dsk` dictionary with results we've
+    already obtained from a previous run. Remove upstream dependencies for these nodes, and just return the data we've
+    already retrieved, rather than visiting them again.
+
+    If there's no cached data, the dsk dictionary won't change.
+    """
+
+    cached_results: Dict[str, Optional[List[Row]]] = resources.get_all_cached_objects()
+
+    for collection_name in cached_results:
+        dsk[CollectionAddress.from_string(collection_name)] = (
+            start_fn(cached_results[collection_name]),
+        )
+
+
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -497,14 +531,16 @@ def run_access_request(
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
 
-        def start_function(seed: Dict[str, Any]) -> Callable[[], List[Dict[str, Any]]]:
+        def start_function(
+            seed: List[Dict[str, Any]]
+        ) -> Callable[[], List[Dict[str, Any]]]:
             """Return a function that returns the seed value to kick off the dask function chain.
 
             The first traversal_node in the dask function chain is just a function that when called returns
             the graph seed value."""
 
             def g() -> List[Dict[str, Any]]:
-                return [seed]
+                return seed
 
             return g
 
@@ -515,9 +551,10 @@ def run_access_request(
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        def termination_fn(*dependent_values: List[Row]) -> Dict[str, List[Row]]:
+        def termination_fn(
+            *dependent_values: List[Row],
+        ) -> Dict[str, Optional[List[Row]]]:
             """A termination function that just returns its inputs mapped to their source addresses.
-
             This needs to wait for all dependent keys because this is how dask is informed to wait for
             all terminating addresses before calling this."""
 
@@ -526,11 +563,14 @@ def run_access_request(
         env: Dict[CollectionAddress, Any] = {}
         end_nodes = traversal.traverse(env, collect_tasks_fn)
 
-        dsk = {k: (t.access_request, *t.input_keys) for k, t in env.items()}
-        dsk[ROOT_COLLECTION_ADDRESS] = (start_function(traversal.seed_data),)
+        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
+            k: (t.access_request, *t.input_keys) for k, t in env.items()
+        }
+        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        update_mapping_from_cache(dsk, resources, start_function)
 
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
 

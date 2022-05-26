@@ -4,7 +4,6 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
 
-import dask
 import pytest
 from bson import ObjectId
 
@@ -33,7 +32,6 @@ from ..task.traversal_data import (
     integration_db_mongo_graph,
 )
 
-dask.config.set(scheduler="processes")
 empty_policy = Policy()
 
 
@@ -140,6 +138,9 @@ def test_combined_erasure_task(
         "mongo_test:rewards": 0,
     }
 
+    privacy_request = PrivacyRequest(
+        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
+    )
     rerun_access = graph_task.run_access_request(
         privacy_request,
         policy,
@@ -400,6 +401,7 @@ def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
     access_request_data = graph_task.run_access_request(
         privacy_request,
         policy,
@@ -976,6 +978,7 @@ def test_array_querying_mongo(
     ]
 
     # Run again with different email
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
     access_request_results = graph_task.run_access_request(
         privacy_request,
         policy,
