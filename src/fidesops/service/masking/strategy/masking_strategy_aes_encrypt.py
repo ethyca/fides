@@ -16,13 +16,17 @@ from fidesops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 from fidesops.util.encryption.aes_gcm_encryption_scheme import encrypt
 from fidesops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_bytes
 from fidesops.util.encryption.secrets_util import SecretsUtil
 
-AES_ENCRYPT = "aes_encrypt"
+AES_ENCRYPT_STRATEGY_NAME = "aes_encrypt"
 
 
+@MaskingStrategyFactory.register(AES_ENCRYPT_STRATEGY_NAME)
 class AesEncryptionMaskingStrategy(MaskingStrategy):
     def __init__(self, configuration: AesEncryptionMaskingConfiguration):
         self.mode = configuration.mode
@@ -82,7 +86,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         """Returns the description used for documentation. In particular, used by the
         documentation endpoint in masking_endpoints.list_masking_strategies"""
         return MaskingStrategyDescription(
-            name=AES_ENCRYPT,
+            name=AES_ENCRYPT_STRATEGY_NAME,
             description="Masks by encrypting the value using AES",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -122,15 +126,15 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[bytes](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_bytes,
             ),
             SecretType.key_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt_hmac: MaskingSecretMeta[str](
-                masking_strategy=AES_ENCRYPT,
+                masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

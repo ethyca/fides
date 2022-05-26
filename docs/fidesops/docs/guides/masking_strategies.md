@@ -190,7 +190,7 @@ strategies available, along with their configuration options.
 ## Extensibility
 
 In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
-MaskingStrategy has five methods - `mask`, `secrets_required`,  `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
+`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
 
@@ -204,8 +204,13 @@ from fidesops.schemas.masking.masking_configuration import RandomStringMaskingCo
 from fidesops.schemas.masking.masking_strategy_description import MaskingStrategyDescription
 from fidesops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.service.masking.strategy.masking_strategy_factory import (
+    MaskingStrategyFactory,
+)
 
+RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
+@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks a value with a random string of the length specified in the configuration."""
 
@@ -256,71 +261,9 @@ This is the configuration for the masking strategy. It is used to house the opti
 any defaults that should be applied in their absence. All configuration classes extend from the 
 `MaskingConfiguration` class.
 
+
 ### Integrating with the Masking Strategy Factory
 
-Now that we know how a masking strategy is built in the system and how a masking strategy is configured, we will cover 
-how to enable the linkage between the two. In other words, how do we run the masking strategy that we have configured? 
-The answer to that is the Masking Strategy Factory.
+In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
 
-The masking strategy factory is defined in the `masking_strategy_factory.py` file. The pertinent sections have been 
-pasted below:
-
-```python
-from enum import Enum
-from typing import Dict, Union
-
-from pydantic import ValidationError
-
-from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RandomStringRewriteMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
-    StringRewriteMaskingStrategy,
-)
-from fidesops.common_exceptions import ValidationError as FidesopsValidationError
-
-from fidesops.schemas.masking.masking_configuration import FormatPreservationConfig
-
-class SupportedMaskingStrategies(Enum):
-    string_rewrite = StringRewriteMaskingStrategy
-    hash = HashMaskingStrategy
-    random_string_rewrite = RandomStringRewriteMaskingStrategy
-    aes_encrypt = AesEncryptionMaskingStrategy
-    hmac = HmacMaskingStrategy
-    
-
-def get_strategy(
-    strategy_name: str,
-    configuration: Dict[
-        str,
-        Union[str, FormatPreservationConfig],
-    ],
-) -> MaskingStrategy:
-    """
-    Returns the strategy given the name and configuration.
-    Raises NoSuchStrategyException if the strategy does not exist
-    """
-    if strategy_name not in SupportedMaskingStrategies.__members__:
-        valid_strategies = ", ".join([s.name for s in SupportedMaskingStrategies])
-        raise NoSuchStrategyException(
-            f"Strategy '{strategy_name}' does not exist. Valid strategies are [{valid_strategies}]"
-        )
-    strategy = SupportedMaskingStrategies[strategy_name].value
-    try:
-        strategy_config = strategy.get_configuration_model()(**configuration)
-        return strategy(configuration=strategy_config)
-    except ValidationError as e:
-        raise FidesopsValidationError(message=str(e))
-
-```
-
-
-The `SupportedMaskingStrategy` enum maps the strategy name to the masking strategy implementation class. 
-
-After creating a new masking strategy and configuration, just register it in this enum, and it will be ready for use by the system.
+The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the same value defined by [callers](#using-fidesops-as-a-masking-service) in the `"masking_strategy"."strategy"` field.
