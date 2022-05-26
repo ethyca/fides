@@ -1,13 +1,22 @@
 import {
-  Box, Button, chakra, Flex, FormControl, FormErrorMessage, FormLabel, Heading, Input, Stack, useToast
-} from '@fidesui/react';
-import { useFormik } from 'formik';
-import type { NextPage } from 'next';
-import { signIn } from 'next-auth/react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-
+  Box,
+  Button,
+  chakra,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  Stack,
+  useToast,
+} from "@fidesui/react";
+import { useFormik } from "formik";
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { signIn } from "next-auth/react";
+import React, { useState } from "react";
 
 const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,25 +24,25 @@ const useLogin = () => {
   const router = useRouter();
   const formik = useFormik({
     initialValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
     onSubmit: async (values) => {
       setIsLoading(true);
-      const response = await signIn<'credentials'>('credentials', {
+      const response = await signIn<"credentials">("credentials", {
         ...values,
         callbackUrl: `${window.location.origin}`,
         redirect: false,
       });
       setIsLoading(false);
       if (response && response.ok) {
-        router.push('/');
+        router.push("/");
         toast.closeAll();
       } else {
         toast({
-          status: 'error',
+          status: "error",
           description:
-            'Login failed. Please check your credentials and try again.',
+            "Login failed. Please check your credentials and try again.",
         });
       }
     },
@@ -44,7 +53,7 @@ const useLogin = () => {
       } = {};
 
       if (!values.email) {
-        errors.email = 'Required';
+        errors.email = "Required";
       }
       /* Disable email validation while client-level authentication is required
        *
@@ -56,7 +65,7 @@ const useLogin = () => {
        */
 
       if (!values.password) {
-        errors.password = 'Required';
+        errors.password = "Required";
       }
 
       return errors;
@@ -95,7 +104,7 @@ const Login: NextPage = () => {
           minH="100vh"
           justify="center"
         >
-          <Box display={['none', 'none', 'block']}>
+          <Box display={["none", "none", "block"]}>
             <img
               src="/logo.svg"
               alt="FidesUI logo"
@@ -107,7 +116,7 @@ const Login: NextPage = () => {
             <Heading
               fontSize="4xl"
               colorScheme="primary"
-              display={['none', 'none', 'block']}
+              display={["none", "none", "block"]}
             >
               Sign into your account
             </Heading>
@@ -115,9 +124,9 @@ const Login: NextPage = () => {
               bg="white"
               py={12}
               px={[0, 0, 40]}
-              width={['100%', '100%', 640]}
+              width={["100%", "100%", 640]}
               borderRadius={4}
-              position={['absolute', 'absolute', 'inherit']}
+              position={["absolute", "absolute", "inherit"]}
               top={0}
               bottom={0}
               left={0}
@@ -125,7 +134,7 @@ const Login: NextPage = () => {
               boxShadow="base"
             >
               <Stack align="center" justify="center" spacing={8}>
-                <Stack display={['block', 'block', 'none']} spacing={12}>
+                <Stack display={["block", "block", "none"]} spacing={12}>
                   <Flex justifyContent="center">
                     <img
                       src="/logo.svg"
@@ -140,7 +149,7 @@ const Login: NextPage = () => {
                 </Stack>
                 <chakra.form
                   onSubmit={handleSubmit}
-                  maxW={['xs', 'xs', '100%']}
+                  maxW={["xs", "xs", "100%"]}
                   width="100%"
                 >
                   <Stack spacing={6}>
@@ -185,8 +194,8 @@ const Login: NextPage = () => {
                     <Button
                       type="submit"
                       bg="primary.800"
-                      _hover={{ bg: 'primary.400' }}
-                      _active={{ bg: 'primary.500' }}
+                      _hover={{ bg: "primary.400" }}
+                      _active={{ bg: "primary.500" }}
                       disabled={!values.email || !values.password}
                       isLoading={isLoading}
                       colorScheme="primary"
