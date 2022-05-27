@@ -1,10 +1,17 @@
-import { Box, Select, Spinner } from "@fidesui/react";
+import { Box, Select, Spinner, Text, useToast } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 
 import { FidesKey } from "../common/fides-types";
 import { useGetDatasetByKeyQuery } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
 import { DatasetCollection } from "./types";
+
+const SuccessMessage = () => (
+  <Text>
+    <strong>Success:</strong> Successfully loaded dataset
+  </Text>
+);
 
 const useDataset = (key: FidesKey) => {
   const { data, isLoading } = useGetDatasetByKeyQuery(key);
@@ -24,6 +31,9 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const [activeCollection, setActiveCollection] = useState<
     DatasetCollection | undefined
   >();
+  const router = useRouter();
+  const toast = useToast();
+  const { fromLoad } = router.query;
 
   useEffect(() => {
     if (dataset) {
@@ -32,6 +42,23 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
       setActiveCollection(undefined);
     }
   }, [dataset]);
+
+  useEffect(() => {
+    if (fromLoad) {
+      toast({
+        variant: "subtle",
+        position: "top",
+        description: <SuccessMessage />,
+        duration: 5000,
+        status: "success",
+        isClosable: true,
+      });
+    }
+  }, [fromLoad, toast]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (!dataset) {
     return <div>Dataset not found</div>;
@@ -45,10 +72,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     )[0];
     setActiveCollection(collection);
   };
-
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   return (
     <Box>
