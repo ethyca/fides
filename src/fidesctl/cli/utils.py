@@ -22,10 +22,9 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import check_response, echo_green, echo_red
+from fidesctl.core.utils import check_response, echo_green, echo_red, API_PREFIX
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:

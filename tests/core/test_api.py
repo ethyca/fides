@@ -10,7 +10,7 @@ from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
 from fidesapi import main
-from fidesapi.routes.util import API_PREFIX
+from fidesctl.core.utils import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 

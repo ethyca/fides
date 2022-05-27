@@ -3,7 +3,7 @@ import pytest
 from requests_mock import Mocker
 
 import fidesctl.cli.utils as utils
-from fidesapi.routes.util import API_PREFIX
+from fidesctl.core.utils import API_PREFIX
 
 
 @pytest.mark.unit
