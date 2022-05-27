@@ -1,8 +1,9 @@
 from pathlib import Path
 
 from fastapi import APIRouter
+from fidesctl.core.utils import API_PREFIX as _API_PREFIX
 
-API_PREFIX = "/api/v1"
+API_PREFIX = _API_PREFIX
 WEBAPP_DIRECTORY = Path("src/fidesapi/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
