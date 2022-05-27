@@ -1,11 +1,9 @@
 import { Button, Flex } from "@fidesui/react";
+import { useSession } from "next-auth/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import React, { ReactElement } from "react";
-
 import { ArrowDownLineIcon } from "~/features/common/Icon";
-
 import Header from "./Header";
 
 interface NavLinkProps {
@@ -63,6 +61,8 @@ const NavBar = () => {
           <NavLink title="Policies" href="/policy" disabled />
           <NavLink title="Taxonomy" href="/taxonomy" disabled />
           <NavLink title="User Management" href="/user-management" disabled />
+          {/* This is a temporary link to the config wizard while it's still in progress */}
+          <NavLink title="Config Wizard" href="/config-wizard" />
           <NavLink
             title="More"
             href="#"

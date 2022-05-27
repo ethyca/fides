@@ -1,58 +1,14 @@
-import { Box, Button, Flex, Heading } from "@fidesui/react";
+import { Heading } from "@fidesui/react";
 import type { NextPage } from "next";
-import Head from "next/head";
-import NextLink from "next/link";
 import React from "react";
 import Layout from "~/features/common/Layout";
-import Header from "../features/common/Header";
-import { ArrowDownLineIcon } from "../features/common/Icon";
 
-const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
+const Home: NextPage = () => (
   <Layout title="Home">
-    <Head>
-      <title>Fides Admin UI</title>
-      <meta name="description" content="Generated from FidesUI template" />
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
-
-    <Header username={session && session.username} />
-
     <main>
-      {/* NEED TO FLAG BEFORE RELEASE
-      Show Setup when the user is an admin and there are zero systems registered in the database */}
-      {/* <Setup /> */}
-
-      <Flex
-        borderBottom="1px"
-        borderTop="1px"
-        px={9}
-        py={1}
-        borderColor="gray.100"
-      >
-        <Button variant="ghost" mr={4} colorScheme="complimentary">
-          Subject Requests
-        </Button>
-        <Button variant="ghost" disabled mr={4}>
-          Datastore Connections
-        </Button>
-        <Button variant="ghost" disabled mr={4}>
-          User Management
-        </Button>
-        {/* This is a temporary link to the config wizard while it's still in progress */}
-        <NextLink href="/config-wizard" passHref>
-          <Button variant="ghost" mr={4}>
-            Config Wizard
-          </Button>
-        </NextLink>
-        <Button variant="ghost" disabled rightIcon={<ArrowDownLineIcon />}>
-          More
-        </Button>
-      </Flex>
-      <Box px={9} py={10}>
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Subject Requests
-        </Heading>
-      </Box>
+      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        Welcome home!
+      </Heading>
     </main>
   </Layout>
 );
