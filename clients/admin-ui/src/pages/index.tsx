@@ -3,13 +3,12 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import NextLink from "next/link";
 import React from "react";
-
+import Layout from "~/features/common/Layout";
 import Header from "../features/common/Header";
-// import Setup from './setup';
 import { ArrowDownLineIcon } from "../features/common/Icon";
 
 const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
-  <div>
+  <Layout title="Home">
     <Head>
       <title>Fides Admin UI</title>
       <meta name="description" content="Generated from FidesUI template" />
@@ -41,7 +40,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         </Button>
         {/* This is a temporary link to the config wizard while it's still in progress */}
         <NextLink href="/config-wizard" passHref>
-          <Button variant="ghost" disabled mr={4}>
+          <Button variant="ghost" mr={4}>
             Config Wizard
           </Button>
         </NextLink>
@@ -55,7 +54,7 @@ const Home: NextPage<{ session: { username: string } }> = ({ session }) => (
         </Heading>
       </Box>
     </main>
-  </div>
+  </Layout>
 );
 
 // TODO: replace auth https://github.com/ethyca/fidesui/issues/2
