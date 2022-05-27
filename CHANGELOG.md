@@ -27,6 +27,7 @@ The types of changes are:
 * Navigation bar for management UI
 * Dataset backend integration for management UI
 * Initial dataset collection UI view
+  * Add interaction for viewing a dataset collection
 
 ### Changed
 

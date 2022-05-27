@@ -2,15 +2,19 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
+import type { AppState } from "~/app/store";
+
 import { FidesKey } from "../common/fides-types";
 import { Dataset } from "./types";
 
 export interface State {
   datasets: Dataset[];
+  activeDataset: Dataset | undefined;
 }
 
 const initialState: State = {
   datasets: [],
+  activeDataset: undefined,
 };
 
 export const datasetApi = createApi({
@@ -38,7 +42,12 @@ export const datasetSlice = createSlice({
   initialState,
   reducers: {
     setDatasets: (state, action: PayloadAction<Dataset[]>) => ({
+      ...state,
       datasets: action.payload,
+    }),
+    setActiveDataset: (state, action: PayloadAction<Dataset | undefined>) => ({
+      ...state,
+      activeDataset: action.payload,
     }),
   },
   extraReducers: {
@@ -49,6 +58,8 @@ export const datasetSlice = createSlice({
   },
 });
 
-export const { setDatasets } = datasetSlice.actions;
+export const { setDatasets, setActiveDataset } = datasetSlice.actions;
+export const selectActiveDataset = (state: AppState) =>
+  state.dataset.activeDataset;
 
 export const { reducer } = datasetSlice;
