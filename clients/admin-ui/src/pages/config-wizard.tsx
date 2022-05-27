@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import ConfigWizardModal from "../features/config-wizard/ConfigWizardModal";
+import ConfigWizardWalkthrough from "../features/config-wizard/ConfigWizardWalkthrough";
 import Setup from "../features/config-wizard/setup";
 
 const ConfigWizard: NextPage = () => (
@@ -7,7 +7,7 @@ const ConfigWizard: NextPage = () => (
     {/* step 0 */}
     <Setup />
     {/* wizard initiated */}
-    <ConfigWizardModal />
+    <ConfigWizardWalkthrough />
   </>
 );
 
