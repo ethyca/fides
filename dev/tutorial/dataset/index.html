@@ -1572,8 +1572,8 @@ You're not viewing the latest version.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset db <span class="se">\</span>
-  postgresql://postgres:postgres@localhost:5432/flaskr <span class="se">\</span>
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml <span class="se">\</span>
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 </code></pre></div></td></tr></table></div>
 <h2 id="understanding-the-dataset-resource">Understanding the Dataset Resource</h2>
 <p>This YAML serves as the foundation of <a href="https://github.com/ethyca/fideslang"><code>fideslang</code></a>, the Fides language; it answers "<em>What data and kinds of data do we have?</em>" and "<em>How is our data organized?</em>". The language is built on declaring the types of data found in storage for your organization.</p>

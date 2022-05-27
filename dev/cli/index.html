@@ -2229,19 +2229,29 @@ flag can be used to return data to the console instead.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a database directly via a SQLAlchemy-style connection string and
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a database directly via a SQLAlchemy-style connection string and
 generate a dataset manifest file that consists of every schema/table/field.
+Connection string can be supplied as an option or a credentials reference
+to fidesctl config.
 
 This is a one-time operation that does not track the state of the database.
 It will need to be run again if the database schema changes.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset db [OPTIONS] CONNECTION_STRING OUTPUT_FILENAME
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset db [OPTIONS] OUTPUT_FILENAME
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --include-null  Includes attributes that would otherwise be null.
-  --help          Show this message and exit.
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials defined within fidesctl config
+  --connection-string TEXT  Use connection string option to connect to a
+                            database
+  --include-null            Includes attributes that would otherwise be null.
+  --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h5 id="fidesctl-generate-dataset-okta">fidesctl generate dataset okta</h5>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2249,20 +2259,32 @@ It will need to be run again if the database schema changes.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates datasets for your Okta applications. Connect to an Okta admin
-account by providing an organization url. Auth token can be supplied by
-setting the environment variable OKTA_CLIENT_TOKEN.
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates datasets for your Okta applications. Connect to an Okta admin
+account by providing an organization url and auth token or a credentials
+reference to fidesctl config. Auth token and organization url can also
+be supplied by setting environment variables as defined by the okta python sdk.
 
 This is a one-time operation that does not track the state of the okta resources.
 It will need to be run again if the tracked resources change.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset okta [OPTIONS] ORG_URL OUTPUT_FILENAME
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset okta [OPTIONS] OUTPUT_FILENAME
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --include-null  Includes attributes that would otherwise be null.
-  --help          Show this message and exit.
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
+  --org-url TEXT         Use org url option to connect to okta. Requires
+                         options --org-url and --token
+  --token TEXT           Use token option to connect to okta. Requires options
+                         --org-url and --token
+  --include-null         Includes attributes that would otherwise be null.
+  --help                 Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fidesctl-generate-system">fidesctl generate system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl System resources
@@ -2279,9 +2301,13 @@ It will need to be run again if the tracked resources change.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account by leveraging a boto3 environment variable
-configuration and generate a system manifest file that consists of every
-tracked resource. Tracked resources: [Redshift, RDS]
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account and generate a system manifest file that consists of every
+tracked resource.
+Credentials can be supplied as options, a credentials
+reference to fidesctl config, or boto3 environment configuration.
+Tracked resources: [Redshift, RDS]
 
 This is a one-time operation that does not track the state of the aws resources.
 It will need to be run again if the tracked resources change.
@@ -2290,11 +2316,31 @@ It will need to be run again if the tracked resources change.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate system aws [OPTIONS] OUTPUT_FILENAME
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  --include-null           Includes attributes that would otherwise be null.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials defined within fidesctl config
+  --access_key_id TEXT      Use access key id option to connect to aws.
+                            Requires options --access_key_id,
+                            --secret_access_key and --region
+  --secret_access_key TEXT  Use access key option to connect to aws. Requires
+                            options --access_key_id, --secret_access_key and
+                            --region
+  --region TEXT             Use region option to connect to aws. Requires
+                            options --access_key_id, --secret_access_key and
+                            --region
+  --include-null            Includes attributes that would otherwise be null.
   -o, --organization TEXT
-  --help                   Show this message and exit.
+  --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-get">fidesctl get</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>View a resource from the server as a JSON object.
@@ -2376,8 +2422,10 @@ If the taxonomy is invalid, this command prints the error messages and triggers 
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a database directly via a SQLAlchemy-style connection string and
-compare the database objects to existing datasets.
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a database directly via a SQLAlchemy-style connection string and
+compare the database objects to existing datasets. Connection string can be
+supplied as an option or a credentials reference to fidesctl config.
 
 If there are fields within the database that aren&#39;t listed and categorized
 within one of the datasets, this counts as lacking coverage.
@@ -2386,12 +2434,20 @@ Outputs missing fields and has a non-zero exit if coverage is
 under the stated threshold.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan dataset db [OPTIONS] CONNECTION_STRING [MANIFESTS_DIR]
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan dataset db [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -c, --coverage-threshold INTEGER RANGE
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+                                  config
+  --connection-string TEXT        Use connection string option to connect to a
+                                  database
+  -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.
 </code></pre></div></td></tr></table></div>
@@ -2401,20 +2457,36 @@ under the stated threshold.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Scans your existing datasets and compares them to found Okta applications.
-Connect to an Okta admin account by providing an organization url. Auth token
-can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Scans your existing datasets and compares them to found Okta applications.
+Connect to an Okta admin account by providing an organization url and
+auth token or a credentials reference to fidesctl config. Auth token and
+organization url can also be supplied by setting environment variables
+as defined by the okta python sdk.
 
 Outputs missing resources and has a non-zero exit if coverage is
 under the stated threshold.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan dataset okta [OPTIONS] ORG_URL [MANIFESTS_DIR]
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan dataset okta [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -c, --coverage-threshold INTEGER RANGE
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+                                  config
+  --org-url TEXT                  Use org url option to connect to okta.
+                                  Requires options --org-url and --token
+  --token TEXT                    Use token option to connect to okta.
+                                  Requires options --org-url and --token
+  -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.
 </code></pre></div></td></tr></table></div>
@@ -2433,8 +2505,10 @@ under the stated threshold.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account by leveraging a valid boto3 environment varible
-configuration and compares tracked resources to existing systems.
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account and compares tracked resources to existing systems.
+Credentials can be supplied as options, a credentials reference to fidesctl
+config, or boto3 environment configuration.
 Tracked resources: [Redshift, RDS]
 
 Outputs missing resources and has a non-zero exit if coverage is
@@ -2444,10 +2518,32 @@ under the stated threshold.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan system aws [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  -o, --organization TEXT
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+                                  config
+  --access_key_id TEXT            Use access key id option to connect to aws.
+                                  Requires options --access_key_id,
+                                  --secret_access_key and --region
+  --secret_access_key TEXT        Use access key option to connect to aws.
+                                  Requires options --access_key_id,
+                                  --secret_access_key and --region
+  --region TEXT                   Use region option to connect to aws.
+                                  Requires options --access_key_id,
+                                  --secret_access_key and --region
+  -o, --organization TEXT
   -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.
