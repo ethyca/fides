@@ -70,6 +70,19 @@ To better describe the various configuration options, the following tables descr
     | analytics_opt_out | Boolean | "" | When set to `true`, prevents sending anonymous analytics data to Ethyca. |
 
 
+=== "Credentials Section"
+
+The credentials section uses custom keys which can be referenced in certain commands. 
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
+    | my_postgres.connection_string | String | Required | Sets the connection_string for `my_postgres` database credentials |
+    | my_aws.aws_access_key_id | String | Required | Sets the aws_access_key_id for `my_aws` credentials |
+    | my_aws.aws_secret_access_key | String | Required | Sets the aws_secret_access_key for `my_aws` credentials |
+    | my_aws.region_name | String | Required | Sets the region_name for `my_aws` credentials |
+    | my_okta.orgUrl | String | Required | Sets the orgUrl for `my_okta` credentials |
+    | my_okta.token | String | Required | Sets the token for `my_okta` credentials |
+
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
 1. At the path specified using the config file argument passed through the CLI
