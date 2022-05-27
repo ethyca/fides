@@ -42,8 +42,9 @@ def get_config(config_path: str = "") -> FidesctlConfig:
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
         config_environment_dict = settings.get("credentials", dict())
-        settings["credentials"] = config_environment_dict
-        merge_credentials_environment(credentials_dict=config_environment_dict)
+        settings["credentials"] = merge_credentials_environment(
+            credentials_dict=config_environment_dict
+        )
 
         fidesctl_config = FidesctlConfig.parse_obj(settings)
         return fidesctl_config
