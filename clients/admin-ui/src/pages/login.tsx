@@ -13,9 +13,9 @@ import {
 } from "@fidesui/react";
 import { useFormik } from "formik";
 import type { NextPage } from "next";
+import { signIn } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { signIn } from "next-auth/react";
 import React, { useState } from "react";
 
 const useLogin = () => {
