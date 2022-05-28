@@ -2,7 +2,7 @@ import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
 import { StepperCircleIcon, VerticalLineIcon } from "./Icon";
 
-const Stepper = (activeStep) => {
+const Stepper = (activeStep: number | null) => {
   const steps = [
     {
       number: 1,
@@ -42,11 +42,11 @@ const Stepper = (activeStep) => {
         <VerticalLineIcon boxSize={20} />
         <StepperCircleIcon boxSize={8} />
       </Stack>
-      <Stack direction={"column"} spacing="24px">
-        {steps.map((step) => (
+      <Stack direction={"column"} justify={"space-between"}>
+        {steps?.map((step: any) => (
           <Box>
-            <Text>{step.number}</Text>
-            <Text>{step.name}</Text>
+            <Text color="gray.800">Step {step.number}</Text>
+            <Text color="gray.500">{step.name}</Text>
           </Box>
         ))}
       </Stack>
