@@ -73,8 +73,8 @@ As an alternative to manually authoring the resource file, you can also use the 
 
 ```sh
 ./venv/bin/fidesctl generate dataset db \
-  postgresql://postgres:postgres@localhost:5432/flaskr \
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml \
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
 
 ## Understanding the Dataset Resource

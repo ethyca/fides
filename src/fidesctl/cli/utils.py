@@ -23,6 +23,12 @@ from fideslog.sdk.python.utils import (
 
 import fidesctl
 from fidesctl.core import api as _api
+from fidesctl.core.config import FidesctlConfig
+from fidesctl.core.config.credentials_settings import (
+    get_config_aws_credentials,
+    get_config_database_credentials,
+    get_config_okta_credentials,
+)
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.core.utils import API_PREFIX, check_response, echo_green, echo_red
 
@@ -185,3 +191,103 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
+
+
+def handle_database_credentials_options(
+    fides_config: FidesctlConfig, connection_string: str, credentials_id: str
+) -> str:
+    """
+    Handles the mutually exclusive database connections options connetion-string and credentials-id.
+    Raises errors if neither or both options are provided
+    """
+    actual_connection_string = connection_string
+    if connection_string and credentials_id:
+        raise click.UsageError(
+            "Illegal usage: connection-string and credentials-id cannot be used together"
+        )
+    if not connection_string and not credentials_id:
+        raise click.UsageError(
+            "Illegal usage: connection-string or credentials-id are required"
+        )
+    if credentials_id:
+        database_credentials = get_config_database_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not database_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        actual_connection_string = database_credentials.connection_string
+    return actual_connection_string
+
+
+def handle_okta_credentials_options(
+    fides_config: FidesctlConfig, token: str, org_url: str, credentials_id: str
+) -> Dict[str, str]:
+    """
+    Handles the mutually exclusive okta connections options org-url/token and credentials-id.
+    It is allowed to provide neither as there is support for environment variables
+    """
+    okta_config = dict()
+    if token or org_url:
+        if not token or not org_url:
+            raise click.UsageError(
+                "Illegal usage: token and org-url must be used together"
+            )
+        if credentials_id:
+            raise click.UsageError(
+                "Illegal usage: token/org-url and credentials-id cannot be used together"
+            )
+        okta_config = {"orgUrl": org_url, "token": token}
+    if credentials_id:
+        okta_credentials = get_config_okta_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not okta_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        okta_config = okta_credentials.dict()
+    return okta_config
+
+
+def handle_aws_credentials_options(
+    fides_config: FidesctlConfig,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
+    credentials_id: str,
+) -> Dict[str, str]:
+    """
+    Handles the mutually exclusive aws connections options access-key/access-key-id/region
+    and credentials-id. It is allowed to provide neither as there is support for environment
+    variables.
+    """
+    aws_config = dict()
+    if access_key_id or secret_access_key or region:
+        if not access_key_id or not secret_access_key or not region:
+            raise click.UsageError(
+                "Illegal usage: access-key-id, secret_access_key and region must be used together"
+            )
+        if credentials_id:
+            raise click.UsageError(
+                "Illegal usage: access-key-id/secret_access_key/region and credentials-id cannot be used together"
+            )
+        aws_config = {
+            "aws_access_key_id": access_key_id,
+            "aws_secret_access_key": secret_access_key,
+            "region_name": region,
+        }
+    if credentials_id:
+        aws_credentials = get_config_aws_credentials(
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        if not aws_credentials:
+            raise click.UsageError(
+                f"credentials-id {credentials_id} does not exist in fides config"
+            )
+        aws_config = aws_credentials.dict()
+    return aws_config
