@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import APIRouter
+
 from fidesctl.core.utils import API_PREFIX as _API_PREFIX
 
 API_PREFIX = _API_PREFIX
