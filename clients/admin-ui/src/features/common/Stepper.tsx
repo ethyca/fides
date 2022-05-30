@@ -2,7 +2,11 @@ import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
 import { StepperCircleIcon, VerticalLineIcon } from "./Icon";
 
-const Stepper = (activeStep: number | null) => {
+interface Props {
+  activeStep: number | null;
+}
+
+const Stepper = ({ activeStep }: Props) => {
   const steps = [
     {
       number: 1,
@@ -29,18 +33,15 @@ const Stepper = (activeStep: number | null) => {
   return (
     <Stack direction={["column", "row"]}>
       <Stack alignItems={"center"} direction={"column"} spacing={0}>
-        {/* if(activeStep === step.number) {
-          color is green
-        } */}
-        <StepperCircleIcon boxSize={8} stroke={"secondary.500"} />
-        <VerticalLineIcon boxSize={20} />
-        <StepperCircleIcon boxSize={8} />
-        <VerticalLineIcon boxSize={20} />
-        <StepperCircleIcon boxSize={8} />
-        <VerticalLineIcon boxSize={20} />
-        <StepperCircleIcon boxSize={8} />
-        <VerticalLineIcon boxSize={20} />
-        <StepperCircleIcon boxSize={8} />
+        {steps?.map((step: any) => (
+          <>
+            <StepperCircleIcon
+              boxSize={8}
+              stroke={activeStep === step.number ? "secondary.500" : "inherit"}
+            />
+            {step.number !== 5 ? <VerticalLineIcon boxSize={20} /> : null}
+          </>
+        ))}
       </Stack>
       <Stack direction={"column"} justify={"space-between"}>
         {steps?.map((step: any) => (
