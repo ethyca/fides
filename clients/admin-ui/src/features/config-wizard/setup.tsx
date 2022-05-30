@@ -1,14 +1,14 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import ConfigWizardWalkthrough from "./ConfigWizardWalkthrough";
+import React from "react";
 
-const Setup = () => {
+interface Props {
+  wizardStep: Function;
+}
+
+const Setup = ({ wizardStep }: Props) => {
   const router = useRouter();
-
-  const [configWizardStepper, setConfigWizardStepper] = useState(false);
-
-  return !configWizardStepper ? (
+  return (
     <Stack>
       <Container
         height="35vh"
@@ -46,7 +46,7 @@ const Setup = () => {
               _hover={{ bg: "primary.400" }}
               _active={{ bg: "primary.500" }}
               colorScheme="primary"
-              onClick={() => setConfigWizardStepper(true)}
+              onClick={() => wizardStep(true)}
             >
               Guided Setup (Recommended)
             </Button>
@@ -62,8 +62,6 @@ const Setup = () => {
         </Stack>
       </main>
     </Stack>
-  ) : (
-    <ConfigWizardWalkthrough />
   );
 };
 

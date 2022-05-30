@@ -1,13 +1,17 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Stepper from "../common/Stepper";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
+  const router = useRouter();
   const [step, setStep] = useState(null);
 
   const handleCancelSetup = () => {
     // Cancel
+    // Save progress ?
+    router.push("/");
   };
 
   const handleChangeStep = () => {
@@ -15,7 +19,8 @@ const ConfigWizardWalkthrough = () => {
   };
 
   return (
-    <Stack>
+    // Unique header to wizard
+    <>
       <Box>
         <Button bg="transparent" onClick={handleCancelSetup}>
           x Cancel setup
@@ -28,7 +33,7 @@ const ConfigWizardWalkthrough = () => {
         </Box>
         <OrganizationInfoForm handleChangeStep={handleChangeStep} />
       </Stack>
-    </Stack>
+    </>
   );
 };
 
