@@ -43,7 +43,13 @@ const DatasetsTable = ({ datasets }: Props) => {
               key={dataset.fides_key}
               _hover={{ bg: isActive ? undefined : "gray.50" }}
               backgroundColor={isActive ? "complimentary.50" : undefined}
+              tabIndex={0}
               onClick={() => handleRowClick(dataset)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleRowClick(dataset);
+                }
+              }}
               cursor="pointer"
             >
               <Td pl={0}>{dataset.name}</Td>
