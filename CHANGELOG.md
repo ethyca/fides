@@ -22,7 +22,8 @@ The types of changes are:
 * Added dependabot to keep dependencies updated
 * Include a warning for any orphan datasets as part of the `apply` command.
 * Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
-  * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
+* New `audit` command for `system` and `organization` resources, checking data map attribute compliance. [#548](https://github.com/ethyca/fides/pull/548)
+* UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
 * Navigation bar for management UI
