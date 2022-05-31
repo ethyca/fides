@@ -3448,6 +3448,58 @@
         }
       }
     },
+    "/api/v1/generate/": {
+      "post": {
+        "tags": [
+          "Generate"
+        ],
+        "summary": "Generate",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Okta: Systems\n* Snowflake: Datasets\n\nAll config secrets should be encoded as a minor security precaution, using the\n`obscure_string` function in `fidesapi.routes.util`\n\nAll production deployments should implement HTTPS for security purposes",
+        "operationId": "generate_api_v1_generate__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequestPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unable to generate resources."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -3571,6 +3623,30 @@
   },
   "components": {
     "schemas": {
+      "AWSConfig": {
+        "title": "AWSConfig",
+        "required": [
+          "region_name",
+          "aws_secret_access_key",
+          "aws_access_key_id"
+        ],
+        "type": "object",
+        "properties": {
+          "region_name": {
+            "title": "Region Name",
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "type": "string"
+          }
+        },
+        "description": "The model for the connection config for AWS"
+      },
       "ContactDetails": {
         "title": "ContactDetails",
         "type": "object",
@@ -4144,6 +4220,83 @@
         "type": "string",
         "description": "Figure Type Enum to capture the discrete possible values\nfor a valid figure type to be visualized"
       },
+      "Generate": {
+        "title": "Generate",
+        "required": [
+          "config",
+          "target",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "config": {
+            "title": "Config",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AWSConfig"
+              },
+              {
+                "$ref": "#/components/schemas/OktaConfig"
+              }
+            ]
+          },
+          "target": {
+            "$ref": "#/components/schemas/ValidTargets"
+          },
+          "type": {
+            "$ref": "#/components/schemas/GenerateTypes"
+          }
+        },
+        "description": "Defines attributes for generating resources included in a request."
+      },
+      "GenerateRequestPayload": {
+        "title": "GenerateRequestPayload",
+        "required": [
+          "organization_key",
+          "generate"
+        ],
+        "type": "object",
+        "properties": {
+          "organization_key": {
+            "title": "Organization Key",
+            "type": "string"
+          },
+          "generate": {
+            "$ref": "#/components/schemas/Generate"
+          }
+        },
+        "description": "The model for the request body housing generate information."
+      },
+      "GenerateTypes": {
+        "title": "GenerateTypes",
+        "enum": [
+          "systems",
+          "datasets"
+        ],
+        "type": "string",
+        "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
+      },
+      "GeneratedResponse": {
+        "title": "GeneratedResponse",
+        "type": "object",
+        "properties": {
+          "generate_results": {
+            "title": "Generate Results",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Dataset"
+                },
+                {
+                  "$ref": "#/components/schemas/System"
+                }
+              ]
+            }
+          }
+        },
+        "description": "The model to house the response for generated infrastructure."
+      },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
         "type": "object",
@@ -4191,6 +4344,20 @@
         ],
         "type": "string",
         "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
+      },
+      "OktaConfig": {
+        "title": "OktaConfig",
+        "required": [
+          "okta_client_token"
+        ],
+        "type": "object",
+        "properties": {
+          "okta_client_token": {
+            "title": "Okta Client Token",
+            "type": "string"
+          }
+        },
+        "description": "The model for the connection config for Okta"
       },
       "Organization": {
         "title": "Organization",
@@ -4691,6 +4858,14 @@
           }
         },
         "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
+      },
+      "ValidTargets": {
+        "title": "ValidTargets",
+        "enum": [
+          "aws"
+        ],
+        "type": "string",
+        "description": "Validation of targets attempted to generate resources from"
       },
       "ValidationError": {
         "title": "ValidationError",
