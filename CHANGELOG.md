@@ -25,6 +25,10 @@ The types of changes are:
 * New `audit` command for `system` and `organization` resources, checking data map attribute compliance. [#548](https://github.com/ethyca/fides/pull/548)
 * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
+* New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
+* Navigation bar for management UI
+* Dataset backend integration for management UI
+* Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 
 ### Changed
 
@@ -52,6 +56,7 @@ The types of changes are:
 * Updated the webserver so that it won't fail if the database is inaccessible [#649](https://github.com/ethyca/fides/pull/649)
 * Handle complex characters in external tests  [#661](https://github.com/ethyca/fides/pull/661)
 * Evaluations now properly merge the default taxonomy into the user-defined taxonomy [#684](https://github.com/ethyca/fides/pull/684)
+* The CLI can be run without installing the webserver components [#715](https://github.com/ethyca/fides/pull/715)
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 

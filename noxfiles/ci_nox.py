@@ -110,11 +110,9 @@ def xenon(session: nox.Session) -> None:
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fidesctl is installed."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "check_install")
-    else:
-        run_command = ("fidesctl", *(WITH_TEST_CONFIG), "--version")
-    session.run(*run_command, external=True)
+    session.install(".")
+    run_command = ("fidesctl", *(WITH_TEST_CONFIG), "--version")
+    session.run(*run_command)
 
 
 @nox.session()
@@ -140,6 +138,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
         "scan",
         "dataset",
         "db",
+        "--connection-string",
         "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
     )
     session.run(*run_command, external=True)

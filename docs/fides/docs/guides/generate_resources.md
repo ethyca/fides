@@ -10,6 +10,39 @@ The `scan` and `generate` commands work best when used in tandem as they follow 
 
 The `generate` command can connect to a database and automatically generate resource YAML file based on the database schema.
 
+### Providing Credentials
+
+Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config. 
+
+#### Command Options
+A connection string can be supplied using the `connection-string` option:
+```sh
+...
+--connection-string <my_connection_string>
+...
+```
+
+
+#### Fides Config
+A connection string can also be defined within your fides config under the credentials section.
+
+```sh
+[credentials]
+my_database_credentials = {connection_string="<my_connection_string>"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_database_credentials"
+...
+```
+
+It is possible to use an environment variable to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING="<my_database_credentials>"
+```
+
 ### Generating a Dataset
 
 Given a database schema with a single `users` table as follows:
@@ -26,8 +59,8 @@ flaskr=# SELECT * FROM users;
 We can invoke the `generate` command by providing a connection url for this database:
 ```sh
 ./venv/bin/fidesctl generate dataset db \
-  postgresql://postgres:postgres@localhost:5432/flaskr \
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml \
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
 
 The result is a resource file with a dataset with collections and fields to represent our schema:
@@ -80,8 +113,8 @@ The resulting file still requires annotating the dataset with data categories to
 The `scan` command can then connect to your database and compare its schema to your already defined datasets:
 ```sh
 ./venv/bin/fidesctl scan dataset db \
-  postgresql://postgres:postgres@localhost:5432/flaskr \
-  fides_resources/flaskr_postgres_dataset.yml
+  fides_resources/flaskr_postgres_dataset.yml \
+  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
 
 The command output confirms our database resource is covered fully:
@@ -100,21 +133,52 @@ The `generate` command can connect to an AWS account and automatically generate 
 
 ### Providing Credentials
 
-Authentication is managed through environment variable configuration defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html). 
+AWS credentials can be provided through command options, environment variables or the fides config. 
 
-We can define our credentials directly as environment variables:
+#### Command Options
+Credentials can be directly supplied in your command using the `access_key_id`, `secret_access_key`, and `region` options. 
+```sh
+...
+--access_key_id "<my_access_key_id>"
+--secret_access_key "<my_secret_access_key>"
+--region "us-east-1"
+...
+```
+
+#### Environment Variables
+The simplest way to authenticate through environment variables is to set an `SECRET_ACCESS_KEY` and `ACCESS_KEY_ID`, as defined by [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables):
 ```sh
 export AWS_ACCESS_KEY_ID="<my_access_key_id>"
 export AWS_SECRET_ACCESS_KEY="<my_access_key>"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-Or reference a profile through an environment variable:
+It is also possible to reference a profile:
 ```sh
 export AWS_PROFILE="my_profile_1"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
+#### Fides Config
+Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
+
+```sh
+[credentials]
+my_aws_credentials = {aws_access_key_id="<my_aws_access_key_id>", aws_secret_access_key="<my_aws_secret_access_key>", region_name="us-east-1"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_aws_credentials"
+...
+```
+
+It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
+```
 ### Required Permissions
 
 The identity which is authenticated must be allowed to invoke the following actions:
@@ -206,9 +270,19 @@ The `generate` command can connect to an Okta admin account and automatically ge
 
 ### Providing Credentials
 
-Authentication is managed through environment variable configuration defined by the Okta Python [SDK](https://github.com/okta/okta-sdk-python#environment-variables). 
+Okta credentials can be provided through command options, environment variables or the fides config. 
 
-The simplest way to authenticate is by using a client token:
+#### Command Options
+Credentials can be directly supplied in your command using the `org-url` and `token` options. 
+```sh
+...
+--token "<my_okta_client_token>"
+--org-url "<my_okta_org_url>"
+...
+```
+
+#### Environment Variables
+The simplest way to authenticate is by using a client token, defined by the [Okta Python SDK](https://github.com/okta/okta-sdk-python#environment-variables):
 ```sh
 export OKTA_CLIENT_TOKEN="<my_okta_client_token>"
 ```
@@ -221,12 +295,31 @@ export OKTA_CLIENT_SCOPES="<my_scope_1,my_scope_2>"
 export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
 ```
 
+#### Fides Config
+Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
+
+```sh
+[credentials]
+my_okta_credentials = {orgUrl="<my_okta_org_url>" token="<my_okta_client_token>"}
+```
+
+Your command can then reference the key defined in your config. 
+```sh
+...
+--credentials-id "my_okta_credentials"
+...
+```
+
+It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
+```
+
 ### Generating Datasets
 
 Once credentials have been configured we can invoke the `generate dataset okta` command:
 ```sh
-./venv/bin/fidesctl generate dataset okta \
-  <my_org_url> \
+./venv/bin/fidesctl generate dataset okta 
   fides_resources/okta_datasets.yml
 ```
 
@@ -259,7 +352,6 @@ dataset:
 The `scan` command can then connect to your Okta account and compare its applications to your already defined datasets:
 ```sh
 ./venv/bin/fidesctl scan dataset okta \
-  https://dev-78908748.okta.com \
   fides_resources/okta_datasets.yml
 ```
 

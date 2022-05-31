@@ -1,13 +1,20 @@
 import {
-  Button, Flex,
-  Link, Menu,
-  MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text
-} from '@fidesui/react';
-import { signOut } from 'next-auth/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { UserIcon } from './Icon';
+  Button,
+  Flex,
+  Link,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  Stack,
+  Text,
+} from "@fidesui/react";
+import NextLink from "next/link";
+import { signOut } from "next-auth/react";
+import React from "react";
 
+import { UserIcon } from "./Icon";
 
 interface HeaderProps {
   username: string;
@@ -44,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
             <MenuDivider />
             <MenuItem
               px={3}
-              _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+              _focus={{ color: "complimentary.500", bg: "gray.100" }}
               onClick={() => signOut()}
             >
               Sign out
