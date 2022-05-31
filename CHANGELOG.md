@@ -28,6 +28,7 @@ The types of changes are:
 * Navigation bar for management UI
 * Dataset backend integration for management UI
 * Initial dataset collection UI view
+  * Add column picker
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 
 ### Changed
