@@ -51,6 +51,7 @@ from fidesops.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fidesops.schemas.masking.masking_secrets import SecretType
+from fidesops.schemas.policy import PolicyResponse
 from fidesops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -484,6 +485,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                 }
             ],
@@ -529,6 +536,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                 }
             ],
@@ -826,6 +839,12 @@ class TestGetPrivacyRequests:
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
+                        "rules": [
+                            rule.dict()
+                            for rule in PolicyResponse.from_orm(
+                                privacy_request.policy
+                            ).rules
+                        ],
                     },
                     "results": {
                         "my-mongo-db": [
@@ -1611,6 +1630,10 @@ class TestResumePrivacyRequest:
                 "drp_action": None,
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
+                "rules": [
+                    rule.dict()
+                    for rule in PolicyResponse.from_orm(privacy_request.policy).rules
+                ],
             },
         }
 
