@@ -2,8 +2,23 @@
 
 import click
 
-from fidesctl.cli.options import coverage_threshold_option, manifests_dir_argument
-from fidesctl.cli.utils import with_analytics
+from fidesctl.cli.options import (
+    aws_access_key_id_option,
+    aws_region_option,
+    aws_secret_access_key_option,
+    connection_string_option,
+    coverage_threshold_option,
+    credentials_id_option,
+    manifests_dir_argument,
+    okta_org_url_option,
+    okta_token_option,
+)
+from fidesctl.cli.utils import (
+    handle_aws_credentials_options,
+    handle_database_credentials_options,
+    handle_okta_credentials_options,
+    with_analytics,
+)
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -26,19 +41,22 @@ def scan_dataset(ctx: click.Context) -> None:
 
 @scan_dataset.command(name="db")
 @click.pass_context
-@click.argument("connection_string", type=str)
 @manifests_dir_argument
+@credentials_id_option
+@connection_string_option
 @coverage_threshold_option
 @with_analytics
 def scan_dataset_db(
     ctx: click.Context,
-    connection_string: str,
     manifests_dir: str,
+    connection_string: str,
+    credentials_id: str,
     coverage_threshold: int,
 ) -> None:
     """
     Connect to a database directly via a SQLAlchemy-style connection string and
-    compare the database objects to existing datasets.
+    compare the database objects to existing datasets. Connection string can be
+    supplied as an option or a credentials reference to fidesctl config.
 
     If there are fields within the database that aren't listed and categorized
     within one of the datasets, this counts as lacking coverage.
@@ -47,8 +65,14 @@ def scan_dataset_db(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    _dataset.scan_dataset_db(
+    actual_connection_string = handle_database_credentials_options(
+        fides_config=config,
         connection_string=connection_string,
+        credentials_id=credentials_id,
+    )
+
+    _dataset.scan_dataset_db(
+        connection_string=actual_connection_string,
         manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
@@ -58,28 +82,38 @@ def scan_dataset_db(
 
 @scan_dataset.command(name="okta")
 @click.pass_context
-@click.argument("org_url", type=str)
 @manifests_dir_argument
+@credentials_id_option
+@okta_org_url_option
+@okta_token_option
 @coverage_threshold_option
 @with_analytics
 def scan_dataset_okta(
     ctx: click.Context,
-    org_url: str,
     manifests_dir: str,
+    credentials_id: str,
+    org_url: str,
+    token: str,
     coverage_threshold: int,
 ) -> None:
     """
     Scans your existing datasets and compares them to found Okta applications.
-    Connect to an Okta admin account by providing an organization url. Auth token
-    can be supplied by setting the environment variable OKTA_CLIENT_TOKEN.
+    Connect to an Okta admin account by providing an organization url and
+    auth token or a credentials reference to fidesctl config. Auth token and
+    organization url can also be supplied by setting environment variables
+    as defined by the okta python sdk.
 
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
 
     config = ctx.obj["CONFIG"]
+    okta_config = handle_okta_credentials_options(
+        fides_config=config, token=token, org_url=org_url, credentials_id=credentials_id
+    )
+
     _dataset.scan_dataset_okta(
-        org_url=org_url,
+        okta_config=okta_config,
         coverage_threshold=coverage_threshold,
         manifest_dir=manifests_dir,
         url=config.cli.server_url,
@@ -98,28 +132,45 @@ def scan_system(ctx: click.Context) -> None:
 @scan_system.command(name="aws")
 @click.pass_context
 @manifests_dir_argument
+@credentials_id_option
+@aws_access_key_id_option
+@aws_secret_access_key_option
+@aws_region_option
 @click.option("-o", "--organization", type=str, default="default_organization")
 @coverage_threshold_option
 @with_analytics
 def scan_system_aws(
     ctx: click.Context,
     manifests_dir: str,
+    credentials_id: str,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
     organization: str,
     coverage_threshold: int,
 ) -> None:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
-    configuration and compares tracked resources to existing systems.
+    Connect to an aws account and compares tracked resources to existing systems.
+    Credentials can be supplied as options, a credentials reference to fidesctl
+    config, or boto3 environment configuration.
     Tracked resources: [Redshift, RDS]
 
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
     """
-
     config = ctx.obj["CONFIG"]
+    aws_config = handle_aws_credentials_options(
+        fides_config=config,
+        access_key_id=access_key_id,
+        secret_access_key=secret_access_key,
+        region=region,
+        credentials_id=credentials_id,
+    )
+
     _system.scan_system_aws(
         manifest_dir=manifests_dir,
         organization_key=organization,
+        aws_config=aws_config,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,

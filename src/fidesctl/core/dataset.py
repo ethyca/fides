@@ -345,7 +345,7 @@ def scan_dataset_db(
 
 def scan_dataset_okta(
     manifest_dir: str,
-    org_url: str,
+    okta_config: Dict[str, str],
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -365,7 +365,7 @@ def scan_dataset_okta(
 
     import fidesctl.connectors.okta as okta_connector
 
-    okta_client = okta_connector.get_okta_client(org_url)
+    okta_client = okta_connector.get_okta_client(okta_config)
     okta_applications = asyncio.run(
         okta_connector.list_okta_applications(okta_client=okta_client)
     )
@@ -419,7 +419,9 @@ def generate_dataset_db(
     return file_name
 
 
-def generate_dataset_okta(org_url: str, file_name: str, include_null: bool) -> str:
+def generate_dataset_okta(
+    okta_config: Dict[str, str], file_name: str, include_null: bool
+) -> str:
     """
     Given an organization url, generates a dataset manifest from existing Okta
     applications.
@@ -429,7 +431,7 @@ def generate_dataset_okta(org_url: str, file_name: str, include_null: bool) -> s
 
     import fidesctl.connectors.okta as okta_connector
 
-    okta_client = okta_connector.get_okta_client(org_url)
+    okta_client = okta_connector.get_okta_client(okta_config)
     okta_applications = asyncio.run(
         okta_connector.list_okta_applications(okta_client=okta_client)
     )

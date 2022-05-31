@@ -11,3 +11,9 @@ test_database_name = "fidesctl_test"
 
 [user]
 analytics_opt_out = true
+
+
+[credentials]
+postgres_1 = {connection_string="postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"}
+okta_1 = {orgUrl="https://dev-78908748.okta.com", token="redacted_override_in_tests"}
+aws_1 = {aws_access_key_id="redacted_id_override_in_tests", aws_secret_access_key="redacted_override_in_tests", region_name="us-east-1"}
