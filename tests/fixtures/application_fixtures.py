@@ -564,10 +564,7 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
-def policy_drp_action_erasure(
-    db: Session,
-    oauth_client: ClientDetail
-) -> Generator:
+def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
         data={
