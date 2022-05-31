@@ -24,6 +24,7 @@ The types of changes are:
 * Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
   * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
+* New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
 * Navigation bar for management UI
 * Dataset backend integration for management UI
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
