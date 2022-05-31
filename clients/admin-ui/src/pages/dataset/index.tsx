@@ -33,6 +33,10 @@ const DataSets: NextPage = () => {
   const router = useRouter();
 
   const handleLoadDataset = () => {
+    // use the router to let the page know we loaded the dataset from this view
+    // this allows us to display a Success toast message, which we would not want to display
+    // if just navigating directly to the page via URL
+    // the second URL to `push` allows us to hide the query parameter from the URL the user sees
     if (activeDataset) {
       router.push(
         `/dataset/${activeDataset.fides_key}/?fromLoad=1`,
@@ -66,7 +70,7 @@ const DataSets: NextPage = () => {
         <Button
           size="sm"
           variant="outline"
-          // TODO: need a primary color scheme?
+          // TODO: need a primary color scheme with a dark background?
           colorScheme="complimentary"
           disabled={!activeDataset}
           onClick={handleLoadDataset}
