@@ -28,6 +28,7 @@ The types of changes are:
 * Integration for management UI
   * Datasets
   * Systems
+* Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 
 ### Changed
 

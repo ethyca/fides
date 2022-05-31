@@ -229,6 +229,7 @@ def generate_system_aws(
     file_name: str,
     include_null: bool,
     organization_key: str,
+    aws_config: Dict[str, str],
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> str:
@@ -239,15 +240,13 @@ def generate_system_aws(
     """
     _check_boto3_import()
 
-    empty_aws_config_dict: Dict = {}  # not used via CLI today
-
     organization = get_organization(
         organization_key=organization_key,
         manifest_organizations=[],
         url=url,
         headers=headers,
     )
-    aws_systems = generate_aws_systems(organization, aws_config=empty_aws_config_dict)
+    aws_systems = generate_aws_systems(organization, aws_config=aws_config)
 
     output_list_of_dicts = [i.dict(exclude_none=not include_null) for i in aws_systems]
     manifests.write_manifest(
@@ -371,6 +370,7 @@ def print_scan_system_aws_result(
 def scan_system_aws(
     manifest_dir: str,
     organization_key: str,
+    aws_config: Dict[str, str],
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -399,7 +399,7 @@ def scan_system_aws(
         headers=headers,
     )
 
-    aws_systems = generate_aws_systems(organization=organization, aws_config={})
+    aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
     (
         scan_text_output,
