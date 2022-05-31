@@ -253,6 +253,7 @@ def test_scan_system_aws_passes(
         coverage_threshold=100,
         manifest_dir="",
         organization_key="default_organization",
+        aws_config={},
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
     )
@@ -264,6 +265,7 @@ def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> 
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
         organization_key="default_organization",
+        aws_config={},
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
     )

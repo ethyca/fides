@@ -8,6 +8,11 @@ from fidesctl.core.config import APISettings, get_config
 
 
 # Unit
+@patch.dict(
+    os.environ,
+    {},
+    clear=True,
+)
 @pytest.mark.unit
 def test_get_config() -> None:
     """Test that the actual config matches what the function returns."""
@@ -15,6 +20,10 @@ def test_get_config() -> None:
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
     assert config.cli.server_url == "http://fidesctl:8080"
+    assert (
+        config.credentials["postgres_1"]["connection_string"]
+        == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+    )
 
 
 @pytest.mark.unit
@@ -35,6 +44,7 @@ def test_default_config() -> None:
         "FIDESCTL__USER__USER_ID": "2",
         "FIDESCTL__CLI__SERVER_HOST": "test",
         "FIDESCTL__CLI__SERVER_PORT": "8080",
+        "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test",
     },
     clear=True,
 )
@@ -47,6 +57,10 @@ def test_config_from_env_vars() -> None:
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"
     assert config.cli.server_url == "http://test:8080"
+    assert (
+        config.credentials["postgres_1"]["connection_string"]
+        == "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test"
+    )
 
 
 @pytest.mark.unit
