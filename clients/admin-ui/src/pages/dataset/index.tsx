@@ -69,9 +69,7 @@ const DataSets: NextPage = () => {
         </Button>
         <Button
           size="sm"
-          variant="outline"
-          // TODO: need a primary color scheme with a dark background?
-          colorScheme="complimentary"
+          colorScheme="primary"
           disabled={!activeDataset}
           onClick={handleLoadDataset}
         >
