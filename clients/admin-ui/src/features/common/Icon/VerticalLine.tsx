@@ -11,14 +11,7 @@ export default createIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <line
-        x1="1"
-        y1="0.125"
-        x2="1"
-        y2="49"
-        stroke="#EDF2F7"
-        stroke-width="2"
-      />
+      <line x1="1" y1="0.125" x2="1" y2="49" stroke="#EDF2F7" strokeWidth="2" />
     </svg>
   ),
 });

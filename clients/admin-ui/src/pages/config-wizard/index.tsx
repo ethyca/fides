@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import React, { useState } from "react";
+import Header from "~/features/common/Header";
 import Layout from "~/features/common/Layout";
 import ConfigWizardWalkthrough from "~/features/config-wizard/ConfigWizardWalkthrough";
 import Setup from "../../features/config-wizard/setup";
@@ -16,7 +17,10 @@ const ConfigWizard: NextPage = () => {
       <Setup wizardStep={handleWizardStep} />
     </Layout>
   ) : (
-    <ConfigWizardWalkthrough />
+    <>
+      <Header />
+      <ConfigWizardWalkthrough />
+    </>
   );
 };
 

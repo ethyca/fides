@@ -10,14 +10,13 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
-import NextLink from "next/link";
 import { signOut } from "next-auth/react";
+import NextLink from "next/link";
 import React from "react";
-
-import { UserIcon } from "./Icon";
+import { QuestionIcon, UserIcon } from "./Icon";
 
 interface HeaderProps {
-  username: string;
+  username?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ username }) => (
@@ -37,27 +36,41 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
         </Link>
       </NextLink>
       <Flex alignItems="center">
-        <Menu>
-          <MenuButton as={Button} size="sm" variant="ghost">
-            <UserIcon color="gray.700" />
-          </MenuButton>
-          <MenuList shadow="xl">
-            <Stack px={3} py={2} spacing={0}>
-              <Text fontWeight="medium">{username}</Text>
-              <Text fontSize="sm" color="gray.600">
-                Administrator
-              </Text>
-            </Stack>
-            <MenuDivider />
-            <MenuItem
-              px={3}
-              _focus={{ color: "complimentary.500", bg: "gray.100" }}
-              onClick={() => signOut()}
-            >
-              Sign out
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        {username ? (
+          <Menu>
+            <MenuButton as={Button} size="sm" variant="ghost">
+              <UserIcon color="gray.700" />
+            </MenuButton>
+
+            <MenuList shadow="xl">
+              <Stack px={3} py={2} spacing={0}>
+                <Text fontWeight="medium">{username}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Administrator
+                </Text>
+              </Stack>
+              <MenuDivider />
+              <MenuItem
+                px={3}
+                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                onClick={() => signOut()}
+              >
+                Sign out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
+          <Button
+            // onClick={}
+            color="gray.700"
+            fontWeight="400"
+            iconSpacing={2}
+            variant="link"
+            leftIcon={<QuestionIcon boxSize={5} />}
+          >
+            Get help (Fides community)
+          </Button>
+        )}
       </Flex>
     </Flex>
   </header>

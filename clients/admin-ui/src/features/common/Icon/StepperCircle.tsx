@@ -11,7 +11,7 @@ export default createIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="12" cy="12" r="9" stroke="#EDF2F7" stroke-width="2" />
+      <circle cx="12" cy="12" r="9" stroke="#EDF2F7" strokeWidth="2" />
       <circle cx="12" cy="12" r="4" fill="#EDF2F7" />
     </svg>
   ),

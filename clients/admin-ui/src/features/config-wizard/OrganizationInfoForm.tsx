@@ -16,14 +16,14 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
       <Heading as="h3" size="lg">
         Tell us about your business
       </Heading>
-      <Text>
+      <div>
         Provide your organization information. This information is used to
         configure your organization in Fidesctl for{" "}
         <Text display="inline" color="complimentary.500">
           data map
         </Text>{" "}
         reporting purposes.
-      </Text>
+      </div>
       <Stack>
         <FormControl>
           <FormLabel>Organization name</FormLabel>
