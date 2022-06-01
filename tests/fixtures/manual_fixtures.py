@@ -20,7 +20,7 @@ def integration_manual_config(db) -> ConnectionConfig:
             "name": str(uuid4()),
             "key": "manual_example",
             "connection_type": ConnectionType.manual,
-            "access": AccessLevel.read,
+            "access": AccessLevel.write,
         },
     )
     yield connection_config

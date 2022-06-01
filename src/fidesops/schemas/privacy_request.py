@@ -103,6 +103,12 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
+class RowCountRequest(BaseSchema):
+    """Schema for a user to manually confirm data erased for a collection"""
+
+    row_count: int
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 

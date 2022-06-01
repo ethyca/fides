@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
-from fidesops.models.policy import ActionType, Policy
+from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.service.connectors.base_connector import BaseConnector
 from fidesops.util.collection_util import Row
@@ -35,17 +35,17 @@ class ManualConnector(BaseConnector[None]):
         """
         Returns manually added data for the given collection if it exists, otherwise pauses the Privacy Request.
         """
-        cached_results: Optional[
-            Dict[str, Optional[List[Row]]]
-        ] = privacy_request.get_manual_input(node.address)
+        cached_results: Optional[List[Row]] = privacy_request.get_manual_input(
+            node.address
+        )
 
-        if cached_results:
+        if cached_results is not None:  # None comparison intentional
             privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
-            return list(cached_results.values())[0]
+            return cached_results
 
         # Save the step (access) and collection where we're paused.
         privacy_request.cache_paused_step_and_collection(
-            ActionType.access, node.address
+            PausedStep.access, node.address
         )
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual data for privacy request '{privacy_request.id}'"
@@ -57,6 +57,20 @@ class ManualConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
-    ) -> int:
-        """Pause to have the user manually perform an erasure of data at the given node."""
-        # TODO implement in follow-up ticket
+    ) -> Optional[int]:
+        """If erasure confirmation has been added to the manual cache, continue, otherwise,
+        pause and wait for manual input."""
+        manual_cached_count: Optional[int] = privacy_request.get_manual_erasure_count(
+            node.address
+        )
+
+        if manual_cached_count is not None:  # None comparison intentional
+            privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
+            return manual_cached_count
+
+        privacy_request.cache_paused_step_and_collection(
+            PausedStep.erasure, node.address
+        )
+        raise PrivacyRequestPaused(
+            f"Collection '{node.address.value}' waiting on manual erasure confirmation for privacy request '{privacy_request.id}'"
+        )

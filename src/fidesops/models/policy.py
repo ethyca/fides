@@ -25,6 +25,11 @@ from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.util.data_category import _validate_data_category
 
 
+class PausedStep(EnumType):
+    access = "access"
+    erasure = "erasure"
+
+
 class ActionType(str, EnumType):
     """The purpose of a particular privacy request"""
 

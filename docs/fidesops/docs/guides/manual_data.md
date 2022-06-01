@@ -3,7 +3,8 @@
 In this section we'll cover:
 
 - How to describe a manual dataset
-- How to send manual data to resume a privacy request
+- How to send manual data to resume the access portion of a privacy request
+- How to send manual data to resume the erasure portion of a privacy request
 
 ## Overview
 
@@ -37,11 +38,13 @@ dataset:
               data_type: string
 ```
 
-## Resuming a paused privacy request
+## Resuming a paused access privacy request
 
-A privacy request will pause execution when it reaches a manual collection.  An administrator
+A privacy request will pause execution when it reaches a manual collection in an access request.  An administrator
 should manually retrieve the data and send it in a POST request.  The fields 
 should match the fields on the paused collection.  
+
+Erasure requests with manual collections will also need data manually added as well.
 
 ```json title="<code>POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input</code>"
 [{
@@ -54,4 +57,19 @@ If no manual data can be found, simply pass in an empty list to resume the priva
 
 ```json
 []
+```
+
+## Resuming a paused erasure privacy request
+
+A privacy request will pause execution when it reaches a manual collection in an erasure request.  An administrator
+should manually mask the records in question and send confirmation of the rows affected in a POST request.  
+
+```json title="<code>POST {{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm</code>"
+{"row_count": 2}
+```
+
+If no manual data was destroyed, pass in a count of 0 to resume the privacy request:
+
+```json
+{"row_count": 0}
 ```

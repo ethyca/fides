@@ -21,6 +21,7 @@ from fidesops.models.client import ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.policy import (
     ActionType,
+    PausedStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -232,7 +233,7 @@ class PrivacyRequest(Base):
 
     def cache_paused_step_and_collection(
         self,
-        paused_step: Optional[ActionType] = None,
+        paused_step: Optional[PausedStep] = None,
         paused_collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
@@ -257,7 +258,7 @@ class PrivacyRequest(Base):
 
     def get_paused_step_and_collection(
         self,
-    ) -> Tuple[Optional[ActionType], Optional[CollectionAddress]]:
+    ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
         """Get both the paused step (access or erasure) and collection awaiting manual input for the given privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -269,7 +270,7 @@ class PrivacyRequest(Base):
 
         if node_addr:
             split_addr = node_addr.split(self.PAUSED_SEPARATOR)
-            return ActionType(split_addr[0]), CollectionAddress.from_string(
+            return PausedStep(split_addr[0]), CollectionAddress.from_string(
                 split_addr[1]
             )
         return None, None  # If no cached data, return a tuple of Nones
@@ -284,16 +285,39 @@ class PrivacyRequest(Base):
             manual_rows,
         )
 
-    def get_manual_input(
-        self, collection: CollectionAddress
-    ) -> Optional[Dict[str, Optional[List[Row]]]]:
+    def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual key mapped to the manual data.
+        Returns the manual data if it exists, otherwise None
         """
         cache: FidesopsRedis = get_cache()
-        return cache.get_encoded_objects_by_prefix(
+        cached_results: Optional[
+            Dict[str, Optional[List[Row]]]
+        ] = cache.get_encoded_objects_by_prefix(
             f"MANUAL_INPUT__{self.id}__{collection.value}"
         )
+        return list(cached_results.values())[0] if cached_results else None
+
+    def cache_manual_erasure_count(
+        self, collection: CollectionAddress, count: int
+    ) -> None:
+        """Cache the number of rows manually masked for a given collection."""
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(
+            f"MANUAL_MASK__{self.id}__{collection.value}",
+            count,
+        )
+
+    def get_manual_erasure_count(self, collection: CollectionAddress) -> Optional[int]:
+        """Retrieve number of rows manually masked for this collection from the cache.
+
+        Cached as an integer to mimic what we return from erasures in an automated way.
+        """
+        cache: FidesopsRedis = get_cache()
+        prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
+        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
+            prefix
+        )
+        return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response

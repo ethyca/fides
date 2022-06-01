@@ -14,6 +14,7 @@ from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import (
     ActionType,
+    PausedStep,
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
@@ -98,7 +99,7 @@ class PrivacyRequestRunner:
     def submit(
         self,
         from_webhook: Optional[PolicyPreWebhook] = None,
-        from_step: Optional[ActionType] = None,
+        from_step: Optional[PausedStep] = None,
     ) -> Awaitable[None]:
         """Run this privacy request in a separate thread."""
         from_webhook_id = from_webhook.id if from_webhook else None
@@ -108,7 +109,7 @@ class PrivacyRequestRunner:
         self,
         privacy_request_id: str,
         from_webhook_id: Optional[str] = None,
-        from_step: Optional[ActionType] = None,
+        from_step: Optional[PausedStep] = None,
     ) -> None:
         # pylint: disable=too-many-locals
         """
@@ -155,7 +156,7 @@ class PrivacyRequestRunner:
                 connection_configs = ConnectionConfig.all(db=session)
 
                 if (
-                    not from_step == ActionType.erasure
+                    not from_step == PausedStep.erasure
                 ):  # Skip if we're resuming from erasure step
                     access_result: Dict[str, List[Row]] = run_access_request(
                         privacy_request=privacy_request,

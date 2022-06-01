@@ -481,6 +481,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             retrieved_data,
         )
         self.log_end(ActionType.erasure)
+        self.resources.cache_erasure(
+            f"{self.key}", output
+        )  # Cache that the erasure was performed in case we need to restart
         return output
 
 
@@ -520,6 +523,18 @@ def update_mapping_from_cache(
         )
 
 
+def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
+    """Return a function for collections with no upstream dependencies, that just start
+    with seed data.
+
+    This is used for root nodes or previously-visited nodes on restart."""
+
+    def g() -> List[Dict[str, Any]]:
+        return seed
+
+    return g
+
+
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -530,19 +545,6 @@ def run_access_request(
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
     with TaskResources(privacy_request, policy, connection_configs) as resources:
-
-        def start_function(
-            seed: List[Dict[str, Any]]
-        ) -> Callable[[], List[Dict[str, Any]]]:
-            """Return a function that returns the seed value to kick off the dask function chain.
-
-            The first traversal_node in the dask function chain is just a function that when called returns
-            the graph seed value."""
-
-            def g() -> List[Dict[str, Any]]:
-                return seed
-
-            return g
 
         def collect_tasks_fn(
             tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
@@ -589,6 +591,24 @@ def get_cached_data_for_erasures(
     return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
 
+def update_erasure_mapping_from_cache(
+    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    resources: TaskResources,
+    start_fn: Callable,
+) -> None:
+    """On pause or restart from failure, update the dsk graph to skip running erasures on collections
+    we've already visited. Instead, just return the previous count of rows affected.
+
+    If there's no cached data, the dsk dictionary won't change.
+    """
+    cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
+
+    for collection_name in cached_erasures:
+        dsk[CollectionAddress.from_string(collection_name)] = (
+            start_fn(cached_erasures[collection_name]),
+        )
+
+
 def run_erasure(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -624,7 +644,8 @@ def run_erasure(  # pylint: disable = too-many-arguments
         }
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS))
+        update_erasure_mapping_from_cache(dsk, resources, start_function)
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide
