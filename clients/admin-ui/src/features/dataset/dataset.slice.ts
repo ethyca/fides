@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
+import { FidesKey } from "../common/fides-types";
 import { Dataset } from "./types";
 
 export interface State {
@@ -23,10 +24,14 @@ export const datasetApi = createApi({
       query: () => ({ url: `dataset/` }),
       providesTags: () => ["Dataset"],
     }),
+    getDatasetByKey: build.query<Dataset, FidesKey>({
+      query: (key) => ({ url: `dataset/${key}` }),
+      providesTags: () => ["Dataset"],
+    }),
   }),
 });
 
-export const { useGetAllDatasetsQuery } = datasetApi;
+export const { useGetAllDatasetsQuery, useGetDatasetByKeyQuery } = datasetApi;
 
 export const datasetSlice = createSlice({
   name: "dataset",
