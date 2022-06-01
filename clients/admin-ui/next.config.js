@@ -21,14 +21,16 @@ const nextConfig = {
     return config;
   },
   async rewrites() {
+    // these paths are unnecessarily complicated due to our backend being
+    // picky about trailing slashes https://github.com/ethyca/fides/issues/690
     return [
       {
-        source: `/api/v1/:path*`,
-        // note: we may need to be careful about this in the future
-        // our backend paths are picky about trailing slashes, and
-        // nextjs automatically removes trailing slashes. may have to
-        // be careful when there are query parameters.
-        destination: "http://0.0.0.0:8080/api/v1/:path*/",
+        source: `/api/v1/:path`,
+        destination: "http://0.0.0.0:8080/api/v1/:path/",
+      },
+      {
+        source: `/api/v1/:first/:second*`,
+        destination: "http://0.0.0.0:8080/api/v1/:first/:second*",
       },
     ];
   },

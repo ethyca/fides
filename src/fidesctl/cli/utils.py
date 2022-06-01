@@ -22,7 +22,6 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesapi.routes.util import API_PREFIX
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.credentials_settings import (
@@ -31,7 +30,7 @@ from fidesctl.core.config.credentials_settings import (
     get_config_okta_credentials,
 )
 from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import check_response, echo_green, echo_red
+from fidesctl.core.utils import API_PREFIX, check_response, echo_green, echo_red
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
@@ -192,6 +191,16 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
+
+
+def print_divider(character: str = "-", character_length: int = 10) -> None:
+    """
+    Returns a consistent divider to print to the console for use within fidesctl
+
+    Defaults to using a hyphen of length 10, however this can optionally be
+    overridden as required.
+    """
+    print(character * character_length)
 
 
 def handle_database_credentials_options(
