@@ -27,9 +27,13 @@ The types of changes are:
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
 * Navigation bar for management UI
-* Dataset backend integration for management UI
+* Integration for management UI
+  * Datasets
+  * Systems
 * Initial dataset collection UI view
-* Edit dataset fields through UI
+  * Add interaction for viewing a dataset collection
+  * Add column picker
+  * Edit dataset fields
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 
 ### Changed
