@@ -147,9 +147,15 @@ class SecuritySettings(FidesSettings):
     def validate_encryption_key_length(
         cls, v: Optional[str], values: Dict[str, str]
     ) -> Optional[str]:
-        """Validate the encryption key is exactly 32 bytes"""
-        if v is None or len(v.encode(values.get("ENCODING", "UTF-8"))) != 32:
-            raise ValueError("APP_ENCRYPTION_KEY value must be exactly 32 bytes long")
+        """Validate the encryption key is exactly 32 characters"""
+        if v is None:
+            raise ValueError("APP_ENCRYPTION_KEY value not provided!")
+        encryption_key = v.encode(values.get("ENCODING", "UTF-8"))
+        if len(encryption_key) != 32:
+            raise ValueError(
+                f"APP_ENCRYPTION_KEY value must be exactly 32 characters, "
+                f"received {len(encryption_key)} characters!"
+            )
         return v
 
     CORS_ORIGINS: List[AnyHttpUrl] = []
@@ -187,6 +193,29 @@ class SecuritySettings(FidesSettings):
         hashed_client_id = hashlib.sha512(value.encode(encoding) + salt).hexdigest()
         return hashed_client_id, salt
 
+    LOG_LEVEL: str = "INFO"
+
+    @validator("LOG_LEVEL", pre=True)
+    def validate_log_level(cls, value: str) -> str:
+        """Ensure the provided LOG_LEVEL is a valid value."""
+        valid_values = [
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+            logging.CRITICAL,
+        ]
+        value = value.upper()  # force uppercase, for safety
+
+        # Attempt to convert the string value (e.g. 'debug') to a numeric level, e.g. 10 (logging.DEBUG)
+        # NOTE: If the string doesn't match a valid level, this will return a string like 'Level {value}'
+        if logging.getLevelName(value) not in valid_values:
+            raise ValueError(
+                f"Invalid LOG_LEVEL provided '{value}', must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL"
+            )
+
+        return value
+
     class Config:
         env_prefix = "FIDESOPS__SECURITY__"
 
@@ -214,6 +243,17 @@ class FidesopsConfig(FidesSettings):
         f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
     )
 
+    def log_all_config_values(self) -> None:
+        """Output DEBUG logs of all the config values."""
+        for settings in [self.database, self.redis, self.security, self.execution]:
+            for key, value in settings.dict().items():
+                logger.debug(
+                    "Using config: %s%s = %s",
+                    NotPii(settings.Config.env_prefix),
+                    NotPii(key),
+                    NotPii(value),
+                )
+
 
 def load_file(file_name: str) -> str:
     """Load a file and from the first matching location.
@@ -226,7 +266,6 @@ def load_file(file_name: str) -> str:
 
     raises FileNotFound if none is found
     """
-
     possible_directories = [
         os.getenv("FIDESOPS__CONFIG_PATH"),
         os.curdir,
@@ -266,7 +305,7 @@ def get_config() -> FidesopsConfig:
     """
     try:
         return FidesopsConfig.parse_obj(load_toml("fidesops.toml"))
-    except (FileNotFoundError, ValidationError) as e:
+    except (FileNotFoundError) as e:
         logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
         # If no path is specified Pydantic will attempt to read settings from
         # the environment. Default values will still be used if the matching
@@ -274,7 +313,7 @@ def get_config() -> FidesopsConfig:
         try:
             return FidesopsConfig()
         except ValidationError as exc:
-            logger.error("ValidationError: %s", exc)
+            logger.error("Fidesops config could not be loaded: %s", NotPii(exc))
             # If FidesopsConfig is missing any required values Pydantic will throw
             # an ImportError. This means the config has not been correctly specified
             # so we can throw the missing config error.
