@@ -21,25 +21,28 @@ const ConfigWizardWalkthrough = () => {
   return (
     // Unique header to wizard
     <>
-      <Box m={2} ml={6}>
-        <Button bg="transparent" fontWeight="500" onClick={handleCancelSetup}>
+      <Box bg="white">
+        <Button
+          bg="transparent"
+          fontWeight="500"
+          m={2}
+          ml={6}
+          onClick={handleCancelSetup}
+        >
           x Cancel setup
         </Button>
       </Box>
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
-        <Stack mt={10} mb={10} maxW="60%">
-          <Stack direction={"row"} spacing="24px">
+        <Stack bg="white" height="100vh" maxW="60%">
+          <Stack mt={10} mb={10} direction={"row"} spacing="24px">
             <Box>
               <Stepper activeStep={1} />
             </Box>
             <OrganizationInfoForm handleChangeStep={handleChangeStep} />
           </Stack>
         </Stack>
-        <Stack maxW="40%">
-          <Box bg="blue"> Right hand side</Box>
-          {/* give this stack 50% width to split page, this stack holds tooltips */}
-        </Stack>
+        <Stack bg="gray.50" maxW="40%"></Stack>
       </Stack>
     </>
   );

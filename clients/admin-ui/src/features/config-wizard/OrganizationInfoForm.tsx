@@ -12,7 +12,7 @@ import { QuestionIcon } from "~/features/common/Icon";
 
 const OrganizationInfoForm = (handleChangeStep: any) => {
   return (
-    <Stack spacing="24px" w="80%">
+    <Stack spacing="24px" w="60%">
       <Heading as="h3" size="lg">
         Tell us about your business
       </Heading>
@@ -33,8 +33,12 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
               // value={}
               // onChange={handleInputChange}
             />
-            <Tooltip label="The legal name of your organization" fontSize="md">
-              <QuestionIcon boxSize={5} />
+            <Tooltip
+              fontSize="md"
+              label="The legal name of your organization"
+              placement="right"
+            >
+              <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
           <Stack direction={"row"}>
@@ -45,11 +49,12 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
               // onChange={handleInputChange}
             />
             <Tooltip
+              fontSize="md"
               label="An explanation of the type of organization and primary activity. 
                   For example “Acme Inc. is an e-commerce company that sells scarves.”"
-              fontSize="md"
+              placement="right"
             >
-              <QuestionIcon boxSize={5} />
+              <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
         </FormControl>

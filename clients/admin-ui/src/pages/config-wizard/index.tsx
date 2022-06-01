@@ -1,3 +1,4 @@
+import { css, Global } from "@emotion/react";
 import type { NextPage } from "next";
 import React, { useState } from "react";
 import Header from "~/features/common/Header";
@@ -18,6 +19,13 @@ const ConfigWizard: NextPage = () => {
     </Layout>
   ) : (
     <>
+      <Global
+        styles={css`
+          body {
+            background-color: #f7fafc !important;
+          }
+        `}
+      />
       <Header />
       <ConfigWizardWalkthrough />
     </>
