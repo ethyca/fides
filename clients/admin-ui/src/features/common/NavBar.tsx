@@ -35,7 +35,7 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
         rightIcon={rightIcon}
         data-testid={`nav-link-${title}`}
         isActive={isActive}
-        _active={{ bg: undefined }}
+        _active={{ bg: "transparent" }}
       >
         {title}
       </Button>
