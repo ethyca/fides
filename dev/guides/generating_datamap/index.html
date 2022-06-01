@@ -755,6 +755,13 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#auditing-resources" class="md-nav__link">
+    Auditing Resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#data-use" class="md-nav__link">
     Data Use
   </a>
@@ -764,6 +771,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#data-subject" class="md-nav__link">
     Data Subject
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-your-changes" class="md-nav__link">
+    Testing Your Changes
   </a>
   
 </li>
@@ -1503,6 +1517,13 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#auditing-resources" class="md-nav__link">
+    Auditing Resources
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#data-use" class="md-nav__link">
     Data Use
   </a>
@@ -1512,6 +1533,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#data-subject" class="md-nav__link">
     Data Subject
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-your-changes" class="md-nav__link">
+    Testing Your Changes
   </a>
   
 </li>
@@ -1577,6 +1605,7 @@ You're not viewing the latest version.
 <p>Fides is capable of exporting a data map of your <a href="../../language/resources/system/">resources</a> to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the <a href="https://github.com/ethyca/fides">Fides repository</a>.</p>
 <p>To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the <a href="https://github.com/ethyca/fides/#rocket-quick-start">Quick Start guide</a>.</p>
 <h2 id="export-the-demo-resources">Export the Demo Resources</h2>
+<p>First, ensure <code>fidesctl</code> is running with <code>nox -s cli</code>.</p>
 <p>To apply and export the provided <code>demo_resources</code>, run the following commands:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
@@ -1752,6 +1781,62 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <h2 id="extend-the-default-taxonomy">Extend the Default Taxonomy</h2>
 <p>In your initial export, several data map columns are populated with <code>N/A</code>. The default <a href="../../language/taxonomy/overview/">Fides Taxonomy</a> can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.</p>
 <p>Example manifest updates are included in <code>demo_resources/demo_extended_taxonomy.yml</code>.</p>
+<h3 id="auditing-resources">Auditing Resources</h3>
+<p>Your Organization and System datasets can also be assessed using the <code>--audit</code> flag as part of the <code>evaluate</code> command, which will identify how your resources could be extended to generate a compliant data map.</p>
+<ol>
+<li><code>fidesctl evaluate demo_resources/ --audit</code></li>
+</ol>
+<p>The output of this command will highlight any missing information:</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example Output: <code>fidesctl audit</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span></pre></div></td><td class="code"><div><pre><span></span><code>...
+<span class="s2">&quot;Auditing Organization Resource Compliance&quot;</span>
+Found <span class="m">1</span> Organization resource<span class="o">(</span>s<span class="o">)</span> to audit...
+Auditing Organization: Demo Organization
+controller <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+data_protection_officer <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+representative <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+security_policy <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+All audited organization resource<span class="o">(</span>s<span class="o">)</span> compliant!
+----------
+<span class="s2">&quot;Auditing System Resource Compliance&quot;</span>
+Found <span class="m">2</span> System resource<span class="o">(</span>s<span class="o">)</span> to audit...
+<span class="s2">&quot;Auditing System: Demo Analytics System&quot;</span>
+improve.system missing recipients <span class="k">in</span> Demo Analytics System.
+improve.system missing legal_basis <span class="k">in</span> Demo Analytics System.
+improve.system missing special_category <span class="k">in</span> Demo Analytics System.
+customer missing rights <span class="k">in</span> Demo Analytics System.
+customer missing automated_decisions_or_profiling <span class="k">in</span> Demo Analytics System.
+<span class="s2">&quot;Auditing System: Demo Marketing System&quot;</span>
+advertising missing recipients <span class="k">in</span> Demo Marketing System.
+advertising missing legal_basis <span class="k">in</span> Demo Marketing System.
+advertising missing special_category <span class="k">in</span> Demo Marketing System.
+customer missing rights <span class="k">in</span> Demo Marketing System.
+customer missing automated_decisions_or_profiling <span class="k">in</span> Demo Marketing System.
+<span class="m">10</span> issue<span class="o">(</span>s<span class="o">)</span> were detected <span class="k">in</span> auditing system completeness.
+</code></pre></div></td></tr></table></div>
 <h3 id="data-use">Data Use</h3>
 <p>Below is an extended <a href="../../language/taxonomy/data_uses/">Data Use</a> example. Each of these properties is responsible for populating a field on your data map.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Extended Data Use</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -1774,7 +1859,7 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="w">    </span><span class="nt">legitimate_interest_impact_assessment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/legitimate_interest_assessment</span><span class="w"></span>
 <span class="w">    </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p>You can now apply this Data Use to the Demo Marketing System in <code>demo_system.yml</code>.</p>
+<p>Apply this <code>data_subject</code> by adding it to the Demo Marketing System in <code>demo_system.yml</code>.</p>
 <p>Replace the Demo Marketing System's Data Use of <code>advertising</code> with the above fides_key of <code>third_party_sharing.personalized_advertising.direct_marketing</code> to include its information in your data map.</p>
 <h3 id="data-subject">Data Subject</h3>
 <p>A <a href="../../language/taxonomy/data_subjects/">Data Subject</a>, shown below, can also be extended to populate your data map with additional information.</p>
@@ -1804,8 +1889,190 @@ Each of <code>controller</code>, <code>data_protection_officer</code>, and <code
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
 <span class="w">    </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<p>You can now apply this Data Subject to the Demo Marketing System in <code>demo_system.yml</code>.</p>
+<p>Apply this <code>data_subject</code> by adding it to the Demo Marketing System in <code>demo_system.yml</code>.</p>
 <p>Replace the Demo Marketing System's Data Subject of <code>customer</code> with the above fides_key of <code>potential_customer</code> to include its information in your data map.</p>
+<h3 id="testing-your-changes">Testing Your Changes</h3>
+<p>Your resulting <code>demo_system.yml</code> should look like the following:
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>demo_system.yml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_analytics_system</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Analytics System</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A system used for analyzing customer behaviour.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span><span class="w"></span>
+<span class="w">    </span><span class="nt">administrating_department</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Engineering</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_responsibility_title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Controller</span><span class="w"></span>
+<span class="w">    </span><span class="nt">third_country_transfers</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">USA</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CAN</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_protection_impact_assessment</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">is_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"></span>
+<span class="w">      </span><span class="nt">progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Complete</span><span class="w"></span>
+<span class="w">      </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/analytics_system_data_protection_impact_assessment</span><span class="w"></span>
+<span class="w">    </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Analyze customer behaviour for improvements.</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.device.cookie_id</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_use</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve.system</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">        </span><span class="nt">dataset_references</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_users_dataset</span><span class="w"></span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo_marketing_system</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo Marketing System</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Collect data about our users for marketing.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span><span class="w"></span>
+<span class="w">    </span><span class="nt">administrating_department</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Marketing</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_responsibility_title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor</span><span class="w"></span>
+<span class="w">    </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Collect data for marketing</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="c1">#- user.provided.identifiable.contact # uncomment to add this category to the system</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable.device.cookie_id</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_use</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potential_customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_use</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising.direct_marketing</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Direct Marketing</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">User information for direct marketing purposes</span><span class="w"></span>
+<span class="w">        </span><span class="nt">recipients</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Processor - marketing co.</span><span class="w"></span>
+<span class="w">        </span><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legitimate Interests</span><span class="w"></span>
+<span class="w">        </span><span class="nt">special_category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Vital Interests</span><span class="w"></span>
+<span class="w">        </span><span class="nt">legitimate_interest_impact_assessment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/legitimate_interest_assessment</span><span class="w"></span>
+<span class="w">        </span><span class="nt">parent_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing.personalized_advertising</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_subject</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">potential_customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Potential Customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A prospective individual or other organization that purchases goods or services from the organization.</span><span class="w"></span>
+<span class="w">        </span><span class="nt">rights</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INCLUDE</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Informed</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Access</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rectification</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Erasure</span><span class="w"></span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
+<span class="w">        </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+</code></pre></div></td></tr></table></div></p>
+<p>Running <code>fidesctl apply demo_resources/</code> will apply your changes.</p>
+<p>Now, auditing this resource with <code>fidesctl evaluate demo_resources --audit</code> will show the Demo Marketing System issues are resolved:
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span></pre></div></td><td class="code"><div><pre><span></span><code>...
+<span class="s2">&quot;Auditing Organization Resource Compliance&quot;</span>
+Found <span class="m">1</span> Organization resource<span class="o">(</span>s<span class="o">)</span> to audit...
+Auditing Organization: Demo Organization
+controller <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+data_protection_officer <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+representative <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+security_policy <span class="k">for</span> default_organization <span class="k">in</span> Demo Organization is compliant
+All audited organization resource<span class="o">(</span>s<span class="o">)</span> compliant!
+----------
+<span class="s2">&quot;Auditing System Resource Compliance&quot;</span>
+Found <span class="m">2</span> System resource<span class="o">(</span>s<span class="o">)</span> to audit...
+<span class="s2">&quot;Auditing System: Demo Analytics System&quot;</span>
+improve.system missing recipients <span class="k">in</span> Demo Analytics System.
+improve.system missing legal_basis <span class="k">in</span> Demo Analytics System.
+improve.system missing special_category <span class="k">in</span> Demo Analytics System.
+customer missing rights <span class="k">in</span> Demo Analytics System.
+customer missing automated_decisions_or_profiling <span class="k">in</span> Demo Analytics System.
+<span class="s2">&quot;Auditing System: Demo Marketing System&quot;</span>
+recipients <span class="k">for</span> third_party_sharing.personalized_advertising.direct_marketing <span class="k">in</span> Demo Marketing System is compliant
+legal_basis <span class="k">for</span> third_party_sharing.personalized_advertising.direct_marketing <span class="k">in</span> Demo Marketing System is compliant
+special_category <span class="k">for</span> third_party_sharing.personalized_advertising.direct_marketing <span class="k">in</span> Demo Marketing System is compliant
+rights <span class="k">for</span> potential_customer <span class="k">in</span> Demo Marketing System is compliant
+automated_decisions_or_profiling <span class="k">for</span> potential_customer <span class="k">in</span> Demo Marketing System is compliant
+<span class="m">5</span> issue<span class="o">(</span>s<span class="o">)</span> were detected <span class="k">in</span> auditing system completeness.
+</code></pre></div></td></tr></table></div></p>
 <h2 id="generate-a-ropa">Generate a RoPA</h2>
 <p>Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
