@@ -7,8 +7,9 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo, with_analytics
+from fidesctl.cli.utils import pretty_echo, print_divider, with_analytics
 from fidesctl.core import apply as _apply
+from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
 
@@ -48,6 +49,12 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     "--message",
     help="A message that you can supply to describe the context of this evaluation.",
 )
+@click.option(
+    "-a",
+    "--audit",
+    is_flag=True,
+    help="Raise errors if resources are missing attributes required for building a data map.",
+)
 @dry_flag
 @with_analytics
 def evaluate(
@@ -55,6 +62,7 @@ def evaluate(
     manifests_dir: str,
     fides_key: str,
     message: str,
+    audit: bool,
     dry: bool,
 ) -> None:
     """
@@ -88,6 +96,24 @@ def evaluate(
         local=config.cli.local_mode,
         dry=dry,
     )
+
+    if audit:
+        print_divider()
+        pretty_echo("Auditing Organization Resource Compliance")
+        _audit.audit_organizations(
+            url=config.cli.server_url,
+            headers=config.user.request_headers,
+            include_keys=[
+                organization.fides_key for organization in taxonomy.organization
+            ],
+        )
+        print_divider()
+        pretty_echo("Auditing System Resource Compliance")
+        _audit.audit_systems(
+            url=config.cli.server_url,
+            headers=config.user.request_headers,
+            include_keys=[system.fides_key for system in taxonomy.system],
+        )
 
 
 @click.command()
