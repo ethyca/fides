@@ -14,6 +14,7 @@ import { Form, Formik } from "formik";
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import CloseSolid from "../common/Icon/CloseSolid";
 import { DATA_QUALIFIERS } from "./constants";
+import { useUpdateDatasetMutation } from "./dataset.slice";
 import { DatasetField } from "./types";
 
 interface FieldValues {
@@ -31,6 +32,7 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
     identifiability: field.data_qualifier,
     data_categories: field.data_categories,
   };
+  const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
   const handleSubmit = (values: FieldValues) => {
     console.log("submitting!", values);
   };

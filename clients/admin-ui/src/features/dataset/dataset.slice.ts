@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
 import { FidesKey } from "../common/fides-types";
-import { Dataset } from "./types";
+import { Dataset, DatasetField } from "./types";
 
 export interface State {
   datasets: Dataset[];
@@ -28,10 +28,25 @@ export const datasetApi = createApi({
       query: (key) => ({ url: `dataset/${key}` }),
       providesTags: () => ["Dataset"],
     }),
+    updateDataset: build.mutation<
+      Dataset,
+      Partial<Dataset> & Pick<Dataset, "fides_key">
+    >({
+      query: (dataset) => ({
+        url: `dataset/${dataset.fides_key}`,
+        method: "PUT",
+        body: dataset,
+      }),
+      invalidatesTags: ["Dataset"],
+    }),
   }),
 });
 
-export const { useGetAllDatasetsQuery, useGetDatasetByKeyQuery } = datasetApi;
+export const {
+  useGetAllDatasetsQuery,
+  useGetDatasetByKeyQuery,
+  useUpdateDatasetMutation,
+} = datasetApi;
 
 export const datasetSlice = createSlice({
   name: "dataset",
