@@ -1,4 +1,5 @@
-import { Box, Select, Spinner } from "@fidesui/react";
+import { Box, Select, Spinner, Text, useToast } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 
 import { FidesKey } from "../common/fides-types";
@@ -13,6 +14,12 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Personal Data Categories", attribute: "data_categories" },
   { name: "Identifiability", attribute: "data_qualifier" },
 ];
+
+const SuccessMessage = () => (
+  <Text>
+    <strong>Success:</strong> Successfully loaded dataset
+  </Text>
+);
 
 const useDataset = (key: FidesKey) => {
   const { data, isLoading } = useGetDatasetByKeyQuery(key);
@@ -29,18 +36,38 @@ interface Props {
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const { dataset, isLoading } = useDataset(fidesKey);
-  const [activeCollection, setActiveCollection] = useState<
-    DatasetCollection | undefined
-  >();
+  const [activeCollection, setActiveCollection] =
+    useState<DatasetCollection | null>();
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+
+  const router = useRouter();
+  const toast = useToast();
+  const { fromLoad } = router.query;
 
   useEffect(() => {
     if (dataset) {
       setActiveCollection(dataset.collections[0]);
     } else {
-      setActiveCollection(undefined);
+      setActiveCollection(null);
     }
   }, [dataset]);
+
+  useEffect(() => {
+    if (fromLoad) {
+      toast({
+        variant: "subtle",
+        position: "top",
+        description: <SuccessMessage />,
+        duration: 5000,
+        status: "success",
+        isClosable: true,
+      });
+    }
+  }, [fromLoad, toast]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (!dataset) {
     return <div>Dataset not found</div>;
@@ -54,10 +81,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     )[0];
     setActiveCollection(collection);
   };
-
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   return (
     <Box>
