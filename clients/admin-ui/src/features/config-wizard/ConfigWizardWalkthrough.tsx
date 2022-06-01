@@ -1,6 +1,7 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+
 import Stepper from "../common/Stepper";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
@@ -18,10 +19,7 @@ const ConfigWizardWalkthrough = () => {
     // or are they different api calls at each step?
     if (formStep && step !== 5) {
       setStep(formStep + 1);
-    } else {
-      return;
     }
-    // Step
   };
 
   return (
@@ -40,7 +38,7 @@ const ConfigWizardWalkthrough = () => {
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" maxW="60%">
-          <Stack mt={10} mb={10} direction={"row"} spacing="24px">
+          <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box>
               <Stepper activeStep={step} />
             </Box>

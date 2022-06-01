@@ -11,6 +11,7 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
+
 import { QuestionIcon } from "~/features/common/Icon";
 
 const useOrganizationInfoForm = () => {
@@ -20,9 +21,8 @@ const useOrganizationInfoForm = () => {
       organizationName: "",
       organizationDescription: "",
     },
-    onSubmit: async (values) => {
+    onSubmit: async () => {
       setIsLoading(true);
-      console.log(values);
       // submission API call when available
       setIsLoading(false);
     },
@@ -54,7 +54,7 @@ const OrganizationInfoForm: NextPage<{
     errors,
     handleBlur,
     handleChange,
-    handleSubmit,
+    // handleSubmit,
     isLoading,
     touched,
     values,
@@ -81,7 +81,7 @@ const OrganizationInfoForm: NextPage<{
       </div>
       <Stack>
         <FormControl>
-          <Stack direction={"row"} mb={5}>
+          <Stack direction="row" mb={5}>
             <FormLabel>Organization name</FormLabel>
             <Input
               type="text"
@@ -103,7 +103,7 @@ const OrganizationInfoForm: NextPage<{
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
-          <Stack direction={"row"}>
+          <Stack direction="row">
             <FormLabel>Description</FormLabel>
             <Input
               type="text"
