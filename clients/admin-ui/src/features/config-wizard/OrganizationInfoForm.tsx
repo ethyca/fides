@@ -7,18 +7,14 @@ import {
   Stack,
   Text,
   Tooltip,
-  useToast,
 } from "@fidesui/react";
 import { useFormik } from "formik";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 
 const useOrganizationInfoForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const toast = useToast();
-  const router = useRouter();
   const formik = useFormik({
     initialValues: {
       organizationName: "",
@@ -51,7 +47,9 @@ const useOrganizationInfoForm = () => {
   return { ...formik, isLoading };
 };
 
-const OrganizationInfoForm: NextPage = () => {
+const OrganizationInfoForm: NextPage<{
+  handleChangeStep: Function;
+}> = ({ handleChangeStep }) => {
   const {
     errors,
     handleBlur,
@@ -138,7 +136,7 @@ const OrganizationInfoForm: NextPage = () => {
         colorScheme="primary"
         disabled={!values.organizationName || !values.organizationDescription}
         isLoading={isLoading}
-        // onClick={}
+        onClick={() => handleChangeStep(1)}
       >
         Save and Continue
       </Button>

@@ -6,20 +6,25 @@ import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
-  const [step, setStep] = useState(null);
+  const [step, setStep] = useState<number>(1);
 
   const handleCancelSetup = () => {
-    // Cancel
-    // Save progress ?
+    // Save progress
     router.push("/");
   };
 
-  const handleChangeStep = () => {
+  const handleChangeStep = (formStep: number) => {
+    // Save info between steps for submission to API with all info
+    // or are they different api calls at each step?
+    if (formStep && step !== 5) {
+      setStep(formStep + 1);
+    } else {
+      return;
+    }
     // Step
   };
 
   return (
-    // Unique header to wizard
     <>
       <Box bg="white">
         <Button
@@ -37,9 +42,15 @@ const ConfigWizardWalkthrough = () => {
         <Stack bg="white" height="100vh" maxW="60%">
           <Stack mt={10} mb={10} direction={"row"} spacing="24px">
             <Box>
-              <Stepper activeStep={1} />
+              <Stepper activeStep={step} />
             </Box>
-            <OrganizationInfoForm />
+            {step === 1 ? (
+              <OrganizationInfoForm
+                handleChangeStep={(organizationStep: number) =>
+                  handleChangeStep(organizationStep)
+                }
+              />
+            ) : null}
           </Stack>
         </Stack>
       </Stack>
