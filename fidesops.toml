@@ -22,6 +22,7 @@ ENCODING="UTF-8"
 OAUTH_ROOT_CLIENT_ID="fidesopsadmin"
 OAUTH_ROOT_CLIENT_SECRET="fidesopsadminsecret"
 DRP_JWT_SECRET="secret"
+LOG_LEVEL = "INFO"
 
 [execution]
 TASK_RETRY_COUNT=0

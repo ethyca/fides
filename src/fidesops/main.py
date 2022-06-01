@@ -14,7 +14,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.logger import get_fides_log_record_factory
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,14 @@ for handler in ExceptionHandlers.get_handlers():
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("****************fidesops****************")
+
+    if logger.getEffectiveLevel() == logging.DEBUG:
+        logger.warning(
+            "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
+            "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
+        )
+        config.log_all_config_values()
+
     if config.database.ENABLED:
         logger.info("Running any pending DB migrations...")
         init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)

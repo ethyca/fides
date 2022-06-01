@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.1...main)
 
+### Added
+* Added `FIDESOPS__SECURITY__LOG_LEVEL` configuration variable to allow controlling the log level [#579](https://github.com/ethyca/fidesops/pull/579)
+* Added `DEBUG` logs at startup to view all configuration values [#579](https://github.com/ethyca/fidesops/pull/579)
+
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
 
