@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   FormControl,
   FormLabel,
@@ -9,10 +8,11 @@ import {
   Text,
   Tooltip,
 } from "@fidesui/react";
+import { QuestionIcon } from "~/features/common/Icon";
 
 const OrganizationInfoForm = (handleChangeStep: any) => {
   return (
-    <Box borderWidth="1px" borderRadius="lg">
+    <Stack spacing="24px" w="80%">
       <Heading as="h3" size="lg">
         Tell us about your business
       </Heading>
@@ -26,20 +26,19 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
       </div>
       <Stack>
         <FormControl>
-          <FormLabel>Organization name</FormLabel>
-          <Stack direction={"row"}>
+          <Stack direction={"row"} mb={5}>
+            <FormLabel>Organization name</FormLabel>
             <Input
               type="text"
               // value={}
               // onChange={handleInputChange}
             />
             <Tooltip label="The legal name of your organization" fontSize="md">
-              {/* <Icon /> */}
-              Hi
+              <QuestionIcon boxSize={5} />
             </Tooltip>
           </Stack>
-          <FormLabel>Description</FormLabel>
           <Stack direction={"row"}>
+            <FormLabel>Description</FormLabel>
             <Input
               type="text"
               // value={}
@@ -50,8 +49,7 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
                   For example “Acme Inc. is an e-commerce company that sells scarves.”"
               fontSize="md"
             >
-              {/* <Icon /> */}
-              Hello
+              <QuestionIcon boxSize={5} />
             </Tooltip>
           </Stack>
         </FormControl>
@@ -65,7 +63,7 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
       >
         Save and Continue
       </Button>
-    </Box>
+    </Stack>
   );
 };
 export default OrganizationInfoForm;

@@ -31,7 +31,7 @@ const Stepper = ({ activeStep }: Props) => {
   ];
 
   return (
-    <Stack direction={["column", "row"]}>
+    <Stack direction={["column", "row"]} w="100%">
       <Stack alignItems={"center"} direction={"column"} spacing={0}>
         {steps?.map((step: any) => (
           <React.Fragment key={step.number}>
