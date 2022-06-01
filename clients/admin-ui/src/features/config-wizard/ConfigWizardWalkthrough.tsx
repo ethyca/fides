@@ -39,7 +39,7 @@ const ConfigWizardWalkthrough = () => {
             <Box>
               <Stepper activeStep={1} />
             </Box>
-            <OrganizationInfoForm handleChangeStep={handleChangeStep} />
+            <OrganizationInfoForm />
           </Stack>
         </Stack>
       </Stack>

@@ -7,10 +7,61 @@ import {
   Stack,
   Text,
   Tooltip,
+  useToast,
 } from "@fidesui/react";
+import { useFormik } from "formik";
+import type { NextPage } from "next";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 
-const OrganizationInfoForm = (handleChangeStep: any) => {
+const useOrganizationInfoForm = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+  const router = useRouter();
+  const formik = useFormik({
+    initialValues: {
+      organizationName: "",
+      organizationDescription: "",
+    },
+    onSubmit: async (values) => {
+      setIsLoading(true);
+      console.log(values);
+      // submission API call when available
+      setIsLoading(false);
+    },
+    validate: (values) => {
+      const errors: {
+        organizationName?: string;
+        organizationDescription?: string;
+      } = {};
+
+      if (!values.organizationName) {
+        errors.organizationName = "Organization name is required";
+      }
+
+      if (!values.organizationDescription) {
+        errors.organizationDescription = "Organization description is equired";
+      }
+
+      return errors;
+    },
+  });
+
+  return { ...formik, isLoading };
+};
+
+const OrganizationInfoForm: NextPage = () => {
+  const {
+    errors,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    isLoading,
+    touched,
+    values,
+  } = useOrganizationInfoForm();
+
   return (
     <Stack spacing="24px" w="60%">
       <Heading as="h3" size="lg">
@@ -36,8 +87,15 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
             <FormLabel>Organization name</FormLabel>
             <Input
               type="text"
-              // value={}
-              // onChange={handleInputChange}
+              id="organizationName"
+              name="organizationName"
+              focusBorderColor="gray.700"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.organizationName}
+              isInvalid={
+                touched.organizationName && Boolean(errors.organizationName)
+              }
             />
             <Tooltip
               fontSize="md"
@@ -51,8 +109,16 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
             <FormLabel>Description</FormLabel>
             <Input
               type="text"
-              // value={}
-              // onChange={handleInputChange}
+              id="organizationDescription"
+              name="organizationDescription"
+              focusBorderColor="gray.700"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.organizationDescription}
+              isInvalid={
+                touched.organizationDescription &&
+                Boolean(errors.organizationDescription)
+              }
             />
             <Tooltip
               fontSize="md"
@@ -70,7 +136,9 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
         _hover={{ bg: "primary.400" }}
         _active={{ bg: "primary.500" }}
         colorScheme="primary"
-        onClick={handleChangeStep}
+        disabled={!values.organizationName || !values.organizationDescription}
+        isLoading={isLoading}
+        // onClick={}
       >
         Save and Continue
       </Button>
