@@ -65,7 +65,7 @@ const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
           <Box display="flex" justifyContent="space-between" mb={2}>
             <Button variant="outline" size="xs" onClick={handleClear}>
               Clear
-            </Button>{" "}
+            </Button>
             <Button size="xs" colorScheme="primary" onClick={handleSubmit}>
               Done
             </Button>
