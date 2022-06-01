@@ -130,6 +130,22 @@ class TaskResources:
         # extract request id to return a map of address:value
         return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
+    def cache_erasure(self, key: str, value: int) -> None:
+        """Cache that a node's masking is complete. Object will be stored in redis under
+        'REQUEST_ID__erasure_request__ADDRESS
+        '"""
+        self.cache.set_encoded_object(
+            f"{self.request.id}__erasure_request__{key}", value
+        )
+
+    def get_all_cached_erasures(self) -> Dict[str, int]:
+        """Retrieve which collections have been masked and their row counts(cache_erasure)"""
+        value_dict = self.cache.get_encoded_objects_by_prefix(
+            f"{self.request.id}__erasure_request"
+        )
+        # extract request id to return a map of address:value
+        return {k.split("__")[-1]: v for k, v in value_dict.items()}
+
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,
         collection_address: CollectionAddress,

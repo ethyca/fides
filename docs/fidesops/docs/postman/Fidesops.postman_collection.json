@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "336250bf-42b1-49d2-8b9f-d82706f6f4b4",
+		"_postman_id": "9019796e-9107-41a1-a268-4d2cda117e85",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3526,7 +3526,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Manual connector\",\n    \"key\": \"{{manual_connector}}\",\n    \"connection_type\": \"manual\",\n    \"access\": \"read\"\n}]",
+							"raw": "[\n    {\"name\": \"Manual connector\",\n    \"key\": \"{{manual_connector}}\",\n    \"connection_type\": \"manual\",\n    \"access\": \"write\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3693,6 +3693,44 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"manual_input"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Erasure Request with Confirmed Masked Row Count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"row_count\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"erasure_confirm"
 							]
 						}
 					},
