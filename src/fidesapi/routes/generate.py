@@ -32,7 +32,8 @@ class GenerateTypes(str, Enum):
 
     SYSTEM = "systems"
     DATASET = "datasets"
-    
+
+
 class Generate(BaseModel):
     """
     Defines attributes for generating resources included in a request.

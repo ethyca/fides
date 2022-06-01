@@ -74,9 +74,7 @@ def get_config_okta_credentials(
     credentials_config: Dict[str, Dict], credentials_id: str
 ) -> Optional[OktaConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
-    parsed_config = (
-        OktaConfig.parse_obj(credentials_dict) if credentials_dict else None
-    )
+    parsed_config = OktaConfig.parse_obj(credentials_dict) if credentials_dict else None
     return parsed_config
 
 
@@ -84,7 +82,5 @@ def get_config_aws_credentials(
     credentials_config: Dict[str, Dict], credentials_id: str
 ) -> Optional[AWSConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
-    parsed_config = (
-        AWSConfig.parse_obj(credentials_dict) if credentials_dict else None
-    )
+    parsed_config = AWSConfig.parse_obj(credentials_dict) if credentials_dict else None
     return parsed_config

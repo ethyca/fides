@@ -18,9 +18,11 @@ class OktaConfig(BaseModel):
     """
     The model for the connection config for Okta
     """
+
     # camel case matches okta client config model
     orgUrl: str
     token: str
+
 
 class DatabaseConfig(BaseModel):
     """
