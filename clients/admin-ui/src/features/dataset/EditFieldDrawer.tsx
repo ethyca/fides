@@ -19,7 +19,11 @@ interface FieldValues {
   identifiability: DatasetField["data_qualifier"];
   data_categories: DatasetField["data_categories"];
 }
-const EditFieldForm = ({ field }: { field: DatasetField }) => {
+interface EditFieldFormProps {
+  field: DatasetField;
+  onClose: () => void;
+}
+const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
   const initialValues: FieldValues = {
     description: field.description,
     identifiability: field.data_qualifier,
@@ -47,9 +51,16 @@ const EditFieldForm = ({ field }: { field: DatasetField }) => {
             <Field name="data_categories" type="text" className="form-input" />
             <ErrorMessage name="data_categories" />
           </Box>
-        </Stack>
 
-        <Button type="submit">Save</Button>
+          <Box>
+            <Button onClick={onClose} mr={2} size="sm" variant="outline">
+              Cancel
+            </Button>
+            <Button type="submit" colorScheme="primary" size="sm">
+              Save
+            </Button>
+          </Box>
+        </Stack>
       </Form>
     </Formik>
   );
@@ -77,7 +88,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => (
             By providing a small amount of additional context for each system we
             can make reporting and understanding our tech stack much easier.
           </Text>
-          <EditFieldForm field={field} />
+          <EditFieldForm field={field} onClose={onClose} />
         </DrawerBody>
       </Box>
     </DrawerContent>
