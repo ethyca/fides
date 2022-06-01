@@ -46,3 +46,8 @@ export interface DatasetCollection {
   retention?: string;
   fields: DatasetField[];
 }
+
+export interface ColumnMetadata {
+  name: string;
+  attribute: keyof DatasetField;
+}
