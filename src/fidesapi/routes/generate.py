@@ -12,6 +12,7 @@ from pydantic import BaseModel, root_validator
 from fidesapi.routes.crud import get_resource
 from fidesapi.routes.util import API_PREFIX, unobscure_string
 from fidesapi.sql_models import sql_model_map
+from fidesctl.connectors.models import AWSConfig, OktaConfig
 from fidesctl.core.system import generate_aws_systems
 
 
@@ -31,26 +32,7 @@ class GenerateTypes(str, Enum):
 
     SYSTEM = "systems"
     DATASET = "datasets"
-
-
-class AWSConfig(BaseModel):
-    """
-    The model for the connection config for AWS
-    """
-
-    region_name: str
-    aws_secret_access_key: str
-    aws_access_key_id: str
-
-
-class OktaConfig(BaseModel):
-    """
-    The model for the connection config for Okta
-    """
-
-    okta_client_token: str
-
-
+    
 class Generate(BaseModel):
     """
     Defines attributes for generating resources included in a request.

@@ -6,28 +6,7 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel
 
-
-# TODO: These credentials objects could be shared with api code being written in fides#642
-class DatabaseCredentials(BaseModel):
-    """Class used to validate database credentials fields when retrieved from config"""
-
-    connection_string: str
-
-
-class OktaCredentials(BaseModel):
-    """Class used to validate okta credentials fields when retrieved from config"""
-
-    # camel case matches okta client config model
-    orgUrl: str
-    token: str
-
-
-class AwsCredentials(BaseModel):
-    """Class used to validate aws credentials fields when retrieved from config"""
-
-    aws_access_key_id: str
-    aws_secret_access_key: str
-    region_name: str
+from fidesctl.connectors.models import AWSConfig, OktaConfig, DatabaseConfig
 
 
 CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
@@ -83,29 +62,29 @@ def insert_environment(current_dict: Dict, env_key: str, env_val: str) -> None:
 
 def get_config_database_credentials(
     credentials_config: Dict[str, Dict], credentials_id: str
-) -> Optional[DatabaseCredentials]:
+) -> Optional[DatabaseConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
     parsed_config = (
-        DatabaseCredentials.parse_obj(credentials_dict) if credentials_dict else None
+        DatabaseConfig.parse_obj(credentials_dict) if credentials_dict else None
     )
     return parsed_config
 
 
 def get_config_okta_credentials(
     credentials_config: Dict[str, Dict], credentials_id: str
-) -> Optional[OktaCredentials]:
+) -> Optional[OktaConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
     parsed_config = (
-        OktaCredentials.parse_obj(credentials_dict) if credentials_dict else None
+        OktaConfig.parse_obj(credentials_dict) if credentials_dict else None
     )
     return parsed_config
 
 
 def get_config_aws_credentials(
     credentials_config: Dict[str, Dict], credentials_id: str
-) -> Optional[AwsCredentials]:
+) -> Optional[AWSConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
     parsed_config = (
-        AwsCredentials.parse_obj(credentials_dict) if credentials_dict else None
+        AWSConfig.parse_obj(credentials_dict) if credentials_dict else None
     )
     return parsed_config
