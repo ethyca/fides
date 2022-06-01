@@ -19,9 +19,15 @@ const OrganizationInfoForm = (handleChangeStep: any) => {
       <div>
         Provide your organization information. This information is used to
         configure your organization in Fidesctl for{" "}
-        <Text display="inline" color="complimentary.500">
-          data map
-        </Text>{" "}
+        <Tooltip
+          fontSize="md"
+          label="Wondering what a data map is? No problem, we've got your covered with this quick overview here"
+          placement="right"
+        >
+          <Text display="inline" color="complimentary.500">
+            data map
+          </Text>
+        </Tooltip>{" "}
         reporting purposes.
       </div>
       <Stack>

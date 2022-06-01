@@ -42,7 +42,6 @@ const ConfigWizardWalkthrough = () => {
             <OrganizationInfoForm handleChangeStep={handleChangeStep} />
           </Stack>
         </Stack>
-        <Stack bg="gray.50" maxW="40%"></Stack>
       </Stack>
     </>
   );
