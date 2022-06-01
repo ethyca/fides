@@ -1,26 +1,31 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 
-import { DatasetField } from "./types";
+import { ColumnMetadata, DatasetField } from "./types";
 
 interface Props {
   fields: DatasetField[];
+  columns: ColumnMetadata[];
 }
 
-const DatasetFieldsTable = ({ fields }: Props) => (
+const DatasetFieldsTable = ({ fields, columns }: Props) => (
   <Table size="sm">
     <Thead>
       <Tr>
-        <Th pl={0}>Field Name</Th>
-        <Th pl={0}>Description</Th>
-        <Th pl={0}>Identifiability</Th>
+        {columns.map((c) => (
+          <Th key={c.name} pl={0}>
+            {c.name}
+          </Th>
+        ))}
       </Tr>
     </Thead>
     <Tbody>
       {fields.map((field) => (
         <Tr key={field.name}>
-          <Td pl={0}>{field.name}</Td>
-          <Td pl={0}>{field.description}</Td>
-          <Td pl={0}>{field.data_qualifier}</Td>
+          {columns.map((c) => (
+            <Td key={`${field.name}-${field[c.attribute]}`} pl={0}>
+              {field[c.attribute]}
+            </Td>
+          ))}
         </Tr>
       ))}
     </Tbody>
