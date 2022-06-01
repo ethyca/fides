@@ -14,7 +14,7 @@ const DatasetFieldsTable = ({ fields }: Props) => {
     undefined
   );
   const handleClose = () => {
-    console.log("close");
+    setEditDrawerIsOpen(false);
   };
   const handleClick = (field: DatasetField) => {
     setActiveField(field);

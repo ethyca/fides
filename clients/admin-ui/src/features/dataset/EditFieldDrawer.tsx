@@ -9,9 +9,11 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Form, Formik } from "formik";
 
+import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import CloseSolid from "../common/Icon/CloseSolid";
+import { DATA_QUALIFIERS } from "./constants";
 import { DatasetField } from "./types";
 
 interface FieldValues {
@@ -37,21 +39,18 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
       <Form>
         <Stack>
           <Box>
-            <label htmlFor="description">Description</label>
-            <Field name="description" type="text" className="form-input" />
-            <ErrorMessage name="description" />
+            <CustomTextInput name="description" label="Description" />
           </Box>
           <Box>
-            <label htmlFor="identifiability">Identifiability</label>
-            <Field name="identifiability" type="text" className="form-input" />
-            <ErrorMessage name="identifiability" />
+            <CustomSelect name="identifiability" label="Identifiability">
+              {DATA_QUALIFIERS.map((qualifier) => (
+                <option key={qualifier.key} value={qualifier.key}>
+                  {qualifier.label}
+                </option>
+              ))}
+            </CustomSelect>
           </Box>
-          <Box>
-            <label htmlFor="data_categories">Data Categories</label>
-            <Field name="data_categories" type="text" className="form-input" />
-            <ErrorMessage name="data_categories" />
-          </Box>
-
+          <Box>Data Categories (todo)</Box>
           <Box>
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
@@ -78,13 +77,13 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => (
     <DrawerContent>
       <Box py={2}>
         <Box display="flex" justifyContent="flex-end" mr={2}>
-          <Button variant="ghost">
+          <Button variant="ghost" onClick={onClose}>
             <CloseSolid />
           </Button>
         </Box>
         <DrawerHeader py={2}>Field Name: {field.name}</DrawerHeader>
         <DrawerBody>
-          <Text fontSize="sm">
+          <Text fontSize="sm" mb={4}>
             By providing a small amount of additional context for each system we
             can make reporting and understanding our tech stack much easier.
           </Text>
