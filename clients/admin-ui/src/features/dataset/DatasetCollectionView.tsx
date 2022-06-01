@@ -36,9 +36,8 @@ interface Props {
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const { dataset, isLoading } = useDataset(fidesKey);
-  const [activeCollection, setActiveCollection] = useState<
-    DatasetCollection | undefined
-  >();
+  const [activeCollection, setActiveCollection] =
+    useState<DatasetCollection | null>();
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
 
   const router = useRouter();
@@ -49,7 +48,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     if (dataset) {
       setActiveCollection(dataset.collections[0]);
     } else {
-      setActiveCollection(undefined);
+      setActiveCollection(null);
     }
   }, [dataset]);
 

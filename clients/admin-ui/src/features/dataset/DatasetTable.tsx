@@ -15,7 +15,7 @@ const DatasetsTable = ({ datasets }: Props) => {
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
     if (dataset.fides_key === activeDataset?.fides_key) {
-      dispatch(setActiveDataset(undefined));
+      dispatch(setActiveDataset(null));
     } else {
       dispatch(setActiveDataset(dataset));
     }

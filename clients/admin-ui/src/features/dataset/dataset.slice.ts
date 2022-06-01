@@ -9,12 +9,12 @@ import { Dataset } from "./types";
 
 export interface State {
   datasets: Dataset[];
-  activeDataset: Dataset | undefined;
+  activeDataset: Dataset | null;
 }
 
 const initialState: State = {
   datasets: [],
-  activeDataset: undefined,
+  activeDataset: null,
 };
 
 export const datasetApi = createApi({
@@ -45,7 +45,7 @@ export const datasetSlice = createSlice({
       ...state,
       datasets: action.payload,
     }),
-    setActiveDataset: (state, action: PayloadAction<Dataset | undefined>) => ({
+    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => ({
       ...state,
       activeDataset: action.payload,
     }),
