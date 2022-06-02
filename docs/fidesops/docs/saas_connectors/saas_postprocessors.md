@@ -70,12 +70,13 @@ Filters object or array given field name and value. Value can reference a dynami
 
 `configuration`:
 
-- `field` (_str_): Corresponds to the field on which to filter. For example, we wish to filter where `email_contact == "bob@mail.com"`, then `field` will be `email_contact`. Note that filtering an array by a field that's deeply nested is not yet supported.
+- `field` (_str_): Corresponds to the field on which to filter. For example, we wish to filter where `email_contact == "bob@mail.com"`, then `field` will be `email_contact`.
 - `value` (_str_): Value to search for when filtering (e.g. hard-coded `bob@mail.com`) or Dict of identity path:
     - `identity` (_str_): Identity object from subject request (e.g. `email` or `phone_number`)
+- `exact` (optional _bool_ defaults to True): `value` and `field` value must be the same length (no extra characters).
+- `case_sensitive` (optional _bool_ defaults to True): Cases must match between `value` and `field` value.
 
-
-#### Example
+#### Examples
 
 Post-Processor Config:
 ```yaml
@@ -120,6 +121,59 @@ Result:
     }
 ]
 ```
+By default this filter is exact and case-sensitive.
+
+Post-Processor Config:
+```yaml
+- strategy: filter
+  configuration:
+    field: email_contact
+    value:
+      identity: email
+    exact: False
+    case_sensitive: False
+```
+
+Identity data passed in through request:
+
+```json
+{
+  "email": "somebody@email.com"
+}
+```
+
+Data to be processed:
+```json
+[
+    {
+        "id": 1397429347,
+        "email_contact": "[Somebody Awesome] SOMEBODY@email.com",
+        "name": "Somebody Awesome"
+    },
+    {
+        "id": 1397429348,
+        "email_contact": "somebody@email.com",
+        "name": "Somebody Awesome"
+    }
+]
+```
+
+Result:
+```json
+[
+    {
+        "id": 1397429347,
+        "email_contact": "[Somebody Awesome] SOMEBODY@email.com",
+        "name": "Somebody Awesome"
+    },
+    {
+        "id": 1397429348,
+        "email_contact": "somebody@email.com",
+        "name": "Somebody Awesome"
+    }
+]
+```
+We can configure how strict the filter is by setting `exact` and `case_sensitive` both to False. This allows our value to be a substring of a longer string, and to ignore case (upper vs lower case).
 
 Note: Type casting is not supported at this time. We currently only support filtering by string values. e.g. `bob@mail.com` and not `12344245`.
 

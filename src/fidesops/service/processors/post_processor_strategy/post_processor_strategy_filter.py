@@ -1,6 +1,9 @@
 import logging
 from typing import Any, Dict, List, Union
 
+import pydash
+
+from fidesops.common_exceptions import FidesopsException
 from fidesops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -44,6 +47,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     def __init__(self, configuration: FilterPostProcessorConfiguration):
         self.field = configuration.field
         self.value = configuration.value
+        self.exact = configuration.exact
+        self.case_sensitive = configuration.case_sensitive
 
     def get_strategy_name(self) -> str:
         return STRATEGY_NAME
@@ -54,9 +59,10 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         identity_data: Dict[str, Any] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
-        :param data: A list or a dict
-        :param identity_data: dict of cached identity data
-        :return: filtered dict, list of dicts, or empty list
+        - data: A list or a dict
+        - identity_data: A dict of cached identity data
+
+        returns a filtered dict, list of dicts, or empty list
         """
 
         if not data:
@@ -76,13 +82,81 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         try:
             if isinstance(data, list):
-                return [item for item in data if item[self.field] == filter_value]
-            return data if data[self.field] == filter_value else []
+                return [
+                    item
+                    for item in data
+                    if self._matches(
+                        self.exact,
+                        self.case_sensitive,
+                        filter_value,
+                        pydash.get(item, self.field),
+                    )
+                ]
+            return (
+                data
+                if self._matches(
+                    self.exact,
+                    self.case_sensitive,
+                    filter_value,
+                    pydash.get(data, self.field),
+                )
+                else []
+            )
         except KeyError:
             logger.warning(
                 f"{self.field} could not be found on data for the following post processing strategy: {self.get_strategy_name()}"
             )
             return []
+
+    def _matches(
+        self,
+        exact: bool,
+        case_sensitive: bool,
+        filter_value: str,
+        target: Union[str, List[str]],
+    ) -> bool:
+        """
+        Returns a boolean indicating if the filter_value (string) is contained
+        in the target (string or list of strings).
+
+        - exact: filter_value and target must be the same length (no extra characters)
+        - case_sensitive: cases must match between filter_value and target
+        """
+
+        # does not match if we don't have anything to compare to
+        if target is None:
+            return False
+
+        # validate inputs
+        if not isinstance(target, (str, list)):
+            raise FidesopsException(
+                f"Field value '{self.field}' for filter postprocessor must be a string or list of strings, found '{type(target).__name__}'"
+            )
+
+        # validate list contents
+        if isinstance(target, list):
+            if not all(isinstance(item, str) for item in target):
+                raise FidesopsException(
+                    f"Every value in the '{self.field}' list must be a string"
+                )
+
+        # prep inputs by converting them to lowercase
+        if not case_sensitive:
+            filter_value = filter_value.casefold()
+            if isinstance(target, list):
+                target = [item.casefold() for item in target]
+            elif isinstance(target, str):
+                target = target.casefold()
+
+        # compare filter_values to a target list
+        if isinstance(target, list):
+            return any(
+                filter_value == item if exact else filter_value in item
+                for item in target
+            )
+
+        # base case, compare filter_value to a single string
+        return filter_value == target if exact else filter_value in target
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
