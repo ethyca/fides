@@ -48,9 +48,15 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
               _hover={{ bg: "gray.50" }}
               cursor="pointer"
               onClick={() => handleClick(idx)}
+              tabIndex={0}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleClick(idx);
+                }
+              }}
             >
               {columns.map((c) => (
-                <Td key={`${field.name}-${field[c.attribute]}`} pl={0}>
+                <Td key={`${c.name}-${field.name}`} pl={0}>
                   {field[c.attribute]}
                 </Td>
               ))}

@@ -37,7 +37,7 @@ interface EditFieldFormProps {
 
 const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
   const initialValues: FieldValues = {
-    description: field.description,
+    description: field.description ?? "",
     data_qualifier: field.data_qualifier,
     data_categories: field.data_categories,
   };
