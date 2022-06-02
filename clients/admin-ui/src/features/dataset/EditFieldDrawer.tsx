@@ -49,7 +49,6 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
 
   const handleSubmit = (values: FieldValues) => {
     // merge the updated fields with the original dataset
-    console.log({ values });
     if (dataset && collectionIndex != null && fieldIndex != null) {
       const updatedField = { ...field, ...values };
       const updatedDataset = getUpdatedDatasetFromField(

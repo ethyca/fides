@@ -1,3 +1,14 @@
+/**
+ * Because there is only one /dataset endpoint which handles dataset, collection,
+ * and field modifications, and always takes a whole dataset object, it is convenient
+ * to have helper functions which, given a field or collection, recreates the
+ * entire dataset object to send to the backend.
+ *
+ * Right now, there are no guaranteed unique attributes on a field or collection, and
+ * so we have to use their index in the array. If they ever get a unique ID, we should
+ * use that instead.
+ */
+
 import { Dataset, DatasetCollection, DatasetField } from "./types";
 
 export const getUpdatedDatasetFromCollection = (
