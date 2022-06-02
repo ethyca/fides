@@ -1,4 +1,5 @@
 # Configuration TOML used in select unit tests
+PORT=8080
 
 [database]
 SERVER="testserver"

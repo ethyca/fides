@@ -1,3 +1,5 @@
+PORT=8080
+
 [database]
 SERVER="db"
 USER="postgres"
