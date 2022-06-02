@@ -229,6 +229,7 @@ class FidesopsConfig(FidesSettings):
     security: SecuritySettings
     execution: ExecutionSettings
 
+    PORT: int
     is_test_mode: bool = os.getenv("TESTING") == "True"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
     dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE") == "True"

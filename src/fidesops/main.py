@@ -60,7 +60,7 @@ def start_webserver() -> None:
     uvicorn.run(
         "fidesops.main:app",
         host="0.0.0.0",
-        port=8080,
+        port=config.PORT,
         log_config=None,
         reload=config.hot_reloading,
     )
