@@ -26,19 +26,22 @@ import { DatasetField } from "./types";
 
 interface FieldValues {
   description: DatasetField["description"];
-  identifiability: DatasetField["data_qualifier"];
+  data_qualifier: DatasetField["data_qualifier"];
   data_categories: DatasetField["data_categories"];
 }
+
 interface EditFieldFormProps {
   field: DatasetField;
   onClose: () => void;
 }
+
 const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
   const initialValues: FieldValues = {
     description: field.description,
-    identifiability: field.data_qualifier,
+    data_qualifier: field.data_qualifier,
     data_categories: field.data_categories,
   };
+
   const dataset = useSelector(selectActiveDataset);
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
@@ -46,6 +49,7 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
 
   const handleSubmit = (values: FieldValues) => {
     // merge the updated fields with the original dataset
+    console.log({ values });
     if (dataset && collectionIndex != null && fieldIndex != null) {
       const updatedField = { ...field, ...values };
       const updatedDataset = getUpdatedDatasetFromField(
@@ -67,7 +71,7 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
             <CustomTextInput name="description" label="Description" />
           </Box>
           <Box>
-            <CustomSelect name="identifiability" label="Identifiability">
+            <CustomSelect name="data_qualifier" label="Identifiability">
               {DATA_QUALIFIERS.map((qualifier) => (
                 <option key={qualifier.key} value={qualifier.key}>
                   {qualifier.label}
