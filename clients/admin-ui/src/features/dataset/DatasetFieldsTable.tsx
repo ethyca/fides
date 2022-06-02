@@ -1,6 +1,8 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { selectActiveFieldIndex, setActiveFieldIndex } from "./dataset.slice";
 import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata, DatasetField } from "./types";
 
@@ -10,17 +12,18 @@ interface Props {
 }
 
 const DatasetFieldsTable = ({ fields, columns }: Props) => {
+  const dispatch = useDispatch();
   const [editDrawerIsOpen, setEditDrawerIsOpen] = useState(false);
-  const [activeField, setActiveField] = useState<DatasetField | undefined>(
-    undefined
-  );
+  const activeFieldIndex = useSelector(selectActiveFieldIndex);
   const handleClose = () => {
     setEditDrawerIsOpen(false);
   };
-  const handleClick = (field: DatasetField) => {
-    setActiveField(field);
+  const handleClick = (index: number) => {
+    dispatch(setActiveFieldIndex(index));
     setEditDrawerIsOpen(true);
   };
+  const activeField =
+    activeFieldIndex != null ? fields[activeFieldIndex] : null;
   return (
     <Box>
       <Table size="sm">
@@ -34,12 +37,12 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
           </Tr>
         </Thead>
         <Tbody>
-          {fields.map((field) => (
+          {fields.map((field, idx) => (
             <Tr
               key={field.name}
               _hover={{ bg: "gray.50" }}
               cursor="pointer"
-              onClick={() => handleClick(field)}
+              onClick={() => handleClick(idx)}
             >
               {columns.map((c) => (
                 <Td key={`${field.name}-${field[c.attribute]}`} pl={0}>

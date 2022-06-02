@@ -5,16 +5,21 @@ import { HYDRATE } from "next-redux-wrapper";
 import type { AppState } from "~/app/store";
 
 import { FidesKey } from "../common/fides-types";
-import { Dataset, DatasetField } from "./types";
+import { Dataset } from "./types";
 
 export interface State {
   datasets: Dataset[];
   activeDataset: Dataset | null;
+  // collections and fields don't have unique IDs, so we have to use their index
+  activeCollectionIndex: number | null;
+  activeFieldIndex: number | null;
 }
 
 const initialState: State = {
   datasets: [],
   activeDataset: null,
+  activeCollectionIndex: null,
+  activeFieldIndex: null,
 };
 
 export const datasetApi = createApi({
@@ -64,6 +69,17 @@ export const datasetSlice = createSlice({
       ...state,
       activeDataset: action.payload,
     }),
+    setActiveCollectionIndex: (
+      state,
+      action: PayloadAction<number | null>
+    ) => ({
+      ...state,
+      activeCollectionIndex: action.payload,
+    }),
+    setActiveFieldIndex: (state, action: PayloadAction<number | null>) => ({
+      ...state,
+      activeFieldIndex: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -73,8 +89,17 @@ export const datasetSlice = createSlice({
   },
 });
 
-export const { setDatasets, setActiveDataset } = datasetSlice.actions;
+export const {
+  setDatasets,
+  setActiveDataset,
+  setActiveCollectionIndex,
+  setActiveFieldIndex,
+} = datasetSlice.actions;
 export const selectActiveDataset = (state: AppState) =>
   state.dataset.activeDataset;
+export const selectActiveCollectionIndex = (state: AppState) =>
+  state.dataset.activeCollectionIndex;
+export const selectActiveFieldIndex = (state: AppState) =>
+  state.dataset.activeFieldIndex;
 
 export const { reducer } = datasetSlice;

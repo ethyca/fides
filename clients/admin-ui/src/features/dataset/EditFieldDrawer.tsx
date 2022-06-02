@@ -10,11 +10,17 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
+import { useSelector } from "react-redux";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import CloseSolid from "../common/Icon/CloseSolid";
 import { DATA_QUALIFIERS } from "./constants";
-import { useUpdateDatasetMutation } from "./dataset.slice";
+import {
+  selectActiveCollectionIndex,
+  selectActiveDataset,
+  selectActiveFieldIndex,
+  useUpdateDatasetMutation,
+} from "./dataset.slice";
 import { DatasetField } from "./types";
 
 interface FieldValues {
@@ -32,9 +38,22 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
     identifiability: field.data_qualifier,
     data_categories: field.data_categories,
   };
-  const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
+  const dataset = useSelector(selectActiveDataset);
+  const collectionIndex = useSelector(selectActiveCollectionIndex);
+  const fieldIndex = useSelector(selectActiveFieldIndex);
+  // const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
   const handleSubmit = (values: FieldValues) => {
-    console.log("submitting!", values);
+    console.log({ dataset });
+    // merge the updated fields with the original dataset
+    if (dataset && collectionIndex != null && fieldIndex != null) {
+      const updatedField = { ...field, ...values };
+      const updatedDataset = { ...dataset };
+      const updatedCollections = [...updatedDataset.collections];
+      const updatedFields = [...updatedCollections[collectionIndex].fields];
+      updatedFields[fieldIndex] = updatedField;
+
+      console.log({ updatedDataset });
+    }
   };
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
