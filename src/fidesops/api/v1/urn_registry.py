@@ -11,6 +11,7 @@ CLIENT = "/oauth/client"
 SCOPE = "/oauth/scope"
 CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
+OAUTH_CALLBACK = "/oauth/callback"
 
 # Encryption URLs
 ENCRYPT_AES = "/cryptography/encryption/aes/encrypt"
@@ -65,6 +66,7 @@ CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_TEST = "/connection/{connection_key}/test"
+AUTHORIZE = "/connection/{connection_key}/authorize"
 
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"

@@ -12,6 +12,7 @@ POLICY_DELETE = "policy:delete"
 CONNECTION_CREATE_OR_UPDATE = "connection:create_or_update"
 CONNECTION_READ = "connection:read"
 CONNECTION_DELETE = "connection:delete"
+CONNECTION_AUTHORIZE = "connection:authorize"
 
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
@@ -63,6 +64,7 @@ SCOPE_REGISTRY = [
     CONNECTION_READ,
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
+    CONNECTION_AUTHORIZE,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,

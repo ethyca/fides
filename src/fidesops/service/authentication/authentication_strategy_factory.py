@@ -16,6 +16,9 @@ from fidesops.service.authentication.authentication_strategy_basic import (
 from fidesops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
+from fidesops.service.authentication.authentication_strategy_oauth2 import (
+    OAuth2AuthenticationStrategy,
+)
 from fidesops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
 )
@@ -31,6 +34,7 @@ class SupportedAuthenticationStrategies(Enum):
     basic = BasicAuthenticationStrategy
     bearer = BearerAuthenticationStrategy
     query_param = QueryParamAuthenticationStrategy
+    oauth2 = OAuth2AuthenticationStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

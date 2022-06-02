@@ -114,6 +114,10 @@ class SaaSConfigNotFoundException(FidesopsException):
     """Custom Exception - SaaS Config Not Found"""
 
 
+class OAuth2TokenException(FidesopsException):
+    """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
+
+
 class AuthenticationFailure(HTTPException):
     """Wrapper for authentication failure exception"""
 

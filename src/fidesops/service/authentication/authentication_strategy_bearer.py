@@ -1,7 +1,6 @@
-from typing import Any, Dict
-
 from requests import PreparedRequest
 
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     BearerAuthenticationConfiguration,
     StrategyConfiguration,
@@ -24,11 +23,11 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
         self.token = configuration.token
 
     def add_authentication(
-        self, request: PreparedRequest, secrets: Dict[str, Any]
+        self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add bearer authentication to the request"""
         request.headers["Authorization"] = "Bearer " + assign_placeholders(
-            self.token, secrets
+            self.token, connection_config.secrets
         )
         return request
 

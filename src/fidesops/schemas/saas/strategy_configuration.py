@@ -3,6 +3,9 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 
+from fidesops.schemas.saas.saas_config import SaaSRequest
+from fidesops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
+
 
 class StrategyConfiguration(BaseModel):
     """Base class for strategy configuration"""
@@ -12,18 +15,6 @@ class UnwrapPostProcessorConfiguration(StrategyConfiguration):
     """Dynamic JSON path access"""
 
     data_path: str
-
-
-class IdentityParamRef(BaseModel):
-    """A reference to the identity type in the filter Post Processor Config"""
-
-    identity: str
-
-
-class ConnectorParamRef(BaseModel):
-    """A reference to a value in the connector params (by name)"""
-
-    connector_param: Any
 
 
 class FilterPostProcessorConfiguration(StrategyConfiguration):
@@ -118,3 +109,16 @@ class QueryParamAuthenticationConfiguration(StrategyConfiguration):
 
     name: str
     value: str
+
+
+class OAuth2AuthenticationConfiguration(StrategyConfiguration):
+    """
+    OAuth2 endpoints for authentication, token retrieval, and token refresh.
+    Includes an optional expires_in parameter (in seconds) for OAuth2 integrations that
+    do not specify a TTL for the access tokens.
+    """
+
+    expires_in: Optional[int]
+    authorization_request: SaaSRequest
+    token_request: SaaSRequest
+    refresh_request: Optional[SaaSRequest]

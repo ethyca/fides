@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
 
 from requests import PreparedRequest
 
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 
@@ -11,7 +11,7 @@ class AuthenticationStrategy(ABC):
 
     @abstractmethod
     def add_authentication(
-        self, request: PreparedRequest, secrets: Dict[str, Any]
+        self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add authentication to the request"""
 

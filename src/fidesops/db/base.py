@@ -3,6 +3,7 @@
 # imported by Alembic
 from fidesops.db.base_class import Base
 from fidesops.models.audit_log import AuditLog
+from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
