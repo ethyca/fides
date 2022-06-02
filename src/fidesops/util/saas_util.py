@@ -3,12 +3,14 @@ import logging
 import re
 from collections import defaultdict
 from functools import reduce
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fidesops.common_exceptions import FidesopsException
 from fidesops.graph.config import Collection, CollectionAddress, Dataset, Field
+from fidesops.schemas.saas.saas_config import SaaSRequest
+from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 
@@ -169,9 +171,7 @@ def format_body(
     return headers, output
 
 
-def assign_placeholders(
-    value: Union[str, int], param_values: Dict[str, Any]
-) -> Optional[Union[str, int]]:
+def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[Any]:
     """
     Finds all the placeholders (indicated by <>) in the passed in value
     and replaces them with the actual param values
@@ -187,3 +187,59 @@ def assign_placeholders(
             else:
                 return None
     return value
+
+
+def map_param_values(
+    action: str,
+    context: str,
+    current_request: SaaSRequest,
+    param_values: Dict[str, Any],
+) -> SaaSRequestParams:
+    """
+    Visits path, headers, query, and body params in the current request and replaces
+    the placeholders with the request param values.
+
+    The action and context parameters provide more information for the logs
+
+    For example:
+        - action: 'read', context: 'transactions collection'
+        - action: 'refresh', context: 'Outreach Connector OAuth2'
+    """
+
+    path = assign_placeholders(current_request.path, param_values)
+    if path is None:
+        raise ValueError(
+            f"At least one param_value references an invalid field for the '{action}' request of {context}."
+        )
+
+    headers: Dict[str, Any] = {}
+    for header in current_request.headers or []:
+        header_value = assign_placeholders(header.value, param_values)
+        # only create header if placeholders were replaced with actual values
+        if header_value is not None:
+            headers[header.name] = assign_placeholders(header.value, param_values)
+
+    query_params: Dict[str, Any] = {}
+    for query_param in current_request.query_params or []:
+        query_param_value = assign_placeholders(query_param.value, param_values)
+        # only create query param if placeholders were replaced with actual values
+        if query_param_value is not None:
+            query_params[query_param.name] = query_param_value
+
+    body = assign_placeholders(current_request.body, param_values)
+    # if we declared a body and it's None after assigning placeholders we should error the request
+    if current_request.body and body is None:
+        raise ValueError(
+            f"Unable to replace placeholders in body for the '{action}' request of {context}"
+        )
+
+    # format the body based on the content type
+    updated_headers, formatted_body = format_body(headers, body)
+
+    return SaaSRequestParams(
+        method=current_request.method,
+        path=path,
+        headers=updated_headers,
+        query_params=query_params,
+        body=formatted_body,
+    )

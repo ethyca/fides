@@ -12,9 +12,7 @@ from fidesops.graph.config import (
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
 from fidesops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.schemas.saas.strategy_configuration import ConnectorParamRef
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.service.pagination.pagination_strategy_factory import get_strategy
 
 
 class ParamValue(BaseModel):
@@ -65,10 +63,8 @@ class ClientConfig(BaseModel):
     """Definition for an authenticated base HTTP client"""
 
     protocol: str
-    host: Union[
-        str, ConnectorParamRef
-    ]  # can be defined inline or be a connector_param reference
-    authentication: Strategy
+    host: str
+    authentication: Optional[Strategy]
 
 
 class Header(BaseModel):
@@ -116,6 +112,10 @@ class SaaSRequest(BaseModel):
         the specified pagination strategy. Passes in the raw value dict
         before any field validation.
         """
+
+        # delay import to avoid cyclic-dependency error
+        from fidesops.service.pagination.pagination_strategy_factory import get_strategy
+
         pagination = values.get("pagination")
         if pagination is not None:
             pagination_strategy = get_strategy(
@@ -158,7 +158,7 @@ class SaaSRequest(BaseModel):
 
 
 class Endpoint(BaseModel):
-    """An collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
+    """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
     requests: Dict[Literal["read", "update", "delete"], SaaSRequest]

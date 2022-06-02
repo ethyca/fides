@@ -21,7 +21,7 @@ from fidesops.service.connectors import (
     SaaSConnector,
     get_connector,
 )
-from fidesops.service.connectors.saas_connector import AuthenticatedClient
+from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fidesops.service.connectors.sql_connector import (
     MariaDBConnector,
     MicrosoftSQLServerConnector,

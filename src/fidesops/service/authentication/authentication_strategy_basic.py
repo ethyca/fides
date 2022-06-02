@@ -1,7 +1,6 @@
-from typing import Any, Dict
-
 from requests import PreparedRequest
 
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.strategy_configuration import (
     BasicAuthenticationConfiguration,
     StrategyConfiguration,
@@ -25,9 +24,10 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
         self.password = configuration.password
 
     def add_authentication(
-        self, request: PreparedRequest, secrets: Dict[str, Any]
+        self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add basic authentication to the request"""
+        secrets = connection_config.secrets
         request.prepare_auth(
             auth=(
                 assign_placeholders(self.username, secrets),

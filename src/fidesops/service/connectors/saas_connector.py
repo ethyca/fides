@@ -3,25 +3,17 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pydash
-from requests import PreparedRequest, Request, Response, Session
+from requests import Response
 
-from fidesops.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-    FidesopsException,
-    PostProcessingException,
-)
-from fidesops.core.config import config
+from fidesops.common_exceptions import FidesopsException, PostProcessingException
 from fidesops.graph.traversal import Row, TraversalNode
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.models.policy import Policy
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.service.authentication.authentication_strategy_factory import (
-    get_strategy as get_authentication_strategy,
-)
 from fidesops.service.connectors.base_connector import BaseConnector
+from fidesops.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fidesops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.service.pagination.pagination_strategy_factory import (
@@ -36,98 +28,6 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
 from fidesops.util.saas_util import assign_placeholders
 
 logger = logging.getLogger(__name__)
-
-
-class AuthenticatedClient:
-    """
-    A helper class to build authenticated HTTP requests based on
-    authentication and parameter configurations
-    """
-
-    def __init__(self, uri: str, configuration: ConnectionConfig):
-        self.session = Session()
-        self.uri = uri
-        self.key = configuration.key
-        self.client_config = configuration.get_saas_config().client_config
-        self.secrets = configuration.secrets
-
-    def get_authenticated_request(
-        self, request_params: SaaSRequestParams
-    ) -> PreparedRequest:
-        """
-        Returns an authenticated request based on the client config and
-        incoming path, headers, query, and body params.
-        """
-        req: PreparedRequest = Request(
-            method=request_params.method,
-            url=f"{self.uri}{request_params.path}",
-            headers=request_params.headers,
-            params=request_params.query_params,
-            data=request_params.body,
-        ).prepare()
-
-        auth_strategy = get_authentication_strategy(
-            self.client_config.authentication.strategy,
-            self.client_config.authentication.configuration,
-        )
-
-        return auth_strategy.add_authentication(req, self.secrets)
-
-    def send(
-        self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
-    ) -> Response:
-        """
-        Builds and executes an authenticated request.
-        Optionally ignores non-200 responses if ignore_errors is set to True
-        """
-        try:
-            prepared_request: PreparedRequest = self.get_authenticated_request(
-                request_params
-            )
-            response = self.session.send(prepared_request)
-        except Exception as exc:  # pylint: disable=W0703
-            if config.dev_mode:  # pylint: disable=R1720
-                raise ConnectionException(
-                    f"Operational Error connecting to '{self.key}' with error: {exc}"
-                )
-            else:
-                raise ConnectionException(
-                    f"Operational Error connecting to '{self.key}'."
-                )
-
-        log_request_and_response_for_debugging(
-            prepared_request, response
-        )  # Dev mode only
-
-        if not response.ok:
-            if ignore_errors:
-                logger.info(
-                    f"Ignoring errors on response with status code {response.status_code} as configured."
-                )
-                return response
-
-            raise ClientUnsuccessfulException(status_code=response.status_code)
-
-        return response
-
-
-def log_request_and_response_for_debugging(
-    prepared_request: PreparedRequest, response: Response
-) -> None:
-    """Log SaaS request and response in dev mode only"""
-    if config.dev_mode:
-        logger.info(
-            "\n\n-----------SAAS REQUEST-----------"
-            "\n%s %s"
-            "\nheaders: %s"
-            "\nbody: %s"
-            "\nresponse: %s",
-            prepared_request.method,
-            prepared_request.url,
-            prepared_request.headers,
-            prepared_request.body,
-            response._content,  # pylint: disable=W0212
-        )
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):

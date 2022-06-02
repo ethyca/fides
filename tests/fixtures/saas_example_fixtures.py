@@ -12,6 +12,9 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.schemas.saas.strategy_configuration import (
+    OAuth2AuthenticationConfiguration,
+)
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -124,6 +127,104 @@ def saas_example_connection_config_with_invalid_saas_config(
             "access": AccessLevel.read,
             "secrets": saas_example_secrets,
             "saas_config": invalid_saas_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
+    return {
+        "authorization_request": {
+            "method": "GET",
+            "path": "/auth/authorize",
+            "query_params": [
+                {"name": "client_id", "value": "<client_id>"},
+                {"name": "redirect_uri", "value": "<redirect_uri>"},
+                {"name": "response_type", "value": "code"},
+                {
+                    "name": "scope",
+                    "value": "admin.read admin.write",
+                },
+                {"name": "state", "value": "<state>"},
+            ],
+        },
+        "token_request": {
+            "method": "POST",
+            "path": "/oauth/token",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                }
+            ],
+            "query_params": [
+                {"name": "client_id", "value": "<client_id>"},
+                {"name": "client_secret", "value": "<client_secret>"},
+                {"name": "grant_type", "value": "authorization_code"},
+                {"name": "code", "value": "<code>"},
+                {"name": "redirect_uri", "value": "<redirect_uri>"},
+            ],
+        },
+        "refresh_request": {
+            "method": "POST",
+            "path": "/oauth/token",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                }
+            ],
+            "query_params": [
+                {"name": "client_id", "value": "<client_id>"},
+                {"name": "client_secret", "value": "<client_secret>"},
+                {"name": "redirect_uri", "value": "<redirect_uri>"},
+                {"name": "grant_type", "value": "refresh_token"},
+                {"name": "refresh_token", "value": "<refresh_token>"},
+            ],
+        },
+    }
+
+
+@pytest.fixture(scope="function")
+def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
+    secrets = {
+        "domain": "localhost",
+        "client_id": "client",
+        "client_secret": "secret",
+        "redirect_uri": "https://localhost/callback",
+        "access_token": "access",
+        "refresh_token": "refresh",
+    }
+    saas_config = {
+        "fides_key": "oauth2_connector",
+        "name": "OAuth2 Connector",
+        "description": "Generic OAuth2 connector for testing",
+        "version": "0.0.1",
+        "connector_params": [{"name": item} for item in secrets.values()],
+        "client_config": {
+            "protocol": "https",
+            "host": secrets["domain"],
+            "authentication": {
+                "strategy": "oauth2",
+                "configuration": oauth2_configuration,
+            },
+        },
+        "endpoints": [],
+        "test_request": {"method": "GET", "path": "/test"},
+    }
+
+    fides_key = saas_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": secrets,
+            "saas_config": saas_config,
         },
     )
     yield connection_config

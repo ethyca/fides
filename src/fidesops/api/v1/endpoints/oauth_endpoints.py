@@ -4,9 +4,16 @@ from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 from fidesops.api.deps import get_db
+from fidesops.api.v1.endpoints.saas_config_endpoints import (
+    verify_oauth_connection_config,
+)
 from fidesops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -19,14 +26,25 @@ from fidesops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
+    OAUTH_CALLBACK,
     SCOPE,
     TOKEN,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import AuthenticationFailure
+from fidesops.common_exceptions import (
+    AuthenticationFailure,
+    FidesopsException,
+    OAuth2TokenException,
+)
+from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.client import ClientDetail
+from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.client import ClientCreatedResponse
 from fidesops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
+from fidesops.service.authentication.authentication_strategy_factory import get_strategy
+from fidesops.service.authentication.authentication_strategy_oauth2 import (
+    OAuth2AuthenticationStrategy,
+)
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
@@ -157,3 +175,37 @@ def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
     logging.info("Getting all available scopes")
     return SCOPE_REGISTRY
+
+
+@router.post(OAUTH_CALLBACK, response_model=None)
+def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None:
+    """
+    Uses the passed in code to generate the token access request
+    for the connection associated with the given state.
+    """
+
+    # find authentication request by state
+    authentication_request: AuthenticationRequest = AuthenticationRequest.get_by(
+        db, field="state", value=state
+    )
+    if not authentication_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No authentication request found for the given state.",
+        )
+
+    connection_config: ConnectionConfig = ConnectionConfig.get_by(
+        db, field="key", value=authentication_request.connection_key
+    )
+    verify_oauth_connection_config(connection_config)
+
+    try:
+        authentication = (
+            connection_config.get_saas_config().client_config.authentication
+        )
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+            authentication.strategy, authentication.configuration
+        )
+        auth_strategy.get_access_token(db, code, connection_config)
+    except (OAuth2TokenException, FidesopsException) as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))

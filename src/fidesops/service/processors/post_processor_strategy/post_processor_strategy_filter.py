@@ -1,9 +1,9 @@
 import logging
 from typing import Any, Dict, List, Union
 
+from fidesops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
-    IdentityParamRef,
     StrategyConfiguration,
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy import (
