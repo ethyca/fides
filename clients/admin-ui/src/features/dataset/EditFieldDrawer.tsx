@@ -55,7 +55,7 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
         fieldIndex
       );
       updateDataset(updatedDataset);
-      // onClose();
+      onClose();
     }
   };
 
