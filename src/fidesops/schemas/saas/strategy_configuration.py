@@ -22,6 +22,8 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
 
     field: str
     value: Union[str, IdentityParamRef]
+    exact: Optional[bool] = True
+    case_sensitive: Optional[bool] = True
 
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
