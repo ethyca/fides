@@ -16,10 +16,10 @@ from fidesctl.core.export_helpers import (
     convert_tuple_to_string,
     export_datamap_to_excel,
     export_to_csv,
+    format_data_subjects,
+    format_data_uses,
     generate_data_category_rows,
     get_formatted_data_protection_impact_assessment,
-    get_formatted_data_subjects,
-    get_formatted_data_use,
     union_data_categories_in_joined_dataframe,
 )
 from fidesctl.core.utils import echo_green, get_all_level_fields
@@ -128,15 +128,16 @@ def export_dataset(
 
 
 def generate_system_records(
-    server_system_list: List,
-    url: str,
-    headers: Dict[str, str],
+    server_resources: Dict[str, List],
 ) -> List[Tuple[str, ...]]:
     """
-    Takes a list of systems from the server, creating a list of tuples
-    to be used as records to be exported. The headers of the csv are
-    currently added here as well.
+    Takes a dictionary of resources from the server, returning a list of tuples
+    to be used as records to be exported. The headers are defined
+    as the first tuple in the result.
     """
+
+    formatted_data_uses = format_data_uses(server_resources["data_use"])
+    formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
     output_list: List[Tuple[str, ...]] = [
         (
             "system.name",
@@ -163,7 +164,7 @@ def generate_system_records(
         )
     ]
 
-    for system in server_system_list:
+    for system in server_resources["system"]:
         third_country_list = ", ".join(system.third_country_transfers or [])
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
@@ -171,11 +172,12 @@ def generate_system_records(
             )
         )
         for declaration in system.privacy_declarations:
-            data_use = get_formatted_data_use(url, headers, declaration.data_use)
+            data_use = formatted_data_uses[declaration.data_use]
             data_categories = declaration.data_categories or []
-            data_subjects = get_formatted_data_subjects(
-                url, headers, declaration.data_subjects
-            )
+            data_subjects = [
+                formatted_data_subjects[data_subject_fides_key]
+                for data_subject_fides_key in declaration.data_subjects
+            ]
             dataset_references = declaration.dataset_references or ["N/A"]
             cartesian_product_of_declaration = [
                 (
@@ -216,17 +218,40 @@ def export_system(
     """
     Exports the required fields from a system resource to a csv file.
 
-    The resource is fetched from the server prior to being
+    Currently limited to systems found in the specified directory.
+
+    Required resources are fetched from the server prior to being
     flattened as needed for exporting.
     """
     resource_type = "system"
 
+    server_resources = dict()
     existing_keys = [resource.fides_key for resource in system_list]
-    server_resource_list = get_server_resources(
+    server_resources[resource_type] = get_server_resources(
         url, resource_type, existing_keys, headers
     )
 
-    output_list = generate_system_records(server_resource_list, url, headers)
+    data_use_fides_keys = [
+        privacy_declaration.data_use
+        for system in server_resources[resource_type]
+        for privacy_declaration in system.privacy_declarations
+    ]
+    server_resources["data_use"] = get_server_resources(
+        url, "data_use", set(data_use_fides_keys), headers
+    )
+
+    data_subject_fides_keys = [
+        data_subject
+        for system in server_resources[resource_type]
+        for privacy_declaration in system.privacy_declarations
+        for data_subject in privacy_declaration.data_subjects
+    ]
+
+    server_resources["data_subject"] = get_server_resources(
+        url, "data_subject", set(data_subject_fides_keys), headers
+    )
+
+    output_list = generate_system_records(server_resources)
 
     if not dry:
         exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
@@ -320,7 +345,7 @@ def export_organization(
 
 
 def build_joined_dataframe(
-    server_resource_dict: Dict[str, List], url: str, headers: Dict[str, str]
+    server_resource_dict: Dict[str, List],
 ) -> pd.DataFrame:
     """
     Return joined dataframes for datamap export
@@ -331,9 +356,8 @@ def build_joined_dataframe(
     """
 
     # systems
-    system_output_list = generate_system_records(
-        server_resource_dict["system"], url, headers
-    )
+
+    system_output_list = generate_system_records(server_resource_dict)
     systems_df = pd.DataFrame.from_records(system_output_list)
     systems_df.columns = systems_df.iloc[0]
     systems_df = systems_df[1:]
@@ -408,7 +432,7 @@ def export_datamap(
             get_server_resource(url, "organization", organization_fides_key, headers)
         ]
     }
-    for resource_type in ["system", "dataset"]:
+    for resource_type in ["system", "dataset", "data_subject", "data_use"]:
         server_resources = list_server_resources(
             url,
             headers,
@@ -423,9 +447,7 @@ def export_datamap(
         server_resource_dict[resource_type] = filtered_server_resources
 
     # transform the resources to join a system and referenced datasets
-    joined_system_dataset_df = build_joined_dataframe(
-        server_resource_dict, url, headers
-    )
+    joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
 
     if not dry and not to_csv:
         # build an organization dataframe if exporting to excel
