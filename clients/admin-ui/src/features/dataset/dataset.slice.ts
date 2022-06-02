@@ -42,7 +42,8 @@ export const datasetApi = createApi({
       Partial<Dataset> & Pick<Dataset, "fides_key">
     >({
       query: (dataset) => ({
-        url: `dataset/${dataset.fides_key}`,
+        url: `dataset/`,
+        params: { resource_type: "dataset" },
         method: "PUT",
         body: dataset,
       }),

@@ -21,6 +21,7 @@ import {
   selectActiveFieldIndex,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
+import { getUpdatedDatasetFromField } from "./helpers";
 import { DatasetField } from "./types";
 
 interface FieldValues {
@@ -41,33 +42,23 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
   const dataset = useSelector(selectActiveDataset);
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
-  const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
-  console.log({ updateDatasetResult });
+  const [updateDataset] = useUpdateDatasetMutation();
+
   const handleSubmit = (values: FieldValues) => {
     // merge the updated fields with the original dataset
     if (dataset && collectionIndex != null && fieldIndex != null) {
       const updatedField = { ...field, ...values };
-      const newFields = dataset.collections[collectionIndex].fields.map(
-        (f, idx) => {
-          if (idx === fieldIndex) {
-            return updatedField;
-          }
-          return f;
-        }
+      const updatedDataset = getUpdatedDatasetFromField(
+        dataset,
+        updatedField,
+        collectionIndex,
+        fieldIndex
       );
-      const newCollections = dataset.collections.map((c, idx) => {
-        if (idx === collectionIndex) {
-          return {
-            ...dataset.collections[collectionIndex],
-            ...{ fields: newFields },
-          };
-        }
-        return c;
-      });
-      const updatedDataset = { ...dataset, ...{ collections: newCollections } };
       updateDataset(updatedDataset);
+      // onClose();
     }
   };
+
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       <Form>
