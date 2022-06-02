@@ -66,17 +66,32 @@ export const datasetSlice = createSlice({
       ...state,
       datasets: action.payload,
     }),
-    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => ({
-      ...state,
-      activeDataset: action.payload,
-    }),
-    setActiveCollectionIndex: (
-      state,
-      action: PayloadAction<number | null>
-    ) => ({
-      ...state,
-      activeCollectionIndex: action.payload,
-    }),
+    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => {
+      if (action.payload != null) {
+        return { ...state, activeDataset: action.payload };
+      }
+      // clear out child fields when a dataset becomes null
+      return {
+        ...state,
+        activeDataset: action.payload,
+        activeCollectionIndex: null,
+        activeFieldIndex: null,
+      };
+    },
+    setActiveCollectionIndex: (state, action: PayloadAction<number | null>) => {
+      if (action.payload != null) {
+        return {
+          ...state,
+          activeCollectionIndex: action.payload,
+        };
+      }
+      // clear our child fields when a collection becomes null
+      return {
+        ...state,
+        activeCollectionIndex: action.payload,
+        activeFieldIndex: null,
+      };
+    },
     setActiveFieldIndex: (state, action: PayloadAction<number | null>) => ({
       ...state,
       activeFieldIndex: action.payload,

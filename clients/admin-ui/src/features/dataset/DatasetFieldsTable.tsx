@@ -15,15 +15,20 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
   const dispatch = useDispatch();
   const [editDrawerIsOpen, setEditDrawerIsOpen] = useState(false);
   const activeFieldIndex = useSelector(selectActiveFieldIndex);
+
   const handleClose = () => {
     setEditDrawerIsOpen(false);
+    dispatch(setActiveFieldIndex(null));
   };
+
   const handleClick = (index: number) => {
     dispatch(setActiveFieldIndex(index));
     setEditDrawerIsOpen(true);
   };
+
   const activeField =
     activeFieldIndex != null ? fields[activeFieldIndex] : null;
+
   return (
     <Box>
       <Table size="sm">
