@@ -41,18 +41,31 @@ const EditFieldForm = ({ field, onClose }: EditFieldFormProps) => {
   const dataset = useSelector(selectActiveDataset);
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
-  // const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
+  const [updateDataset, updateDatasetResult] = useUpdateDatasetMutation();
+  console.log({ updateDatasetResult });
   const handleSubmit = (values: FieldValues) => {
-    console.log({ dataset });
     // merge the updated fields with the original dataset
     if (dataset && collectionIndex != null && fieldIndex != null) {
       const updatedField = { ...field, ...values };
-      const updatedDataset = { ...dataset };
-      const updatedCollections = [...updatedDataset.collections];
-      const updatedFields = [...updatedCollections[collectionIndex].fields];
-      updatedFields[fieldIndex] = updatedField;
-
-      console.log({ updatedDataset });
+      const newFields = dataset.collections[collectionIndex].fields.map(
+        (f, idx) => {
+          if (idx === fieldIndex) {
+            return updatedField;
+          }
+          return f;
+        }
+      );
+      const newCollections = dataset.collections.map((c, idx) => {
+        if (idx === collectionIndex) {
+          return {
+            ...dataset.collections[collectionIndex],
+            ...{ fields: newFields },
+          };
+        }
+        return c;
+      });
+      const updatedDataset = { ...dataset, ...{ collections: newCollections } };
+      updateDataset(updatedDataset);
     }
   };
   return (

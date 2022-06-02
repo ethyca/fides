@@ -1,25 +1,48 @@
 import { Dataset, DatasetCollection, DatasetField } from "./types";
 
-export const getUpdatedDatasetCollection = (
+export const getUpdatedDatasetFromCollection = (
   dataset: Dataset,
-  collection: DatasetCollection
+  collection: DatasetCollection,
+  collectionIndex: number
 ) => {
-  const updatedDataset = { ...dataset };
-  const idx = dataset.collections.map((c) => c.name).indexOf(collection.name);
-  if (idx !== -1) {
-    updatedDataset.collections[idx] = collection;
-  }
-  return updatedDataset;
+  const newCollections = dataset.collections.map((c, idx) => {
+    if (idx === collectionIndex) {
+      return collection;
+    }
+    return c;
+  });
+  return { ...dataset, ...{ collections: newCollections } };
 };
 
-export const getUpdatedCollectionField = (
+export const getUpdatedCollectionFromField = (
   collection: DatasetCollection,
-  field: DatasetField
+  field: DatasetField,
+  fieldIndex: number
 ) => {
-  const updatedCollection = { ...collection };
-  const idx = collection.fields.map((f) => f.name).indexOf(field.name);
-  if (idx !== -1) {
-    updatedCollection.fields[idx] = field;
-  }
-  return updatedCollection;
+  const newFields = collection.fields.map((f, idx) => {
+    if (idx === fieldIndex) {
+      return field;
+    }
+    return f;
+  });
+  return { ...collection, ...{ fields: newFields } };
+};
+
+export const getUpdatedDatasetFromField = (
+  dataset: Dataset,
+  field: DatasetField,
+  collectionIndex: number,
+  fieldIndex: number
+) => {
+  const collection = dataset.collections[collectionIndex];
+  const updatedCollection = getUpdatedCollectionFromField(
+    collection,
+    field,
+    fieldIndex
+  );
+  return getUpdatedDatasetFromCollection(
+    dataset,
+    updatedCollection,
+    collectionIndex
+  );
 };
