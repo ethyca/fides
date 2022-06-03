@@ -139,3 +139,6 @@ fides_uploads
 
 # Prevent SaaS configs from being committed
 saas_config.toml
+
+# Script secrets
+scripts/secrets.py
