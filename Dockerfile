@@ -74,9 +74,6 @@ RUN pip install -r dev-requirements.txt
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY optional-requirements.txt optional-requirements.txt
-RUN pip install -r optional-requirements.txt
-
 ###############################
 ## General Application Setup ##
 ###############################
