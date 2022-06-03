@@ -1,5 +1,3 @@
-import { transform } from "@chakra-ui/system";
-
 import { transformDataCategoriesToNodes } from "~/features/taxonomy/helpers";
 
 describe("data category transform", () => {
@@ -95,8 +93,6 @@ describe("data category transform", () => {
   ];
   it("should convert a list of dot strings to nodes", () => {
     const nodes = transformDataCategoriesToNodes(categories);
-    // 3 top level categories
-    expect(nodes.length).toEqual(3);
     expect(nodes).toEqual([
       {
         children: [

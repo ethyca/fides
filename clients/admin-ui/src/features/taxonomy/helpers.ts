@@ -1,12 +1,6 @@
 import { FidesKey } from "../common/fides-types";
-import { DataCategory } from "./types";
+import { DataCategory, DataCategoryNode } from "./types";
 
-interface DataCategoryNode {
-  value: string;
-  label: string;
-  description?: string;
-  children: DataCategoryNode[];
-}
 // eslint-disable-next-line import/prefer-default-export
 export const transformDataCategoriesToNodes = (
   categories: DataCategory[],
