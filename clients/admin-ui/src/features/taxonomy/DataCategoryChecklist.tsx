@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box, Heading, Text } from "@fidesui/react";
 import { useMemo } from "react";
 
 import { transformDataCategoriesToNodes } from "./helpers";
@@ -12,8 +12,16 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
   );
-  console.log({ dataCategories, nodes });
-  return <Box>hi</Box>;
+  return (
+    <Box>
+      <Heading size="md" mb={2}>
+        🚧 In progress 🚧
+      </Heading>
+      {nodes.map((n) => (
+        <Text key={n.value}>{n.label}</Text>
+      ))}
+    </Box>
+  );
 };
 
 export default DataCategoryChecklist;
