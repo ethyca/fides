@@ -20,18 +20,26 @@ const CheckboxItem = ({
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
-  // const [isOpen, setIsOpen] = useState<boolean | null>(null)
   const [checked, setChecked] = useState(isChecked);
+
   const handleCheck = () => {
     setChecked(!checked);
     onChecked(node);
   };
+
   return (
     <Box>
-      <Checkbox value={value} isChecked={checked} onChange={handleCheck} ml={2}>
+      <Checkbox
+        colorScheme="complimentary"
+        value={value}
+        isChecked={checked}
+        onChange={handleCheck}
+        ml={2}
+        data-testid={`checkbox-${label}`}
+      >
         {label}
       </Checkbox>
-      <Box ml={5}>{children}</Box>
+      {children && <Box ml={5}>{children}</Box>}
     </Box>
   );
 };
@@ -45,7 +53,8 @@ interface CheckboxTreeProps {
 const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
   const handleChecked = (node: CheckboxNode) => {
     if (checked.indexOf(node.value) >= 0) {
-      onChecked(checked.filter((c) => c !== node.value));
+      // take advantage of dot notation here for unchecking children
+      onChecked(checked.filter((c) => !c.startsWith(node.value)));
     } else {
       onChecked([...checked, node.value]);
     }
@@ -63,9 +72,10 @@ const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
           isChecked={isChecked}
           onChecked={handleChecked}
         >
-          {node.children.map((childNode) => (
-            <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
-          ))}
+          {isChecked &&
+            node.children.map((childNode) => (
+              <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
+            ))}
         </CheckboxItem>
       );
     }

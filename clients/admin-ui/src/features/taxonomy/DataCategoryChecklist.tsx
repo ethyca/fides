@@ -12,7 +12,8 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
   );
-  const [checked, setChecked] = useState<string[]>(["account"]);
+  const [checked, setChecked] = useState<string[]>([]);
+
   return (
     <CheckboxTree nodes={nodes} checked={checked} onChecked={setChecked} />
   );
