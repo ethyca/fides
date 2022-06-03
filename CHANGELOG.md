@@ -17,7 +17,10 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
+
+
+## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
 ### Added
 * Added OAuth2 authentication strategy for SaaS connectors [#555](https://github.com/ethyca/fidesops/pull/555)
