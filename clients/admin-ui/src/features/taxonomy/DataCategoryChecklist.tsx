@@ -19,6 +19,7 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
     <SimpleGrid columns={[2]}>
       <CheckboxTree nodes={nodes} checked={checked} onChecked={setChecked} />
       <Box>
+        <Text fontWeight="semibold">Selected</Text>
         {checked.map((c) => (
           <Text key={c}>{c}</Text>
         ))}

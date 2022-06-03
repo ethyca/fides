@@ -30,6 +30,7 @@ The types of changes are:
 * Integration for management UI
   * Datasets
   * Systems
+  * Taxonomy (data categories)
 * Initial dataset collection UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
