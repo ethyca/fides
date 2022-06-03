@@ -1,6 +1,6 @@
-import { Box } from "@fidesui/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
+import CheckboxTree from "../common/CheckboxTree";
 import { transformDataCategoriesToNodes } from "./helpers";
 import { DataCategory } from "./types";
 
@@ -12,8 +12,10 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
   );
-  console.log({ dataCategories, nodes });
-  return <Box>hi</Box>;
+  const [checked, setChecked] = useState<string[]>(["account"]);
+  return (
+    <CheckboxTree nodes={nodes} checked={checked} onChecked={setChecked} />
+  );
 };
 
 export default DataCategoryChecklist;
