@@ -26,6 +26,7 @@ The types of changes are:
 * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
+* New `datamap` endpoint to enable visualizing a data map from the UI [#721](https://github.com/ethyca/fides/pull/721)
 * Navigation bar for management UI
 * Dataset backend integration for management UI
 * Initial dataset collection UI view
