@@ -13,6 +13,7 @@ from fidesapi.routes.util import API_PREFIX
 from fidesapi.sql_models import sql_model_map
 from fidesapi.utils.errors import DatabaseUnavailableError, NotFoundError
 from fidesctl.core.export import build_joined_dataframe
+from fidesctl.core.export_helpers import DATAMAP_COLUMNS
 
 router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 
@@ -78,36 +79,10 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> Dict[str, str]
     """
     Formats the joined DataFrame to return the data as records.
     """
-    output_columns = [
-        "dataset.name",
-        "system.name",
-        "system.administrating_department",
-        "system.privacy_declaration.data_use.name",
-        "system.joint_controller",
-        "system.privacy_declaration.data_subjects.name",
-        "unioned_data_categories",
-        "system.privacy_declaration.data_use.recipients",
-        "system.link_to_processor_contract",
-        "third_country_combined",
-        "system.third_country_safeguards",
-        "dataset.retention",
-        "organization.link_to_security_policy",
-        "system.data_responsibility_title",
-        "system.privacy_declaration.data_use.legal_basis",
-        "system.privacy_declaration.data_use.special_category",
-        "system.privacy_declaration.data_use.legitimate_interest",
-        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-        "system.privacy_declaration.data_subjects.rights_available",
-        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-        "dataset.name",
-        "system.data_protection_impact_assessment.is_required",
-        "system.data_protection_impact_assessment.progress",
-        "system.data_protection_impact_assessment.link",
-    ]
 
     limited_columns_df = joined_system_dataset_df[
         joined_system_dataset_df.columns[
-            joined_system_dataset_df.columns.isin(output_columns)
+            joined_system_dataset_df.columns.isin(DATAMAP_COLUMNS)
         ]
     ]
     return limited_columns_df.to_dict("records")
