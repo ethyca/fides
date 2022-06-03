@@ -1,3 +1,4 @@
+import { Box, SimpleGrid, Text } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
 import CheckboxTree from "../common/CheckboxTree";
@@ -15,7 +16,14 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
   const [checked, setChecked] = useState<string[]>([]);
 
   return (
-    <CheckboxTree nodes={nodes} checked={checked} onChecked={setChecked} />
+    <SimpleGrid columns={[2]}>
+      <CheckboxTree nodes={nodes} checked={checked} onChecked={setChecked} />
+      <Box>
+        {checked.map((c) => (
+          <Text key={c}>{c}</Text>
+        ))}
+      </Box>
+    </SimpleGrid>
   );
 };
 
