@@ -41,6 +41,7 @@ The types of changes are:
 * Migrate all endpoints to be prefixed by `/api/v1` [#623](https://github.com/ethyca/fides/issues/623)
 * Allow credentials to be passed to the generate systems from aws functionality via the API [#645](https://github.com/ethyca/fides/pull/645)
 * Update the export of a datamap to load resources from the server instead of a manifest directory[#662](https://github.com/ethyca/fides/pull/662)
+* Removed `optional-requirements.txt` in favor of installing through extras. [#733](https://github.com/ethyca/fides/pull/733)
 
 ### Developer Experience
 
