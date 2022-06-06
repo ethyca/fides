@@ -1,6 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { HYDRATE } from 'next-redux-wrapper';
-import type { AppState } from '../../app/store';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { HYDRATE } from "next-redux-wrapper";
+
+import type { AppState } from "../../app/store";
 
 export interface State {
   token: string | null;
@@ -11,7 +12,7 @@ const initialState: State = {
 };
 
 export const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     assignToken: (state, action: PayloadAction<string>) => ({

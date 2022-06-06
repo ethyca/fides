@@ -483,7 +483,7 @@ def test_generate_dataset_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -
     actual_result = _dataset.generate_dataset_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
-        org_url="https://dev-78908748.okta.com",
+        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
     )
     assert actual_result
 
@@ -494,11 +494,13 @@ def test_scan_dataset_okta_success(
 ) -> None:
     file_name = f"{tmpdir}/test_file.yml"
     _dataset.generate_dataset_okta(
-        file_name=file_name, include_null=False, org_url="https://dev-78908748.okta.com"
+        file_name=file_name,
+        include_null=False,
+        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
     )
     _dataset.scan_dataset_okta(
         manifest_dir=file_name,
-        org_url="https://dev-78908748.okta.com",
+        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
         coverage_threshold=100,
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -511,7 +513,7 @@ def test_scan_dataset_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) 
     with pytest.raises(SystemExit):
         _dataset.scan_dataset_okta(
             manifest_dir="",
-            org_url="https://dev-78908748.okta.com",
+            okta_config={"orgUrl": "https://dev-78908748.okta.com"},
             coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,

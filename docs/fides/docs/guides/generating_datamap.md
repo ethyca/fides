@@ -5,6 +5,8 @@ Fides is capable of exporting a data map of your [resources](./../language/resou
 To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
 
+First, ensure `fidesctl` is running with `nox -s cli`.
+
 To apply and export the provided `demo_resources`, run the following commands:
 
 ```sh title="Apply and Export Defaults"
@@ -119,6 +121,41 @@ In your initial export, several data map columns are populated with `N/A`. The d
 
 Example manifest updates are included in `demo_resources/demo_extended_taxonomy.yml`.
 
+### Auditing Resources
+
+Your Organization and System datasets can also be assessed using the `--audit` flag as part of the `evaluate` command, which will identify how your resources could be extended to generate a compliant data map.
+
+1. `fidesctl evaluate demo_resources/ --audit`
+
+The output of this command will highlight any missing information:
+
+```bash title="Example Output: <code>fidesctl audit</code>"
+...
+"Auditing Organization Resource Compliance"
+Found 1 Organization resource(s) to audit...
+Auditing Organization: Demo Organization
+controller for default_organization in Demo Organization is compliant
+data_protection_officer for default_organization in Demo Organization is compliant
+representative for default_organization in Demo Organization is compliant
+security_policy for default_organization in Demo Organization is compliant
+All audited organization resource(s) compliant!
+----------
+"Auditing System Resource Compliance"
+Found 2 System resource(s) to audit...
+"Auditing System: Demo Analytics System"
+improve.system missing recipients in Demo Analytics System.
+improve.system missing legal_basis in Demo Analytics System.
+improve.system missing special_category in Demo Analytics System.
+customer missing rights in Demo Analytics System.
+customer missing automated_decisions_or_profiling in Demo Analytics System.
+"Auditing System: Demo Marketing System"
+advertising missing recipients in Demo Marketing System.
+advertising missing legal_basis in Demo Marketing System.
+advertising missing special_category in Demo Marketing System.
+customer missing rights in Demo Marketing System.
+customer missing automated_decisions_or_profiling in Demo Marketing System.
+10 issue(s) were detected in auditing system completeness.
+```
 ### Data Use
 Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
 
@@ -136,7 +173,7 @@ data_use:
 ```
 
 
-You can now apply this Data Use to the Demo Marketing System in `demo_system.yml`.
+Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Use of `advertising` with the above fides_key of `third_party_sharing.personalized_advertising.direct_marketing` to include its information in your data map.
 
@@ -160,9 +197,111 @@ data_subject:
     automated_decisions_or_profiling: true
 ```
 
-You can now apply this Data Subject to the Demo Marketing System in `demo_system.yml`.
+Apply this `data_subject` by adding it to the Demo Marketing System in `demo_system.yml`.
 
 Replace the Demo Marketing System's Data Subject of `customer` with the above fides_key of `potential_customer` to include its information in your data map.
+
+### Testing Your Changes
+
+Your resulting `demo_system.yml` should look like the following:
+```yaml title="<code>demo_system.yml</code>"
+system:
+  - fides_key: demo_analytics_system
+    name: Demo Analytics System
+    description: A system used for analyzing customer behaviour.
+    system_type: Service
+    administrating_department: Engineering
+    data_responsibility_title: Controller
+    third_country_transfers:
+    - USA
+    - CAN
+    data_protection_impact_assessment:
+      is_required: True
+      progress: Complete
+      link: https://example.org/analytics_system_data_protection_impact_assessment
+    privacy_declarations:
+      - name: Analyze customer behaviour for improvements.
+        data_categories:
+          - user.provided.identifiable.contact
+          - user.derived.identifiable.device.cookie_id
+        data_use: improve.system
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - demo_users_dataset
+
+  - fides_key: demo_marketing_system
+    name: Demo Marketing System
+    description: Collect data about our users for marketing.
+    system_type: Service
+    administrating_department: Marketing
+    data_responsibility_title: Processor
+    privacy_declarations:
+      - name: Collect data for marketing
+        data_categories:
+          #- user.provided.identifiable.contact # uncomment to add this category to the system
+          - user.derived.identifiable.device.cookie_id
+        data_use: third_party_sharing.personalized_advertising.direct_marketing
+        data_subjects:
+          - potential_customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    data_use:
+      - fides_key: third_party_sharing.personalized_advertising.direct_marketing
+        name: Direct Marketing
+        description: User information for direct marketing purposes
+        recipients:
+        - Processor - marketing co.
+        legal_basis: Legitimate Interests
+        special_category: Vital Interests
+        legitimate_interest_impact_assessment: https://example.org/legitimate_interest_assessment
+        parent_key: third_party_sharing.personalized_advertising
+    data_subject:
+      - fides_key: potential_customer
+        name: Potential Customer
+        description: A prospective individual or other organization that purchases goods or services from the organization.
+        rights:
+          strategy: INCLUDE
+          values:
+          - Informed
+          - Access
+          - Rectification
+          - Erasure
+          - Object
+        automated_decisions_or_profiling: true
+```
+
+Running `fidesctl apply demo_resources/` will apply your changes.
+
+Now, auditing this resource with `fidesctl evaluate demo_resources --audit` will show the Demo Marketing System issues are resolved:
+```bash
+...
+"Auditing Organization Resource Compliance"
+Found 1 Organization resource(s) to audit...
+Auditing Organization: Demo Organization
+controller for default_organization in Demo Organization is compliant
+data_protection_officer for default_organization in Demo Organization is compliant
+representative for default_organization in Demo Organization is compliant
+security_policy for default_organization in Demo Organization is compliant
+All audited organization resource(s) compliant!
+----------
+"Auditing System Resource Compliance"
+Found 2 System resource(s) to audit...
+"Auditing System: Demo Analytics System"
+improve.system missing recipients in Demo Analytics System.
+improve.system missing legal_basis in Demo Analytics System.
+improve.system missing special_category in Demo Analytics System.
+customer missing rights in Demo Analytics System.
+customer missing automated_decisions_or_profiling in Demo Analytics System.
+"Auditing System: Demo Marketing System"
+recipients for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+legal_basis for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+special_category for third_party_sharing.personalized_advertising.direct_marketing in Demo Marketing System is compliant
+rights for potential_customer in Demo Marketing System is compliant
+automated_decisions_or_profiling for potential_customer in Demo Marketing System is compliant
+5 issue(s) were detected in auditing system completeness.
+```
+
 
 ## Generate a RoPA
 

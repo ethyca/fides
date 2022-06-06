@@ -28,6 +28,7 @@ system:
     name: Demo Marketing System
     description: Collect data about our users for marketing.
     system_type: Service
+    administrating_department: Marketing
     data_responsibility_title: Processor
     privacy_declarations:
       - name: Collect data for marketing
