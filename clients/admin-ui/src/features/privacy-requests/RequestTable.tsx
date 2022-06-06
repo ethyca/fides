@@ -62,7 +62,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
   const endingItem = Math.min(total, page * size);
   return (
     <>
-      <Table size="sm">
+      <Table size='sm'>
         <Thead>
           <Tr>
             <Th pl={0}>Status</Th>
@@ -80,8 +80,8 @@ const RequestTable: React.FC<RequestTableProps> = () => {
           ))}
         </Tbody>
       </Table>
-      <Flex justifyContent="space-between" mt={6}>
-        <Text fontSize="xs" color="gray.600">
+      <Flex justifyContent='space-between' mt={6}>
+        <Text fontSize='xs' color='gray.600'>
           {total > 0 ? (
             <>
               Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
@@ -97,14 +97,14 @@ const RequestTable: React.FC<RequestTableProps> = () => {
             disabled={page <= 1}
             onClick={handlePreviousPage}
             mr={2}
-            size="sm"
+            size='sm'
           >
             Previous
           </Button>
           <Button
             disabled={page * size >= total}
             onClick={handleNextPage}
-            size="sm"
+            size='sm'
           >
             Next
           </Button>

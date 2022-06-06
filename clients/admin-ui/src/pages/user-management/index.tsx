@@ -11,26 +11,26 @@ import UserManagementTable from '../../features/user-management/UserManagementTa
 import UserManagementTableActions from '../../features/user-management/UserManagementTableActions';
 
 const UserManagement: NextPage = () => (
-    <div>
-      <Head>
-        <title>Fides Admin UI - User Management</title>
-        <meta name="description" content="Generated from FidesUI template" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+  <div>
+    <Head>
+      <title>Fides Admin UI - User Management</title>
+      <meta name='description' content='Generated from FidesUI template' />
+      <link rel='icon' href='/favicon.ico' />
+    </Head>
 
-      <NavBar />
+    <NavBar />
 
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            User Management
-          </Heading>
-          <UserManagementTableActions />
-          <UserManagementTable />
-        </Box>
-      </main>
-    </div>
-  );
+    <main>
+      <Box px={9} py={10}>
+        <Heading fontSize='2xl' fontWeight='semibold'>
+          User Management
+        </Heading>
+        <UserManagementTableActions />
+        <UserManagementTable />
+      </Box>
+    </main>
+  </div>
+);
 
 export default UserManagement;
 

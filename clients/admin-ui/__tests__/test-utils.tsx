@@ -18,7 +18,9 @@ function render(
     ...renderOptions
   }: CustomRenderOptions = {}
 ) {
-  const Wrapper: React.FC = ({ children }) => <Provider store={store}>{children}</Provider>;
+  const Wrapper: React.FC = ({ children }) => (
+    <Provider store={store}>{children}</Provider>
+  );
   return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });
 }
 

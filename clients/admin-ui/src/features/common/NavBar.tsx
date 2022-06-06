@@ -1,11 +1,11 @@
-import { Button,Flex } from '@fidesui/react';
+import { Button, Flex } from '@fidesui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import React from 'react';
 
 import Header from './Header';
-import { ArrowDownLineIcon } from "./Icon";
+import { ArrowDownLineIcon } from './Icon';
 
 const NavBar = () => {
   const { data: session } = useSession();
@@ -16,16 +16,16 @@ const NavBar = () => {
     <>
       <Header username={username} />
       <Flex
-        borderBottom="1px"
-        borderTop="1px"
+        borderBottom='1px'
+        borderTop='1px'
         px={9}
         py={1}
-        borderColor="gray.100"
+        borderColor='gray.100'
       >
-        <NextLink href="/" passHref>
+        <NextLink href='/' passHref>
           <Button
-            as="a"
-            variant="ghost"
+            as='a'
+            variant='ghost'
             mr={4}
             colorScheme={
               router && router.pathname === '/' ? 'complimentary' : 'ghost'
@@ -35,16 +35,16 @@ const NavBar = () => {
           </Button>
         </NextLink>
 
-        <NextLink href="#" passHref>
-          <Button as="a" variant="ghost" disabled mr={4}>
+        <NextLink href='#' passHref>
+          <Button as='a' variant='ghost' disabled mr={4}>
             Datastore Connections
           </Button>
         </NextLink>
 
-        <NextLink href="/user-management" passHref>
+        <NextLink href='/user-management' passHref>
           <Button
-            as="a"
-            variant="ghost"
+            as='a'
+            variant='ghost'
             mr={4}
             colorScheme={
               router && router.pathname.startsWith('/user-management')
@@ -56,10 +56,10 @@ const NavBar = () => {
           </Button>
         </NextLink>
 
-        <NextLink href="#" passHref>
+        <NextLink href='#' passHref>
           <Button
-            as="a"
-            variant="ghost"
+            as='a'
+            variant='ghost'
             disabled
             rightIcon={<ArrowDownLineIcon />}
           >

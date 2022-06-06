@@ -12,14 +12,15 @@ import {
 } from './types';
 
 // Helpers
-export const mapFiltersToSearchParams = ({
+export function mapFiltersToSearchParams({
   status,
   id,
   from,
   to,
   page,
   size,
-}: Partial<PrivacyRequestParams>) => {
+  verbose,
+}: Partial<PrivacyRequestParams>): any {
   let fromISO;
   if (from) {
     fromISO = new Date(from);
@@ -35,13 +36,14 @@ export const mapFiltersToSearchParams = ({
   return {
     include_identities: 'true',
     ...(status ? { status } : {}),
-    ...(id ? { id } : {}),
+    ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
     ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+    ...(verbose ? { verbose } : {}),
   };
-};
+}
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -94,6 +96,12 @@ export const privacyRequestApi = createApi({
       invalidatesTags: ['Request'],
     }),
   }),
+  // eslint-disable-next-line consistent-return
+  extractRehydrationInfo(action, { reducerPath }) {
+    if (action.type === HYDRATE) {
+      return action.payload[reducerPath];
+    }
+  },
 });
 
 export const {
@@ -156,6 +164,7 @@ interface SubjectRequestsState {
   to: string;
   page: number;
   size: number;
+  verbose?: boolean;
 }
 
 const initialState: SubjectRequestsState = {
@@ -208,6 +217,10 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setVerbose: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      verbose: action.payload,
+    }),
   },
   extraReducers: {
     [HYDRATE]: (state, action) => ({
@@ -224,6 +237,7 @@ export const {
   setRequestFrom,
   setRequestTo,
   setPage,
+  setVerbose,
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
@@ -241,6 +255,7 @@ export const selectPrivacyRequestFilters = (
   to: state.subjectRequests.to,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
+  verbose: state.subjectRequests.verbose,
 });
 
 export const { reducer } = subjectRequestsSlice;
