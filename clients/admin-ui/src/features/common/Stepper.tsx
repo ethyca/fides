@@ -1,5 +1,6 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
+
 import steps from "../config-wizard/constants";
 import { StepperCircleIcon, VerticalLineIcon } from "./Icon";
 
@@ -7,8 +8,7 @@ interface Props {
   activeStep: number | null;
 }
 
-const Stepper = ({ activeStep }: Props) => {
-  return (
+const Stepper = ({ activeStep }: Props) => (
     <Stack direction={["column", "row"]} w="100%">
       <Stack alignItems="center" direction="column" spacing={0}>
         {steps?.map((step) => (
@@ -33,6 +33,5 @@ const Stepper = ({ activeStep }: Props) => {
       </Stack>
     </Stack>
   );
-};
 
 export default Stepper;

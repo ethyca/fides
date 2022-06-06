@@ -11,6 +11,7 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
+
 import { QuestionIcon } from "~/features/common/Icon";
 
 const useOrganizationInfoForm = () => {
