@@ -1,6 +1,6 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
-
+import steps from "../config-wizard/constants";
 import { StepperCircleIcon, VerticalLineIcon } from "./Icon";
 
 interface Props {
@@ -8,39 +8,18 @@ interface Props {
 }
 
 const Stepper = ({ activeStep }: Props) => {
-  const steps = [
-    {
-      number: 1,
-      name: "Organization setup",
-    },
-    {
-      number: 2,
-      name: "Add a system",
-    },
-    {
-      number: 3,
-      name: "Authenticate scanner",
-    },
-    {
-      number: 4,
-      name: "Scan results",
-    },
-    {
-      number: 5,
-      name: "Describe systems",
-    },
-  ];
-
   return (
     <Stack direction={["column", "row"]} w="100%">
       <Stack alignItems="center" direction="column" spacing={0}>
-        {steps?.map((step: any) => (
+        {steps?.map((step) => (
           <React.Fragment key={step.number}>
             <StepperCircleIcon
               boxSize={8}
               stroke={activeStep === step.number ? "secondary.500" : "inherit"}
             />
-            {step.number !== 5 ? <VerticalLineIcon boxSize={20} /> : null}
+            {step.number !== steps.length ? (
+              <VerticalLineIcon boxSize={20} />
+            ) : null}
           </React.Fragment>
         ))}
       </Stack>

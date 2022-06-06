@@ -11,7 +11,6 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
 
 const useOrganizationInfoForm = () => {
@@ -81,8 +80,8 @@ const OrganizationInfoForm: NextPage<{
       </div>
       <Stack>
         <FormControl>
-          <Stack direction="row" mb={5}>
-            <FormLabel>Organization name</FormLabel>
+          <Stack direction="row" mb={5} justifyContent="flex-end">
+            <FormLabel w="100%">Organization name</FormLabel>
             <Input
               type="text"
               id="organizationName"
@@ -94,6 +93,8 @@ const OrganizationInfoForm: NextPage<{
               isInvalid={
                 touched.organizationName && Boolean(errors.organizationName)
               }
+              minW="65%"
+              w="65%"
             />
             <Tooltip
               fontSize="md"
@@ -103,8 +104,8 @@ const OrganizationInfoForm: NextPage<{
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
-          <Stack direction="row">
-            <FormLabel>Description</FormLabel>
+          <Stack direction="row" justifyContent="flex-end">
+            <FormLabel w="100%">Description</FormLabel>
             <Input
               type="text"
               id="organizationDescription"
@@ -117,6 +118,8 @@ const OrganizationInfoForm: NextPage<{
                 touched.organizationDescription &&
                 Boolean(errors.organizationDescription)
               }
+              minW="65%"
+              w="65%"
             />
             <Tooltip
               fontSize="md"

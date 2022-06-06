@@ -1,8 +1,9 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
+import { CloseSolidIcon } from "~/features/common/Icon";
 import Stepper from "../common/Stepper";
+import steps from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
@@ -17,7 +18,7 @@ const ConfigWizardWalkthrough = () => {
   const handleChangeStep = (formStep: number) => {
     // Save info between steps for submission to API with all info
     // or are they different api calls at each step?
-    if (formStep && step !== 5) {
+    if (formStep && step !== steps.length) {
       setStep(formStep + 1);
     }
   };
@@ -32,7 +33,7 @@ const ConfigWizardWalkthrough = () => {
           ml={6}
           onClick={handleCancelSetup}
         >
-          x Cancel setup
+          <CloseSolidIcon /> Cancel setup
         </Button>
       </Box>
       <Divider orientation="horizontal" />
