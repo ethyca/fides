@@ -15,19 +15,26 @@ import More from "~/features/common/Icon/More";
 const ActionItem = ({
   children,
   isDisabled,
+  onClick,
 }: {
   children: ReactNode;
   isDisabled?: boolean;
+  onClick?: () => void;
 }) => (
   <MenuItem
     isDisabled={isDisabled}
     _hover={{ backgroundColor: "gray.100" }}
     fontSize="sm"
+    onClick={onClick}
   >
     {children}
   </MenuItem>
 );
-const MoreActionsMenu = () => (
+
+interface Props {
+  onModifyCollection: () => void;
+}
+const MoreActionsMenu = ({ onModifyCollection }: Props) => (
   <Menu size="sm">
     <MenuButton as={Button} variant="outline">
       <More />
@@ -41,7 +48,7 @@ const MoreActionsMenu = () => (
       >
         <MenuDivider />
         <ActionItem isDisabled>Add a collection</ActionItem>
-        <ActionItem>Modify collection</ActionItem>
+        <ActionItem onClick={onModifyCollection}>Modify collection</ActionItem>
       </MenuGroup>
       <MenuGroup
         title="Datasets"
