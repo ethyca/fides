@@ -1,26 +1,13 @@
-# Admin UI
+# Fidesops UI
 
-Fides provides a built-in control panel for managing policies, system users, and datastore connections.
+Fidesops provides several user interfaces to assist in receiving and managing privacy requests. The Privacy Center and Admin UI work together to allow users to submit data subject requests (DSRs), which can then be reviewed and executed by privacy administrators.
 
-## Developing Locally
+## Privacy Center
+The fidesops [Privacy Center](privacy_center.md) is a configurable webpage where users can request to download or delete their data. Requests submitted through the Privacy Center are available for review in the Admin UI.
 
-For testing and local development, clone the [Fides repository](https://github.com/ethyca/fides/).
+![privacy center](../img/admin_ui/privacy_center.png)
 
-### Creating the root user
+## Admin UI
+The [Admin UI](admin_ui.md) organizes processes like fulfilling data subject requests, customizing database connections, and managing user access into a single control panel. Once configured, the Admin UI allows [authorized users](user_management.md) to approve or deny privacy requests, manage datastores, and create or update fidesops [policies](../guides/policies.md).
 
-In the top-level `fides` directory, run `nox -s user`.
-
-A series of prompts will walk you through creating a username and password. Passwords require 8 or more characters, upper and lowercase characters, a number, and a symbol. 
-
-This will create an Admin UI Root User that can be used to access the local UI, and additional [user endpoints](./user_management.md#managing-users-from-the-api).
-
-### Accessing the Control Panel
-
-From the root `fides` directory, run the following:
-``` sh
-    nox -s admin_ui
-```
-
-This will install the necessary dependencies, and run the development environment.
-
-Visit `http://localhost:3000/` in your browser, and provide user credentials to log in. 
+![admin ui](../img/admin_ui/admin_ui.png)
