@@ -4,10 +4,7 @@
 import os
 from typing import Dict, Optional
 
-from pydantic import BaseModel
-
-from fidesctl.connectors.models import AWSConfig, OktaConfig, DatabaseConfig
-
+from fidesctl.connectors.models import AWSConfig, DatabaseConfig, OktaConfig
 
 CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
 NESTED_KEY_DELIMITER = "__"

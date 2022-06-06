@@ -1,19 +1,21 @@
 """Module that adds interactions with okta"""
-from typing import Dict, List
+from typing import List, Optional
 
 from fideslang.models import Dataset, DatasetMetadata
 from okta.client import Client as OktaClient
 from okta.models import Application as OktaApplication
 
+from fidesctl.connectors.models import OktaConfig
 from fidesctl.core.utils import echo_red
 
 
-def get_okta_client(config: Dict[str, str]) -> OktaClient:
+def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaClient:
     """
     Returns an Okta client for the given okta config. Authentication can
     also be handled through environment variables that the okta python sdk support.
     """
-    okta_client = OktaClient(config)
+    config_dict = okta_config.dict() if okta_config else {}
+    okta_client = OktaClient(config_dict)
     return okta_client
 
 

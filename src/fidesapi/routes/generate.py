@@ -138,14 +138,16 @@ def generate_aws(
     """
     from botocore.exceptions import ClientError
 
-    config = {
-        "region_name": aws_config.region_name,
-        "aws_access_key_id": unobscure_string(aws_config.aws_access_key_id),
-        "aws_secret_access_key": unobscure_string(aws_config.aws_secret_access_key),
-    }
+    unobscured_config = AWSConfig(
+        region_name=aws_config.region_name,
+        aws_access_key_id=unobscure_string(aws_config.aws_access_key_id),
+        aws_secret_access_key=unobscure_string(aws_config.aws_secret_access_key),
+    )
     try:
         log.info("Generating systems from AWS")
-        aws_systems = generate_aws_systems(organization=organization, aws_config=config)
+        aws_systems = generate_aws_systems(
+            organization=organization, aws_config=unobscured_config
+        )
     except ClientError as error:
         if error.response["Error"]["Code"] in [
             "InvalidClientTokenId",
