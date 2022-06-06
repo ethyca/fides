@@ -18,8 +18,9 @@ import {
   DownloadSolidIcon,
   SearchLineIcon,
 } from '../common/Icon';
+import PIIToggle from '../common/PIIToggle';
+import { statusPropMap } from '../common/RequestStatusBadge';
 import { selectUserToken } from '../user/user.slice';
-import PIIToggle from './PIIToggle';
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -29,7 +30,6 @@ import {
   setRequestStatus,
   setRequestTo,
 } from './privacy-requests.slice';
-import { statusPropMap } from './RequestBadge';
 import { PrivacyRequestStatus } from './types';
 
 const useRequestFilters = () => {
@@ -95,80 +95,80 @@ const RequestFilters: React.FC = () => {
     to,
   } = useRequestFilters();
   return (
-    <Stack direction="row" spacing={4} mb={6}>
+    <Stack direction='row' spacing={4} mb={6}>
       <Select
-        placeholder="Select status"
-        size="sm"
-        minWidth="144px"
+        placeholder='Select status'
+        size='sm'
+        minWidth='144px'
         value={status || ''}
         onChange={handleStatusChange}
-        borderRadius="md"
+        borderRadius='md'
       >
-        <StatusOption status="approved" />
-        <StatusOption status="complete" />
-        <StatusOption status="denied" />
-        <StatusOption status="error" />
-        <StatusOption status="in_processing" />
-        <StatusOption status="paused" />
-        <StatusOption status="pending" />
+        <StatusOption status='approved' />
+        <StatusOption status='complete' />
+        <StatusOption status='denied' />
+        <StatusOption status='error' />
+        <StatusOption status='in_processing' />
+        <StatusOption status='paused' />
+        <StatusOption status='pending' />
       </Select>
-      <InputGroup size="sm">
-        <InputLeftElement pointerEvents="none">
-          <SearchLineIcon color="gray.300" w="17px" h="17px" />
+      <InputGroup size='sm'>
+        <InputLeftElement pointerEvents='none'>
+          <SearchLineIcon color='gray.300' w='17px' h='17px' />
         </InputLeftElement>
         <Input
-          type="search"
+          type='search'
           minWidth={200}
-          placeholder="Search"
-          size="sm"
-          borderRadius="md"
+          placeholder='Search'
+          size='sm'
+          borderRadius='md'
           value={id}
-          name="search"
+          name='search'
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <InputGroup size="sm">
-        <InputLeftAddon borderRadius="md">From</InputLeftAddon>
+      <InputGroup size='sm'>
+        <InputLeftAddon borderRadius='md'>From</InputLeftAddon>
         <Input
-          type="date"
-          name="From"
+          type='date'
+          name='From'
           value={from}
           max={to || undefined}
           onChange={handleFromChange}
-          borderRadius="md"
+          borderRadius='md'
         />
       </InputGroup>
-      <InputGroup size="sm">
-        <InputLeftAddon borderRadius="md">To</InputLeftAddon>
+      <InputGroup size='sm'>
+        <InputLeftAddon borderRadius='md'>To</InputLeftAddon>
         <Input
-          type="date"
-          borderRadius="md"
-          name="To"
+          type='date'
+          borderRadius='md'
+          name='To'
           value={to}
           min={from || undefined}
           onChange={handleToChange}
         />
       </InputGroup>
-      <Flex flexShrink={0} alignItems="center">
-        <Text fontSize="xs" mr={2} size="sm">
+      <Flex flexShrink={0} alignItems='center'>
+        <Text fontSize='xs' mr={2} size='sm'>
           Reveal PII
         </Text>
         <PIIToggle />
       </Flex>
       <Button
-        variant="ghost"
+        variant='ghost'
         flexShrink={0}
         rightIcon={<DownloadSolidIcon />}
-        size="sm"
+        size='sm'
         onClick={handleDownloadClick}
       >
         Download
       </Button>
       <Button
-        variant="ghost"
+        variant='ghost'
         flexShrink={0}
         rightIcon={<CloseSolidIcon />}
-        size="sm"
+        size='sm'
         onClick={handleClearAllFilters}
       >
         Clear all filters

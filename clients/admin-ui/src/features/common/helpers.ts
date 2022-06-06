@@ -2,7 +2,7 @@
  * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
  */
 
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 /**
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`
@@ -10,7 +10,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 export function isFetchBaseQueryError(
   error: unknown
 ): error is FetchBaseQueryError {
-  return typeof error === "object" && error != null && "status" in error;
+  return typeof error === 'object' && error != null && 'status' in error;
 }
 
 /**
@@ -20,10 +20,10 @@ export function isErrorWithMessage(
   error: unknown
 ): error is { message: string } {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error != null &&
-    "message" in error &&
-    typeof (error as any).message === "string"
+    'message' in error &&
+    typeof (error as any).message === 'string'
   );
 }
 
@@ -52,10 +52,10 @@ interface ValidationError {
  */
 export function isErrorWithDetail(error: unknown): error is ResponseError {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error != null &&
-    "data" in error &&
-    typeof (error as any).data.detail === "string"
+    'data' in error &&
+    typeof (error as any).data.detail === 'string'
   );
 }
 
@@ -63,9 +63,9 @@ export function isErrorWithDetailArray(
   error: unknown
 ): error is ValidationError {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error != null &&
-    "data" in error &&
+    'data' in error &&
     Array.isArray((error as any).data.detail)
   );
 }

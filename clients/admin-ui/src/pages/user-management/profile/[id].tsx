@@ -20,32 +20,31 @@ import {
 import EditUserForm from '../../../features/user-management/EditUserForm';
 
 const Profile: NextPage<{ session: { user: User } }> = ({ session }) => (
-    <div>
-      <NavBar />
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            User Management
-            <Box mt={2} mb={7}>
-              <Breadcrumb fontWeight="medium" fontSize="sm">
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/user-management">
-                    User Management
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
+  <div>
+    <NavBar />
+    <main>
+      <Box px={9} py={10}>
+        <Heading fontSize='2xl' fontWeight='semibold'>
+          User Management
+          <Box mt={2} mb={7}>
+            <Breadcrumb fontWeight='medium' fontSize='sm'>
+              <BreadcrumbItem>
+                <BreadcrumbLink href='/user-management'>
+                  User Management
+                </BreadcrumbLink>
+              </BreadcrumbItem>
 
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="#">Edit User</BreadcrumbLink>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Box>
-          </Heading>
-          {/* @ts-ignore */}
-          <EditUserForm user={session.user} />
-        </Box>
-      </main>
-    </div>
-  );
+              <BreadcrumbItem>
+                <BreadcrumbLink href='#'>Edit User</BreadcrumbLink>
+              </BreadcrumbItem>
+            </Breadcrumb>
+          </Box>
+        </Heading>
+        <EditUserForm user={session.user} />
+      </Box>
+    </main>
+  </div>
+);
 
 export default Profile;
 

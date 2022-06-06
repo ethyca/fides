@@ -56,7 +56,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
 
   return (
     <>
-      <Table size="sm">
+      <Table size='sm'>
         <Thead>
           <Tr>
             <Th pl={0}>Username</Th>
@@ -71,8 +71,8 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
           ))}
         </Tbody>
       </Table>
-      <Flex justifyContent="space-between" mt={6}>
-        <Text fontSize="xs" color="gray.600">
+      <Flex justifyContent='space-between' mt={6}>
+        <Text fontSize='xs' color='gray.600'>
           {total > 0 ? (
             <>
               Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{' '}
@@ -88,14 +88,14 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
             disabled={page <= 1}
             onClick={handlePreviousPage}
             mr={2}
-            size="sm"
+            size='sm'
           >
             Previous
           </Button>
           <Button
             disabled={page * size >= total}
             onClick={handleNextPage}
-            size="sm"
+            size='sm'
           >
             Next
           </Button>

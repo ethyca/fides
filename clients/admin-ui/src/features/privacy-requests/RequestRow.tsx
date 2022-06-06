@@ -16,21 +16,18 @@ import {
   useToast,
 } from '@fidesui/react';
 import { format } from 'date-fns-tz';
+import { useRouter } from 'next/router';
 import React, { useRef, useState } from 'react';
 
 import { MoreIcon } from '../common/Icon';
+import PII from '../common/PII';
+import RequestStatusBadge from '../common/RequestStatusBadge';
 import DenyPrivacyRequestModal from './DenyPrivacyRequestModal';
-import { useObscuredPII } from './helpers';
 import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from './privacy-requests.slice';
-import RequestBadge from './RequestBadge';
 import { PrivacyRequest } from './types';
-
-const PII: React.FC<{ data: string }> = ({ data }) => (
-  <>{useObscuredPII(data)}</>
-);
 
 const useRequestRow = (request: PrivacyRequest) => {
   const toast = useToast();
@@ -74,8 +71,8 @@ const useRequestRow = (request: PrivacyRequest) => {
         title: 'Request ID copied',
         duration: 5000,
         render: () => (
-          <Alert bg="gray.600" borderRadius="6px" display="flex">
-            <AlertTitle color="white">Request ID copied</AlertTitle>
+          <Alert bg='gray.600' borderRadius='6px' display='flex'>
+            <AlertTitle color='white'>Request ID copied</AlertTitle>
           </Alert>
         ),
         containerStyle: {
@@ -83,6 +80,11 @@ const useRequestRow = (request: PrivacyRequest) => {
         },
       });
     }
+  };
+
+  const router = useRouter();
+  const handleViewDetails = () => {
+    router.push(`/subject-request/${request.id}`);
   };
   return {
     approveRequestResult,
@@ -106,6 +108,7 @@ const useRequestRow = (request: PrivacyRequest) => {
     shiftFocusToHoverMenu,
     denialReason,
     setDenialReason,
+    handleViewDetails,
   };
 };
 
@@ -132,6 +135,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     focused,
     denialReason,
     setDenialReason,
+    handleViewDetails,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
 
@@ -142,79 +146,79 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       bg={showMenu ? 'gray.50' : 'white'}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      height="36px"
+      height='36px'
     >
       <Td pl={0} py={1}>
-        <RequestBadge status={request.status} />
+        <RequestStatusBadge status={request.status} />
       </Td>
       <Td py={1}>
         <Tag
-          color="white"
-          bg="primary.400"
+          color='white'
+          bg='primary.400'
           px={2}
           py={0.5}
-          size="sm"
-          fontWeight="medium"
+          size='sm'
+          fontWeight='medium'
         >
           {request.policy.name}
         </Tag>
       </Td>
       <Td py={1}>
-        <Text fontSize="xs">
+        <Text fontSize='xs'>
           <PII
             data={
               request.identity
-                ? request.identity.email || request.identity.phone || ''
+                ? request.identity.email || request.identity.phone_number || ''
                 : ''
             }
           />
         </Text>
       </Td>
       <Td py={1}>
-        <Text fontSize="xs">
+        <Text fontSize='xs'>
           {format(new Date(request.created_at), 'MMMM d, Y, KK:mm:ss z')}
         </Text>
       </Td>
       <Td py={1}>
-        <Text fontSize="xs">
+        <Text fontSize='xs'>
           <PII data={request.reviewer ? request.reviewer.username : ''} />
         </Text>
       </Td>
       <Td py={1}>
-        <Text isTruncated fontSize="xs" maxWidth="87px">
+        <Text isTruncated fontSize='xs' maxWidth='87px'>
           {request.id}
         </Text>
       </Td>
-      <Td pr={0} py={1} textAlign="end" position="relative">
+      <Td pr={0} py={1} textAlign='end' position='relative'>
         <Button
-          size="xs"
-          variant="ghost"
+          size='xs'
+          variant='ghost'
           mr={2.5}
           onFocus={shiftFocusToHoverMenu}
           tabIndex={showMenu ? -1 : 0}
         >
-          <MoreIcon color="gray.700" w={18} h={18} />
+          <MoreIcon color='gray.700' w={18} h={18} />
         </Button>
         <ButtonGroup
           isAttached
-          variant="outline"
-          position="absolute"
+          variant='outline'
+          position='absolute'
           right={2.5}
-          top="50%"
-          transform="translate(1px, -50%)"
+          top='50%'
+          transform='translate(1px, -50%)'
           opacity={showMenu ? 1 : 0}
           pointerEvents={showMenu ? 'auto' : 'none'}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          shadow="base"
-          borderRadius="md"
+          shadow='base'
+          borderRadius='md'
         >
           {request.status === 'pending' ? (
             <>
               <Button
-                size="xs"
-                mr="-px"
-                bg="white"
+                size='xs'
+                mr='-px'
+                bg='white'
                 onClick={handleApproveRequest}
                 isLoading={approveRequestResult.isLoading}
                 _loading={{
@@ -229,9 +233,9 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                 Approve
               </Button>
               <Button
-                size="xs"
-                mr="-px"
-                bg="white"
+                size='xs'
+                mr='-px'
+                bg='white'
                 onClick={handleModalOpen}
                 _loading={{
                   opacity: 1,
@@ -259,19 +263,25 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}
-              size="xs"
-              bg="white"
+              size='xs'
+              bg='white'
               ref={request.status !== 'pending' ? hoverButtonRef : null}
             >
-              <MoreIcon color="gray.700" w={18} h={18} />
+              <MoreIcon color='gray.700' w={18} h={18} />
             </MenuButton>
             <Portal>
-              <MenuList shadow="xl">
+              <MenuList shadow='xl'>
                 <MenuItem
                   _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
                   onClick={handleIdCopy}
                 >
-                  <Text fontSize="sm">Copy Request ID</Text>
+                  <Text fontSize='sm'>Copy Request ID</Text>
+                </MenuItem>
+                <MenuItem
+                  _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+                  onClick={handleViewDetails}
+                >
+                  <Text fontSize='sm'>View Details</Text>
                 </MenuItem>
               </MenuList>
             </Portal>
