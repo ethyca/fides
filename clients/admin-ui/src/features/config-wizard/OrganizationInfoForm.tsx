@@ -27,8 +27,8 @@ const useOrganizationInfoForm = () => {
     },
     onSubmit: async () => {
       const organizationBody = {
-        orgName: "",
-        orgDescription: "",
+        name: "",
+        description: "",
       };
       setIsLoading(true);
 
@@ -36,7 +36,8 @@ const useOrganizationInfoForm = () => {
 
       setIsLoading(false);
 
-      if (response && response.ok) {
+      if (response) {
+        console.log(response);
         toast.closeAll();
       } else {
         toast({
@@ -80,12 +81,8 @@ const OrganizationInfoForm: NextPage<{
   } = useOrganizationInfoForm();
 
   return (
-    <chakra.form
-      onSubmit={handleSubmit}
-      maxW={["xs", "xs", "100%"]}
-      width="100%"
-    >
-      <Stack spacing="24px" w="60%">
+    <chakra.form onSubmit={handleSubmit}>
+      <Stack ml="50px" spacing="24px" w="80%">
         <Heading as="h3" size="lg">
           Tell us about your business
         </Heading>

@@ -1,5 +1,11 @@
 export interface Organization {
-  response: {};
+  description: string;
+  name: string;
+}
+
+export interface OrganizationParams {
+  page: number;
+  size: number;
 }
 
 export interface OrganizationResponse {

@@ -2,7 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 import type { AppState } from "../../app/store";
-import { Organization, OrganizationResponse } from "./types";
+import {
+  Organization,
+  OrganizationParams,
+  OrganizationResponse,
+} from "./types";
 
 export interface State {
   page: number;
@@ -41,38 +45,41 @@ export const organizationApi = createApi({
   }),
   tagTypes: ["Organization"],
   endpoints: (build) => ({
-    createOrganization: build.query<
+    createOrganization: build.mutation<
       OrganizationResponse,
       Partial<Organization>
     >({
       query: (body) => ({
-        url: `.../`,
+        url: `organization`,
         method: "POST",
         body: body,
       }),
-      providesTags: () => ["Organization"],
+      invalidatesTags: () => ["Organization"],
     }),
     getOrganizationById: build.query<object, string>({
       query: (id) => ({ url: `.../${id}` }),
-      providesTags: ["Organzation"],
+      providesTags: ["Organization"],
     }),
     updateOrganization: build.mutation<
       Organization,
-      Partial<Organization> & Pick<Organization, "id">
+      Partial<Organization> & Pick<Organization, "fides_key">
     >({
-      query: ({ id, ...patch }) => ({
-        url: `.../${id}`,
+      query: ({ ...patch }) => ({
+        url: `organization`,
         method: "PUT",
         body: patch,
       }),
       invalidatesTags: ["Organization"],
       // For optimistic updates
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+      async onQueryStarted(
+        { fides_key, ...patch },
+        { dispatch, queryFulfilled }
+      ) {
         const patchResult = dispatch(
           // @ts-ignore
           organizationApi.util.updateQueryData(
             "getOrganizationById",
-            id,
+            fides_key,
             (draft) => {
               Object.assign(draft, patch);
             }
@@ -127,9 +134,9 @@ export const organizationSlice = createSlice({
 
 export const { assignToken, setPage } = organizationSlice.actions;
 
-export const selectUserFilters = (state: AppState): OrganizationListParams => ({
-  page: state.user.page,
-  size: state.user.size,
-});
+// export const selectUserFilters = (state: AppState): OrganizationParams => ({
+//   page: state.user.page,
+//   size: state.user.size,
+// });
 
 export const { reducer } = organizationSlice;
