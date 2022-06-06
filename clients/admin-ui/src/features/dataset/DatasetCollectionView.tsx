@@ -12,6 +12,7 @@ import {
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
+import MoreActionsMenu from "./MoreActionsMenu";
 import { ColumnMetadata } from "./types";
 
 const ALL_COLUMNS: ColumnMetadata[] = [
@@ -97,11 +98,16 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             </option>
           ))}
         </Select>
-        <ColumnDropdown
-          allColumns={ALL_COLUMNS}
-          selectedColumns={columns}
-          onChange={setColumns}
-        />
+        <Box display="flex">
+          <Box mr={2}>
+            <ColumnDropdown
+              allColumns={ALL_COLUMNS}
+              selectedColumns={columns}
+              onChange={setColumns}
+            />
+          </Box>
+          <MoreActionsMenu />
+        </Box>
       </Box>
       {activeCollection && (
         <DatasetFieldsTable
