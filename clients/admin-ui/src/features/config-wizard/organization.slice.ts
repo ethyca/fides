@@ -1,0 +1,135 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { HYDRATE } from "next-redux-wrapper";
+import type { AppState } from "../../app/store";
+import { Organization, OrganizationResponse } from "./types";
+
+export interface State {
+  page: number;
+  size: number;
+  token: string | null;
+}
+
+const initialState: State = {
+  page: 1,
+  size: 25,
+  token: null,
+};
+
+// Helpers
+export const mapFiltersToSearchParams = ({
+  page,
+  size,
+}: Partial<OrganizationParams>) => ({
+  ...(page ? { page: `${page}` } : {}),
+  ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
+});
+
+// Organization API
+export const organizationApi = createApi({
+  reducerPath: "organizationApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
+    prepareHeaders: (headers, { getState }) => {
+      const { token } = (getState() as AppState).user;
+      headers.set("Access-Control-Allow-Origin", "*");
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ["Organization"],
+  endpoints: (build) => ({
+    createOrganization: build.query<
+      OrganizationResponse,
+      Partial<Organization>
+    >({
+      query: (body) => ({
+        url: `.../`,
+        method: "POST",
+        body: body,
+      }),
+      providesTags: () => ["Organization"],
+    }),
+    getOrganizationById: build.query<object, string>({
+      query: (id) => ({ url: `.../${id}` }),
+      providesTags: ["Organzation"],
+    }),
+    updateOrganization: build.mutation<
+      Organization,
+      Partial<Organization> & Pick<Organization, "id">
+    >({
+      query: ({ id, ...patch }) => ({
+        url: `.../${id}`,
+        method: "PUT",
+        body: patch,
+      }),
+      invalidatesTags: ["Organization"],
+      // For optimistic updates
+      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          // @ts-ignore
+          organizationApi.util.updateQueryData(
+            "getOrganizationById",
+            id,
+            (draft) => {
+              Object.assign(draft, patch);
+            }
+          )
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+          /**
+           * Alternatively, on failure you can invalidate the corresponding cache tags
+           * to trigger a re-fetch:
+           * dispatch(api.util.invalidateTags(['Organization']))
+           */
+        }
+      },
+    }),
+  }),
+});
+
+export const {
+  useGetOrganizationByIdQuery,
+  useCreateOrganizationMutation,
+  useUpdateOrganizationMutation,
+} = organizationApi;
+
+export const organizationSlice = createSlice({
+  name: "organization",
+  initialState,
+  reducers: {
+    assignToken: (state, action: PayloadAction<string>) => ({
+      ...state,
+      token: action.payload,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
+  },
+  extraReducers: {
+    [HYDRATE]: (state, action) => ({
+      ...state,
+      ...action.payload.user,
+    }),
+  },
+});
+
+export const { assignToken, setPage } = organizationSlice.actions;
+
+export const selectUserFilters = (state: AppState): OrganizationListParams => ({
+  page: state.user.page,
+  size: state.user.size,
+});
+
+export const { reducer } = organizationSlice;
