@@ -1,34 +1,37 @@
-# Configuration TOML used in select unit tests
-PORT=8080
+PORT = 8080
 
 [database]
-SERVER="testserver"
-USER="testuser"
-PASSWORD="testpassword"
-DB="testdb"
-TEST_DB="test_testdb"
-ENABLED=true
+SERVER = "testserver"
+USER = "testuser"
+PASSWORD = "testpassword"
+DB = "testdb"
+TEST_DB = "test_testdb"
+ENABLED = true
 
 [redis]
-HOST="testredis"
-PASSWORD="testpassword"
-PORT=1234
-CHARSET="utf8"
-DEFAULT_TTL_SECONDS=1000
-DB_INDEX=0
-ENABLED=true
+HOST = "testredis"
+PASSWORD = "testpassword"
+PORT = 1234
+CHARSET = "utf8"
+DEFAULT_TTL_SECONDS = 1000
+DB_INDEX = 0
+ENABLED = true
 
 [security]
-APP_ENCRYPTION_KEY="atestencryptionkeythatisvalidlen"
-CORS_ORIGINS=["http://test.com", "https://test.com"]
-OAUTH_ROOT_CLIENT_ID="testrootclientid"
-OAUTH_ROOT_CLIENT_SECRET="testrootclientsecret"
-DRP_JWT_SECRET="testdrpsecret"
+APP_ENCRYPTION_KEY = "atestencryptionkeythatisvalidlen"
+CORS_ORIGINS = [ "http://test.com", "https://test.com",]
+OAUTH_ROOT_CLIENT_ID = "testrootclientid"
+OAUTH_ROOT_CLIENT_SECRET = "testrootclientsecret"
+DRP_JWT_SECRET = "testdrpsecret"
 LOG_LEVEL = "DEBUG"
 
 [execution]
-TASK_RETRY_COUNT=0
-TASK_RETRY_DELAY=1
-TASK_RETRY_BACKOFF=1
-REQUIRE_MANUAL_REQUEST_APPROVAL=false
-MASKING_STRICT=true
+TASK_RETRY_COUNT = 0
+TASK_RETRY_DELAY = 1
+TASK_RETRY_BACKOFF = 1
+REQUIRE_MANUAL_REQUEST_APPROVAL = false
+MASKING_STRICT = true
+
+[root_user]
+ANALYTICS_OPT_OUT = true
+ANALYTICS_ID = "internal"

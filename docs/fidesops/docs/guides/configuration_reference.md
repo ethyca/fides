@@ -56,6 +56,9 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
+|---|---|---|---|---|---|
+|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
+
 
 
 ## An example `fidesops.toml` configuration file
@@ -91,6 +94,9 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
+
+[root_user]
+ANALYTICS_OPT_OUT=false
 ```
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.

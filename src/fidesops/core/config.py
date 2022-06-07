@@ -7,6 +7,7 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
 import bcrypt
 import toml
+from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, ValidationError, validator
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -220,6 +221,32 @@ class SecuritySettings(FidesSettings):
         env_prefix = "FIDESOPS__SECURITY__"
 
 
+class RootUserSettings(FidesSettings):
+    """Configuration settings for Analytics variables."""
+
+    ANALYTICS_OPT_OUT: Optional[bool]
+    ANALYTICS_ID: Optional[str]
+
+    @validator("ANALYTICS_ID", pre=True)
+    def populate_analytics_id(cls, v: Optional[str]) -> str:
+        """
+        Populates the appropriate value for analytics id based on config
+        """
+        return v or cls.generate_and_store_client_id()
+
+    @staticmethod
+    def generate_and_store_client_id() -> str:
+        update_obj: Dict[str, Dict] = {}
+        client_id: str = generate_client_id(FIDESOPS)
+        logger.debug("analytics client id generated")
+        update_obj.update(root_user={"ANALYTICS_ID": client_id})
+        update_config_file(update_obj)
+        return client_id
+
+    class Config:
+        env_prefix = "FIDESOPS__ROOT_USER__"
+
+
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
@@ -228,6 +255,7 @@ class FidesopsConfig(FidesSettings):
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings
+    root_user: RootUserSettings
 
     PORT: int
     is_test_mode: bool = os.getenv("TESTING") == "True"
@@ -365,6 +393,33 @@ def get_censored_config(the_config: FidesopsConfig) -> Dict[str, Any]:
             filtered[key][field] = data[field]
 
     return filtered
+
+
+def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
+    """
+    Overwrite the existing config file with a new version that includes the desired `updates`.
+    :param updates: A nested `dict`, where top-level keys correspond to configuration sections and top-level values contain `dict`s whose key/value pairs correspond to the desired option/value updates.
+    """
+    try:
+        config_path: str = load_file("fidesops.toml")
+        current_config: MutableMapping[str, Any] = load_toml("fidesops.toml")
+    except FileNotFoundError as e:
+        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
+
+    for key, value in updates.items():
+        if key in current_config:
+            current_config[key].update(value)
+        else:
+            current_config.update({key: value})
+
+    with open(config_path, "w") as config_file:
+        toml.dump(current_config, config_file)
+
+    logger.info(f"Updated {config_path}:")
+
+    for key, value in updates.items():
+        for subkey, val in value.items():
+            logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
 
 
 config = get_config()

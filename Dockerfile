@@ -43,4 +43,7 @@ COPY . /fidesops
 WORKDIR /fidesops
 RUN pip install -e .
 
+# Enable detection of running within Docker
+ENV RUNNING_IN_DOCKER=true
+
 CMD [ "fidesops", "webserver" ]

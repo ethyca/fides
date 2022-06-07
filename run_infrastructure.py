@@ -36,6 +36,7 @@ def run_infrastructure(
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_superuser: bool = False,  # Should we run the create_superuser command?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
+    analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -91,6 +92,7 @@ def run_infrastructure(
             datastores,
             docker_compose_path=path,
             pytest_path=pytest_path,
+            analytics_opt_out=analytics_opt_out,
         )
 
     elif run_create_superuser:
@@ -205,6 +207,7 @@ def _run_tests(
     datastores: List[str],
     docker_compose_path: str,
     pytest_path: str = "",
+    analytics_opt_out: bool = False,
 ) -> None:
     """
     Runs unit tests against the specified datastores
@@ -232,6 +235,9 @@ def _run_tests(
         if datastore in datastores:
             for env_var in EXTERNAL_DATASTORE_CONFIG[datastore]:
                 environment_variables += f"-e {env_var} "
+
+    if analytics_opt_out:
+        environment_variables += "-e ANALYTICS_OPT_OUT"
 
     pytest_path += f' -m "{pytest_markers}"'
 
@@ -295,6 +301,11 @@ if __name__ == "__main__":
         "--run_create_test_data",
         action="store_true",
     )
+    parser.add_argument(
+        "-a",
+        "--analytics_opt_out",
+        action="store_true",
+    )
 
     config_args = parser.parse_args()
 
@@ -307,4 +318,5 @@ if __name__ == "__main__":
         run_tests=config_args.run_tests,
         run_create_superuser=config_args.run_create_superuser,
         run_create_test_data=config_args.run_create_test_data,
+        analytics_opt_out=config_args.analytics_opt_out,
     )
