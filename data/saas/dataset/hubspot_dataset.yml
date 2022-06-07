@@ -91,7 +91,6 @@ dataset:
           - name: id
             data_categories: [user.derived.identifiable.unique_id]
             fidesops_meta:
-              primary_key: True
               data_type: string
           - name: userId
             data_categories: [user.derived.identifiable.unique_id]

@@ -3737,6 +3737,40 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Restart from Failure",
+			"item": [
+				{
+					"name": "Restart failed node",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"retry"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [

@@ -567,7 +567,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             }
         )
 
-        valid = len(non_empty_primary_keys) > 0
+        valid = len(non_empty_primary_keys) > 0 and update_value_map
         if not valid:
             logger.warning(
                 f"There is not enough data to generate a valid update statement for {self.node.address}"

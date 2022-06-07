@@ -21,6 +21,7 @@ The types of changes are:
 
 ### Added
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
+* Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
@@ -32,6 +33,7 @@ The types of changes are:
 * Modified `filter` post-processor to include toggles for exact and case sensitive matching [#584](https://github.com/ethyca/fidesops/pull/584)
 * Added dataset for Outreach with access configuration [#588](https://github.com/ethyca/fidesops/pull/588)
 * All directories containing `*.py` files now also contain `__init__.py` files [#590](https://github.com/ethyca/fidesops/pull/590)
+* Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
 
 ### Changed
 * Use the `RuleResponse` schema within the `PrivacyRequestReposnse` schema [#580](https://github.com/ethyca/fidesops/pull/580)
@@ -48,7 +50,6 @@ The types of changes are:
 * Added `FIDESOPS__DATABASE__ENABLED` and `FIDESOPS__REDIS__ENABLED` configuration variables to allow `fidesops` to run cleanly in a "stateless" mode without any database or redis cache integration [#550](https://github.com/ethyca/fidesops/pull/550)
 * Pause Access Request Execution / Resume on Manual Input in [#554](https://github.com/ethyca/fidesops/pull/554)
 * A `[package]` section of the `fidesops.toml` configuration file may specify the path to the `fidesops` package itself [#566](https://github.com/ethyca/fidesops/pull/566)
-* Pause Erasure Request Execution / Resume on Manual Input in [#571](https://github.com/ethyca/fidesops/pull/571/)
 
 ### Changed
 * `MaskingStrategyFactory` and associated `MaskingStrategy` implementations now use a decorator-based registration system, to improve extensibility [#560](https://github.com/ethyca/fidesops/pull/560)

@@ -40,6 +40,7 @@ REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
 PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
+PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
 
 # Rule URLs

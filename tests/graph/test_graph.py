@@ -1,8 +1,11 @@
+import pytest
+
 from fidesops.core.config import config
 from fidesops.graph.config import *
 from fidesops.graph.traversal import *
 from fidesops.models.policy import ActionType
 from fidesops.task.graph_task import retry
+from fidesops.task.task_resources import TaskResources
 from tests.task.traversal_data import integration_db_graph
 
 t1 = Collection(
@@ -56,7 +59,7 @@ class TestNode:
         assert node.contains_field(lambda f: f.identity == "ssn")
 
 
-def test_retry_decorator():
+def test_retry_decorator(privacy_request, policy):
     input_data = {"test": "data"}
     graph: DatasetGraph = integration_db_graph("postgres_example")
     traversal = Traversal(graph, {"email": "X"})
@@ -78,6 +81,7 @@ def test_retry_decorator():
             self.start_logged = 0
             self.retry_logged = 0
             self.end_called_with = ()
+            self.resources = TaskResources(privacy_request, policy, [])
 
         def log_end(self, action_type: ActionType, exc: Optional[str] = None):
             self.end_called_with = (action_type, exc)
@@ -88,13 +92,14 @@ def test_retry_decorator():
         def log_retry(self, _: ActionType):
             self.retry_logged += 1
 
-        @retry(action_type=ActionType.access, default_return=[])
+        @retry(action_type=ActionType.access)
         def test_function(self):
             self.call_count += 1
             input_data["nonexistent_value"]
 
     test_obj = TestRetryDecorator()
-    test_obj.test_function()
+    with pytest.raises(Exception):
+        test_obj.test_function()
     assert test_obj.call_count == 6  # called once, with 5 retries
     assert test_obj.end_called_with[0] == ActionType.access
     assert isinstance(test_obj.end_called_with[1], KeyError)

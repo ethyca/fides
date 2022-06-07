@@ -44,13 +44,14 @@ COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldP
 
 def retry(
     action_type: ActionType,
-    default_return: Any,
 ) -> Callable:
     """
     Retry decorator for access and right to forget requests requests -
 
     If an exception is raised, we retry the function `count` times with exponential backoff. After the number of
     retries have expired, we call GraphTask.end() with the appropriate `action_type` and `default_return`.
+
+    If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
     def decorator(func: Callable) -> Callable:
@@ -78,7 +79,7 @@ def retry(
                         f"Privacy request {method_name} paused {self.traversal_node.address}"
                     )
                     self.log_paused(action_type, ex)
-                    # Re-raise to stop privacy request execution.
+                    # Re-raise to stop privacy request execution on pause.
                     raise
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
@@ -87,8 +88,13 @@ def retry(
                     )
                     sleep(func_delay)
                     raised_ex = ex
+
             self.log_end(action_type, raised_ex)
-            return default_return
+            self.resources.request.cache_failed_step_and_collection(
+                failed_step=action_type, failed_collection=self.traversal_node.address
+            )
+            # Re-raise to stop privacy request execution on failure.
+            raise raised_ex
 
         return result
 
@@ -426,7 +432,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
-    @retry(action_type=ActionType.access, default_return=[])
+    @retry(action_type=ActionType.access)
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -444,7 +450,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.log_end(ActionType.access)
         return filtered_output
 
-    @retry(action_type=ActionType.erasure, default_return=0)
+    @retry(action_type=ActionType.erasure)
     def erasure_request(self, retrieved_data: List[Row]) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
