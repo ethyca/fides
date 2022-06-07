@@ -13,7 +13,7 @@ class FidesOpsKey(FidesKey):
         """Throws ValueError if val is not a valid FidesKey"""
         if value is not None and not cls.regex.match(value):
             raise ValueError(
-                "FidesKey must only contain alphanumeric characters, '.' or '_'."
+                "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
             )
 
         return value

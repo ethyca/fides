@@ -11,21 +11,27 @@ def test_get_key_from_data_method() -> None:
     key = get_key_from_data({"key": "test_key", "name": "config name"}, "StorageConfig")
     assert key == "test_key"
 
+
+def test_get_key_from_data_method_no_key() -> None:
     # Test no key
     key = get_key_from_data({"name": "config name"}, "StorageConfig")
     assert key == "config_name"
 
+
+def test_get_key_from_data_method_no_data() -> None:
     # Test no data
     with pytest.raises(KeyValidationError) as exc:
         get_key_from_data({}, "StorageConfig")
     assert str(exc.value) == "StorageConfig requires a name."
 
+
+def test_get_key_from_data_method_invalid_key() -> None:
     # Test key not valid
     with pytest.raises(ValueError) as exc:
-        get_key_from_data({"key": "test-key", "name": "config name"}, "StorageConfig")
+        get_key_from_data({"key": "test*key", "name": "config name"}, "StorageConfig")
     assert (
         str(exc.value)
-        == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+        == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
     )
 
 

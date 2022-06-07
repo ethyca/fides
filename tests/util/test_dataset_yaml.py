@@ -100,7 +100,7 @@ example_dataset_nested_yaml = """dataset:
               - name: submitter
 """
 example_bad_dataset_nested_yaml = """dataset:
-  - fides_key: mongo_nested_test 
+  - fides_key: mongo_nested_test
     name: Mongo Example Nested Test Dataset
     description: Example of a Mongo dataset that contains nested data
     collections:
@@ -117,7 +117,7 @@ example_bad_dataset_nested_yaml = """dataset:
                 data_type: string
               - name: submitter
                 data_type: string
-                data_categories: [user.provided.identifiable]          
+                data_categories: [user.provided.identifiable]
 """
 
 
@@ -155,12 +155,13 @@ def test_dataset_yaml_format_invalid_fides_keys():
     dataset = __to_dataset__(example_dataset_yaml)
     dataset.get("collections")[0].get("fidesops_meta").get("after")[
         0
-    ] = "invalid-dataset-name.invalid-collection-name"
+    ] = "invalid*dataset*name.invalid*collection*name"
     with pytest.raises(ValueError) as exc:
         d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
         convert_dataset_to_graph(d, "ignore")
-    assert "FidesKey must only contain alphanumeric characters, '.' or '_'." in str(
-        exc.value
+    assert (
+        "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+        in str(exc.value)
     )
 
 
