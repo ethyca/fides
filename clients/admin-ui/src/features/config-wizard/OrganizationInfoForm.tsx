@@ -13,12 +13,10 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import { useCreateOrganizationMutation } from "./organization.slice";
 
-const useOrganizationInfoForm = () => {
+const useOrganizationInfoForm = (handleChangeStep: Function) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -31,20 +29,25 @@ const useOrganizationInfoForm = () => {
       const organizationBody = {
         name: "",
         description: "",
+        fides_key: "default_organization",
       };
       setIsLoading(true);
 
-      const response = await createOrganization(organizationBody);
+      // @ts-ignore
+      const { error: createOrganizationError, data } = await createOrganization(
+        organizationBody
+      );
 
       setIsLoading(false);
 
-      if (response) {
-        toast.closeAll();
-      } else {
+      if (createOrganizationError) {
         toast({
           status: "error",
           description: "Creating organization failed.",
         });
+      } else {
+        handleChangeStep(1);
+        toast.closeAll();
       }
     },
     validate: (values) => {
@@ -79,7 +82,7 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useOrganizationInfoForm();
+  } = useOrganizationInfoForm(handleChangeStep);
 
   return (
     <chakra.form onSubmit={handleSubmit}>
@@ -162,7 +165,7 @@ const OrganizationInfoForm: NextPage<{
           colorScheme="primary"
           disabled={!values.organizationName || !values.organizationDescription}
           isLoading={isLoading}
-          onClick={() => handleChangeStep(1)}
+          type="submit"
         >
           Save and Continue
         </Button>
