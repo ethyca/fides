@@ -13,7 +13,9 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
+
 import { QuestionIcon } from "~/features/common/Icon";
+
 import { useCreateOrganizationMutation } from "./organization.slice";
 
 const useOrganizationInfoForm = (handleChangeStep: Function) => {
@@ -34,7 +36,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       setIsLoading(true);
 
       // @ts-ignore
-      const { error: createOrganizationError, data } = await createOrganization(
+      const { error: createOrganizationError } = await createOrganization(
         organizationBody
       );
 

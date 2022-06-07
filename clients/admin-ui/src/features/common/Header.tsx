@@ -61,16 +61,19 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
             </MenuList>
           </Menu>
         ) : (
-          <Button
-            // onClick={}
-            color="gray.700"
-            fontWeight="400"
-            iconSpacing={2}
-            variant="link"
-            leftIcon={<QuestionIcon boxSize={5} />}
-          >
-            Get help (Fides community)
-          </Button>
+          <>
+            <QuestionIcon boxSize={5} />
+            <Link
+              href="https://ethyca.github.io/fides/1.6.0/"
+              isExternal
+              color="gray.700"
+              fontWeight="400"
+              // iconSpacing={2}
+              // leftIcon={<QuestionIcon boxSize={5} />}
+            >
+              Get help (Fides community)
+            </Link>
+          </>
         )}
       </Flex>
     </Flex>
