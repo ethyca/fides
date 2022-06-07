@@ -237,7 +237,7 @@ def export_system(
         for privacy_declaration in system.privacy_declarations
     ]
     server_resources["data_use"] = get_server_resources(
-        url, "data_use", set(data_use_fides_keys), headers
+        url, "data_use", list(set(data_use_fides_keys)), headers
     )
 
     data_subject_fides_keys = [
@@ -248,7 +248,7 @@ def export_system(
     ]
 
     server_resources["data_subject"] = get_server_resources(
-        url, "data_subject", set(data_subject_fides_keys), headers
+        url, "data_subject", list(set(data_subject_fides_keys)), headers
     )
 
     output_list = generate_system_records(server_resources)
