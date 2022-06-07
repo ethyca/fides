@@ -212,7 +212,10 @@ def format_data_subjects(data_subjects: List[DataSubject]) -> Dict[str, Dict[str
         else:
             data_subject_dict["rights_available"] = "No data subject rights listed"
 
-        formatted_data_subject = {attribute: data_subject_dict.get(attribute) or "N/A" for attribute in formatted_data_subject_attributes_list}
+        formatted_data_subject = {
+            attribute: data_subject_dict.get(attribute) or "N/A"
+            for attribute in formatted_data_subject_attributes_list
+        }
 
         formatted_data_subjects[data_subject.fides_key] = formatted_data_subject
 
