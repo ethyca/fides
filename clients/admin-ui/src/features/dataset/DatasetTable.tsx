@@ -1,5 +1,7 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { selectActiveDataset, setActiveDataset } from "./dataset.slice";
 import { Dataset } from "./types";
 
 interface Props {
@@ -7,6 +9,18 @@ interface Props {
 }
 
 const DatasetsTable = ({ datasets }: Props) => {
+  const dispatch = useDispatch();
+  const activeDataset = useSelector(selectActiveDataset);
+
+  const handleRowClick = (dataset: Dataset) => {
+    // toggle the active dataset
+    if (dataset.fides_key === activeDataset?.fides_key) {
+      dispatch(setActiveDataset(null));
+    } else {
+      dispatch(setActiveDataset(dataset));
+    }
+  };
+
   if (!datasets) {
     return <div>Empty state</div>;
   }
@@ -20,13 +34,30 @@ const DatasetsTable = ({ datasets }: Props) => {
         </Tr>
       </Thead>
       <Tbody>
-        {datasets.map((dataset) => (
-          <Tr key={dataset.fides_key}>
-            <Td pl={0}>{dataset.name}</Td>
-            <Td pl={0}>{dataset.fides_key}</Td>
-            <Td pl={0}>{dataset.description}</Td>
-          </Tr>
-        ))}
+        {datasets.map((dataset) => {
+          const isActive =
+            activeDataset && activeDataset.fides_key === dataset.fides_key;
+
+          return (
+            <Tr
+              key={dataset.fides_key}
+              _hover={{ bg: isActive ? undefined : "gray.50" }}
+              backgroundColor={isActive ? "complimentary.50" : undefined}
+              tabIndex={0}
+              onClick={() => handleRowClick(dataset)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleRowClick(dataset);
+                }
+              }}
+              cursor="pointer"
+            >
+              <Td pl={0}>{dataset.name}</Td>
+              <Td pl={0}>{dataset.fides_key}</Td>
+              <Td pl={0}>{dataset.description}</Td>
+            </Tr>
+          );
+        })}
       </Tbody>
     </Table>
   );
