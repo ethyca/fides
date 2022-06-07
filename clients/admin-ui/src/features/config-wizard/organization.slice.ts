@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
+
 import type { AppState } from "../../app/store";
 import {
   Organization,
@@ -52,7 +53,7 @@ export const organizationApi = createApi({
       query: (body) => ({
         url: `organization/`,
         method: "POST",
-        body: body,
+        body,
       }),
       invalidatesTags: () => ["Organization"],
     }),
