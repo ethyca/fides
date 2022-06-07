@@ -30,3 +30,15 @@ class DatabaseConfig(BaseModel):
     """
 
     connection_string: str
+
+
+class ConnectorFailureException(Exception):
+    """
+    Connector exception for unspecified failures
+    """
+
+
+class ConnectorAuthFailureException(Exception):
+    """
+    Connector exception for authentication failures
+    """

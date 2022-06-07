@@ -1,15 +1,22 @@
 """Module that adds interactions with aws"""
-from typing import Any, Dict, List, Optional
+from functools import update_wrapper
+from typing import Any, Callable, Dict, List, Optional
 
 import boto3
+from botocore.exceptions import ClientError
 from fideslang.models import System, SystemMetadata
 
-from fidesctl.connectors.models import AWSConfig
+from fidesctl.connectors.models import (
+    AWSConfig,
+    ConnectorAuthFailureException,
+    ConnectorFailureException,
+)
 
 
 def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # type: ignore
     """
-    Creates boto3 redshift client and returns describe_clusters response.
+    Creates boto3 client for a given service. A config is optional
+    to allow for environment variable configuration.
     """
     config_dict = aws_config.dict() if aws_config else {}
     service_client = boto3.client(
@@ -19,25 +26,57 @@ def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # typ
     return service_client
 
 
+def handle_common_aws_errors(func: Callable) -> Callable:
+    """
+    Function decorator which handles common errors for aws calls.
+    Classifies exceptions based on error codes returned by the client.
+    """
+
+    def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
+        try:
+            return func(*args, **kwargs)
+        except ClientError as error:
+            if error.response["Error"]["Code"] in [
+                "InvalidClientTokenId",
+                "SignatureDoesNotMatch",
+            ]:
+                raise ConnectorAuthFailureException(error.response["Error"]["Message"])
+            raise ConnectorFailureException(error.response["Error"]["Message"])
+
+    return update_wrapper(wrapper_func, func)
+
+
+@handle_common_aws_errors
+def validate_credentials(aws_config: Optional[AWSConfig]) -> None:
+    """
+    Calls the get_caller_identity sts api to validate aws credentials
+    """
+    client = get_aws_client("sts", aws_config)
+    client.get_caller_identity()
+
+
+@handle_common_aws_errors
 def describe_redshift_clusters(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
     """
-    Creates boto3 redshift client and returns describe_clusters response.
+    Returns describe_clusters response given a redshift boto3 client.
     """
     describe_clusters = client.describe_clusters()
     return describe_clusters
 
 
+@handle_common_aws_errors
 def describe_rds_clusters(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
     """
-    Creates boto3 rds client and returns describe_db_clusters response.
+    Returns describe_db_clusters response given a rds boto3 client.
     """
     describe_clusters = client.describe_db_clusters()
     return describe_clusters
 
 
+@handle_common_aws_errors
 def describe_rds_instances(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
     """
-    Creates boto3 rds client and returns describe_db_instances response.
+    Returns describe_db_instances response given a rds boto3 client.
     """
     describe_instances = client.describe_db_instances()
     return describe_instances

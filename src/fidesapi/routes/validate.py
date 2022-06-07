@@ -4,16 +4,27 @@ Contains all of the endpoints required to validate credentials.
 from enum import Enum
 from typing import Callable, Dict, Union
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Response, status
 from pydantic import BaseModel
 
-from fidesapi.routes.util import API_PREFIX
-from fidesctl.connectors.models import AWSConfig, OktaConfig
+from fidesapi.routes.util import (
+    API_PREFIX,
+    route_requires_aws_connector,
+    route_requires_okta_connector,
+    unobscure_aws_config,
+    unobscure_okta_config,
+)
+from fidesctl.connectors.models import (
+    AWSConfig,
+    ConnectorAuthFailureException,
+    ConnectorFailureException,
+    OktaConfig,
+)
 
 
 class ValidationTarget(str, Enum):
     """
-    TODO
+    Allowed targets for the validate endpoint
     """
 
     AWS = "aws"
@@ -22,7 +33,7 @@ class ValidationTarget(str, Enum):
 
 class ValidateRequest(BaseModel):
     """
-    TODO
+    Validate endpoint request object
     """
 
     config: Union[AWSConfig, OktaConfig]
@@ -31,7 +42,7 @@ class ValidateRequest(BaseModel):
 
 class ValidationStatus(str, Enum):
     """
-    TODO
+    Validate endpoint response status
     """
 
     SUCCESS = "success"
@@ -40,7 +51,7 @@ class ValidationStatus(str, Enum):
 
 class ValidateResponse(BaseModel):
     """
-    TODO
+    Validate endpoint response object
     """
 
     status: ValidationStatus
@@ -57,29 +68,53 @@ router = APIRouter(tags=["Validate"], prefix=f"{API_PREFIX}/validate")
 )
 async def validate(
     validate_request_payload: ValidateRequest, response: Response
-) -> Dict:
+) -> ValidateResponse:
     """
-    TODO
+    Endpoint used to validate different resource targets.
     """
     validate_function_map: Dict[ValidationTarget, Callable] = {
-        ValidationTarget.AWS: validate_aws
+        ValidationTarget.AWS: validate_aws,
+        ValidationTarget.OKTA: validate_okta,
     }
-    validate_function = validate_function_map[ValidationTarget.AWS]
-    validate_response = validate_function(validate_request_payload.config)
-    return validate_response.dict()
+    validate_function = validate_function_map[validate_request_payload.target]
 
-
-def validate_aws(aws_config: AWSConfig) -> ValidateResponse:
-    """
-    Validates that given credentials are valid and builds a response
-    """
     try:
-        import boto3  # pylint: disable=unused-import
-    except ModuleNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Packages not found, ensure aws is included: fidesctl[aws]",
+        await validate_function(validate_request_payload.config)
+    except ConnectorAuthFailureException as err:
+        return ValidateResponse(
+            status=ValidationStatus.FAILURE,
+            message=f"Authentication failed validating config. {str(err)}",
         )
+    except ConnectorFailureException as err:
+        return ValidateResponse(
+            status=ValidationStatus.FAILURE,
+            message=f"Unexpected failure validating config. {str(err)}",
+        )
+
     return ValidateResponse(
         status=ValidationStatus.SUCCESS, message="Config validation succeeded"
     )
+
+
+@route_requires_aws_connector
+async def validate_aws(aws_config: AWSConfig) -> None:
+    """
+    Validates that given aws credentials are valid. Dependency
+    exception is raised if failure occurs.
+    """
+    import fidesctl.connectors.aws as aws_connector
+
+    unobscured_config = unobscure_aws_config(aws_config=aws_config)
+    aws_connector.validate_credentials(aws_config=unobscured_config)
+
+
+@route_requires_okta_connector
+async def validate_okta(okta_config: OktaConfig) -> None:
+    """
+    Validates that given okta credentials are valid. Dependency
+    exception is raised if failure occurs.
+    """
+    import fidesctl.connectors.okta as okta_connector
+
+    unobscured_config = unobscure_okta_config(okta_config=okta_config)
+    await okta_connector.validate_credentials(okta_config=unobscured_config)
