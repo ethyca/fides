@@ -40,7 +40,8 @@ def unobscure_string(obscured: str) -> str:
 
 def unobscure_aws_config(aws_config: AWSConfig) -> AWSConfig:
     """
-    Returns a list of Systems found in AWS.
+    Given an aws config unobscures the access key id and
+    access key using the unobscure_string function.
     """
     unobscured_config = AWSConfig(
         region_name=aws_config.region_name,
@@ -52,7 +53,8 @@ def unobscure_aws_config(aws_config: AWSConfig) -> AWSConfig:
 
 def unobscure_okta_config(okta_config: OktaConfig) -> OktaConfig:
     """
-    Returns a list of Systems found in AWS.
+    Given an okta config unobscures the token using the
+    unobscure_string function.
     """
     unobscured_config = OktaConfig(
         orgUrl=okta_config.orgUrl, token=unobscure_string(okta_config.token)
