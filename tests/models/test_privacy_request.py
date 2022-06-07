@@ -427,3 +427,32 @@ class TestCacheManualErasureCount:
         privacy_request.cache_manual_erasure_count(paused_location, 0)
         cached_data = privacy_request.get_manual_erasure_count(paused_location)
         assert cached_data == 0
+
+
+class TestPrivacyRequestCacheFailedStep:
+    def test_cache_failed_step_and_collection(self, privacy_request):
+        privacy_request.cache_failed_step_and_collection(
+            PausedStep.erasure, paused_location
+        )
+
+        cached_data = privacy_request.get_failed_step_and_collection()
+        assert cached_data == (PausedStep.erasure, paused_location)
+
+    def test_cache_null_step_and_location(self, privacy_request):
+        privacy_request.cache_failed_step_and_collection()
+
+        cached_data = privacy_request.get_failed_step_and_collection()
+        assert cached_data == (None, None)
+
+    def test_replace_failed_step_and_location(self, privacy_request):
+        privacy_request.cache_failed_step_and_collection(
+            PausedStep.erasure, paused_location
+        )
+        privacy_request.cache_failed_step_and_collection(
+            PausedStep.access, CollectionAddress("test", "test")
+        )
+
+        assert privacy_request.get_failed_step_and_collection() == (
+            PausedStep.access,
+            CollectionAddress("test", "test"),
+        )

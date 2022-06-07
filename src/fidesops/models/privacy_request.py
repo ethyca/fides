@@ -229,31 +229,16 @@ class PrivacyRequest(Base):
         result_prefix = f"{self.id}__*"
         return cache.get_encoded_objects_by_prefix(result_prefix)
 
-    PAUSED_SEPARATOR = "__fidesops_paused_sep__"
-
     def cache_paused_step_and_collection(
         self,
         paused_step: Optional[PausedStep] = None,
         paused_collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        When a privacy request is paused, cache both the paused step (access or erasure) and the collection
-        awaiting manual input.  For example, we might pause a privacy request at the erasure step of the
-        postgres_example:address collection.
-
-        The paused_step is needed because we may build and execute multiple graphs as part of running a privacy request.
-        An erasure request builds two graphs, one to access the data, and the second to mask it.
-        We need to know if we should resume execution from the access or the erasure portion of the request.
+        Cache both paused step (access or erasure) and paused collection
         """
-        cache: FidesopsRedis = get_cache()
-        paused_key = f"PAUSED_LOCATION__{self.id}"
-
-        # Store both the paused separator and paused collection in one value
-        cache.set_encoded_object(
-            paused_key,
-            f"{paused_step.value}{self.PAUSED_SEPARATOR}{paused_collection.value}"
-            if paused_step and paused_collection
-            else None,
+        cache_step_and_collection(
+            paused_step, paused_collection, cache_key=f"PAUSED_LOCATION__{self.id}"
         )
 
     def get_paused_step_and_collection(
@@ -265,15 +250,29 @@ class PrivacyRequest(Base):
         portion of the privacy request flow, and the collection tells us where we should cache manual input data for later use,
         In other words, this manual data belongs to this collection.
         """
-        cache: FidesopsRedis = get_cache()
-        node_addr: str = cache.get_encoded_by_key(f"EN_PAUSED_LOCATION__{self.id}")
+        return get_step_and_collection(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
 
-        if node_addr:
-            split_addr = node_addr.split(self.PAUSED_SEPARATOR)
-            return PausedStep(split_addr[0]), CollectionAddress.from_string(
-                split_addr[1]
-            )
-        return None, None  # If no cached data, return a tuple of Nones
+    def cache_failed_step_and_collection(
+        self,
+        failed_step: Optional[PausedStep] = None,
+        failed_collection: Optional[CollectionAddress] = None,
+    ) -> None:
+        """
+        Cache both the failed step (access or erasure) and failed collection.
+        """
+        cache_step_and_collection(
+            failed_step, failed_collection, cache_key=f"FAILED_LOCATION__{self.id}"
+        )
+
+    def get_failed_step_and_collection(
+        self,
+    ) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
+        """Get both the failed step (access or erasure) and collection that triggered failure.
+
+        The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
+        portion of the privacy request flow.
+        """
+        return get_step_and_collection(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
@@ -378,7 +377,9 @@ class PrivacyRequest(Base):
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
         if self.started_processing_at is None:
             self.started_processing_at = datetime.utcnow()
-            self.save(db=db)
+        if self.status == PrivacyRequestStatus.pending:
+            self.status = PrivacyRequestStatus.in_processing
+        self.save(db=db)
 
     def error_processing(self, db: Session) -> None:
         """Mark privacy request as errored, and note time processing was finished"""
@@ -389,6 +390,50 @@ class PrivacyRequest(Base):
                 "finished_processing_at": datetime.utcnow(),
             },
         )
+
+
+# Unique text to separate a step from a collection address, so we can store two values in one.
+PAUSED_SEPARATOR = "__fidesops_paused_sep__"
+
+
+def cache_step_and_collection(
+    step: Optional[PausedStep], collection: Optional[CollectionAddress], cache_key: str
+) -> None:
+    """Generic method to cache which collection and which step (access/erasure) we're stopped on
+
+    For example, we might pause a privacy request at the erasure step of the postgres_example:address collection or
+    the request might have failed at the access step of the mongo_example:payment_card collection.
+
+    The "step" is needed because we may build and execute multiple graphs as part of running a privacy request.
+    An erasure request builds two graphs, one to access the data, and the second to mask it.
+    We need to know if we should resume execution from the access or the erasure portion of the request.
+    """
+    cache: FidesopsRedis = get_cache()
+
+    # Store both the step and collection under one value
+    cache.set_encoded_object(
+        cache_key,
+        f"{step.value}{PAUSED_SEPARATOR}{collection.value}"
+        if step and collection
+        else None,
+    )
+
+
+def get_step_and_collection(
+    cached_key: str,
+) -> Tuple[Optional[PausedStep], Optional[CollectionAddress]]:
+    """Get both the stopped step (access or erasure) and collection where we've stopped the privacy request.
+
+    The "step" lets us know if we should resume privacy request execution from the "access" or the "erasure"
+    portion of the privacy request flow, and the collection lets us know which node we stopped on.
+    """
+    cache: FidesopsRedis = get_cache()
+    node_addr: str = cache.get_encoded_by_key(cached_key)
+
+    if node_addr:
+        split_addr = node_addr.split(PAUSED_SEPARATOR)
+        return PausedStep(split_addr[0]), CollectionAddress.from_string(split_addr[1])
+    return None, None  # If no cached data, return a tuple of Nones
 
 
 class ExecutionLogStatus(EnumType):

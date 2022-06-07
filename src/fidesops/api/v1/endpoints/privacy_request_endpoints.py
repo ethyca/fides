@@ -37,6 +37,7 @@ from fidesops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
+    PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
 from fidesops.common_exceptions import TraversalError, ValidationError
@@ -727,6 +728,57 @@ def resume_with_erasure_confirmation(
         expected_paused_step=PausedStep.erasure,
         manual_count=manual_count.row_count,
     )
+
+
+@router.post(
+    PRIVACY_REQUEST_RETRY,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+def restart_privacy_request_from_failure(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> PrivacyRequestResponse:
+    """Restart a privacy request from failure"""
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.error:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+        )
+
+    failed_step: Optional[PausedStep]
+    failed_collection: Optional[CollectionAddress]
+    failed_step, failed_collection = privacy_request.get_failed_step_and_collection()
+    if not failed_step or not failed_collection:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
+        )
+
+    logger.info(
+        f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+
+    PrivacyRequestRunner(
+        cache=cache,
+        privacy_request=privacy_request,
+    ).submit(from_step=failed_step)
+
+    privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
+
+    return privacy_request
 
 
 def review_privacy_request(

@@ -8,6 +8,7 @@ In this section we'll cover:
 - How can I submit a Privacy Request?
 - How can I approve/deny a Privacy Request? 
 - How do I monitor Privacy Requests as they execute?
+- How can I restart a failed request?
 - How can I integrate the Privacy Request flow into my existing support tools?
 - Specifying encryption of access request results 
 - Decrypting access request results
@@ -94,6 +95,14 @@ Privacy Requests can be monitored at any time throughout their execution by subm
 `GET api/v1/privacy-request?external_id=<external_id>`
 
 For more detailed examples and further Privacy Request filtering in Fidesops please see [How-To: Report on Privacy Requests](reporting.md).
+
+
+## How can I restart a failed Privacy Request?
+To restart a failed Privacy Request from the failed collection, submit a request to:
+
+`POST /api/v1/privacy-request/<privacy_request_id>/retry`
+
+with an empty request body.  
 
 
 ## How can I integrate the Privacy Request flow into my existing support tools?
