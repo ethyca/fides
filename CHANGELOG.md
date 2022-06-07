@@ -43,6 +43,7 @@ The types of changes are:
 * Update the export of a datamap to load resources from the server instead of a manifest directory[#662](https://github.com/ethyca/fides/pull/662)
 * Refactor `export` to remove CLI specific uses from the core modules and load resources[#725](https://github.com/ethyca/fides/pull/725)
 * Bump version of FastAPI in `setup.py` to 0.77.1 to match `optional-requirements.txt` [#734](https://github.com/ethyca/fides/pull/734)
+* Docker images are now only built and pushed on tags to match when we release to pypi [#740](https://github.com/ethyca/fides/pull/740)
 
 ### Developer Experience
 
