@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
-
 import type { AppState } from "../../app/store";
 import {
   Organization,
@@ -51,14 +50,14 @@ export const organizationApi = createApi({
       Partial<Organization>
     >({
       query: (body) => ({
-        url: `organization`,
+        url: `organization/`,
         method: "POST",
-        body,
+        body: body,
       }),
       invalidatesTags: () => ["Organization"],
     }),
-    getOrganizationById: build.query<object, string>({
-      query: (id) => ({ url: `.../${id}` }),
+    getOrganizationByFidesKey: build.query<object, string>({
+      query: (fides_key) => ({ url: `organization/${fides_key}/` }),
       providesTags: ["Organization"],
     }),
     updateOrganization: build.mutation<
@@ -66,7 +65,7 @@ export const organizationApi = createApi({
       Partial<Organization> & Pick<Organization, "fides_key">
     >({
       query: ({ ...patch }) => ({
-        url: `organization`,
+        url: `organization/`,
         method: "PUT",
         body: patch,
       }),
@@ -79,7 +78,7 @@ export const organizationApi = createApi({
         const patchResult = dispatch(
           // @ts-ignore
           organizationApi.util.updateQueryData(
-            "getOrganizationById",
+            "getOrganizationByFidesKey",
             fides_key,
             (draft) => {
               Object.assign(draft, patch);
@@ -102,7 +101,7 @@ export const organizationApi = createApi({
 });
 
 export const {
-  useGetOrganizationByIdQuery,
+  useGetOrganizationByFidesKeyQuery,
   useCreateOrganizationMutation,
   useUpdateOrganizationMutation,
 } = organizationApi;

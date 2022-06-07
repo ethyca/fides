@@ -13,9 +13,7 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import { useCreateOrganizationMutation } from "./organization.slice";
 
 const useOrganizationInfoForm = (handleChangeStep: Function) => {
@@ -24,13 +22,13 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
-      organizationName: "",
-      organizationDescription: "",
+      name: "",
+      description: "",
     },
-    onSubmit: async () => {
+    onSubmit: async (values) => {
       const organizationBody = {
-        name: "",
-        description: "",
+        name: values.name,
+        description: values.description,
         fides_key: "default_organization",
       };
       setIsLoading(true);
@@ -54,16 +52,16 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
     },
     validate: (values) => {
       const errors: {
-        organizationName?: string;
-        organizationDescription?: string;
+        name?: string;
+        description?: string;
       } = {};
 
-      if (!values.organizationName) {
-        errors.organizationName = "Organization name is required";
+      if (!values.name) {
+        errors.name = "Organization name is required";
       }
 
-      if (!values.organizationDescription) {
-        errors.organizationDescription = "Organization description is equired";
+      if (!values.description) {
+        errors.description = "Organization description is equired";
       }
 
       return errors;
@@ -112,15 +110,13 @@ const OrganizationInfoForm: NextPage<{
               <FormLabel w="100%">Organization name</FormLabel>
               <Input
                 type="text"
-                id="organizationName"
-                name="organizationName"
+                id="name"
+                name="name"
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={values.organizationName}
-                isInvalid={
-                  touched.organizationName && Boolean(errors.organizationName)
-                }
+                value={values.name}
+                isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
                 w="65%"
               />
@@ -136,16 +132,13 @@ const OrganizationInfoForm: NextPage<{
               <FormLabel w="100%">Description</FormLabel>
               <Input
                 type="text"
-                id="organizationDescription"
-                name="organizationDescription"
+                id="description"
+                name="description"
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                value={values.organizationDescription}
-                isInvalid={
-                  touched.organizationDescription &&
-                  Boolean(errors.organizationDescription)
-                }
+                value={values.description}
+                isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"
                 w="65%"
               />
@@ -165,7 +158,7 @@ const OrganizationInfoForm: NextPage<{
           _hover={{ bg: "primary.400" }}
           _active={{ bg: "primary.500" }}
           colorScheme="primary"
-          disabled={!values.organizationName || !values.organizationDescription}
+          disabled={!values.name || !values.description}
           isLoading={isLoading}
           type="submit"
         >
