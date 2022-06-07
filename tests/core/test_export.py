@@ -6,6 +6,8 @@ from fideslang.models import (
     Dataset,
     DatasetCollection,
     DatasetField,
+    DataSubject,
+    DataUse,
     Organization,
     PrivacyDeclaration,
     System,
@@ -17,24 +19,33 @@ from fidesctl.core.config import FidesctlConfig
 
 @pytest.fixture()
 def test_sample_system_taxonomy() -> Generator:
-    yield [
-        System(
-            fides_key="test_system",
-            system_type="test",
-            system_name="test system",
-            system_description="system used for testing exports",
-            privacy_declarations=[
-                PrivacyDeclaration(
-                    name="privacy_declaration_1",
-                    data_categories=["account.contact.email", "account.contact.name"],
-                    data_use="provide.system",
-                    data_qualifier="aggregated.anonymized",
-                    data_subjects=["customer"],
-                    dataset_references=["users_dataset"],
-                )
-            ],
-        )
-    ]
+    yield {
+        "system": [
+            System(
+                fides_key="test_system",
+                system_type="test",
+                system_name="test system",
+                system_description="system used for testing exports",
+                privacy_declarations=[
+                    PrivacyDeclaration(
+                        name="privacy_declaration_1",
+                        data_categories=[
+                            "account.contact.email",
+                            "account.contact.name",
+                        ],
+                        data_use="provide.system",
+                        data_qualifier="aggregated.anonymized",
+                        data_subjects=["customer"],
+                        dataset_references=["users_dataset"],
+                    )
+                ],
+            )
+        ],
+        "data_subject": [DataSubject(fides_key="customer", name="customer")],
+        "data_use": [
+            DataUse(fides_key="provide.system", name="System", parent_key="provide")
+        ],
+    }
 
 
 @pytest.fixture()
@@ -86,11 +97,8 @@ def test_system_records_to_export(
     Asserts that unique records are returned properly (including
     the header row)
     """
-    output_list = export.generate_system_records(
-        test_sample_system_taxonomy,
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-    )
+
+    output_list = export.generate_system_records(test_sample_system_taxonomy)
     print(output_list)
     assert len(output_list) == 3
 
