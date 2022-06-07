@@ -522,7 +522,7 @@ class TestCreatePolicies:
         generate_auth_header,
         storage_config,
     ):
-        key = "here-is-an-invalid-key"
+        key = "here*is*an*invalid*key"
         data = [
             {
                 "name": "test create policy api",
@@ -537,7 +537,7 @@ class TestCreatePolicies:
         assert resp.status_code == 422
         assert (
             json.loads(resp.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
         )
 
     def test_create_policy_already_exists(

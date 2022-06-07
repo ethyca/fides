@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
 from pydantic import BaseModel, ConstrainedStr, validator
 
 from fidesops.common_exceptions import (
@@ -121,11 +121,10 @@ class FidesopsMeta(BaseModel):
         return _valid_data_length(v)
 
 
-class FidesopsDatasetField(DatasetField):
+class FidesopsDatasetField(DatasetFieldBase):
     """Extends fideslang DatasetField model with additional Fidesops annotations"""
 
     fidesops_meta: Optional[FidesopsMeta]
-
     fields: Optional[List["FidesopsDatasetField"]] = []
 
     @validator("data_categories")

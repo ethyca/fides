@@ -209,7 +209,7 @@ class TestPatchStorageConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.' or '_'."
+            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
         )
 
     @mock.patch(
