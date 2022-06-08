@@ -27,7 +27,7 @@ export const CustomTextInput = ({
         </FormLabel>
         <Input {...field} type={type} placeholder={placeholder} size="sm" />
       </SimpleGrid>
-      {isInvalid && <FormErrorMessage>{meta.error}</FormErrorMessage>}
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
 };
@@ -47,7 +47,7 @@ export const CustomSelect = ({
         {/* @ts-ignore having trouble getting Formik and Chakra select to be happy together */}
         <Select {...field} {...props} size="sm" />
       </SimpleGrid>
-      {isInvalid && <FormErrorMessage>{meta.error}</FormErrorMessage>}
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
 };
