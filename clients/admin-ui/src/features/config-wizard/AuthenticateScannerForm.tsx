@@ -17,7 +17,9 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
+
 import { QuestionIcon } from "~/features/common/Icon";
+
 import { useCreateOrganizationMutation } from "./organization.slice";
 
 const useAuthenticateScannerForm = (handleChangeStep: Function) => {
@@ -131,7 +133,7 @@ const AuthenticateScannerForm: NextPage<{
         </Accordion>
         <div>
           In order to run the scanner, please provide credentials for
-          authenticating to AWS. Please note, the credentials must have the
+          authenticating to AWS. Please note, the credentials must have the
           minimum permissions listed in the support documentation here. You can
           copy the sample IAM policy here.
         </div>
