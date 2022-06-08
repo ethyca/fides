@@ -308,6 +308,7 @@ class TestField:
         assert (
             isinstance(object_array_field, ObjectField) and object_array_field.is_array
         )
+        print(object_field)
         assert object_array_field.fields["obj"] == object_field
 
     def test_field_data_type(self):

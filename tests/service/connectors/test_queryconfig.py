@@ -70,29 +70,23 @@ class TestSQLQueryConfig:
         }
 
         # values exist for all query keys
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id", "customer_id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            },
+        ) == {"id", "customer_id"}
         # with no values OR an empty set, these are omitted
-        assert (
-            found_query_keys(
-                payment_card_node,
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                },
-            )
-            == {"id"}
-        )
+        assert found_query_keys(
+            payment_card_node,
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            },
+        ) == {"id"}
         assert found_query_keys(
             payment_card_node, {"id": ["A"], "ignore_me": ["X"]}
         ) == {"id"}
@@ -100,27 +94,21 @@ class TestSQLQueryConfig:
         assert found_query_keys(payment_card_node, {}) == set()
 
     def test_typed_filtered_values(self):
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": ["V"],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"], "customer_id": ["V"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"], "customer_id": ["V"]}
 
-        assert (
-            payment_card_node.typed_filtered_values(
-                {
-                    "id": ["A"],
-                    "customer_id": [],
-                    "ignore_me": ["X"],
-                }
-            )
-            == {"id": ["A"]}
-        )
+        assert payment_card_node.typed_filtered_values(
+            {
+                "id": ["A"],
+                "customer_id": [],
+                "ignore_me": ["X"],
+            }
+        ) == {"id": ["A"]}
 
         assert payment_card_node.typed_filtered_values(
             {"id": ["A"], "ignore_me": ["X"]}
