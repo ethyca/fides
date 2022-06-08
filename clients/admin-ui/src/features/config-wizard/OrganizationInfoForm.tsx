@@ -31,7 +31,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       const organizationBody = {
         name: values.name,
         description: values.description,
-        fides_key: "default_organization",
+        fides_key: "default_organization_21",
       };
       setIsLoading(true);
 

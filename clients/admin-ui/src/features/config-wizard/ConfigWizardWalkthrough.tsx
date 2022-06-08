@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { CloseSolidIcon } from "~/features/common/Icon";
 
 import Stepper from "../common/Stepper";
-import steps from "./constants";
+import STEPS from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
@@ -20,7 +20,7 @@ const ConfigWizardWalkthrough = () => {
   const handleChangeStep = (formStep: number) => {
     // Save info between steps for submission to API with all info
     // or are they different api calls at each step?
-    if (formStep && step !== steps.length) {
+    if (formStep && step !== STEPS.length) {
       setStep(formStep + 1);
     }
   };
@@ -43,7 +43,7 @@ const ConfigWizardWalkthrough = () => {
         <Stack bg="white" height="100vh" maxW="60%">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box>
-              <Stepper activeStep={step} />
+              <Stepper activeStep={step} steps={STEPS} />
             </Box>
             {step === 1 ? (
               <OrganizationInfoForm

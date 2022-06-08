@@ -1,48 +1,15 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
-import type { AppState } from "../../app/store";
-import {
-  Organization,
-  OrganizationParams,
-  OrganizationResponse,
-} from "./types";
-
-export interface State {
-  page: number;
-  size: number;
-  token: string | null;
-}
-
-const initialState: State = {
-  page: 1,
-  size: 25,
-  token: null,
-};
-
-// Helpers
-export const mapFiltersToSearchParams = ({
-  page,
-  size,
-}: Partial<OrganizationParams>) => ({
-  ...(page ? { page: `${page}` } : {}),
-  ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-});
+import { Organization, OrganizationResponse } from "./types";
 
 // Organization API
 export const organizationApi = createApi({
   reducerPath: "organizationApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-    prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
-      headers.set("Access-Control-Allow-Origin", "*");
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
+    prepareHeaders: (headers) => headers,
   }),
   tagTypes: ["Organization"],
   endpoints: (build) => ({
@@ -109,22 +76,8 @@ export const {
 
 export const organizationSlice = createSlice({
   name: "organization",
-  initialState,
-  reducers: {
-    assignToken: (state, action: PayloadAction<string>) => ({
-      ...state,
-      token: action.payload,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: action.payload,
-    }),
-    setSize: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: initialState.page,
-      size: action.payload,
-    }),
-  },
+  initialState: {},
+  reducers: {},
   extraReducers: {
     [HYDRATE]: (state, action) => ({
       ...state,
@@ -132,12 +85,5 @@ export const organizationSlice = createSlice({
     }),
   },
 });
-
-export const { assignToken, setPage } = organizationSlice.actions;
-
-// export const selectUserFilters = (state: AppState): OrganizationParams => ({
-//   page: state.user.page,
-//   size: state.user.size,
-// });
 
 export const { reducer } = organizationSlice;

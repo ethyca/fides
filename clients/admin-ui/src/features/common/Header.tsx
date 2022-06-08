@@ -68,8 +68,6 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
               isExternal
               color="gray.700"
               fontWeight="400"
-              // iconSpacing={2}
-              // leftIcon={<QuestionIcon boxSize={5} />}
             >
               Get help (Fides community)
             </Link>

@@ -1,4 +1,4 @@
-const steps = [
+const STEPS = [
   {
     number: 1,
     name: "Organization setup",
@@ -21,4 +21,4 @@ const steps = [
   },
 ];
 
-export default steps;
+export default STEPS;
