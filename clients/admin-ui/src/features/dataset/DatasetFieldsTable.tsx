@@ -71,13 +71,13 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
           ))}
         </Tbody>
       </Table>
-      {activeField && (
+      {activeField ? (
         <EditFieldDrawer
           isOpen={editDrawerIsOpen}
           onClose={handleClose}
           field={activeField}
         />
-      )}
+      ) : null}
     </Box>
   );
 };
