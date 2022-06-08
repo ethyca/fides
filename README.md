@@ -25,25 +25,16 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 ### System Requirements
 1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+) 
 2. [Python](https://www.python.org/downloads/) (3.8+)
+3. [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
 
 ### Getting Started
-1. Ensure `nox` is installed locally.
-   <details>
-   <summary>Run <code> pip install nox</code></summary>
-    
-    Fidesctl uses [nox](https://nox.thea.codes/en/stable/) for build and development tasks. If `nox` is already installed, you may skip this step.
-
-    </details>
-
-2. Ensure `docker` is installed locally, and clone the Fides repo.
+1. Ensure `nox` and `docker` and installed locally, and clone the Fides repo.
    
-   Then, from the fides directory, run the following commands:
+   Then, from the root fides directory, run the following commands:
 
     <details>
-
-    This will spin up the entire project and open a shell within the `fidesctl` container. Once you see the `fidesctl#` prompt (takes ~3 minutes the first time), you know you're ready to go:
-
     <summary>Run <code>nox -s cli</code></summary>
+    This will spin up the entire project and open a shell within the `fidesctl` container. Once you see the `fidesctl#` prompt (takes ~3 minutes the first time), you know you're ready to go:
 
       ```bash
       ~/git/fides% nox -s cli
@@ -59,11 +50,10 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
       ```
 
     </details>
+    <summary>Run <code>fidesctl init</code></summary>
 
     <details>
     This builds the required images, spins up the database, and runs the initialization scripts.
-
-    <summary>Run <code>fidesctl init</code></summary>
 
     ```
     Initializing Fidesctl...
@@ -83,52 +73,20 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
     </details>
 
 
-3. Use the <code>evaluate</code> command to see if this project's demo analytics and demo marketing systems are compliant with your privacy policy as code:
+2. Use the <code>export datamap</code> command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
     <details>
 
-    <summary>Run <code>fidesctl evaluate demo_resources/</code></summary>
+    <summary>run <code>fidesctl apply demo_resources/</code>
+            run <code>fidesctl export datamap --output-dir demo_resources/</code></summary>
 
       ```bash
-      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-      Loading resource manifests from: demo_resources
-      Taxonomy successfully created.
-      ----------
-      Processing registry resources...
-      CREATED 1 registry resources.
-      UPDATED 0 registry resources.
-      SKIPPED 0 registry resources.
-      ----------
-      Processing dataset resources...
-      CREATED 1 dataset resources.
-      UPDATED 0 dataset resources.
-      SKIPPED 0 dataset resources.
-      ----------
-      Processing policy resources...
-      CREATED 1 policy resources.
-      UPDATED 0 policy resources.
-      SKIPPED 0 policy resources.
-      ----------
-      Processing system resources...
-      CREATED 2 system resources.
-      UPDATED 0 system resources.
-      SKIPPED 0 system resources.
-      ----------
-      Loading resource manifests from: demo_resources
-      Taxonomy successfully created.
-      Evaluating the following policies:
-      demo_privacy_policy
-      ----------
-      Checking for missing resources...
-      Executing evaluations...
-      Sending the evaluation results to the server...
-      Evaluation passed!
+      
       ```
-
     </details>
 
     Congratulations, you've successfully run your first fidesctl `evaluate` command!
 
-4. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
+3. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
     <details>
       <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
 
@@ -159,7 +117,7 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
       </details>
 
 
-5. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
+4. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
     <details>
 
     Edit `demo_resources/demo_system.yml` and uncomment the line that adds `user.provided.identifiable.contact` to the list of `data_categories` for the `demo_marketing_system`.
