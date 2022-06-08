@@ -12,6 +12,7 @@ import {
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
+import EditCollectionDrawer from "./EditCollectionDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
 import { ColumnMetadata } from "./types";
 
@@ -46,6 +47,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const { dataset, isLoading } = useDataset(fidesKey);
   const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [isModifyingCollection, setIsModifyingCollection] = useState(false);
 
   const router = useRouter();
   const toast = useToast();
@@ -106,14 +108,26 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
               onChange={setColumns}
             />
           </Box>
-          <MoreActionsMenu />
+          <MoreActionsMenu
+            onModifyCollection={() => {
+              setIsModifyingCollection(true);
+            }}
+          />
         </Box>
       </Box>
+
       {activeCollection && (
-        <DatasetFieldsTable
-          fields={activeCollection.fields}
-          columns={columns}
-        />
+        <>
+          <DatasetFieldsTable
+            fields={activeCollection.fields}
+            columns={columns}
+          />
+          <EditCollectionDrawer
+            collection={activeCollection}
+            isOpen={isModifyingCollection}
+            onClose={() => setIsModifyingCollection(false)}
+          />
+        </>
       )}
     </Box>
   );
