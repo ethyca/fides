@@ -1,4 +1,8 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionItem,
+  AccordionPanel,
   Button,
   chakra,
   FormControl,
@@ -16,7 +20,7 @@ import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 import { useCreateOrganizationMutation } from "./organization.slice";
 
-const useOrganizationInfoForm = (handleChangeStep: Function) => {
+const useAuthenticateScannerForm = (handleChangeStep: Function) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -71,88 +75,107 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
   return { ...formik, isLoading };
 };
 
-const OrganizationInfoForm: NextPage<{
+const AuthenticateScannerForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => {
   const {
-    errors,
-    handleBlur,
-    handleChange,
+    // errors,
+    // handleBlur,
+    // handleChange,
     handleSubmit,
     isLoading,
-    touched,
+    // touched,
     values,
-  } = useOrganizationInfoForm(handleChangeStep);
+  } = useAuthenticateScannerForm(handleChangeStep);
 
   return (
     <chakra.form onSubmit={handleSubmit}>
       <Stack ml="50px" spacing="24px" w="80%">
         <Heading as="h3" size="lg">
-          Tell us about your business
+          Authenticate Infrastructure scanner
         </Heading>
+        <Accordion allowToggle border="transparent">
+          <AccordionItem>
+            {({ isExpanded }) => (
+              <>
+                <h2>
+                  The scanner can be connected to your cloud infrastructure
+                  provider to automatically scan and create a list of all
+                  systems that may contain personal data.
+                  <AccordionButton
+                    display="inline"
+                    padding="0px"
+                    ml="5px !important"
+                    width="auto"
+                  >
+                    {isExpanded ? (
+                      <Text display="inline" color="complimentary.500">
+                        (show less)
+                      </Text>
+                    ) : (
+                      <Text display="inline" color="complimentary.500">
+                        (show more)
+                      </Text>
+                    )}
+                  </AccordionButton>
+                </h2>
+                <AccordionPanel padding="0px" mt="20px">
+                  Currently the scanner supports certain data storage systems in
+                  AWS. We will be adding support for other cloud providers (e.g.
+                  Google, Microsoft Azure, Digital Ocean) shortly, please let us
+                  know if you have specific requests.
+                </AccordionPanel>
+              </>
+            )}
+          </AccordionItem>
+        </Accordion>
         <div>
-          Provide your organization information. This information is used to
-          configure your organization in Fidesctl for{" "}
-          <Tooltip
-            fontSize="md"
-            label="Wondering what a data map is? No problem, we've got your covered with this quick overview here"
-            placement="right"
-          >
-            <Text display="inline" color="complimentary.500">
-              data map
-            </Text>
-          </Tooltip>{" "}
-          reporting purposes.
+          In order to run the scanner, please provide credentials for
+          authenticating to AWS. Please note, the credentials must have the
+          minimum permissions listed in the support documentation here. You can
+          copy the sample IAM policy here.
         </div>
         <Stack>
           <FormControl>
             <Stack direction="row" mb={5} justifyContent="flex-end">
-              <FormLabel w="100%">Organization name</FormLabel>
+              <FormLabel w="100%">Access Key ID:</FormLabel>
               <Input
                 type="text"
-                id="name"
-                name="name"
+                // id="name"
+                // name="name"
                 focusBorderColor="gray.700"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.name}
-                isInvalid={touched.name && Boolean(errors.name)}
+                // onChange={handleChange}
+                // onBlur={handleBlur}
+                // value={values.name}
+                // isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
                 w="65%"
               />
-              <Tooltip
-                fontSize="md"
-                label="The legal name of your organization"
-                placement="right"
-              >
+              <Tooltip fontSize="md" label="An explanation" placement="right">
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
             <Stack direction="row" justifyContent="flex-end">
-              <FormLabel w="100%">Description</FormLabel>
+              <FormLabel w="100%">Secret:</FormLabel>
               <Input
                 type="text"
-                id="description"
-                name="description"
+                // id="description"
+                // name="description"
                 focusBorderColor="gray.700"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.description}
-                isInvalid={touched.description && Boolean(errors.description)}
+                // onChange={handleChange}
+                // onBlur={handleBlur}
+                // value={values.description}
+                // isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"
                 w="65%"
               />
-              <Tooltip
-                fontSize="md"
-                label="An explanation of the type of organization and primary activity. 
-                  For example “Acme Inc. is an e-commerce company that sells scarves.”"
-                placement="right"
-              >
+              <Tooltip fontSize="md" label="An explanation" placement="right">
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
           </FormControl>
         </Stack>
+        <Button>Cancel</Button>
         <Button
           bg="primary.800"
           _hover={{ bg: "primary.400" }}
@@ -162,10 +185,10 @@ const OrganizationInfoForm: NextPage<{
           isLoading={isLoading}
           type="submit"
         >
-          Save and Continue
+          Scan now
         </Button>
       </Stack>
     </chakra.form>
   );
 };
-export default OrganizationInfoForm;
+export default AuthenticateScannerForm;
