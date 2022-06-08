@@ -47,6 +47,9 @@ As with the PostgreSQL deployment, setting up a production-grade Redis cache is 
 | `FIDESOPS__REDIS__HOST` | redis.internal | hostname for your Redis server |
 | `FIDESOPS__REDIS__PORT` | 6379 | port for your Redis server |
 | `FIDESOPS__REDIS__PASSWORD` | fidesopssecret | password `fidesops` should use to access Redis |
+| `FIDESOPS__REDIS__SSL` | true |  Whether we should enable Redis SSL |
+| `FIDESOPS__REDIS__SSL_CERT_REQS` | required | Hostname verification. If SSL is true, the default is that it is required. |
+
 
 ## Step 3: Setup fidesops Web Server
 

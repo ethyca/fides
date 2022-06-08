@@ -1,4 +1,4 @@
-PORT=8080
+PORT = 8080
 
 [database]
 SERVER = "db"
@@ -16,6 +16,8 @@ CHARSET = "utf8"
 DEFAULT_TTL_SECONDS = 604800
 DB_INDEX = 0
 ENABLED = true
+SSL = false
+SSL_CERT_REQS = "required"
 
 [security]
 APP_ENCRYPTION_KEY = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
