@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from json import dumps, loads
+from json import dumps
 from os import getenv
 from typing import Generator
 
@@ -7,6 +7,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from fidesapi import main
+from fidesapi.routes.generate import GenerateResponse
 from fidesapi.routes.util import API_PREFIX, obscure_string
 from fidesctl.core.config import FidesctlConfig
 
@@ -50,5 +51,6 @@ def test_generate(
         headers=test_config.user.request_headers,
         data=dumps(data),
     )
-    assert len(loads(response.text)["generate_results"]) > 0
+    generate_response = GenerateResponse.parse_raw(response.text)
+    assert len(generate_response.generate_results) > 0
     assert response.status_code == 200

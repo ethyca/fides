@@ -8,6 +8,7 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 
+from fidesctl.connectors.models import OktaConfig
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
 
@@ -345,7 +346,7 @@ def scan_dataset_db(
 
 def scan_dataset_okta(
     manifest_dir: str,
-    okta_config: Dict[str, str],
+    okta_config: Optional[OktaConfig],
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -355,7 +356,7 @@ def scan_dataset_okta(
     against existing datasets in the server and manifest supplied.
     """
 
-    _check_okta_import()
+    _check_okta_connector_import()
 
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
@@ -420,14 +421,14 @@ def generate_dataset_db(
 
 
 def generate_dataset_okta(
-    okta_config: Dict[str, str], file_name: str, include_null: bool
+    okta_config: Optional[OktaConfig], file_name: str, include_null: bool
 ) -> str:
     """
     Given an organization url, generates a dataset manifest from existing Okta
     applications.
     """
 
-    _check_okta_import()
+    _check_okta_connector_import()
 
     import fidesctl.connectors.okta as okta_connector
 
@@ -444,10 +445,10 @@ def generate_dataset_okta(
     return file_name
 
 
-def _check_okta_import() -> None:
+def _check_okta_connector_import() -> None:
     "Validate okta can be imported"
     try:
-        import okta  # pylint: disable=unused-import
+        import fidesctl.connectors.okta  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[okta]"')
         raise SystemExit

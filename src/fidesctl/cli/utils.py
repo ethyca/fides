@@ -7,7 +7,7 @@ from functools import update_wrapper
 from importlib.metadata import version
 from os import getenv
 from platform import system
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 import click
 import requests
@@ -22,6 +22,7 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
+from fidesctl.connectors.models import AWSConfig, OktaConfig
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.credentials_settings import (
@@ -234,7 +235,7 @@ def handle_database_credentials_options(
 
 def handle_okta_credentials_options(
     fides_config: FidesctlConfig, token: str, org_url: str, credentials_id: str
-) -> Dict[str, str]:
+) -> Optional[OktaConfig]:
     """
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
@@ -249,17 +250,16 @@ def handle_okta_credentials_options(
             raise click.UsageError(
                 "Illegal usage: token/org-url and credentials-id cannot be used together"
             )
-        okta_config = {"orgUrl": org_url, "token": token}
+        okta_config = OktaConfig(orgUrl=org_url, token=token)
     if credentials_id:
-        okta_credentials = get_config_okta_credentials(
+        okta_config = get_config_okta_credentials(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if not okta_credentials:
+        if not okta_config:
             raise click.UsageError(
                 f"credentials-id {credentials_id} does not exist in fides config"
             )
-        okta_config = okta_credentials.dict()
     return okta_config
 
 
@@ -269,13 +269,13 @@ def handle_aws_credentials_options(
     secret_access_key: str,
     region: str,
     credentials_id: str,
-) -> Dict[str, str]:
+) -> Optional[AWSConfig]:
     """
     Handles the mutually exclusive aws connections options access-key/access-key-id/region
     and credentials-id. It is allowed to provide neither as there is support for environment
     variables.
     """
-    aws_config = dict()
+    aws_config = None
     if access_key_id or secret_access_key or region:
         if not access_key_id or not secret_access_key or not region:
             raise click.UsageError(
@@ -285,19 +285,18 @@ def handle_aws_credentials_options(
             raise click.UsageError(
                 "Illegal usage: access-key-id/secret_access_key/region and credentials-id cannot be used together"
             )
-        aws_config = {
-            "aws_access_key_id": access_key_id,
-            "aws_secret_access_key": secret_access_key,
-            "region_name": region,
-        }
+        aws_config = AWSConfig(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
+            region_name=region,
+        )
     if credentials_id:
-        aws_credentials = get_config_aws_credentials(
+        aws_config = get_config_aws_credentials(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if not aws_credentials:
+        if not aws_config:
             raise click.UsageError(
                 f"credentials-id {credentials_id} does not exist in fides config"
             )
-        aws_config = aws_credentials.dict()
     return aws_config
