@@ -3472,7 +3472,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GeneratedResponse"
+                  "$ref": "#/components/schemas/GenerateResponse"
                 }
               }
             }
@@ -3483,6 +3483,48 @@
               "application/json": {
                 "example": {
                   "detail": "Unable to generate resources."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/validate/": {
+      "post": {
+        "tags": [
+          "Validate"
+        ],
+        "summary": "Validate",
+        "description": "Endpoint used to validate different resource targets.",
+        "operationId": "validate_api_v1_validate__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
                 }
               }
             }
@@ -4267,17 +4309,8 @@
         },
         "description": "The model for the request body housing generate information."
       },
-      "GenerateTypes": {
-        "title": "GenerateTypes",
-        "enum": [
-          "systems",
-          "datasets"
-        ],
-        "type": "string",
-        "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
-      },
-      "GeneratedResponse": {
-        "title": "GeneratedResponse",
+      "GenerateResponse": {
+        "title": "GenerateResponse",
         "type": "object",
         "properties": {
           "generate_results": {
@@ -4296,6 +4329,15 @@
           }
         },
         "description": "The model to house the response for generated infrastructure."
+      },
+      "GenerateTypes": {
+        "title": "GenerateTypes",
+        "enum": [
+          "systems",
+          "datasets"
+        ],
+        "type": "string",
+        "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
       },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
@@ -4348,12 +4390,17 @@
       "OktaConfig": {
         "title": "OktaConfig",
         "required": [
-          "okta_client_token"
+          "orgUrl",
+          "token"
         ],
         "type": "object",
         "properties": {
-          "okta_client_token": {
-            "title": "Okta Client Token",
+          "orgUrl": {
+            "title": "Orgurl",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
             "type": "string"
           }
         },
@@ -4867,6 +4914,49 @@
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"
       },
+      "ValidateRequest": {
+        "title": "ValidateRequest",
+        "required": [
+          "config",
+          "target"
+        ],
+        "type": "object",
+        "properties": {
+          "config": {
+            "title": "Config",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AWSConfig"
+              },
+              {
+                "$ref": "#/components/schemas/OktaConfig"
+              }
+            ]
+          },
+          "target": {
+            "$ref": "#/components/schemas/ValidationTarget"
+          }
+        },
+        "description": "Validate endpoint request object"
+      },
+      "ValidateResponse": {
+        "title": "ValidateResponse",
+        "required": [
+          "status",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ValidationStatus"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "description": "Validate endpoint response object"
+      },
       "ValidationError": {
         "title": "ValidationError",
         "required": [
@@ -4899,6 +4989,24 @@
             "type": "string"
           }
         }
+      },
+      "ValidationStatus": {
+        "title": "ValidationStatus",
+        "enum": [
+          "success",
+          "failure"
+        ],
+        "type": "string",
+        "description": "Validate endpoint response status"
+      },
+      "ValidationTarget": {
+        "title": "ValidationTarget",
+        "enum": [
+          "aws",
+          "okta"
+        ],
+        "type": "string",
+        "description": "Allowed targets for the validate endpoint"
       },
       "Violation": {
         "title": "Violation",
