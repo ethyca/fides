@@ -1,3 +1,8 @@
+import {
+  Dataset,
+  DatasetCollection,
+  DatasetField,
+} from "~/features/dataset/types";
 import { System } from "~/features/system/types";
 
 /**
@@ -117,3 +122,44 @@ export const MOCK_DATA_CATEGORIES = [
     parent_key: "user.provided",
   },
 ];
+
+export const mockDatasetField = (
+  partialField?: Partial<DatasetField>
+): DatasetField => {
+  const field: DatasetField = {
+    name: "created_at",
+    data_qualifier: "aggregated",
+    description: "User's creation timestamp",
+    data_categories: ["system.operations"],
+    retention: "Account termination",
+  };
+  return Object.assign(field, partialField);
+};
+
+export const mockDatasetCollection = (
+  partialCollection?: Partial<DatasetCollection>
+): DatasetCollection => {
+  const collection: DatasetCollection = {
+    name: "created_at",
+    data_qualifier: "aggregated",
+    description: "User's creation timestamp",
+    data_categories: ["system.operations"],
+    retention: "Account termination",
+    fields: [mockDatasetField()],
+  };
+  return Object.assign(collection, partialCollection);
+};
+
+export const mockDataset = (partialDataset?: Partial<Dataset>): Dataset => {
+  const dataset: Dataset = {
+    fides_key: "sample_dataset",
+    organization_fides_key: "mock_organization",
+    name: "created_at",
+    data_qualifier: "aggregated",
+    description: "User's creation timestamp",
+    data_categories: ["system.operations"],
+    retention: "Account termination",
+    collections: [mockDatasetCollection()],
+  };
+  return Object.assign(dataset, partialDataset);
+};

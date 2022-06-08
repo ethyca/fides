@@ -10,11 +10,16 @@ import { Dataset } from "./types";
 export interface State {
   datasets: Dataset[];
   activeDataset: Dataset | null;
+  // collections and fields don't have unique IDs, so we have to use their index
+  activeCollectionIndex: number | null;
+  activeFieldIndex: number | null;
 }
 
 const initialState: State = {
   datasets: [],
   activeDataset: null,
+  activeCollectionIndex: null,
+  activeFieldIndex: null,
 };
 
 export const datasetApi = createApi({
@@ -32,10 +37,26 @@ export const datasetApi = createApi({
       query: (key) => ({ url: `dataset/${key}` }),
       providesTags: () => ["Dataset"],
     }),
+    updateDataset: build.mutation<
+      Dataset,
+      Partial<Dataset> & Pick<Dataset, "fides_key">
+    >({
+      query: (dataset) => ({
+        url: `dataset/`,
+        params: { resource_type: "dataset" },
+        method: "PUT",
+        body: dataset,
+      }),
+      invalidatesTags: ["Dataset"],
+    }),
   }),
 });
 
-export const { useGetAllDatasetsQuery, useGetDatasetByKeyQuery } = datasetApi;
+export const {
+  useGetAllDatasetsQuery,
+  useGetDatasetByKeyQuery,
+  useUpdateDatasetMutation,
+} = datasetApi;
 
 export const datasetSlice = createSlice({
   name: "dataset",
@@ -45,9 +66,35 @@ export const datasetSlice = createSlice({
       ...state,
       datasets: action.payload,
     }),
-    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => ({
+    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => {
+      if (action.payload != null) {
+        return { ...state, activeDataset: action.payload };
+      }
+      // clear out child fields when a dataset becomes null
+      return {
+        ...state,
+        activeDataset: action.payload,
+        activeCollectionIndex: null,
+        activeFieldIndex: null,
+      };
+    },
+    setActiveCollectionIndex: (state, action: PayloadAction<number | null>) => {
+      if (action.payload != null) {
+        return {
+          ...state,
+          activeCollectionIndex: action.payload,
+        };
+      }
+      // clear our child fields when a collection becomes null
+      return {
+        ...state,
+        activeCollectionIndex: action.payload,
+        activeFieldIndex: null,
+      };
+    },
+    setActiveFieldIndex: (state, action: PayloadAction<number | null>) => ({
       ...state,
-      activeDataset: action.payload,
+      activeFieldIndex: action.payload,
     }),
   },
   extraReducers: {
@@ -58,8 +105,17 @@ export const datasetSlice = createSlice({
   },
 });
 
-export const { setDatasets, setActiveDataset } = datasetSlice.actions;
+export const {
+  setDatasets,
+  setActiveDataset,
+  setActiveCollectionIndex,
+  setActiveFieldIndex,
+} = datasetSlice.actions;
 export const selectActiveDataset = (state: AppState) =>
   state.dataset.activeDataset;
+export const selectActiveCollectionIndex = (state: AppState) =>
+  state.dataset.activeCollectionIndex;
+export const selectActiveFieldIndex = (state: AppState) =>
+  state.dataset.activeFieldIndex;
 
 export const { reducer } = datasetSlice;
