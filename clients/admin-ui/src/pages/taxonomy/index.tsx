@@ -17,20 +17,19 @@ const useDataCategories = () => {
 const DataSets: NextPage = () => {
   const { isLoading, dataCategories } = useDataCategories();
 
+  let content = dataCategories ? (
+    <DataCategoryChecklist dataCategories={dataCategories} />
+  ) : null;
+  if (isLoading) {
+    content = <Spinner />;
+  }
+
   return (
     <Layout title="Datasets">
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
         Taxonomy
       </Heading>
-      <Box mb={4}>
-        {isLoading ? (
-          <Spinner />
-        ) : (
-          dataCategories && (
-            <DataCategoryChecklist dataCategories={dataCategories} />
-          )
-        )}
-      </Box>
+      <Box mb={4}>{content}</Box>
     </Layout>
   );
 };
