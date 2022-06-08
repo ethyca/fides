@@ -13,25 +13,20 @@ type FormValues =
     >;
 
 interface Props {
-  field: FormValues;
+  values: FormValues;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
 }
 
-const EditCollectionOrFieldForm = ({ field, onClose, onSubmit }: Props) => {
+const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
   const initialValues: FormValues = {
-    description: field.description ?? "",
-    data_qualifier: field.data_qualifier,
-    data_categories: field.data_categories,
-  };
-
-  const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
-    onClose();
+    description: values.description ?? "",
+    data_qualifier: values.data_qualifier,
+    data_categories: values.data_categories,
   };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik initialValues={initialValues} onSubmit={onSubmit}>
       <Form>
         <Stack>
           <Box>

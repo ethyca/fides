@@ -53,9 +53,11 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const toast = useToast();
   const { fromLoad } = router.query;
 
-  if (dataset) {
-    dispatch(setActiveDataset(dataset));
-  }
+  useEffect(() => {
+    if (dataset) {
+      dispatch(setActiveDataset(dataset));
+    }
+  }, [dispatch, dataset]);
 
   useEffect(() => {
     dispatch(setActiveCollectionIndex(0));

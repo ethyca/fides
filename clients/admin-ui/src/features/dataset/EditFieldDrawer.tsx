@@ -54,7 +54,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
     >
       <EditCollectionOrFieldForm
-        field={field}
+        values={field}
         onClose={onClose}
         onSubmit={handleSubmit}
       />
