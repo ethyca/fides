@@ -15,6 +15,7 @@ import {
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import React from "react";
+
 import {
   AWSLogoIcon,
   ManualSetupIcon,
@@ -24,8 +25,7 @@ import {
 
 const AddSystemForm: NextPage<{
   handleChangeStep: Function;
-}> = ({ handleChangeStep }) => {
-  return (
+}> = ({ handleChangeStep }) => (
     <chakra.form
     // onSubmit={handleSubmit}
     >
@@ -138,5 +138,4 @@ const AddSystemForm: NextPage<{
       </Stack>
     </chakra.form>
   );
-};
 export default AddSystemForm;

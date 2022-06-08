@@ -5,7 +5,7 @@ const ManualSetup = (props: any) => (
     <g filter="url(#filter0_dd_42_1595)">
       <rect x="3" y="2" width="107" height="107" rx="10" fill="white" />
     </g>
-    <g clip-path="url(#clip0_42_1595)">
+    <g clipPath="url(#clip0_42_1595)">
       <path
         d="M73.125 38.875H39.875C38.5673 38.875 37.5 39.9423 37.5 41.25V50.75C37.5 52.0577 38.5673 53.125 39.875 53.125H73.125C74.4327 53.125 75.5 52.0577 75.5 50.75V41.25C75.5 39.9423 74.4312 38.875 73.125 38.875ZM63.625 47.7812C62.6416 47.7812 61.8438 46.9834 61.8438 46C61.8438 45.0166 62.6453 44.2188 63.625 44.2188C64.6047 44.2188 65.4062 45.0203 65.4062 46C65.4062 46.9797 64.6121 47.7812 63.625 47.7812ZM68.375 47.7812C67.3916 47.7812 66.5938 46.9834 66.5938 46C66.5938 45.0166 67.3953 44.2188 68.375 44.2188C69.3547 44.2188 70.1562 45.0203 70.1562 46C70.1562 46.9797 69.3621 47.7812 68.375 47.7812Z"
         fill="#805AD5"
@@ -23,9 +23,9 @@ const ManualSetup = (props: any) => (
         width="113"
         height="113"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+        colorInterpolationFilters="sRGB"
       >
-        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"

@@ -5,7 +5,7 @@ const OktaLogo = (props: any) => (
     <g filter="url(#filter0_dd_42_1091)">
       <rect x="3" y="2" width="107" height="107" rx="10" fill="white" />
     </g>
-    <g clip-path="url(#clip0_42_1091)">
+    <g clipPath="url(#clip0_42_1091)">
       <path
         d="M37.039 51.1827C33.425 51.1827 30.5 54.0781 30.5 57.6554C30.5 61.2327 33.425 64.128 37.039 64.128C40.653 64.128 43.578 61.2327 43.578 57.6554C43.578 54.0781 40.653 51.1827 37.039 51.1827ZM37.039 60.8982C35.232 60.8982 33.763 59.4441 33.763 57.6554C33.763 55.8667 35.232 54.4126 37.039 54.4126C38.846 54.4126 40.315 55.8667 40.315 57.6554C40.315 59.4441 38.846 60.8982 37.039 60.8982Z"
         fill="#007DC1"
@@ -31,9 +31,9 @@ const OktaLogo = (props: any) => (
         width="113"
         height="113"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+        colorInterpolationFilters="sRGB"
       >
-        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feFlood floodOpacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"
