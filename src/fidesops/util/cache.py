@@ -101,6 +101,8 @@ def get_cache() -> FidesopsRedis:
             port=config.redis.PORT,
             db=config.redis.DB_INDEX,
             password=config.redis.PASSWORD,
+            ssl=config.redis.SSL,
+            ssl_cert_reqs=config.redis.SSL_CERT_REQS,
         )
 
     connected = _connection.ping()
