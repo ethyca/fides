@@ -45,14 +45,13 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       description={DESCRIPTION}
-      header={`Collection name: ${collection.name}`}
+      header={`Collection Name: ${collection.name}`}
     >
       <EditCollectionOrFieldForm
         values={collection}
         onClose={onClose}
         onSubmit={handleSubmit}
       />
-      {/* <EditFieldForm field={field} onClose={onClose} /> */}
     </EditDrawer>
   );
 };
