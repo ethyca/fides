@@ -34,6 +34,12 @@ class DataTypeConverter(ABC, Generic[T]):
         )
         return val
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DataTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
+
 
 class NoOpTypeConverter(DataTypeConverter[Any]):
     """Placeholder No-op converter. This type is assigned to fields when type is unspecified."""
@@ -133,6 +139,12 @@ class ObjectIdTypeConverter(DataTypeConverter[ObjectId]):
                 return None
         return None
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ObjectTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
+
 
 class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
     """Json data type converter."""
@@ -145,6 +157,12 @@ class ObjectTypeConverter(DataTypeConverter[Dict[str, Any]]):
         if isinstance(other, dict):
             return other
         return None
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ObjectTypeConverter):
+            return False
+
+        return self.__dict__ == other.__dict__
 
 
 class DataType(Enum):

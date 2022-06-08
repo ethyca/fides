@@ -1,4 +1,4 @@
-black==21.8b0
+black==22.3.0
 Faker==8.12.1
 ipython
 isort
