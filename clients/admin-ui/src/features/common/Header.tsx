@@ -10,10 +10,9 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
-import NextLink from "next/link";
 import { signOut } from "next-auth/react";
+import NextLink from "next/link";
 import React from "react";
-
 import { QuestionIcon, UserIcon } from "./Icon";
 
 interface HeaderProps {
@@ -68,8 +67,6 @@ const Header: React.FC<HeaderProps> = ({ username }) => (
               isExternal
               color="gray.700"
               fontWeight="400"
-              // iconSpacing={2}
-              // leftIcon={<QuestionIcon boxSize={5} />}
             >
               Get help (Fides community)
             </Link>
