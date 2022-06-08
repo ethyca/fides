@@ -3,6 +3,11 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import {
+  setDataCategories,
+  useGetAllDataCategoriesQuery,
+} from "~/features/taxonomy/data-categories.slice";
+
 import { FidesKey } from "../common/fides-types";
 import ColumnDropdown from "./ColumnDropdown";
 import {
@@ -48,6 +53,12 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
   const [isModifyingCollection, setIsModifyingCollection] = useState(false);
+
+  // load data categories into redux
+  const { data: dataCategories } = useGetAllDataCategoriesQuery();
+  useEffect(() => {
+    dispatch(setDataCategories(dataCategories ?? []));
+  }, [dispatch, dataCategories]);
 
   const router = useRouter();
   const toast = useToast();

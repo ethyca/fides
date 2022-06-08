@@ -1,8 +1,13 @@
-import { Box, Button, Stack } from "@fidesui/react";
+import { Box, Button, FormLabel, SimpleGrid, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+
+import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import { DATA_QUALIFIERS } from "./constants";
+import DataCategoryDropdown from "./DataCategoryDropdown";
 import { DatasetCollection, DatasetField } from "./types";
 
 type FormValues =
@@ -24,6 +29,11 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
     data_qualifier: values.data_qualifier,
     data_categories: values.data_categories,
   };
+  const dataCategories = useSelector(selectDataCategories);
+
+  const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
+    []
+  );
 
   return (
     <Formik initialValues={initialValues} onSubmit={onSubmit}>
@@ -41,7 +51,16 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               ))}
             </CustomSelect>
           </Box>
-          <Box>Data Categories (todo)</Box>
+          <Box>
+            <SimpleGrid columns={[1, 2]}>
+              <FormLabel>Data Categories</FormLabel>
+              <DataCategoryDropdown
+                dataCategories={dataCategories}
+                checked={checkedDataCategories}
+                onChecked={setCheckedDataCategories}
+              />
+            </SimpleGrid>
+          </Box>
           <Box>
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
