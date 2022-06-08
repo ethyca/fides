@@ -103,12 +103,12 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
           onChange={setColumns}
         />
       </Box>
-      {activeCollection && (
+      {activeCollection ? (
         <DatasetFieldsTable
           fields={activeCollection.fields}
           columns={columns}
         />
-      )}
+      ) : null}
     </Box>
   );
 };
