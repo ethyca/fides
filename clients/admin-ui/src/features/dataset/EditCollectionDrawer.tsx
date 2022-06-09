@@ -13,7 +13,7 @@ import { getUpdatedDatasetFromCollection } from "./helpers";
 import { DatasetCollection } from "./types";
 
 const DESCRIPTION =
-  "By providing a small amount of additional context for each system we can make reporting and understanding our tech stack much easier.";
+  "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
   collection: DatasetCollection;
   isOpen: boolean;
@@ -39,7 +39,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         collectionIndex
       );
       try {
-        await updateDataset(updatedDataset).unwrap();
+        await updateDataset(updatedDataset);
         toast(successToastParams("Successfully modified collection"));
       } catch (error) {
         toast(errorToastParams(error as string));

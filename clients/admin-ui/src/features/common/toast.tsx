@@ -21,7 +21,6 @@ const DEFAULT_TOAST_PARAMS: UseToastOptions = {
   isClosable: true,
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const successToastParams = (message: string): UseToastOptions => {
   const description = <SuccessMessage message={message} />;
   return { ...DEFAULT_TOAST_PARAMS, ...{ description } };

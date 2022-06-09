@@ -18,7 +18,7 @@ interface Props {
 }
 
 const DESCRIPTION =
-  "By providing a small amount of additional context for each system we can make reporting and understanding our tech stack much easier.";
+  "Fields are an array of objects that describe the collection's fields. Provide additional context to this field by filling out the fields below.";
 
 const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   const dataset = useSelector(selectActiveDataset);
