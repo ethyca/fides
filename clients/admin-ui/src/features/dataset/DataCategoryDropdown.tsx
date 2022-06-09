@@ -4,10 +4,12 @@ import {
   Menu,
   MenuButton,
   MenuDivider,
+  MenuItem,
   MenuList,
+  MenuOptionGroup,
   Text,
 } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
@@ -32,12 +34,18 @@ const DataCategoryDropdown = ({
 
   const [internalChecked, setInternalChecked] = useState(checked);
 
+  useEffect(() => {
+    // make sure this stays up to date with the parent `checked` since this is not the only
+    // component that can control which items are checked
+    setInternalChecked(checked);
+  }, [checked]);
+
   const handleClear = () => {
     setInternalChecked([]);
   };
 
   return (
-    <Menu>
+    <Menu closeOnSelect>
       <MenuButton
         as={Button}
         variant="outline"
@@ -53,20 +61,40 @@ const DataCategoryDropdown = ({
       </MenuButton>
       <MenuList>
         <Box maxHeight="500px" minWidth="300px" overflowY="scroll">
-          <Box position="sticky" top={0} zIndex={1} backgroundColor="white">
-            <Box display="flex" justifyContent="space-between" px={2} mb={2}>
-              <Button variant="outline" size="xs" onClick={handleClear} mr={2}>
-                Clear
-              </Button>
-              <Text mr={2}>Data Categories</Text>
-              <Button
-                size="xs"
-                colorScheme="primary"
-                onClick={() => onChecked(internalChecked)}
-              >
-                Done
-              </Button>
-            </Box>
+          <Box
+            position="sticky"
+            top={0}
+            zIndex={1}
+            backgroundColor="white"
+            pt={1}
+          >
+            <MenuOptionGroup>
+              <Box display="flex" justifyContent="space-between" px={2} mb={2}>
+                <MenuItem
+                  as={Button}
+                  variant="outline"
+                  size="xs"
+                  onClick={handleClear}
+                  mr={2}
+                  width="auto"
+                  closeOnSelect={false}
+                >
+                  Clear
+                </MenuItem>
+                <Text mr={2}>Data Categories</Text>
+                <MenuItem
+                  as={Button}
+                  size="xs"
+                  colorScheme="primary"
+                  color="white"
+                  _hover={{ backgroundColor: "primary.600" }}
+                  onClick={() => onChecked(internalChecked)}
+                  width="auto"
+                >
+                  Done
+                </MenuItem>
+              </Box>
+            </MenuOptionGroup>
             <MenuDivider />
           </Box>
           <Box px={2}>
