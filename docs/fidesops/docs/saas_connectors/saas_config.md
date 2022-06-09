@@ -158,31 +158,31 @@ authentication:
 
 #### Test request
 Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](../guides/database_connectors.md#testing-your-connection).
+
+```yaml
 test_request:
   method: GET
   path: /3.0/lists
 ```
-
-#### Data Protection Request
+#### Data protection request
 If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
 ```yaml
-  data_protection_request:
-    method: POST
-    path: /v1beta/workspaces/<workspace_name>/regulations
-    param_values:
-      - name: workspace_name
-        connector_param: workspace
-      - name: user_id
-        identity: email
-    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
-    client_config:
-      protocol: https
-      host: <config_domain>
-      authentication:
-        strategy: bearer
-        configuration:
-          username: <access_token>
-
+data_protection_request:
+  method: POST
+  path: /v1beta/workspaces/<workspace_name>/regulations
+  param_values:
+    - name: workspace_name
+      connector_param: workspace
+    - name: user_id
+      identity: email
+  body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>",]}}'
+  client_config:
+    protocol: https
+    host: <config_domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        username: <access_token>
 ```
 #### Endpoints
 This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
