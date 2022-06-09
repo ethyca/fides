@@ -1,9 +1,10 @@
-import { Box, Select, Spinner, Text, useToast } from "@fidesui/react";
+import { Box, Select, Spinner, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { FidesKey } from "../common/fides-types";
+import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollectionIndex,
@@ -22,12 +23,6 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Personal Data Categories", attribute: "data_categories" },
   { name: "Identifiability", attribute: "data_qualifier" },
 ];
-
-const SuccessMessage = () => (
-  <Text>
-    <strong>Success:</strong> Successfully loaded dataset
-  </Text>
-);
 
 const useDataset = (key: FidesKey) => {
   const { data, isLoading } = useGetDatasetByKeyQuery(key);
@@ -69,14 +64,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
 
   useEffect(() => {
     if (fromLoad) {
-      toast({
-        variant: "subtle",
-        position: "top",
-        description: <SuccessMessage />,
-        duration: 5000,
-        status: "success",
-        isClosable: true,
-      });
+      toast(successToastParams("Successfully loaded dataset"));
     }
   }, [fromLoad, toast]);
 

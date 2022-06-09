@@ -1,5 +1,7 @@
+import { useToast } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
+import { errorToastParams, successToastParams } from "../common/toast";
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,
@@ -21,8 +23,9 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   const dataset = useSelector(selectActiveDataset);
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const [updateDataset] = useUpdateDatasetMutation();
+  const toast = useToast();
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: Pick<
       DatasetCollection,
       "description" | "data_qualifier" | "data_categories"
@@ -35,7 +38,12 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         updatedCollection,
         collectionIndex
       );
-      updateDataset(updatedDataset);
+      try {
+        await updateDataset(updatedDataset).unwrap();
+        toast(successToastParams("Successfully modified collection"));
+      } catch (error) {
+        toast(errorToastParams(error as string));
+      }
       onClose();
     }
   };
