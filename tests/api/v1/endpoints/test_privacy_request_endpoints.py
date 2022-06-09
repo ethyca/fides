@@ -45,8 +45,10 @@ from fidesops.models.policy import ActionType, PausedStep
 from fidesops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
+    ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
+    StoppedCollection,
 )
 from fidesops.schemas.dataset import DryRunDatasetResponse
 from fidesops.schemas.jwt import (
@@ -484,6 +486,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -496,6 +499,8 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
+                    "stopped_collection_details": None,
+                    "resume_endpoint": None,
                 }
             ],
             "total": 1,
@@ -535,6 +540,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -547,6 +553,8 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
+                    "stopped_collection_details": None,
+                    "resume_endpoint": None,
                 }
             ],
             "total": 1,
@@ -838,6 +846,7 @@ class TestGetPrivacyRequests:
                     "identity": None,
                     "reviewed_at": None,
                     "reviewed_by": None,
+                    "paused_at": None,
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
@@ -850,6 +859,8 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
+                    "stopped_collection_details": None,
+                    "resume_endpoint": None,
                     "results": {
                         "my-mongo-db": [
                             {
@@ -998,6 +1009,129 @@ class TestGetPrivacyRequests:
         assert first_row["Reviewer"] == user.id
         assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
         assert first_row["Denial reason"] == ""
+
+    def test_get_paused_access_privacy_request_resume_info(
+        self, db, privacy_request, generate_auth_header, api_client, url
+    ):
+        # Mock the privacy request being in a paused state waiting for manual input to the "manual_collection"
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+        paused_step = PausedStep.access
+        paused_collection = CollectionAddress("manual_dataset", "manual_collection")
+        privacy_request.cache_paused_collection_details(
+            step=paused_step,
+            collection=paused_collection,
+            action_needed=[
+                ManualAction(
+                    locators={"email": ["customer-1@example.com"]},
+                    get=["authorized_user"],
+                    update=None,
+                )
+            ],
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        data = response.json()["items"][0]
+        assert data["status"] == "paused"
+        assert data["stopped_collection_details"] == {
+            "step": "access",
+            "collection": "manual_dataset:manual_collection",
+            "action_needed": [
+                {
+                    "locators": {"email": ["customer-1@example.com"]},
+                    "get": ["authorized_user"],
+                    "update": None,
+                }
+            ],
+        }
+        assert data["resume_endpoint"] == "/privacy-request/{}/manual_input".format(
+            privacy_request.id
+        )
+
+    def test_get_paused_erasure_privacy_request_resume_info(
+        self, db, privacy_request, generate_auth_header, api_client, url
+    ):
+        # Mock the privacy request being in a paused state waiting for manual erasure confirmation to the "another_collection"
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+        paused_step = PausedStep.erasure
+        paused_collection = CollectionAddress("manual_dataset", "another_collection")
+        privacy_request.cache_paused_collection_details(
+            step=paused_step,
+            collection=paused_collection,
+            action_needed=[
+                ManualAction(
+                    locators={"id": [32424]},
+                    get=None,
+                    update={"authorized_user": "abcde_masked_user"},
+                )
+            ],
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        data = response.json()["items"][0]
+        assert data["status"] == "paused"
+        assert data["stopped_collection_details"] == {
+            "step": "erasure",
+            "collection": "manual_dataset:another_collection",
+            "action_needed": [
+                {
+                    "locators": {"id": [32424]},
+                    "get": None,
+                    "update": {"authorized_user": "abcde_masked_user"},
+                }
+            ],
+        }
+        assert data["resume_endpoint"] == "/privacy-request/{}/erasure_confirm".format(
+            privacy_request.id
+        )
+
+    def test_get_paused_webhook_resume_info(
+        self, db, privacy_request, generate_auth_header, api_client, url
+    ):
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        data = response.json()["items"][0]
+        assert data["status"] == "paused"
+        assert data["stopped_collection_details"] is None
+        assert data["resume_endpoint"] == "/privacy-request/{}/resume".format(
+            privacy_request.id
+        )
+
+    def test_get_failed_request_resume_info(
+        self, db, privacy_request, generate_auth_header, api_client, url
+    ):
+        # Mock the privacy request being in an errored state waiting for retry
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+        privacy_request.cache_failed_collection_details(
+            step=PausedStep.erasure,
+            collection=CollectionAddress("manual_example", "another_collection"),
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        data = response.json()["items"][0]
+        assert data["status"] == "error"
+        assert data["stopped_collection_details"] == {
+            "step": "erasure",
+            "collection": "manual_example:another_collection",
+            "action_needed": None,
+        }
+        assert data["resume_endpoint"] == f"/privacy-request/{privacy_request.id}/retry"
 
 
 class TestGetExecutionLogs:
@@ -1198,6 +1332,9 @@ class TestRequestPreview:
     def test_request_preview_all(
         self,
         dataset_config_preview,
+        manual_dataset_config,
+        integration_manual_config,
+        postgres_example_test_dataset_config,
         api_client: TestClient,
         url,
         generate_auth_header,
@@ -1206,6 +1343,7 @@ class TestRequestPreview:
         response = api_client.put(url, headers=auth_header)
         assert response.status_code == 200
         response_body: List[DryRunDatasetResponse] = json.loads(response.text)
+
         assert (
             next(
                 response["query"]
@@ -1215,6 +1353,24 @@ class TestRequestPreview:
             )
             == "SELECT email,id FROM subscriptions WHERE email = ?"
         )
+
+        assert next(
+            response["query"]
+            for response in response_body
+            if response["collectionAddress"]["dataset"] == "manual_input"
+            if response["collectionAddress"]["collection"] == "filing_cabinet"
+        ) == {
+            "locators": {"customer_id": ["?", "?"]},
+            "get": ["authorized_user", "customer_id", "id", "payment_card_id"],
+            "update": None,
+        }
+
+        assert next(
+            response["query"]
+            for response in response_body
+            if response["collectionAddress"]["dataset"] == "manual_input"
+            if response["collectionAddress"]["collection"] == "storage_unit"
+        ) == {"locators": {"email": ["?"]}, "get": ["box_id", "email"], "update": None}
 
 
 class TestApprovePrivacyRequest:
@@ -1630,6 +1786,7 @@ class TestResumePrivacyRequest:
             "reviewed_at": None,
             "reviewed_by": None,
             "reviewer": None,
+            "paused_at": None,
             "policy": {
                 "drp_action": None,
                 "key": privacy_request.policy.key,
@@ -1639,6 +1796,8 @@ class TestResumePrivacyRequest:
                     for rule in PolicyResponse.from_orm(privacy_request.policy).rules
                 ],
             },
+            "stopped_collection_details": None,
+            "resume_endpoint": None,
         }
 
 
@@ -1681,7 +1840,7 @@ class TestResumeAccessRequestWithManualInput:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
     def test_resume_with_manual_input_collection_has_changed(
@@ -1692,9 +1851,11 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.access,
+            collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
+
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1718,9 +1879,11 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.access, CollectionAddress("manual_input", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.access,
+            collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
+
         response = api_client.post(url, headers=auth_header, json=[{"mock": "row"}])
         assert response.status_code == 422
         assert (
@@ -1728,11 +1891,15 @@ class TestResumeAccessRequestWithManualInput:
             == "Cannot save manual rows. No 'mock' field defined on the 'manual_input:filing_cabinet' collection."
         )
 
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.submit"
+    )
     @pytest.mark.usefixtures(
         "postgres_example_test_dataset_config", "manual_dataset_config"
     )
     def test_resume_with_manual_input(
         self,
+        _,
         db,
         api_client,
         url,
@@ -1743,9 +1910,11 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.access, CollectionAddress("manual_input", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.access,
+            collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
+
         response = api_client.post(
             url,
             headers=auth_header,
@@ -1849,7 +2018,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step."
+            == f"Cannot resume privacy request '{privacy_request.id}'; no paused details."
         )
 
     def test_resume_with_manual_erasure_confirmation_collection_has_changed(
@@ -1860,9 +2029,11 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.erasure, CollectionAddress("manual_example", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.erasure,
+            collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
+
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
         assert response.status_code == 422
         assert (
@@ -1878,8 +2049,9 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.access, CollectionAddress("manual_example", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.access,
+            collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
         assert response.status_code == 400
@@ -1908,8 +2080,9 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.erasure, CollectionAddress("manual_input", "filing_cabinet")
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.erasure,
+            collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
         response = api_client.post(
             url,
@@ -1976,8 +2149,10 @@ class TestRestartFromFailure:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
-        privacy_request.cache_failed_step_and_collection(
-            PausedStep.access, CollectionAddress("test_dataset", "test_collection")
+
+        privacy_request.cache_failed_collection_details(
+            step=PausedStep.access,
+            collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
         response = api_client.post(url, headers=auth_header)

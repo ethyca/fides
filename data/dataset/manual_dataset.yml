@@ -10,11 +10,11 @@ dataset:
             fidesops_meta:
               primary_key: true
           - name: authorized_user
-            data_categories: [ user.derived.identifiable ]
+            data_categories: [ user.provided.identifiable ]
             fidesops_meta:
               data_type: string
           - name: customer_id
-            data_categories: [ user.derived.identifiable.unique_id ]
+            data_categories: [ user.provided.identifiable ]
             fidesops_meta:
               references:
                 - dataset: postgres_example_test_dataset

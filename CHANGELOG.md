@@ -23,6 +23,7 @@ The types of changes are:
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
 * Restart Graph from Failure [#578](https://github.com/ethyca/fidesops/pull/578)
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
+* Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 

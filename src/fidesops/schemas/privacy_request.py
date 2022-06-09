@@ -6,7 +6,11 @@ from pydantic import Field, validator
 
 from fidesops.core.config import config
 from fidesops.models.policy import ActionType
-from fidesops.models.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fidesops.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+    StoppedCollection,
+)
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.policy import PolicyResponse as PolicySchema
@@ -109,6 +113,11 @@ class RowCountRequest(BaseSchema):
     row_count: int
 
 
+class StoppedCollectionDetails(StoppedCollection):
+
+    collection: Optional[str] = None
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 
@@ -119,6 +128,7 @@ class PrivacyRequestResponse(BaseSchema):
     reviewed_by: Optional[str]
     reviewer: Optional[PrivacyRequestReviewer]
     finished_processing_at: Optional[datetime]
+    paused_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
     # This field intentionally doesn't use the PrivacyRequestIdentity schema
@@ -127,6 +137,8 @@ class PrivacyRequestResponse(BaseSchema):
     # creation.
     identity: Optional[Dict[str, str]]
     policy: PolicySchema
+    stopped_collection_details: Optional[StoppedCollectionDetails] = None
+    resume_endpoint: Optional[str]
 
     class Config:
         """Set orm_mode and use_enum_values"""

@@ -1,17 +1,24 @@
+import logging
 from typing import Any, Dict, List, Optional
 
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.graph.traversal import TraversalNode
 from fidesops.models.policy import PausedStep, Policy
-from fidesops.models.privacy_request import PrivacyRequest
+from fidesops.models.privacy_request import ManualAction, PrivacyRequest
 from fidesops.service.connectors.base_connector import BaseConnector
+from fidesops.service.connectors.query_config import ManualQueryConfig
 from fidesops.util.collection_util import Row
+
+logger = logging.getLogger(__name__)
 
 
 class ManualConnector(BaseConnector[None]):
-    def query_config(self, node: TraversalNode) -> None:
-        """No query_config for the Manual Connector"""
-        return None
+    def query_config(self, node: TraversalNode) -> ManualQueryConfig:
+        """
+        The ManualQueryConfig generates instructions for the user to retrieve and mask
+        data manually.
+        """
+        return ManualQueryConfig(node)
 
     def create_client(self) -> None:
         """Not needed because this connector involves a human performing some lookup step"""
@@ -34,19 +41,28 @@ class ManualConnector(BaseConnector[None]):
     ) -> Optional[List[Row]]:
         """
         Returns manually added data for the given collection if it exists, otherwise pauses the Privacy Request.
+
+        On the event that we pause, caches the stopped step, stopped collection, and details needed to manually resume
+        the privacy request.
         """
         cached_results: Optional[List[Row]] = privacy_request.get_manual_input(
             node.address
         )
 
         if cached_results is not None:  # None comparison intentional
-            privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
+            privacy_request.cache_paused_collection_details()  # Resets paused details to None
             return cached_results
 
-        # Save the step (access) and collection where we're paused.
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.access, node.address
+        query_config = self.query_config(node)
+        action_needed: Optional[ManualAction] = query_config.generate_query(
+            input_data, policy
         )
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.access,
+            collection=node.address,
+            action_needed=[action_needed] if action_needed else None,
+        )
+
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual data for privacy request '{privacy_request.id}'"
         )
@@ -59,18 +75,34 @@ class ManualConnector(BaseConnector[None]):
         rows: List[Row],
     ) -> Optional[int]:
         """If erasure confirmation has been added to the manual cache, continue, otherwise,
-        pause and wait for manual input."""
+        pause and wait for manual input.
+
+        On the event that we pause, caches the stopped step, stopped collection, and details needed to manually resume
+        the privacy request.
+        """
         manual_cached_count: Optional[int] = privacy_request.get_manual_erasure_count(
             node.address
         )
 
         if manual_cached_count is not None:  # None comparison intentional
-            privacy_request.cache_paused_step_and_collection()  # Caches paused location as None
+            privacy_request.cache_paused_collection_details()  # Resets paused details to None
             return manual_cached_count
 
-        privacy_request.cache_paused_step_and_collection(
-            PausedStep.erasure, node.address
+        query_config: ManualQueryConfig = self.query_config(node)
+        action_needed: List[ManualAction] = []
+        for row in rows:
+            action: Optional[ManualAction] = query_config.generate_update_stmt(
+                row, policy, privacy_request
+            )
+            if action:
+                action_needed.append(action)
+
+        privacy_request.cache_paused_collection_details(
+            step=PausedStep.erasure,
+            collection=node.address,
+            action_needed=action_needed if action_needed else None,
         )
+
         raise PrivacyRequestPaused(
             f"Collection '{node.address.value}' waiting on manual erasure confirmation for privacy request '{privacy_request.id}'"
         )

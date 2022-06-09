@@ -78,13 +78,10 @@ class HTTPSConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Retrieve data in a connector dependent way based on input data.
-
-        The input data is expected to include a key and list of values for
-        each input key that may be queried on.
-
-        TODO: implement when HTTPS Connectors can be part of the traversal.
-        """
+        """Currently not supported as webhooks are not called at the collection level"""
+        raise NotImplementedError(
+            "Currently not supported as webhooks are not yet called at the collection level"
+        )
 
     def mask_data(
         self,
@@ -93,10 +90,10 @@ class HTTPSConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated
-
-        TODO: implement when HTTPS Connectors can be part of the traversal.
-        """
+        """Currently not supported as webhooks are not called at the collection level"""
+        raise NotImplementedError(
+            "Currently not supported as webhooks are not yet called at the collection level"
+        )
 
     def create_client(self) -> None:
         """Not required for this type"""

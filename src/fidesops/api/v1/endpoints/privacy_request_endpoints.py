@@ -67,6 +67,7 @@ from fidesops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     RowCountRequest,
+    StoppedCollection,
 )
 from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
 from fidesops.service.privacy_request.request_service import (
@@ -281,7 +282,6 @@ def execution_logs_by_dataset_name(
 
 def _filter_privacy_request_queryset(
     query: Query,
-    db: Session = Depends(deps.get_db),
     request_id: Optional[str] = None,
     status: Optional[PrivacyRequestStatus] = None,
     created_lt: Optional[datetime] = None,
@@ -306,7 +306,7 @@ def _filter_privacy_request_queryset(
     for end, start, field_name in [
         [created_lt, created_gt, "created"],
         [completed_lt, completed_gt, "completed"],
-        [errored_lt, errored_gt, "errorer"],
+        [errored_lt, errored_gt, "errored"],
         [started_lt, started_gt, "started"],
     ]:
         if end is None or start is None:
@@ -362,6 +362,47 @@ def _filter_privacy_request_queryset(
     return query.order_by(PrivacyRequest.created_at.desc())
 
 
+def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
+    """
+    Temporarily update a paused or errored privacy request object with instructions from the Redis cache
+    about how to resume manually if applicable.
+    """
+    resume_endpoint: Optional[str] = None
+    stopped_collection_details: Optional[StoppedCollection] = None
+
+    if privacy_request.status == PrivacyRequestStatus.paused:
+        stopped_collection_details = privacy_request.get_paused_collection_details()
+
+        if stopped_collection_details:
+            # Graph is paused on a specific collection
+            resume_endpoint = (
+                PRIVACY_REQUEST_MANUAL_ERASURE
+                if stopped_collection_details.step == PausedStep.erasure
+                else PRIVACY_REQUEST_MANUAL_INPUT
+            )
+        else:
+            # Graph is paused on a pre-processing webhook
+            resume_endpoint = PRIVACY_REQUEST_RESUME
+
+    elif privacy_request.status == PrivacyRequestStatus.error:
+        stopped_collection_details = privacy_request.get_failed_collection_details()
+        resume_endpoint = PRIVACY_REQUEST_RETRY
+
+    if stopped_collection_details:
+        stopped_collection_details.step = stopped_collection_details.step.value
+        stopped_collection_details.collection = (
+            stopped_collection_details.collection.value
+        )
+
+    privacy_request.stopped_collection_details = stopped_collection_details
+    # replaces the placeholder in the url with the privacy request id
+    privacy_request.resume_endpoint = (
+        resume_endpoint.format(privacy_request_id=privacy_request.id)
+        if resume_endpoint
+        else None
+    )
+
+
 @router.get(
     urls.PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
@@ -401,7 +442,6 @@ def get_request_status(
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         query,
-        db,
         request_id,
         status,
         created_lt,
@@ -435,6 +475,10 @@ def get_request_status(
         # it is explicitly requested
         for item in paginated.items:
             item.identity = item.get_cached_identity_data()
+            attach_resume_instructions(item)
+    else:
+        for item in paginated.items:
+            attach_resume_instructions(item)
 
     return paginated
 
@@ -618,14 +662,17 @@ def resume_privacy_request_with_manual_input(
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
-    paused_step: Optional[PausedStep]
-    paused_collection: Optional[CollectionAddress]
-    paused_step, paused_collection = privacy_request.get_paused_step_and_collection()
-    if not paused_collection or not paused_step:
+    paused_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_paused_collection_details()
+    if not paused_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused collection or no paused step.",
+            detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused details.",
         )
+
+    paused_step: PausedStep = paused_details.step
+    paused_collection: CollectionAddress = paused_details.collection
 
     if paused_step != expected_paused_step:
         raise HTTPException(
@@ -755,14 +802,17 @@ def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
         )
 
-    failed_step: Optional[PausedStep]
-    failed_collection: Optional[CollectionAddress]
-    failed_step, failed_collection = privacy_request.get_failed_step_and_collection()
-    if not failed_step or not failed_collection:
+    failed_details: Optional[
+        StoppedCollection
+    ] = privacy_request.get_failed_collection_details()
+    if not failed_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
+
+    failed_step: PausedStep = failed_details.step
+    failed_collection: CollectionAddress = failed_details.collection
 
     logger.info(
         f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
@@ -776,7 +826,7 @@ def restart_privacy_request_from_failure(
         privacy_request=privacy_request,
     ).submit(from_step=failed_step)
 
-    privacy_request.cache_failed_step_and_collection()  # Reset failed step and collection to None
+    privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
 
     return privacy_request
 
