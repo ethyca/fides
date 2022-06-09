@@ -11,12 +11,12 @@ import {
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { User } from '../user/types';
+import { User } from './types';
 import {
   selectUserFilters,
   setPage,
   useGetAllUsersQuery,
-} from '../user/user.slice';
+} from './user-management.slice';
 import UserManagementRow from './UserManagementRow';
 
 interface UsersTableProps {

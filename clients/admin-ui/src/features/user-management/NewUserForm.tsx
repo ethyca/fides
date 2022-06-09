@@ -18,12 +18,12 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
 
+import { USER_PRIVILEGES } from '../../constants';
 import { isErrorWithDetail, isErrorWithDetailArray } from '../common/helpers';
-import { userPrivilegesArray } from '../user/types';
 import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
-} from '../user/user.slice';
+} from './user-management.slice';
 
 const useUserForm = () => {
   const [createUser] = useCreateUserMutation();
@@ -138,7 +138,7 @@ const UserForm: NextPage = () => {
         <chakra.form
           onSubmit={handleSubmit}
           maxW={['xs', 'xs', '100%']}
-          width='100%'
+          width="100%"
         >
           <Stack mb={8} spacing={6}>
             <FormControl
@@ -221,10 +221,10 @@ const UserForm: NextPage = () => {
             <Text>Select privileges to assign to this user</Text>
             <Divider mb={2} mt={2} />
 
-            <Stack spacing={[1, 5]} direction='column'>
-              {userPrivilegesArray.map((policy) => (
+            <Stack spacing={[1, 5]} direction="column">
+              {USER_PRIVILEGES.map((policy) => (
                 <Checkbox
-                  colorScheme='purple'
+                  colorScheme="purple"
                   defaultChecked={policy.scope === 'privacy-request:read'}
                   key={`${policy.privilege}`}
                   onChange={handleChange}
@@ -252,11 +252,11 @@ const UserForm: NextPage = () => {
             </Button>
           </NextLink>
           <Button
-            type='submit'
-            bg='primary.800'
+            type="submit"
+            bg="primary.800"
             _hover={{ bg: 'primary.400' }}
             _active={{ bg: 'primary.500' }}
-            colorScheme='primary'
+            colorScheme="primary"
             // disabled={!(isValid && dirty)}
             size='sm'
           >

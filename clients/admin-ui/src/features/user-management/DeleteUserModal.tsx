@@ -16,10 +16,10 @@ import {
 } from '@fidesui/react';
 import React, { useState } from 'react';
 
-import { User } from '../user/types';
-import { useDeleteUserMutation } from '../user/user.slice';
+import { User } from './types';
+import { useDeleteUserMutation } from './user-management.slice';
 
-const DeleteUserModal = (user: User) => {
+const DeleteUserModal: React.FC<User> = ({ id, username }) => {
   const [usernameValue, setUsernameValue] = useState('');
   const [confirmValue, setConfirmValue] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -32,10 +32,9 @@ const DeleteUserModal = (user: User) => {
       setConfirmValue(event.target.value);
     }
   };
-  const { id: userId, username } = user;
 
   const deletionValidation = !!(
-    userId &&
+    id &&
     confirmValue &&
     usernameValue &&
     username === usernameValue &&
@@ -43,8 +42,8 @@ const DeleteUserModal = (user: User) => {
   );
 
   const handleDeleteUser = () => {
-    if (deletionValidation && userId) {
-      deleteUser(userId);
+    if (deletionValidation && id) {
+      deleteUser(id);
       onClose();
     }
   };

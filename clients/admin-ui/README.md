@@ -17,12 +17,8 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 5. Submit a privacy request through the Privacy Request center.
 6. View that request in the Admin UI and either approve or deny it.
 
-## Authentication
+## Unit test locations
 
-To enable stable authentication you must supply a `NEXTAUTH_SECRET` environment
-variable. The best way to do this is by creating a `.env.local` file, which Next
-will automatically pick up:
+Unless otherwise specified below, all unit tests should be colocated in the directory with the file(s) they are testing, in a `__tests__` subfolder.
 
-```bash
-echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
-```
+The sole exception to this is the `pages` directory. Tests for Next.js pages live in the root `__tests__/pages` directory. Otherwise, Next.js attempts to include them in final build output, which breaks the build.

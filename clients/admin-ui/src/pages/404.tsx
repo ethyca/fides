@@ -1,7 +1,8 @@
 import { Box, Button, Heading, Stack, Text } from '@fidesui/react';
 import Head from 'next/head';
-import Image from 'next/image';
 import NextLink from 'next/link';
+
+import Image from '../features/common/Image';
 
 const Custom404 = () => (
   <div>

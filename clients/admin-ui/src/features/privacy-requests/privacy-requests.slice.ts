@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { HYDRATE } from 'next-redux-wrapper';
 
-import type { AppState } from '../../app/store';
+import type { RootState } from '../../app/store';
+import { selectToken } from '../auth';
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
@@ -51,7 +51,7 @@ export const privacyRequestApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
     prepareHeaders: (headers, { getState }) => {
-      const { token } = (getState() as AppState).user;
+      const token = selectToken(getState() as RootState);
       headers.set('Access-Control-Allow-Origin', '*');
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
@@ -63,7 +63,7 @@ export const privacyRequestApi = createApi({
   endpoints: (build) => ({
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
-      PrivacyRequestParams
+      Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
         url: `privacy-request`,
@@ -96,12 +96,6 @@ export const privacyRequestApi = createApi({
       invalidatesTags: ['Request'],
     }),
   }),
-  // eslint-disable-next-line consistent-return
-  extractRehydrationInfo(action, { reducerPath }) {
-    if (action.type === HYDRATE) {
-      return action.payload[reducerPath];
-    }
-  },
 });
 
 export const {
@@ -222,12 +216,6 @@ export const subjectRequestsSlice = createSlice({
       verbose: action.payload,
     }),
   },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.subjectRequests,
-    }),
-  },
 });
 
 export const {
@@ -241,13 +229,13 @@ export const {
   clearAllFilters,
 } = subjectRequestsSlice.actions;
 
-export const selectRevealPII = (state: AppState) =>
+export const selectRevealPII = (state: RootState) =>
   state.subjectRequests.revealPII;
-export const selectRequestStatus = (state: AppState) =>
+export const selectRequestStatus = (state: RootState) =>
   state.subjectRequests.status;
 
 export const selectPrivacyRequestFilters = (
-  state: AppState
+  state: RootState
 ): PrivacyRequestParams => ({
   status: state.subjectRequests.status,
   id: state.subjectRequests.id,
