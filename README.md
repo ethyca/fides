@@ -81,32 +81,32 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
     <details>
     <summary>Example Output</summary>
-        ```bash
-        "Auditing Organization Resource Compliance"
-        Found 1 Organization resource(s) to audit...
-        Auditing Organization: Demo Organization
-        controller for default_organization in Demo Organization is compliant
-        data_protection_officer for default_organization in Demo Organization is compliant
-        representative for default_organization in Demo Organization is compliant
-        security_policy for default_organization in Demo Organization is compliant
-        All audited organization resource(s) compliant!
-        ----------
-        "Auditing System Resource Compliance"
-        Found 2 System resource(s) to audit...
-        "Auditing System: Demo Analytics System"
-        improve.system missing recipients in Demo Analytics System.
-        improve.system missing legal_basis in Demo Analytics System.
-        improve.system missing special_category in Demo Analytics System.
-        customer missing rights in Demo Analytics System.
-        customer missing automated_decisions_or_profiling in Demo Analytics System.
-        "Auditing System: Demo Marketing System"
-        advertising missing recipients in Demo Marketing System.
-        advertising missing legal_basis in Demo Marketing System.
-        advertising missing special_category in Demo Marketing System.
-        customer missing rights in Demo Marketing System.
-        customer missing automated_decisions_or_profiling in Demo Marketing System.
-        10 issue(s) were detected in auditing system completeness.
-        ```
+    ```bash
+    "Auditing Organization Resource Compliance"
+    Found 1 Organization resource(s) to audit...
+    Auditing Organization: Demo Organization
+    controller for default_organization in Demo Organization is compliant
+    data_protection_officer for default_organization in Demo Organization is compliant
+    representative for default_organization in Demo Organization is compliant
+    security_policy for default_organization in Demo Organization is compliant
+    All audited organization resource(s) compliant!
+    ----------
+    "Auditing System Resource Compliance"
+    Found 2 System resource(s) to audit...
+    "Auditing System: Demo Analytics System"
+    improve.system missing recipients in Demo Analytics System.
+    improve.system missing legal_basis in Demo Analytics System.
+    improve.system missing special_category in Demo Analytics System.
+    customer missing rights in Demo Analytics System.
+    customer missing automated_decisions_or_profiling in Demo Analytics System.
+    "Auditing System: Demo Marketing System"
+    advertising missing recipients in Demo Marketing System.
+    advertising missing legal_basis in Demo Marketing System.
+    advertising missing special_category in Demo Marketing System.
+    customer missing rights in Demo Marketing System.
+    customer missing automated_decisions_or_profiling in Demo Marketing System.
+    10 issue(s) were detected in auditing system completeness.
+    ```
     </details>
 
 Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the empty values revealed by `--audit` with additional required data, and apply your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
