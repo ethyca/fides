@@ -5,6 +5,7 @@ In this section we'll cover:
 - How to check the high-level status of your privacy requests
 - How to get more detailed execution logs of collections and fields that were potentially affected as part of your privacy request.
 - How to download all privacy requests as a CSV
+- How to view details on resuming/restarting a request
 
 Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
@@ -183,4 +184,129 @@ To get all privacy requests in CSV format, use the `download_csv` query param:
 ```csv
 Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied
 2022-03-14 16:53:28.869258+00:00,{'email': 'customer-1@example.com'},my_primary_policy,complete,fid_16ffde2f-613b-4f79-bbae-41420b0f836b,2022-03-14 16:54:08.804283+00:00
+```
+
+## Details to resume a privacy request
+
+A privacy request may pause when manual input is needed from the user, or it might fail for various reason on a specific collection.  
+Details to resume or retry that privacy request can be accessed via the `GET api/v1/privacy-request?request_id=<privacy_request_id>` endpoint.
+
+### Paused Access Request Example
+
+The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `stopped_collection_details` key, we can see that the request
+paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  The `action_needed.locators` field shows the user they should
+fetch the record in the filing cabinet with a `customer_id` of `72909`, and pull the `authorized_user`, `customer_id`, `id`, and `payment_card_id` fields
+from that record.  These values should be manually uploaded to the `resume_endpoint`.  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-access-privacy-request) 
+guides for more information on resuming a paused access request.
+                          
+
+```json
+{
+    "items": [
+        {
+            "id": "pri_ed4a6b7d-deab-489a-9a9f-9c2b19cd0713",
+            "created_at": "2022-06-06T20:12:28.809815+00:00",
+            "started_processing_at": "2022-06-06T20:12:28.986462+00:00",
+            ...,
+            "stopped_collection_details": {
+                "step": "access",
+                "collection": "manual_key:filing_cabinet",
+                "action_needed": [
+                    {
+                        "locators": {
+                            "customer_id": [
+                                72909
+                            ]
+                        },
+                        "get": [
+                            "authorized_user",
+                            "customer_id",
+                            "id",
+                            "payment_card_id"
+                        ],
+                        "update": null
+                    }
+                ]
+            },
+            "resume_endpoint": "/privacy-request/pri_ed4a6b7d-deab-489a-9a9f-9c2b19cd0713/manual_input"
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+```
+
+### Paused Erasure Request Example
+
+The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `stopped_collection_details` shows us that the request
+paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
+see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
+A confirmation of the masked records count should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
+guides for more information on resuming a paused erasure request.
+              
+```json
+{
+    "items": [
+        {
+            "id": "pri_59ea0129-fc6d-4a12-a5bd-2ee647bf5cec",
+            "created_at": "2022-06-06T20:22:05.436361+00:00",
+            "started_processing_at": "2022-06-06T20:22:05.473280+00:00",
+            "finished_processing_at": null,
+            "status": "paused",
+            ...,
+            "stopped_collection_details": {
+                "step": "erasure",
+                "collection": "manual_key:filing_cabinet",
+                "action_needed": [
+                    {
+                        "locators": {
+                            "id": 2
+                        },
+                        "get": null,
+                        "update": {
+                            "authorized_user": null
+                        }
+                    }
+                ]
+            },
+            "resume_endpoint": "/privacy-request/pri_59ea0129-fc6d-4a12-a5bd-2ee647bf5cec/erasure_confirm"
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+
+```
+
+### Failed Request Example
+
+The below request is an `error` state because something failed in the `erasure` step of the `postgres_dataset:payment_card` collection.  
+After troubleshooting the issues with your postgres connection, you would resume the request with a POST to the `resume_endpoint`.
+
+```json
+{
+    "items": [
+        {
+            "id": "pri_59ea0129-fc6d-4a12-a5bd-2ee647bf5cec",
+            "created_at": "2022-06-06T20:22:05.436361+00:00",
+            "started_processing_at": "2022-06-06T20:22:05.473280+00:00",
+            "finished_processing_at": null,
+            "status": "error",
+            ...,
+            "stopped_collection_details": {
+              "step": "erasure",
+              "collection": "postgres_dataset:payment_card",
+              "action_needed": null
+            },
+            "resume_endpoint": "/privacy-request/pri_59ea0129-fc6d-4a12-a5bd-2ee647bf5cec/retry"
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
 ```

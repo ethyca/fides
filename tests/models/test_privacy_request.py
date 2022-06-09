@@ -12,6 +12,7 @@ from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import PausedStep, Policy
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.service.connectors.manual_connector import ManualAction
 from fidesops.util.cache import FidesopsRedis, get_identity_cache_key
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
@@ -364,20 +365,36 @@ class TestPrivacyRequestTriggerWebhooks:
 
 class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):
-        assert privacy_request.get_paused_step_and_collection() == (None, None)
+        assert privacy_request.get_paused_collection_details() is None
 
         paused_step = PausedStep.erasure
-        privacy_request.cache_paused_step_and_collection(paused_step, paused_location)
-
-        assert privacy_request.get_paused_step_and_collection() == (
-            paused_step,
-            paused_location,
+        privacy_request.cache_paused_collection_details(
+            step=paused_step,
+            collection=paused_location,
+            action_needed=[
+                ManualAction(
+                    locators={"email": "customer-1@example.com"},
+                    get=["box_id", "associated_data"],
+                    update=None,
+                )
+            ],
         )
 
-    def test_privacy_request_unpause(self, privacy_request):
-        privacy_request.cache_paused_step_and_collection()
+        paused_details = privacy_request.get_paused_collection_details()
+        assert paused_details.step == paused_step
+        assert paused_details.collection == paused_location
+        assert paused_details.action_needed == [
+            ManualAction(
+                locators={"email": "customer-1@example.com"},
+                get=["box_id", "associated_data"],
+                update=None,
+            )
+        ]
 
-        assert privacy_request.get_paused_step_and_collection() == (None, None)
+    def test_privacy_request_unpause(self, privacy_request):
+        privacy_request.cache_paused_collection_details()
+
+        assert privacy_request.get_paused_collection_details() is None
 
 
 class TestCacheManualInput:
@@ -431,28 +448,18 @@ class TestCacheManualErasureCount:
 
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
-        privacy_request.cache_failed_step_and_collection(
-            PausedStep.erasure, paused_location
+
+        privacy_request.cache_failed_collection_details(
+            step=PausedStep.erasure, collection=paused_location
         )
 
-        cached_data = privacy_request.get_failed_step_and_collection()
-        assert cached_data == (PausedStep.erasure, paused_location)
+        cached_data = privacy_request.get_failed_collection_details()
+        assert cached_data.step == PausedStep.erasure
+        assert cached_data.collection == paused_location
+        assert cached_data.action_needed is None
 
     def test_cache_null_step_and_location(self, privacy_request):
-        privacy_request.cache_failed_step_and_collection()
+        privacy_request.cache_failed_collection_details()
 
-        cached_data = privacy_request.get_failed_step_and_collection()
-        assert cached_data == (None, None)
-
-    def test_replace_failed_step_and_location(self, privacy_request):
-        privacy_request.cache_failed_step_and_collection(
-            PausedStep.erasure, paused_location
-        )
-        privacy_request.cache_failed_step_and_collection(
-            PausedStep.access, CollectionAddress("test", "test")
-        )
-
-        assert privacy_request.get_failed_step_and_collection() == (
-            PausedStep.access,
-            CollectionAddress("test", "test"),
-        )
+        cached_data = privacy_request.get_failed_collection_details()
+        assert cached_data is None

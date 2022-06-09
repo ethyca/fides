@@ -523,7 +523,11 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
         name="filing_cabinet",
         fields=[
             ScalarField(name="id", primary_key=True, data_type_converter=int_converter),
-            ScalarField(name="authorized_user", data_type_converter=str_converter),
+            ScalarField(
+                name="authorized_user",
+                data_type_converter=str_converter,
+                data_categories=["user.provided.identifiable"],
+            ),
             ScalarField(
                 name="customer_id",
                 references=[(FieldAddress(postgres_db_name, "customer", "id"), "from")],
@@ -543,7 +547,10 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
                 name="box_id", primary_key=True, data_type_converter=int_converter
             ),
             ScalarField(
-                name="email", identity="email", data_type_converter=str_converter
+                name="email",
+                identity="email",
+                data_type_converter=str_converter,
+                data_categories=["user.provided.identifiable"],
             ),
         ],
     )

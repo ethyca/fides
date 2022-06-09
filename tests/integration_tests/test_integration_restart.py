@@ -7,7 +7,11 @@ from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.models.policy import PausedStep
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.models.privacy_request import (
+    ExecutionLog,
+    PrivacyRequest,
+    StoppedCollection,
+)
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
 
@@ -77,10 +81,9 @@ def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
     ]
-
-    assert privacy_request.get_failed_step_and_collection() == (
-        PausedStep.access,
-        CollectionAddress("mongo_test", "customer_details"),
+    assert privacy_request.get_failed_collection_details() == StoppedCollection(
+        step=PausedStep.access,
+        collection=CollectionAddress("mongo_test", "customer_details"),
     )
 
     # Reset secrets

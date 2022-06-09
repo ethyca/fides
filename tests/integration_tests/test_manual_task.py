@@ -40,9 +40,19 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == PausedStep.access
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
+    )
+    assert paused_details.step == PausedStep.access
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {
+        "email": ["customer-1@example.com"]
+    }
+
+    assert paused_details.action_needed[0].get == ["box_id", "email"]
+    assert paused_details.action_needed[0].update is None
 
     # Mock user retrieving storage unit data by adding manual data to cache
     privacy_request.cache_manual_input(
@@ -60,6 +70,23 @@ def test_postgres_with_manual_input_access_request_task(
             {"email": "customer-1@example.com"},
         )
 
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
+    )
+    assert paused_details.step == PausedStep.access
+    assert len(paused_details.action_needed) == 1
+    assert paused_details.action_needed[0].locators == {"customer_id": [1]}
+
+    assert paused_details.action_needed[0].get == [
+        "id",
+        "authorized_user",
+        "customer_id",
+        "payment_card_id",
+    ]
+    assert paused_details.action_needed[0].update is None
+
+    # Add manual filing cabinet data from the user
     privacy_request.cache_manual_input(
         CollectionAddress.from_string("manual_example:filing_cabinet"),
         [{"id": 1, "authorized_user": "Jane Doe", "payment_card_id": "pay_bbb-bbb"}],
@@ -113,10 +140,9 @@ def test_postgres_with_manual_input_access_request_task(
         keys=["city", "id", "state", "street", "zip"],
     )
 
-    # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type is None
-    assert paused_node is None
+    # Paused details removed from cache
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details is None
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id
@@ -208,9 +234,11 @@ def test_no_manual_input_found(
             {"email": "customer-1@example.com"},
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type == PausedStep.access
-    assert paused_node.value == "manual_example:storage_unit"
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
+    )
+    assert paused_details.step == PausedStep.access
 
     # Mock user retrieving storage unit data by adding manual data to cache,
     # In this case, no data was found in the storage unit, so we pass in an empty list.
@@ -228,6 +256,12 @@ def test_no_manual_input_found(
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
         )
+
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
+    )
+    assert paused_details.step == PausedStep.access
 
     # No filing cabinet input found
     privacy_request.cache_manual_input(
@@ -263,22 +297,24 @@ def test_no_manual_input_found(
     )
 
     # Paused node removed from cache
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert request_type is None
-    assert paused_node is None
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details is None
 
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 def test_collections_with_manual_erasure_confirmation(
-    policy,
+    db,
+    erasure_policy,
     integration_postgres_config,
     integration_manual_config,
+    privacy_request,
 ) -> None:
     """Run an erasure privacy request with two manual nodes"""
-    privacy_request = PrivacyRequest(
-        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
-    )
+    privacy_request.policy = erasure_policy
+    rule = erasure_policy.rules[0]
+    target = rule.targets[0]
+    target.data_category = "user.provided.identifiable"
 
     cached_data_for_erasures = {
         "postgres_example:payment_card": [
@@ -349,20 +385,29 @@ def test_collections_with_manual_erasure_confirmation(
         ],
     }
 
-    # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from the filing cabinet
+    # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from
+    # the filing cabinet
     with pytest.raises(PrivacyRequestPaused):
         graph_task.run_erasure(
             privacy_request,
-            policy,
+            erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
             cached_data_for_erasures,
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:filing_cabinet"
-    assert request_type == PausedStep.erasure
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "filing_cabinet"
+    )
+    assert paused_details.step == PausedStep.erasure
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {"id": 1}
+
+    assert paused_details.action_needed[0].get is None
+    assert paused_details.action_needed[0].update == {"authorized_user": None}
 
     # Mock confirming from user that there was no data in the filing cabinet
     privacy_request.cache_manual_erasure_count(
@@ -374,16 +419,24 @@ def test_collections_with_manual_erasure_confirmation(
     with pytest.raises(PrivacyRequestPaused):
         graph_task.run_erasure(
             privacy_request,
-            policy,
+            erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
             cached_data_for_erasures,
         )
 
-    request_type, paused_node = privacy_request.get_paused_step_and_collection()
-    assert paused_node.value == "manual_example:storage_unit"
-    assert request_type == PausedStep.erasure
+    paused_details = privacy_request.get_paused_collection_details()
+    assert paused_details.collection == CollectionAddress(
+        "manual_example", "storage_unit"
+    )
+    assert paused_details.step == PausedStep.erasure
+    assert len(paused_details.action_needed) == 1
+
+    assert paused_details.action_needed[0].locators == {"box_id": 5}
+
+    assert paused_details.action_needed[0].get is None
+    assert paused_details.action_needed[0].update == {"email": None}
 
     # Mock confirming from user that storage unit erasure is complete
     privacy_request.cache_manual_erasure_count(
@@ -393,7 +446,7 @@ def test_collections_with_manual_erasure_confirmation(
     # Attempt 3 - We've confirmed data has been removed for manual nodes so we can proceed with the rest of the erasure
     v = graph_task.run_erasure(
         privacy_request,
-        policy,
+        erasure_policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
@@ -408,3 +461,5 @@ def test_collections_with_manual_erasure_confirmation(
         "postgres_example:address": 0,
         "manual_example:filing_cabinet": 0,
     }
+
+    assert privacy_request.get_paused_collection_details() is None

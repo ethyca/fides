@@ -1203,6 +1203,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
         assert not proceed
         assert privacy_request.finished_processing_at is None
         assert privacy_request.status == PrivacyRequestStatus.paused
+        assert privacy_request.paused_at is not None
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_ap_scheduler_cleanup(
@@ -1230,6 +1231,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
         # Privacy request has been set to errored by ap scheduler, because it took too long for webhook to report back
         assert privacy_request.status == PrivacyRequestStatus.error
         assert privacy_request.finished_processing_at is not None
+        assert privacy_request.paused_at is not None
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_client_error(
@@ -1249,6 +1251,8 @@ class TestPrivacyRequestRunnerRunWebhooks:
         )
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.finished_processing_at is not None
+        assert privacy_request.paused_at is None
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks_validation_error(
@@ -1269,6 +1273,7 @@ class TestPrivacyRequestRunnerRunWebhooks:
         assert not proceed
         assert privacy_request.finished_processing_at is not None
         assert privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.paused_at is None
 
     @mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
     def test_run_webhooks(

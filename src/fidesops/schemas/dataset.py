@@ -254,4 +254,4 @@ class DryRunDatasetResponse(BaseSchema):
     """
 
     collectionAddress: CollectionAddressResponse
-    query: Optional[str]
+    query: Any
