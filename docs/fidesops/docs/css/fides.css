@@ -377,7 +377,7 @@ form.hs-form{
 
 .highlight .filename > code{
     background-color: transparent;
-    color: #2A2F45 ;
+    color: var(--md-typeset-color);
 }
 
 
