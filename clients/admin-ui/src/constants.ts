@@ -1,51 +1,8 @@
-export interface User {
-  id?: string;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
-  password?: string;
-  created_at?: string;
-}
+import { UserPrivileges } from './features/user-management/types';
 
-export interface UserResponse {
-  id: string;
-}
+export const STORED_CREDENTIALS_KEY = 'auth.fidesops-admin-ui';
 
-export interface UsersResponse {
-  items: User[];
-  total: number;
-}
-
-export interface UsersListParams {
-  page: number;
-  size: number;
-  user: User;
-}
-
-export interface UserPasswordUpdate {
-  id: string | null;
-  old_password: string;
-  new_password: string;
-}
-
-export interface UserPermissionsUpdate {
-  id: string | null;
-  scopes: never[];
-}
-
-export interface UserPermissionsResponse {
-  data: {
-    id: string;
-  };
-  scope: string[];
-}
-
-export interface UserPrivileges {
-  privilege: string;
-  scope: string;
-}
-
-export const userPrivilegesArray: UserPrivileges[] = [
+export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: 'View subject requests',
     scope: 'privacy-request:read',

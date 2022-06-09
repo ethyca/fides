@@ -13,6 +13,7 @@ import {
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { selectToken } from '../auth';
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
@@ -20,7 +21,6 @@ import {
 } from '../common/Icon';
 import PIIToggle from '../common/PIIToggle';
 import { statusPropMap } from '../common/RequestStatusBadge';
-import { selectUserToken } from '../user/user.slice';
 import {
   clearAllFilters,
   requestCSVDownload,
@@ -34,7 +34,7 @@ import { PrivacyRequestStatus } from './types';
 
 const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
-  const token = useSelector(selectUserToken);
+  const token = useSelector(selectToken);
   const dispatch = useDispatch();
   const toast = useToast();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>

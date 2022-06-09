@@ -39,6 +39,7 @@ interface ErrorDetail {
   msg: string;
   type: string;
 }
+
 interface ValidationError {
   data: {
     detail: ErrorDetail[];

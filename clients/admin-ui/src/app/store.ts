@@ -1,34 +1,65 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, StateFromReducersMapObject } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
-import { createWrapper } from 'next-redux-wrapper';
 
+import { STORED_CREDENTIALS_KEY } from '../constants';
+import {
+  authApi,
+  AuthState,
+  credentialStorage,
+  reducer as authReducer,
+} from '../features/auth';
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
 } from '../features/privacy-requests';
-import { reducer as userReducer, userApi } from '../features/user';
+import {
+  reducer as userManagementReducer,
+  userApi,
+} from '../features/user-management';
 
-export const makeStore = (preloadedState = {}) => {
-  const store = configureStore({
-    reducer: {
-      [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-      subjectRequests: privacyRequestsReducer,
-      [userApi.reducerPath]: userApi.reducer,
-      user: userReducer,
-    },
+const reducer = {
+  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
+  subjectRequests: privacyRequestsReducer,
+  [userApi.reducerPath]: userApi.reducer,
+  [authApi.reducerPath]: authApi.reducer,
+  userManagement: userManagementReducer,
+  auth: authReducer,
+};
+
+export type RootState = StateFromReducersMapObject<typeof reducer>;
+
+export const makeStore = (preloadedState?: Partial<RootState>) =>
+  configureStore({
+    reducer,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
+        credentialStorage.middleware,
         privacyRequestApi.middleware,
-        userApi.middleware
+        userApi.middleware,
+        authApi.middleware
       ),
     devTools: true,
     preloadedState,
   });
-  setupListeners(store.dispatch);
-  return store;
-};
 
-export type AppStore = ReturnType<typeof makeStore>;
-export type AppState = ReturnType<AppStore['getState']>;
+let storedAuthState: AuthState | undefined;
+if (typeof window !== 'undefined' && 'localStorage' in window) {
+  const storedAuthStateString = localStorage.getItem(STORED_CREDENTIALS_KEY);
+  if (storedAuthStateString) {
+    try {
+      storedAuthState = JSON.parse(storedAuthStateString);
+    } catch (error) {
+      // TODO: build in formal error logging system
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+}
 
-export const wrapper = createWrapper<AppStore>(makeStore);
+const store = makeStore({
+  auth: storedAuthState,
+});
+
+setupListeners(store.dispatch);
+
+export default store;

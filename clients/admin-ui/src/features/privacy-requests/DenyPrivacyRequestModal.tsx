@@ -44,14 +44,14 @@ const DenyPrivacyRequestModal = ({
     returnFocusOnClose={false}
   >
     <ModalOverlay />
-    <ModalContent width='100%' maxWidth='456px'>
+    <ModalContent width="100%" maxWidth="456px">
       <ModalHeader>Data subject request denial</ModalHeader>
-      <ModalBody color='gray.500' fontSize='14px'>
+      <ModalBody color="gray.500" fontSize="14px">
         Please enter a reason for denying this data subject request
       </ModalBody>
       <ModalBody>
         <Textarea
-          focusBorderColor='primary.600'
+          focusBorderColor="primary.600"
           value={denialReason}
           onChange={onChange}
           disabled={isLoading}
@@ -59,10 +59,10 @@ const DenyPrivacyRequestModal = ({
       </ModalBody>
       <ModalFooter>
         <Button
-          size='sm'
-          width='100%'
-          maxWidth='198px'
-          colorScheme='gray.200'
+          size="sm"
+          width="100%"
+          maxWidth="198px"
+          colorScheme="gray.200"
           mr={3}
           disabled={isLoading}
           onClick={handleMenuClose}
@@ -70,11 +70,11 @@ const DenyPrivacyRequestModal = ({
           Close
         </Button>
         <Button
-          size='sm'
-          width='100%'
-          maxWidth='198px'
-          colorScheme='primary'
-          variant='solid'
+          size="sm"
+          width="100%"
+          maxWidth="198px"
+          colorScheme="primary"
+          variant="solid"
           isLoading={isLoading}
           onClick={() => {
             closeModal(handleMenuClose, handleDenyRequest, denialReason);

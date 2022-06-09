@@ -25,6 +25,10 @@ The types of changes are:
 * Redis SSL Support [#611](https://github.com/ethyca/fidesops/pull/611)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
 
+### Changed
+
+* Refactor auth and enable static file serving [#577](https://github.com/ethyca/fidesops/pull/577)
+
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
 ### Added

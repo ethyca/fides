@@ -4,98 +4,81 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Heading,
+  Spinner,
   Text,
 } from '@fidesui/react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { getSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import React from 'react';
 
-import { useAppSelector } from '../../app/hooks';
-import { wrapper } from '../../app/store';
+import ProtectedRoute from '../../features/auth/ProtectedRoute';
 import NavBar from '../../features/common/NavBar';
-import {
-  privacyRequestApi,
-  selectPrivacyRequestFilters,
-  setRequestId,
-  setVerbose,
-  useGetAllPrivacyRequestsQuery,
-} from '../../features/privacy-requests';
+import { useGetAllPrivacyRequestsQuery } from '../../features/privacy-requests';
 import SubjectRequest from '../../features/subject-request/SubjectRequest';
-import { assignToken, setUser } from '../../features/user';
 
-const SubjectRequestDetails: NextPage<{}> = () => {
-  const filters = useAppSelector(selectPrivacyRequestFilters);
-  const { data } = useGetAllPrivacyRequestsQuery(filters);
-  const body =
-    data?.items.length === 0 ? (
+const useSubjectRequestDetails = () => {
+  const router = useRouter();
+  const { id = '' } = router.query;
+  const { data, isLoading, isUninitialized } = useGetAllPrivacyRequestsQuery(
+    {
+      id: Array.isArray(id) ? id[0] : id,
+      verbose: true,
+    },
+    {
+      skip: id === '',
+    }
+  );
+
+  return { data, isLoading, isUninitialized };
+};
+
+const SubjectRequestDetails: NextPage = () => {
+  const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
+  let body =
+    !data || data?.items.length === 0 ? (
       <Text>404 no subject request found</Text>
     ) : (
       <SubjectRequest subjectRequest={data?.items[0]!} />
     );
 
+  if (isLoading || isUninitialized) {
+    body = <Spinner />;
+  }
+
   return (
-    <div>
-      <Head>
-        <title>Fides Admin UI - Subject Request Details</title>
-        <meta name='description' content='Subject Request Details' />
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
+    <ProtectedRoute>
+      <div>
+        <Head>
+          <title>Fides Admin UI - Subject Request Details</title>
+          <meta name='description' content='Subject Request Details' />
+          <link rel='icon' href='/favicon.ico' />
+        </Head>
 
-      <NavBar />
+        <NavBar />
 
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize='2xl' fontWeight='semibold'>
-            Subject Request
-            <Box mt={2} mb={9}>
-              <Breadcrumb fontWeight='medium' fontSize='sm'>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href='/'>Subject Request</BreadcrumbLink>
-                </BreadcrumbItem>
+        <main>
+          <Box px={9} py={10}>
+            <Heading fontSize='2xl' fontWeight='semibold'>
+              Subject Request
+              <Box mt={2} mb={9}>
+                <Breadcrumb fontWeight='medium' fontSize='sm'>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href='/'>Subject Request</BreadcrumbLink>
+                  </BreadcrumbItem>
 
-                <BreadcrumbItem>
-                  <BreadcrumbLink href='#'>View Details</BreadcrumbLink>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Box>
-          </Heading>
-          {body}
-        </Box>
-      </main>
-    </div>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href='#'>View Details</BreadcrumbLink>
+                  </BreadcrumbItem>
+                </Breadcrumb>
+              </Box>
+            </Heading>
+            {body}
+          </Box>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 };
 
 export default SubjectRequestDetails;
-
-export const getServerSideProps = wrapper.getServerSideProps(
-  (store) => async (context) => {
-    const session = await getSession(context);
-    if (session && typeof session.accessToken !== 'undefined') {
-      await store.dispatch(assignToken(session.accessToken));
-      await store.dispatch(setUser(session.user));
-      await store.dispatch(setRequestId(context.query.id as string));
-      await store.dispatch(setVerbose(true));
-      const state = store.getState();
-
-      if (context.query.id) {
-        const filters = selectPrivacyRequestFilters(state);
-        delete filters.status;
-        store.dispatch(
-          privacyRequestApi.endpoints.getAllPrivacyRequests.initiate(filters)
-        );
-        await Promise.all(privacyRequestApi.util.getRunningOperationPromises());
-      }
-
-      return { props: {} };
-    }
-
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-);

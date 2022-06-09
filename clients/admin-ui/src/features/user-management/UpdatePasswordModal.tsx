@@ -14,13 +14,19 @@ import {
 } from '@fidesui/react';
 import React, { useState } from 'react';
 
-import { useUpdateUserPasswordMutation } from '../user/user.slice';
+import { useUpdateUserPasswordMutation } from './user-management.slice';
 
-const UpdatePasswordModal = ({ id }: { id: string }) => {
+const useUpdatePasswordModal = (id: string) => {
+  const modal = useDisclosure();
   const [oldPasswordValue, setOldPasswordValue] = useState('');
   const [newPasswordValue, setNewPasswordValue] = useState('');
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [changePassword] = useUpdateUserPasswordMutation();
+  const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
+
+  const changePasswordValidation = !!(
+    id &&
+    newPasswordValue &&
+    oldPasswordValue
+  );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.name === 'oldPassword') {
@@ -30,25 +36,45 @@ const UpdatePasswordModal = ({ id }: { id: string }) => {
     }
   };
 
-  const changePasswordValidation = !!(
-    id &&
-    newPasswordValue &&
-    oldPasswordValue
-  );
-
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (changePasswordValidation) {
-      const changePasswordBody = {
+      changePassword({
         id,
         old_password: oldPasswordValue,
         new_password: newPasswordValue,
-      };
-
-      changePassword(changePasswordBody);
-
-      onClose();
+      })
+        .unwrap()
+        .then(() => modal.onClose());
     }
   };
+
+  return {
+    ...modal,
+    changePasswordValidation,
+    handleChange,
+    handleChangePassword,
+    isLoading,
+    newPasswordValue,
+    oldPasswordValue,
+  };
+};
+
+interface UpdatePasswordModalProps {
+  id: string;
+}
+
+const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
+  const {
+    changePasswordValidation,
+    handleChange,
+    handleChangePassword,
+    isLoading,
+    isOpen,
+    newPasswordValue,
+    oldPasswordValue,
+    onClose,
+    onOpen,
+  } = useUpdatePasswordModal(id);
 
   return (
     <>
@@ -95,24 +121,26 @@ const UpdatePasswordModal = ({ id }: { id: string }) => {
 
           <ModalFooter>
             <Button
+              bg="white"
+              marginRight="10px"
               onClick={onClose}
-              marginRight='10px'
-              size='sm'
-              variant='solid'
-              bg='white'
-              width='50%'
+              size="sm"
+              variant="solid"
+              width="50%"
             >
               Cancel
             </Button>
             <Button
+              bg="primary.800"
+              color="white"
               disabled={!changePasswordValidation}
-              onClick={handleChangePassword}
+              isLoading={isLoading}
               mr={3}
-              size='sm'
-              variant='solid'
-              bg='primary.800'
-              color='white'
-              width='50%'
+              onClick={handleChangePassword}
+              size="sm"
+              type="submit"
+              variant="solid"
+              width="50%"
             >
               Change Password
             </Button>

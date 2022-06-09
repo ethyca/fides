@@ -10,13 +10,13 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { SearchLineIcon } from '../common/Icon';
-import { selectUserFilters, setUser } from '../user/user.slice';
+import { selectUserFilters, setUsernameSearch } from './user-management.slice';
 
 const useUserManagementTableActions = () => {
   const filters = useSelector(selectUserFilters);
   const dispatch = useDispatch();
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setUser({ username: event.target.value }));
+    dispatch(setUsernameSearch(event.target.value));
   };
 
   return {
@@ -26,7 +26,7 @@ const useUserManagementTableActions = () => {
 };
 
 const UserManagementTableActions: React.FC = () => {
-  const { handleSearchChange, user } = useUserManagementTableActions();
+  const { handleSearchChange, username } = useUserManagementTableActions();
 
   return (
     <Stack direction='row' spacing={4} mb={6}>
@@ -37,11 +37,11 @@ const UserManagementTableActions: React.FC = () => {
         <Input
           type='search'
           minWidth={200}
-          placeholder='Search by Username'
-          size='sm'
-          borderRadius='md'
-          value={user.username}
-          name='search'
+          placeholder="Search by Username"
+          size="sm"
+          borderRadius="md"
+          value={username}
+          name="search"
           onChange={handleSearchChange}
         />
       </InputGroup>

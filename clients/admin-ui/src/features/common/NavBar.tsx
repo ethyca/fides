@@ -1,20 +1,17 @@
 import { Button, Flex } from '@fidesui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
 import React from 'react';
 
 import Header from './Header';
 import { ArrowDownLineIcon } from './Icon';
 
 const NavBar = () => {
-  const { data: session } = useSession();
   const router = useRouter();
-  const username: string | any = session?.username;
 
   return (
     <>
-      <Header username={username} />
+      <Header />
       <Flex
         borderBottom='1px'
         borderTop='1px'
