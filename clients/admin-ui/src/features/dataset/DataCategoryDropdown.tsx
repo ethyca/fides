@@ -56,6 +56,7 @@ const DataCategoryDropdown = ({
         _hover={{ backgroundColor: "transparent" }}
         _active={{ backgroundColor: "transparent" }}
         rightIcon={<ArrowDownLineIcon />}
+        width="100%"
       >
         Select data categories
       </MenuButton>

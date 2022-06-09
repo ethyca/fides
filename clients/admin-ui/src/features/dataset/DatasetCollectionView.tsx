@@ -51,7 +51,9 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
   const { dataset, isLoading } = useDataset(fidesKey);
   const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
-  const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [columns, setColumns] = useState<ColumnMetadata[]>(
+    ALL_COLUMNS.filter((c) => c.attribute !== "data_categories")
+  );
   const [isModifyingCollection, setIsModifyingCollection] = useState(false);
 
   // load data categories into redux
@@ -63,10 +65,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const router = useRouter();
   const toast = useToast();
   const { fromLoad } = router.query;
-
-  if (dataset) {
-    dispatch(setActiveDataset(dataset));
-  }
 
   useEffect(() => {
     if (dataset) {

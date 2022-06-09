@@ -81,11 +81,13 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               <SimpleGrid columns={[1, 2]}>
                 <FormLabel>Data Categories</FormLabel>
                 <Stack>
-                  <DataCategoryDropdown
-                    dataCategories={allDataCategories}
-                    checked={checkedDataCategories}
-                    onChecked={setCheckedDataCategories}
-                  />
+                  <Box>
+                    <DataCategoryDropdown
+                      dataCategories={allDataCategories}
+                      checked={checkedDataCategories}
+                      onChecked={setCheckedDataCategories}
+                    />
+                  </Box>
                   <Stack>
                     {sortedCheckedDataCategories.map((dc) => (
                       <DataCategoryTag
