@@ -33,7 +33,7 @@ const CheckboxItem = ({
       >
         {label}
       </Checkbox>
-      {children && <Box ml={5}>{children}</Box>}
+      {children && <Box ml={4}>{children}</Box>}
     </Box>
   );
 };
@@ -60,7 +60,6 @@ const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
   const createTree = (node: CheckboxNode) => {
     if (node.children) {
       const isChecked = checked.indexOf(node.value) >= 0;
-      console.log({ isChecked });
       return (
         <CheckboxItem
           node={node}

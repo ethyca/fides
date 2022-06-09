@@ -38,29 +38,36 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
   return (
     <Formik initialValues={initialValues} onSubmit={onSubmit}>
       <Form>
-        <Stack>
-          <Box>
-            <CustomTextInput name="description" label="Description" />
-          </Box>
-          <Box>
-            <CustomSelect name="data_qualifier" label="Identifiability">
-              {DATA_QUALIFIERS.map((qualifier) => (
-                <option key={qualifier.key} value={qualifier.key}>
-                  {qualifier.label}
-                </option>
-              ))}
-            </CustomSelect>
-          </Box>
-          <Box>
-            <SimpleGrid columns={[1, 2]}>
-              <FormLabel>Data Categories</FormLabel>
-              <DataCategoryDropdown
-                dataCategories={dataCategories}
-                checked={checkedDataCategories}
-                onChecked={setCheckedDataCategories}
-              />
-            </SimpleGrid>
-          </Box>
+        <Box
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          height="80vh"
+        >
+          <Stack>
+            <Box>
+              <CustomTextInput name="description" label="Description" />
+            </Box>
+            <Box>
+              <CustomSelect name="data_qualifier" label="Identifiability">
+                {DATA_QUALIFIERS.map((qualifier) => (
+                  <option key={qualifier.key} value={qualifier.key}>
+                    {qualifier.label}
+                  </option>
+                ))}
+              </CustomSelect>
+            </Box>
+            <Box>
+              <SimpleGrid columns={[1, 2]}>
+                <FormLabel>Data Categories</FormLabel>
+                <DataCategoryDropdown
+                  dataCategories={dataCategories}
+                  checked={checkedDataCategories}
+                  onChecked={setCheckedDataCategories}
+                />
+              </SimpleGrid>
+            </Box>
+          </Stack>
           <Box>
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
@@ -69,7 +76,7 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               Save
             </Button>
           </Box>
-        </Stack>
+        </Box>
       </Form>
     </Formik>
   );
