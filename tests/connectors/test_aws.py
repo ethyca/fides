@@ -1,59 +1,14 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from typing import Generator, List
+import os
+from typing import Generator
 
 import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
-from fidesctl.core import api
-from fidesctl.core import system as _system
+import fidesctl.connectors.aws as aws_connector
+from fidesctl.connectors.models import AWSConfig
 from fidesctl.core.config import FidesctlConfig
-
-
-def create_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
-    for system in systems:
-        api.create(
-            url=test_config.cli.server_url,
-            resource_type="system",
-            json_resource=system.json(exclude_none=True),
-            headers=test_config.user.request_headers,
-        )
-
-
-def delete_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
-    for system in systems:
-        api.delete(
-            url=test_config.cli.server_url,
-            resource_type="system",
-            resource_id=system.fides_key,
-            headers=test_config.user.request_headers,
-        )
-
-
-@pytest.fixture(scope="function")
-def create_test_server_systems(
-    test_config: FidesctlConfig, redshift_systems: List[System]
-) -> Generator:
-    systems = redshift_systems
-    delete_server_systems(test_config, systems)
-    create_server_systems(test_config, systems)
-    yield
-    delete_server_systems(test_config, systems)
-
-
-@pytest.fixture(scope="function")
-def create_external_server_systems(test_config: FidesctlConfig) -> Generator:
-    systems = _system.generate_redshift_systems(
-        organization_key="default_organization",
-        aws_config={},
-    ) + _system.generate_rds_systems(
-        organization_key="default_organization",
-        aws_config={},
-    )
-    delete_server_systems(test_config, systems)
-    create_server_systems(test_config, systems)
-    yield
-    delete_server_systems(test_config, systems)
 
 
 @pytest.fixture()
@@ -112,6 +67,14 @@ def redshift_systems() -> Generator:
         ),
     ]
     yield redshift_systems
+
+
+def get_test_aws_config() -> AWSConfig:
+    return AWSConfig(
+        region_name=os.environ["AWS_DEFAULT_REGION"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+    )
 
 
 @pytest.fixture()
@@ -179,69 +142,60 @@ def rds_describe_instances() -> Generator:
     yield describe_instances
 
 
+# Unit
 @pytest.mark.unit
-def test_get_system_arns(redshift_systems: Generator) -> None:
-    expected_result = [
-        "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
-        "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
-    ]
-    actual_result = _system.get_system_arns(redshift_systems)
-    assert actual_result == expected_result
+def test_transform_redshift_systems(
+    redshift_describe_clusters: Generator, redshift_systems: Generator
+) -> None:
+    actual_result = aws_connector.create_redshift_systems(
+        describe_clusters=redshift_describe_clusters,
+        organization_key="default_organization",
+    )
+    assert actual_result == redshift_systems
 
 
 @pytest.mark.unit
-def test_scan_aws_systems(
-    redshift_systems: List[System], rds_systems: List[System]
+def test_transform_rds_systems(
+    rds_describe_clusters: Generator,
+    rds_describe_instances: Generator,
+    rds_systems: Generator,
 ) -> None:
-    (
-        scan_text_output,
-        scanned_resource_count,
-        missing_resource_count,
-    ) = _system.scan_aws_systems(
-        aws_systems=redshift_systems + rds_systems,
-        existing_system_arns=[
-            "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
-        ],
+    actual_result = aws_connector.create_rds_systems(
+        describe_clusters=rds_describe_clusters,
+        describe_instances=rds_describe_instances,
+        organization_key="default_organization",
     )
-    assert scan_text_output
-    assert scanned_resource_count == 4
-    assert missing_resource_count == 3
+    assert actual_result == rds_systems
 
 
-@pytest.mark.integration
-def test_get_all_server_systems(
-    test_config: FidesctlConfig, create_test_server_systems: Generator
+# Integration
+@pytest.mark.external
+def test_describe_redshift_clusters(
+    tmpdir: LocalPath, test_config: FidesctlConfig
 ) -> None:
-    actual_result = _system.get_all_server_systems(
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-        exclude_systems=[],
+    client = aws_connector.get_aws_client(
+        service="redshift",
+        aws_config=get_test_aws_config(),
     )
+    actual_result = aws_connector.describe_redshift_clusters(client=client)
     assert actual_result
 
 
 @pytest.mark.external
-def test_scan_system_aws_passes(
-    test_config: FidesctlConfig, create_external_server_systems: Generator
-) -> None:
-    _system.scan_system_aws(
-        coverage_threshold=100,
-        manifest_dir="",
-        organization_key="default_organization",
-        aws_config=None,
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+def test_describe_rds_instances(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+    client = aws_connector.get_aws_client(
+        service="rds",
+        aws_config=get_test_aws_config(),
     )
+    actual_result = aws_connector.describe_rds_instances(client=client)
+    assert actual_result
 
 
 @pytest.mark.external
-def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
-    actual_result = _system.generate_system_aws(
-        file_name=f"{tmpdir}/test_file.yml",
-        include_null=False,
-        organization_key="default_organization",
-        aws_config=None,
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+def test_describe_rds_clusters(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+    client = aws_connector.get_aws_client(
+        service="rds",
+        aws_config=get_test_aws_config(),
     )
+    actual_result = aws_connector.describe_rds_clusters(client=client)
     assert actual_result

@@ -1,5 +1,7 @@
 import { useSelector } from "react-redux";
+import { useToast } from "@fidesui/react";
 
+import { errorToastParams, successToastParams } from "../common/toast";
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,
@@ -11,7 +13,7 @@ import { getUpdatedDatasetFromCollection } from "./helpers";
 import { DatasetCollection } from "./types";
 
 const DESCRIPTION =
-  "By providing a small amount of additional context for each system we can make reporting and understanding our tech stack much easier.";
+  "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
   collection: DatasetCollection;
   isOpen: boolean;
@@ -21,8 +23,9 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   const dataset = useSelector(selectActiveDataset);
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const [updateDataset] = useUpdateDatasetMutation();
+  const toast = useToast();
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: Pick<
       DatasetCollection,
       "description" | "data_qualifier" | "data_categories"
@@ -35,7 +38,12 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         updatedCollection,
         collectionIndex
       );
-      updateDataset(updatedDataset);
+      try {
+        await updateDataset(updatedDataset);
+        toast(successToastParams("Successfully modified collection"));
+      } catch (error) {
+        toast(errorToastParams(error as string));
+      }
       onClose();
     }
   };
