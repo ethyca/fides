@@ -744,42 +744,59 @@ def privacy_requests(db: Session, policy: Policy) -> Generator:
 def _create_privacy_request_for_policy(
     db: Session,
     policy: Policy,
+    status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
 ) -> PrivacyRequest:
+    data = {
+        "external_id": f"ext-{str(uuid4())}",
+        "requested_at": datetime(
+            2018,
+            12,
+            31,
+            hour=2,
+            minute=30,
+            second=23,
+            microsecond=916482,
+            tzinfo=timezone.utc,
+        ),
+        "status": status,
+        "origin": f"https://example.com/",
+        "policy_id": policy.id,
+        "client_id": policy.client_id,
+    }
+    if status != PrivacyRequestStatus.pending:
+        data["started_processing_at"] = datetime(
+            2019,
+            1,
+            1,
+            hour=1,
+            minute=45,
+            second=55,
+            microsecond=393185,
+            tzinfo=timezone.utc,
+        )
     return PrivacyRequest.create(
         db=db,
-        data={
-            "external_id": f"ext-{str(uuid4())}",
-            "started_processing_at": datetime(
-                2019,
-                1,
-                1,
-                hour=1,
-                minute=45,
-                second=55,
-                microsecond=393185,
-                tzinfo=timezone.utc,
-            ),
-            "requested_at": datetime(
-                2018,
-                12,
-                31,
-                hour=2,
-                minute=30,
-                second=23,
-                microsecond=916482,
-                tzinfo=timezone.utc,
-            ),
-            "status": PrivacyRequestStatus.in_processing,
-            "origin": f"https://example.com/",
-            "policy_id": policy.id,
-            "client_id": policy.client_id,
-        },
+        data=data,
     )
 
 
 @pytest.fixture(scope="function")
 def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(db, policy)
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.pending,
+    )
     yield privacy_request
     privacy_request.delete(db)
 

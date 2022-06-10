@@ -10,7 +10,7 @@ services:
     expose:
       - 8080
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -57,6 +57,25 @@ services:
       - 6379
     ports:
       - "0.0.0.0:6379:6379"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A fidesops.tasks beat -l info --logfile=/var/log/celery.log
+    depends_on:
+      fidesops:
+        condition: service_healthy
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    volumes:
+      - type: bind
+        source: ./
+        target: /fidesops
+        read_only: False
 
   docs:
     build:
