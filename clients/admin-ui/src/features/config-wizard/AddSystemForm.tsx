@@ -22,6 +22,8 @@ import {
   QuestionIcon,
 } from "~/features/common/Icon";
 
+import { iconButtonSize } from "./constants";
+
 const AddSystemForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => (
@@ -65,10 +67,10 @@ const AddSystemForm: NextPage<{
             <IconButton
               aria-label="AWS"
               background="white"
-              height="107px"
+              height={`${iconButtonSize}px`}
               icon={<AWSLogoIcon />}
               onClick={() => handleChangeStep(2)}
-              width="107px"
+              width={`${iconButtonSize}px`}
             />
             <Text>Infrastructure Scan (AWS)</Text>
             <Tooltip
@@ -83,10 +85,10 @@ const AddSystemForm: NextPage<{
             <IconButton
               aria-label="Okta"
               background="white"
-              height="107px"
+              height={`${iconButtonSize}px`}
               icon={<OktaLogoIcon />}
               onClick={() => handleChangeStep(2)}
-              width="107px"
+              width={`${iconButtonSize}px`}
             />
             <Text>System Scan (Okta)</Text>
             <Tooltip
@@ -102,10 +104,10 @@ const AddSystemForm: NextPage<{
               <IconButton
                 aria-label="Manual setup"
                 background="white"
-                height="107px"
+                height={`${iconButtonSize}px`}
                 icon={<ManualSetupIcon />}
                 onClick={() => handleChangeStep(4)}
-                width="107px"
+                width={`${iconButtonSize}px`}
               />
             </HStack>
             <Text>Add a system manually</Text>

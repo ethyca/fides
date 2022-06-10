@@ -6,7 +6,7 @@ import { CloseSolidIcon } from "~/features/common/Icon";
 
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
-import STEPS from "./constants";
+import { STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {

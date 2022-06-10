@@ -1,4 +1,4 @@
-const STEPS = [
+export const STEPS = [
   {
     number: 1,
     name: "Organization setup",
@@ -21,4 +21,4 @@ const STEPS = [
   },
 ];
 
-export default STEPS;
+export const iconButtonSize = "107";
