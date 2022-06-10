@@ -95,31 +95,6 @@ class ExecutionSettings(FidesSettings):
         env_prefix = "FIDESOPS__EXECUTION__"
 
 
-class PackageSettings(FidesSettings):
-    """Configuration settings for the fidesops package itself."""
-
-    PATH: Optional[str] = None
-
-    @validator("PATH", pre=True)
-    def ensure_valid_package_path(cls, v: Optional[str]) -> str:
-        """
-        Ensure a valid path to the fidesops src/ directory is provided.
-
-        This is required to enable fidesops-plus to start successfully.
-        """
-
-        if isinstance(v, str) and os.path.isdir(v):
-            return (
-                v if os.path.basename(v) == "fidesops" else os.path.join(v, "fidesops/")
-            )
-
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.normpath(os.path.join(current_dir, "../../"))
-
-    class Config:
-        env_prefix = "FIDESOPS__PACKAGE__"
-
-
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
@@ -253,7 +228,6 @@ class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
     database: DatabaseSettings
-    package = PackageSettings()
     redis: RedisSettings
     security: SecuritySettings
     execution: ExecutionSettings

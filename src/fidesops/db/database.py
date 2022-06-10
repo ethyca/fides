@@ -1,29 +1,27 @@
 """
 Contains all of the logic for spinning up/tearing down the database.
 """
-import os
+from os import path
 
 from alembic import command
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from pydantic import PostgresDsn
 
-from fidesops.core.config import config
 from fidesops.db.session import get_db_engine
 
 from .base import Base
 
 
-def get_alembic_config(
-    database_url: str,
-    package_source_dir: str = config.package.PATH,
-) -> Config:
+def get_alembic_config(database_url: str) -> Config:
     """
     Do lots of magic to make alembic work programmatically.
     """
 
-    migrations_dir = os.path.join(package_source_dir, "migrations/")
-    alembic_config = Config(os.path.join(package_source_dir, "alembic.ini"))
+    current_dir = path.dirname(path.abspath(__file__))
+    migrations_dir = path.abspath(path.join(current_dir, "../migrations"))
+
+    alembic_config = Config(path.abspath(path.join(current_dir, "../alembic.ini")))
     alembic_config.set_main_option("script_location", migrations_dir.replace("%", "%%"))
     alembic_config.set_main_option("sqlalchemy.url", database_url)
     return alembic_config
@@ -35,14 +33,11 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-def init_db(
-    database_url: PostgresDsn,
-    package_source_dir: str = config.package.PATH,
-) -> None:
+def init_db(database_url: PostgresDsn) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
-    alembic_config = get_alembic_config(database_url, package_source_dir)
+    alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
 
 
