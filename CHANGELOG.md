@@ -31,6 +31,7 @@ The types of changes are:
 * Refactor auth and enable static file serving [#577](https://github.com/ethyca/fidesops/pull/577)
 * Bumped mypy to version 0.961 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped Python to version 3.9.13 in the `Dockerfile` [#630](https://github.com/ethyca/fidesops/pull/630)
+* Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
 
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
