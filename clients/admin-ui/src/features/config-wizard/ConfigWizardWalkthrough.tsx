@@ -47,16 +47,10 @@ const ConfigWizardWalkthrough = () => {
               <Stepper activeStep={step} steps={STEPS} />
             </Box>
             {step === 1 ? (
-              <OrganizationInfoForm
-                handleChangeStep={(organizationStep: number) =>
-                  handleChangeStep(organizationStep)
-                }
-              />
+              <OrganizationInfoForm handleChangeStep={handleChangeStep} />
             ) : null}
             {step === 2 ? (
-              <AddSystemForm
-                handleChangeStep={handleChangeStep}
-              />
+              <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
           </Stack>
         </Stack>
