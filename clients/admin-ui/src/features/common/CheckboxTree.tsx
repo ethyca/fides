@@ -1,7 +1,7 @@
 import { Box, Checkbox, IconButton } from "@fidesui/react";
 import { Fragment, ReactNode, useState } from "react";
 
-import { ArrowDownLineIcon } from "./Icon";
+import { ArrowDownLineIcon, ArrowUpLineIcon } from "./Icon";
 
 interface CheckboxNode {
   label: string;
@@ -50,7 +50,7 @@ const CheckboxItem = ({
           <IconButton
             data-testid={`expand-${label}`}
             aria-label={isExpanded ? "collapse" : "expand"}
-            icon={<ArrowDownLineIcon />}
+            icon={isExpanded ? <ArrowUpLineIcon /> : <ArrowDownLineIcon />}
             variant="ghost"
             onClick={() => onExpanded(node)}
             size="sm"
