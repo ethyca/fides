@@ -69,6 +69,7 @@ interface CheckboxItemProps {
   onChecked: (node: CheckboxNode) => void;
   isExpanded: boolean;
   onExpanded: (node: CheckboxNode) => void;
+  isIndeterminate: boolean;
   children?: ReactNode;
 }
 const CheckboxItem = ({
@@ -77,6 +78,7 @@ const CheckboxItem = ({
   onChecked,
   isExpanded,
   onExpanded,
+  isIndeterminate,
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
@@ -92,7 +94,8 @@ const CheckboxItem = ({
         <Checkbox
           colorScheme="complimentary"
           value={value}
-          isChecked={isChecked}
+          isChecked={isIndeterminate ? false : isChecked}
+          isIndeterminate={isIndeterminate}
           onChange={() => onChecked(node)}
           mx={2}
           data-testid={`checkbox-${label}`}
@@ -149,7 +152,6 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
       newChecked = [...checked, ...descendants];
     }
     setChecked(newChecked);
-    console.log({ newChecked });
     // we want to make sure to only save the most specific descendant
     const descendants = getMostSpecificDescendants(newChecked);
     onSelected(descendants);
@@ -171,6 +173,18 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
     if (node.children) {
       const isChecked = checked.indexOf(node.value) >= 0;
       const isExpanded = expanded.indexOf(node.value) >= 0;
+      const isIndeterminate =
+        isChecked &&
+        node.children.length > 0 &&
+        node.children.length !==
+          selected.filter((s) => s.startsWith(node.value)).length;
+      console.log(
+        node.value,
+        node.children.length,
+        selected.filter((s) => s.startsWith(node.value)).length - 1,
+        { isIndeterminate }
+      );
+
       return (
         <CheckboxItem
           node={node}
@@ -178,6 +192,7 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
           onChecked={handleChecked}
           isExpanded={isExpanded}
           onExpanded={handleExpanded}
+          isIndeterminate={isIndeterminate}
         >
           {isExpanded &&
             node.children.map((childNode) => (

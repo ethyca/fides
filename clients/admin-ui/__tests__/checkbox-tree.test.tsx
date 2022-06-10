@@ -88,24 +88,12 @@ describe("Checkbox tree", () => {
     );
     fireEvent.click(getByTestId("checkbox-grandparent"));
     expect(handleSelected).toBeCalledTimes(1);
+    // we only mark the most specific ones as "selected"
     expect(handleSelected).toBeCalledWith([
       "grandparent.parent.child",
       "grandparent.parent.sibling",
       "grandparent.aunt",
     ]);
-    expect(getByTestId("checkbox-grandparent")).toHaveAttribute("data-checked");
-    expect(getByTestId("checkbox-grandparent.parent")).toHaveAttribute(
-      "data-checked"
-    );
-    expect(getByTestId("checkbox-grandparent.parent.sibling")).toHaveAttribute(
-      "data-checked"
-    );
-    expect(getByTestId("checkbox-grandparent.parent.child")).toHaveAttribute(
-      "data-checked"
-    );
-    expect(getByTestId("checkbox-grandparent.parent.aunt")).toHaveAttribute(
-      "data-checked"
-    );
   });
 
   it("can remove checked values", () => {
@@ -117,7 +105,9 @@ describe("Checkbox tree", () => {
         onSelected={handleSelected}
       />
     );
-    expect(getByTestId("checkbox-grandparent")).toHaveAttribute("data-checked");
+    expect(
+      getByTestId("checkbox-grandparent").querySelector("span")
+    ).toHaveAttribute("data-checked");
     fireEvent.click(getByTestId("checkbox-grandparent"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith([]);
@@ -142,36 +132,48 @@ describe("Checkbox tree", () => {
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
-  it("can make ancestors checked when all descendants are checked", () => {
+  it("can render ancestors indeterminate when some descendants are checked", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
         nodes={MOCK_NODES}
-        selected={[]}
+        selected={["grandparent.parent.child"]}
         onSelected={handleSelected}
       />
     );
-    fireEvent.click(getByTestId("expand-grandparent"));
-    fireEvent.click(getByTestId("checkbox-aunt"));
-    expect(handleSelected).toBeCalledTimes(1);
-    expect(handleSelected).toBeCalledWith(["grandparent.aunt"]);
-    expect(getByTestId("checkbox-grandparent")).toBeChecked();
+
+    expect(
+      getByTestId("checkbox-grandparent").querySelector("span")
+    ).toHaveAttribute("data-indeterminate");
+    expect(
+      getByTestId("checkbox-parent").querySelector("span")
+    ).toHaveAttribute("data-indeterminate");
+    expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
+      "data-checked"
+    );
   });
 
-  it("can make ancestors indeterminate when some descendants are checked", () => {
+  it("can render ancestors checked when all descendants are checked", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
         nodes={MOCK_NODES}
-        selected={[]}
+        selected={["grandparent.parent.child", "grandparent.parent.sibling"]}
         onSelected={handleSelected}
       />
     );
-    fireEvent.click(getByTestId("expand-grandparent"));
-    fireEvent.click(getByTestId("expand-parent"));
-    fireEvent.click(getByTestId("checkbox-child"));
-    expect(handleSelected).toBeCalledTimes(1);
-    expect(handleSelected).toBeCalledWith(["grandparent.parent.child"]);
+    expect(
+      getByTestId("checkbox-grandparent").querySelector("span")
+    ).toHaveAttribute("data-indeterminate");
+    expect(
+      getByTestId("checkbox-parent").querySelector("span")
+    ).toHaveAttribute("data-checked");
+    expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
+      "data-checked"
+    );
+    expect(
+      getByTestId("checkbox-sibling").querySelector("span")
+    ).toHaveAttribute("data-checked");
   });
 
   it("can render expanded when starting with checked child", () => {
