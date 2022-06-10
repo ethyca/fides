@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
+import DataCategoryTag from "~/features/taxonomy/DataCategoryTag";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import { DATA_QUALIFIERS } from "./constants";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 import { DatasetCollection, DatasetField } from "./types";
-import DataCategoryTag from "~/features/taxonomy/DataCategoryTag";
 
 type FormValues =
   | Pick<DatasetField, "description" | "data_qualifier" | "data_categories">
@@ -40,10 +40,10 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
     .slice()
     .sort((a, b) => a.localeCompare(b));
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element
     const newValues = {
-      ...values,
+      ...formValues,
       ...{ data_categories: checkedDataCategories },
     };
     onSubmit(newValues);
