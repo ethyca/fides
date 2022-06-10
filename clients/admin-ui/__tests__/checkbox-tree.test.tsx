@@ -45,14 +45,12 @@ describe("Checkbox tree", () => {
     expect(queryByTestId("sibling")).toBeNull();
   });
 
-  it("renders children when parent is selected", () => {
+  it("can expand children", () => {
     const { getByTestId, queryByTestId } = render(
-      <CheckboxTree
-        nodes={MOCK_NODES}
-        checked={["grandparent"]}
-        onChecked={jest.fn()}
-      />
+      <CheckboxTree nodes={MOCK_NODES} checked={[]} onChecked={jest.fn()} />
     );
+    expect(queryByTestId("checkbox-parent")).toBeNull();
+    fireEvent.click(getByTestId("expand-grandparent"));
     expect(getByTestId("checkbox-grandparent")).toBeInTheDocument();
     expect(getByTestId("checkbox-great uncle")).toBeInTheDocument();
     expect(getByTestId("checkbox-parent")).toBeInTheDocument();
@@ -103,4 +101,10 @@ describe("Checkbox tree", () => {
     expect(handleChecked).toBeCalledTimes(1);
     expect(handleChecked).toBeCalledWith(["great uncle"]);
   });
+
+  it("can make ancestors checked", () => {});
+
+  it("can make ancestors indeterminate", () => {});
+
+  it("can render expanded when starting with checked child", () => {});
 });
