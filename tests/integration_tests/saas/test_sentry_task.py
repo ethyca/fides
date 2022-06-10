@@ -14,6 +14,7 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
 def test_sentry_access_request_task(
@@ -263,6 +264,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
     return erasure_email, issue_url, headers
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
 def test_sentry_erasure_request_task(
