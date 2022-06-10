@@ -2,7 +2,7 @@ black==22.3.0
 Faker==8.12.1
 ipython
 isort
-mypy==0.812
+mypy==0.961
 packaging==20.9
 pdbpp
 pre-commit==2.9.3
@@ -11,3 +11,7 @@ pytest-cov==2.11.1
 pytest-env==0.6.2
 pytest==6.2.2
 requests-mock==1.8.0
+types-PyYAML==6.0.8
+types-redis==4.2.6
+types-toml==0.10.7
+types-ujson==5.2.0

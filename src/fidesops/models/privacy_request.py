@@ -177,7 +177,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
 
     reviewer = relationship(
-        "FidesopsUser", backref=backref("privacy_request", passive_deletes=True)
+        FidesopsUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
 

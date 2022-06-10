@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.9.6-slim-buster
+FROM --platform=linux/amd64 python:3.9.13-slim-buster
 
 ARG MSSQL_REQUIRED
 

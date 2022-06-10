@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
-from sqlalchemy.engine import (
+from sqlalchemy.engine import (  # type: ignore
     URL,
     Connection,
     CursorResult,
@@ -13,7 +13,7 @@ from sqlalchemy.engine import (
     create_engine,
 )
 from sqlalchemy.exc import InternalError, OperationalError
-from sqlalchemy.sql import Executable
+from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
 from fidesops.common_exceptions import ConnectionException

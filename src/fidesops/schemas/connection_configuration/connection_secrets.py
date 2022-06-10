@@ -16,14 +16,14 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
     _required_components: List[str]
 
-    def __init_subclass__(cls: BaseModel, **kwargs: Any):
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
+        super().__init_subclass__(**kwargs)  # type: ignore
         if not getattr(cls, "_required_components"):
-            raise TypeError(f"Class {cls.__name__} must define '_required_components.'")
+            raise TypeError(f"Class {cls.__name__} must define '_required_components.'")  # type: ignore
 
     @root_validator
     @classmethod
-    def required_components_supplied(
+    def required_components_supplied(  # type: ignore
         cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied.
@@ -35,7 +35,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
         )
         if not min_fields_present:
             raise ValueError(
-                f"{cls.__name__} must be supplied a 'url' or all of: {cls._required_components}."
+                f"{cls.__name__} must be supplied a 'url' or all of: {cls._required_components}."  # type: ignore
             )
 
         return values

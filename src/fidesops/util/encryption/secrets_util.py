@@ -66,7 +66,7 @@ class SecretsUtil:
             meta = masking_secret_meta[secret_type]
             secret: T = meta.generate_secret_func(meta.secret_length)
             masking_secrets.append(
-                MaskingSecretCache[T](
+                MaskingSecretCache[T](  # type: ignore
                     secret=secret,
                     masking_strategy=meta.masking_strategy,
                     secret_type=secret_type,

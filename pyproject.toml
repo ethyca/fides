@@ -4,10 +4,18 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 ######
 # MyPy
 ######
-# [tool.mypy] Waiting for new version of Mypy
-# warn_unused_configs = true
-# ignore_missing_imports = true
-# pretty = true
+[tool.mypy]
+exclude = ["src.migrations.*"]
+warn_unused_configs = true
+ignore_missing_imports = true
+pretty = true
+plugins = ["pydantic.mypy", "sqlmypy"]
+disallow_untyped_defs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
 
 #######
 # Black

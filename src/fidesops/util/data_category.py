@@ -8,7 +8,7 @@ from fidesops import common_exceptions
 
 def generate_fides_data_categories() -> Type[EnumType]:
     """Programmatically generated the DataCategory enum based on the imported Fides data."""
-    FidesDataCategory = EnumType(
+    FidesDataCategory = EnumType(  # type: ignore
         "FidesDataCategory",
         {cat.fides_key: cat.fides_key for cat in DEFAULT_TAXONOMY.data_category},
     )

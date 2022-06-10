@@ -6,7 +6,7 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 import pydash
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Executable, Update
+from sqlalchemy.sql import Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fidesops.graph.config import (

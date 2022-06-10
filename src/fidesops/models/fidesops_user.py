@@ -32,7 +32,7 @@ class FidesopsUser(Base):
     )
 
     client = relationship(
-        "ClientDetail", backref="user", cascade="all, delete", uselist=False
+        "ClientDetail", backref="user", cascade="all, delete", uselist=False  # type: ignore
     )
 
     @classmethod

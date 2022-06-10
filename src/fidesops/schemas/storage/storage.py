@@ -173,7 +173,7 @@ class StorageDestination(BaseModel):
             )
 
         try:
-            schema.parse_obj(v)
+            schema.parse_obj(v)  # type: ignore
         except ValidationError as exc:
             # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
             # so this exception is cast into a `ValueError`.

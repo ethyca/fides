@@ -27,6 +27,6 @@ class NoValidationSchema(BaseModel):
     but we still want valid request schemas to show up in the docs."""
 
     @classmethod
-    def validate(cls: "NoValidationSchema", value: Any) -> Any:
+    def validate(cls: "NoValidationSchema", value: Any) -> Any:  # type: ignore
         """Returns value exactly as it was passed in, when validation is going to be handled later."""
         return value

@@ -473,11 +473,11 @@ def get_request_status(
     if include_identities:
         # Conditionally include the cached identity data in the response if
         # it is explicitly requested
-        for item in paginated.items:
+        for item in paginated.items:  # type: ignore
             item.identity = item.get_cached_identity_data()
             attach_resume_instructions(item)
     else:
-        for item in paginated.items:
+        for item in paginated.items:  # type: ignore
             attach_resume_instructions(item)
 
     return paginated
