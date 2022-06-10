@@ -3,10 +3,10 @@ include README.md
 include requirements.txt
 include dev-requirements.txt
 include versioneer.py
-include src/alembic.ini
+include src/fidesops/alembic.ini
 include src/fidesops/_version.py
-graft src/migrations
-exclude src/migrations/README
-exclude src/migrations/script.py.mako
+graft src/fidesops/migrations
+exclude src/fidesops/migrations/README
+exclude src/fidesops/migrations/script.py.mako
 
 global-exclude *.pyc

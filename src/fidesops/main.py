@@ -56,7 +56,7 @@ def start_webserver() -> None:
 
     if config.database.ENABLED:
         logger.info("Running any pending DB migrations...")
-        init_db(config.database.SQLALCHEMY_DATABASE_URI, config.package.PATH)
+        init_db(config.database.SQLALCHEMY_DATABASE_URI)
 
     scheduler.start()
 

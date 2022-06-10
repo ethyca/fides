@@ -17,7 +17,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.2...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.3...main)
 
 ### Added
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
@@ -34,6 +34,14 @@ The types of changes are:
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
+
+## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
+
+### Changed
+* Database migrations now exist as part of the core `fidesops` package [#620](https://github.com/ethyca/fidesops/pull/620)
+
+### Removed
+* The `[package]` config section no longer exists [#620](https://github.com/ethyca/fidesops/pull/620)
 
 ## [1.5.2](https://github.com/ethyca/fidesops/compare/1.5.1...1.5.2)
 
