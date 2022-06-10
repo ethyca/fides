@@ -1,6 +1,6 @@
 import hashlib
 import hmac
-from typing import Callable, Optional
+from typing import Callable
 
 from fidesops.core.config import config
 from fidesops.schemas.masking.masking_configuration import HmacMaskingConfiguration
@@ -37,9 +37,10 @@ def _hmac_encrypt(
         HmacMaskingConfiguration.Algorithm.sha_512: _hmac_sha512,
     }
 
-    algorithm_function: Optional[
-        Callable[[str, str, str], hmac.HMAC]
-    ] = algorithm_function_mapping.get(hashing_algorithm)
+    if hashing_algorithm not in algorithm_function_mapping.keys():
+        raise ValueError(f"{hashing_algorithm} is an unsupported hashing_algorithm")
+
+    algorithm_function = algorithm_function_mapping[hashing_algorithm]
     return algorithm_function(value, hmac_key, salt)
 
 

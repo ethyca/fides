@@ -94,7 +94,7 @@ def retry(
                 step=action_type, collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.
-            raise raised_ex
+            raise raised_ex  # type: ignore
 
         return result
 

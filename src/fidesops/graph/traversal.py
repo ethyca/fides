@@ -213,7 +213,7 @@ class Traversal:
 
     def traversal_map(
         self,
-    ) -> Tuple[Dict[str, Dict[str, Any]], List[CollectionAddress]]:
+    ) -> Tuple[Dict[str, List[Dict[str, Any]]], List[CollectionAddress]]:
         """Generate a descriptive map of the traversal generated.
 
         For each traversal_node N, list

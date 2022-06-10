@@ -280,7 +280,7 @@ class FidesopsConfig(FidesSettings):
             for key, value in settings.dict().items():
                 logger.debug(
                     "Using config: %s%s = %s",
-                    NotPii(settings.Config.env_prefix),
+                    NotPii(settings.Config.env_prefix),  # type: ignore
                     NotPii(key),
                     NotPii(value),
                 )

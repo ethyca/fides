@@ -320,8 +320,8 @@ def get_datasets(
     # DatasetConfig. This has to be done *afterwards* to ensure that the
     # paginated query is handled by paginate()
     paginated_results = paginate(dataset_configs, params=params)
-    paginated_results.items = [
-        dataset_config.dataset for dataset_config in paginated_results.items
+    paginated_results.items = [  # type: ignore
+        dataset_config.dataset for dataset_config in paginated_results.items  # type: ignore
     ]
     return paginated_results
 

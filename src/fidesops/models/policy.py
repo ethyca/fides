@@ -8,7 +8,7 @@ from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session, backref, declared_attr, relationship
+from sqlalchemy.orm import Session, backref, declared_attr, relationship  # type: ignore
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -454,7 +454,7 @@ class WebhookBase:
 
     @declared_attr
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+        return cls.__name__.lower()  # type: ignore
 
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
@@ -490,7 +490,7 @@ class WebhookBase:
         """
 
         cls = self.__class__
-        webhooks = getattr(self.policy, f"{cls.prefix}_execution_webhooks").order_by(
+        webhooks = getattr(self.policy, f"{cls.prefix}_execution_webhooks").order_by(  # type: ignore
             cls.order
         )  # pylint: disable=W0143
 

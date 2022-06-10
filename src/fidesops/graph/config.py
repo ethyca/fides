@@ -455,7 +455,7 @@ class Collection(BaseModel):
     def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
         """return identity pointers included in the table"""
         return {
-            field_path: field.identity
+            field_path: field.identity  # type: ignore
             for field_path, field in self.field_dict.items()
             if field.identity
         }
