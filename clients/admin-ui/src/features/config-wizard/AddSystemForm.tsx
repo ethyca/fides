@@ -25,9 +25,7 @@ import {
 const AddSystemForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => (
-  <chakra.form
-  // onSubmit={handleSubmit}
-  >
+  <chakra.form>
     <Stack ml="50px" spacing="24px" w="80%">
       <Heading as="h3" size="lg">
         Add a system
@@ -48,7 +46,7 @@ const AddSystemForm: NextPage<{
                   width="auto"
                 >
                   <Text display="inline" color="complimentary.500">
-                    { isExpanded ? (show less) : (show more) }
+                    {isExpanded ? `(show less)` : `(show more)`}
                   </Text>
                 </AccordionButton>
               </h2>
