@@ -155,3 +155,9 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 @pytest.fixture(scope="session")
 def integration_config() -> MutableMapping[str, Any]:
     yield load_toml("fidesops-integration.toml")
+
+
+@pytest.fixture(autouse=True, scope="session")
+def celery_enable_logging():
+    """Turns on celery output logs."""
+    return True

@@ -90,6 +90,8 @@ class ExecutionSettings(FidesSettings):
     TASK_RETRY_BACKOFF: int
     REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
     MASKING_STRICT: bool = True
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
