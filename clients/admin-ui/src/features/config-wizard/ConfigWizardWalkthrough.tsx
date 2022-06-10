@@ -55,9 +55,7 @@ const ConfigWizardWalkthrough = () => {
             ) : null}
             {step === 2 ? (
               <AddSystemForm
-                handleChangeStep={(organizationStep: number) =>
-                  handleChangeStep(organizationStep)
-                }
+                handleChangeStep={handleChangeStep}
               />
             ) : null}
           </Stack>
