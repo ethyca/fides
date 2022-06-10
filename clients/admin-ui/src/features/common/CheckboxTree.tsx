@@ -1,5 +1,5 @@
 import { Box, Checkbox, IconButton } from "@fidesui/react";
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 
 import { ArrowDownLineIcon, ArrowUpLineIcon } from "./Icon";
 
@@ -15,7 +15,6 @@ interface CheckboxItemProps {
   onChecked: (node: CheckboxNode) => void;
   isExpanded: boolean;
   onExpanded: (node: CheckboxNode) => void;
-  hasDescendants: boolean;
   children?: ReactNode;
 }
 const CheckboxItem = ({
@@ -24,10 +23,10 @@ const CheckboxItem = ({
   onChecked,
   isExpanded,
   onExpanded,
-  hasDescendants,
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
+  const hasDescendants = node.children ? node.children.length > 0 : false;
 
   return (
     <Box>
@@ -70,6 +69,30 @@ interface CheckboxTreeProps {
 
 const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
   const [expanded, setExpanded] = useState<string[]>([]);
+
+  useEffect(() => {
+    // if something is selected, we should expand the checkbox to show it
+    // from i.e. ["account.contact.city"] get ["account", "account.contact", "account.contact.city"]
+    const nestedNodeNames = checked.map((c) => {
+      const splitNames = c.split(".");
+      const ancestors: string[] = [];
+      splitNames.forEach((name) => {
+        const parent =
+          ancestors.length > 0 ? ancestors[ancestors.length - 1] : null;
+        if (!parent) {
+          ancestors.push(name);
+        } else {
+          ancestors.push(`${parent}.${name}`);
+        }
+      });
+      return ancestors;
+    });
+    const nodeNames = new Set(
+      nestedNodeNames.reduce((acc, value) => acc.concat(value), [])
+    );
+    setExpanded(Array.from(nodeNames));
+  }, [checked]);
+
   const handleChecked = (node: CheckboxNode) => {
     if (checked.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unchecking children
@@ -102,7 +125,6 @@ const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
           onChecked={handleChecked}
           isExpanded={isExpanded}
           onExpanded={handleExpanded}
-          hasDescendants={node.children.length > 0}
         >
           {isExpanded &&
             node.children.map((childNode) => (

@@ -40,9 +40,9 @@ describe("Checkbox tree", () => {
     );
     expect(getByTestId("checkbox-grandparent")).toBeInTheDocument();
     expect(getByTestId("checkbox-great uncle")).toBeInTheDocument();
-    expect(queryByTestId("parent")).toBeNull();
-    expect(queryByTestId("child")).toBeNull();
-    expect(queryByTestId("sibling")).toBeNull();
+    expect(queryByTestId("checkbox-parent")).toBeNull();
+    expect(queryByTestId("checkbox-child")).toBeNull();
+    expect(queryByTestId("checkbox-sibling")).toBeNull();
   });
 
   it("can expand children", () => {
@@ -55,8 +55,8 @@ describe("Checkbox tree", () => {
     expect(getByTestId("checkbox-great uncle")).toBeInTheDocument();
     expect(getByTestId("checkbox-parent")).toBeInTheDocument();
     expect(getByTestId("checkbox-aunt")).toBeInTheDocument();
-    expect(queryByTestId("child")).toBeNull();
-    expect(queryByTestId("sibling")).toBeNull();
+    expect(queryByTestId("checkbox-child")).toBeNull();
+    expect(queryByTestId("checkbox-sibling")).toBeNull();
   });
 
   it("can add checked values", () => {
@@ -78,6 +78,7 @@ describe("Checkbox tree", () => {
         onChecked={handleChecked}
       />
     );
+    expect(getByTestId("checkbox-grandparent")).toHaveAttribute("data-checked");
     fireEvent.click(getByTestId("checkbox-grandparent"));
     expect(handleChecked).toBeCalledTimes(1);
     expect(handleChecked).toBeCalledWith([]);
@@ -102,9 +103,46 @@ describe("Checkbox tree", () => {
     expect(handleChecked).toBeCalledWith(["great uncle"]);
   });
 
-  it("can make ancestors checked", () => {});
+  it("can make ancestors checked when all descendants are checked", () => {
+    const handleChecked = jest.fn();
+    const { getByTestId } = render(
+      <CheckboxTree nodes={MOCK_NODES} checked={[]} onChecked={handleChecked} />
+    );
+    fireEvent.click(getByTestId("expand-grandparent"));
+    fireEvent.click(getByTestId("checkbox-aunt"));
+    expect(handleChecked).toBeCalledTimes(1);
+    expect(handleChecked).toBeCalledWith(["grandparent.aunt"]);
+    // expect(getByTestId("checkbox-grandparent")).toBeChecked();
+  });
 
-  it("can make ancestors indeterminate", () => {});
+  it("can make ancestors indeterminate when some descendants are checked", () => {
+    const handleChecked = jest.fn();
+    const { getByTestId } = render(
+      <CheckboxTree nodes={MOCK_NODES} checked={[]} onChecked={handleChecked} />
+    );
+    fireEvent.click(getByTestId("expand-grandparent"));
+    fireEvent.click(getByTestId("expand-parent"));
+    fireEvent.click(getByTestId("checkbox-child"));
+    expect(handleChecked).toBeCalledTimes(1);
+    expect(handleChecked).toBeCalledWith(["child"]);
+  });
 
-  it("can render expanded when starting with checked child", () => {});
+  it("can render expanded when starting with checked child", () => {
+    const { getByTestId } = render(
+      <CheckboxTree
+        nodes={MOCK_NODES}
+        checked={["grandparent.parent.child"]}
+        onChecked={jest.fn()}
+      />
+    );
+    expect(getByTestId("checkbox-child")).toBeInTheDocument();
+  });
+
+  it("does not render an expanding arrow when node has no children", () => {
+    const { getByTestId, queryByTestId } = render(
+      <CheckboxTree nodes={MOCK_NODES} checked={[]} onChecked={jest.fn()} />
+    );
+    expect(getByTestId("expand-grandparent")).toBeInTheDocument();
+    expect(queryByTestId("expand-great uncle")).toBeNull();
+  });
 });

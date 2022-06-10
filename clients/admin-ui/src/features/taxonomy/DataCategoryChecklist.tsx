@@ -13,7 +13,7 @@ const DataCategoryChecklist = ({ dataCategories }: Props) => {
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
   );
-  const [checked, setChecked] = useState<string[]>([]);
+  const [checked, setChecked] = useState<string[]>(["account.contact.city"]);
 
   return (
     <Box>
