@@ -1,12 +1,21 @@
-import { Box, Select, Spinner, Text, useToast } from "@fidesui/react";
+import { Box, Select, Spinner, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { FidesKey } from "../common/fides-types";
+import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";
-import { useGetDatasetByKeyQuery } from "./dataset.slice";
+import {
+  selectActiveCollectionIndex,
+  setActiveCollectionIndex,
+  setActiveDataset,
+  useGetDatasetByKeyQuery,
+} from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
-import { ColumnMetadata, DatasetCollection } from "./types";
+import EditCollectionDrawer from "./EditCollectionDrawer";
+import MoreActionsMenu from "./MoreActionsMenu";
+import { ColumnMetadata } from "./types";
 
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Field Name", attribute: "name" },
@@ -14,12 +23,6 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Personal Data Categories", attribute: "data_categories" },
   { name: "Identifiability", attribute: "data_qualifier" },
 ];
-
-const SuccessMessage = () => (
-  <Text>
-    <strong>Success:</strong> Successfully loaded dataset
-  </Text>
-);
 
 const useDataset = (key: FidesKey) => {
   const { data, isLoading } = useGetDatasetByKeyQuery(key);
@@ -35,33 +38,33 @@ interface Props {
 }
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
+  const dispatch = useDispatch();
   const { dataset, isLoading } = useDataset(fidesKey);
-  const [activeCollection, setActiveCollection] =
-    useState<DatasetCollection | null>();
+  const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [isModifyingCollection, setIsModifyingCollection] = useState(false);
 
   const router = useRouter();
   const toast = useToast();
   const { fromLoad } = router.query;
 
+  if (dataset) {
+    dispatch(setActiveDataset(dataset));
+  }
+
   useEffect(() => {
     if (dataset) {
-      setActiveCollection(dataset.collections[0]);
-    } else {
-      setActiveCollection(null);
+      dispatch(setActiveDataset(dataset));
     }
-  }, [dataset]);
+  }, [dispatch, dataset]);
+
+  useEffect(() => {
+    dispatch(setActiveCollectionIndex(0));
+  }, [dispatch]);
 
   useEffect(() => {
     if (fromLoad) {
-      toast({
-        variant: "subtle",
-        position: "top",
-        description: <SuccessMessage />,
-        duration: 5000,
-        status: "success",
-        isClosable: true,
-      });
+      toast(successToastParams("Successfully loaded dataset"));
     }
   }, [fromLoad, toast]);
 
@@ -74,12 +77,11 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   }
 
   const { collections } = dataset;
+  const activeCollection =
+    activeCollectionIndex != null ? collections[activeCollectionIndex] : null;
 
   const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {
-    const collection = collections.filter(
-      (c) => c.name === event.target.value
-    )[0];
-    setActiveCollection(collection);
+    dispatch(setActiveCollectionIndex(event.target.selectedIndex));
   };
 
   return (
@@ -92,18 +94,34 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             </option>
           ))}
         </Select>
-        <ColumnDropdown
-          allColumns={ALL_COLUMNS}
-          selectedColumns={columns}
-          onChange={setColumns}
-        />
+        <Box display="flex">
+          <Box mr={2}>
+            <ColumnDropdown
+              allColumns={ALL_COLUMNS}
+              selectedColumns={columns}
+              onChange={setColumns}
+            />
+          </Box>
+          <MoreActionsMenu
+            onModifyCollection={() => {
+              setIsModifyingCollection(true);
+            }}
+          />
+        </Box>
       </Box>
-      {activeCollection && (
-        <DatasetFieldsTable
-          fields={activeCollection.fields}
-          columns={columns}
-        />
-      )}
+      {activeCollection ? (
+        <>
+          <DatasetFieldsTable
+            fields={activeCollection.fields}
+            columns={columns}
+          />
+          <EditCollectionDrawer
+            collection={activeCollection}
+            isOpen={isModifyingCollection}
+            onClose={() => setIsModifyingCollection(false)}
+          />
+        </>
+      ) : null}
     </Box>
   );
 };

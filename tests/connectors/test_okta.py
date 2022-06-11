@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import os
 from typing import Generator
 
 import pytest
@@ -7,6 +8,7 @@ from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
 import fidesctl.connectors.okta as okta_connector
+from fidesctl.connectors.models import OktaConfig
 from fidesctl.core.config import FidesctlConfig
 
 
@@ -112,6 +114,11 @@ def test_create_okta_datasets_filters_inactive(
 # Integration
 @pytest.mark.external
 def test_list_okta_applications(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
-    client = okta_connector.get_okta_client({"orgUrl": "https://dev-78908748.okta.com"})
+    client = okta_connector.get_okta_client(
+        OktaConfig(
+            orgUrl="https://dev-78908748.okta.com",
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        )
+    )
     actual_result = okta_connector.list_okta_applications(okta_client=client)
     assert actual_result
