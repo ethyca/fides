@@ -142,3 +142,6 @@ saas_config.toml
 
 # Script secrets
 scripts/secrets.py
+
+# celery beat schedule file
+celerybeat-schedule
