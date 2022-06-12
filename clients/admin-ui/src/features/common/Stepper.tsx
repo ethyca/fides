@@ -1,22 +1,39 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
 
-import { StepperCircleIcon, VerticalLineIcon } from "./Icon";
+import {
+  StepperCircleCheckmarkIcon,
+  StepperCircleIcon,
+  VerticalLineIcon,
+} from "./Icon";
 
 interface Props {
   activeStep: number | null;
+  setActiveStep: Function;
   steps: { number: number; name: string }[];
 }
 
-const Stepper = ({ activeStep, steps }: Props) => (
+const Stepper = ({ activeStep, setActiveStep, steps }: Props) => (
   <Stack direction={["column", "row"]} w="100%">
     <Stack alignItems="center" direction="column" spacing={0}>
       {steps.map((step) => (
         <React.Fragment key={step.number}>
-          <StepperCircleIcon
-            boxSize={8}
-            stroke={activeStep === step.number ? "secondary.500" : "inherit"}
-          />
+          {activeStep &&
+          activeStep !== 1 &&
+          activeStep !== step.number &&
+          activeStep > step.number - 1 ? (
+            <StepperCircleCheckmarkIcon
+              boxSize={8}
+              cursor="pointer"
+              onClick={() => setActiveStep(step.number)}
+            />
+          ) : (
+            <StepperCircleIcon
+              boxSize={8}
+              cursor="pointer"
+              onClick={() => setActiveStep(step.number)}
+            />
+          )}
           {step.number !== steps.length ? (
             <VerticalLineIcon boxSize={20} />
           ) : null}
