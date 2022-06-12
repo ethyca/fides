@@ -22,16 +22,56 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
     "/{organization_fides_key}",
     status_code=status.HTTP_200_OK,
     responses={
+        status.HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "system.name": "Demo Analytics System",
+                            "system.data_responsibility_title": "Controller",
+                            "system.administrating_department": "Engineering",
+                            "system.privacy_declaration.data_use.name": "System",
+                            "system.privacy_declaration.data_use.legal_basis": "N/A",
+                            "system.privacy_declaration.data_use.special_category": "N/A",
+                            "system.privacy_declaration.data_use.recipients": "N/A",
+                            "system.privacy_declaration.data_use.legitimate_interest": "N/A",
+                            "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "N/A",
+                            "system.privacy_declaration.data_subjects.name": "Customer",
+                            "system.privacy_declaration.data_subjects.rights_available": "No data subject rights listed",
+                            "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "N/A",
+                            "system.data_protection_impact_assessment.is_required": "true",
+                            "system.data_protection_impact_assessment.progress": "Complete",
+                            "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
+                            "dataset.name": "N/A",
+                            "third_country_combined": "GBR, USA, CAN",
+                            "unioned_data_categories": "user.provided.identifiable.contact",
+                            "dataset.retention": "N/A",
+                            "system.joint_controller": "",
+                            "system.third_country_safeguards": "",
+                            "system.link_to_processor_contract": "",
+                            "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/",
+                        }
+                    ]
+                }
+            }
+        },
         status.HTTP_400_BAD_REQUEST: {
             "content": {
                 "application/json": {
                     "example": {"detail": "Unable to compile data map."}
                 }
             }
-        }
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "content": {
+                "application/json": {"example": {"detail": "Resource not found."}}
+            }
+        },
     },
 )
-async def export_datamap(organization_fides_key: str, response: Response) -> Dict:
+async def export_datamap(
+    organization_fides_key: str, response: Response
+) -> Dict[str, str]:
     """
     An endpoint to return the data map for a given Organization.
 
@@ -51,7 +91,7 @@ async def export_datamap(organization_fides_key: str, response: Response) -> Dic
             )
         except NotFoundError:
             error = NotFoundError("organization", organization_fides_key)
-            log.bind(error=error.detail["error"]).error("Resource not found")
+            log.bind(error=error.detail["error"]).error("Resource not found.")
             raise error
         server_resource_dict = {"organization": [organization]}
 
