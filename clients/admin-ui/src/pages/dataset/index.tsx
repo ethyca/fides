@@ -9,11 +9,13 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import Layout from "~/features/common/Layout";
 import {
   selectActiveDataset,
+  setActiveDataset,
   useGetAllDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
@@ -31,6 +33,11 @@ const DataSets: NextPage = () => {
   const { isLoading, datasets } = useDatasetsTable();
   const activeDataset = useSelector(selectActiveDataset);
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setActiveDataset(null));
+  }, [dispatch]);
 
   const handleLoadDataset = () => {
     // use the router to let the page know we loaded the dataset from this view

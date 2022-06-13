@@ -9,6 +9,7 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
 from py._path.local import LocalPath
 
+from fidesctl.connectors.models import OktaConfig
 from fidesctl.core import api
 from fidesctl.core import dataset as _dataset
 from fidesctl.core.config import FidesctlConfig
@@ -478,12 +479,18 @@ class TestDatabase:
         )
 
 
+OKTA_ORG_URL = "https://dev-78908748.okta.com"
+
+
 @pytest.mark.external
 def test_generate_dataset_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
     actual_result = _dataset.generate_dataset_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
     )
     assert actual_result
 
@@ -496,11 +503,17 @@ def test_scan_dataset_okta_success(
     _dataset.generate_dataset_okta(
         file_name=file_name,
         include_null=False,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
     )
     _dataset.scan_dataset_okta(
         manifest_dir=file_name,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
         coverage_threshold=100,
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -513,7 +526,10 @@ def test_scan_dataset_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) 
     with pytest.raises(SystemExit):
         _dataset.scan_dataset_okta(
             manifest_dir="",
-            okta_config={"orgUrl": "https://dev-78908748.okta.com"},
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
             coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,

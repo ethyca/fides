@@ -180,31 +180,6 @@ def rds_describe_instances() -> Generator:
 
 
 @pytest.mark.unit
-def test_transform_redshift_systems(
-    redshift_describe_clusters: Generator, redshift_systems: Generator
-) -> None:
-    actual_result = _system.transform_redshift_systems(
-        describe_clusters=redshift_describe_clusters,
-        organization_key="default_organization",
-    )
-    assert actual_result == redshift_systems
-
-
-@pytest.mark.unit
-def test_transform_rds_systems(
-    rds_describe_clusters: Generator,
-    rds_describe_instances: Generator,
-    rds_systems: Generator,
-) -> None:
-    actual_result = _system.transform_rds_systems(
-        describe_clusters=rds_describe_clusters,
-        describe_instances=rds_describe_instances,
-        organization_key="default_organization",
-    )
-    assert actual_result == rds_systems
-
-
-@pytest.mark.unit
 def test_get_system_arns(redshift_systems: Generator) -> None:
     expected_result = [
         "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
@@ -253,7 +228,7 @@ def test_scan_system_aws_passes(
         coverage_threshold=100,
         manifest_dir="",
         organization_key="default_organization",
-        aws_config={},
+        aws_config=None,
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
     )
@@ -265,7 +240,7 @@ def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> 
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
         organization_key="default_organization",
-        aws_config={},
+        aws_config=None,
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
     )

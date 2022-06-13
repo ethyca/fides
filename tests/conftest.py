@@ -6,7 +6,9 @@ from typing import Dict, Generator, Union
 import pytest
 import yaml
 from fideslang import models
+from starlette.testclient import TestClient
 
+from fidesapi import main
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -33,6 +35,13 @@ def test_invalid_config_path() -> Generator:
 @pytest.fixture(scope="session")
 def test_config(test_config_path: str) -> Generator:
     yield get_config(test_config_path)
+
+
+@pytest.fixture(scope="session")
+def test_client() -> Generator:
+    """Starlette test client fixture. Easier to use mocks with when testing out API calls"""
+    with TestClient(main.app) as test_client:
+        yield test_client
 
 
 @pytest.fixture(scope="session", autouse=True)

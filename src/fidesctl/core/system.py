@@ -3,10 +3,11 @@ from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
 from fideslang import manifests
-from fideslang.models import Organization, System, SystemMetadata
+from fideslang.models import Organization, System
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response
+from fidesctl.connectors.models import AWSConfig
 from fidesctl.core import api
 from fidesctl.core.api_helpers import get_server_resource, get_server_resources
 from fidesctl.core.parse import parse
@@ -15,152 +16,34 @@ from .filters import filter_aws_systems
 from .utils import echo_green, echo_red
 
 
-def describe_redshift_clusters(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
-    """
-    Creates boto3 redshift client and returns describe_clusters response.
-    """
-    import boto3
-
-    redshift_client = boto3.client(
-        "redshift",
-        **aws_config,
-    )
-    describe_clusters = redshift_client.describe_clusters()
-    return describe_clusters
-
-
-def transform_redshift_systems(
-    describe_clusters: Dict[str, List[Dict]], organization_key: str
-) -> List[System]:
-    """
-    Given a "describe_clusters" response, build a system object which represents
-    each cluster.
-    """
-    redshift_systems = [
-        System(
-            fides_key=cluster["ClusterIdentifier"],
-            name=cluster["ClusterIdentifier"],
-            description=f"Fides Generated Description for Redshift Cluster: {cluster['ClusterIdentifier']}",
-            system_type="redshift_cluster",
-            organization_fides_key=organization_key,
-            fidesctl_meta=SystemMetadata(
-                endpoint_address=cluster["Endpoint"]["Address"]
-                if cluster.get("Endpoint")
-                else None,
-                endpoint_port=cluster["Endpoint"]["Port"]
-                if cluster.get("Endpoint")
-                else None,
-                resource_id=cluster["ClusterNamespaceArn"],
-            ),
-            privacy_declarations=[],
-        )
-        for cluster in describe_clusters["Clusters"]
-    ]
-    return redshift_systems
-
-
 def generate_redshift_systems(
-    organization_key: str, aws_config: Dict[str, str]
+    organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
     Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
     """
-    describe_clusters = describe_redshift_clusters(aws_config)
-    redshift_systems = transform_redshift_systems(
+    import fidesctl.connectors.aws as aws_connector
+
+    client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
+    describe_clusters = aws_connector.describe_redshift_clusters(client=client)
+    redshift_systems = aws_connector.create_redshift_systems(
         describe_clusters=describe_clusters, organization_key=organization_key
     )
     return redshift_systems
 
 
-def describe_rds_clusters(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
-    """
-    Creates boto3 rds client and returns describe_db_clusters response.
-    """
-    import boto3
-
-    rds_client = boto3.client(
-        "rds",
-        **aws_config,
-    )
-    describe_clusters = rds_client.describe_db_clusters()
-    return describe_clusters
-
-
-def describe_rds_instances(aws_config: Dict[str, str]) -> Dict[str, List[Dict]]:
-    """
-    Creates boto3 rds client and returns describe_db_instances response.
-    """
-    import boto3
-
-    rds_client = boto3.client(
-        "rds",
-        **aws_config,
-    )
-    describe_instances = rds_client.describe_db_instances()
-    return describe_instances
-
-
-def transform_rds_systems(
-    describe_clusters: Dict[str, List[Dict]],
-    describe_instances: Dict[str, List[Dict]],
-    organization_key: str,
-) -> List[System]:
-    """
-    Given "describe_clusters" and "describe_instances" responses, build a system object
-    which represents each cluster or instance.
-
-    A system is created for each cluster, but for instances we only create a system if
-    it is not part of a cluster
-    """
-    rds_cluster_systems = [
-        System(
-            fides_key=cluster["DBClusterIdentifier"],
-            name=cluster["DBClusterIdentifier"],
-            description=f"Fides Generated Description for RDS Cluster: {cluster['DBClusterIdentifier']}",
-            system_type="rds_cluster",
-            organization_fides_key=organization_key,
-            fidesctl_meta=SystemMetadata(
-                endpoint_address=cluster["Endpoint"],
-                endpoint_port=cluster["Port"],
-                resource_id=cluster["DBClusterArn"],
-            ),
-            privacy_declarations=[],
-        )
-        for cluster in describe_clusters["DBClusters"]
-    ]
-    rds_instances_systems = [
-        System(
-            fides_key=instance["DBInstanceIdentifier"],
-            name=instance["DBInstanceIdentifier"],
-            description=f"Fides Generated Description for RDS Instance: {instance['DBInstanceIdentifier']}",
-            system_type="rds_instance",
-            organization_fides_key=organization_key,
-            fidesctl_meta=SystemMetadata(
-                endpoint_address=instance["Endpoint"]["Address"]
-                if instance.get("Endpoint")
-                else None,
-                endpoint_port=instance["Endpoint"]["Port"]
-                if instance.get("Endpoint")
-                else None,
-                resource_id=instance["DBInstanceArn"],
-            ),
-            privacy_declarations=[],
-        )
-        for instance in describe_instances["DBInstances"]
-        if not instance.get("DBClusterIdentifier")
-    ]
-    return rds_cluster_systems + rds_instances_systems
-
-
 def generate_rds_systems(
-    organization_key: str, aws_config: Dict[str, str]
+    organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
     Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
     """
-    describe_clusters = describe_rds_clusters(aws_config)
-    describe_instances = describe_rds_instances(aws_config)
-    rds_systems = transform_rds_systems(
+    import fidesctl.connectors.aws as aws_connector
+
+    client = aws_connector.get_aws_client(service="rds", aws_config=aws_config)
+    describe_clusters = aws_connector.describe_rds_clusters(client=client)
+    describe_instances = aws_connector.describe_rds_instances(client=client)
+    rds_systems = aws_connector.create_rds_systems(
         describe_clusters=describe_clusters,
         describe_instances=describe_instances,
         organization_key=organization_key,
@@ -204,7 +87,7 @@ def get_organization(
 
 
 def generate_aws_systems(
-    organization: Organization, aws_config: Dict[str, str]
+    organization: Organization, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
     Calls each generate system function for aws resources
@@ -229,7 +112,7 @@ def generate_system_aws(
     file_name: str,
     include_null: bool,
     organization_key: str,
-    aws_config: Dict[str, str],
+    aws_config: Optional[AWSConfig],
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> str:
@@ -238,7 +121,7 @@ def generate_system_aws(
     configuration and extract tracked resource to write a System manifest with.
     Tracked resources: [Redshift, RDS]
     """
-    _check_boto3_import()
+    _check_aws_connector_import()
 
     organization = get_organization(
         organization_key=organization_key,
@@ -370,7 +253,7 @@ def print_scan_system_aws_result(
 def scan_system_aws(
     manifest_dir: str,
     organization_key: str,
-    aws_config: Dict[str, str],
+    aws_config: Optional[AWSConfig],
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
@@ -381,7 +264,7 @@ def scan_system_aws(
     Tracked resources: [Redshift, RDS]
     """
 
-    _check_boto3_import()
+    _check_aws_connector_import()
 
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
@@ -422,10 +305,10 @@ def scan_system_aws(
     )
 
 
-def _check_boto3_import() -> None:
+def _check_aws_connector_import() -> None:
     "Validates boto3 is installed and can be imported"
     try:
-        import boto3  # pylint: disable=unused-import
+        import fidesctl.connectors.aws  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[aws]"')
         raise SystemExit

@@ -26,14 +26,22 @@ The types of changes are:
 * UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
 * New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
+* New `datamap` endpoint to enable visualizing a data map from the UI [#721](https://github.com/ethyca/fides/pull/721)
 * Navigation bar for management UI
 * Integration for management UI
   * Datasets
   * Systems
+  * Taxonomy (data categories)
 * Initial dataset collection UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
+  * Add a data category checklist tree  
+  * Edit dataset fields
+  * Edit dataset collections
+  * Add a component for Identifiability tags
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
+* New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
+
 
 ### Changed
 
