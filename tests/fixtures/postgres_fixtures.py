@@ -140,6 +140,7 @@ def connection_config(
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.write,
             "secrets": integration_secrets["postgres_example"],
+            "disabled": False,
         },
     )
     yield connection_config

@@ -44,6 +44,8 @@ The connection between Fidesops and your database is represented by a _Connectio
 
 * `access` sets the connection's permissions, one of "read" (Fidesops may only read from your database) or "write" (Fidesops can read from and write to your database).
 
+* `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
+
 While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
 
 
@@ -74,7 +76,8 @@ PATCH api/v1/connection
     "name": "My Mongo DB",
     "key": "my_mongo_db",
     "connection_type": "mongodb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -88,7 +91,8 @@ PATCH api/v1/connection
     "name": "My MySQL DB",
     "key": "my_mysql_db",
     "connection_type": "mysql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -102,7 +106,8 @@ PATCH api/v1/connection
     "name": "My Maria DB",
     "key": "my_maria_db",
     "connection_type": "mariadb",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -116,7 +121,8 @@ PATCH api/v1/connection
     "name": "My MsSQL DB",
     "key": "my_mssql_db",
     "connection_type": "mssql",
-    "access": "write"
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
@@ -130,7 +136,8 @@ PATCH api/v1/connection
     "name": "Manual connector",
     "key": "manual_connector",
     "connection_type": "manual",
-    "access": "read"
+    "access": "read",
+    "disabled": false
   }
 ]
 ``` 

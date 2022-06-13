@@ -14,7 +14,7 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.service.connectors import MongoDBConnector, PostgreSQLConnector
+from fidesops.service.connectors import MongoDBConnector
 
 from .application_fixtures import faker, integration_secrets
 
@@ -149,17 +149,21 @@ def postgres_inserts(postgres_integration_db):
 # ======================= mongodb  ==========================
 
 
-@pytest.fixture(scope="session")
-def integration_mongodb_config() -> ConnectionConfig:
-    return ConnectionConfig(
+@pytest.fixture(scope="function")
+def integration_mongodb_config(db) -> ConnectionConfig:
+    connection_config = ConnectionConfig(
         key="mongo_example",
         connection_type=ConnectionType.mongodb,
         access=AccessLevel.write,
         secrets=integration_secrets["mongo_example"],
+        name="mongo_example",
     )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def integration_mongodb_connector(integration_mongodb_config) -> MongoClient:
     return MongoDBConnector(integration_mongodb_config).client()
 

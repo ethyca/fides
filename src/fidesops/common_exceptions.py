@@ -106,6 +106,10 @@ class PostProcessingException(BaseException):
     """Custom Exception - Issue with post processing"""
 
 
+class CollectionDisabled(BaseException):
+    """Collection is attached to disabled ConnectionConfig"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 

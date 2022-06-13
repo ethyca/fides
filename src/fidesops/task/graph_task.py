@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import dask
 from dask.threaded import get
 
-from fidesops.common_exceptions import PrivacyRequestPaused
+from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -44,6 +44,7 @@ COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldP
 
 def retry(
     action_type: ActionType,
+    default_return: Any,
 ) -> Callable:
     """
     Retry decorator for access and right to forget requests requests -
@@ -67,6 +68,7 @@ def retry(
                 return func(*args, **kwargs)
             for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
                 try:
+                    self.skip_if_disabled()
                     # Create ExecutionLog with status in_processing or retrying
                     if attempt:
                         self.log_retry(action_type)
@@ -81,6 +83,13 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
+                except CollectionDisabled as exc:
+                    logger.warning(
+                        f"Skipping disabled collection {self.traversal_node.address} "
+                        f"for privacy_request: {self.resources.request.id}"
+                    )
+                    self.log_skipped(action_type, exc)
+                    return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.TASK_RETRY_BACKOFF
                     logger.warning(
@@ -334,6 +343,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
+    def log_skipped(self, action_type: ActionType, ex: str) -> None:
+        """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
+        logger.info(f"Skipping {self.resources.request.id}, node {self.key}")
+
+        self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
+
     def log_end(
         self, action_type: ActionType, ex: Optional[BaseException] = None
     ) -> None:
@@ -432,7 +447,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
-    @retry(action_type=ActionType.access)
+    def skip_if_disabled(self) -> None:
+        """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
+        connection_config: ConnectionConfig = self.connector.configuration
+        if connection_config.disabled:
+            raise CollectionDisabled(
+                f"Skipping collection {self.traversal_node.node.address}. "
+                f"ConnectionConfig {connection_config.key} is disabled.",
+            )
+
+    @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -450,7 +474,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.log_end(ActionType.access)
         return filtered_output
 
-    @retry(action_type=ActionType.erasure)
+    @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(self, retrieved_data: List[Row]) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration

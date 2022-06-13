@@ -506,6 +506,7 @@ class ExecutionLogStatus(EnumType):
     error = "error"
     paused = "paused"
     retrying = "retrying"
+    skipped = "skipped"
 
 
 class ExecutionLog(Base):
