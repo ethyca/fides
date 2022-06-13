@@ -33,6 +33,7 @@ def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict
         "updated_at": stringify_date(connection_config.updated_at),
         "last_test_timestamp": None,
         "last_test_succeeded": None,
+        "disabled": False,
     }
 
 
