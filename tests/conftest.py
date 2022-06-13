@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Generator, List, MutableMapping
 
 import pytest
 from fastapi.testclient import TestClient
+from fideslib.core.config import load_toml
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -154,7 +155,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config() -> MutableMapping[str, Any]:
-    yield load_toml("fidesops-integration.toml")
+    yield load_toml(["fidesops-integration.toml"])
 
 
 @pytest.fixture(autouse=True, scope="session")

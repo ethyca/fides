@@ -4,9 +4,9 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -19,7 +19,7 @@ from fidesops.service.connectors.saas_connector import SaaSConnector
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 
 @pytest.fixture(scope="function")

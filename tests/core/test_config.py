@@ -3,14 +3,15 @@ import os
 from unittest.mock import patch
 
 import pytest
+from fideslib.core.config import get_config
 from pydantic import ValidationError
 
-from fidesops.core.config import get_config
+from fidesops.core.config import FidesopsConfig
 
 
 def test_config_from_default() -> None:
     "Test building a config from default local TOML"
-    config = get_config()
+    config = get_config(FidesopsConfig)
 
     assert config.database.SERVER == "db"
     assert config.redis.HOST == "redis"
@@ -20,13 +21,13 @@ def test_config_from_default() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDESOPS__CONFIG_PATH": "data/config/",
+        "FIDES__CONFIG_PATH": "data/config/",
     },
     clear=True,
 )
 def test_config_from_path() -> None:
     """Test reading config using the FIDESOPS__CONFIG_PATH option."""
-    config = get_config()
+    config = get_config(FidesopsConfig)
     assert config.database.SERVER == "testserver"
     assert config.redis.HOST == "testredis"
     assert config.security.APP_ENCRYPTION_KEY == "atestencryptionkeythatisvalidlen"
@@ -42,26 +43,32 @@ def test_config_from_path() -> None:
 )
 def test_config_from_env_vars() -> None:
     """Test overriding config using ENV vars."""
-    config = get_config()
+    config = get_config(FidesopsConfig)
     assert config.database.SERVER == "envserver"
     assert config.redis.HOST == "envhost"
     assert config.security.APP_ENCRYPTION_KEY == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
+def test_config_app_encryption_key_validation() -> None:
+    """Test APP_ENCRYPTION_KEY is validated to be exactly 32 characters."""
+    app_encryption_key = "atestencryptionkeythatisvalidlen"
+
+    with patch.dict(
+        os.environ,
+        {
+            "FIDESOPS__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
+        },
+        clear=True,
+    ):
+        config = get_config(FidesopsConfig)
+        assert config.security.APP_ENCRYPTION_KEY == app_encryption_key
+
+
 @pytest.mark.parametrize(
-    "app_encryption_key,expected_error",
-    [
-        ("tooshortkey", "must be exactly 32 characters, received 11"),
-        (
-            "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey",
-            "must be exactly 32 characters, received 42",
-        ),
-        ("atestencryptionkeythatisvalidlen", None),
-    ],
+    "app_encryption_key",
+    ["tooshortkey", "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey"],
 )
-def test_config_app_encryption_key_validation(
-    app_encryption_key, expected_error
-) -> None:
+def test_config_app_encryption_key_validation_length_error(app_encryption_key) -> None:
     """Test APP_ENCRYPTION_KEY is validated to be exactly 32 characters."""
     with patch.dict(
         os.environ,
@@ -70,13 +77,9 @@ def test_config_app_encryption_key_validation(
         },
         clear=True,
     ):
-        if expected_error is not None:
-            with pytest.raises(ValidationError) as err:
-                config = get_config()
-            assert expected_error in str(err.value)
-        else:
-            config = get_config()
-            assert config.security.APP_ENCRYPTION_KEY == app_encryption_key
+        with pytest.raises(ValidationError) as err:
+            get_config(FidesopsConfig)
+        assert "must be exactly 32 characters" in str(err.value)
 
 
 @pytest.mark.parametrize(
@@ -88,7 +91,6 @@ def test_config_app_encryption_key_validation(
         ("WARNING", "WARNING"),
         ("ERROR", "ERROR"),
         ("CRITICAL", "CRITICAL"),
-        ("INVALID", None),
     ],
 )
 def test_config_log_level(log_level, expected_log_level):
@@ -100,10 +102,18 @@ def test_config_log_level(log_level, expected_log_level):
         },
         clear=True,
     ):
-        if expected_log_level is not None:
-            config = get_config()
-            assert config.security.LOG_LEVEL == expected_log_level
-        else:
-            with pytest.raises(ValidationError) as err:
-                config = get_config()
-            assert "Invalid LOG_LEVEL" in str(err.value)
+        config = get_config(FidesopsConfig)
+        assert config.security.LOG_LEVEL == expected_log_level
+
+
+def test_config_log_level_invalid():
+    with patch.dict(
+        os.environ,
+        {
+            "FIDESOPS__SECURITY__LOG_LEVEL": "INVALID",
+        },
+        clear=True,
+    ):
+        with pytest.raises(ValidationError) as err:
+            get_config(FidesopsConfig)
+        assert "Invalid LOG_LEVEL" in str(err.value)
