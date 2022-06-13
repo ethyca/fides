@@ -118,8 +118,6 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
 Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and apply your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
 
-To start from the beginning in using fidesctl to solve a real-world privacy problem, follow the Fides [tutorial](https://ethyca.github.io/fides/tutorial/).
-
 ## :book: Learn More
 
 The Fides core team is committed to providing a variety of documentation to help get you started using Fidesctl.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
