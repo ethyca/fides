@@ -60,56 +60,65 @@ This guide will walk through generating a mock RoPA using predefined resources i
     This will `apply` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
 
 4. View the newly-generated data map generated from the provided resources.
-  
-    The header block at the top of a data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    ![Organization Contact Info](/docs/fides/docs/img/datamap_organization_contact.png)
+    #### Controller
+    The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    The [Dataset resource](demo_resources/demo_dataset.yml) is primarily used to provide a list of Data Categories, recorded here using the [Fides taxonomy](https://github.com/ethyca/fideslang). Any Datasets referenced by a System will have this information included as rows of your data map.
+    #### Article 30 Record of Processing Activities 
+    The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system.md). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 
-    Finally, the [System resource](demo_resources/demo_system.yml) contains the remainder of the attributes on the data map, such as the Purpose of Processing, Categories of Personal Data, etc.
+    The [Dataset resource](demo_resources/demo_dataset.yml) is primarily used to provide a list of categories of personal data, recorded here using the [Fides taxonomy](https://github.com/ethyca/fideslang), that your systems store or process, as well as their retention policies. Any Datasets referenced by a System will have this information included as rows of your data map.
 
-    ![Demo Dataset Properties](/docs/fides/docs/img/demo_dataset_properties.png)
+    The [System resource](demo_resources/demo_system.yml) describes anything that processes data for your organization, such as applications, services, and third party APIs. In the resulting data map, this populates system-relevant items like the purpose of processing and use, as well as categories of individual the data pertains to.
 
-5. Assess the Organization and System datasets using the  `--audit` flag.
+    Together, these configuration files build out an initial map of RoPA-required data and resources.
+
+5. Assess the Organization and System datasets using the `--audit` flag.
    
     ```
     fidesctl evaluate demo_resources/ --audit
     ```
 
-    This command will identify how your existing resources could be extended to generate a fully-compliant RoPA.
+    This command will identify any missing information in your resources, which should be added to generate a compliant Record of Processing Activities.
 
     <details>
+
     <summary>Example Output</summary>
-        ```sh
-        "Auditing Organization Resource Compliance"
-        Found 1 Organization resource(s) to audit...
-        Auditing Organization: Demo Organization
-        controller for default_organization in Demo Organization is compliant
-        data_protection_officer for default_organization in Demo Organization is compliant
-        representative for default_organization in Demo Organization is compliant
-        security_policy for default_organization in Demo Organization is compliant
-        All audited organization resource(s) compliant!
-        ----------
-        "Auditing System Resource Compliance"
-        Found 2 System resource(s) to audit...
-        "Auditing System: Demo Analytics System"
-        improve.system missing recipients in Demo Analytics System.
-        improve.system missing legal_basis in Demo Analytics System.
-        improve.system missing special_category in Demo Analytics System.
-        customer missing rights in Demo Analytics System.
-        customer missing automated_decisions_or_profiling in Demo Analytics System.
-        "Auditing System: Demo Marketing System"
-        advertising missing recipients in Demo Marketing System.
-        advertising missing legal_basis in Demo Marketing System.
-        advertising missing special_category in Demo Marketing System.
-        customer missing rights in Demo Marketing System.
-        customer missing automated_decisions_or_profiling in Demo Marketing System.
-        10 issue(s) were detected in auditing system completeness.
-        ```
+
+    ```sh
+    "Auditing Organization Resource Compliance"
+    Found 1 Organization resource(s) to audit...
+    Auditing Organization: Demo Organization
+    controller for default_organization in Demo Organization is compliant
+    data_protection_officer for default_organization in Demo Organization is compliant
+    representative for default_organization in Demo Organization is compliant
+    security_policy for default_organization in Demo Organization is compliant
+    All audited organization resource(s) compliant!
+    ----------
+    "Auditing System Resource Compliance"
+    Found 2 System resource(s) to audit...
+    "Auditing System: Demo Analytics System"
+    improve.system missing recipients in Demo Analytics System.
+    improve.system missing legal_basis in Demo Analytics System.
+    improve.system missing special_category in Demo Analytics System.
+    customer missing rights in Demo Analytics System.
+    customer missing automated_decisions_or_profiling in Demo Analytics System.
+    "Auditing System: Demo Marketing System"
+    advertising missing recipients in Demo Marketing System.
+    advertising missing legal_basis in Demo Marketing System.
+    advertising missing special_category in Demo Marketing System.
+    customer missing rights in Demo Marketing System.
+    customer missing automated_decisions_or_profiling in Demo Marketing System.
+    10 issue(s) were detected in auditing system completeness.
+    ```
+
     </details>
 
-Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the empty values revealed by `--audit` with additional required data, and apply your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
+    `--audit` flags any empty fields, along with the System or Organization they belong to, and returns where or not the system is incomplete or fully compliant. In the above example, the Organization resource is compliant, but both the Marketing and Analytics systems are missing information that would be required in your RoPA.
+
+Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and apply your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
+
+To start from the beginning in using fidesctl to solve a real-world privacy problem, follow the Fides [tutorial](https://ethyca.github.io/fides/tutorial/).
 
 ## :book: Learn More
 
