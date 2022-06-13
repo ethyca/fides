@@ -5,9 +5,9 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -21,7 +21,7 @@ from fidesops.util.saas_util import format_body
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
-saas_config = load_toml("saas_config.toml")
+saas_config = load_toml(["saas_config.toml"])
 
 HUBSPOT_FIRSTNAME = "SomeoneFirstname"
 

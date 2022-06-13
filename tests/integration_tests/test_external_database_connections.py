@@ -3,9 +3,9 @@ import os
 from typing import Generator
 
 import pytest
+from fideslib.core.config import load_toml
 from sqlalchemy import inspect
 
-from fidesops.core.config import load_toml
 from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
 from fidesops.service.connectors import (
@@ -16,7 +16,7 @@ from fidesops.service.connectors import (
 
 logger = logging.getLogger(__name__)
 
-integration_config = load_toml("fidesops-integration.toml")
+integration_config = load_toml(["fidesops-integration.toml"])
 
 
 @pytest.fixture(scope="session")

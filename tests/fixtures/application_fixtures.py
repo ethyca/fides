@@ -8,11 +8,11 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fideslib.core.config import load_file, load_toml
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.core.config import load_file, load_toml
 from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
@@ -52,7 +52,7 @@ from fidesops.util.data_category import DataCategory
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
-integration_config = load_toml("fidesops-integration.toml")
+integration_config = load_toml(["fidesops-integration.toml"])
 
 logger = logging.getLogger(__name__)
 
@@ -969,13 +969,13 @@ def dataset_config_preview(
 
 
 def load_dataset(filename: str) -> Dict:
-    yaml_file = load_file(filename)
+    yaml_file = load_file([filename])
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file).get("dataset", [])
 
 
 def load_dataset_as_string(filename: str) -> str:
-    yaml_file = load_file(filename)
+    yaml_file = load_file([filename])
     with open(yaml_file, "r") as file:
         return file.read()
 

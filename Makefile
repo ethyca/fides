@@ -127,6 +127,7 @@ pytest: compose-build
 		-e ANALYTICS_OPT_OUT \
 		$(IMAGE_NAME) \
 		pytest $(pytestpath) -m "not integration and not integration_external and not integration_saas"
+
 	@make teardown
 
 pytest-integration:
