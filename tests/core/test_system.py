@@ -1,10 +1,12 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import os
 from typing import Generator, List
 
 import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
+from fidesctl.connectors.models import OktaConfig
 from fidesctl.core import api
 from fidesctl.core import system as _system
 from fidesctl.core.config import FidesctlConfig
@@ -180,32 +182,25 @@ def rds_describe_instances() -> Generator:
 
 
 @pytest.mark.unit
-def test_get_system_arns(redshift_systems: Generator) -> None:
+def test_get_system_resource_ids(redshift_systems: List[System]) -> None:
     expected_result = [
         "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
         "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149177",
     ]
-    actual_result = _system.get_system_arns(redshift_systems)
+    actual_result = _system.get_system_resource_ids(redshift_systems)
     assert actual_result == expected_result
 
 
 @pytest.mark.unit
-def test_scan_aws_systems(
+def test_find_missing_systems(
     redshift_systems: List[System], rds_systems: List[System]
 ) -> None:
-    (
-        scan_text_output,
-        scanned_resource_count,
-        missing_resource_count,
-    ) = _system.scan_aws_systems(
-        aws_systems=redshift_systems + rds_systems,
-        existing_system_arns=[
-            "arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176",
-        ],
+    source_systems = rds_systems + redshift_systems
+    existing_systems = redshift_systems
+    actual_result = _system.find_missing_systems(
+        source_systems=source_systems, existing_systems=existing_systems
     )
-    assert scan_text_output
-    assert scanned_resource_count == 4
-    assert missing_resource_count == 3
+    assert actual_result == rds_systems
 
 
 @pytest.mark.integration
@@ -245,3 +240,60 @@ def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> 
         headers=test_config.user.request_headers,
     )
     assert actual_result
+
+
+OKTA_ORG_URL = "https://dev-78908748.okta.com"
+
+
+@pytest.mark.external
+def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+    actual_result = _system.generate_system_okta(
+        file_name=f"{tmpdir}/test_file.yml",
+        include_null=False,
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
+    )
+    assert actual_result
+
+
+@pytest.mark.external
+def test_scan_system_okta_success(
+    tmpdir: LocalPath, test_config: FidesctlConfig
+) -> None:
+    file_name = f"{tmpdir}/test_file.yml"
+    _system.generate_system_okta(
+        file_name=file_name,
+        include_null=False,
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
+    )
+    _system.scan_system_okta(
+        manifest_dir=file_name,
+        okta_config=OktaConfig(
+            orgUrl=OKTA_ORG_URL,
+            token=os.environ["OKTA_CLIENT_TOKEN"],
+        ),
+        coverage_threshold=100,
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+    )
+    assert True
+
+
+@pytest.mark.external
+def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+    with pytest.raises(SystemExit):
+        _system.scan_system_okta(
+            manifest_dir="",
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
+            coverage_threshold=100,
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+        )
