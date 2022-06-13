@@ -26,6 +26,7 @@ The types of changes are:
 * Celery as a dependency for use in the execution layer [#610](https://github.com/ethyca/fidesops/pull/610)
 * Cache and Surface Resume/Restart Instructions [#591](https://github.com/ethyca/fidesops/pull/591)
 * Allow disabling a ConnectionConfig [#637](https://github.com/ethyca/fidesops/pull/637)
+* Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
 
 ### Changed
 

@@ -6,10 +6,13 @@ saas_config:
 
   connector_params:
     - name: domain
+    - name: requester_email
+      description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
     - name: client_secret
     - name: redirect_uri
     - name: page_size
+      description: The number of entries to return per page
 
   client_config:
     protocol: https
@@ -83,6 +86,26 @@ saas_config:
             - name: email
               identity: email
           data_path: data
+        delete:
+          method: POST
+          path: /api/v2/complianceRequests
+          param_values:
+            - name: requester_email
+              connector_param: requester_email
+            - name: email
+              identity: email
+          body: |
+            {
+              "data": {
+                "type": "complianceRequest",
+                "attributes": {
+                  "requester_email": "<requester_email>",
+                  "request_type": "Delete",
+                  "object_type": "Prospect",
+                  "request_object_email": "<email>"
+                }
+              }
+            }
     - name: recipients
       requests:
         read:
@@ -110,3 +133,23 @@ saas_config:
                   identity: email
                 exact: False
                 case_sensitive: False
+        delete:
+          method: POST
+          path: /api/v2/complianceRequests
+          param_values:
+            - name: requester_email
+              connector_param: requester_email
+            - name: email
+              identity: email
+          body: |
+            {
+              "data": {
+                "type": "complianceRequest",
+                "attributes": {
+                  "requester_email": "<requester_email>",
+                  "request_type": "Delete",
+                  "object_type": "Recipient",
+                  "request_object_email": "<email>"
+                }
+              }
+            }

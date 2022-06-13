@@ -169,6 +169,7 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user-provided and constants)"""
 
     name: str
+    description: Optional[str]
 
 
 class SaaSConfig(BaseModel):

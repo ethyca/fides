@@ -7,6 +7,8 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: attributes
             fields:
               - name: createdAt
@@ -23,6 +25,8 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
           - name: attributes
             fields:
               - name: addressCity
