@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import type { AppState } from "~/app/store";
 
@@ -39,15 +38,10 @@ export const dataCategoriesSlice = createSlice({
       dataCategories: action.payload,
     }),
   },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.dataCategories,
-    }),
-  },
 });
 
 export const { setDataCategories } = dataCategoriesSlice.actions;
-export const selectDataCategories = (state: AppState) => state;
+export const selectDataCategories = (state: AppState) =>
+  state.dataCategories.dataCategories;
 
 export const { reducer } = dataCategoriesSlice;

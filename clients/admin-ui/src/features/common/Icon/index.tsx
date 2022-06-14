@@ -10,5 +10,6 @@ export { default as OktaLogoIcon } from "./OktaLogo";
 export { default as QuestionIcon } from "./Question";
 export { default as SearchLineIcon } from "./SearchLine";
 export { default as StepperCircleIcon } from "./StepperCircle";
+export { default as StepperCircleCheckmarkIcon } from "./StepperCircleCheckmark";
 export { default as UserIcon } from "./User";
 export { default as VerticalLineIcon } from "./VerticalLine";

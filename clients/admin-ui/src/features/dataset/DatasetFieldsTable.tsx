@@ -2,6 +2,7 @@ import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
 import { selectActiveFieldIndex, setActiveFieldIndex } from "./dataset.slice";
 import EditFieldDrawer from "./EditFieldDrawer";
@@ -58,13 +59,23 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>
-                  {c.attribute === "data_qualifier" ? (
-                    <IdentifiabilityTag
-                      dataQualifierName={field[c.attribute]}
-                    />
-                  ) : (
-                    `${field[c.attribute]}`
-                  )}
+                  {(() => {
+                    if (c.attribute === "data_qualifier") {
+                      return (
+                        <IdentifiabilityTag
+                          dataQualifierName={field[c.attribute]}
+                        />
+                      );
+                    }
+                    if (c.attribute === "data_categories") {
+                      return field[c.attribute]?.map((dc) => (
+                        <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
+                          <DataCategoryTag name={dc} />
+                        </Box>
+                      ));
+                    }
+                    return field[c.attribute];
+                  })()}
                 </Td>
               ))}
             </Tr>
