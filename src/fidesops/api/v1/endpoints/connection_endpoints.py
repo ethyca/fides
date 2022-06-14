@@ -7,7 +7,9 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import ValidationError, conlist
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -80,14 +82,28 @@ def get_connection_config_or_error(
     response_model=Page[ConnectionConfigurationResponse],
 )
 def get_connections(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    search: Optional[str] = None,
 ) -> AbstractPage[ConnectionConfig]:
-    """Returns all connection configurations in the database."""
+    """Returns all connection configurations in the database.
+    Optionally filter the key, name, and description with a search query param
+    """
     logger.info(
-        f"Finding all connection configurations with pagination params {params}"
+        f"Finding all connection configurations with pagination params {params} and search query: '{search if search else ''}'."
     )
+    query = ConnectionConfig.query(db)
+    if search:
+        query = query.filter(
+            or_(
+                ConnectionConfig.key.ilike(f"%{escape_like(search)}%"),
+                ConnectionConfig.name.ilike(f"%{escape_like(search)}%"),
+                ConnectionConfig.description.ilike(f"%{escape_like(search)}%"),
+            )
+        )
     return paginate(
-        ConnectionConfig.query(db).order_by(ConnectionConfig.created_at.desc()),
+        query.order_by(ConnectionConfig.created_at.desc()),
         params=params,
     )
 
