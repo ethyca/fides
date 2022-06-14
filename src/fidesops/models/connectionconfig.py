@@ -63,6 +63,7 @@ class ConnectionConfig(Base):
 
     name = Column(String, index=True, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
+    description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
     access = Column(Enum(AccessLevel), nullable=False)
     secrets = Column(
