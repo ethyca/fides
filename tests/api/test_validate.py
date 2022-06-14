@@ -1,23 +1,13 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 from json import dumps
 from os import getenv
-from typing import Generator
 
 import pytest
 from starlette.testclient import TestClient
 
-from fidesapi import main
 from fidesapi.routes.util import API_PREFIX, obscure_string
 from fidesapi.routes.validate import ValidateResponse
 from fidesctl.core.config import FidesctlConfig
-
-
-@pytest.fixture()
-def test_client() -> Generator:
-    """Starlette test client fixture."""
-    with TestClient(main.app) as test_client:
-        yield test_client
-
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
