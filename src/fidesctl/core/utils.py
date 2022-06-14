@@ -98,14 +98,7 @@ def check_fides_key(proposed_fides_key: str) -> str:
         return proposed_fides_key
     except FidesValidationError as error:
         echo_red(error)
-        updated_fides_key = sanitize_fides_key(proposed_fides_key)
-        updated_key_copy = f"Do you accept the proposed fides_key of '{updated_fides_key}'? Type 'n' to manually update or any other key to accept.\n"
-        reject_sanitized = bool(input(updated_key_copy).lower() == "n")
-        if reject_sanitized:
-            updated_fides_key = input(
-                "populate a Fides Key manually, then hit return:\n"
-            )
-        return check_fides_key(updated_fides_key)
+        return sanitize_fides_key(proposed_fides_key)
 
 
 def sanitize_fides_key(proposed_fides_key: str) -> str:
@@ -113,5 +106,5 @@ def sanitize_fides_key(proposed_fides_key: str) -> str:
     Attempts to manually sanitize a fides key if restricted
     characters are discovered.
     """
-    sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]+$", "_", proposed_fides_key)
+    sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", proposed_fides_key)
     return sanitized_fides_key
