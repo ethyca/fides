@@ -3,7 +3,7 @@ import ast
 from functools import update_wrapper
 from typing import Any, Callable, List, Optional
 
-from fideslang.models import Dataset, DatasetMetadata
+from fideslang.models import System, SystemMetadata
 from okta.client import Client as OktaClient
 from okta.exceptions import OktaAPIException
 from okta.models import Application as OktaApplication
@@ -77,22 +77,22 @@ async def list_okta_applications(okta_client: OktaClient) -> List[OktaApplicatio
     return applications
 
 
-def create_okta_datasets(okta_applications: List[OktaApplication]) -> List[Dataset]:
+def create_okta_systems(okta_applications: List[OktaApplication]) -> List[System]:
     """
-    Returns a list of dataset objects given a list of Okta applications
+    Returns a list of system objects given a list of Okta applications
     """
-    datasets = [
-        Dataset(
+    systems = [
+        System(
             fides_key=application.id,
             name=application.name,
-            fidesctl_meta=DatasetMetadata(
+            fidesctl_meta=SystemMetadata(
                 resource_id=application.id,
             ),
             description=f"Fides Generated Description for Okta Application: {application.label}",
-            data_categories=[],
-            collections=[],
+            system_type="okta_application",
+            privacy_declarations=[],
         )
         for application in okta_applications
         if application.status and application.status == "ACTIVE"
     ]
-    return datasets
+    return systems

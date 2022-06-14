@@ -556,12 +556,12 @@ def test_scan_system_aws_input_credentials_id(
 
 
 @pytest.mark.external
-def test_generate_dataset_okta_input_credential_options(
+def test_generate_system_okta_input_credential_options(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
 ) -> None:
-    tmp_file = tmpdir.join("dataset.yml")
+    tmp_file = tmpdir.join("system.yml")
     token = os.environ["OKTA_CLIENT_TOKEN"]
     result = test_cli_runner.invoke(
         cli,
@@ -569,7 +569,7 @@ def test_generate_dataset_okta_input_credential_options(
             "-f",
             test_config_path,
             "generate",
-            "dataset",
+            "system",
             "okta",
             f"{tmp_file}",
             "--org-url",
@@ -583,7 +583,7 @@ def test_generate_dataset_okta_input_credential_options(
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_input_credential_options(
+def test_scan_system_okta_input_credential_options(
     test_config_path: str, test_cli_runner: CliRunner
 ) -> None:
     token = os.environ["OKTA_CLIENT_TOKEN"]
@@ -593,7 +593,7 @@ def test_scan_dataset_okta_input_credential_options(
             "-f",
             test_config_path,
             "scan",
-            "dataset",
+            "system",
             "okta",
             "--org-url",
             OKTA_URL,
@@ -608,23 +608,23 @@ def test_scan_dataset_okta_input_credential_options(
 
 
 @pytest.mark.external
-def test_generate_dataset_okta_environment_credentials(
+def test_generate_system_okta_environment_credentials(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
 ) -> None:
-    tmp_file = tmpdir.join("dataset.yml")
+    tmp_file = tmpdir.join("system.yml")
     os.environ["OKTA_CLIENT_ORGURL"] = OKTA_URL
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "generate", "dataset", "okta", f"{tmp_file}"],
+        ["-f", test_config_path, "generate", "system", "okta", f"{tmp_file}"],
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_environment_credentials(
+def test_scan_system_okta_environment_credentials(
     test_config_path: str,
     test_cli_runner: CliRunner,
 ) -> None:
@@ -635,7 +635,7 @@ def test_scan_dataset_okta_environment_credentials(
             "-f",
             test_config_path,
             "scan",
-            "dataset",
+            "system",
             "okta",
             "--coverage-threshold",
             "0",
@@ -646,12 +646,12 @@ def test_scan_dataset_okta_environment_credentials(
 
 
 @pytest.mark.external
-def test_generate_dataset_okta_input_credentials_id(
+def test_generate_system_okta_input_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
 ) -> None:
-    tmp_file = tmpdir.join("dataset.yml")
+    tmp_file = tmpdir.join("system.yml")
     os.environ["FIDESCTL__CREDENTIALS__OKTA_1__TOKEN"] = os.environ["OKTA_CLIENT_TOKEN"]
     result = test_cli_runner.invoke(
         cli,
@@ -659,7 +659,7 @@ def test_generate_dataset_okta_input_credentials_id(
             "-f",
             test_config_path,
             "generate",
-            "dataset",
+            "system",
             "okta",
             f"{tmp_file}",
             "--credentials-id",
@@ -671,7 +671,7 @@ def test_generate_dataset_okta_input_credentials_id(
 
 
 @pytest.mark.external
-def test_scan_dataset_okta_input_credentials_id(
+def test_scan_system_okta_input_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
 ) -> None:
@@ -682,7 +682,7 @@ def test_scan_dataset_okta_input_credentials_id(
             "-f",
             test_config_path,
             "scan",
-            "dataset",
+            "system",
             "okta",
             "--credentials-id",
             "okta_1",

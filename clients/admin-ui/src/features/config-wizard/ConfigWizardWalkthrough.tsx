@@ -5,7 +5,8 @@ import React, { useState } from "react";
 import { CloseSolidIcon } from "~/features/common/Icon";
 
 import Stepper from "../common/Stepper";
-import STEPS from "./constants";
+import AddSystemForm from "./AddSystemForm";
+import { STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
@@ -46,11 +47,10 @@ const ConfigWizardWalkthrough = () => {
               <Stepper activeStep={step} steps={STEPS} />
             </Box>
             {step === 1 ? (
-              <OrganizationInfoForm
-                handleChangeStep={(organizationStep: number) =>
-                  handleChangeStep(organizationStep)
-                }
-              />
+              <OrganizationInfoForm handleChangeStep={handleChangeStep} />
+            ) : null}
+            {step === 2 ? (
+              <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
           </Stack>
         </Stack>
