@@ -35,7 +35,7 @@ The types of changes are:
 * Initial dataset collection UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
-  * Add a data category checklist tree  
+  * Add a data category checklist tree
   * Edit dataset fields
   * Edit dataset collections
   * Add a component for Identifiability tags
@@ -59,6 +59,7 @@ The types of changes are:
 * Replaced `make` with `nox`
 * Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
 * Added starting up the frontend server to `nox`
+* `TestClient` defined in and shared across test modules via `conftest.py` [#759](https://github.com/ethyca/fides/pull/759)
 
 ### Docs
 
