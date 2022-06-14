@@ -19,7 +19,7 @@ RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 
 @nox.session()
-def check_all(session: nox.Session) -> None:
+def ci(session: nox.Session) -> None:
     """
     Runs all of the CI checks, except for 'pytest_external'.
 

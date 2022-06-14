@@ -45,7 +45,8 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", "fidesctl-ui")
+START_APP = ("docker-compose", "up", "-d", "fidesctl")
+START_APP_UI = ("docker-compose", "up", "-d", "fidesctl-ui")
 START_APP_EXTERNAL = (
     "docker-compose",
     "-f",
