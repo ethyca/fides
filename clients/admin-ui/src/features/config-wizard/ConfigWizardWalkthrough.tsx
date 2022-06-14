@@ -44,7 +44,11 @@ const ConfigWizardWalkthrough = () => {
         <Stack bg="white" height="100vh" maxW="60%">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box>
-              <Stepper activeStep={step} steps={STEPS} />
+              <Stepper
+                activeStep={step}
+                setActiveStep={setStep}
+                steps={STEPS}
+              />
             </Box>
             {step === 1 ? (
               <OrganizationInfoForm handleChangeStep={handleChangeStep} />
