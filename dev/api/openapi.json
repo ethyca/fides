@@ -3500,6 +3500,94 @@
         }
       }
     },
+    "/api/v1/datamap/{organization_fides_key}": {
+      "get": {
+        "tags": [
+          "Datamap"
+        ],
+        "summary": "Export Datamap",
+        "description": "An endpoint to return the data map for a given Organization.\n\nThe Organization `fides_key` is the only url parameter required. In most cases,\nthis should be `default_organization`\n\nUses shared logic from the CLI, first gathering all resources from the server then\nformatting all attributes appropriately.\n\nReturns the expected datamap for a given organization fides key as a set of records.",
+        "operationId": "export_datamap_api_v1_datamap__organization_fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Organization Fides Key",
+              "type": "string"
+            },
+            "name": "organization_fides_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": [
+                  {
+                    "system.name": "Demo Analytics System",
+                    "system.data_responsibility_title": "Controller",
+                    "system.administrating_department": "Engineering",
+                    "system.privacy_declaration.data_use.name": "System",
+                    "system.privacy_declaration.data_use.legal_basis": "N/A",
+                    "system.privacy_declaration.data_use.special_category": "N/A",
+                    "system.privacy_declaration.data_use.recipients": "N/A",
+                    "system.privacy_declaration.data_use.legitimate_interest": "N/A",
+                    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "N/A",
+                    "system.privacy_declaration.data_subjects.name": "Customer",
+                    "system.privacy_declaration.data_subjects.rights_available": "No data subject rights listed",
+                    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "N/A",
+                    "system.data_protection_impact_assessment.is_required": "true",
+                    "system.data_protection_impact_assessment.progress": "Complete",
+                    "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
+                    "dataset.name": "N/A",
+                    "third_country_combined": "GBR, USA, CAN",
+                    "unioned_data_categories": "user.provided.identifiable.contact",
+                    "dataset.retention": "N/A",
+                    "system.joint_controller": "",
+                    "system.third_country_safeguards": "",
+                    "system.link_to_processor_contract": "",
+                    "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unable to compile data map."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Resource not found."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/validate/": {
       "post": {
         "tags": [
