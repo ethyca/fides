@@ -1,5 +1,5 @@
 import { Box, Checkbox } from "@fidesui/react";
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode } from "react";
 
 interface CheckboxNode {
   label: string;
@@ -20,26 +20,20 @@ const CheckboxItem = ({
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
-  const [checked, setChecked] = useState(isChecked);
-
-  const handleCheck = () => {
-    setChecked(!checked);
-    onChecked(node);
-  };
 
   return (
     <Box>
       <Checkbox
         colorScheme="complimentary"
         value={value}
-        isChecked={checked}
-        onChange={handleCheck}
+        isChecked={isChecked}
+        onChange={() => onChecked(node)}
         ml={2}
         data-testid={`checkbox-${label}`}
       >
         {label}
       </Checkbox>
-      {children && <Box ml={5}>{children}</Box>}
+      {children && <Box ml={4}>{children}</Box>}
     </Box>
   );
 };
