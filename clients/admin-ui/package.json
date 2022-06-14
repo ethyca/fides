@@ -12,7 +12,10 @@
     "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
-    "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"
+    "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
+    "export": "next build && next export",
+    "copy-export": "rsync -a --delete out/ ../../src/fidesops/build/static/",
+    "prod-export": "npm run export && npm run copy-export"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.8.0",

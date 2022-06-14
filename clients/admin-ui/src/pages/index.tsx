@@ -1,8 +1,8 @@
 import { Box, Heading } from '@fidesui/react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 
 import ProtectedRoute from '../features/auth/ProtectedRoute';
+import Head from '../features/common/Head'
 import NavBar from '../features/common/NavBar';
 import RequestFilters from '../features/privacy-requests/RequestFilters';
 import RequestTable from '../features/privacy-requests/RequestTable';
@@ -10,12 +10,7 @@ import RequestTable from '../features/privacy-requests/RequestTable';
 const Home: NextPage = () => (
   <ProtectedRoute redirectUrl="/login">
     <>
-      <Head>
-        <title>Fides Admin UI</title>
-        <meta name="description" content="Generated from FidesUI template" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
+      <Head/>
       <NavBar />
 
       <main>

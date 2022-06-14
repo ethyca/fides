@@ -1,16 +1,12 @@
 import { Box, Button, Heading, Stack, Text } from '@fidesui/react';
-import Head from 'next/head';
 import NextLink from 'next/link';
 
+import Head from '../features/common/Head'
 import Image from '../features/common/Image';
 
 const Custom404 = () => (
   <div>
-    <Head>
-      <title>FidesUI App</title>
-      <meta name='description' content='Generated from FidesUI template' />
-      <link rel='icon' href='/favicon.ico' />
-    </Head>
+    <Head/>
 
     <main>
       <Stack minH='100vh' align='center' justify='center' spacing={6}>

@@ -14,6 +14,7 @@ import NextLink from 'next/link';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { BASE_ASSET_URN } from "../../constants"
 import { logout, selectUser } from '../auth';
 import { UserIcon } from './Icon';
 import Image from './Image';
@@ -43,7 +44,7 @@ const Header: React.FC = () => {
         <NextLink href="/" passHref>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link display="flex">
-            <Image src="/logo.svg" width={83} height={26} alt="FidesOps Logo" />
+            <Image src={`${BASE_ASSET_URN}/logo.svg`} width={83} height={26} alt="FidesOps Logo" />
           </Link>
         </NextLink>
         <Flex alignItems="center">

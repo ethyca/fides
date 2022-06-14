@@ -37,3 +37,6 @@ MASKING_STRICT = true
 [root_user]
 ANALYTICS_OPT_OUT = true
 ANALYTICS_ID = "internal"
+
+[admin_ui]
+ENABLED = true

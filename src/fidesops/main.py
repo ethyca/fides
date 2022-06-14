@@ -1,8 +1,10 @@
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fideslog.sdk.python.event import AnalyticsEvent
 from starlette.middleware.cors import CORSMiddleware
 
@@ -41,6 +43,21 @@ if config.security.CORS_ORIGINS:
 app.include_router(api_router)
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
+
+
+@app.on_event("startup")
+async def create_webapp_dir_if_not_exists() -> None:
+    """Creates the webapp directory if it doesn't exist."""
+    if config.admin_ui.ENABLED:
+        WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
+        WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
+        if not WEBAPP_INDEX.is_file():
+            WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+            with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+                index_file.write("<h1>Privacy is a Human Right!</h1>")
+
+        app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
+        logger.info("Mounted static file directory...")
 
 
 def start_webserver() -> None:
