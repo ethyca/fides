@@ -1,5 +1,6 @@
 """Utils to help with API calls."""
 import logging
+import re
 from functools import partial
 from json.decoder import JSONDecodeError
 from typing import Dict, Iterator
@@ -8,7 +9,8 @@ import click
 import jwt
 import requests
 import sqlalchemy
-from fideslang.models import DatasetField
+from fideslang.models import DatasetField, FidesModel
+from fideslang.validation import FidesValidationError
 from sqlalchemy.engine import Engine
 
 logger = logging.getLogger("server_api")
@@ -83,3 +85,33 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
         if field.fields:
             for nested_field in get_all_level_fields(field.fields):
                 yield nested_field
+
+
+def check_fides_key(proposed_fides_key: str) -> str:
+    """
+    A helper function to either automatically sanitize
+    an invalid FidesKey or provide an option to manually
+    override.
+    """
+    try:
+        FidesModel(fides_key=proposed_fides_key)
+        return proposed_fides_key
+    except FidesValidationError as error:
+        echo_red(error)
+        updated_fides_key = sanitize_fides_key(proposed_fides_key)
+        updated_key_copy = f"Do you accept the proposed fides_key of '{updated_fides_key}'? Type 'n' to manually update or any other key to accept.\n"
+        reject_sanitized = bool(input(updated_key_copy).lower() == "n")
+        if reject_sanitized:
+            updated_fides_key = input(
+                "populate a Fides Key manually, then hit return:\n"
+            )
+        return check_fides_key(updated_fides_key)
+
+
+def sanitize_fides_key(proposed_fides_key: str) -> str:
+    """
+    Attempts to manually sanitize a fides key if restricted
+    characters are discovered.
+    """
+    sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]+$", "_", proposed_fides_key)
+    return sanitized_fides_key
