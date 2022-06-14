@@ -173,17 +173,12 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
     if (node.children) {
       const isChecked = checked.indexOf(node.value) >= 0;
       const isExpanded = expanded.indexOf(node.value) >= 0;
+      const thisDescendants = getDescendantsAndCurrent(nodes, node.value);
       const isIndeterminate =
         isChecked &&
         node.children.length > 0 &&
-        node.children.length !==
-          selected.filter((s) => s.startsWith(node.value)).length;
-      console.log(
-        node.value,
-        node.children.length,
-        selected.filter((s) => s.startsWith(node.value)).length - 1,
-        { isIndeterminate }
-      );
+        checked.filter((s) => s.startsWith(node.value)).length !==
+          thisDescendants.length;
 
       return (
         <CheckboxItem

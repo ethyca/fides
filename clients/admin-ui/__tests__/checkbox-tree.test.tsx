@@ -101,14 +101,14 @@ describe("Checkbox tree", () => {
     const { getByTestId } = render(
       <CheckboxTree
         nodes={MOCK_NODES}
-        selected={["grandparent"]}
+        selected={["great uncle"]}
         onSelected={handleSelected}
       />
     );
     expect(
-      getByTestId("checkbox-grandparent").querySelector("span")
+      getByTestId("checkbox-great uncle").querySelector("span")
     ).toHaveAttribute("data-checked");
-    fireEvent.click(getByTestId("checkbox-grandparent"));
+    fireEvent.click(getByTestId("checkbox-great uncle"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith([]);
   });
