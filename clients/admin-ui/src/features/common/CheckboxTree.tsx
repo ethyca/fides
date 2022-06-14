@@ -131,14 +131,26 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
   useEffect(() => {
     // if something is selected, we should expand the checkbox to show it
     // from i.e. ["account.contact.city"] get ["account", "account.contact", "account.contact.city"]
-    const nestedNodeNames = selected.map((c) => getAncestorsAndCurrent(c));
-    const nodeNames = Array.from(
-      new Set(nestedNodeNames.reduce((acc, value) => acc.concat(value), []))
+    const nestedAncestorNames = selected.map((s) => getAncestorsAndCurrent(s));
+    const ancestorNames = nestedAncestorNames.reduce(
+      (acc, value) => acc.concat(value),
+      []
     );
 
+    // also, if a parent is selected, check all of its descendants
+    const nestedDescendantNames = selected.map((s) =>
+      getDescendantsAndCurrent(nodes, s)
+    );
+    const descendantNames = nestedDescendantNames
+      .reduce((acc, value) => acc.concat(value), [])
+      .map((d) => d.value);
+
+    const nodeNames = Array.from(
+      new Set([...ancestorNames, ...descendantNames])
+    );
     setExpanded(nodeNames);
     setChecked(nodeNames);
-  }, [selected]);
+  }, [selected, nodes]);
 
   const handleChecked = (node: CheckboxNode) => {
     let newChecked: string[] = [];

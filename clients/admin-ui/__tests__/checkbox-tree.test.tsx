@@ -146,6 +146,26 @@ describe("Checkbox tree", () => {
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
+  it("can render children as selected when a parent is selected", () => {
+    const handleSelected = jest.fn();
+    const { getByTestId } = render(
+      <CheckboxTree
+        nodes={MOCK_NODES}
+        selected={["grandparent"]}
+        onSelected={handleSelected}
+      />
+    );
+    expect(
+      getByTestId("checkbox-grandparent").querySelector("span")
+    ).toHaveAttribute("data-checked");
+    expect(
+      getByTestId("checkbox-parent").querySelector("span")
+    ).toHaveAttribute("data-checked");
+    expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
+      "data-checked"
+    );
+  });
+
   it("can render ancestors indeterminate when some descendants are checked", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
