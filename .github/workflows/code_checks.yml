@@ -1,11 +1,11 @@
-name: PR Checks
+name: Code Checks
 
 on:
   pull_request:
     branches:
       - main
     paths-ignore:
-      - '**.md'
+      - "**.md"
 
 env:
   CONTAINER: fidesctl-local
