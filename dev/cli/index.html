@@ -1216,13 +1216,6 @@ You're not viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#fidesctl-generate-dataset-okta" class="md-nav__link">
-    okta
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1239,6 +1232,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-generate-system-aws" class="md-nav__link">
     aws
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-system-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -1304,13 +1304,6 @@ You're not viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#fidesctl-scan-dataset-okta" class="md-nav__link">
-    okta
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1327,6 +1320,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-scan-system-aws" class="md-nav__link">
     aws
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-system-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -1807,13 +1807,6 @@ You're not viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#fidesctl-generate-dataset-okta" class="md-nav__link">
-    okta
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1830,6 +1823,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-generate-system-aws" class="md-nav__link">
     aws
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-system-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -1895,13 +1895,6 @@ You're not viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#fidesctl-scan-dataset-okta" class="md-nav__link">
-    okta
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1918,6 +1911,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-scan-system-aws" class="md-nav__link">
     aws
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-scan-system-okta" class="md-nav__link">
+    okta
   </a>
   
 </li>
@@ -2257,39 +2257,6 @@ It will need to be run again if the database schema changes.
   --include-null            Includes attributes that would otherwise be null.
   --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
-<h5 id="fidesctl-generate-dataset-okta">fidesctl generate dataset okta</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates datasets for your Okta applications. Connect to an Okta admin
-account by providing an organization url and auth token or a credentials
-reference to fidesctl config. Auth token and organization url can also
-be supplied by setting environment variables as defined by the okta python sdk.
-
-This is a one-time operation that does not track the state of the okta resources.
-It will need to be run again if the tracked resources change.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset okta [OPTIONS] OUTPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
-  --org-url TEXT         Use org url option to connect to okta. Requires
-                         options --org-url and --token
-  --token TEXT           Use token option to connect to okta. Requires options
-                         --org-url and --token
-  --include-null         Includes attributes that would otherwise be null.
-  --help                 Show this message and exit.
-</code></pre></div></td></tr></table></div>
 <h4 id="fidesctl-generate-system">fidesctl generate system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl System resources
 </code></pre></div></td></tr></table></div>
@@ -2345,6 +2312,39 @@ It will need to be run again if the tracked resources change.
   --include-null            Includes attributes that would otherwise be null.
   -o, --organization TEXT
   --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h5 id="fidesctl-generate-system-okta">fidesctl generate system okta</h5>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates systems for your Okta applications. Connect to an Okta admin
+account by providing an organization url and auth token or a credentials
+reference to fidesctl config. Auth token and organization url can also
+be supplied by setting environment variables as defined by the okta python sdk.
+
+This is a one-time operation that does not track the state of the okta resources.
+It will need to be run again if the tracked resources change.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate system okta [OPTIONS] OUTPUT_FILENAME
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
+  --org-url TEXT         Use org url option to connect to okta. Requires
+                         options --org-url and --token
+  --token TEXT           Use token option to connect to okta. Requires options
+                         --org-url and --token
+  --include-null         Includes attributes that would otherwise be null.
+  --help                 Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-get">fidesctl get</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>View a resource from the server as a JSON object.
@@ -2455,45 +2455,6 @@ under the stated threshold.
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.
 </code></pre></div></td></tr></table></div>
-<h5 id="fidesctl-scan-dataset-okta">fidesctl scan dataset okta</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Scans your existing datasets and compares them to found Okta applications.
-Connect to an Okta admin account by providing an organization url and
-auth token or a credentials reference to fidesctl config. Auth token and
-organization url can also be supplied by setting environment variables
-as defined by the okta python sdk.
-
-Outputs missing resources and has a non-zero exit if coverage is
-under the stated threshold.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan dataset okta [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
-                                  config
-  --org-url TEXT                  Use org url option to connect to okta.
-                                  Requires options --org-url and --token
-  --token TEXT                    Use token option to connect to okta.
-                                  Requires options --org-url and --token
-  -c, --coverage-threshold INTEGER RANGE
-                                  [0&lt;=x&lt;=100]
-  --help                          Show this message and exit.
-</code></pre></div></td></tr></table></div>
 <h4 id="fidesctl-scan-system">fidesctl scan system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan fidesctl System resources
 </code></pre></div></td></tr></table></div>
@@ -2548,6 +2509,45 @@ under the stated threshold.
                                   Requires options --access_key_id,
                                   --secret_access_key and --region
   -o, --organization TEXT
+  -c, --coverage-threshold INTEGER RANGE
+                                  [0&lt;=x&lt;=100]
+  --help                          Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h5 id="fidesctl-scan-system-okta">fidesctl scan system okta</h5>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>Scans your existing systems and compares them to found Okta applications.
+Connect to an Okta admin account by providing an organization url and
+auth token or a credentials reference to fidesctl config. Auth token and
+organization url can also be supplied by setting environment variables
+as defined by the okta python sdk.
+
+Outputs missing resources and has a non-zero exit if coverage is
+under the stated threshold.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan system okta [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+                                  config
+  --org-url TEXT                  Use org url option to connect to okta.
+                                  Requires options --org-url and --token
+  --token TEXT                    Use token option to connect to okta.
+                                  Requires options --org-url and --token
   -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.

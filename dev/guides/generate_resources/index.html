@@ -842,15 +842,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-datasets" class="md-nav__link">
-    Generating Datasets
+  <a href="#generating-systems_1" class="md-nav__link">
+    Generating Systems
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#scanning-the-datasets" class="md-nav__link">
-    Scanning the Datasets
+  <a href="#scanning-the-systems_1" class="md-nav__link">
+    Scanning the Systems
   </a>
   
 </li>
@@ -1727,15 +1727,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-datasets" class="md-nav__link">
-    Generating Datasets
+  <a href="#generating-systems_1" class="md-nav__link">
+    Generating Systems
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#scanning-the-datasets" class="md-nav__link">
-    Scanning the Datasets
+  <a href="#scanning-the-systems_1" class="md-nav__link">
+    Scanning the Systems
   </a>
   
 </li>
@@ -2110,13 +2110,13 @@ Resource coverage: <span class="m">100</span>%
 <p>It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of <code>FIDESCTL__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
-<h3 id="generating-datasets">Generating Datasets</h3>
-<p>Once credentials have been configured we can invoke the <code>generate dataset okta</code> command:
+<h3 id="generating-systems_1">Generating Systems</h3>
+<p>Once credentials have been configured we can invoke the <code>generate system okta</code> command:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset okta 
-  fides_resources/okta_datasets.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate system okta 
+  fides_resources/okta_systems.yml
 </code></pre></div></td></tr></table></div></p>
-<p>The result is a resource file with datasets that represent our application integrations:
+<p>The result is a resource file with systems that represent our application integrations:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2131,39 +2131,27 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Salesforce.com&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span><span class="w"></span>
-<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span><span class="w"></span>
 <span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span><span class="w"></span>
 <span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Google</span><span class="nv"> </span><span class="s">Workspace&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 <span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span><span class="w"></span>
-<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
-<h3 id="scanning-the-datasets">Scanning the Datasets</h3>
-<p>The <code>scan</code> command can then connect to your Okta account and compare its applications to your already defined datasets:
+<h3 id="scanning-the-systems_1">Scanning the Systems</h3>
+<p>The <code>scan</code> command can then connect to your Okta account and compare its applications to your already defined systems:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl scan dataset okta <span class="se">\</span>
-  fides_resources/okta_datasets.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl scan system okta <span class="se">\</span>
+  fides_resources/okta_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our resources are covered fully:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2177,7 +2165,7 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal"> 9</span>
 <span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: manifest.yml
 Taxonomy successfully created.
-Successfully scanned the following datasets:
+Successfully scanned the following systems:
     saasure<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lj1tcpqU6W5d7<span class="o">)</span>
     okta_enduser<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45ln0xLKJnAw5d7<span class="o">)</span>
     okta_browser_plugin<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lnodX7MHJB5d7<span class="o">)</span>
