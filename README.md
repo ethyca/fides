@@ -9,47 +9,48 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
-
 ![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
 
  _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_
 
 ## :zap: Overview
 
-Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
+Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
 
 ![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
 
 ## :rocket: Quick Start
 
 ### System Requirements
-1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+) 
-2. [Python](https://www.python.org/downloads/) (3.8+)
-3. [Pipx](https://pypa.github.io/pipx/installation/)
-4. [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
+
+1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
+1. [Python](https://www.python.org/downloads/) (3.8+)
+1. [pipx](https://pypa.github.io/pipx/installation/) (`pip install pipx  ; pip ensurepath`)
+1. [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
-Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system.md) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA). 
+
+Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system.md) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA).
 
 This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
 1. Ensure `nox` and `docker` and installed locally, and clone the Fides repo.
-   
+
 2. From the root fides directory, run the following commands:
 
-    ```
+    ```sh
     nox -s cli
     ```
-    This will spin up the entire project and open a shell within the `fidesctl` container. 
-    
+
+    This will spin up the entire project and open a shell within the `fidesctl` container.
+
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
-    ```
+    ```sh
     fidesctl init
     ```
 
     This builds the required images, spins up the database, and runs the initialization scripts.
-
 
 3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
 
@@ -62,10 +63,12 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
 4. View the newly-generated data map generated from the provided resources.
 
-    #### Controller
+#### Controller
+
     The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    #### Article 30 Record of Processing Activities 
+#### Article 30 Record of Processing Activities
+
     The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system.md). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 
     The [Dataset resource](demo_resources/demo_dataset.yml) is primarily used to provide a list of categories of personal data, recorded here using the [Fides taxonomy](https://github.com/ethyca/fideslang), that your systems store or process, as well as their retention policies. Any Datasets referenced by a System will have this information included as rows of your data map.
@@ -75,8 +78,8 @@ This guide will walk through generating a mock RoPA using predefined resources i
     Together, these configuration files build out an initial map of RoPA-required data and resources.
 
 5. Assess the Organization and System datasets using the `--audit` flag.
-   
-    ```
+
+    ```sh
     fidesctl evaluate demo_resources/ --audit
     ```
 
@@ -127,19 +130,19 @@ The Fides core team is committed to providing a variety of documentation to help
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-- Documentation: https://ethyca.github.io/fides/
-- Tutorial: https://ethyca.github.io/fides/tutorial/
-- Deployment: https://ethyca.github.io/fides/deployment/
-- Roadmap: https://github.com/ethyca/fides/projects
-- Website: www.ethyca.com/fides
+* Documentation: <https://ethyca.github.io/fides/>
+* Tutorial: <https://ethyca.github.io/fides/tutorial/>
+* Deployment: <https://ethyca.github.io/fides/deployment/>
+* Roadmap: <https://github.com/ethyca/fides/projects>
+* Website: www.ethyca.com/fides
 
 ### Support
 
 Join the conversation on:
 
-- [Slack](https://fid.es/join-slack)
-- [Twitter](https://twitter.com/ethyca)
-- [Discussions](https://github.com/ethyca/fides/discussions)
+* [Slack](https://fid.es/join-slack)
+* [Twitter](https://twitter.com/ethyca)
+* [Discussions](https://github.com/ethyca/fides/discussions)
 
 ### Contributing
 
