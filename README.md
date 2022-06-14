@@ -25,181 +25,98 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 ### System Requirements
 1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+) 
 2. [Python](https://www.python.org/downloads/) (3.8+)
+3. [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
 
 ### Getting Started
-1. Ensure `nox` is installed locally.
-   <details>
-   <summary>Run <code> pip install nox</code></summary>
-    
-    Fidesctl uses [nox](https://nox.thea.codes/en/stable/) for build and development tasks. If `nox` is already installed, you may skip this step.
+Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system.md) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA). 
 
-    </details>
+This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
-2. Ensure `docker` is installed locally, and clone the Fides repo.
+1. Ensure `nox` and `docker` and installed locally, and clone the Fides repo.
    
-   Then, from the fides directory, run the following commands:
+2. From the root fides directory, run the following commands:
 
-    <details>
+    ```
+    nox -s cli
+    ```
+    This will spin up the entire project and open a shell within the `fidesctl` container. 
+    
+    Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
-    This will spin up the entire project and open a shell within the `fidesctl` container. Once you see the `fidesctl#` prompt (takes ~3 minutes the first time), you know you're ready to go:
+    ```
+    fidesctl init
+    ```
 
-    <summary>Run <code>nox -s cli</code></summary>
-
-      ```bash
-      ~/git/fides% nox -s cli
-      Build the images required in the docker-compose file...
-      ...
-      Building fidesapi
-      ...
-      Building fidesctl
-      ...
-      Building docs
-      ...
-      root@1a742083cedf:/fides/fidesctl#
-      ```
-
-    </details>
-
-    <details>
     This builds the required images, spins up the database, and runs the initialization scripts.
 
-    <summary>Run <code>fidesctl init</code></summary>
 
-    ```
-    Initializing Fidesctl...
-    ----------
-    Created a './.fides' directory.
-    ----------
-    Created a fidesctl config file: ./.fides/fidesctl.toml
-    To learn more about configuring fidesctl, see:
-      https://ethyca.github.io/fides/installation/configuration/
-    ----------
-    For example policies and help getting started, see:
-      https://ethyca.github.io/fides/guides/policies/
-    ----------
-    Fidesctl initialization complete.
+3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
+
+    ```sh
+    fidesctl apply demo_resources/
+    fidesctl export datamap --output-dir demo_resources/
     ```
 
-    </details>
+    This will `apply` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
 
+4. View the newly-generated data map generated from the provided resources.
 
-3. Use the <code>evaluate</code> command to see if this project's demo analytics and demo marketing systems are compliant with your privacy policy as code:
-    <details>
+    #### Controller
+    The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    <summary>Run <code>fidesctl evaluate demo_resources/</code></summary>
+    #### Article 30 Record of Processing Activities 
+    The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system.md). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 
-      ```bash
-      root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-      Loading resource manifests from: demo_resources
-      Taxonomy successfully created.
-      ----------
-      Processing registry resources...
-      CREATED 1 registry resources.
-      UPDATED 0 registry resources.
-      SKIPPED 0 registry resources.
-      ----------
-      Processing dataset resources...
-      CREATED 1 dataset resources.
-      UPDATED 0 dataset resources.
-      SKIPPED 0 dataset resources.
-      ----------
-      Processing policy resources...
-      CREATED 1 policy resources.
-      UPDATED 0 policy resources.
-      SKIPPED 0 policy resources.
-      ----------
-      Processing system resources...
-      CREATED 2 system resources.
-      UPDATED 0 system resources.
-      SKIPPED 0 system resources.
-      ----------
-      Loading resource manifests from: demo_resources
-      Taxonomy successfully created.
-      Evaluating the following policies:
-      demo_privacy_policy
-      ----------
-      Checking for missing resources...
-      Executing evaluations...
-      Sending the evaluation results to the server...
-      Evaluation passed!
-      ```
+    The [Dataset resource](demo_resources/demo_dataset.yml) is primarily used to provide a list of categories of personal data, recorded here using the [Fides taxonomy](https://github.com/ethyca/fideslang), that your systems store or process, as well as their retention policies. Any Datasets referenced by a System will have this information included as rows of your data map.
 
-    </details>
+    The [System resource](demo_resources/demo_system.yml) describes anything that processes data for your organization, such as applications, services, and third party APIs. In the resulting data map, this populates system-relevant items like the purpose of processing and use, as well as categories of individual the data pertains to.
 
-    Congratulations, you've successfully run your first fidesctl `evaluate` command!
+    Together, these configuration files build out an initial map of RoPA-required data and resources.
 
-4. Now, take a closer look at `demo_resources/demo_policy.yml` which describes an organization's privacy policy as code. This policy just includes one rule: fail if any system uses contact information for marketing purposes.
-    <details>
-      <summary>Run <code>cat demo_resources/demo_policy.yml</code></summary>
+5. Assess the Organization and System datasets using the `--audit` flag.
+   
+    ```
+    fidesctl evaluate demo_resources/ --audit
+    ```
 
-      ```yaml
-      policy:
-        - fides_key: demo_privacy_policy
-          name: Demo Privacy Policy
-          description: The main privacy policy for the organization.
-          rules:
-            - fides_key: reject_direct_marketing
-              name: Reject Direct Marketing
-              description: Disallow collecting any user contact info to use for marketing.
-              data_categories:
-                matches: ANY
-                values:
-                  - user.provided.identifiable.contact
-              data_uses:
-                matches: ANY
-                values:
-                  - advertising
-              data_subjects:
-                matches: ANY
-                values:
-                  - customer
-              data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      ```
-
-      </details>
-
-
-5. Lastly, we're going to modify our annotations in a way that would fail the policy we just looked at:
-    <details>
-
-    Edit `demo_resources/demo_system.yml` and uncomment the line that adds `user.provided.identifiable.contact` to the list of `data_categories` for the `demo_marketing_system`.
-      <summary>Add User-provided contact info to the demo_marketing_system</summary>
-
-     ```diff
-          privacy_declarations:
-            - name: Collect data for marketing
-              data_categories:
-     -          #- user.provided.identifiable.contact # uncomment to add this category to the system
-     +          - user.provided.identifiable.contact # uncomment to add this category to the system
-                - user.derived.identifiable.device.cookie_id
-              data_uses: marketing_advertising_or_promotion
-              data_subjects:
-     ```
-
-     </details>
+    This command will identify any missing information in your resources, which should be added to generate a compliant Record of Processing Activities.
 
     <details>
 
-      <summary>Run <code>fidesctl evaluate demo_resources/</code> </summary>
+    <summary>Example Output</summary>
 
-      Running `fidesctl evaluate demo_resources` now causes an evaluation failure. The privacy policy "Reject Direct Marketing" rule disallows collecting contact information for marketing purposes, and flagged the violating `privacy_declaration` during evaluation.
-
-     ```bash
-     root@fa175a43c077:/fides/fidesctl# fidesctl evaluate demo_resources
-     ...
-     Executing evaluations...
-     {
-       "status": "FAIL",
-       "details": [
-         "Declaration (Collect data for marketing) of System (demo_marketing_system) failed Rule (Reject Direct Marketing) from Policy (demo_privacy_policy)"
-       ],
-       "message": null
-     }
-     ```
+    ```sh
+    "Auditing Organization Resource Compliance"
+    Found 1 Organization resource(s) to audit...
+    Auditing Organization: Demo Organization
+    controller for default_organization in Demo Organization is compliant
+    data_protection_officer for default_organization in Demo Organization is compliant
+    representative for default_organization in Demo Organization is compliant
+    security_policy for default_organization in Demo Organization is compliant
+    All audited organization resource(s) compliant!
+    ----------
+    "Auditing System Resource Compliance"
+    Found 2 System resource(s) to audit...
+    "Auditing System: Demo Analytics System"
+    improve.system missing recipients in Demo Analytics System.
+    improve.system missing legal_basis in Demo Analytics System.
+    improve.system missing special_category in Demo Analytics System.
+    customer missing rights in Demo Analytics System.
+    customer missing automated_decisions_or_profiling in Demo Analytics System.
+    "Auditing System: Demo Marketing System"
+    advertising missing recipients in Demo Marketing System.
+    advertising missing legal_basis in Demo Marketing System.
+    advertising missing special_category in Demo Marketing System.
+    customer missing rights in Demo Marketing System.
+    customer missing automated_decisions_or_profiling in Demo Marketing System.
+    10 issue(s) were detected in auditing system completeness.
+    ```
 
     </details>
 
-At this point, you've seen some of the core concepts in place: declaring systems, evaluating policies, and re-evaluating policies on every code change. But there's a lot more to discover, so we'd recommend following [the tutorial](https://ethyca.github.io/fides/tutorial/) to keep learning.
+    `--audit` flags any empty fields, along with the System or Organization they belong to, and returns where or not the system is incomplete or fully compliant. In the above example, the Organization resource is compliant, but both the Marketing and Analytics systems are missing information that would be required in your RoPA.
+
+Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and apply your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
 
 ## :book: Learn More
 
