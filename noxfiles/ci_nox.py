@@ -12,7 +12,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from docker_nox import build_local_prod
+from docker_nox import build
 from utils_nox import teardown
 
 RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
@@ -26,7 +26,7 @@ def check_all(session: nox.Session) -> None:
     Excludes 'pytest_external' so that no additional secrets/tooling are required.
     """
     teardown(session)
-    build_local_prod(session)
+    build(session, "test")
     black(session)
     isort(session)
     xenon(session)

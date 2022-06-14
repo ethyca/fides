@@ -1,6 +1,12 @@
 """Contains the nox sessions for docker-related tasks."""
 import nox
-from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, get_current_tag
+from constants_nox import (
+    IMAGE,
+    IMAGE_LATEST,
+    IMAGE_LOCAL,
+    IMAGE_LOCAL_UI,
+    get_current_tag,
+)
 
 
 def get_current_image() -> str:
@@ -9,32 +15,33 @@ def get_current_image() -> str:
 
 
 @nox.session()
-def build(session: nox.Session) -> None:
+@nox.parametrize(
+    "image",
+    [
+        nox.param("prod", id="prod"),
+        nox.param("dev", id="dev"),
+        nox.param("test", id="test"),
+        nox.param("ui", id="ui"),
+    ],
+)
+def build(session: nox.Session, image: str) -> None:
     """Build the Docker container for fidesctl."""
+    build_matrix = {
+        "prod": {"tag": get_current_image(), "target": "prod"},
+        "dev": {"tag": IMAGE_LOCAL, "target": "dev"},
+        "test": {"tag": IMAGE_LOCAL, "target": "prod"},
+        "ui": {"tag": IMAGE_LOCAL_UI, "target": "frontend"},
+    }
+    target = build_matrix[image]["target"]
+    tag = build_matrix[image]["tag"]
     session.run(
         "docker",
         "build",
-        "--target=prod",
+        f"--target={target}",
         "--tag",
-        get_current_image(),
+        tag,
         ".",
         external=True,
-    )
-
-
-@nox.session()
-def build_local(session: nox.Session) -> None:
-    """Build the Docker container for fidesctl tagged 'local'."""
-    session.run(
-        "docker", "build", "--target=dev", "--tag", IMAGE_LOCAL, ".", external=True
-    )
-
-
-@nox.session()
-def build_local_prod(session: nox.Session) -> None:
-    """Build the Docker container for fidesctl tagged 'local' with the prod stage target."""
-    session.run(
-        "docker", "build", "--target=prod", "--tag", IMAGE_LOCAL, ".", external=True
     )
 
 
