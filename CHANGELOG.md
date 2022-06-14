@@ -52,6 +52,7 @@ The types of changes are:
 * Refactor `export` to remove CLI specific uses from the core modules and load resources[#725](https://github.com/ethyca/fides/pull/725)
 * Bump version of FastAPI in `setup.py` to 0.77.1 to match `optional-requirements.txt` [#734](https://github.com/ethyca/fides/pull/734)
 * Docker images are now only built and pushed on tags to match when we release to pypi [#740](https://github.com/ethyca/fides/pull/740)
+* Okta resource scanning and generation now works with systems instead of datasets [#751](https://github.com/ethyca/fides/pull/751)
 
 ### Developer Experience
 
