@@ -25,7 +25,8 @@ Fides (*fee-dhez*, Latin: Fidēs) is an open-source tool that allows you to easi
 ### System Requirements
 1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+) 
 2. [Python](https://www.python.org/downloads/) (3.8+)
-3. [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
+3. [Pipx](https://pypa.github.io/pipx/installation/)
+4. [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
 Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system.md) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA). 
