@@ -142,18 +142,23 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
 
   const handleChecked = (node: CheckboxNode) => {
     let newChecked: string[] = [];
+    let newSelected: string[] = [];
     if (checked.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unchecking children
       newChecked = checked.filter((s) => !s.startsWith(node.value));
+      // have to also filter selected so that unselecting children
+      // will not make parents selected
+      newSelected = selected.filter((s) => !s.startsWith(node.value));
     } else {
       const descendants = getDescendantsAndCurrent(nodes, node.value).map(
         (d) => d.value
       );
       newChecked = [...checked, ...descendants];
+      newSelected = newChecked;
     }
     setChecked(newChecked);
     // we want to make sure to only save the most specific descendant
-    const descendants = getMostSpecificDescendants(newChecked);
+    const descendants = getMostSpecificDescendants(newSelected);
     onSelected(descendants);
   };
 

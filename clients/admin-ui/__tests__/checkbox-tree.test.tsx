@@ -132,6 +132,20 @@ describe("Checkbox tree", () => {
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
+  it("can remove ancestors when no descendants are selected", () => {
+    const handleSelected = jest.fn();
+    const { getByTestId } = render(
+      <CheckboxTree
+        nodes={MOCK_NODES}
+        selected={["grandparent.parent.child", "great uncle"]}
+        onSelected={handleSelected}
+      />
+    );
+    fireEvent.click(getByTestId("checkbox-child"));
+    expect(handleSelected).toBeCalledTimes(1);
+    expect(handleSelected).toBeCalledWith(["great uncle"]);
+  });
+
   it("can render ancestors indeterminate when some descendants are checked", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
