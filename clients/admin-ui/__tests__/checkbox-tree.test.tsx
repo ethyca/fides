@@ -1,9 +1,9 @@
 import { fireEvent, render } from "@testing-library/react";
 
 import CheckboxTree, {
+  ancestorIsSelected,
   getAncestorsAndCurrent,
   getDescendantsAndCurrent,
-  getMostSpecificDescendants,
 } from "~/features/common/CheckboxTree";
 
 const MOCK_NODES = [
@@ -77,25 +77,6 @@ describe("Checkbox tree", () => {
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
-  it("can add nested checked values", () => {
-    const handleSelected = jest.fn();
-    const { getByTestId } = render(
-      <CheckboxTree
-        nodes={MOCK_NODES}
-        selected={[]}
-        onSelected={handleSelected}
-      />
-    );
-    fireEvent.click(getByTestId("checkbox-grandparent"));
-    expect(handleSelected).toBeCalledTimes(1);
-    // we only mark the most specific ones as "selected"
-    expect(handleSelected).toBeCalledWith([
-      "grandparent.parent.child",
-      "grandparent.parent.sibling",
-      "grandparent.aunt",
-    ]);
-  });
-
   it("can remove checked values", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
@@ -146,7 +127,7 @@ describe("Checkbox tree", () => {
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
-  it("can render children as selected when a parent is selected", () => {
+  it("can render children as selected and disabled when a parent is selected", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
@@ -164,6 +145,10 @@ describe("Checkbox tree", () => {
     expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
       "data-checked"
     );
+    expect(getByTestId("checkbox-grandparent")).not.toHaveAttribute(
+      "data-disabled"
+    );
+    expect(getByTestId("checkbox-child")).toHaveAttribute("data-disabled");
   });
 
   it("can render ancestors indeterminate when some descendants are checked", () => {
@@ -239,29 +224,6 @@ describe("Checkbox tree", () => {
       ]);
     });
 
-    it("can get most specific descendants", () => {
-      expect(getMostSpecificDescendants(["grandparent"])).toEqual([
-        "grandparent",
-      ]);
-      expect(
-        getMostSpecificDescendants(["grandparent", "grandparent.parent"])
-      ).toEqual(["grandparent.parent"]);
-      expect(
-        getMostSpecificDescendants([
-          "grandparent",
-          "grandparent.parent",
-          "grandparent.parent.child",
-        ])
-      ).toEqual(["grandparent.parent.child"]);
-      expect(
-        getMostSpecificDescendants([
-          "grandparent",
-          "grandparent.parent",
-          "grandparent.aunt",
-        ])
-      ).toEqual(["grandparent.parent", "grandparent.aunt"]);
-    });
-
     it("can get all descendants of a node", () => {
       expect(
         getDescendantsAndCurrent(MOCK_NODES, "grandparent")
@@ -292,6 +254,20 @@ describe("Checkbox tree", () => {
           (d) => d.value
         )
       ).toEqual(["grandparent.parent.child"]);
+    });
+
+    it("can determine if an ancestor is selected", () => {
+      expect(
+        ancestorIsSelected(["grandparent"], "grandparent.parent")
+      ).toBeTruthy();
+      expect(ancestorIsSelected(["grandparent"], "great uncle")).toBeFalsy();
+      expect(
+        ancestorIsSelected(["grandparent"], "grandparent.parent.child")
+      ).toBeTruthy();
+      expect(
+        ancestorIsSelected(["grandparent.parent"], "grandparent.parent.child")
+      ).toBeTruthy();
+      expect(ancestorIsSelected(["grandparent"], "grandparent")).toBeFalsy();
     });
   });
 });

@@ -27,17 +27,12 @@ export const getAncestorsAndCurrent = (nodeName: string) => {
   return ancestors;
 };
 
-export const getMostSpecificDescendants = (nodeNames: string[]) => {
-  // take advantage of dot notation. this is n^2 time, but the input array
-  // likely won't be very long
-  const leaves: string[] = [];
-  nodeNames.forEach((nodeName) => {
-    const ancestors = nodeNames.filter((n) => n.startsWith(nodeName));
-    if (ancestors.length === 1) {
-      leaves.push(nodeName);
-    }
-  });
-  return leaves;
+export const ancestorIsSelected = (selected: string[], nodeName: string) => {
+  const ancestors = getAncestorsAndCurrent(nodeName).filter(
+    (a) => a !== nodeName
+  );
+  const intersection = selected.filter((s) => ancestors.includes(s));
+  return intersection.length > 0;
 };
 
 export const getDescendantsAndCurrent = (
@@ -70,6 +65,7 @@ interface CheckboxItemProps {
   isExpanded: boolean;
   onExpanded: (node: CheckboxNode) => void;
   isIndeterminate: boolean;
+  isDisabled: boolean;
   children?: ReactNode;
 }
 const CheckboxItem = ({
@@ -79,6 +75,7 @@ const CheckboxItem = ({
   isExpanded,
   onExpanded,
   isIndeterminate,
+  isDisabled,
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
@@ -96,6 +93,7 @@ const CheckboxItem = ({
           value={value}
           isChecked={isIndeterminate ? false : isChecked}
           isIndeterminate={isIndeterminate}
+          isDisabled={isDisabled}
           onChange={() => onChecked(node)}
           mx={2}
           data-testid={`checkbox-${label}`}
@@ -158,25 +156,23 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
     if (checked.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unchecking children
       newChecked = checked.filter((s) => !s.startsWith(node.value));
-      // have to also filter selected so that unselecting children
-      // will not make parents selected
       newSelected = selected.filter((s) => !s.startsWith(node.value));
     } else {
+      // we need to mark all descendants as checked, though these are not
+      // technically 'selected'
       const descendants = getDescendantsAndCurrent(nodes, node.value).map(
         (d) => d.value
       );
       newChecked = [...checked, ...descendants];
-      newSelected = newChecked;
+      newSelected = [...selected, node.value];
     }
     setChecked(newChecked);
-    // we want to make sure to only save the most specific descendant
-    const descendants = getMostSpecificDescendants(newSelected);
-    onSelected(descendants);
+    onSelected(newSelected);
   };
 
   const handleExpanded = (node: CheckboxNode) => {
     if (expanded.indexOf(node.value) >= 0) {
-      // take advantage of dot notation here for unchecking children
+      // take advantage of dot notation here for unexpanding children
       setExpanded(expanded.filter((c) => !c.startsWith(node.value)));
     } else {
       setExpanded([...expanded, node.value]);
@@ -196,6 +192,7 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
         node.children.length > 0 &&
         checked.filter((s) => s.startsWith(node.value)).length !==
           thisDescendants.length;
+      const isDisabled = ancestorIsSelected(selected, node.value);
 
       return (
         <CheckboxItem
@@ -204,6 +201,7 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
           onChecked={handleChecked}
           isExpanded={isExpanded}
           onExpanded={handleExpanded}
+          isDisabled={isDisabled}
           isIndeterminate={isIndeterminate}
         >
           {isExpanded &&
