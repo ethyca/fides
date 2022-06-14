@@ -5,11 +5,15 @@ import { errorToastParams, successToastParams } from "../common/toast";
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,
+  setActiveCollectionIndex,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
 import EditCollectionOrFieldForm from "./EditCollectionOrFieldForm";
 import EditDrawer from "./EditDrawer";
-import { getUpdatedDatasetFromCollection } from "./helpers";
+import {
+  getUpdatedDatasetFromCollection,
+  removeCollectionFromDataset,
+} from "./helpers";
 import { DatasetCollection } from "./types";
 
 const DESCRIPTION =
@@ -48,12 +52,32 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (dataset && collectionIndex != null) {
+      const updatedDataset = removeCollectionFromDataset(
+        dataset,
+        collectionIndex
+      );
+      try {
+        await updateDataset(updatedDataset);
+        toast(successToastParams("Successfully deleted collection"));
+        const newActiveCollectionIndex =
+          dataset.collections.length > 0 ? 0 : null;
+        setActiveCollectionIndex(newActiveCollectionIndex);
+      } catch (error) {
+        toast(errorToastParams(error as string));
+      }
+      onClose();
+    }
+  };
+
   return (
     <EditDrawer
       isOpen={isOpen}
       onClose={onClose}
       description={DESCRIPTION}
       header={`Collection Name: ${collection.name}`}
+      onDelete={handleDelete}
     >
       <EditCollectionOrFieldForm
         values={collection}
