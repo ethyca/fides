@@ -8,7 +8,7 @@ Docker and Docker-Compose are the only requirements here.
 
 1. Install `docker` locally (see [Docker Desktop](https://www.docker.com/products/docker-desktop) or your preferred installation). The minimum verified Docker version is `20.10.8`
 1. If your `docker` installation did not include `docker-compose`, make sure to get at least version `1.29.0`. Installation instructions can be found [here](https://docs.docker.com/compose/install/).
-1. Create a `.fides` folder in the root directory of your project (or in the same directory as your docker compose file).
+1. In a new project folder (or in the root directory of your current project), create a `.fides` folder.
 
 ## Docker Setup
 
