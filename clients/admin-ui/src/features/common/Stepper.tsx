@@ -1,5 +1,6 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
+
 import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
@@ -25,7 +26,7 @@ const Stepper = ({ activeStep, setActiveStep, steps }: Props) => (
               boxSize={8}
               cursor={step.number < activeStep ? "pointer" : "default"}
               onClick={() => {
-                if (step.number <= activeStep) {
+                if (step.number < activeStep) {
                   setActiveStep(step.number);
                 }
               }}
@@ -34,13 +35,10 @@ const Stepper = ({ activeStep, setActiveStep, steps }: Props) => (
             <StepperCircleIcon
               boxSize={8}
               cursor={
-                activeStep &&
-                (step.number === activeStep || step.number) <= activeStep
-                  ? "pointer"
-                  : "default"
+                activeStep && step.number < activeStep ? "pointer" : "default"
               }
               onClick={() => {
-                if (activeStep && step.number <= activeStep) {
+                if (activeStep && step.number < activeStep) {
                   setActiveStep(step.number);
                 }
               }}
