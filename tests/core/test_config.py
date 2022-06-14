@@ -31,6 +31,7 @@ def test_config_from_path() -> None:
     assert config.database.SERVER == "testserver"
     assert config.redis.HOST == "testredis"
     assert config.security.APP_ENCRYPTION_KEY == "atestencryptionkeythatisvalidlen"
+    assert config.admin_ui.ENABLED == True
 
 
 @patch.dict(

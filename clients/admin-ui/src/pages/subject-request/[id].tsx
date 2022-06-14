@@ -8,11 +8,11 @@ import {
   Text,
 } from '@fidesui/react';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React from 'react';
 
 import ProtectedRoute from '../../features/auth/ProtectedRoute';
+import Head from '../../features/common/Head';
 import NavBar from '../../features/common/NavBar';
 import { useGetAllPrivacyRequestsQuery } from '../../features/privacy-requests';
 import SubjectRequest from '../../features/subject-request/SubjectRequest';
@@ -49,11 +49,7 @@ const SubjectRequestDetails: NextPage = () => {
   return (
     <ProtectedRoute>
       <div>
-        <Head>
-          <title>Fides Admin UI - Subject Request Details</title>
-          <meta name='description' content='Subject Request Details' />
-          <link rel='icon' href='/favicon.ico' />
-        </Head>
+        <Head/>
 
         <NavBar />
 

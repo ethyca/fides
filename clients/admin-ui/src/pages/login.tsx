@@ -13,12 +13,12 @@ import {
 } from '@fidesui/react';
 import { Formik } from 'formik';
 import type { NextPage } from 'next';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { login, selectToken, useLoginMutation } from '../features/auth';
+import Head from '../features/common/Head';
 import Image from '../features/common/Image';
 
 const useLogin = () => {
@@ -94,14 +94,7 @@ const Login: NextPage = () => {
         values,
       }) => (
         <div>
-          <Head>
-            <title>FidesUI App</title>
-            <meta
-              name="description"
-              content="Generated from FidesUI template"
-            />
-            <link rel="icon" href="/favicon.ico" />
-          </Head>
+          <Head />
 
           <main>
             <Stack

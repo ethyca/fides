@@ -1,6 +1,7 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
+import { BASE_API_URN } from '../../src/constants'
 import LoginPage from '../../src/pages/login';
 import { act, fireEvent, render, screen, waitFor } from '../test-utils';
 
@@ -13,7 +14,7 @@ afterAll(() => {
 describe('/login', () => {
   it('Should redirect when the user logs in successfully', async () => {
     const server = setupServer(
-      rest.post(`/login`, (req, res, ctx) =>
+      rest.post(`${BASE_API_URN}/login`, (req, res, ctx) =>
         res(
           ctx.json({
             user_data: {

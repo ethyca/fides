@@ -6,7 +6,7 @@ import {
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import type { RootState } from '../../app/store';
-import { STORED_CREDENTIALS_KEY } from '../../constants';
+import { BASE_API_URN, STORED_CREDENTIALS_KEY } from '../../constants';
 import { User } from '../user-management/types';
 import { LoginRequest, LoginResponse } from './types';
 
@@ -74,7 +74,7 @@ credentialStorage.startListening({
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESOPS_API!,
+    baseUrl: BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
       headers.set('Access-Control-Allow-Origin', '*');
