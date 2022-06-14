@@ -46,12 +46,17 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
     }
   };
 
+  const handleDelete = () => {
+    console.log("delete", field);
+  };
+
   return (
     <EditDrawer
       isOpen={isOpen}
       onClose={onClose}
       header={`Field Name: ${field.name}`}
       description={DESCRIPTION}
+      onDelete={handleDelete}
     >
       <EditCollectionOrFieldForm
         values={field}
