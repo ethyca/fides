@@ -1,10 +1,10 @@
 policy:
 - fides_key: fidesctl_policy
+  organization_fides_key: default_organization
   name: Fidesctl Policy
   description: The main privacy policy for Fidesctl.
   rules:
   - name: reject_non_system_data
-    description: Disallow any non-system data or uses.
     data_categories:
       matches: OTHER
       values:
@@ -19,11 +19,11 @@ policy:
       - anonymous_user
     data_qualifier: aggregated
 - fides_key: data_sharing_policy
+  organization_fides_key: default_organization
   name: Data Sharing
   description: The privacy policy that governs sharing of data with third parties.
   rules:
   - name: Disallow Third-Party Marketing
-    description: Disallow collecting any user contact info to use for marketing.
     data_categories:
       matches: ANY
       values:

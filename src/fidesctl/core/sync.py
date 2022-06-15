@@ -5,7 +5,7 @@ from typing import Dict, List
 import yaml
 from fideslang.manifests import load_yaml_into_dict
 
-from fidesctl.core.api_helpers import get_server_resource
+from fidesctl.core.api_helpers import get_raw_server_resource
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
@@ -34,7 +34,7 @@ def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
 
             for resource in resource_list:
                 fides_key = resource["fides_key"]
-                server_resource = get_server_resource(
+                server_resource = get_raw_server_resource(
                     url, resource_type, fides_key, headers
                 )
                 if server_resource:
@@ -43,4 +43,4 @@ def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
                     updated_resource_list.append(resource)
             updated_manifest[resource_type] = updated_resource_list
         with open(manifest_path, "w") as manifest_file:
-            yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
+            yaml.dump(updated_manifest, manifest_file, sort_keys=False, indent=2)

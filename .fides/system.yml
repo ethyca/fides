@@ -1,16 +1,29 @@
 system:
 - fides_key: fidesctl_system
+  organization_fides_key: default_organization
   name: Fidesctl System
   description: Software that functionally applies Fides.
+  registry_id: null
+  meta: null
+  fidesctl_meta: null
   system_type: Service
+  data_responsibility_title: Controller
   privacy_declarations:
   - name: Store system data.
     data_categories:
     - system.operations
     - user.provided.identifiable.contact
     data_use: improve.system
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     data_subjects:
     - anonymous_user
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     dataset_references:
     - public
+  system_dependencies: null
+  joint_controller: null
+  third_country_transfers: null
+  administrating_department: Not defined
+  data_protection_impact_assessment:
+    is_required: false
+    progress: null
+    link: null
