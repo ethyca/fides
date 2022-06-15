@@ -45,6 +45,8 @@ services:
         source: .
         target: /fides
         read_only: False
+    environment:
+      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fidesctl:8080
 
   fidesctl-db:
     image: postgres:12

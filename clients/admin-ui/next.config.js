@@ -26,11 +26,11 @@ const nextConfig = {
     return [
       {
         source: `/api/v1/:path`,
-        destination: "http://fidesctl:8080/api/v1/:path/",
+        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:path/`,
       },
       {
         source: `/api/v1/:first/:second*`,
-        destination: "http://fidesctl:8080/api/v1/:first/:second*",
+        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:first/:second*`,
       },
     ];
   },
