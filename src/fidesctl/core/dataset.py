@@ -11,7 +11,7 @@ from fidesctl.core.parse import parse
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 
-from .utils import echo_green, echo_red, get_db_engine
+from .utils import check_fides_key, echo_green, echo_red, get_db_engine
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],
@@ -87,8 +87,9 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
 
     Placeholder values are use where needed.
     """
+    sanitized_fides_key = check_fides_key(schema_name)
     dataset = Dataset(
-        fides_key=schema_name,
+        fides_key=sanitized_fides_key,
         name=schema_name,
         description=f"Fides Generated Description for Schema: {schema_name}",
         data_categories=[],

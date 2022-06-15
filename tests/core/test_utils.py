@@ -53,3 +53,21 @@ def test_nested_fields_unpacked(test_nested_collection_fields):
     for field in utils.get_all_level_fields(collection.fields):
         collected_field_names.append(field.name)
     assert len(collected_field_names) == 5
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "fides_key, sanitized_fides_key",
+    [("foo", "foo"), ("@foo#", "_foo_"), (":_foo)bar!123$", "__foo_bar_123_")],
+)
+def test_sanitize_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
+    assert sanitized_fides_key == utils.sanitize_fides_key(fides_key)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "fides_key, sanitized_fides_key",
+    [("foo", "foo"), ("@foo#", "_foo_"), (":_foo)bar!123$", "__foo_bar_123_")],
+)
+def test_check_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
+    assert sanitized_fides_key == utils.check_fides_key(fides_key)
