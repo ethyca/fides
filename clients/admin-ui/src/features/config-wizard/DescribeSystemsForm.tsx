@@ -113,6 +113,11 @@ const DescribeSystemsForm: NextPage<{
     //   handleChangeStep
 
     const chakraStyles: ChakraStylesConfig = {
+      container: (provided, state) => ({
+        ...provided,
+        width: "65%",
+        maxWidth: "65%",
+      }),
       multiValue: (provided, state) => ({
         ...provided,
         background: "primary.400",
@@ -140,7 +145,7 @@ const DescribeSystemsForm: NextPage<{
           <Stack>
             <FormControl>
               <Stack direction="row" mb={5} justifyContent="flex-end">
-                <FormLabel w="100%">System name</FormLabel>
+                <FormLabel>System name</FormLabel>
                 <Input
                   type="text"
                   id="name"
@@ -161,87 +166,108 @@ const DescribeSystemsForm: NextPage<{
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
-              <Stack direction="row" mb={5} justifyContent="flex-end">
-                <FormLabel w="100%">System key</FormLabel>
-                <Input
-                  type="text"
-                  id="key"
-                  name="key"
-                  focusBorderColor="gray.700"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.key}
-                  isInvalid={touched.key && Boolean(errors.key)}
-                  minW="65%"
-                  w="65%"
-                />
-                <Tooltip
-                  fontSize="md"
-                  label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-              <Stack direction="row" mb={5} justifyContent="flex-end">
-                <FormLabel w="100%">Description</FormLabel>
-                <Input
-                  type="text"
-                  id="description"
-                  name="description"
-                  focusBorderColor="gray.700"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.description}
-                  isInvalid={touched.description && Boolean(errors.description)}
-                  minW="65%"
-                  w="65%"
-                />
-                <Tooltip
-                  fontSize="md"
-                  label="If you wish you can provide a description which better explains the purpose of this system."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-              <Stack direction="row" mb={5} justifyContent="flex-end">
-                <FormLabel w="100%">System type</FormLabel>
-                <Select placeholder="Select option">
-                  <option value="emailSystem">Email System</option>
-                  <option value="option2">Option 2</option>
-                  <option value="option3">Option 3</option>
-                </Select>
-                <Tooltip
-                  fontSize="md"
-                  label="Select a system type from the pre-approved list of system types."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-              <Stack direction="row" mb={5} justifyContent="flex-end">
-                <FormLabel w="100%">System tags</FormLabel>
-                <CreatableSelect
-                  isMulti
-                  isClearable
-                  noOptionsMessage={() => null}
-                  placeholder="Add your system tags"
-                  components={{
-                    Menu: () => null,
-                    DropdownIndicator: () => null,
-                  }}
-                  chakraStyles={chakraStyles}
-                  size="md"
-                />
-                <Tooltip
-                  fontSize="md"
-                  label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
+
+              {values.name ? (
+                <Stack direction="row" mb={5} justifyContent="flex-end">
+                  <FormLabel>System key</FormLabel>
+                  <Input
+                    type="text"
+                    id="key"
+                    name="key"
+                    focusBorderColor="gray.700"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.key}
+                    isInvalid={touched.key && Boolean(errors.key)}
+                    minW="65%"
+                    w="65%"
+                  />
+                  <Tooltip
+                    fontSize="md"
+                    label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
+                    placement="right"
+                  >
+                    <QuestionIcon boxSize={5} color="gray.400" />
+                  </Tooltip>
+                </Stack>
+              ) : null}
+
+              {values.key ? (
+                <Stack direction="row" mb={5} justifyContent="flex-end">
+                  <FormLabel>Description</FormLabel>
+                  <Input
+                    type="text"
+                    id="description"
+                    name="description"
+                    focusBorderColor="gray.700"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.description}
+                    isInvalid={
+                      touched.description && Boolean(errors.description)
+                    }
+                    minW="65%"
+                    w="65%"
+                  />
+                  <Tooltip
+                    fontSize="md"
+                    label="If you wish you can provide a description which better explains the purpose of this system."
+                    placement="right"
+                  >
+                    <QuestionIcon boxSize={5} color="gray.400" />
+                  </Tooltip>
+                </Stack>
+              ) : null}
+
+              {values.description ? (
+                <Stack direction="row" mb={5} justifyContent="flex-end">
+                  <FormLabel>System type</FormLabel>
+                  <Select
+                    id="type"
+                    name="type"
+                    placeholder="Select option"
+                    w="65%"
+                    minWidth="65%"
+                  >
+                    <option value="emailSystem">Email System</option>
+                    <option value="option2">Option 2</option>
+                    <option value="option3">Option 3</option>
+                  </Select>
+                  <Tooltip
+                    fontSize="md"
+                    label="Select a system type from the pre-approved list of system types."
+                    placement="right"
+                  >
+                    <QuestionIcon boxSize={5} color="gray.400" />
+                  </Tooltip>
+                </Stack>
+              ) : null}
+
+              {/* this seems to have changed in the designs and also values.types is nothing */}
+              {values.type ? (
+                <Stack direction="row" mb={5} justifyContent="flex-end">
+                  <FormLabel>System tags</FormLabel>
+                  <CreatableSelect
+                    isMulti
+                    isClearable
+                    noOptionsMessage={() => null}
+                    placeholder="Add your system tags"
+                    components={{
+                      Menu: () => null,
+                      DropdownIndicator: () => null,
+                    }}
+                    chakraStyles={chakraStyles}
+                    size="md"
+                  />
+                  <Tooltip
+                    fontSize="md"
+                    label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+                    placement="right"
+                  >
+                    <QuestionIcon boxSize={5} color="gray.400" />
+                  </Tooltip>
+                </Stack>
+              ) : null}
             </FormControl>
           </Stack>
           <Box>

@@ -46,7 +46,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       //     description: "Creating organization failed.",
       //   });
       // } else {
-      handleChangeStep(2);
+      handleChangeStep(1);
       //   toast.closeAll();
       // }
     },
