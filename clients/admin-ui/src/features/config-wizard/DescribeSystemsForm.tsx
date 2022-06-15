@@ -1,10 +1,10 @@
 import {
+  Box,
   Button,
   chakra,
   FormControl,
   FormLabel,
   Heading,
-  HStack,
   Input,
   Select,
   Stack,
@@ -139,7 +139,7 @@ const DescribeSystemsForm: NextPage<{
           </div>
           <Stack>
             <FormControl>
-              <Stack direction="row" mb={5}>
+              <Stack direction="row" mb={5} justifyContent="flex-end">
                 <FormLabel w="100%">System name</FormLabel>
                 <Input
                   type="text"
@@ -161,7 +161,7 @@ const DescribeSystemsForm: NextPage<{
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
-              <Stack direction="row">
+              <Stack direction="row" mb={5} justifyContent="flex-end">
                 <FormLabel w="100%">System key</FormLabel>
                 <Input
                   type="text"
@@ -183,7 +183,7 @@ const DescribeSystemsForm: NextPage<{
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
-              <Stack direction="row">
+              <Stack direction="row" mb={5} justifyContent="flex-end">
                 <FormLabel w="100%">Description</FormLabel>
                 <Input
                   type="text"
@@ -205,8 +205,8 @@ const DescribeSystemsForm: NextPage<{
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
-              <Stack direction="row">
-                <FormLabel>System type</FormLabel>
+              <Stack direction="row" mb={5} justifyContent="flex-end">
+                <FormLabel w="100%">System type</FormLabel>
                 <Select placeholder="Select option">
                   <option value="emailSystem">Email System</option>
                   <option value="option2">Option 2</option>
@@ -220,12 +220,8 @@ const DescribeSystemsForm: NextPage<{
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
-            </FormControl>
-          </Stack>
-          <Stack>
-            <HStack direction="row" spacing={4}>
-              <FormLabel>System tags</FormLabel>
-              <FormControl>
+              <Stack direction="row" mb={5} justifyContent="flex-end">
+                <FormLabel w="100%">System tags</FormLabel>
                 <CreatableSelect
                   isMulti
                   isClearable
@@ -238,27 +234,29 @@ const DescribeSystemsForm: NextPage<{
                   chakraStyles={chakraStyles}
                   size="md"
                 />
-              </FormControl>
-              <Tooltip
-                fontSize="md"
-                label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </HStack>
+                <Tooltip
+                  fontSize="md"
+                  label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
+            </FormControl>
           </Stack>
-          <Button
-            bg="primary.800"
-            _hover={{ bg: "primary.400" }}
-            _active={{ bg: "primary.500" }}
-            colorScheme="primary"
-            disabled={!values.name || !values.description}
-            isLoading={isLoading}
-            type="submit"
-          >
-            Confirm and Continue
-          </Button>
+          <Box>
+            <Button
+              // onClick={onClose}
+              mr={2}
+              size="sm"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" colorScheme="primary" size="sm">
+              Confirm and Continue
+            </Button>
+          </Box>
         </Stack>
       </chakra.form>
     );

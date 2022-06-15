@@ -40,15 +40,15 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
 
       setIsLoading(false);
 
-      if (createOrganizationError) {
-        toast({
-          status: "error",
-          description: "Creating organization failed.",
-        });
-      } else {
-        handleChangeStep(1);
-        toast.closeAll();
-      }
+      // if (createOrganizationError) {
+      //   toast({
+      //     status: "error",
+      //     description: "Creating organization failed.",
+      //   });
+      // } else {
+      handleChangeStep(2);
+      //   toast.closeAll();
+      // }
     },
     validate: (values) => {
       const errors: {
