@@ -11,6 +11,11 @@ import { DATA_QUALIFIERS } from "./constants";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 import { DatasetCollection, DatasetField } from "./types";
 
+const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
+  value: dq.key,
+  label: dq.label,
+}));
+
 type FormValues =
   | Pick<DatasetField, "description" | "data_qualifier" | "data_categories">
   | Pick<
@@ -69,13 +74,12 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               <CustomTextInput name="description" label="Description" />
             </Box>
             <Box>
-              <CustomSelect name="data_qualifier" label="Identifiability">
-                {DATA_QUALIFIERS.map((qualifier) => (
-                  <option key={qualifier.key} value={qualifier.key}>
-                    {qualifier.label}
-                  </option>
-                ))}
-              </CustomSelect>
+              <CustomSelect
+                name="data_qualifier"
+                label="Identifiability"
+                options={IDENTIFIER_OPTIONS}
+                isSearchable={false}
+              />
             </Box>
             <Box>
               <SimpleGrid columns={[1, 2]}>

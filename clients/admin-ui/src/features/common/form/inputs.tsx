@@ -3,9 +3,9 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
-  Select,
   SimpleGrid,
 } from "@fidesui/react";
+import { Select } from "chakra-react-select";
 import { FieldHookConfig, useField } from "formik";
 
 interface InputProps {
@@ -32,11 +32,23 @@ export const CustomTextInput = ({
   );
 };
 
+interface Option {
+  value: string;
+  label: string;
+}
+interface SelectProps {
+  label: string;
+  options: Option[];
+  isSearchable?: boolean;
+}
 export const CustomSelect = ({
   label,
+  options,
+  isSearchable,
   ...props
-}: InputProps & FieldHookConfig<string>) => {
+}: SelectProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
+
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
@@ -44,8 +56,35 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        {/* @ts-ignore having trouble getting Formik and Chakra select to be happy together */}
-        <Select {...field} {...props} size="sm" />
+        <Select
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(option) => {
+            if (option) {
+              field.onChange(props.name)(option.value);
+            }
+          }}
+          name={props.name}
+          value={options.find((o) => o.value === field.value)}
+          size="sm"
+          chakraStyles={{
+            dropdownIndicator: (provided) => ({
+              ...provided,
+              bg: "transparent",
+              px: 2,
+              cursor: "inherit",
+            }),
+            indicatorSeparator: (provided) => ({
+              ...provided,
+              display: "none",
+            }),
+          }}
+          isSearchable={isSearchable ?? false}
+        />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
