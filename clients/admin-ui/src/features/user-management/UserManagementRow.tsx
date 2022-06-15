@@ -9,13 +9,13 @@ import {
   Td,
   Text,
   Tr,
-} from '@fidesui/react';
-import { useRouter } from 'next/router';
-import React from 'react';
+} from "@fidesui/react";
+import { useRouter } from "next/router";
+import React from "react";
 
-import { MoreIcon } from '../common/Icon';
-import DeleteUserModal from './DeleteUserModal';
-import { User } from './types';
+import { MoreIcon } from "../common/Icon";
+import DeleteUserModal from "./DeleteUserModal";
+import { User } from "./types";
 
 interface UserManagementRowProps {
   user: User;
@@ -29,7 +29,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   };
 
   return (
-    <Tr key={user.id} _hover={{ bg: 'gray.50' }} height="36px">
+    <Tr key={user.id} _hover={{ bg: "gray.50" }} height="36px">
       <Td pl={0} py={1}>
         {user.username}
       </Td>
@@ -51,7 +51,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
             <Portal>
               <MenuList shadow="xl">
                 <MenuItem
-                  _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleEditUser}
                 >
                   <Text fontSize="sm">Edit</Text>

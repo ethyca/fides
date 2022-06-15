@@ -30,6 +30,7 @@ The types of changes are:
 * Erasure support for Outreach connector [#619](https://github.com/ethyca/fidesops/pull/619)
 * Adds searching of ConnectionConfigs [#641](https://github.com/ethyca/fidesops/pull/641)
 * Added `AdminUiSettings` to the `log_all_config_values` helper method [#647](https://github.com/ethyca/fidesops/pull/647)
+* Prettier formatting CI check for frontend code [#655](https://github.com/ethyca/fidesops/pull/655)
 
 ### Changed
 

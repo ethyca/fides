@@ -36,6 +36,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Format
+        run: npm run format:ci
+
       - name: Jest test
         run: npm run test:ci
 
@@ -64,6 +67,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Format
+        run: npm run format:ci
 
       - name: Jest test
         run: npm run test:ci

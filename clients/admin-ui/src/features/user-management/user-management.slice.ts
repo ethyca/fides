@@ -1,9 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from '../../app/store';
-import { BASE_API_URN } from '../../constants';
-import { selectToken } from '../auth';
+import type { RootState } from "../../app/store";
+import { BASE_API_URN } from "../../constants";
+import { selectToken } from "../auth";
 import {
   User,
   UserPasswordUpdate,
@@ -12,7 +12,7 @@ import {
   UserResponse,
   UsersListParams,
   UsersResponse,
-} from './types';
+} from "./types";
 
 export interface UserManagementState {
   id: string;
@@ -23,15 +23,15 @@ export interface UserManagementState {
 }
 
 const initialState: UserManagementState = {
-  id: '',
+  id: "",
   page: 1,
   size: 25,
   token: null,
-  username: '',
+  username: "",
 };
 
 export const userManagementSlice = createSlice({
-  name: 'userManagement',
+  name: "userManagement",
   initialState,
   reducers: {
     assignToken: (state, action: PayloadAction<string>) => ({
@@ -72,47 +72,47 @@ export const mapFiltersToSearchParams = ({
   username,
 }: Partial<UsersListParams>) => ({
   ...(page ? { page: `${page}` } : {}),
-  ...(typeof size !== 'undefined' ? { size: `${size}` } : {}),
+  ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
   ...(username ? { username } : {}),
 });
 
 export const userApi = createApi({
-  reducerPath: 'userApi',
+  reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
-      headers.set('Access-Control-Allow-Origin', '*');
+      headers.set("Access-Control-Allow-Origin", "*");
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['User'],
+  tagTypes: ["User"],
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
       query: (filters) => ({
         url: `user`,
         params: mapFiltersToSearchParams(filters),
       }),
-      providesTags: () => ['User'],
+      providesTags: () => ["User"],
     }),
     getUserById: build.query<object, string>({
       query: (id) => ({ url: `user/${id}` }),
-      providesTags: ['User'],
+      providesTags: ["User"],
     }),
     getUserPermissions: build.query<object, string>({
       query: (id) => ({ url: `user/${id}/permission` }),
-      providesTags: ['User'],
+      providesTags: ["User"],
     }),
     createUser: build.mutation<UserResponse, Partial<User>>({
       query: (user) => ({
-        url: 'user',
-        method: 'POST',
+        url: "user",
+        method: "POST",
         body: user,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
     createUserPermissions: build.mutation<
       UserPermissionsResponse,
@@ -120,23 +120,23 @@ export const userApi = createApi({
     >({
       query: (user) => ({
         url: `user/${user?.data?.id}/permission`,
-        method: 'POST',
+        method: "POST",
         body: { scopes: user.scope },
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
-    editUser: build.mutation<User, Partial<User> & Pick<User, 'id'>>({
+    editUser: build.mutation<User, Partial<User> & Pick<User, "id">>({
       query: ({ id, ...patch }) => ({
         url: `user/${id}`,
-        method: 'PUT',
+        method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
       // For optimistic updates
       async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           // @ts-ignore
-          userApi.util.updateQueryData('getUserById', id, (draft) => {
+          userApi.util.updateQueryData("getUserById", id, (draft) => {
             Object.assign(draft, patch);
           })
         );
@@ -154,33 +154,33 @@ export const userApi = createApi({
     }),
     updateUserPassword: build.mutation<
       UserPasswordUpdate,
-      Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, 'id'>
+      Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, "id">
     >({
       query: ({ id, old_password, new_password }) => ({
         url: `user/${id}/reset-password`,
-        method: 'POST',
+        method: "POST",
         body: { old_password, new_password },
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
     updateUserPermissions: build.mutation<
       UserPermissionsUpdate,
-      Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, 'id'>
+      Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, "id">
     >({
       query: ({ id, scopes }) => ({
         url: `user/${id}/permission`,
-        method: 'PUT',
+        method: "PUT",
         body: { id, scopes },
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
     deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({
         url: `user/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
       // Invalidates all queries that subscribe to this User `id` only
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
   }),
 });

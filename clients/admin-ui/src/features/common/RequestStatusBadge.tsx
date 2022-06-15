@@ -1,38 +1,38 @@
-import { Badge } from '@fidesui/react';
-import { ComponentProps } from 'react';
+import { Badge } from "@fidesui/react";
+import { ComponentProps } from "react";
 
-import { PrivacyRequestStatus } from '../privacy-requests/types';
+import { PrivacyRequestStatus } from "../privacy-requests/types";
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: ComponentProps<typeof Badge>;
 } = {
   approved: {
-    bg: 'yellow.500',
-    label: 'Approved',
+    bg: "yellow.500",
+    label: "Approved",
   },
   complete: {
-    bg: 'green.500',
-    label: 'Completed',
+    bg: "green.500",
+    label: "Completed",
   },
   denied: {
-    bg: 'red.500',
-    label: 'Denied',
+    bg: "red.500",
+    label: "Denied",
   },
   error: {
-    bg: 'red.800',
-    label: 'Error',
+    bg: "red.800",
+    label: "Error",
   },
   in_processing: {
-    bg: 'orange.500',
-    label: 'In Progress',
+    bg: "orange.500",
+    label: "In Progress",
   },
   paused: {
-    bg: 'gray.400',
-    label: 'Paused',
+    bg: "gray.400",
+    label: "Paused",
   },
   pending: {
-    bg: 'blue.400',
-    label: 'New',
+    bg: "blue.400",
+    label: "New",
   },
 };
 
@@ -42,11 +42,11 @@ interface RequestBadgeProps {
 
 const RequestStatusBadge: React.FC<RequestBadgeProps> = ({ status }) => (
   <Badge
-    color='white'
+    color="white"
     bg={statusPropMap[status].bg}
     width={107}
-    lineHeight='18px'
-    textAlign='center'
+    lineHeight="18px"
+    textAlign="center"
   >
     {statusPropMap[status].label}
   </Badge>

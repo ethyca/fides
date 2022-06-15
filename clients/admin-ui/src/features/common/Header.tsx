@@ -9,20 +9,20 @@ import {
   MenuList,
   Stack,
   Text,
-} from '@fidesui/react';
-import NextLink from 'next/link';
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@fidesui/react";
+import NextLink from "next/link";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { BASE_ASSET_URN } from "../../constants"
-import { logout, selectUser } from '../auth';
-import { UserIcon } from './Icon';
-import Image from './Image';
+import { BASE_ASSET_URN } from "../../constants";
+import { logout, selectUser } from "../auth";
+import { UserIcon } from "./Icon";
+import Image from "./Image";
 
 const useHeader = () => {
   const dispatch = useDispatch();
   const handleLogout = () => dispatch(logout());
-  const { username } = useSelector(selectUser) ?? { username: '' };
+  const { username } = useSelector(selectUser) ?? { username: "" };
   return {
     handleLogout,
     username,
@@ -44,7 +44,12 @@ const Header: React.FC = () => {
         <NextLink href="/" passHref>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link display="flex">
-            <Image src={`${BASE_ASSET_URN}/logo.svg`} width={83} height={26} alt="FidesOps Logo" />
+            <Image
+              src={`${BASE_ASSET_URN}/logo.svg`}
+              width={83}
+              height={26}
+              alt="FidesOps Logo"
+            />
           </Link>
         </NextLink>
         <Flex alignItems="center">
@@ -63,7 +68,7 @@ const Header: React.FC = () => {
               <MenuDivider />
               <MenuItem
                 px={3}
-                _focus={{ color: 'complimentary.500', bg: 'gray.100' }}
+                _focus={{ color: "complimentary.500", bg: "gray.100" }}
                 onClick={handleLogout}
               >
                 Sign out

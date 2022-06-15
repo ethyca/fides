@@ -11,7 +11,7 @@ import {
   AlertIcon,
   AlertDescription,
   CloseButton,
-  Image
+  Image,
 } from "@fidesui/react";
 
 import { useRequestModal, RequestModal } from "../components/RequestModal";
@@ -123,8 +123,8 @@ const Home: NextPage = () => {
                   <Image
                     src={action.icon_path}
                     alt={action.description}
-                    width='54px'
-                    height='54px'
+                    width="54px"
+                    height="54px"
                   />
                   <Stack spacing={1} textAlign="center">
                     <Heading

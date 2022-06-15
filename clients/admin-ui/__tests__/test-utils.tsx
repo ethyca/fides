@@ -1,10 +1,10 @@
 // test-utils.jsx
-import { Store } from '@reduxjs/toolkit';
-import { render as rtlRender, RenderOptions } from '@testing-library/react';
-import React from 'react';
-import { Provider } from 'react-redux';
+import { Store } from "@reduxjs/toolkit";
+import { render as rtlRender, RenderOptions } from "@testing-library/react";
+import React from "react";
+import { Provider } from "react-redux";
 
-import { makeStore, RootState } from '../src/app/store';
+import { makeStore, RootState } from "../src/app/store";
 
 type CustomRenderOptions = {
   preloadedState?: Partial<RootState>;
@@ -26,7 +26,7 @@ function render(
 }
 
 // re-export everything
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 
 // override render method
 export { render };

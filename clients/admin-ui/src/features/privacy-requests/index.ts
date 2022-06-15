@@ -1,1 +1,1 @@
-export * from './privacy-requests.slice';
+export * from "./privacy-requests.slice";

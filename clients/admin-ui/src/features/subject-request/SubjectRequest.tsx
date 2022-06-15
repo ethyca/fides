@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import { PrivacyRequest } from '../privacy-requests/types';
-import RequestDetails from './RequestDetails';
-import SubjectIdentities from './SubjectIdentities';
+import { PrivacyRequest } from "../privacy-requests/types";
+import RequestDetails from "./RequestDetails";
+import SubjectIdentities from "./SubjectIdentities";
 
 type SubjectRequestProps = {
   subjectRequest: PrivacyRequest;

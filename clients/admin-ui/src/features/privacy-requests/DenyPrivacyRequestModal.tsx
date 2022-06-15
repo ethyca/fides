@@ -7,8 +7,8 @@ import {
   ModalHeader,
   ModalOverlay,
   Textarea,
-} from '@fidesui/react';
-import React from 'react';
+} from "@fidesui/react";
+import React from "react";
 
 type DenyModalProps = {
   isOpen: boolean;
