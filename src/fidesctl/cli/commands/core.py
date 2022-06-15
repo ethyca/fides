@@ -12,8 +12,7 @@ from fidesctl.core import apply as _apply
 from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
-
-# sync
+from fidesctl.core import sync as _sync
 
 
 @click.command()
@@ -133,3 +132,22 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.dict(), color="green")
+
+
+@click.command()
+@click.pass_context
+@manifests_dir_argument
+@with_analytics
+def sync(ctx: click.Context, manifests_dir: str) -> None:
+    """
+    Update local resource files by their fides_key to match their server versions.
+    """
+
+    config = ctx.obj["CONFIG"]
+    # Do this to validate the manifests since they won't get parsed during the sync process
+    _parse.parse(manifests_dir)
+    _sync.sync(
+        url=config.cli.server_url,
+        manifests_dir=manifests_dir,
+        headers=config.user.request_headers,
+    )
