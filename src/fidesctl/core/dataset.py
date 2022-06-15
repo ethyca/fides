@@ -86,9 +86,9 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
 
     Placeholder values are use where needed.
     """
-    validated_fides_key = check_fides_key(schema_name)
+    sanitized_fides_key = check_fides_key(schema_name)
     dataset = Dataset(
-        fides_key=validated_fides_key,
+        fides_key=sanitized_fides_key,
         name=schema_name,
         description=f"Fides Generated Description for Schema: {schema_name}",
         data_categories=[],

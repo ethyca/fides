@@ -89,9 +89,8 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
 
 def check_fides_key(proposed_fides_key: str) -> str:
     """
-    A helper function to either automatically sanitize
-    an invalid FidesKey or provide an option to manually
-    override.
+    A helper function to automatically sanitize
+    an invalid FidesKey.
     """
     try:
         FidesModel(fides_key=proposed_fides_key)
