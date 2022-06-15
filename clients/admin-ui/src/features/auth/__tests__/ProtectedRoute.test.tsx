@@ -1,20 +1,20 @@
-import { render, screen } from '../../../../__tests__/test-utils';
-import ProtectedRoute from '../ProtectedRoute';
+import { render, screen } from "../../../../__tests__/test-utils";
+import ProtectedRoute from "../ProtectedRoute";
 
-const useRouter = jest.spyOn(require('next/router'), 'useRouter');
+const useRouter = jest.spyOn(require("next/router"), "useRouter");
 
 const preloadedLoginState = {
   auth: {
     user: {
-      username: 'Test',
+      username: "Test",
     },
-    token: 'Valid Token',
+    token: "Valid Token",
   },
 };
 
-describe('ProtectedRoute', () => {
-  describe('when user is not logged in', () => {
-    it('should render provided fallback component before redirecting', () => {
+describe("ProtectedRoute", () => {
+  describe("when user is not logged in", () => {
+    it("should render provided fallback component before redirecting", () => {
       useRouter.mockImplementationOnce(() => ({
         push: () => {},
       }));
@@ -27,13 +27,13 @@ describe('ProtectedRoute', () => {
         }
       );
 
-      const unauthorizedMessage = screen.getByText('Not Authorized');
-      const protectedContent = screen.queryByText('Protected Page');
+      const unauthorizedMessage = screen.getByText("Not Authorized");
+      const protectedContent = screen.queryByText("Protected Page");
       expect(unauthorizedMessage).toBeInTheDocument();
       expect(protectedContent).toBeNull();
     });
 
-    it('should default to redirecting to /login', () => {
+    it("should default to redirecting to /login", () => {
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
@@ -48,10 +48,10 @@ describe('ProtectedRoute', () => {
         }
       );
 
-      expect(push).toHaveBeenCalledWith('/login');
+      expect(push).toHaveBeenCalledWith("/login");
     });
 
-    it('should redirect to specified route', () => {
+    it("should redirect to specified route", () => {
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
@@ -66,12 +66,12 @@ describe('ProtectedRoute', () => {
         }
       );
 
-      expect(push).toHaveBeenCalledWith('some/other/page');
+      expect(push).toHaveBeenCalledWith("some/other/page");
     });
   });
 
-  describe('when the user is logged in', () => {
-    it('should not redirect', () => {
+  describe("when the user is logged in", () => {
+    it("should not redirect", () => {
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
@@ -87,7 +87,7 @@ describe('ProtectedRoute', () => {
       expect(push).toBeCalledTimes(0);
     });
 
-    it('should render passed children', () => {
+    it("should render passed children", () => {
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
@@ -102,7 +102,7 @@ describe('ProtectedRoute', () => {
         }
       );
 
-      const protectedContent = screen.getByText('Protected Page');
+      const protectedContent = screen.getByText("Protected Page");
       expect(protectedContent).toBeInTheDocument();
     });
   });

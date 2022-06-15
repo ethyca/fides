@@ -1,4 +1,4 @@
-import { User } from '../user-management/types';
+import { User } from "../user-management/types";
 
 export interface LoginRequest {
   username: string;

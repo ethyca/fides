@@ -2,13 +2,13 @@ import {
   createListenerMiddleware,
   createSlice,
   PayloadAction,
-} from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+} from "@reduxjs/toolkit";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from '../../app/store';
-import { BASE_API_URN, STORED_CREDENTIALS_KEY } from '../../constants';
-import { User } from '../user-management/types';
-import { LoginRequest, LoginResponse } from './types';
+import type { RootState } from "../../app/store";
+import { BASE_API_URN, STORED_CREDENTIALS_KEY } from "../../constants";
+import { User } from "../user-management/types";
+import { LoginRequest, LoginResponse } from "./types";
 
 export interface AuthState {
   user: User | null;
@@ -22,7 +22,7 @@ const initialState: AuthState = {
 
 // Auth slice
 export const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     login(
@@ -72,27 +72,27 @@ credentialStorage.startListening({
 
 // Auth API
 export const authApi = createApi({
-  reducerPath: 'authApi',
+  reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
       const token = selectToken(getState() as RootState);
-      headers.set('Access-Control-Allow-Origin', '*');
+      headers.set("Access-Control-Allow-Origin", "*");
       if (token) {
-        headers.set('authorization', `Bearer ${token}`);
+        headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ['Auth'],
+  tagTypes: ["Auth"],
   endpoints: (build) => ({
     login: build.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: 'login',
-        method: 'POST',
+        url: "login",
+        method: "POST",
         body: credentials,
       }),
-      invalidatesTags: () => ['Auth'],
+      invalidatesTags: () => ["Auth"],
     }),
   }),
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -13,13 +13,13 @@ import {
   FormControl,
   Input,
   FormErrorMessage,
-} from '@fidesui/react';
+} from "@fidesui/react";
 
-import { useFormik } from 'formik';
+import { useFormik } from "formik";
 
-import type { AlertState } from '../types/AlertState';
+import type { AlertState } from "../types/AlertState";
 
-import config from '../config/config.json';
+import config from "../config/config.json";
 
 export const useRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,9 +50,9 @@ const useRequestForm = ({
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
-      name: '',
-      email: '',
-      phone: '',
+      name: "",
+      email: "",
+      phone: "",
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -62,7 +62,7 @@ const useRequestForm = ({
 
       setIsLoading(true);
       const host =
-        process.env.NODE_ENV === 'development'
+        process.env.NODE_ENV === "development"
           ? config.fidesops_host_development
           : config.fidesops_host_production;
       const body = [
@@ -79,18 +79,18 @@ const useRequestForm = ({
 
       const handleError = () => {
         setAlert({
-          status: 'error',
-          description: 'Your request has failed. Please try again.',
+          status: "error",
+          description: "Your request has failed. Please try again.",
         });
         onClose();
       };
 
       try {
         const response = await fetch(`${host}/privacy-request`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
         });
@@ -104,9 +104,9 @@ const useRequestForm = ({
 
         if (data.succeeded.length) {
           setAlert({
-            status: 'success',
+            status: "success",
             description:
-              'Your request was successful, please await further instructions.',
+              "Your request was successful, please await further instructions.",
           });
         } else {
           handleError();
@@ -126,16 +126,16 @@ const useRequestForm = ({
         phone?: string;
       } = {};
 
-      if (!values.email && action.identity_inputs.email === 'required') {
-        errors.email = 'Required';
+      if (!values.email && action.identity_inputs.email === "required") {
+        errors.email = "Required";
       }
 
-      if (!values.name && action.identity_inputs.name === 'required') {
-        errors.name = 'Required';
+      if (!values.name && action.identity_inputs.name === "required") {
+        errors.name = "Required";
       }
 
-      if (!values.phone && action.identity_inputs.phone === 'required') {
-        errors.phone = 'Required';
+      if (!values.phone && action.identity_inputs.phone === "required") {
+        errors.phone = "Required";
       }
 
       return errors;
@@ -174,7 +174,7 @@ export const RequestModal: React.FC<{
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent top={[0, '205px']} maxWidth="464px" mx={5} my={3}>
+      <ModalContent top={[0, "205px"]} maxWidth="464px" mx={5} my={3}>
         <ModalHeader pt={6} pb={0}>
           {action.title}
         </ModalHeader>
@@ -194,11 +194,11 @@ export const RequestModal: React.FC<{
                     name="name"
                     focusBorderColor="primary.500"
                     placeholder={
-                      action.identity_inputs.name === 'required'
-                        ? 'Name*'
-                        : 'Name'
+                      action.identity_inputs.name === "required"
+                        ? "Name*"
+                        : "Name"
                     }
-                    isRequired={action.identity_inputs.name === 'required'}
+                    isRequired={action.identity_inputs.name === "required"}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.name}
@@ -218,11 +218,11 @@ export const RequestModal: React.FC<{
                     type="email"
                     focusBorderColor="primary.500"
                     placeholder={
-                      action.identity_inputs.email === 'required'
-                        ? 'Email*'
-                        : 'Email'
+                      action.identity_inputs.email === "required"
+                        ? "Email*"
+                        : "Email"
                     }
-                    isRequired={action.identity_inputs.email === 'required'}
+                    isRequired={action.identity_inputs.email === "required"}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.email}
@@ -242,11 +242,11 @@ export const RequestModal: React.FC<{
                     type="phone"
                     focusBorderColor="primary.500"
                     placeholder={
-                      action.identity_inputs.phone === 'required'
-                        ? 'Phone*'
-                        : 'Phone'
+                      action.identity_inputs.phone === "required"
+                        ? "Phone*"
+                        : "Phone"
                     }
-                    isRequired={action.identity_inputs.phone === 'required'}
+                    isRequired={action.identity_inputs.phone === "required"}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.phone}
@@ -272,8 +272,8 @@ export const RequestModal: React.FC<{
               type="submit"
               flex="1"
               bg="primary.800"
-              _hover={{ bg: 'primary.400' }}
-              _active={{ bg: 'primary.500' }}
+              _hover={{ bg: "primary.400" }}
+              _active={{ bg: "primary.500" }}
               colorScheme="primary"
               disabled={!(isValid && dirty)}
               size="sm"

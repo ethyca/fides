@@ -6,6 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write types/ theme/ pages/ config/ components/ __tests__/",
+    "format:ci": "prettier --check types/ theme/ pages/ config/ components/ __tests__/",
     "test": "jest --watch",
     "test:ci": "jest",
     "analyze": "cross-env ANALYZE=true next build",
@@ -51,6 +53,7 @@
     "jest": "^27.5.1",
     "msw": "^0.39.0",
     "typescript": "4.5.5",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.2",
+    "prettier": "^2.6.2"
   }
 }

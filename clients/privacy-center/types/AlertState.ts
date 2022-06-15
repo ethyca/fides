@@ -1,4 +1,4 @@
 export interface AlertState {
-  status: 'error' | 'success' | 'info' | 'warning';
+  status: "error" | "success" | "info" | "warning";
   description: string;
 }

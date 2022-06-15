@@ -1,1 +1,1 @@
-export * from './user-management.slice';
+export * from "./user-management.slice";
