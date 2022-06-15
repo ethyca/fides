@@ -8,13 +8,12 @@ import {
   Input,
   Select,
   Stack,
-  Tag,
   Tooltip,
 } from "@fidesui/react";
+import { ChakraStylesConfig, CreatableSelect } from "chakra-react-select";
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
 
 //   import { useCreateOrganizationMutation } from "./organization.slice";
@@ -113,6 +112,19 @@ const DescribeSystemsForm: NextPage<{
     } = useDescribeSystemsForm();
     //   handleChangeStep
 
+    const chakraStyles: ChakraStylesConfig = {
+      multiValue: (provided, state) => ({
+        ...provided,
+        background: "primary.400",
+        color: "white",
+      }),
+      multiValueRemove: (provided, state) => ({
+        ...provided,
+        display: "none",
+        visibility: "hidden",
+      }),
+    };
+
     return (
       <chakra.form onSubmit={handleSubmit}>
         <Stack ml="50px" spacing="24px" w="80%">
@@ -194,7 +206,7 @@ const DescribeSystemsForm: NextPage<{
                 </Tooltip>
               </Stack>
               <Stack direction="row">
-                <FormLabel w="100%">System type</FormLabel>
+                <FormLabel>System type</FormLabel>
                 <Select placeholder="Select option">
                   <option value="emailSystem">Email System</option>
                   <option value="option2">Option 2</option>
@@ -212,19 +224,29 @@ const DescribeSystemsForm: NextPage<{
           </Stack>
           <Stack>
             <HStack direction="row" spacing={4}>
-              {["sm", "md", "lg"].map((size) => (
-                <Tag size={size} key={size} variant="solid" colorScheme="teal">
-                  Teal
-                </Tag>
-              ))}
+              <FormLabel>System tags</FormLabel>
+              <FormControl>
+                <CreatableSelect
+                  isMulti
+                  isClearable
+                  noOptionsMessage={() => null}
+                  placeholder="Add your system tags"
+                  components={{
+                    Menu: () => null,
+                    DropdownIndicator: () => null,
+                  }}
+                  chakraStyles={chakraStyles}
+                  size="md"
+                />
+              </FormControl>
+              <Tooltip
+                fontSize="md"
+                label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+                placement="right"
+              >
+                <QuestionIcon boxSize={5} color="gray.400" />
+              </Tooltip>
             </HStack>
-            <Tooltip
-              fontSize="md"
-              label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-              placement="right"
-            >
-              <QuestionIcon boxSize={5} color="gray.400" />
-            </Tooltip>
           </Stack>
           <Button
             bg="primary.800"

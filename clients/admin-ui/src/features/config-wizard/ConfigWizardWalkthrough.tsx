@@ -1,12 +1,11 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
 import { CloseSolidIcon } from "~/features/common/Icon";
-
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import { STEPS } from "./constants";
+import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
@@ -55,6 +54,9 @@ const ConfigWizardWalkthrough = () => {
             ) : null}
             {step === 2 ? (
               <AddSystemForm handleChangeStep={handleChangeStep} />
+            ) : null}
+            {step === 5 ? (
+              <DescribeSystemsForm handleChangeStep={handleChangeStep} />
             ) : null}
           </Stack>
         </Stack>
