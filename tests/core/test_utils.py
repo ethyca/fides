@@ -56,3 +56,19 @@ def test_nested_fields_unpacked(
     for field in utils.get_all_level_fields(collection.fields):
         collected_field_names.append(field.name)
     assert len(collected_field_names) == 5
+
+
+@pytest.mark.unit
+def test_get_manifest_list(tmp_path) -> None:
+    """Test that the correct number of yml files are returned."""
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    test_files = ["foo.yml", "foo.yaml"]
+
+    for file in test_files:
+        test_file = test_dir / file
+        print(test_file)
+        test_file.write_text("content")
+
+    manifest_list = utils.get_manifest_list(test_dir)
+    assert len(manifest_list) == 2

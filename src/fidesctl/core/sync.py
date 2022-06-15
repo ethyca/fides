@@ -1,24 +1,14 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
 import glob
 from typing import Dict, List
-from click import echo
 
 import yaml
+from click import echo
 from fideslang.manifests import load_yaml_into_dict
 
-from fidesctl.core.api_helpers import get_server_resource
 from fidesctl.cli.utils import echo_green, print_divider
-
-
-def get_manifest_list(manifests_dir: str) -> List[str]:
-    """Get a list of manifest files from the manifest directory."""
-
-    yml_endings = ["yml", "yaml"]
-    manifest_list = []
-    for yml_ending in yml_endings:
-        manifest_list += glob.glob(f"{manifests_dir}/**/*.{yml_ending}", recursive=True)
-
-    return manifest_list
+from fidesctl.core.api_helpers import get_server_resource
+from fidesctl.core.utils import get_manifest_list
 
 
 def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:

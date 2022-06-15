@@ -1,8 +1,9 @@
 """Utils to help with API calls."""
+import glob
 import logging
 from functools import partial
 from json.decoder import JSONDecodeError
-from typing import Dict, Iterator
+from typing import Dict, Iterator, List
 
 import click
 import jwt
@@ -83,3 +84,14 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
         if field.fields:
             for nested_field in get_all_level_fields(field.fields):
                 yield nested_field
+
+
+def get_manifest_list(manifests_dir: str) -> List[str]:
+    """Get a list of manifest files from the manifest directory."""
+
+    yml_endings = ["yml", "yaml"]
+    manifest_list = []
+    for yml_ending in yml_endings:
+        manifest_list += glob.glob(f"{manifests_dir}/**/*.{yml_ending}", recursive=True)
+
+    return manifest_list

@@ -47,7 +47,7 @@ def get_server_resource(
     resource_key: str,
     headers: Dict[str, str],
     raw: bool = False,
-) -> Optional[Union[FidesModel,Dict]]:
+) -> Optional[Union[FidesModel, Dict]]:
     """
     Attempt to get a given resource from the server.
 
