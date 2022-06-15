@@ -9,7 +9,6 @@ test_database_name = "fidesctl_test"
 [cli]
 server_host = "localhost"
 server_port = 8080
-analytics_id = "1495a7959616d38984353ee50ff75c96"
 
 [user]
 analytics_opt_out = false
