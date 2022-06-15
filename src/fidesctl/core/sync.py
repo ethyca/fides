@@ -1,9 +1,7 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
-import glob
-from typing import Dict, List
+from typing import Dict
 
 import yaml
-from click import echo
 from fideslang.manifests import load_yaml_into_dict
 
 from fidesctl.cli.utils import echo_green, print_divider
@@ -12,7 +10,10 @@ from fidesctl.core.utils import get_manifest_list
 
 
 def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
-    """Sync local files with their server versions."""
+    """
+    If a resource in a local file has a matching resource on the server,
+    write out the server version into the local file.
+    """
 
     manifest_path_list = get_manifest_list(manifests_dir)
 
@@ -31,6 +32,7 @@ def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
                 server_resource = get_server_resource(
                     url, resource_type, fides_key, headers, raw=True
                 )
+
                 if server_resource:
                     updated_resource_list.append(server_resource)
                     print(
@@ -38,9 +40,12 @@ def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
                     )
                 else:
                     updated_resource_list.append(resource)
+
             updated_manifest[resource_type] = updated_resource_list
+
         with open(manifest_path, "w") as manifest_file:
             yaml.dump(updated_manifest, manifest_file, sort_keys=False, indent=2)
         echo_green(f"Updated manifest file written out to: '{manifest_path}'")
         print_divider()
+
     echo_green("Sync complete.")

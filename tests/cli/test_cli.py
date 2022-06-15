@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from shutil import copytree
 from typing import Generator
 
 import pytest
@@ -97,9 +98,10 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 
 
 @pytest.mark.integration
-def test_sync(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_sync(test_config_path: str, test_cli_runner: CliRunner, tmp_path) -> None:
+    copytree("demo_resources", tmp_path, dirs_exist_ok=True)
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "sync", "demo_resources/"]
+        cli, ["-f", test_config_path, "sync", str(tmp_path)]
     )
     print(result.output)
     assert result.exit_code == 0
