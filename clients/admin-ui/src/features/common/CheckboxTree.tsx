@@ -86,7 +86,8 @@ const CheckboxItem = ({
       <Box
         display="flex"
         justifyContent="space-between"
-        _hover={{ backgroundColor: "gray.100" }}
+        _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
+        onClick={() => onExpanded(node)}
       >
         <Checkbox
           colorScheme="complimentary"
