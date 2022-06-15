@@ -1,6 +1,7 @@
 """Utils to help with API calls."""
 import glob
 import logging
+import re
 from functools import partial
 from json.decoder import JSONDecodeError
 from typing import Dict, Iterator, List
@@ -9,7 +10,8 @@ import click
 import jwt
 import requests
 import sqlalchemy
-from fideslang.models import DatasetField
+from fideslang.models import DatasetField, FidesModel
+from fideslang.validation import FidesValidationError
 from sqlalchemy.engine import Engine
 
 logger = logging.getLogger("server_api")
@@ -95,3 +97,25 @@ def get_manifest_list(manifests_dir: str) -> List[str]:
         manifest_list += glob.glob(f"{manifests_dir}/**/*.{yml_ending}", recursive=True)
 
     return manifest_list
+
+
+def check_fides_key(proposed_fides_key: str) -> str:
+    """
+    A helper function to automatically sanitize
+    an invalid FidesKey.
+    """
+    try:
+        FidesModel(fides_key=proposed_fides_key)
+        return proposed_fides_key
+    except FidesValidationError as error:
+        echo_red(error)
+        return sanitize_fides_key(proposed_fides_key)
+
+
+def sanitize_fides_key(proposed_fides_key: str) -> str:
+    """
+    Attempts to manually sanitize a fides key if restricted
+    characters are discovered.
+    """
+    sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", proposed_fides_key)
+    return sanitized_fides_key

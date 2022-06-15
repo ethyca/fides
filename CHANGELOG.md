@@ -35,7 +35,7 @@ The types of changes are:
 * Initial dataset collection UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
-  * Add a data category checklist tree  
+  * Add a data category checklist tree
   * Edit dataset fields
   * Edit dataset collections
   * Add a component for Identifiability tags
@@ -53,6 +53,7 @@ The types of changes are:
 * Bump version of FastAPI in `setup.py` to 0.77.1 to match `optional-requirements.txt` [#734](https://github.com/ethyca/fides/pull/734)
 * Docker images are now only built and pushed on tags to match when we release to pypi [#740](https://github.com/ethyca/fides/pull/740)
 * Okta resource scanning and generation now works with systems instead of datasets [#751](https://github.com/ethyca/fides/pull/751)
+* Handle invalid characters when generating a `fides_key` [#761](https://github.com/ethyca/fides/pull/761)
 
 ### Developer Experience
 
