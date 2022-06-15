@@ -1,5 +1,4 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-
 import pytest
 from starlette.testclient import TestClient
 
@@ -12,9 +11,10 @@ from fidesctl.core.config import FidesctlConfig
     "organization_fides_key, expected_status_code",
     [
         ("fake_organization", 404),
+        ("default_organization", 200),
     ],
 )
-def test_datamap_failure(
+def test_datamap(
     test_config: FidesctlConfig,
     organization_fides_key: str,
     expected_status_code: int,
