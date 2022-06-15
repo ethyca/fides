@@ -93,7 +93,7 @@ def check_fides_key(proposed_fides_key: str) -> str:
         FidesModel(fides_key=proposed_fides_key)
         return proposed_fides_key
     except FidesValidationError as error:
-        echo_red(error)
+        echo_red(error.__str__())
         return sanitize_fides_key(proposed_fides_key)
 
 
