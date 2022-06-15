@@ -67,7 +67,7 @@ def get_server_resource(
         and raw_server_response.status_code <= 299
         else None
     )
-    if not raw:
+    if not raw and server_resource:
         server_resource = parse_dict(
             resource_type=resource_type,
             resource=raw_server_response.json(),
