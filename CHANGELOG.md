@@ -38,6 +38,7 @@ The types of changes are:
   * Add a data category checklist tree
   * Edit dataset fields
   * Edit dataset collections
+  * Edit datasets
   * Add a component for Identifiability tags
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
