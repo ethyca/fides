@@ -13,6 +13,8 @@ from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
 
+# sync
+
 
 @click.command()
 @click.pass_context
