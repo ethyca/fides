@@ -19,6 +19,7 @@ import {
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
 import EditCollectionDrawer from "./EditCollectionDrawer";
+import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
 import { ColumnMetadata } from "./types";
 
@@ -50,6 +51,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     ALL_COLUMNS.filter((c) => c.attribute !== "data_categories")
   );
   const [isModifyingCollection, setIsModifyingCollection] = useState(false);
+  const [isModifyingDataset, setIsModifyingDataset] = useState(false);
 
   // load data categories into redux
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
@@ -60,12 +62,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const router = useRouter();
   const toast = useToast();
   const { fromLoad } = router.query;
-
-  useEffect(() => {
-    if (dataset) {
-      dispatch(setActiveDataset(dataset));
-    }
-  }, [dispatch, dataset]);
 
   useEffect(() => {
     if (dataset) {
@@ -118,9 +114,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             />
           </Box>
           <MoreActionsMenu
-            onModifyCollection={() => {
-              setIsModifyingCollection(true);
-            }}
+            onModifyCollection={() => setIsModifyingCollection(true)}
+            onModifyDataset={() => setIsModifyingDataset(true)}
           />
         </Box>
       </Box>
@@ -136,6 +131,13 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             onClose={() => setIsModifyingCollection(false)}
           />
         </>
+      ) : null}
+      {dataset ? (
+        <EditDatasetDrawer
+          dataset={dataset}
+          isOpen={isModifyingDataset}
+          onClose={() => setIsModifyingDataset(false)}
+        />
       ) : null}
     </Box>
   );

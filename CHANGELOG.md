@@ -32,12 +32,13 @@ The types of changes are:
   * Datasets
   * Systems
   * Taxonomy (data categories)
-* Initial dataset collection UI view
+* Initial dataset UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
   * Add a data category checklist tree  
   * Edit/delete dataset fields
   * Edit/delete dataset collections
+  * Edit datasets
   * Add a component for Identifiability tags
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
