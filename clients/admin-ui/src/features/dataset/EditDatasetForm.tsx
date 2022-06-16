@@ -10,6 +10,11 @@ import { DATA_QUALIFIERS } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
 
+const DATA_QUALIFIERS_OPTIONS = DATA_QUALIFIERS.map((qualifier) => ({
+  label: qualifier.label,
+  value: qualifier.key,
+}));
+
 type FormValues = Partial<Dataset>;
 
 interface Props {
@@ -55,19 +60,16 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
             <CustomTextInput name="name" label="Name" />
             <CustomTextInput name="description" label="Description" />
             <CustomTextInput name="retention" label="Retention period" />
-            <CustomSelect name="data_qualifier" label="Identifiability">
-              {DATA_QUALIFIERS.map((qualifier) => (
-                <option key={qualifier.key} value={qualifier.key}>
-                  {qualifier.label}
-                </option>
-              ))}
-            </CustomSelect>
+            <CustomSelect
+              name="data_qualifier"
+              label="Identifiability"
+              options={DATA_QUALIFIERS_OPTIONS}
+            />
             <CustomSelect
               name="third_country_transfers"
               label="Geographic location"
-            >
-              {/* TODO: where do these fields come from? */}
-            </CustomSelect>
+              options={[]} // TODO
+            />
             <DataCategoryInput
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
