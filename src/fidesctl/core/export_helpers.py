@@ -5,16 +5,40 @@ from os.path import dirname, join
 from typing import Dict, List, Set, Tuple
 
 import pandas as pd
-from fideslang.models import DataSubjectRightsEnum
-
-from fidesctl.core.api_helpers import get_server_resource, get_server_resources
-from fidesctl.core.utils import echo_red
+from fideslang.models import DataSubject, DataSubjectRightsEnum, DataUse
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
     "../templates",
     "fides_datamap_template.xlsx",
 )
+
+DATAMAP_COLUMNS = [
+    "dataset.name",
+    "system.name",
+    "system.administrating_department",
+    "system.privacy_declaration.data_use.name",
+    "system.joint_controller",
+    "system.privacy_declaration.data_subjects.name",
+    "unioned_data_categories",
+    "system.privacy_declaration.data_use.recipients",
+    "system.link_to_processor_contract",
+    "third_country_combined",
+    "system.third_country_safeguards",
+    "dataset.retention",
+    "organization.link_to_security_policy",
+    "system.data_responsibility_title",
+    "system.privacy_declaration.data_use.legal_basis",
+    "system.privacy_declaration.data_use.special_category",
+    "system.privacy_declaration.data_use.legitimate_interest",
+    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+    "system.privacy_declaration.data_subjects.rights_available",
+    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+    "dataset.name",
+    "system.data_protection_impact_assessment.is_required",
+    "system.data_protection_impact_assessment.progress",
+    "system.data_protection_impact_assessment.link",
+]
 
 
 def export_to_csv(
@@ -83,33 +107,6 @@ def export_datamap_to_excel(
 
     shutil.copy(DATAMAP_TEMPLATE, filepath)
 
-    # append data to the copied template
-    output_columns = [
-        "dataset.name",
-        "system.name",
-        "system.administrating_department",
-        "system.privacy_declaration.data_use.name",
-        "system.joint_controller",
-        "system.privacy_declaration.data_subjects.name",
-        "unioned_data_categories",
-        "system.privacy_declaration.data_use.recipients",
-        "system.link_to_processor_contract",
-        "third_country_combined",
-        "system.third_country_safeguards",
-        "dataset.retention",
-        "organization.link_to_security_policy",
-        "system.data_responsibility_title",
-        "system.privacy_declaration.data_use.legal_basis",
-        "system.privacy_declaration.data_use.special_category",
-        "system.privacy_declaration.data_use.legitimate_interest",
-        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-        "system.privacy_declaration.data_subjects.rights_available",
-        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-        "dataset.name",
-        "system.data_protection_impact_assessment.is_required",
-        "system.data_protection_impact_assessment.progress",
-        "system.data_protection_impact_assessment.link",
-    ]
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(
         filepath, mode="a", if_sheet_exists="overlay"
@@ -134,36 +131,32 @@ def export_datamap_to_excel(
             index=False,
             header=False,
             startrow=9,
-            columns=output_columns,
+            columns=DATAMAP_COLUMNS,
         )
 
     return filename
 
 
-def get_formatted_data_use(
-    url: str, headers: Dict[str, str], data_use_fides_key: str
-) -> Dict[str, str]:
+def format_data_uses(data_uses: List[DataUse]) -> Dict[str, Dict[str, str]]:
     """
-    This function retrieves the data use from the server
-    and formats the results, returning the necessary values
-    as a dict. Formatting differences exist due to various
-    types allowed across attributes.
+    This function formats data uses for use when exporting,
+    returning the necessary values as a dict. Formatting
+    differences exist due to various types allowed across attributes.
     """
 
-    data_use = get_server_resource(url, "data_use", data_use_fides_key, headers)
+    formatted_data_uses = dict()
+    for data_use in data_uses:
+        formatted_data_use = {
+            "name": data_use.name,
+        }
 
-    formatted_data_use = {
-        "name": data_use.name,
-    }
-
-    for attribute in [
-        "legal_basis",
-        "special_category",
-        "recipients",
-        "legitimate_interest_impact_assessment",
-        "legitimate_interest",
-    ]:
-        try:
+        for attribute in [
+            "legal_basis",
+            "special_category",
+            "recipients",
+            "legitimate_interest_impact_assessment",
+            "legitimate_interest",
+        ]:
             attribute_value = getattr(data_use, attribute)
             if attribute_value is None:
                 attribute_value = "N/A"
@@ -176,18 +169,14 @@ def get_formatted_data_use(
                     attribute_value = "N/A"
 
             formatted_data_use[attribute] = attribute_value
-        except AttributeError:
-            echo_red(f"{attribute} undefined for specified Data Use, setting as N/A.")
 
-    return formatted_data_use
+        formatted_data_uses[data_use.fides_key] = formatted_data_use
+    return formatted_data_uses
 
 
-def get_formatted_data_subjects(
-    url: str, headers: Dict[str, str], data_subjects_fides_keys: List[str]
-) -> List[Dict[str, str]]:
+def format_data_subjects(data_subjects: List[DataSubject]) -> Dict[str, Dict[str, str]]:
     """
-    This function retrieves the data subjects from the server
-    and formats the results, returning the necessary values
+    This function formats data subjects from the server, returning the necessary values
     as a list of dicts.
 
     rights_available is treated differently due to the
@@ -195,17 +184,13 @@ def get_formatted_data_subjects(
     the available data subject rights.
     """
 
-    data_subjects = get_server_resources(
-        url, "data_subject", data_subjects_fides_keys, headers
-    )
-
     formatted_data_subject_attributes_list = [
         "name",
         "rights_available",
         "automated_decisions_or_profiling",
     ]
 
-    formatted_data_subjects_list = []  # empty list to populate and return
+    formatted_data_subjects = dict()  # empty dict to populate and return
 
     for data_subject in data_subjects:
         data_subject_dict = data_subject.dict()
@@ -227,19 +212,14 @@ def get_formatted_data_subjects(
         else:
             data_subject_dict["rights_available"] = "No data subject rights listed"
 
-        for attribute in formatted_data_subject_attributes_list:
-            try:
-                formatted_data_subject[attribute] = (
-                    data_subject_dict[attribute] or "N/A"
-                )
-            except AttributeError:
-                echo_red(
-                    f"{attribute} undefined for specified Data Subject, setting as N/A."
-                )
+        formatted_data_subject = {
+            attribute: data_subject_dict.get(attribute) or "N/A"
+            for attribute in formatted_data_subject_attributes_list
+        }
 
-        formatted_data_subjects_list.append(formatted_data_subject)
+        formatted_data_subjects[data_subject.fides_key] = formatted_data_subject
 
-    return formatted_data_subjects_list
+    return formatted_data_subjects
 
 
 def convert_tuple_to_string(values: Tuple[str, ...]) -> str:

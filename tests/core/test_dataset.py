@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
-from fideslang.models import Dataset, DatasetCollection, DatasetField, DatasetMetadata
+from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 
 from fidesctl.core import api
@@ -235,70 +235,6 @@ def test_unsupported_dialect_error() -> None:
         _dataset.generate_dataset_db(test_url, "test_file.yml", False)
 
 
-@pytest.mark.unit
-def test_get_dataset_resource_ids() -> None:
-    datasets = [
-        Dataset(
-            fides_key="okta_id_1",
-            name="okta_id_1",
-            fidesctl_meta=DatasetMetadata(
-                resource_id="okta_id_1",
-            ),
-            description="Fides Generated Description for Okta Application: okta_label_1",
-            data_categories=[],
-            collections=[],
-        ),
-        Dataset(
-            fides_key="okta_id_2",
-            name="okta_id_2",
-            fidesctl_meta=DatasetMetadata(
-                resource_id="okta_id_2",
-            ),
-            description="Fides Generated Description for Okta Application: okta_label_2",
-            data_categories=[],
-            collections=[],
-        ),
-        Dataset(
-            fides_key="other_resource",
-            name="other_resource",
-            data_categories=[],
-            collections=[],
-        ),
-    ]
-    resource_ids = _dataset.get_dataset_resource_ids(datasets=datasets)
-    assert resource_ids == ["okta_id_1", "okta_id_2"]
-
-
-@pytest.mark.unit
-def test_find_missing_datasets() -> None:
-    okta_dataset_1 = Dataset(
-        fides_key="okta_id_1",
-        name="okta_id_1",
-        fidesctl_meta=DatasetMetadata(
-            resource_id="okta_id_1",
-        ),
-        description="Fides Generated Description for Okta Application: okta_label_1",
-        data_categories=[],
-        collections=[],
-    )
-    okta_dataset_2 = Dataset(
-        fides_key="okta_id_2",
-        name="okta_id_2",
-        fidesctl_meta=DatasetMetadata(
-            resource_id="okta_id_2",
-        ),
-        description="Fides Generated Description for Okta Application: okta_label_2",
-        data_categories=[],
-        collections=[],
-    )
-    okta_datasets = [okta_dataset_1, okta_dataset_2]
-    existing_datasets = [okta_dataset_1]
-    actual_result = _dataset.find_missing_datasets(
-        source_datasets=okta_datasets, existing_datasets=existing_datasets
-    )
-    assert actual_result == [okta_dataset_2]
-
-
 # Generate Dataset Database Integration Tests
 
 # These URLs are for the databases in the docker-compose.integration-tests.yml file
@@ -472,48 +408,6 @@ class TestDatabase:
         _dataset.scan_dataset_db(
             connection_string=database_parameters.get("url"),
             manifest_dir=f"{tmpdir}",
-            coverage_threshold=100,
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-        )
-
-
-@pytest.mark.external
-def test_generate_dataset_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
-    actual_result = _dataset.generate_dataset_okta(
-        file_name=f"{tmpdir}/test_file.yml",
-        include_null=False,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
-    )
-    assert actual_result
-
-
-@pytest.mark.external
-def test_scan_dataset_okta_success(
-    tmpdir: LocalPath, test_config: FidesctlConfig
-) -> None:
-    file_name = f"{tmpdir}/test_file.yml"
-    _dataset.generate_dataset_okta(
-        file_name=file_name,
-        include_null=False,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
-    )
-    _dataset.scan_dataset_okta(
-        manifest_dir=file_name,
-        okta_config={"orgUrl": "https://dev-78908748.okta.com"},
-        coverage_threshold=100,
-        url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
-    )
-    assert True
-
-
-@pytest.mark.external
-def test_scan_dataset_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
-    with pytest.raises(SystemExit):
-        _dataset.scan_dataset_okta(
-            manifest_dir="",
-            okta_config={"orgUrl": "https://dev-78908748.okta.com"},
             coverage_threshold=100,
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,

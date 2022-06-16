@@ -74,7 +74,15 @@ def generate_dataset_db(
     )
 
 
-@generate_dataset.command(name="okta")
+@generate.group(name="system")
+@click.pass_context
+def generate_system(ctx: click.Context) -> None:
+    """
+    Generate fidesctl System resources
+    """
+
+
+@generate_system.command(name="okta")
 @click.pass_context
 @click.argument("output_filename", type=str)
 @credentials_id_option
@@ -82,7 +90,7 @@ def generate_dataset_db(
 @okta_token_option
 @include_null_flag
 @with_analytics
-def generate_dataset_okta(
+def generate_system_okta(
     ctx: click.Context,
     output_filename: str,
     credentials_id: str,
@@ -91,7 +99,7 @@ def generate_dataset_okta(
     include_null: bool,
 ) -> None:
     """
-    Generates datasets for your Okta applications. Connect to an Okta admin
+    Generates systems for your Okta applications. Connect to an Okta admin
     account by providing an organization url and auth token or a credentials
     reference to fidesctl config. Auth token and organization url can also
     be supplied by setting environment variables as defined by the okta python sdk.
@@ -106,19 +114,11 @@ def generate_dataset_okta(
         credentials_id=credentials_id,
     )
 
-    _dataset.generate_dataset_okta(
+    _system.generate_system_okta(
         okta_config=okta_config,
         file_name=output_filename,
         include_null=include_null,
     )
-
-
-@generate.group(name="system")
-@click.pass_context
-def generate_system(ctx: click.Context) -> None:
-    """
-    Generate fidesctl System resources
-    """
 
 
 @generate_system.command(name="aws")

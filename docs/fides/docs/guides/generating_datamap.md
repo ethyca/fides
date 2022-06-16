@@ -10,8 +10,8 @@ First, ensure `fidesctl` is running with `nox -s cli`.
 To apply and export the provided `demo_resources`, run the following commands:
 
 ```sh title="Apply and Export Defaults"
-$ fidesctl apply demo_resources/
-$ fidesctl export datamap --output-dir demo_resources/
+fidesctl apply demo_resources/
+fidesctl export datamap --output-dir demo_resources/
 ```
 
 This will export a data map to the `demo_resources/` directory.

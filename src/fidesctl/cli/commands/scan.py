@@ -80,7 +80,15 @@ def scan_dataset_db(
     )
 
 
-@scan_dataset.command(name="okta")
+@scan.group(name="system")
+@click.pass_context
+def scan_system(ctx: click.Context) -> None:
+    """
+    Scan fidesctl System resources
+    """
+
+
+@scan_system.command(name="okta")
 @click.pass_context
 @manifests_dir_argument
 @credentials_id_option
@@ -88,7 +96,7 @@ def scan_dataset_db(
 @okta_token_option
 @coverage_threshold_option
 @with_analytics
-def scan_dataset_okta(
+def scan_system_okta(
     ctx: click.Context,
     manifests_dir: str,
     credentials_id: str,
@@ -97,7 +105,7 @@ def scan_dataset_okta(
     coverage_threshold: int,
 ) -> None:
     """
-    Scans your existing datasets and compares them to found Okta applications.
+    Scans your existing systems and compares them to found Okta applications.
     Connect to an Okta admin account by providing an organization url and
     auth token or a credentials reference to fidesctl config. Auth token and
     organization url can also be supplied by setting environment variables
@@ -112,21 +120,13 @@ def scan_dataset_okta(
         fides_config=config, token=token, org_url=org_url, credentials_id=credentials_id
     )
 
-    _dataset.scan_dataset_okta(
+    _system.scan_system_okta(
         okta_config=okta_config,
         coverage_threshold=coverage_threshold,
         manifest_dir=manifests_dir,
         url=config.cli.server_url,
         headers=config.user.request_headers,
     )
-
-
-@scan.group(name="system")
-@click.pass_context
-def scan_system(ctx: click.Context) -> None:
-    """
-    Scan fidesctl System resources
-    """
 
 
 @scan_system.command(name="aws")

@@ -315,51 +315,45 @@ It is possible to use an environment variable to set credentials config values i
 export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
 ```
 
-### Generating Datasets
+### Generating Systems
 
-Once credentials have been configured we can invoke the `generate dataset okta` command:
+Once credentials have been configured we can invoke the `generate system okta` command:
 ```sh
-./venv/bin/fidesctl generate dataset okta 
-  fides_resources/okta_datasets.yml
+./venv/bin/fidesctl generate system okta 
+  fides_resources/okta_systems.yml
 ```
 
-The result is a resource file with datasets that represent our application integrations:
+The result is a resource file with systems that represent our application integrations:
 ```yaml
-dataset:
+system:
 - fides_key: 0oa4jejqcp74R9MpJ5d7
   organization_fides_key: default_organization
   name: salesforce
   description: 'Fides Generated Description for Okta Application: Salesforce.com'
-  data_categories: []
-  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   fidesctl_meta:
     resource_id: 0oa4jejqcp74R9MpJ5d7
-  retention: No retention or erasure policy
-  collections: []
+  privacy_declarations: []
 - fides_key: 0oa4jekd00tpvn5hN5d7
   organization_fides_key: default_organization
   name: google
   description: 'Fides Generated Description for Okta Application: Google Workspace'
-  data_categories: []
-  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   fidesctl_meta:
     resource_id: 0oa4jekd00tpvn5hN5d7
-  retention: No retention or erasure policy
-  collections: []
+  privacy_declarations: []
 ```
-### Scanning the Datasets
+### Scanning the Systems
 
-The `scan` command can then connect to your Okta account and compare its applications to your already defined datasets:
+The `scan` command can then connect to your Okta account and compare its applications to your already defined systems:
 ```sh
-./venv/bin/fidesctl scan dataset okta \
-  fides_resources/okta_datasets.yml
+./venv/bin/fidesctl scan system okta \
+  fides_resources/okta_systems.yml
 ```
 
 The command output confirms our resources are covered fully:
 ```sh
 Loading resource manifests from: manifest.yml
 Taxonomy successfully created.
-Successfully scanned the following datasets:
+Successfully scanned the following systems:
 	saasure(id=0oa4h45lj1tcpqU6W5d7)
 	okta_enduser(id=0oa4h45ln0xLKJnAw5d7)
 	okta_browser_plugin(id=0oa4h45lnodX7MHJB5d7)
