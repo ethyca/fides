@@ -8,7 +8,7 @@ import {
 } from "./dataset.slice";
 import EditCollectionOrFieldForm from "./EditCollectionOrFieldForm";
 import EditDrawer from "./EditDrawer";
-import { getUpdatedDatasetFromField } from "./helpers";
+import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
 import { DatasetField } from "./types";
 
 interface Props {
@@ -46,12 +46,25 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
     }
   };
 
+  const handleDelete = () => {
+    if (dataset && collectionIndex != null && fieldIndex != null) {
+      const updatedDataset = removeFieldFromDataset(
+        dataset,
+        collectionIndex,
+        fieldIndex
+      );
+      updateDataset(updatedDataset);
+      onClose();
+    }
+  };
+
   return (
     <EditDrawer
       isOpen={isOpen}
       onClose={onClose}
       header={`Field Name: ${field.name}`}
       description={DESCRIPTION}
+      onDelete={handleDelete}
     >
       <EditCollectionOrFieldForm
         values={field}

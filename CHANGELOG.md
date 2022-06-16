@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.6.1...main)
 
 ### Added
 
@@ -32,12 +32,13 @@ The types of changes are:
   * Datasets
   * Systems
   * Taxonomy (data categories)
-* Initial dataset collection UI view
+* Initial dataset UI view
   * Add interaction for viewing a dataset collection
   * Add column picker
   * Add a data category checklist tree  
-  * Edit dataset fields
-  * Edit dataset collections
+  * Edit/delete dataset fields
+  * Edit/delete dataset collections
+  * Edit datasets
   * Add a component for Identifiability tags
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
@@ -59,21 +60,31 @@ The types of changes are:
 * Replaced `make` with `nox`
 * Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
 * Added starting up the frontend server to `nox`
+* `TestClient` defined in and shared across test modules via `conftest.py` [#759](https://github.com/ethyca/fides/pull/759)
 
 ### Docs
 
-* Updated `Release Steps`
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
 
 ### Fixed
 
-* Resolved a failure with populating applicable data subject rights to a data map
 * Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
 * Updated the webserver so that it won't fail if the database is inaccessible [#649](https://github.com/ethyca/fides/pull/649)
 * Handle complex characters in external tests  [#661](https://github.com/ethyca/fides/pull/661)
 * Evaluations now properly merge the default taxonomy into the user-defined taxonomy [#684](https://github.com/ethyca/fides/pull/684)
 * The CLI can be run without installing the webserver components [#715](https://github.com/ethyca/fides/pull/715)
+
+## [1.6.1](https://github.com/ethyca/fides/compare/1.6.0...1.6.1) - 2022-06-15
+
+### Docs
+
+* Updated `Release Steps`
+
+### Fixed
+
+* Resolved a failure with populating applicable data subject rights to a data map
+* Handle invalid characters when generating a `fides_key` [#761](https://github.com/ethyca/fides/pull/761)
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 

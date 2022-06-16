@@ -57,3 +57,28 @@ export const getUpdatedDatasetFromField = (
     collectionIndex
   );
 };
+
+export const removeFieldFromDataset = (
+  dataset: Dataset,
+  collectionIndex: number,
+  fieldIndex: number
+): Dataset => {
+  const collection = dataset.collections[collectionIndex];
+  const newFields = collection.fields.filter((f, idx) => idx !== fieldIndex);
+  const updatedCollection = { ...collection, ...{ fields: newFields } };
+  return getUpdatedDatasetFromCollection(
+    dataset,
+    updatedCollection,
+    collectionIndex
+  );
+};
+
+export const removeCollectionFromDataset = (
+  dataset: Dataset,
+  collectionIndex: number
+): Dataset => {
+  const newCollections = dataset.collections.filter(
+    (c, idx) => idx !== collectionIndex
+  );
+  return { ...dataset, ...{ collections: newCollections } };
+};

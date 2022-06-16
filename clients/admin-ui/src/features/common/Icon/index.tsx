@@ -11,5 +11,6 @@ export { default as QuestionIcon } from "./Question";
 export { default as SearchLineIcon } from "./SearchLine";
 export { default as StepperCircleIcon } from "./StepperCircle";
 export { default as StepperCircleCheckmarkIcon } from "./StepperCircleCheckmark";
+export { default as TrashCanSolidIcon } from "./TrashCanSolid";
 export { default as UserIcon } from "./User";
 export { default as VerticalLineIcon } from "./VerticalLine";
