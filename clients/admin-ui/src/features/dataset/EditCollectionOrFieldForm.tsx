@@ -3,6 +3,7 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 import DataCategoryTag from "~/features/taxonomy/DataCategoryTag";
 
@@ -22,9 +23,15 @@ interface Props {
   values: FormValues;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
+  dataType: "collection" | "field";
 }
 
-const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
+const EditCollectionOrFieldForm = ({
+  values,
+  onClose,
+  onSubmit,
+  dataType,
+}: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
     data_qualifier: values.data_qualifier,
@@ -39,6 +46,17 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
   const sortedCheckedDataCategories = checkedDataCategories
     .slice()
     .sort((a, b) => a.localeCompare(b));
+
+  // Copied from https://ethyca.github.io/fides/1.6.1/language/resources/dataset/
+  const descriptionTooltip = `A human-readable description of the ${dataType}`;
+  const dataQualifierTooltip =
+    dataType === "collection"
+      ? "Arrays of Data Qualifier resources, identified by fides_key, that apply to all fields in the collection."
+      : "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.";
+  const dataCategoryTooltip =
+    dataType === "collection"
+      ? "Arrays of Data Qualifier resources, identified by fides_key, that apply to all fields in the collection."
+      : "Arrays of Data Categories, identified by fides_key, that applies to this field.";
 
   const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element
@@ -69,11 +87,15 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               <CustomTextInput
                 name="description"
                 label="Description"
-                tooltip="help me"
+                tooltip={descriptionTooltip}
               />
             </Box>
             <Box>
-              <CustomSelect name="data_qualifier" label="Identifiability">
+              <CustomSelect
+                name="data_qualifier"
+                label="Identifiability"
+                tooltip={dataQualifierTooltip}
+              >
                 {DATA_QUALIFIERS.map((qualifier) => (
                   <option key={qualifier.key} value={qualifier.key}>
                     {qualifier.label}
@@ -85,12 +107,15 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               <Grid templateColumns="1fr 3fr">
                 <FormLabel>Data Categories</FormLabel>
                 <Stack>
-                  <Box>
-                    <DataCategoryDropdown
-                      dataCategories={allDataCategories}
-                      checked={checkedDataCategories}
-                      onChecked={setCheckedDataCategories}
-                    />
+                  <Box display="flex" alignItems="center">
+                    <Box mr="2" width="100%">
+                      <DataCategoryDropdown
+                        dataCategories={allDataCategories}
+                        checked={checkedDataCategories}
+                        onChecked={setCheckedDataCategories}
+                      />
+                    </Box>
+                    <QuestionTooltip label={dataCategoryTooltip} />
                   </Box>
                   <Stack>
                     {sortedCheckedDataCategories.map((dc) => (

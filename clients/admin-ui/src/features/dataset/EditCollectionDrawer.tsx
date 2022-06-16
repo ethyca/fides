@@ -59,6 +59,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         values={collection}
         onClose={onClose}
         onSubmit={handleSubmit}
+        dataType="collection"
       />
     </EditDrawer>
   );
