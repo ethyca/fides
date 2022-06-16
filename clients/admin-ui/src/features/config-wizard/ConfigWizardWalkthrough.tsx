@@ -56,7 +56,10 @@ const ConfigWizardWalkthrough = () => {
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
             {step === 5 ? (
-              <DescribeSystemsForm handleChangeStep={handleChangeStep} />
+              <DescribeSystemsForm
+                handleChangeStep={handleChangeStep}
+                handleCancelSetup={handleCancelSetup}
+              />
             ) : null}
           </Stack>
         </Stack>
