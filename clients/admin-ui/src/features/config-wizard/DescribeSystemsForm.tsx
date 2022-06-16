@@ -8,6 +8,7 @@ import {
   Input,
   Stack,
   Tooltip,
+  useToast,
 } from "@fidesui/react";
 import { ChakraStylesConfig, CreatableSelect } from "chakra-react-select";
 import { useFormik } from "formik";
@@ -15,53 +16,85 @@ import type { NextPage } from "next";
 import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 import HorizontalStepper from "../common/HorizontalStepper";
+import {
+  useCreateSystemMutation,
+  useGetSystemByFidesKeyQuery,
+  useUpdateSystemMutation,
+} from "../system";
+// TODO: are we creating/updating just a system here
+// and/or do we need to also update the organization itself?
 import { HORIZONTALSTEPS } from "./constants";
-import { useUpdateOrganizationMutation } from "./organization.slice";
 
 const useDescribeSystemsForm = (
   handleChangeStep: Function,
   fidesKey: string
 ) => {
-  const [updateOrganization] = useUpdateOrganizationMutation();
+  const [updateSystem] = useUpdateSystemMutation();
+  const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-  // const toast = useToast();
+  // TODO: Need a way to check for an existing fides key from the start of the wizard
+  // const { data: existingSystem } = useGetSystemByFidesKeyQuery(fidesKey)
+  const { data: existingSystem } = useGetSystemByFidesKeyQuery(
+    "default_organization"
+  );
+
+  const toast = useToast();
   const formik = useFormik({
     initialValues: {
       fides_key: fidesKey,
-      name: "",
+      name: existingSystem?.name ?? "",
       key: "",
-      description: "",
-      type: "",
-      tags: [],
+      // TODO: is key stored? not seeing it in system info
+      description: existingSystem?.description ?? "",
+      type: existingSystem?.system_type ?? "",
+      tags: existingSystem?.system_dependencies ?? [],
+      // TODO: double-check that these are tags = system_dependencies ?
     },
     onSubmit: async (values) => {
       const systemBody = {
-        fides_key: fidesKey,
-        name: values.name,
+        fides_key: values.fides_key ?? "default_organization",
+        name: values.name ?? existingSystem?.name,
         key: values.key,
-        description: values.description,
-        type: values.type,
-        tags: values.tags,
+        // TODO: is key stored? not seeing it in system info
+        description: values.description ?? existingSystem?.description,
+        type: values.type ?? existingSystem?.system_type,
+        tags: values.tags ?? existingSystem?.system_dependencies,
+        // TODO: double-check that these are tags = system_dependencies ?
       };
+      // TODO: Need to check with this body that if they have a fides_key assigned,
+      // then assign that existing one
 
       setIsLoading(true);
 
-      // @ts-ignore
-      const { error: updateOrganizationError } = await updateOrganization(
-        systemBody
-      );
+      if (!existingSystem) {
+        // @ts-ignore
+        const { error: createSystemError } = await createSystem(systemBody);
+
+        if (createSystemError) {
+          toast({
+            status: "error",
+            description: "Creating system failed.",
+          });
+        } else {
+          toast.closeAll();
+          handleChangeStep(5);
+        }
+      } else {
+        // @ts-ignore
+        const { error: updateSystemError } = await updateSystem(systemBody);
+
+        if (updateSystemError) {
+          toast({
+            status: "error",
+            description: "Updating system failed.",
+          });
+        } else {
+          toast.closeAll();
+          handleChangeStep(5);
+        }
+      }
 
       setIsLoading(false);
-
-      // if (createSystemError) {
-      //   toast({
-      //     status: "error",
-      //     description: "Creating system failed.",
-      //   });
-      // } else {
-      handleChangeStep(5);
-      //   toast.closeAll();
-      // }
     },
     validate: (values) => {
       const errors: {
@@ -92,7 +125,7 @@ const useDescribeSystemsForm = (
     },
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, existingSystem, isLoading };
 };
 
 const DescribeSystemsForm: NextPage<{
@@ -108,6 +141,7 @@ const DescribeSystemsForm: NextPage<{
     isLoading,
     touched,
     values,
+    existingSystem,
   } = useDescribeSystemsForm(handleChangeStep, fidesKey);
 
   const chakraStyles: ChakraStylesConfig = {
@@ -156,6 +190,7 @@ const DescribeSystemsForm: NextPage<{
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                placeholder={existingSystem?.name}
                 value={values.name}
                 isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
@@ -180,6 +215,8 @@ const DescribeSystemsForm: NextPage<{
                   focusBorderColor="gray.700"
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  // placeholder={existingSystem?.system_key}
+                  // TODO: is key stored? not seeing it in system info
                   value={values.key}
                   isInvalid={touched.key && Boolean(errors.key)}
                   minW="65%"
@@ -205,6 +242,7 @@ const DescribeSystemsForm: NextPage<{
                   focusBorderColor="gray.700"
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  placeholder={existingSystem?.description}
                   value={values.description}
                   isInvalid={touched.description && Boolean(errors.description)}
                   minW="65%"
@@ -227,6 +265,7 @@ const DescribeSystemsForm: NextPage<{
                   isClearable
                   id="type"
                   name="type"
+                  placeholder={existingSystem?.system_type}
                   chakraStyles={chakraStyles}
                   size="md"
                 />
@@ -250,7 +289,9 @@ const DescribeSystemsForm: NextPage<{
                 id="tags"
                 name="tags"
                 noOptionsMessage={() => null}
-                placeholder="Add your system tags"
+                placeholder={existingSystem?.system_dependencies}
+                // TODO: grab any existing system tags -- might need to destructure tags here
+                // for the placeholder
                 components={{
                   Menu: () => null,
                   DropdownIndicator: () => null,

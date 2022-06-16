@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
-
 import { Organization, OrganizationResponse } from "./types";
 
 // Organization API
@@ -24,7 +23,7 @@ export const organizationApi = createApi({
       }),
       invalidatesTags: () => ["Organization"],
     }),
-    getOrganizationByFidesKey: build.query<object, string>({
+    getOrganizationByFidesKey: build.query<Partial<Organization>, string>({
       query: (fides_key) => ({ url: `organization/${fides_key}/` }),
       providesTags: ["Organization"],
     }),

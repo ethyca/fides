@@ -124,7 +124,6 @@ const OrganizationInfoForm: NextPage<{
     existingOrg,
   } = useOrganizationInfoForm(handleChangeStep, handleFidesKey);
 
-  // TODO: Pre-populate form if going back to this step
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">
       <Stack ml="100px" spacing={10}>
