@@ -26,7 +26,7 @@ const AddSystemForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => (
   <chakra.form w="100%">
-    <Stack ml="100px">
+    <Stack ml="100px" spacing={10}>
       <Heading as="h3" size="lg">
         Add a system
       </Heading>

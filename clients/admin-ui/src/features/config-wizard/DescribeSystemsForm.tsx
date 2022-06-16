@@ -134,7 +134,7 @@ const DescribeSystemsForm: NextPage<{
 
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">
-      <Stack ml="100px">
+      <Stack ml="100px" spacing={10}>
         <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
         <Heading as="h3" size="lg">
           {/* If describing system manually */}

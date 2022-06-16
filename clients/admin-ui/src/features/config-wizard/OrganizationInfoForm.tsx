@@ -86,7 +86,7 @@ const OrganizationInfoForm: NextPage<{
 
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">
-      <Stack ml="100px">
+      <Stack ml="100px" spacing={10}>
         <Heading as="h3" size="lg">
           Tell us about your business
         </Heading>
