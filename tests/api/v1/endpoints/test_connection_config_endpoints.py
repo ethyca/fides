@@ -7,7 +7,6 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
-from sqlalchemy.testing import db
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import (
@@ -470,7 +469,7 @@ class TestGetConnections:
                     [read_connection_config.key, connection_config.key]
                 )
             )
-            .order_by(ConnectionConfig.created_at.desc())
+            .order_by(ConnectionConfig.name.asc())
             .all()
         )
         assert len(ordered) == 2

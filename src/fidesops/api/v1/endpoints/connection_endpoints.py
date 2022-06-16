@@ -103,7 +103,7 @@ def get_connections(
             )
         )
     return paginate(
-        query.order_by(ConnectionConfig.created_at.desc()),
+        query.order_by(ConnectionConfig.name.asc()),
         params=params,
     )
 
