@@ -5,7 +5,11 @@ import { useSelector } from "react-redux";
 
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "../common/form/inputs";
 import { DATA_QUALIFIERS } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
@@ -65,7 +69,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               label="Identifiability"
               options={DATA_QUALIFIERS_OPTIONS}
             />
-            <CustomSelect
+            <CustomMultiSelect
               name="third_country_transfers"
               label="Geographic location"
               options={[]} // TODO
