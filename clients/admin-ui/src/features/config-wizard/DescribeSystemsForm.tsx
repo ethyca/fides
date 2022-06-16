@@ -116,6 +116,10 @@ const DescribeSystemsForm: NextPage<{
       width: "65%",
       maxWidth: "65%",
     }),
+    dropdownIndicator: (provided, state) => ({
+      ...provided,
+      background: "white",
+    }),
     multiValue: (provided, state) => ({
       ...provided,
       background: "primary.400",
@@ -129,8 +133,8 @@ const DescribeSystemsForm: NextPage<{
   };
 
   return (
-    <chakra.form onSubmit={handleSubmit}>
-      <Stack ml="50px" spacing="24px" w="80%">
+    <chakra.form onSubmit={handleSubmit} w="100%">
+      <Stack ml="100px">
         <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
         <Heading as="h3" size="lg">
           {/* If describing system manually */}

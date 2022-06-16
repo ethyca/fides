@@ -14,21 +14,19 @@ import {
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import React from "react";
-
 import {
   AWSLogoIcon,
   ManualSetupIcon,
   OktaLogoIcon,
   QuestionIcon,
 } from "~/features/common/Icon";
-
 import { iconButtonSize } from "./constants";
 
 const AddSystemForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => (
-  <chakra.form>
-    <Stack ml="50px" spacing="24px" w="80%">
+  <chakra.form w="100%">
+    <Stack ml="100px">
       <Heading as="h3" size="lg">
         Add a system
       </Heading>

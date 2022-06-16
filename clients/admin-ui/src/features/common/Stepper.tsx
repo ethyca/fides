@@ -1,6 +1,5 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
-
 import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
@@ -14,7 +13,7 @@ interface Props {
 }
 
 const Stepper = ({ activeStep, setActiveStep, steps }: Props) => (
-  <Stack direction={["column", "row"]} w="100%">
+  <Stack direction={["column", "row"]}>
     <Stack alignItems="center" direction="column" spacing={0}>
       {steps.map((step) => (
         <React.Fragment key={step.number}>
@@ -50,7 +49,7 @@ const Stepper = ({ activeStep, setActiveStep, steps }: Props) => (
         </React.Fragment>
       ))}
     </Stack>
-    <Stack direction="column" justify="space-between">
+    <Stack direction="column" justify="space-between" minW="100%">
       {steps.map((step) => (
         <Box key={step.name}>
           <Text color="gray.800">Step {step.number}</Text>
