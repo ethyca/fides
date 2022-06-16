@@ -36,6 +36,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
       onClose={onClose}
       description={DESCRIPTION}
       header={`Dataset Name: ${dataset.name}`}
+      onDelete={() => {}} // TODO #769
     >
       <EditDatasetForm
         values={dataset}
