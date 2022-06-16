@@ -18,6 +18,11 @@ import {
 import DataCategoryInput from "./DataCategoryInput";
 import { DatasetCollection, DatasetField } from "./types";
 
+const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
+  value: dq.key,
+  label: dq.label,
+}));
+
 type FormValues =
   | Pick<DatasetField, "description" | "data_qualifier" | "data_categories">
   | Pick<
@@ -92,14 +97,10 @@ const EditCollectionOrFieldForm = ({
               <CustomSelect
                 name="data_qualifier"
                 label="Identifiability"
+                options={IDENTIFIER_OPTIONS}
                 tooltip={dataQualifierTooltip}
-              >
-                {DATA_QUALIFIERS.map((qualifier) => (
-                  <option key={qualifier.key} value={qualifier.key}>
-                    {qualifier.label}
-                  </option>
-                ))}
-              </CustomSelect>
+                isSearchable={false}
+              />
             </Box>
             <Box>
               <DataCategoryInput
