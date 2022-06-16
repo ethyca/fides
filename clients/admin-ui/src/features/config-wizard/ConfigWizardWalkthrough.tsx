@@ -6,14 +6,21 @@ import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import { STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
+import { useUpdateOrganizationMutation } from "./organization.slice";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  const [fidesKey, setFidesKey] = useState("");
+  const [organizationBody, setOrganizationBody] = useState(null);
+  const [updateOrganization] = useUpdateOrganizationMutation();
 
   const handleCancelSetup = () => {
-    // Save progress
+    // If not on step 1, save progress on cancel
+    if (step !== 1 && organizationBody !== null) {
+      updateOrganization(organizationBody);
+    }
     router.push("/");
   };
 
@@ -25,6 +32,12 @@ const ConfigWizardWalkthrough = () => {
     }
   };
 
+  const handleFidesKey = (fidesKey: string) => {
+    if (fidesKey) {
+      setFidesKey(fidesKey);
+    }
+  };
+
   return (
     <>
       <Box bg="white">
@@ -33,7 +46,7 @@ const ConfigWizardWalkthrough = () => {
           fontWeight="500"
           m={2}
           ml={6}
-          onClick={handleCancelSetup}
+          onClick={() => handleCancelSetup()}
         >
           <CloseSolidIcon /> Cancel setup
         </Button>
@@ -50,15 +63,20 @@ const ConfigWizardWalkthrough = () => {
               />
             </Box>
             {step === 1 ? (
-              <OrganizationInfoForm handleChangeStep={handleChangeStep} />
+              <OrganizationInfoForm
+                handleChangeStep={handleChangeStep}
+                handleFidesKey={handleFidesKey}
+              />
             ) : null}
             {step === 2 ? (
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
             {step === 5 ? (
               <DescribeSystemsForm
+                fidesKey={fidesKey}
                 handleChangeStep={handleChangeStep}
                 handleCancelSetup={handleCancelSetup}
+                setOrganizationBody={setOrganizationBody}
               />
             ) : null}
           </Stack>

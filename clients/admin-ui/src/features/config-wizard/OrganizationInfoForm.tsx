@@ -14,27 +14,47 @@ import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
-import { useCreateOrganizationMutation } from "./organization.slice";
+import {
+  useCreateOrganizationMutation,
+  useUpdateOrganizationMutation,
+} from "./organization.slice";
 
-const useOrganizationInfoForm = (handleChangeStep: Function) => {
+const useOrganizationInfoForm = (
+  handleChangeStep: Function,
+  handleFidesKey: Function
+) => {
   const [createOrganization] = useCreateOrganizationMutation();
+  const [updateOrganization] = useUpdateOrganizationMutation();
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
+    // TODO: Initial values can exist if they're going back to step 1 in the stepper, in which case,
+    // we will want to check the initial values here to see if they exist
+    // if not, then empty strings
     initialValues: {
       name: "",
       description: "",
+      fides_key: "",
     },
     onSubmit: async (values) => {
       const organizationBody = {
         name: values.name,
         description: values.description,
-        fides_key: "default_organization",
+        fides_key: values.fides_key ?? "default_organization",
+        // TODO: Need to check with this body that if they have a fides_key assigned,
+        // then assign that existing one
       };
       setIsLoading(true);
 
+      // TODO: If a current org doesn't exist, use the create mutation
       // @ts-ignore
       const { error: createOrganizationError } = await createOrganization(
+        organizationBody
+      );
+
+      // TODO: If a current org exists, use the update mutation
+      // @ts-ignore
+      const { error: updateOrganizationError } = await updateOrganization(
         organizationBody
       );
 
@@ -45,8 +65,16 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       //     status: "error",
       //     description: "Creating organization failed.",
       //   });
+      // }
+      // else if (updateOrganizationError) {
+      //   toast({
+      //     status: "error",
+      //     description: "Updating organization failed.",
+      //   });
+      // }
       // } else {
       handleChangeStep(1);
+      handleFidesKey(organizationBody.fides_key);
       //   toast.closeAll();
       // }
     },
@@ -73,7 +101,8 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
 
 const OrganizationInfoForm: NextPage<{
   handleChangeStep: Function;
-}> = ({ handleChangeStep }) => {
+  handleFidesKey: Function;
+}> = ({ handleChangeStep, handleFidesKey }) => {
   const {
     errors,
     handleBlur,
@@ -82,8 +111,9 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useOrganizationInfoForm(handleChangeStep);
+  } = useOrganizationInfoForm(handleChangeStep, handleFidesKey);
 
+  // TODO: Pre-populate form if going back to this step
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">
       <Stack ml="100px" spacing={10}>

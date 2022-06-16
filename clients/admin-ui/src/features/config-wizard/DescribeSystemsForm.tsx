@@ -16,89 +16,99 @@ import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 import HorizontalStepper from "../common/HorizontalStepper";
 import { HORIZONTALSTEPS } from "./constants";
+import { useUpdateOrganizationMutation } from "./organization.slice";
 
-//   import { useCreateOrganizationMutation } from "./organization.slice";
+const useDescribeSystemsForm = (
+  handleChangeStep: Function,
+  fidesKey: string,
+  setOrganizationBody: Function
+) => {
+  const [updateOrganization] = useUpdateOrganizationMutation();
+  const [isLoading, setIsLoading] = useState(false);
+  // const toast = useToast();
+  const formik = useFormik({
+    initialValues: {
+      fides_key: fidesKey,
+      name: "",
+      key: "",
+      description: "",
+      type: "",
+      tags: [],
+    },
+    onSubmit: async (values) => {
+      const systemBody = {
+        fides_key: fidesKey,
+        name: values.name,
+        key: values.key,
+        description: values.description,
+        type: values.type,
+        tags: values.tags,
+      };
 
-const useDescribeSystemsForm = () =>
-  // handleChangeStep: Function
-  {
-    // const [createOrganization] = useCreateOrganizationMutation();
-    const [isLoading, setIsLoading] = useState(false);
-    // const toast = useToast();
-    const formik = useFormik({
-      initialValues: {
-        name: "",
-        key: "",
-        description: "",
-        type: "",
-        tags: [],
-      },
-      onSubmit: async () =>
-        // values
-        {
-          // const systemBody = {
-          //   name: values.name,
-          //   key: values.key,
-          //   description: values.description,
-          //   type: values.type,
-          //   tags: values.tags,
-          // };
-          setIsLoading(true);
+      setIsLoading(true);
 
-          // @ts-ignore
-          // const { error: createSystemError } =
-          // await createOrganization(
-          //   systemBody
-          // );
+      // @ts-ignore
+      const { error: updateOrganizationError } = await updateOrganization(
+        systemBody
+      );
 
-          setIsLoading(false);
+      setIsLoading(false);
 
-          // if (createSystemError) {
-          //   toast({
-          //     status: "error",
-          //     description: "Creating system failed.",
-          //   });
-          // } else {
-          //   handleChangeStep(...);
-          //   toast.closeAll();
-          // }
-        },
-      validate: (values) => {
-        const errors: {
-          name?: string;
-          key?: string;
-          description?: string;
-          type?: string;
-          tags?: string[];
-        } = {};
+      // if (createSystemError) {
+      //   toast({
+      //     status: "error",
+      //     description: "Creating system failed.",
+      //   });
+      // } else {
+      handleChangeStep(5);
+      //   toast.closeAll();
+      // }
 
-        if (!values.name) {
-          errors.name = "System name is required";
-        }
+      setOrganizationBody(systemBody);
+    },
+    validate: (values) => {
+      const errors: {
+        name?: string;
+        key?: string;
+        description?: string;
+        type?: string;
+        tags?: string[];
+      } = {};
 
-        if (!values.key) {
-          errors.key = "System key is equired";
-        }
+      if (!values.name) {
+        errors.name = "System name is required";
+      }
 
-        if (!values.description) {
-          errors.description = "System description is equired";
-        }
+      if (!values.key) {
+        errors.key = "System key is equired";
+      }
 
-        if (!values.type) {
-          errors.type = "System type is required";
-        }
+      if (!values.description) {
+        errors.description = "System description is equired";
+      }
 
-        return errors;
-      },
-    });
+      if (!values.type) {
+        errors.type = "System type is required";
+      }
 
-    return { ...formik, isLoading };
-  };
+      return errors;
+    },
+  });
+
+  return { ...formik, isLoading };
+};
 
 const DescribeSystemsForm: NextPage<{
+  fidesKey: string;
   handleChangeStep: Function;
   handleCancelSetup: Function;
-}> = ({ handleChangeStep, handleCancelSetup }) => {
+  setOrganizationBody: Function;
+}> = ({
+  fidesKey,
+  handleChangeStep,
+  handleCancelSetup,
+  setOrganizationBody,
+}) => {
   const {
     errors,
     handleBlur,
@@ -107,8 +117,7 @@ const DescribeSystemsForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useDescribeSystemsForm();
-  //   handleChangeStep
+  } = useDescribeSystemsForm(handleChangeStep, fidesKey, setOrganizationBody);
 
   const chakraStyles: ChakraStylesConfig = {
     container: (provided, state) => ({
@@ -240,7 +249,7 @@ const DescribeSystemsForm: NextPage<{
               </Stack>
             ) : null}
 
-            {/* this seems to have changed in the designs and also values.types is nothing */}
+            {/* values.types is nothing */}
             {/* {values.type ? ( */}
             <Stack direction="row" mb={5} justifyContent="flex-end">
               <FormLabel>System tags</FormLabel>
