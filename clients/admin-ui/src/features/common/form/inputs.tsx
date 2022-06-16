@@ -169,6 +169,7 @@ export const CustomMultiSelect = ({
                 ...provided,
                 display: "none",
               }),
+              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
             }}
             isSearchable={isSearchable ?? false}
             isClearable={isClearable}
