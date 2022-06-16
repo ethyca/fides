@@ -26,6 +26,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
             "content": {
                 "application/json": {
                     "example": [
+                        DATAMAP_COLUMNS,
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
@@ -50,7 +51,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
                             "system.third_country_safeguards": "",
                             "system.link_to_processor_contract": "",
                             "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/",
-                        }
+                        },
                     ]
                 }
             }
@@ -111,7 +112,9 @@ async def export_datamap(
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
 
     formatted_datamap = format_datamap_values(joined_system_dataset_df)
-
+    formatted_datamap = [DATAMAP_COLUMNS] + formatted_datamap
+    # log.info("slartibartfast")
+    # log.info(type(formatted_datamap))
     return formatted_datamap
 
 
@@ -122,7 +125,8 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> Dict[str, str]
 
     limited_columns_df = joined_system_dataset_df[
         joined_system_dataset_df.columns[
-            joined_system_dataset_df.columns.isin(DATAMAP_COLUMNS)
+            joined_system_dataset_df.columns.isin(list(DATAMAP_COLUMNS.keys()))
         ]
     ]
+
     return limited_columns_df.to_dict("records")
