@@ -6,17 +6,19 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  IconButton,
   Text,
 } from "@fidesui/react";
 import { ReactNode } from "react";
 
-import { CloseSolidIcon } from "~/features/common/Icon";
+import { CloseSolidIcon, TrashCanSolidIcon } from "~/features/common/Icon";
 
 interface Props {
   header: string;
   description: string;
   isOpen: boolean;
   onClose: () => void;
+  onDelete: () => void;
   children: ReactNode;
 }
 
@@ -25,6 +27,7 @@ const EditDrawer = ({
   description,
   isOpen,
   onClose,
+  onDelete,
   children,
 }: Props) => (
   <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="lg">
@@ -36,7 +39,15 @@ const EditDrawer = ({
             <CloseSolidIcon />
           </Button>
         </Box>
-        <DrawerHeader py={2}>{header}</DrawerHeader>
+        <DrawerHeader py={2} display="flex" alignItems="center">
+          <Text mr="2">{header}</Text>
+          <IconButton
+            aria-label="delete"
+            icon={<TrashCanSolidIcon />}
+            size="xs"
+            onClick={onDelete}
+          />
+        </DrawerHeader>
         <DrawerBody>
           <Text fontSize="sm" mb={4}>
             {description}

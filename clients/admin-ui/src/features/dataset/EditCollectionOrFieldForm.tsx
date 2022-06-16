@@ -1,15 +1,13 @@
-import { Box, Button, FormLabel, Grid, Stack } from "@fidesui/react";
+import { Box, Button, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
-import DataCategoryTag from "~/features/taxonomy/DataCategoryTag";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import { DATA_QUALIFIERS } from "./constants";
-import DataCategoryDropdown from "./DataCategoryDropdown";
+import DataCategoryInput from "./DataCategoryInput";
 import { DatasetCollection, DatasetField } from "./types";
 
 type FormValues =
@@ -43,10 +41,6 @@ const EditCollectionOrFieldForm = ({
     initialValues.data_categories ?? []
   );
 
-  const sortedCheckedDataCategories = checkedDataCategories
-    .slice()
-    .sort((a, b) => a.localeCompare(b));
-
   // Copied from https://ethyca.github.io/fides/1.6.1/language/resources/dataset/
   const descriptionTooltip = `A human-readable description of the ${dataType}`;
   const dataQualifierTooltip =
@@ -65,12 +59,6 @@ const EditCollectionOrFieldForm = ({
       ...{ data_categories: checkedDataCategories },
     };
     onSubmit(newValues);
-  };
-
-  const handleRemoveDataCategory = (dataCategoryName: string) => {
-    setCheckedDataCategories(
-      checkedDataCategories.filter((dc) => dc !== dataCategoryName)
-    );
   };
 
   return (
@@ -104,32 +92,12 @@ const EditCollectionOrFieldForm = ({
               </CustomSelect>
             </Box>
             <Box>
-              <Grid templateColumns="1fr 3fr">
-                <FormLabel>Data Categories</FormLabel>
-                <Stack>
-                  <Box display="flex" alignItems="center">
-                    <Box mr="2" width="100%">
-                      <DataCategoryDropdown
-                        dataCategories={allDataCategories}
-                        checked={checkedDataCategories}
-                        onChecked={setCheckedDataCategories}
-                      />
-                    </Box>
-                    <QuestionTooltip label={dataCategoryTooltip} />
-                  </Box>
-                  <Stack>
-                    {sortedCheckedDataCategories.map((dc) => (
-                      <DataCategoryTag
-                        key={dc}
-                        name={dc}
-                        onClose={() => {
-                          handleRemoveDataCategory(dc);
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                </Stack>
-              </Grid>
+              <DataCategoryInput
+                dataCategories={allDataCategories}
+                checked={checkedDataCategories}
+                onChecked={setCheckedDataCategories}
+                tooltip={dataCategoryTooltip}
+              />
             </Box>
           </Stack>
           <Box>
