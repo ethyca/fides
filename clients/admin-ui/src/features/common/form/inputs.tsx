@@ -1,19 +1,34 @@
 import {
+  Box,
   FormControl,
   FormErrorMessage,
   FormLabel,
+  Grid,
   Input,
   Select,
-  SimpleGrid,
+  Tooltip,
+  TooltipProps,
 } from "@fidesui/react";
 import { FieldHookConfig, useField } from "formik";
 
+import { QuestionIcon } from "~/features/common/Icon";
+
+export const QuestionTooltip = ({
+  ...props
+}: Omit<TooltipProps, "children">) => (
+  <Tooltip {...props}>
+    <QuestionIcon color="gray.400" />
+  </Tooltip>
+);
+
 interface InputProps {
   label: string;
+  tooltip?: string;
 }
 
 export const CustomTextInput = ({
   label,
+  tooltip,
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
@@ -21,12 +36,21 @@ export const CustomTextInput = ({
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
-      <SimpleGrid columns={[1, 2]}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Input {...field} type={type} placeholder={placeholder} size="sm" />
-      </SimpleGrid>
+        <Box display="flex" alignItems="center">
+          <Input
+            {...field}
+            type={type}
+            placeholder={placeholder}
+            size="sm"
+            mr="2"
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -40,13 +64,13 @@ export const CustomSelect = ({
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
-      <SimpleGrid columns={[1, 2]}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
         {/* @ts-ignore having trouble getting Formik and Chakra select to be happy together */}
         <Select {...field} {...props} size="sm" />
-      </SimpleGrid>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );

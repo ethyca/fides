@@ -1,4 +1,4 @@
-import { Box, Button, FormLabel, SimpleGrid, Stack } from "@fidesui/react";
+import { Box, Button, FormLabel, Grid, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -66,7 +66,11 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
         >
           <Stack>
             <Box>
-              <CustomTextInput name="description" label="Description" />
+              <CustomTextInput
+                name="description"
+                label="Description"
+                tooltip="help me"
+              />
             </Box>
             <Box>
               <CustomSelect name="data_qualifier" label="Identifiability">
@@ -78,7 +82,7 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
               </CustomSelect>
             </Box>
             <Box>
-              <SimpleGrid columns={[1, 2]}>
+              <Grid templateColumns="1fr 3fr">
                 <FormLabel>Data Categories</FormLabel>
                 <Stack>
                   <Box>
@@ -100,7 +104,7 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
                     ))}
                   </Stack>
                 </Stack>
-              </SimpleGrid>
+              </Grid>
             </Box>
           </Stack>
           <Box>

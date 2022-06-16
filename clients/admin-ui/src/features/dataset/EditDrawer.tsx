@@ -27,7 +27,7 @@ const EditDrawer = ({
   onClose,
   children,
 }: Props) => (
-  <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="md">
+  <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="lg">
     <DrawerOverlay />
     <DrawerContent>
       <Box py={2}>
