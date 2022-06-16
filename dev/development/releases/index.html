@@ -1251,6 +1251,26 @@ You're not viewing the latest version.
     Release Steps
   </a>
   
+    <nav class="md-nav" aria-label="Release Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#major" class="md-nav__link">
+    Major
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minor" class="md-nav__link">
+    Minor
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1433,6 +1453,26 @@ You're not viewing the latest version.
     Release Steps
   </a>
   
+    <nav class="md-nav" aria-label="Release Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#major" class="md-nav__link">
+    Major
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minor" class="md-nav__link">
+    Minor
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1467,6 +1507,7 @@ You're not viewing the latest version.
 <p>Fidesctl uses continuous delivery with a single <code>main</code> branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.</p>
 <h2 id="release-steps">Release Steps</h2>
 <p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub &amp; PyPi via GitHub Actions pipelines. We also use a <code>CHANGELOG.md</code> to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:</p>
+<h3 id="major">Major</h3>
 <ol>
 <li>Open a PR that is titled the version of the release (i.e. <code>1.6.0</code>)<ul>
 <li>Rename the <code>Unreleased</code> section of <code>CHANGELOG.md</code> to the new version number and put a date next to it</li>
@@ -1480,6 +1521,28 @@ You're not viewing the latest version.
 <li>Add a link to the <code>CHANGELOG.md</code></li>
 <li>Auto-populate the release notes</li>
 <li>Publish the release</li>
+</ol>
+<h3 id="minor">Minor</h3>
+<ol>
+<li>Create a new branch from the latest tagged release being patched (i.e. <code>1.6.0</code>)</li>
+<li>Use <code>git cherry-pick &lt;commit&gt;</code> to incorporate specific changes required for the minor release</li>
+<li>Copy the <code>Unreleased</code> section of <code>CHANGELOG.md</code> and paste above the release being patched<ul>
+<li>Rename <code>Unreleased</code> to the new version number and put a date next to it</li>
+<li>Cut and paste the changes documented that are now included in the minor release in the correct section</li>
+</ul>
+</li>
+<li>Open a PR that is titled the version of the release (i.e. <code>1.6.1</code>), add the <code>do not merge</code> label</li>
+<li>Due to potential merge conflicts when opening against main, checks may need to be run manually</li>
+<li>Create a new release, using the branch created in step 1</li>
+<li>Add the new version as the tag (i.e. <code>1.6.1</code>)</li>
+<li>Make the title the version with a <code>v</code> in front of it (i.e. <code>v1.6.1</code>)</li>
+<li>Add a link to the <code>CHANGELOG.md</code> (the changes are not merged yet but can be planned for)</li>
+<li>Auto-populate the release notes</li>
+<li>Publish the release</li>
+<li>Create a new branch from <code>main</code></li>
+<li>Copy the changes from <code>CHANGELOG.md</code> for the minor release into the new branch</li>
+<li>Open a separate PR for the <code>CHANGELOG.md</code> updates for the minor release, once approved merge the PR</li>
+<li>Close the original PR made for the release (labeled <code>do not merge</code>) without merging</li>
 </ol>
 
               
