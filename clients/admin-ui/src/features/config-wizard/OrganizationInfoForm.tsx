@@ -37,15 +37,12 @@ const useOrganizationInfoForm = (
     initialValues: {
       name: existingOrg?.name ?? "",
       description: existingOrg?.description ?? "",
-      fides_key: existingOrg?.fides_key ?? "",
-      // TODO: in the above, if we can grab the fides_key from the start of the wizard,
-      // we won't need to get it from the currentOrg object
     },
     onSubmit: async (values) => {
       const organizationBody = {
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
-        fides_key: values.fides_key ?? "default_organization",
+        fides_key: existingOrg?.fides_key ?? "default_organization",
         // TODO: Need to check with this body that if they have a fides_key assigned,
         // then assign that existing one
       };

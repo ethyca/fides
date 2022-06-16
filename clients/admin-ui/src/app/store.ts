@@ -1,7 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
-
+import {
+  organizationApi,
+  reducer as organizationReducer,
+} from "~/features/config-wizard/organization.slice";
 import { datasetApi, reducer as datasetReducer } from "~/features/dataset";
 import { systemApi } from "~/features/system";
 import {
@@ -16,13 +19,16 @@ const makeStore = () => {
       user: userReducer,
       dataset: datasetReducer,
       dataCategories: dataCategoriesReducer,
+      organization: organizationReducer,
       [datasetApi.reducerPath]: datasetApi.reducer,
+      [organizationApi.reducerPath]: organizationApi.reducer,
       [systemApi.reducerPath]: systemApi.reducer,
       [dataCategoriesApi.reducerPath]: dataCategoriesApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
         datasetApi.middleware,
+        organizationApi.middleware,
         systemApi.middleware,
         dataCategoriesApi.middleware
       ),
