@@ -13,21 +13,16 @@ const HorizontalStepper = ({ activeStep, steps }: Props) => (
       <React.Fragment key={step.number}>
         {activeStep && activeStep === step.number ? (
           <>
-            <Stack direction={["row"]}>
-              {/* should have colors */}
-              <HorizontalLineIcon boxSize={20} />
-              <Stack>
-                <Text>{step.name}</Text>
-              </Stack>
+            <Stack alignItems="baseline" direction={["column"]}>
+              <HorizontalLineIcon color="#824EF2" />
+              <Text color="#805AD5">{step.name}</Text>
             </Stack>
           </>
         ) : (
           <>
-            <Stack direction={["row"]}>
-              <HorizontalLineIcon boxSize={20} />
-              <Stack>
-                <Text>{step.name}</Text>
-              </Stack>
+            <Stack alignItems="baseline" direction={["column"]}>
+              <HorizontalLineIcon />
+              <Text>{step.name}</Text>
             </Stack>
           </>
         )}

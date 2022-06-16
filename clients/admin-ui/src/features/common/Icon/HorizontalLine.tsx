@@ -1,14 +1,11 @@
-import { createIcon } from "@fidesui/react";
+import { Icon } from "@fidesui/react";
 
-export default createIcon({
-  displayName: "HorizontalLineIcon",
-  viewBox: "0 0 2 49",
-  path: (
+const HorizontalLine = (props: any) => (
+  <Icon height="2px" width="125px" viewBox="0 0 125 2" {...props}>
     <svg
       width="125"
       height="2"
       viewBox="0 0 125 2"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <line
@@ -16,9 +13,11 @@ export default createIcon({
         y1="1"
         x2="124.558"
         y2="1"
-        stroke="#CBD5E0"
+        stroke={props.color ? props.color : "#CBD5E0"}
         stroke-width="2"
       />
     </svg>
-  ),
-});
+  </Icon>
+);
+
+export default HorizontalLine;
