@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   useCreateOrganizationMutation,
+  useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "./organization.slice";
 
@@ -25,58 +26,67 @@ const useOrganizationInfoForm = (
 ) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
+  // TODO: Need a way to check for an existing fides key from the start of the wizard
+  // const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(fidesKey);
+  const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
+    "default_organization"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
-    // TODO: Initial values can exist if they're going back to step 1 in the stepper, in which case,
-    // we will want to check the initial values here to see if they exist
-    // if not, then empty strings
     initialValues: {
-      name: "",
-      description: "",
-      fides_key: "",
+      name: existingOrg?.name ?? "",
+      description: existingOrg?.description ?? "",
+      fides_key: existingOrg?.fides_key ?? "",
+      // TODO: in the above, if we can grab the fides_key from the start of the wizard,
+      // we won't need to get it from the currentOrg object
     },
     onSubmit: async (values) => {
       const organizationBody = {
-        name: values.name,
-        description: values.description,
+        name: values.name ?? existingOrg?.name,
+        description: values.description ?? existingOrg?.description,
         fides_key: values.fides_key ?? "default_organization",
         // TODO: Need to check with this body that if they have a fides_key assigned,
         // then assign that existing one
       };
+
       setIsLoading(true);
 
-      // TODO: If a current org doesn't exist, use the create mutation
-      // @ts-ignore
-      const { error: createOrganizationError } = await createOrganization(
-        organizationBody
-      );
+      if (!existingOrg) {
+        // @ts-ignore
+        const { error: createOrganizationError } = await createOrganization(
+          organizationBody
+        );
 
-      // TODO: If a current org exists, use the update mutation
-      // @ts-ignore
-      const { error: updateOrganizationError } = await updateOrganization(
-        organizationBody
-      );
+        if (createOrganizationError) {
+          toast({
+            status: "error",
+            description: "Creating organization failed.",
+          });
+        } else {
+          handleFidesKey(organizationBody.fides_key);
+          toast.closeAll();
+          handleChangeStep(1);
+        }
+      } else {
+        // @ts-ignore
+        const { error: updateOrganizationError } = await updateOrganization(
+          organizationBody
+        );
+
+        if (updateOrganizationError) {
+          toast({
+            status: "error",
+            description: "Updating organization failed.",
+          });
+        } else {
+          handleFidesKey(organizationBody.fides_key);
+          toast.closeAll();
+          handleChangeStep(1);
+        }
+      }
 
       setIsLoading(false);
-
-      // if (createOrganizationError) {
-      //   toast({
-      //     status: "error",
-      //     description: "Creating organization failed.",
-      //   });
-      // }
-      // else if (updateOrganizationError) {
-      //   toast({
-      //     status: "error",
-      //     description: "Updating organization failed.",
-      //   });
-      // }
-      // } else {
-      handleChangeStep(1);
-      handleFidesKey(organizationBody.fides_key);
-      //   toast.closeAll();
-      // }
     },
     validate: (values) => {
       const errors: {
@@ -96,7 +106,7 @@ const useOrganizationInfoForm = (
     },
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, existingOrg, isLoading };
 };
 
 const OrganizationInfoForm: NextPage<{
@@ -111,6 +121,7 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
+    existingOrg,
   } = useOrganizationInfoForm(handleChangeStep, handleFidesKey);
 
   // TODO: Pre-populate form if going back to this step
@@ -145,6 +156,7 @@ const OrganizationInfoForm: NextPage<{
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                placeholder={existingOrg?.name}
                 value={values.name}
                 isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
@@ -167,6 +179,7 @@ const OrganizationInfoForm: NextPage<{
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
+                placeholder={existingOrg?.description}
                 value={values.description}
                 isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"

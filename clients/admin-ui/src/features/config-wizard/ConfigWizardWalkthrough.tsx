@@ -13,14 +13,9 @@ const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [fidesKey, setFidesKey] = useState("");
-  const [organizationBody, setOrganizationBody] = useState(null);
   const [updateOrganization] = useUpdateOrganizationMutation();
 
   const handleCancelSetup = () => {
-    // If not on step 1, save progress on cancel
-    if (step !== 1 && organizationBody !== null) {
-      updateOrganization(organizationBody);
-    }
     router.push("/");
   };
 
@@ -76,7 +71,6 @@ const ConfigWizardWalkthrough = () => {
                 fidesKey={fidesKey}
                 handleChangeStep={handleChangeStep}
                 handleCancelSetup={handleCancelSetup}
-                setOrganizationBody={setOrganizationBody}
               />
             ) : null}
           </Stack>

@@ -20,8 +20,7 @@ import { useUpdateOrganizationMutation } from "./organization.slice";
 
 const useDescribeSystemsForm = (
   handleChangeStep: Function,
-  fidesKey: string,
-  setOrganizationBody: Function
+  fidesKey: string
 ) => {
   const [updateOrganization] = useUpdateOrganizationMutation();
   const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +62,6 @@ const useDescribeSystemsForm = (
       handleChangeStep(5);
       //   toast.closeAll();
       // }
-
-      setOrganizationBody(systemBody);
     },
     validate: (values) => {
       const errors: {
@@ -102,13 +99,7 @@ const DescribeSystemsForm: NextPage<{
   fidesKey: string;
   handleChangeStep: Function;
   handleCancelSetup: Function;
-  setOrganizationBody: Function;
-}> = ({
-  fidesKey,
-  handleChangeStep,
-  handleCancelSetup,
-  setOrganizationBody,
-}) => {
+}> = ({ fidesKey, handleChangeStep, handleCancelSetup }) => {
   const {
     errors,
     handleBlur,
@@ -117,7 +108,7 @@ const DescribeSystemsForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useDescribeSystemsForm(handleChangeStep, fidesKey, setOrganizationBody);
+  } = useDescribeSystemsForm(handleChangeStep, fidesKey);
 
   const chakraStyles: ChakraStylesConfig = {
     container: (provided, state) => ({
