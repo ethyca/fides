@@ -6,7 +6,6 @@ import {
   FormLabel,
   Heading,
   Input,
-  Select,
   Stack,
   Tooltip,
 } from "@fidesui/react";
@@ -15,6 +14,8 @@ import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
+import HorizontalStepper from "../common/HorizontalStepper";
+import { HORIZONTALSTEPS } from "./constants";
 
 //   import { useCreateOrganizationMutation } from "./organization.slice";
 
@@ -133,6 +134,7 @@ const DescribeSystemsForm: NextPage<{
     return (
       <chakra.form onSubmit={handleSubmit}>
         <Stack ml="50px" spacing="24px" w="80%">
+          <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
           <Heading as="h3" size="lg">
             {/* If describing system manually */}
             Describe your system
@@ -222,17 +224,17 @@ const DescribeSystemsForm: NextPage<{
               {values.description ? (
                 <Stack direction="row" mb={5} justifyContent="flex-end">
                   <FormLabel>System type</FormLabel>
-                  <Select
+                  <CreatableSelect
+                    isClearable
                     id="type"
                     name="type"
-                    placeholder="Select option"
-                    w="65%"
-                    minWidth="65%"
-                  >
-                    <option value="emailSystem">Email System</option>
-                    <option value="option2">Option 2</option>
-                    <option value="option3">Option 3</option>
-                  </Select>
+                    // value={values.type}
+                    // onChange={this.handleChange}
+                    // onInputChange={this.handleInputChange}
+                    // options={}
+                    chakraStyles={chakraStyles}
+                    size="md"
+                  />
                   <Tooltip
                     fontSize="md"
                     label="Select a system type from the pre-approved list of system types."
@@ -250,6 +252,9 @@ const DescribeSystemsForm: NextPage<{
                   <CreatableSelect
                     isMulti
                     isClearable
+                    id="tags"
+                    name="tags"
+                    value={values.tags}
                     noOptionsMessage={() => null}
                     placeholder="Add your system tags"
                     components={{
