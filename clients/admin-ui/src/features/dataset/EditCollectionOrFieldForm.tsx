@@ -6,7 +6,15 @@ import { useSelector } from "react-redux";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATA_QUALIFIERS } from "./constants";
+import {
+  DATA_QUALIFIERS,
+  DATASET_COLLECTION_DATA_CATEGORY_TOOLTIP,
+  DATASET_COLLECTION_DATA_QUALIFIER_TOOLTIP,
+  DATASET_COLLECTION_DESCRIPTION_TOOLTIP,
+  DATASET_FIELD_DATA_CATEGORY_TOOLTIP,
+  DATASET_FIELD_DATA_QUALIFIER_TOOLTIP,
+  DATASET_FIELD_DESCRIPTION_TOOLTIP,
+} from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DatasetCollection, DatasetField } from "./types";
 
@@ -41,16 +49,18 @@ const EditCollectionOrFieldForm = ({
     initialValues.data_categories ?? []
   );
 
-  // Copied from https://ethyca.github.io/fides/1.6.1/language/resources/dataset/
-  const descriptionTooltip = `A human-readable description of the ${dataType}`;
+  const descriptionTooltip =
+    dataType === "collection"
+      ? DATASET_COLLECTION_DESCRIPTION_TOOLTIP
+      : DATASET_FIELD_DESCRIPTION_TOOLTIP;
   const dataQualifierTooltip =
     dataType === "collection"
-      ? "Arrays of Data Qualifier resources, identified by fides_key, that apply to all fields in the collection."
-      : "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.";
+      ? DATASET_COLLECTION_DATA_QUALIFIER_TOOLTIP
+      : DATASET_FIELD_DATA_QUALIFIER_TOOLTIP;
   const dataCategoryTooltip =
     dataType === "collection"
-      ? "Arrays of Data Qualifier resources, identified by fides_key, that apply to all fields in the collection."
-      : "Arrays of Data Categories, identified by fides_key, that applies to this field.";
+      ? DATASET_COLLECTION_DATA_CATEGORY_TOOLTIP
+      : DATASET_FIELD_DATA_CATEGORY_TOOLTIP;
 
   const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element

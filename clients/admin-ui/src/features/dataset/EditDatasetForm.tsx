@@ -8,8 +8,8 @@ import { selectDataCategories } from "~/features/taxonomy/data-categories.slice"
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import {
   DATA_QUALIFIERS,
-  DATASET_DATA_CATEGORY,
-  DATASET_DATA_QUALIFIER,
+  DATASET_DATA_CATEGORY_TOOLTIP,
+  DATASET_DATA_QUALIFIER_TOOLTIP,
   DATASET_DESCRIPTION_TOOLTIP,
   DATASET_NAME_TOOLTIP,
   DATASET_RETENTION_TOOLTIP,
@@ -78,7 +78,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
             <CustomSelect
               name="data_qualifier"
               label="Identifiability"
-              tooltip={DATASET_DATA_QUALIFIER}
+              tooltip={DATASET_DATA_QUALIFIER_TOOLTIP}
             >
               {DATA_QUALIFIERS.map((qualifier) => (
                 <option key={qualifier.key} value={qualifier.key}>
@@ -97,7 +97,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
-              tooltip={DATASET_DATA_CATEGORY}
+              tooltip={DATASET_DATA_CATEGORY_TOOLTIP}
             />
           </Stack>
           <Box>
