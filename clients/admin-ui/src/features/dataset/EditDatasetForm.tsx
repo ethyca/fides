@@ -6,7 +6,15 @@ import { useSelector } from "react-redux";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATA_QUALIFIERS } from "./constants";
+import {
+  DATA_QUALIFIERS,
+  DATASET_DATA_CATEGORY,
+  DATASET_DATA_QUALIFIER,
+  DATASET_DESCRIPTION_TOOLTIP,
+  DATASET_NAME_TOOLTIP,
+  DATASET_RETENTION_TOOLTIP,
+  DATASET_THIRD_COUNTRY_TRANSFERS_TOOLTIP,
+} from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
 
@@ -52,10 +60,26 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
           height="75vh"
         >
           <Stack spacing="3">
-            <CustomTextInput name="name" label="Name" />
-            <CustomTextInput name="description" label="Description" />
-            <CustomTextInput name="retention" label="Retention period" />
-            <CustomSelect name="data_qualifier" label="Identifiability">
+            <CustomTextInput
+              name="name"
+              label="Name"
+              tooltip={DATASET_NAME_TOOLTIP}
+            />
+            <CustomTextInput
+              name="description"
+              label="Description"
+              tooltip={DATASET_DESCRIPTION_TOOLTIP}
+            />
+            <CustomTextInput
+              name="retention"
+              label="Retention period"
+              tooltip={DATASET_RETENTION_TOOLTIP}
+            />
+            <CustomSelect
+              name="data_qualifier"
+              label="Identifiability"
+              tooltip={DATASET_DATA_QUALIFIER}
+            >
               {DATA_QUALIFIERS.map((qualifier) => (
                 <option key={qualifier.key} value={qualifier.key}>
                   {qualifier.label}
@@ -65,6 +89,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
             <CustomSelect
               name="third_country_transfers"
               label="Geographic location"
+              tooltip={DATASET_THIRD_COUNTRY_TRANSFERS_TOOLTIP}
             >
               {/* TODO: where do these fields come from? */}
             </CustomSelect>
@@ -72,6 +97,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
+              tooltip={DATASET_DATA_CATEGORY}
             />
           </Stack>
           <Box>
