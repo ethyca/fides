@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.6.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.6.1...main)
 
 ### Added
 
@@ -54,7 +54,6 @@ The types of changes are:
 * Bump version of FastAPI in `setup.py` to 0.77.1 to match `optional-requirements.txt` [#734](https://github.com/ethyca/fides/pull/734)
 * Docker images are now only built and pushed on tags to match when we release to pypi [#740](https://github.com/ethyca/fides/pull/740)
 * Okta resource scanning and generation now works with systems instead of datasets [#751](https://github.com/ethyca/fides/pull/751)
-* Handle invalid characters when generating a `fides_key` [#761](https://github.com/ethyca/fides/pull/761)
 
 ### Developer Experience
 
@@ -65,18 +64,27 @@ The types of changes are:
 
 ### Docs
 
-* Updated `Release Steps`
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
 
 ### Fixed
 
-* Resolved a failure with populating applicable data subject rights to a data map
 * Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
 * Updated the webserver so that it won't fail if the database is inaccessible [#649](https://github.com/ethyca/fides/pull/649)
 * Handle complex characters in external tests  [#661](https://github.com/ethyca/fides/pull/661)
 * Evaluations now properly merge the default taxonomy into the user-defined taxonomy [#684](https://github.com/ethyca/fides/pull/684)
 * The CLI can be run without installing the webserver components [#715](https://github.com/ethyca/fides/pull/715)
+
+## [1.6.1](https://github.com/ethyca/fides/compare/1.6.0...1.6.1) - 2022-06-15
+
+### Docs
+
+* Updated `Release Steps`
+
+### Fixed
+
+* Resolved a failure with populating applicable data subject rights to a data map
+* Handle invalid characters when generating a `fides_key` [#761](https://github.com/ethyca/fides/pull/761)
 
 ## [1.6.0](https://github.com/ethyca/fides/compare/1.5.3...1.6.0) - 2022-05-02
 
