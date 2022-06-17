@@ -2,9 +2,7 @@ import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
@@ -17,7 +15,7 @@ import {
   useUpdateSystemMutation,
 } from "../system/system.slice";
 import { System } from "../system/types";
-import { HORIZONTALSTEPS } from "./constants";
+import { HORIZONTAL_STEPS } from "./constants";
 
 type FormValues = Partial<System>;
 
@@ -100,10 +98,14 @@ const DescribeSystemsForm: NextPage<{
   };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      enableReinitialize
+      onSubmit={handleSubmit}
+    >
       <Form>
         <Stack ml="100px" spacing={10}>
-          <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
+          <HorizontalStepper activeStep={1} steps={HORIZONTAL_STEPS} />
           <Heading as="h3" size="lg">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
             Describe your system
@@ -153,7 +155,7 @@ const DescribeSystemsForm: NextPage<{
                 id="system_type"
                 label="System Type"
                 name="system_type"
-                options={[]}
+                options={[initialValues.system_type]}
               />
               <Tooltip
                 fontSize="md"
@@ -168,7 +170,7 @@ const DescribeSystemsForm: NextPage<{
               <CustomCreatableMultiSelect
                 name="system_dependencies"
                 label="System Tags"
-                options={[]}
+                options={[[...initialValues.system_dependencies]]}
                 isMulti
               />
               <Tooltip

@@ -79,6 +79,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
 
       setIsLoading(false);
     },
+    enableReinitialize: true,
     validate: (values) => {
       const errors: {
         name?: string;
