@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*"
+      
+# Push a 'dev' whenever there is a push to main
 
 env:
   DOCKER_USER: ethycaci
