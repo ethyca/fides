@@ -26,8 +26,7 @@ const useOrganizationInfoForm = (
 ) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
-  // TODO: Need a way to check for an existing fides key from the start of the wizard
-  // const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(fidesKey);
+  // FUTURE TODO: Need a way to check for an existing fides_key from the start of the wizard
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
   );
@@ -43,7 +42,7 @@ const useOrganizationInfoForm = (
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
         fides_key: existingOrg?.fides_key ?? "default_organization",
-        // TODO: Need to check with this body that if they have a fides_key assigned,
+        // FUTURE TODO: Need to check with this body that if they have a fides_key assigned,
         // then assign that existing one
       };
 
@@ -96,14 +95,14 @@ const useOrganizationInfoForm = (
       }
 
       if (!values.description) {
-        errors.description = "Organization description is equired";
+        errors.description = "Organization description is required";
       }
 
       return errors;
     },
   });
 
-  return { ...formik, existingOrg, isLoading };
+  return { ...formik, isLoading };
 };
 
 const OrganizationInfoForm: NextPage<{
@@ -118,7 +117,6 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
-    existingOrg,
   } = useOrganizationInfoForm(handleChangeStep, handleFidesKey);
 
   return (
@@ -152,7 +150,6 @@ const OrganizationInfoForm: NextPage<{
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder={existingOrg?.name}
                 value={values.name}
                 isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
@@ -175,7 +172,6 @@ const OrganizationInfoForm: NextPage<{
                 focusBorderColor="gray.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder={existingOrg?.description}
                 value={values.description}
                 isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"

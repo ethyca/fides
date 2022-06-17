@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   CustomCreatableMultiSelect,
+  CustomCreatableSingleSelect,
   CustomTextInput,
 } from "../common/form/inputs";
 import HorizontalStepper from "../common/HorizontalStepper";
@@ -18,21 +19,25 @@ import { HORIZONTALSTEPS } from "./constants";
 
 type FormValues = Partial<System>;
 
-const DescribeSystemsForm: NextPage<{}> = () => {
+const DescribeSystemsForm: NextPage<{
+  handleChangeStep: Function;
+  handleCancelSetup: Function;
+}> = ({ handleCancelSetup, handleChangeStep }) => {
   const [updateSystem] = useUpdateSystemMutation();
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-  // TODO: Need a way to check for an existing fides key from the start of the wizard
+  // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
+  // not just use this default
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(
     "default_organization"
   );
 
   const toast = useToast();
 
+  // TODO FUTURE: is key stored? If so, where does it exist in the system API?
   const initialValues = {
     name: existingSystem?.name ?? "",
     description: existingSystem?.description ?? "",
-    // key: values.key ?? "",
     system_dependencies: existingSystem?.system_dependencies ?? [],
     system_type: existingSystem?.system_type ?? "",
   };
@@ -41,18 +46,14 @@ const DescribeSystemsForm: NextPage<{}> = () => {
     const systemBody = {
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: values.name ?? existingSystem?.name,
-      // key: values.key,
-      // TODO: is key stored? not seeing it in system info
       description: values.description ?? existingSystem?.description,
+      privacy_declarations:
+        values.privacy_declarations ?? existingSystem?.privacy_declarations,
       system_type: values.system_type ?? existingSystem?.system_type,
       system_dependencies:
         values.system_dependencies ?? existingSystem?.system_dependencies,
-      // TODO: double-check that these are tags = system_dependencies ?
+      // TODO: tags = system_dependencies?
     };
-    // TODO: Need to check with this body that if they have a fides_key assigned,
-    // then assign that existing one
-
-    console.log("system body", systemBody);
 
     setIsLoading(true);
 
@@ -67,7 +68,7 @@ const DescribeSystemsForm: NextPage<{}> = () => {
         });
       } else {
         toast.closeAll();
-        // handleChangeStep(5);
+        handleChangeStep(5);
       }
     } else {
       // @ts-ignore
@@ -80,7 +81,7 @@ const DescribeSystemsForm: NextPage<{}> = () => {
         });
       } else {
         toast.closeAll();
-        // handleChangeStep(5);
+        handleChangeStep(5);
       }
     }
 
@@ -93,7 +94,7 @@ const DescribeSystemsForm: NextPage<{}> = () => {
         <Stack ml="100px" spacing={10}>
           <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
           <Heading as="h3" size="lg">
-            {/* If describing system manually */}
+            {/* TODO FUTURE: Path when describing system from infra scanning */}
             Describe your system
           </Heading>
           <div>
@@ -136,12 +137,13 @@ const DescribeSystemsForm: NextPage<{}> = () => {
             </Stack>
 
             <Stack direction="row" mb={5} justifyContent="flex-end">
-              <CustomCreatableMultiSelect
+              <CustomCreatableSingleSelect
                 isClearable
                 id="system_type"
                 label="System Type"
                 name="system_type"
                 options={[]}
+                isMulti={false}
               />
               <Tooltip
                 fontSize="md"
@@ -154,13 +156,10 @@ const DescribeSystemsForm: NextPage<{}> = () => {
 
             <Stack direction="row" mb={5} justifyContent="flex-end">
               <CustomCreatableMultiSelect
-                name="tags"
+                name="system_dependencies"
                 label="System Tags"
                 options={[]}
-                components={{
-                  Menu: () => null,
-                  DropdownIndicator: () => null,
-                }}
+                isMulti={true}
               />
               <Tooltip
                 fontSize="md"
@@ -173,7 +172,7 @@ const DescribeSystemsForm: NextPage<{}> = () => {
           </Stack>
           <Box>
             <Button
-              // onClick={() => handleCancelSetup()}
+              onClick={() => handleCancelSetup()}
               mr={2}
               size="sm"
               variant="outline"
@@ -184,12 +183,9 @@ const DescribeSystemsForm: NextPage<{}> = () => {
               type="submit"
               colorScheme="primary"
               size="sm"
-              // disabled={
-              // !values.name || !values.description || !values.key
-              // !values.type ||
-              // !values.tags
-              // }
-              // isLoading={isLoading}
+              // disabled={}
+              // TODO: Disable button if fields are empty
+              isLoading={isLoading}
             >
               Confirm and Continue
             </Button>
