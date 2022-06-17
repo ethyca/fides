@@ -184,11 +184,6 @@ export const CustomCreatableSingleSelect = ({
           }}
           name={props.name}
           chakraStyles={{
-            container: (provided) => ({
-              ...provided,
-              width: "65%",
-              maxWidth: "65%",
-            }),
             dropdownIndicator: (provided) => ({
               ...provided,
               background: "white",
@@ -245,11 +240,6 @@ export const CustomCreatableMultiSelect = ({
           }}
           name={props.name}
           chakraStyles={{
-            container: (provided) => ({
-              ...provided,
-              width: "65%",
-              maxWidth: "65%",
-            }),
             dropdownIndicator: (provided) => ({
               ...provided,
               background: "white",

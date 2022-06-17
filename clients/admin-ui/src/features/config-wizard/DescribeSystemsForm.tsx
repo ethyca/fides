@@ -49,8 +49,17 @@ const DescribeSystemsForm: NextPage<{
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: values.name ?? existingSystem?.name,
       description: values.description ?? existingSystem?.description,
-      privacy_declarations:
-        values.privacy_declarations ?? existingSystem?.privacy_declarations,
+      privacy_declarations: existingSystem?.privacy_declarations ?? [
+        {
+          name: "string",
+          data_categories: ["string"],
+          data_use: "string",
+          data_qualifier:
+            "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          data_subjects: ["string"],
+          dataset_references: ["string"],
+        },
+      ],
       system_type: values.system_type ?? existingSystem?.system_type,
       system_dependencies:
         values.system_dependencies ?? existingSystem?.system_dependencies,
@@ -105,7 +114,7 @@ const DescribeSystemsForm: NextPage<{
             everyone from engineering to legal teams. So let’s do this now.
           </div>
           <Stack>
-            <Stack direction="row" mb={5} justifyContent="flex-end">
+            <Stack direction="row">
               <CustomTextInput name="name" label="System name" />
               <Tooltip
                 fontSize="md"
@@ -116,7 +125,7 @@ const DescribeSystemsForm: NextPage<{
               </Tooltip>
             </Stack>
 
-            <Stack direction="row" mb={5} justifyContent="flex-end">
+            <Stack direction="row" mb={5}>
               <CustomTextInput name="key" label="System key" />
               <Tooltip
                 fontSize="md"
@@ -127,7 +136,7 @@ const DescribeSystemsForm: NextPage<{
               </Tooltip>
             </Stack>
 
-            <Stack direction="row" mb={5} justifyContent="flex-end">
+            <Stack direction="row" mb={5}>
               <CustomTextInput name="description" label="System description" />
               <Tooltip
                 fontSize="md"
@@ -138,7 +147,7 @@ const DescribeSystemsForm: NextPage<{
               </Tooltip>
             </Stack>
 
-            <Stack direction="row" mb={5} justifyContent="flex-end">
+            <Stack direction="row" mb={5}>
               <CustomCreatableSingleSelect
                 isClearable
                 id="system_type"
@@ -156,7 +165,7 @@ const DescribeSystemsForm: NextPage<{
               </Tooltip>
             </Stack>
 
-            <Stack direction="row" mb={5} justifyContent="flex-end">
+            <Stack direction="row" mb={5}>
               <CustomCreatableMultiSelect
                 name="system_dependencies"
                 label="System Tags"
