@@ -2,14 +2,15 @@ name: Docker Build & Push
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "*"
-      
-# Push a 'dev' whenever there is a push to main
 
 env:
   DOCKER_USER: ethycaci
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+  TAG: ${{ github.event.release.tag_name }}
 
 jobs:
   push-fidesctl:
@@ -29,6 +30,7 @@ jobs:
         run: pip install -r dev-requirements.txt
 
       - name: Build Fidesctl
+        if: ${{ env.TAG }}
         run: nox -s build
 
       - name: Push Fidesctl
