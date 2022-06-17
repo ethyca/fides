@@ -105,7 +105,7 @@ export const CustomSelect = ({
               }),
               container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
             }}
-            isSearchable={isSearchable ?? false}
+            isSearchable={isSearchable}
             isClearable={isClearable}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -170,8 +170,13 @@ export const CustomMultiSelect = ({
                 display: "none",
               }),
               container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
             }}
-            isSearchable={isSearchable ?? false}
+            isSearchable={isSearchable}
             isClearable={isClearable}
             isMulti
           />

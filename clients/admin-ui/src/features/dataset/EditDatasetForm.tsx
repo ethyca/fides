@@ -3,6 +3,7 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
+import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import {
@@ -87,7 +88,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               label="Geographic location"
               tooltip={DATASET.third_country_transfers.tooltip}
               isSearchable
-              options={[]} // TODO
+              options={COUNTRY_OPTIONS}
             />
             <DataCategoryInput
               dataCategories={allDataCategories}
