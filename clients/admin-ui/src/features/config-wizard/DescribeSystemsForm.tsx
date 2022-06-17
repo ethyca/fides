@@ -154,7 +154,6 @@ const DescribeSystemsForm: NextPage<{
                 label="System Type"
                 name="system_type"
                 options={[]}
-                isMulti={false}
               />
               <Tooltip
                 fontSize="md"

@@ -21,7 +21,7 @@ export const STEPS = [
   },
 ];
 
-export const HORIZONTALSTEPS = [
+export const HORIZONTAL_STEPS = [
   {
     number: 1,
     name: "Describe",

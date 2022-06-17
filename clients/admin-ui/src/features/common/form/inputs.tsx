@@ -164,7 +164,6 @@ export const CustomCreatableSingleSelect = ({
   options,
   isSearchable,
   isClearable,
-  isMulti,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
@@ -176,7 +175,6 @@ export const CustomCreatableSingleSelect = ({
       <SimpleGrid columns={[1, 2]}>
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
-          // @ts-ignore
           onChange={(newValue: { value: string } | null) => {
             if (newValue) {
               setFieldValue(field.name, newValue?.value);
@@ -200,7 +198,6 @@ export const CustomCreatableSingleSelect = ({
             }),
           }}
           isClearable={isClearable}
-          isMulti={isMulti}
         />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}

@@ -1,9 +1,7 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
 import { CloseSolidIcon } from "~/features/common/Icon";
-
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import { STEPS } from "./constants";
@@ -32,7 +30,7 @@ const ConfigWizardWalkthrough = () => {
           fontWeight="500"
           m={2}
           ml={6}
-          onClick={() => handleCancelSetup()}
+          onClick={handleCancelSetup}
         >
           <CloseSolidIcon /> Cancel setup
         </Button>
