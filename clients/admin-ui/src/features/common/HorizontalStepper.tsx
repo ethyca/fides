@@ -1,6 +1,7 @@
 import { Stack, Text } from "@fidesui/react";
 import React from "react";
-import { HorizontalLineIcon } from "../common/Icon/index";
+
+import { HorizontalLineIcon } from "./Icon/index";
 
 interface Props {
   activeStep: number | null;
@@ -12,19 +13,15 @@ const HorizontalStepper = ({ activeStep, steps }: Props) => (
     {steps.map((step) => (
       <React.Fragment key={step.number}>
         {activeStep && activeStep === step.number ? (
-          <>
-            <Stack alignItems="baseline" direction={["column"]}>
+          <Stack alignItems="baseline" direction={["column"]}>
               <HorizontalLineIcon color="#824EF2" />
               <Text color="#805AD5">{step.name}</Text>
             </Stack>
-          </>
         ) : (
-          <>
-            <Stack alignItems="baseline" direction={["column"]}>
+          <Stack alignItems="baseline" direction={["column"]}>
               <HorizontalLineIcon />
               <Text>{step.name}</Text>
             </Stack>
-          </>
         )}
       </React.Fragment>
     ))}

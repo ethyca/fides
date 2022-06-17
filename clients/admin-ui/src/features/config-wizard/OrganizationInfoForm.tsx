@@ -13,17 +13,16 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
+
 import { QuestionIcon } from "~/features/common/Icon";
+
 import {
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "./organization.slice";
 
-const useOrganizationInfoForm = (
-  handleChangeStep: Function,
-  handleFidesKey: Function
-) => {
+const useOrganizationInfoForm = (handleChangeStep: Function) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
   // FUTURE TODO: Need a way to check for an existing fides_key from the start of the wizard
@@ -60,7 +59,6 @@ const useOrganizationInfoForm = (
             description: "Creating organization failed.",
           });
         } else {
-          handleFidesKey(organizationBody.fides_key);
           toast.closeAll();
           handleChangeStep(1);
         }
@@ -76,7 +74,6 @@ const useOrganizationInfoForm = (
             description: "Updating organization failed.",
           });
         } else {
-          handleFidesKey(organizationBody.fides_key);
           toast.closeAll();
           handleChangeStep(1);
         }
@@ -107,8 +104,7 @@ const useOrganizationInfoForm = (
 
 const OrganizationInfoForm: NextPage<{
   handleChangeStep: Function;
-  handleFidesKey: Function;
-}> = ({ handleChangeStep, handleFidesKey }) => {
+}> = ({ handleChangeStep }) => {
   const {
     errors,
     handleBlur,
@@ -117,7 +113,7 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useOrganizationInfoForm(handleChangeStep, handleFidesKey);
+  } = useOrganizationInfoForm(handleChangeStep);
 
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">
