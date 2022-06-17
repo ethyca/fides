@@ -149,6 +149,26 @@ def connection_config(
 
 
 @pytest.fixture(scope="function")
+def disabled_connection_config(
+    db: Session,
+) -> Generator:
+    disabled_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "disabled_postgres_connection",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.read,
+            "secrets": integration_secrets["postgres_example"],
+            "disabled": True,
+            "description": "Old postgres connection",
+        },
+    )
+    yield connection_config
+    disabled_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def read_connection_config(
     db: Session,
 ) -> Generator:

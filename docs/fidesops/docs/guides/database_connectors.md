@@ -7,6 +7,7 @@ In this section we'll cover:
 - How do you create a ConnectionConfig object?
 - How do you identify the database that a ConnectionConfig connects to?
 - How do you test and update a ConnectionConfig's Secrets?
+- How do you filter your ConnectionConfigs?
 - How do you search your ConnectionConfigs?
 - How does a ConnectionConfig differ from a Dataset?
 
@@ -276,6 +277,130 @@ Once you have a working ConnectionConfig, it can be associated to an existing [d
     "collections": [...]
 }]
 ```
+
+## Filtering ConnectionConfigs
+
+Current available filters are the `connection_type` and whether the connection is `disabled`.
+
+### Example 1: Connection type filter
+
+Including multiple `connection_type` query params and values will result in a query that looks for 
+*any* connections with that type.
+
+```json title="<code>GET api/v1//connection/?connection_type=mariadb&connection_type=postgres</code>"
+{
+    "items": [
+        {
+            "name": "Application Maria DB",
+            "key": "app_mariadb_db",
+            "description": null,
+            "connection_type": "mariadb",
+            "access": "write",
+            "created_at": "2022-06-16T22:21:02.353226+00:00",
+            "updated_at": "2022-06-16T22:21:02.353226+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        },
+        {
+            "name": "Application PostgreSQL DB",
+            "key": "app_postgres_db",
+            "description": "postgres backup",
+            "connection_type": "postgres",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:24.972539+00:00",
+            "updated_at": "2022-06-16T22:20:24.972539+00:00",
+            "disabled": false,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 2: Disabled filter
+
+The `disabled` filter can show which datastores are skipped as part of privacy request execution.
+
+```json title="<code>GET api/v1/connection/?disabled=true</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": null,
+            "last_test_succeeded": null
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 3: Testing Status Filter
+The `testing_status` filter queries on the status of the last successful test:
+
+```json title="<code>GET api/v1/connection/?test_status=false</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
+### Example 4: System Status Filter
+The `system_status` filter surfaces either `database` or `saas`-type connectors:
+
+```json title="<code>GET api/v1/connection/?system_type=database</code>"
+{
+    "items": [
+        {
+            "name": "My Mongo DB",
+            "key": "app_mongo_db",
+            "description": "Primary Mongo DB",
+            "connection_type": "mongodb",
+            "access": "write",
+            "created_at": "2022-06-16T22:20:34.122212+00:00",
+            "updated_at": "2022-06-16T22:20:34.122212+00:00",
+            "disabled": true,
+            "last_test_timestamp": 2022-06-16T22:20:34.122212+00:00,
+            "last_test_succeeded": false
+        }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 50
+}
+
+```
+
 
 ## Searching ConnectionConfigs
 
