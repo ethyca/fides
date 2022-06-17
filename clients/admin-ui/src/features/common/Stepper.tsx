@@ -1,6 +1,5 @@
 import { Box, Stack, Text } from "@fidesui/react";
 import React from "react";
-
 import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,

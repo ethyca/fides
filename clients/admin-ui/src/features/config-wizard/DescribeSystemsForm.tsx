@@ -2,29 +2,26 @@ import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import HorizontalStepper from "../common/HorizontalStepper";
 import {
   useCreateSystemMutation,
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
 } from "../system/system.slice";
 import { System } from "../system/types";
-import { HORIZONTALSTEPS } from "./constants";
 
 type FormValues = Partial<System>;
 
 const DescribeSystemsForm: NextPage<{
   handleChangeStep: Function;
+  handleChangeReviewStep: Function;
   handleCancelSetup: Function;
-}> = ({ handleCancelSetup, handleChangeStep }) => {
+}> = ({ handleCancelSetup, handleChangeStep, handleChangeReviewStep }) => {
   const [updateSystem] = useUpdateSystemMutation();
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +77,7 @@ const DescribeSystemsForm: NextPage<{
       } else {
         toast.closeAll();
         handleChangeStep(5);
+        handleChangeReviewStep(1);
       }
     } else {
       // @ts-ignore
@@ -93,6 +91,7 @@ const DescribeSystemsForm: NextPage<{
       } else {
         toast.closeAll();
         handleChangeStep(5);
+        handleChangeReviewStep(1);
       }
     }
 
@@ -103,7 +102,6 @@ const DescribeSystemsForm: NextPage<{
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       <Form>
         <Stack ml="100px" spacing={10}>
-          <HorizontalStepper activeStep={1} steps={HORIZONTALSTEPS} />
           <Heading as="h3" size="lg">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
             Describe your system

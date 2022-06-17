@@ -1,18 +1,19 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
 import { CloseSolidIcon } from "~/features/common/Icon";
-
+import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
-import { STEPS } from "./constants";
+import { HORIZONTALSTEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
+import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  const [reviewStep, setReviewStep] = useState<number>(1);
 
   const handleCancelSetup = () => {
     router.push("/");
@@ -21,6 +22,12 @@ const ConfigWizardWalkthrough = () => {
   const handleChangeStep = (formStep: number) => {
     if (formStep && step !== STEPS.length) {
       setStep(formStep + 1);
+    }
+  };
+
+  const handleChangeReviewStep = (rStep: number) => {
+    if (rStep && reviewStep !== HORIZONTALSTEPS.length) {
+      setReviewStep(rStep + 1);
     }
   };
 
@@ -55,10 +62,26 @@ const ConfigWizardWalkthrough = () => {
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
             {step === 5 ? (
-              <DescribeSystemsForm
-                handleChangeStep={handleChangeStep}
-                handleCancelSetup={handleCancelSetup}
-              />
+              <Stack direction={"column"}>
+                <HorizontalStepper
+                  activeStep={reviewStep}
+                  steps={HORIZONTALSTEPS}
+                />
+                {reviewStep === 1 && (
+                  <DescribeSystemsForm
+                    handleChangeStep={handleChangeStep}
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                  />
+                )}
+                {reviewStep === 2 && (
+                  <PrivacyDeclarationForm
+                    handleChangeStep={handleChangeStep}
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                  />
+                )}
+              </Stack>
             ) : null}
           </Stack>
         </Stack>
