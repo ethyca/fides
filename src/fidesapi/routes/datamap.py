@@ -1,7 +1,7 @@
 """
 Contains an endpoint for extracting a data map from the server
 """
-from typing import Dict
+from typing import Dict, List
 
 from fastapi import APIRouter, Response, status
 from fideslang.parse import parse_dict
@@ -72,7 +72,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 )
 async def export_datamap(
     organization_fides_key: str, response: Response
-) -> Dict[str, str]:
+) -> List[Dict[str, str]]:
     """
     An endpoint to return the data map for a given Organization.
 
@@ -118,7 +118,7 @@ async def export_datamap(
     return formatted_datamap
 
 
-def format_datamap_values(joined_system_dataset_df: DataFrame) -> Dict[str, str]:
+def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str, str]]:
     """
     Formats the joined DataFrame to return the data as records.
     """
