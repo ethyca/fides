@@ -5,7 +5,7 @@ import {
   Input,
   SimpleGrid,
 } from "@fidesui/react";
-import { Select } from "chakra-react-select";
+import { CreatableSelect, Select } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
 interface InputProps {
@@ -41,6 +41,7 @@ interface SelectProps {
   options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
+  components?: {};
 }
 export const CustomSelect = ({
   label,
@@ -149,6 +150,72 @@ export const CustomMultiSelect = ({
             }),
           }}
           isSearchable={isSearchable ?? false}
+          isClearable={isClearable}
+          isMulti
+        />
+      </SimpleGrid>
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+    </FormControl>
+  );
+};
+
+export const CustomCreatableMultiSelect = ({
+  label,
+  options,
+  isSearchable,
+  isClearable,
+  components,
+  ...props
+}: SelectProps & FieldHookConfig<string[]>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
+  // note: for Multiselect we have to do setFieldValue instead of field.onChange
+  // because field.onChange only accepts strings or events right now, not string[]
+  // https://github.com/jaredpalmer/formik/issues/1667
+  const { setFieldValue } = useFormikContext();
+
+  return (
+    <FormControl>
+      <SimpleGrid columns={[1, 2]}>
+        <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+        <CreatableSelect
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            setFieldValue(
+              field.name,
+              newValue.map((v) => v.value)
+            );
+          }}
+          name={props.name}
+          chakraStyles={{
+            container: (provided, state) => ({
+              ...provided,
+              width: "65%",
+              maxWidth: "65%",
+            }),
+            dropdownIndicator: (provided, state) => ({
+              ...provided,
+              background: "white",
+            }),
+            multiValue: (provided, state) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+            }),
+            multiValueRemove: (provided, state) => ({
+              ...provided,
+              display: "none",
+              visibility: "hidden",
+            }),
+          }}
+          // @ts-ignore
+          components={props.components}
           isClearable={isClearable}
           isMulti
         />
