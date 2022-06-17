@@ -1,18 +1,22 @@
 import {
   Box,
   Button,
+  FormLabel,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
   MenuOptionGroup,
+  SimpleGrid,
+  Stack,
   Text,
 } from "@fidesui/react";
 import { useEffect, useMemo, useState } from "react";
 
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
+import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import { transformDataCategoriesToNodes } from "../taxonomy/helpers";
 import { DataCategory } from "../taxonomy/types";
 
@@ -111,4 +115,40 @@ const DataCategoryDropdown = ({
   );
 };
 
-export default DataCategoryDropdown;
+const DataCategoryInput = ({ dataCategories, checked, onChecked }: Props) => {
+  const handleRemoveDataCategory = (dataCategoryName: string) => {
+    onChecked(checked.filter((dc) => dc !== dataCategoryName));
+  };
+
+  const sortedCheckedDataCategories = checked
+    .slice()
+    .sort((a, b) => a.localeCompare(b));
+
+  return (
+    <SimpleGrid columns={[1, 2]}>
+      <FormLabel>Data Categories</FormLabel>
+      <Stack>
+        <Box>
+          <DataCategoryDropdown
+            dataCategories={dataCategories}
+            checked={checked}
+            onChecked={onChecked}
+          />
+        </Box>
+        <Stack>
+          {sortedCheckedDataCategories.map((dc) => (
+            <DataCategoryTag
+              key={dc}
+              name={dc}
+              onClose={() => {
+                handleRemoveDataCategory(dc);
+              }}
+            />
+          ))}
+        </Stack>
+      </Stack>
+    </SimpleGrid>
+  );
+};
+
+export default DataCategoryInput;

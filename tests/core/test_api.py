@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
 from json import loads
-from typing import Dict, Generator
+from typing import Dict
 
 import pytest
 import requests
@@ -13,13 +13,6 @@ from fidesapi import main
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import API_PREFIX
-
-
-@pytest.fixture()
-def test_client() -> Generator:
-    """Starlette test client fixture. Easier to use mocks with when testing out API calls"""
-    with TestClient(main.app) as test_client:
-        yield test_client
 
 
 # Helper Functions

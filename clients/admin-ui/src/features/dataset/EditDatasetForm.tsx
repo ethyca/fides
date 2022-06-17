@@ -5,22 +5,21 @@ import { useSelector } from "react-redux";
 
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "../common/form/inputs";
 import { DATA_QUALIFIERS } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
-import { DatasetCollection, DatasetField } from "./types";
+import { Dataset } from "./types";
 
-const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
-  value: dq.key,
-  label: dq.label,
+const DATA_QUALIFIERS_OPTIONS = DATA_QUALIFIERS.map((qualifier) => ({
+  label: qualifier.label,
+  value: qualifier.key,
 }));
 
-type FormValues =
-  | Pick<DatasetField, "description" | "data_qualifier" | "data_categories">
-  | Pick<
-      DatasetCollection,
-      "description" | "data_qualifier" | "data_categories"
-    >;
+type FormValues = Partial<Dataset>;
 
 interface Props {
   values: FormValues;
@@ -28,10 +27,13 @@ interface Props {
   onSubmit: (values: FormValues) => void;
 }
 
-const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
+const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
   const initialValues: FormValues = {
+    name: values.name ?? "",
     description: values.description ?? "",
+    retention: values.retention ?? "",
     data_qualifier: values.data_qualifier,
+    third_country_transfers: values.third_country_transfers,
     data_categories: values.data_categories,
   };
   const allDataCategories = useSelector(selectDataCategories);
@@ -56,27 +58,27 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
           display="flex"
           flexDirection="column"
           justifyContent="space-between"
-          height="80vh"
+          height="75vh"
         >
-          <Stack>
-            <Box>
-              <CustomTextInput name="description" label="Description" />
-            </Box>
-            <Box>
-              <CustomSelect
-                name="data_qualifier"
-                label="Identifiability"
-                options={IDENTIFIER_OPTIONS}
-                isSearchable={false}
-              />
-            </Box>
-            <Box>
-              <DataCategoryInput
-                dataCategories={allDataCategories}
-                checked={checkedDataCategories}
-                onChecked={setCheckedDataCategories}
-              />
-            </Box>
+          <Stack spacing="3">
+            <CustomTextInput name="name" label="Name" />
+            <CustomTextInput name="description" label="Description" />
+            <CustomTextInput name="retention" label="Retention period" />
+            <CustomSelect
+              name="data_qualifier"
+              label="Identifiability"
+              options={DATA_QUALIFIERS_OPTIONS}
+            />
+            <CustomMultiSelect
+              name="third_country_transfers"
+              label="Geographic location"
+              options={[]} // TODO
+            />
+            <DataCategoryInput
+              dataCategories={allDataCategories}
+              checked={checkedDataCategories}
+              onChecked={setCheckedDataCategories}
+            />
           </Stack>
           <Box>
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
@@ -92,4 +94,4 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
   );
 };
 
-export default EditCollectionOrFieldForm;
+export default EditDatasetForm;
