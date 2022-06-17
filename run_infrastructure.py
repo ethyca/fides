@@ -61,9 +61,9 @@ def run_infrastructure(
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(f'echo "infrastructure path: {path}"')
-    if "mssql" in datastores:
+    if "mssql" not in datastores:
         _run_cmd_or_err(
-            f'docker-compose {path} build --build-arg MSSQL_REQUIRED="true"'
+            f'docker-compose {path} build --build-arg SKIP_MSSQL_INSTALLATION="true"'
         )
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
