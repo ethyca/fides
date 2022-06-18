@@ -178,7 +178,6 @@ const DescribeSystemsForm: NextPage<{
                   value: s,
                   label: s,
                 }))}
-                isMulti
               />
               <Tooltip
                 fontSize="md"

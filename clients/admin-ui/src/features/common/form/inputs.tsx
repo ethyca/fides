@@ -41,7 +41,6 @@ interface SelectProps {
   options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
-  isMulti?: boolean;
 }
 export const CustomSelect = ({
   label,
@@ -211,12 +210,11 @@ export const CustomCreatableMultiSelect = ({
   options,
   isSearchable,
   isClearable,
-  isMulti,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
+  const selected = field.value.map((v) => ({ label: v, value: v }));
   const { setFieldValue } = useFormikContext();
 
   return (
@@ -253,10 +251,10 @@ export const CustomCreatableMultiSelect = ({
               visibility: "hidden",
             }),
           }}
-          components={{
-            Menu: () => null,
-            DropdownIndicator: () => null,
-          }}
+          // components={{
+          //   Menu: () => null,
+          //   DropdownIndicator: () => null,
+          // }}
           isClearable={isClearable}
           isMulti
           value={selected}
