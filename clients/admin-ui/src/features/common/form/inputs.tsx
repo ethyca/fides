@@ -218,15 +218,12 @@ export const CustomCreatableMultiSelect = ({
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-  const filterableOptions = options.map((o: any) => {
-    return { label: o, value: o };
-  });
+  const filterableOptions = options.map((o: any) => ({ label: o, value: o }));
   const selected = filterableOptions.filter(
     (o: any) => field.value.indexOf(o.value) >= 0
   );
   const { setFieldValue } = useFormikContext();
 
-  console.log(options);
   return (
     <FormControl>
       <SimpleGrid columns={[1, 2]}>
@@ -241,9 +238,7 @@ export const CustomCreatableMultiSelect = ({
           onChange={(newValue) => {
             setFieldValue(
               field.name,
-              newValue?.map((v: any) => {
-                return { label: v, value: v };
-              })
+              newValue?.map((v: any) => ({ label: v, value: v }))
             );
           }}
           name={props.name}
