@@ -174,7 +174,10 @@ const DescribeSystemsForm: NextPage<{
               <CustomCreatableMultiSelect
                 name="system_dependencies"
                 label="System Tags"
-                options={initialValues.system_dependencies}
+                options={initialValues.system_dependencies.map((s) => ({
+                  value: s,
+                  label: s,
+                }))}
                 isMulti
               />
               <Tooltip

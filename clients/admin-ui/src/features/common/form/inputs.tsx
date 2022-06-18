@@ -33,12 +33,12 @@ export const CustomTextInput = ({
 };
 
 export interface Option {
-  value?: string;
-  label?: string;
+  value: string;
+  label: string;
 }
 interface SelectProps {
   label: string;
-  options: Option[] | any;
+  options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
   isMulti?: boolean;
@@ -109,9 +109,7 @@ export const CustomMultiSelect = ({
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = options.filter(
-    (o: any) => field.value.indexOf(o.value) >= 0
-  );
+  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
   // because field.onChange only accepts strings or events right now, not string[]
   // https://github.com/jaredpalmer/formik/issues/1667
@@ -218,10 +216,7 @@ export const CustomCreatableMultiSelect = ({
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-  const filterableOptions = options.map((o: any) => ({ label: o, value: o }));
-  const selected = filterableOptions.filter(
-    (o: any) => field.value.indexOf(o.value) >= 0
-  );
+  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
   const { setFieldValue } = useFormikContext();
 
   return (
@@ -238,7 +233,7 @@ export const CustomCreatableMultiSelect = ({
           onChange={(newValue) => {
             setFieldValue(
               field.name,
-              newValue?.map((v: any) => ({ label: v, value: v }))
+              newValue.map((v) => v.value)
             );
           }}
           name={props.name}
@@ -263,7 +258,7 @@ export const CustomCreatableMultiSelect = ({
             DropdownIndicator: () => null,
           }}
           isClearable={isClearable}
-          isMulti={isMulti}
+          isMulti
           value={selected}
         />
       </SimpleGrid>
