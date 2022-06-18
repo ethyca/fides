@@ -2,9 +2,7 @@ import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
@@ -157,7 +155,9 @@ const DescribeSystemsForm: NextPage<{
                 id="system_type"
                 label="System Type"
                 name="system_type"
-                options={[initialValues.system_type]}
+                options={[
+                  { label: "system_type", value: initialValues.system_type },
+                ]}
               />
               <Tooltip
                 fontSize="md"
@@ -172,7 +172,7 @@ const DescribeSystemsForm: NextPage<{
               <CustomCreatableMultiSelect
                 name="system_dependencies"
                 label="System Tags"
-                options={[[...initialValues.system_dependencies]]}
+                options={initialValues.system_dependencies}
                 isMulti
               />
               <Tooltip
