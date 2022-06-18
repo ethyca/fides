@@ -222,8 +222,7 @@ export const CustomCreatableMultiSelect = ({
   isClearable,
   isMulti,
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
-  return (
+}: SelectProps & FieldHookConfig<string[]>) => (
     <FormControl>
       <SimpleGrid columns={[1, 2]}>
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
@@ -256,4 +255,3 @@ export const CustomCreatableMultiSelect = ({
       {/* {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null} */}
     </FormControl>
   );
-};
