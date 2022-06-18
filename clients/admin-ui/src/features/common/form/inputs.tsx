@@ -251,10 +251,6 @@ export const CustomCreatableMultiSelect = ({
               visibility: "hidden",
             }),
           }}
-          // components={{
-          //   Menu: () => null,
-          //   DropdownIndicator: () => null,
-          // }}
           isClearable={isClearable}
           isMulti
           value={selected}
