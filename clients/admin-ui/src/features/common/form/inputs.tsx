@@ -221,8 +221,19 @@ export const CustomCreatableMultiSelect = ({
   isSearchable,
   isClearable,
   isMulti,
+  options,
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => (
+}: SelectProps & FieldHookConfig<string[]>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const selected = field.value.map((v) => ({ label: v, value: v }));
+
+  // note: for Multiselect we have to do setFieldValue instead of field.onChange
+  // because field.onChange only accepts strings or events right now, not string[]
+  // https://github.com/jaredpalmer/formik/issues/1667
+  const { setFieldValue } = useFormikContext();
+
+  return (
     <FormControl>
       <SimpleGrid columns={[1, 2]}>
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
@@ -250,8 +261,25 @@ export const CustomCreatableMultiSelect = ({
           }}
           isClearable={isClearable}
           isMulti={isMulti}
+          options={options}
+          value={selected}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            if (newValue) {
+              setFieldValue(
+                field.name,
+                // @ts-ignore
+                [...newValue].map((v) => v.value)
+              );
+            }
+          }}
         />
       </SimpleGrid>
-      {/* {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null} */}
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
+};

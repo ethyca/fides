@@ -63,7 +63,6 @@ const DescribeSystemsForm: NextPage<{
       system_type: values.system_type ?? existingSystem?.system_type,
       system_dependencies:
         values.system_dependencies ?? existingSystem?.system_dependencies,
-      // TODO: tags = system_dependencies?
     };
 
     setIsLoading(true);
@@ -182,6 +181,11 @@ const DescribeSystemsForm: NextPage<{
                 name="system_dependencies"
                 label="System Tags"
                 isMulti
+                options={
+                  initialValues.system_dependencies
+                    ? initialValues.system_dependencies.map((d) => ({ label: d, value: d }))
+                    : []
+                }
               />
               <Tooltip
                 fontSize="md"

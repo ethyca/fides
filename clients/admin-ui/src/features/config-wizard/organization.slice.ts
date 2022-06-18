@@ -44,7 +44,6 @@ export const organizationApi = createApi({
         { dispatch, queryFulfilled }
       ) {
         const patchResult = dispatch(
-          // @ts-ignore
           organizationApi.util.updateQueryData(
             "getOrganizationByFidesKey",
             fides_key,
