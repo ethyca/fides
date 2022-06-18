@@ -104,120 +104,134 @@ const DescribeSystemsForm: NextPage<{
       enableReinitialize
       onSubmit={handleSubmit}
     >
-      <Form>
-        <Stack ml="100px" spacing={10}>
-          <HorizontalStepper activeStep={1} steps={HORIZONTAL_STEPS} />
-          <Heading as="h3" size="lg">
-            {/* TODO FUTURE: Path when describing system from infra scanning */}
-            Describe your system
-          </Heading>
-          <div>
-            By providing a small amount of additional context for each system we
-            can make reporting and understanding our tech stack much easier for
-            everyone from engineering to legal teams. So let’s do this now.
-          </div>
-          <Stack>
-            <Stack direction="row">
-              <CustomTextInput name="name" label="System name" />
-              <Tooltip
-                fontSize="md"
-                label="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
+      {({ values }) => (
+        <Form>
+          <Stack ml="100px" spacing={10}>
+            <HorizontalStepper activeStep={1} steps={HORIZONTAL_STEPS} />
+            <Heading as="h3" size="lg">
+              {/* TODO FUTURE: Path when describing system from infra scanning */}
+              Describe your system
+            </Heading>
+            <div>
+              By providing a small amount of additional context for each system
+              we can make reporting and understanding our tech stack much easier
+              for everyone from engineering to legal teams. So let’s do this
+              now.
+            </div>
+            <Stack>
+              <Stack direction="row">
+                <CustomTextInput name="name" label="System name" />
+                <Tooltip
+                  fontSize="md"
+                  label="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
 
-            <Stack direction="row" mb={5}>
-              <CustomTextInput name="key" label="System key" />
-              <Tooltip
-                fontSize="md"
-                label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
+              <Stack direction="row" mb={5}>
+                <CustomTextInput name="key" label="System key" />
+                <Tooltip
+                  fontSize="md"
+                  label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
 
-            <Stack direction="row" mb={5}>
-              <CustomTextInput name="description" label="System description" />
-              <Tooltip
-                fontSize="md"
-                label="If you wish you can provide a description which better explains the purpose of this system."
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
+              <Stack direction="row" mb={5}>
+                <CustomTextInput
+                  name="description"
+                  label="System description"
+                />
+                <Tooltip
+                  fontSize="md"
+                  label="If you wish you can provide a description which better explains the purpose of this system."
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
 
-            <Stack direction="row" mb={5}>
-              <CustomCreatableSingleSelect
-                isClearable
-                id="system_type"
-                label="System Type"
-                name="system_type"
-                options={
-                  initialValues.system_type
-                    ? [
-                        {
-                          label: initialValues.system_type,
-                          value: initialValues.system_type,
-                        },
-                      ]
-                    : []
+              <Stack direction="row" mb={5}>
+                <CustomCreatableSingleSelect
+                  isClearable
+                  id="system_type"
+                  label="System Type"
+                  name="system_type"
+                  options={
+                    initialValues.system_type
+                      ? [
+                          {
+                            label: initialValues.system_type,
+                            value: initialValues.system_type,
+                          },
+                        ]
+                      : []
+                  }
+                />
+                <Tooltip
+                  fontSize="md"
+                  label="Select a system type from the pre-approved list of system types."
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
+
+              <Stack direction="row" mb={5}>
+                <CustomCreatableMultiSelect
+                  name="system_dependencies"
+                  label="System Tags"
+                  isMulti
+                  options={
+                    initialValues.system_dependencies
+                      ? initialValues.system_dependencies.map((d) => ({
+                          label: d,
+                          value: d,
+                        }))
+                      : []
+                  }
+                />
+                <Tooltip
+                  fontSize="md"
+                  label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
+            </Stack>
+            <Box>
+              <Button
+                onClick={() => handleCancelSetup()}
+                mr={2}
+                size="sm"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                colorScheme="primary"
+                size="sm"
+                disabled={
+                  !values.name ||
+                  !values.description ||
+                  !values.system_type ||
+                  (values.system_dependencies &&
+                    values.system_dependencies.length <= 0)
                 }
-              />
-              <Tooltip
-                fontSize="md"
-                label="Select a system type from the pre-approved list of system types."
-                placement="right"
+                isLoading={isLoading}
               >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
-
-            <Stack direction="row" mb={5}>
-              <CustomCreatableMultiSelect
-                name="system_dependencies"
-                label="System Tags"
-                isMulti
-                options={
-                  initialValues.system_dependencies
-                    ? initialValues.system_dependencies.map((d) => ({ label: d, value: d }))
-                    : []
-                }
-              />
-              <Tooltip
-                fontSize="md"
-                label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
+                Confirm and Continue
+              </Button>
+            </Box>
           </Stack>
-          <Box>
-            <Button
-              onClick={() => handleCancelSetup()}
-              mr={2}
-              size="sm"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              colorScheme="primary"
-              size="sm"
-              // disabled={}
-              // TODO: Disable button if fields are empty
-              isLoading={isLoading}
-            >
-              Confirm and Continue
-            </Button>
-          </Box>
-        </Stack>
-      </Form>
+        </Form>
+      )}
     </Formik>
   );
 };

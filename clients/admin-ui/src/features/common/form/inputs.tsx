@@ -227,10 +227,6 @@ export const CustomCreatableMultiSelect = ({
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   const selected = field.value.map((v) => ({ label: v, value: v }));
-
-  // note: for Multiselect we have to do setFieldValue instead of field.onChange
-  // because field.onChange only accepts strings or events right now, not string[]
-  // https://github.com/jaredpalmer/formik/issues/1667
   const { setFieldValue } = useFormikContext();
 
   return (
