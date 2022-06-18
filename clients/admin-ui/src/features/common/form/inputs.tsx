@@ -38,7 +38,7 @@ export interface Option {
 }
 interface SelectProps {
   label: string;
-  options: Option[] | any;
+  options?: Option[] | any;
   isSearchable?: boolean;
   isClearable?: boolean;
   isMulti?: boolean;
@@ -163,11 +163,11 @@ export const CustomMultiSelect = ({
 
 export const CustomCreatableSingleSelect = ({
   label,
-  options,
   isSearchable,
   isClearable,
+  options,
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
+}: SelectProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   const selected = { label: field.value, value: field.value };
@@ -177,12 +177,21 @@ export const CustomCreatableSingleSelect = ({
       <SimpleGrid columns={[1, 2]}>
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
           onChange={(newValue) => {
             if (newValue) {
-              field.onChange(props.name)(newValue.value[0]);
+              field.onChange(props.name)(newValue.value);
+            } else {
+              field.onChange(props.name)("");
             }
           }}
           name={props.name}
+          value={selected}
           chakraStyles={{
             dropdownIndicator: (provided) => ({
               ...provided,
@@ -199,8 +208,7 @@ export const CustomCreatableSingleSelect = ({
               visibility: "hidden",
             }),
           }}
-          isClearable={isClearable}
-          value={selected}
+          isClearable
         />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
@@ -210,37 +218,16 @@ export const CustomCreatableSingleSelect = ({
 
 export const CustomCreatableMultiSelect = ({
   label,
-  options,
   isSearchable,
   isClearable,
   isMulti,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
-  const [field, meta] = useField(props);
-  const isInvalid = !!(meta.touched && meta.error);
-  const filterableOptions = options.map((o: any) => ({ label: o, value: o }));
-  const selected = filterableOptions.filter(
-    (o: any) => field.value.indexOf(o.value) >= 0
-  );
-  const { setFieldValue } = useFormikContext();
-
   return (
     <FormControl>
       <SimpleGrid columns={[1, 2]}>
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
-          options={options}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            setFieldValue(
-              field.name,
-              newValue?.map((v: any) => ({ label: v, value: v }))
-            );
-          }}
           name={props.name}
           chakraStyles={{
             dropdownIndicator: (provided) => ({
@@ -264,10 +251,9 @@ export const CustomCreatableMultiSelect = ({
           }}
           isClearable={isClearable}
           isMulti={isMulti}
-          value={selected}
         />
       </SimpleGrid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      {/* {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null} */}
     </FormControl>
   );
 };
