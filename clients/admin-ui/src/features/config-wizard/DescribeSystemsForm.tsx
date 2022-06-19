@@ -1,4 +1,6 @@
 import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
@@ -10,6 +12,7 @@ import {
   CustomCreatableSingleSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import HorizontalStepper from "../common/HorizontalStepper";
 import {
   useCreateSystemMutation,
@@ -65,35 +68,38 @@ const DescribeSystemsForm: NextPage<{
         values.system_dependencies ?? existingSystem?.system_dependencies,
     };
 
+    const handleResult = (
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      if ("error" in result) {
+        let errorMsg =
+          "An unexpected error occurred while creating system. Please try again.";
+        if (isErrorWithDetail(result.error)) {
+          errorMsg = result.error.data.detail;
+        } else if (isErrorWithDetailArray(result.error)) {
+          const { error } = result;
+          errorMsg = error.data.detail[0].msg;
+        }
+        toast({
+          status: "error",
+          description: errorMsg,
+        });
+      } else {
+        toast.closeAll();
+        handleChangeStep(5);
+      }
+    };
+
     setIsLoading(true);
 
     if (!existingSystem) {
-      // @ts-ignore
-      const { error: createSystemError } = await createSystem(systemBody);
-
-      if (createSystemError) {
-        toast({
-          status: "error",
-          description: "Creating system failed.",
-        });
-      } else {
-        toast.closeAll();
-        handleChangeStep(5);
-      }
-    } else {
-      // @ts-ignore
-      const { error: updateSystemError } = await updateSystem(systemBody);
-
-      if (updateSystemError) {
-        toast({
-          status: "error",
-          description: "Updating system failed.",
-        });
-      } else {
-        toast.closeAll();
-        handleChangeStep(5);
-      }
-    }
+      const createSystemResult = await createSystem(systemBody);
+      handleResult(createSystemResult);
+      return;
+    } 
+      const updateSystemResult = await updateSystem(systemBody);
+      handleResult(updateSystemResult);
+    
 
     setIsLoading(false);
   };

@@ -16,6 +16,7 @@ import React, { useState } from "react";
 
 import { QuestionIcon } from "~/features/common/Icon";
 
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
@@ -48,35 +49,49 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       setIsLoading(true);
 
       if (!existingOrg) {
-        // @ts-ignore
-        const { error: createOrganizationError } = await createOrganization(
+        const createOrganizationResult = await createOrganization(
           organizationBody
         );
 
-        if (createOrganizationError) {
+        if ("error" in createOrganizationResult) {
+          let errorMsg = "An unexpected error occurred. Please try again.";
+          if (isErrorWithDetail(createOrganizationResult.error)) {
+            errorMsg = createOrganizationResult.error.data.detail;
+          } else if (isErrorWithDetailArray(createOrganizationResult.error)) {
+            const { error } = createOrganizationResult;
+            errorMsg = error.data.detail[0].msg;
+          }
           toast({
             status: "error",
-            description: "Creating organization failed.",
+            description: errorMsg,
           });
-        } else {
+          return;
+        } 
           toast.closeAll();
           handleChangeStep(1);
-        }
+        
       } else {
-        // @ts-ignore
-        const { error: updateOrganizationError } = await updateOrganization(
+        const updateOrganizationResult = await updateOrganization(
           organizationBody
         );
 
-        if (updateOrganizationError) {
+        if ("error" in updateOrganizationResult) {
+          let errorMsg = "An unexpected error occurred. Please try again.";
+          if (isErrorWithDetail(updateOrganizationResult.error)) {
+            errorMsg = updateOrganizationResult.error.data.detail;
+          } else if (isErrorWithDetailArray(updateOrganizationResult.error)) {
+            const { error } = updateOrganizationResult;
+            errorMsg = error.data.detail[0].msg;
+          }
           toast({
             status: "error",
-            description: "Updating organization failed.",
+            description: errorMsg,
           });
-        } else {
+          return;
+        } 
           toast.closeAll();
           handleChangeStep(1);
-        }
+        
       }
 
       setIsLoading(false);
