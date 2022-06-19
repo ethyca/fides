@@ -3,11 +3,7 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
 import { QuestionIcon } from "~/features/common/Icon";
-import {
-  CustomCreatableMultiSelect,
-  CustomCreatableSingleSelect,
-  CustomTextInput,
-} from "../common/form/inputs";
+import { CustomTextInput } from "../common/form/inputs";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -84,12 +80,11 @@ const PrivacyDeclarationForm: NextPage<{
             </Stack>
 
             <Stack direction="row" mb={5}>
-              <CustomCreatableMultiSelect
+              {/* <CustomCreatableMultiSelect
                 name="data_categories"
                 label="Data categories"
                 options={[]}
-                isMulti
-              />
+              /> */}
               <Tooltip fontSize="md" label="..." placement="right">
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
@@ -97,40 +92,37 @@ const PrivacyDeclarationForm: NextPage<{
           </Stack>
 
           <Stack direction="row" mb={5}>
-            <CustomCreatableSingleSelect
+            {/* <CustomCreatableSingleSelect
               isClearable
               id="data_use"
               label="Data use"
               name="data_use"
               options={[]}
-              isMulti={false}
-            />
+            /> */}
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
 
           <Stack direction="row" mb={5}>
-            <CustomCreatableMultiSelect
+            {/* <CustomCreatableMultiSelect
               name="data_subjects"
               label="Data subjects"
               options={[]}
-              isMulti
-            />
+            /> */}
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
 
           <Stack direction="row" mb={5}>
-            <CustomCreatableSingleSelect
+            {/* <CustomCreatableSingleSelect
               isClearable
               id="data_qualifier"
               label="Data qualifier"
               name="data_qualifier"
               options={[]}
-              isMulti={false}
-            />
+            /> */}
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>

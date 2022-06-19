@@ -83,8 +83,8 @@ const DescribeSystemsForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleChangeStep(5);
         handleChangeReviewStep(1);
+        handleChangeStep(5);
       }
     };
 
@@ -94,9 +94,10 @@ const DescribeSystemsForm: NextPage<{
       const createSystemResult = await createSystem(systemBody);
       handleResult(createSystemResult);
       return;
+    } else {
+      const updateSystemResult = await updateSystem(systemBody);
+      handleResult(updateSystemResult);
     }
-    const updateSystemResult = await updateSystem(systemBody);
-    handleResult(updateSystemResult);
 
     setIsLoading(false);
   };
