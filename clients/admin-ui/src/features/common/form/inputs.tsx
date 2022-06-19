@@ -33,15 +33,14 @@ export const CustomTextInput = ({
 };
 
 export interface Option {
-  value?: string;
-  label?: string;
+  value: string;
+  label: string;
 }
 interface SelectProps {
   label: string;
-  options?: Option[] | any;
+  options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
-  isMulti?: boolean;
 }
 export const CustomSelect = ({
   label,
@@ -220,7 +219,6 @@ export const CustomCreatableMultiSelect = ({
   label,
   isSearchable,
   isClearable,
-  isMulti,
   options,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
@@ -256,7 +254,7 @@ export const CustomCreatableMultiSelect = ({
             DropdownIndicator: () => null,
           }}
           isClearable={isClearable}
-          isMulti={isMulti}
+          isMulti
           options={options}
           value={selected}
           onBlur={(option) => {
@@ -265,13 +263,10 @@ export const CustomCreatableMultiSelect = ({
             }
           }}
           onChange={(newValue) => {
-            if (newValue) {
-              setFieldValue(
-                field.name,
-                // @ts-ignore
-                [...newValue].map((v) => v.value)
-              );
-            }
+            setFieldValue(
+              field.name,
+              newValue.map((v) => v.value)
+            );
           }}
         />
       </SimpleGrid>
