@@ -5,7 +5,7 @@ import { CloseSolidIcon } from "~/features/common/Icon";
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
-import { HORIZONTALSTEPS, STEPS } from "./constants";
+import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
@@ -26,7 +26,7 @@ const ConfigWizardWalkthrough = () => {
   };
 
   const handleChangeReviewStep = (rStep: number) => {
-    if (rStep && reviewStep !== HORIZONTALSTEPS.length) {
+    if (rStep && reviewStep !== HORIZONTAL_STEPS.length) {
       setReviewStep(rStep + 1);
     }
   };
@@ -39,7 +39,7 @@ const ConfigWizardWalkthrough = () => {
           fontWeight="500"
           m={2}
           ml={6}
-          onClick={() => handleCancelSetup()}
+          onClick={handleCancelSetup}
         >
           <CloseSolidIcon /> Cancel setup
         </Button>
@@ -65,7 +65,7 @@ const ConfigWizardWalkthrough = () => {
               <Stack direction={"column"}>
                 <HorizontalStepper
                   activeStep={reviewStep}
-                  steps={HORIZONTALSTEPS}
+                  steps={HORIZONTAL_STEPS}
                 />
                 {reviewStep === 1 && (
                   <DescribeSystemsForm
