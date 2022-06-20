@@ -62,5 +62,11 @@ def push(session: nox.Session, tag: str) -> None:
 
     tag_matrix = {"prod": IMAGE_LATEST, "dev": IMAGE_DEV}
 
+    # Push either "ethyca/fidesctl:dev" or "ethyca/fidesctl:latest"
     session.run("docker", "tag", get_current_image(), tag_matrix[tag], external=True)
     session.run("docker", "push", tag_matrix[tag], external=True)
+
+    # Only push the tagged version if its for prod
+    # Example: "ethyca/fidesctl:1.7.0"
+    if tag == "prod":
+        session.run("docker", "push", IMAGE, external=True)
