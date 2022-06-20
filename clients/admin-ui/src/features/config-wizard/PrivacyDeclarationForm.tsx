@@ -5,6 +5,21 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
+  selectDataQualifier,
+  setDataQualifier,
+  useGetDataQualifierQuery,
+} from "~/features/data-qualifier/data-qualifier.slice";
+import {
+  selectDataSubjects,
+  setDataSubjects,
+  useGetAllDataSubjectsQuery,
+} from "~/features/data-subjects/data-subjects.slice";
+import {
+  selectDataUse,
+  setDataUse,
+  useGetDataUseQuery,
+} from "~/features/data-use/data-use.slice";
+import {
   selectDataCategories,
   setDataCategories,
   useGetAllDataCategoriesQuery,
@@ -35,15 +50,20 @@ const PrivacyDeclarationForm: NextPage<{
     "default_organization"
   );
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
+  const { data: dataSubjects } = useGetAllDataSubjectsQuery();
+  const { data: dataQualifier } = useGetDataQualifierQuery();
+  const { data: dataUse } = useGetDataUseQuery();
 
   const dispatch = useDispatch();
   const toast = useToast();
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
-  }, [dispatch, dataCategories]);
+    dispatch(setDataSubjects(dataSubjects ?? []));
+    dispatch(setDataUse(dataUse ?? ""));
+    dispatch(setDataQualifier(dataQualifier ?? ""));
+  }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
 
-  // TODO FUTURE: is key stored? If so, where does it exist in the system API?
   const initialValues = {
     privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
@@ -74,8 +94,14 @@ const PrivacyDeclarationForm: NextPage<{
   };
 
   const allDataCategories = useSelector(selectDataCategories);
+  const allDataSubjects = useSelector(selectDataSubjects);
+  const singleDataUse = useSelector(selectDataUse);
+  const singleDataQualifier = useSelector(selectDataQualifier);
 
   console.log("allDataCategories", allDataCategories);
+  console.log("allDataSubjects", allDataSubjects);
+  console.log("singleDataUse", singleDataUse);
+  console.log("singleDataQualifier", singleDataQualifier);
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>

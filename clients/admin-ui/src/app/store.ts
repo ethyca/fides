@@ -12,7 +12,7 @@ import {
 import {
   dataSubjectsApi,
   reducer as dataSubjectsReducer,
-} from "~/features/data-subject/data-subject.slice";
+} from "~/features/data-subjects/data-subjects.slice";
 import {
   dataUseApi,
   reducer as dataUseReducer,
