@@ -107,8 +107,8 @@ const DataCategoryDropdown = ({
           <Box px={2}>
             <CheckboxTree
               nodes={dataCategoryNodes}
-              checked={internalChecked}
-              onChecked={setInternalChecked}
+              selected={internalChecked}
+              onSelected={setInternalChecked}
             />
           </Box>
         </Box>

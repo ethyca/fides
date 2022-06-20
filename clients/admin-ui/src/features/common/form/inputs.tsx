@@ -6,7 +6,7 @@ import {
   Grid,
   Input,
 } from "@fidesui/react";
-import { Select } from "chakra-react-select";
+import { CreatableSelect, Select } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
@@ -46,7 +46,7 @@ export const CustomTextInput = ({
   );
 };
 
-interface Option {
+export interface Option {
   value: string;
   label: string;
 }
@@ -178,6 +178,121 @@ export const CustomMultiSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+    </FormControl>
+  );
+};
+
+export const CustomCreatableSingleSelect = ({
+  label,
+  isSearchable,
+  isClearable,
+  options,
+  ...props
+}: SelectProps & FieldHookConfig<string>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const selected = { label: field.value, value: field.value };
+
+  return (
+    <FormControl>
+      <SimpleGrid columns={[1, 2]}>
+        <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+        <CreatableSelect
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            if (newValue) {
+              field.onChange(props.name)(newValue.value);
+            } else {
+              field.onChange(props.name)("");
+            }
+          }}
+          name={props.name}
+          value={selected}
+          chakraStyles={{
+            dropdownIndicator: (provided) => ({
+              ...provided,
+              background: "white",
+            }),
+            multiValue: (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+            }),
+            multiValueRemove: (provided) => ({
+              ...provided,
+              display: "none",
+              visibility: "hidden",
+            }),
+          }}
+          isClearable
+        />
+      </SimpleGrid>
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+    </FormControl>
+  );
+};
+
+export const CustomCreatableMultiSelect = ({
+  label,
+  isSearchable,
+  isClearable,
+  options,
+  ...props
+}: SelectProps & FieldHookConfig<string[]>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const selected = field.value.map((v) => ({ label: v, value: v }));
+  const { setFieldValue } = useFormikContext();
+
+  return (
+    <FormControl>
+      <SimpleGrid columns={[1, 2]}>
+        <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+        <CreatableSelect
+          name={props.name}
+          chakraStyles={{
+            dropdownIndicator: (provided) => ({
+              ...provided,
+              background: "white",
+            }),
+            multiValue: (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+            }),
+            multiValueRemove: (provided) => ({
+              ...provided,
+              display: "none",
+              visibility: "hidden",
+            }),
+          }}
+          components={{
+            Menu: () => null,
+            DropdownIndicator: () => null,
+          }}
+          isClearable={isClearable}
+          isMulti
+          options={options}
+          value={selected}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            setFieldValue(
+              field.name,
+              newValue.map((v) => v.value)
+            );
+          }}
+        />
+      </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
