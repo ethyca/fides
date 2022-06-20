@@ -2,6 +2,7 @@
 import nox
 from constants_nox import (
     IMAGE,
+    IMAGE_DEV,
     IMAGE_LATEST,
     IMAGE_LOCAL,
     IMAGE_LOCAL_UI,
@@ -49,8 +50,17 @@ def build(session: nox.Session, image: str) -> None:
 
 
 @nox.session()
-def push(session: nox.Session) -> None:
+@nox.parametrize(
+    "tag",
+    [
+        nox.param("prod", id="prod"),
+        nox.param("dev", id="dev"),
+    ],
+)
+def push(session: nox.Session, tag: str) -> None:
     """Push the fidesctl Docker image to Dockerhub."""
-    session.run("docker", "tag", get_current_image(), IMAGE_LATEST, external=True)
-    session.run("docker", "push", IMAGE, external=True)
-    session.run("docker", "push", IMAGE_LATEST, external=True)
+
+    tag_matrix = {"prod": IMAGE_LATEST, "dev": IMAGE_DEV}
+
+    session.run("docker", "tag", get_current_image(), tag_matrix[tag], external=True)
+    session.run("docker", "push", tag_matrix[tag], external=True)

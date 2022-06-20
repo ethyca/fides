@@ -32,7 +32,7 @@ jobs:
       - name: Build Fidesctl Prod
         run: nox -s "build(prod)"
 
-      - name: Push Fidesctl Prod
+      - name: Push Fidesctl Dev
         run: nox -s "push(dev)"
 
       - name: Push Fidesctl Prod
