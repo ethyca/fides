@@ -27,7 +27,7 @@ jobs:
         run: pip install -r dev-requirements.txt
 
       - name: Build Fidesctl
-        run: nox -s build
+        run: nox -s "build(prod)"
 
       - name: Push Fidesctl
         run: nox -s push
