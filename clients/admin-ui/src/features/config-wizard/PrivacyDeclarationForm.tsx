@@ -1,9 +1,19 @@
 import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { QuestionIcon } from "~/features/common/Icon";
-import { CustomTextInput } from "../common/form/inputs";
+import {
+  selectDataCategories,
+  setDataCategories,
+  useGetAllDataCategoriesQuery,
+} from "~/features/taxonomy/data-categories.slice";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "../common/form/inputs";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -24,8 +34,14 @@ const PrivacyDeclarationForm: NextPage<{
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(
     "default_organization"
   );
+  const { data: dataCategories } = useGetAllDataCategoriesQuery();
 
+  const dispatch = useDispatch();
   const toast = useToast();
+
+  useEffect(() => {
+    dispatch(setDataCategories(dataCategories ?? []));
+  }, [dispatch, dataCategories]);
 
   // TODO FUTURE: is key stored? If so, where does it exist in the system API?
   const initialValues = {
@@ -57,6 +73,10 @@ const PrivacyDeclarationForm: NextPage<{
     setIsLoading(false);
   };
 
+  const allDataCategories = useSelector(selectDataCategories);
+
+  console.log("allDataCategories", allDataCategories);
+
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       <Form>
@@ -80,11 +100,15 @@ const PrivacyDeclarationForm: NextPage<{
             </Stack>
 
             <Stack direction="row" mb={5}>
-              {/* <CustomCreatableMultiSelect
+              <CustomMultiSelect
                 name="data_categories"
                 label="Data categories"
-                options={[]}
-              /> */}
+                options={allDataCategories?.map((data) => ({
+                  value: data.fides_key,
+                  label: data.fides_key,
+                }))}
+                size="md"
+              />
               <Tooltip fontSize="md" label="..." placement="right">
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
@@ -92,37 +116,40 @@ const PrivacyDeclarationForm: NextPage<{
           </Stack>
 
           <Stack direction="row" mb={5}>
-            {/* <CustomCreatableSingleSelect
+            <CustomSelect
               isClearable
               id="data_use"
               label="Data use"
               name="data_use"
+              size="md"
               options={[]}
-            /> */}
+            />
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
 
           <Stack direction="row" mb={5}>
-            {/* <CustomCreatableMultiSelect
+            <CustomMultiSelect
               name="data_subjects"
               label="Data subjects"
+              size="md"
               options={[]}
-            /> */}
+            />
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
           </Stack>
 
           <Stack direction="row" mb={5}>
-            {/* <CustomCreatableSingleSelect
+            <CustomSelect
               isClearable
               id="data_qualifier"
               label="Data qualifier"
               name="data_qualifier"
+              size="md"
               options={[]}
-            /> */}
+            />
             <Tooltip fontSize="md" label="..." placement="right">
               <QuestionIcon boxSize={5} color="gray.400" />
             </Tooltip>
