@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
 import type { AppState } from "~/app/store";
-
 import { DataUse } from "./types";
 
 export interface State {
@@ -33,7 +31,7 @@ export const dataUseSlice = createSlice({
   name: "dataUse",
   initialState,
   reducers: {
-    setDataUse: (state, action: PayloadAction<DataUse>) => ({
+    setDataUse: (state, action: PayloadAction<any>) => ({
       ...state,
       dataUse: action.payload,
     }),

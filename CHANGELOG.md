@@ -42,6 +42,8 @@ The types of changes are:
   * Add a component for Identifiability tags
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
+* Initial configuration wizard UI view
+  * Manual entry steps added (name and describe organization, pick entry route, and describe system manually including privacy declarations)
 
 ### Changed
 

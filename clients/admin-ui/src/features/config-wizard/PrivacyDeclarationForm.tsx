@@ -3,7 +3,6 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -25,7 +24,6 @@ import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
-
 import {
   CustomMultiSelect,
   CustomSelect,
@@ -50,6 +48,8 @@ const PrivacyDeclarationForm: NextPage<{
   handleChangeReviewStep: Function;
   handleCancelSetup: Function;
 }> = ({ handleCancelSetup, handleChangeReviewStep }) => {
+  const dispatch = useDispatch();
+  const toast = useToast();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
@@ -61,9 +61,6 @@ const PrivacyDeclarationForm: NextPage<{
   const { data: dataSubjects } = useGetAllDataSubjectsQuery();
   const { data: dataQualifier } = useGetDataQualifierQuery();
   const { data: dataUse } = useGetDataUseQuery();
-
-  const dispatch = useDispatch();
-  const toast = useToast();
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
@@ -81,30 +78,27 @@ const PrivacyDeclarationForm: NextPage<{
   let privacyDeclarations: any;
 
   const handleSubmit = async (values: FormValues) => {
-    // TODO: Need to remove default from previous step before merging !!!!!
     const handlePrivacyDeclarations = () => {
+      const filteredDeclarations =
+        existingSystem && existingSystem.privacy_declarations
+          ? existingSystem?.privacy_declarations.filter(
+              (declaration) => declaration.name !== "string"
+            )
+          : [];
+      // If the declaration being created already exists with that name
       if (
-        existingSystem?.privacy_declarations &&
-        existingSystem?.privacy_declarations.filter(
+        filteredDeclarations &&
+        filteredDeclarations.filter(
           (declaration) => declaration.name === values.name
         ).length > 0
       ) {
-        privacyDeclarations = existingSystem?.privacy_declarations;
-      } else if (!existingSystem) {
-        privacyDeclarations = [
-          {
-            name: values.name,
-            data_categories: values.data_categories,
-            data_use: values.data_use,
-            data_qualifier: values.data_qualifier,
-            data_subjects: values.data_subjects,
-            dataset_references: ["string"],
-          },
-        ];
-      } else {
+        privacyDeclarations = filteredDeclarations;
+      }
+      // If the declaration does not exist with that name
+      else {
         privacyDeclarations = [
           // @ts-ignore
-          ...existingSystem.privacy_declarations,
+          ...filteredDeclarations,
           {
             name: values.name,
             data_categories: values.data_categories,

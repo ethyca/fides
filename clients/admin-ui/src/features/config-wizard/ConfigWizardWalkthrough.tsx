@@ -1,9 +1,7 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
 import { CloseSolidIcon } from "~/features/common/Icon";
-
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
@@ -11,6 +9,7 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
+import ReviewSystemForm from "./ReviewSystemForm";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
@@ -80,6 +79,12 @@ const ConfigWizardWalkthrough = () => {
                   <PrivacyDeclarationForm
                     handleCancelSetup={handleCancelSetup}
                     handleChangeReviewStep={handleChangeReviewStep}
+                  />
+                )}
+                {reviewStep === 3 && (
+                  <ReviewSystemForm
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeStep={handleChangeStep}
                   />
                 )}
               </Stack>
