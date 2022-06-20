@@ -4,17 +4,11 @@ import type { AppState } from "~/app/store";
 import { DataQualifier } from "./types";
 
 export interface State {
-  dataQualifier: DataQualifier;
+  dataQualifier: DataQualifier[];
 }
 
 const initialState: State = {
-  dataQualifier: {
-    fides_key: "",
-    organization_fides_key: "default_organization",
-    name: "",
-    description: "",
-    parent_key: null,
-  },
+  dataQualifier: [],
 };
 
 export const dataQualifierApi = createApi({

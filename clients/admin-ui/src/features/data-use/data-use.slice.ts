@@ -4,22 +4,11 @@ import type { AppState } from "~/app/store";
 import { DataUse } from "./types";
 
 export interface State {
-  dataUse: DataUse;
+  dataUse: DataUse[];
 }
 
 const initialState: State = {
-  dataUse: {
-    fides_key: "",
-    organization_fides_key: "default_organization",
-    name: "",
-    description: "",
-    parent_key: null,
-    legal_basis: "Consent",
-    special_category: "Consent",
-    recipients: [],
-    legitimate_interest: false,
-    legitimate_interest_impact_assessment: "",
-  },
+  dataUse: [],
 };
 
 export const dataUseApi = createApi({

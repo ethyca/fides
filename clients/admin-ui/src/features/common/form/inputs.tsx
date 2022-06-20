@@ -5,7 +5,7 @@ import {
   Input,
   SimpleGrid,
 } from "@fidesui/react";
-import { CreatableSelect, Select } from "chakra-react-select";
+import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
 interface InputProps {
@@ -41,6 +41,7 @@ interface SelectProps {
   options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
+  size?: Size;
 }
 export const CustomSelect = ({
   label,
