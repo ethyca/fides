@@ -4,9 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
@@ -96,10 +94,9 @@ const DescribeSystemsForm: NextPage<{
       const createSystemResult = await createSystem(systemBody);
       handleResult(createSystemResult);
       return;
-    } 
-      const updateSystemResult = await updateSystem(systemBody);
-      handleResult(updateSystemResult);
-    
+    }
+    const updateSystemResult = await updateSystem(systemBody);
+    handleResult(updateSystemResult);
 
     setIsLoading(false);
   };

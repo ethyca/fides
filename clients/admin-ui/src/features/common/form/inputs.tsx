@@ -144,6 +144,7 @@ export const CustomMultiSelect = ({
             );
           }}
           name={props.name}
+          // @ts-ignore
           value={selected}
           size={size}
           chakraStyles={{

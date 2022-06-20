@@ -1,6 +1,5 @@
 import { Stack, Text } from "@fidesui/react";
 import React from "react";
-
 import { HorizontalLineIcon } from "./Icon/index";
 
 interface Props {

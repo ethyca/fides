@@ -5,7 +5,7 @@ Fides is capable of exporting a data map of your [resources](./../language/resou
 To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
 
-First, ensure `fidesctl` is running with `nox -s cli`.
+First, ensure `fidesctl` is running with `nox -s dev`.
 
 To apply and export the provided `demo_resources`, run the following commands:
 
