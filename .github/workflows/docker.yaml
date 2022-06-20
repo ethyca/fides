@@ -29,9 +29,12 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
-      - name: Build Fidesctl
-        if: ${{ env.TAG }}
+      - name: Build Fidesctl Prod
         run: nox -s "build(prod)"
 
-      - name: Push Fidesctl
-        run: nox -s push
+      - name: Push Fidesctl Prod
+        run: nox -s "push(dev)"
+
+      - name: Push Fidesctl Prod
+        if: ${{ env.TAG }}
+        run: nox -s "push(prod)"

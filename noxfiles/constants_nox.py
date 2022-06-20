@@ -24,6 +24,7 @@ IMAGE_NAME = "fidesctl"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
+IMAGE_DEV = f"{IMAGE}:dev"
 IMAGE_LATEST = f"{IMAGE}:latest"
 
 # Disable TTY to perserve output within Github Actions logs
