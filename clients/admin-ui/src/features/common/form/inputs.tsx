@@ -114,7 +114,6 @@ export const CustomMultiSelect = ({
   size = "sm",
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
-  console.log(options);
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   const selected = field.value

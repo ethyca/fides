@@ -35,6 +35,7 @@ import {
 } from "../system/system.slice";
 
 interface PrivacyDeclaration {
+  name: string;
   data_categories: string[];
   data_use: string;
   data_qualifier: string;
@@ -75,16 +76,60 @@ const PrivacyDeclarationForm: NextPage<{
     privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
 
+  let privacyDeclarations: any;
+
   const handleSubmit = async (values: FormValues) => {
-    const systemBody = {
+    // TODO: Need to remove default from previous step before merging !!!!!
+    const handlePrivacyDeclarations = () => {
+      if (
+        existingSystem?.privacy_declarations &&
+        existingSystem?.privacy_declarations.filter(
+          (declaration) => declaration.name === values.name
+        ).length > 0
+      ) {
+        privacyDeclarations = existingSystem?.privacy_declarations;
+      } else if (!existingSystem) {
+        privacyDeclarations = [
+          {
+            name: values.name,
+            data_categories: values.data_categories,
+            data_use: values.data_use,
+            data_qualifier: values.data_qualifier,
+            data_subjects: values.data_subjects,
+            dataset_references: ["string"],
+          },
+        ];
+      } else {
+        privacyDeclarations = [
+          // @ts-ignore
+          ...existingSystem?.privacy_declarations,
+          {
+            name: values.name,
+            data_categories: values.data_categories,
+            data_use: values.data_use,
+            data_qualifier: values.data_qualifier,
+            data_subjects: values.data_subjects,
+            dataset_references: ["string"],
+          },
+        ];
+      }
+    };
+
+    handlePrivacyDeclarations();
+
+    const systemBodyWithDeclaration = {
       fides_key: existingSystem?.fides_key ?? "default_organization",
-      //   privacy_declarations:
+      privacy_declarations: privacyDeclarations,
+      system_type: existingSystem?.system_type,
     };
 
     setIsLoading(true);
 
     // @ts-ignore
-    const { error: updateSystemError } = await updateSystem(systemBody);
+    const { error: updateSystemError } = await updateSystem(
+      // @ts-ignore
+      systemBodyWithDeclaration
+    );
 
     if (updateSystemError) {
       toast({
