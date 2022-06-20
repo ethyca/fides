@@ -1,9 +1,8 @@
-import { Box, Heading, Spinner } from "@fidesui/react";
+import { Box, Heading, Spinner, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/data-categories.slice";
-import DataCategoryChecklist from "~/features/taxonomy/DataCategoryChecklist";
 
 const useDataCategories = () => {
   const { data, isLoading } = useGetAllDataCategoriesQuery();
@@ -17,9 +16,7 @@ const useDataCategories = () => {
 const DataSets: NextPage = () => {
   const { isLoading, dataCategories } = useDataCategories();
 
-  let content = dataCategories ? (
-    <DataCategoryChecklist dataCategories={dataCategories} />
-  ) : null;
+  let content = dataCategories ? <Text> In progress </Text> : null;
   if (isLoading) {
     content = <Spinner />;
   }

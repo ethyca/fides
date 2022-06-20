@@ -1,5 +1,4 @@
 """Module that adds functionality for generating or scanning datasets."""
-import asyncio
 from typing import Dict, List, Optional, Tuple
 
 import sqlalchemy
@@ -8,11 +7,10 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 
-from fidesctl.connectors.models import OktaConfig
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
 
-from .utils import echo_green, echo_red, get_db_engine
+from .utils import check_fides_key, echo_green, echo_red, get_db_engine
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],
@@ -88,8 +86,9 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
 
     Placeholder values are use where needed.
     """
+    sanitized_fides_key = check_fides_key(schema_name)
     dataset = Dataset(
-        fides_key=schema_name,
+        fides_key=sanitized_fides_key,
         name=schema_name,
         description=f"Fides Generated Description for Schema: {schema_name}",
         data_categories=[],
@@ -216,84 +215,6 @@ def print_dataset_db_scan_result(
     echo_green(annotation_output)
 
 
-def get_dataset_resource_ids(datasets: List[Dataset]) -> List[str]:
-    """
-    Given a list of datasets, build a list of resource ids
-    """
-    dataset_resource_ids = []
-    for dataset in datasets:
-        resource_id = get_dataset_resource_id(dataset=dataset)
-        if resource_id:
-            dataset_resource_ids.append(resource_id)
-    return dataset_resource_ids
-
-
-def get_dataset_resource_id(dataset: Dataset) -> Optional[str]:
-    """
-    Given a resource dataset, returns the resource id. Returns None
-    if a resource_id is not found in metadata.
-    """
-    dataset_resource_id = (
-        dataset.fidesctl_meta.resource_id
-        if dataset.fidesctl_meta and dataset.fidesctl_meta.resource_id
-        else None
-    )
-    return dataset_resource_id
-
-
-def find_missing_datasets(
-    source_datasets: List[Dataset],
-    existing_datasets: List[Dataset],
-) -> List[Dataset]:
-    """
-    Given a list of source and existing okta datasets, returns a list
-    of datasets which are not found in the existing list.
-    """
-    existing_resource_ids = get_dataset_resource_ids(datasets=existing_datasets)
-    missing_datasets = [
-        source_dataset
-        for source_dataset in source_datasets
-        if get_dataset_resource_id(dataset=source_dataset) not in existing_resource_ids
-    ]
-    return missing_datasets
-
-
-def print_dataset_resource_scan_result(
-    source_datasets: List[Dataset],
-    missing_datasets: List[Dataset],
-    coverage_threshold: int,
-) -> None:
-    """
-    Prints missing datasets and raises an exception if coverage
-    is lower than provided threshold.
-    """
-    output: str = "Successfully scanned the following datasets:\n"
-    for source_dataset in source_datasets:
-        output += "\t{}(id={})\n".format(
-            source_dataset.name, get_dataset_resource_id(dataset=source_dataset)
-        )
-    echo_green(output)
-
-    if missing_datasets:
-        missing_datasets_output = (
-            "The following datasets were not found in existing manifest:\n"
-        )
-        for missing_dataset in missing_datasets:
-            missing_datasets_output += "\t{}(id={})\n".format(
-                missing_dataset.name, get_dataset_resource_id(dataset=missing_dataset)
-            )
-        echo_red(missing_datasets_output)
-
-    coverage_percent = int(
-        ((len(source_datasets) - len(missing_datasets)) / len(source_datasets)) * 100
-    )
-    annotation_output = "Resource coverage: {}%".format(coverage_percent)
-    if coverage_percent < coverage_threshold:
-        echo_red(annotation_output)
-        raise SystemExit(1)
-    echo_green(annotation_output)
-
-
 def scan_dataset_db(
     connection_string: str,
     manifest_dir: Optional[str],
@@ -344,50 +265,6 @@ def scan_dataset_db(
     )
 
 
-def scan_dataset_okta(
-    manifest_dir: str,
-    okta_config: Optional[OktaConfig],
-    coverage_threshold: int,
-    url: AnyHttpUrl,
-    headers: Dict[str, str],
-) -> None:
-    """
-    Given an organization url, fetches Okta applications and compares them
-    against existing datasets in the server and manifest supplied.
-    """
-
-    _check_okta_connector_import()
-
-    manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
-    manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
-    server_datasets = get_all_server_datasets(
-        url=url, headers=headers, exclude_datasets=manifest_datasets
-    )
-
-    import fidesctl.connectors.okta as okta_connector
-
-    okta_client = okta_connector.get_okta_client(okta_config)
-    okta_applications = asyncio.run(
-        okta_connector.list_okta_applications(okta_client=okta_client)
-    )
-    okta_datasets = okta_connector.create_okta_datasets(
-        okta_applications=okta_applications
-    )
-    if len(okta_datasets) < 1:
-        echo_red("Okta did not return any applications to scan datasets")
-        raise SystemExit(1)
-
-    missing_datasets = find_missing_datasets(
-        source_datasets=okta_datasets,
-        existing_datasets=server_datasets + manifest_datasets,
-    )
-    print_dataset_resource_scan_result(
-        source_datasets=okta_datasets,
-        missing_datasets=missing_datasets,
-        coverage_threshold=coverage_threshold,
-    )
-
-
 def write_dataset_manifest(
     file_name: str, include_null: bool, datasets: List[Dataset]
 ) -> None:
@@ -418,37 +295,3 @@ def generate_dataset_db(
         file_name=file_name, include_null=include_null, datasets=db_datasets
     )
     return file_name
-
-
-def generate_dataset_okta(
-    okta_config: Optional[OktaConfig], file_name: str, include_null: bool
-) -> str:
-    """
-    Given an organization url, generates a dataset manifest from existing Okta
-    applications.
-    """
-
-    _check_okta_connector_import()
-
-    import fidesctl.connectors.okta as okta_connector
-
-    okta_client = okta_connector.get_okta_client(okta_config)
-    okta_applications = asyncio.run(
-        okta_connector.list_okta_applications(okta_client=okta_client)
-    )
-    okta_datasets = okta_connector.create_okta_datasets(
-        okta_applications=okta_applications
-    )
-    write_dataset_manifest(
-        file_name=file_name, include_null=include_null, datasets=okta_datasets
-    )
-    return file_name
-
-
-def _check_okta_connector_import() -> None:
-    "Validate okta can be imported"
-    try:
-        import fidesctl.connectors.okta  # pylint: disable=unused-import
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[okta]"')
-        raise SystemExit

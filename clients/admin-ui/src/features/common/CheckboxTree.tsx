@@ -1,5 +1,56 @@
-import { Box, Checkbox } from "@fidesui/react";
-import { Fragment, ReactNode, useState } from "react";
+/**
+ * This CheckboxTree does a few opinionated things to facilitate DataCategory selection
+ *   * Indeterminate parents when not all children are selected
+ *   * Separate "selected" and "checked" states, since only the most specific child is "selected".
+ *     * However, the parents are not "selected"—they will either be "indeterminate", or "checked" depending
+ *       on if the siblings are also "selected"
+ *   * "Selected" children render expanded up until the child
+ */
+
+import { Box, Checkbox, IconButton } from "@fidesui/react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
+
+import { ArrowDownLineIcon, ArrowUpLineIcon } from "./Icon";
+
+export const getAncestorsAndCurrent = (nodeName: string) => {
+  const splitNames = nodeName.split(".");
+  const ancestors: string[] = [];
+  splitNames.forEach((name) => {
+    const parent =
+      ancestors.length > 0 ? ancestors[ancestors.length - 1] : null;
+    if (!parent) {
+      ancestors.push(name);
+    } else {
+      ancestors.push(`${parent}.${name}`);
+    }
+  });
+  return ancestors;
+};
+
+export const ancestorIsSelected = (selected: string[], nodeName: string) => {
+  const ancestors = getAncestorsAndCurrent(nodeName).filter(
+    (a) => a !== nodeName
+  );
+  const intersection = selected.filter((s) => ancestors.includes(s));
+  return intersection.length > 0;
+};
+
+export const getDescendantsAndCurrent = (
+  nodes: CheckboxNode[],
+  nodeName: string,
+  result?: CheckboxNode[]
+) => {
+  const descendants: CheckboxNode[] = result ?? [];
+  nodes.forEach((node) => {
+    if (node.children) {
+      getDescendantsAndCurrent(node.children, nodeName, descendants);
+    }
+    if (node.value.startsWith(nodeName)) {
+      descendants.push(node);
+    }
+  });
+  return descendants;
+};
 
 interface CheckboxNode {
   label: string;
@@ -11,34 +62,56 @@ interface CheckboxItemProps {
   node: CheckboxNode;
   isChecked: boolean;
   onChecked: (node: CheckboxNode) => void;
+  isExpanded: boolean;
+  onExpanded: (node: CheckboxNode) => void;
+  isIndeterminate: boolean;
+  isDisabled: boolean;
   children?: ReactNode;
 }
 const CheckboxItem = ({
   node,
   isChecked,
   onChecked,
+  isExpanded,
+  onExpanded,
+  isIndeterminate,
+  isDisabled,
   children,
 }: CheckboxItemProps) => {
   const { value, label } = node;
-  const [checked, setChecked] = useState(isChecked);
-
-  const handleCheck = () => {
-    setChecked(!checked);
-    onChecked(node);
-  };
+  const hasDescendants = node.children ? node.children.length > 0 : false;
 
   return (
     <Box>
-      <Checkbox
-        colorScheme="complimentary"
-        value={value}
-        isChecked={checked}
-        onChange={handleCheck}
-        ml={2}
-        data-testid={`checkbox-${label}`}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
+        onClick={() => onExpanded(node)}
       >
-        {label}
-      </Checkbox>
+        <Checkbox
+          colorScheme="complimentary"
+          value={value}
+          isChecked={isIndeterminate ? false : isChecked}
+          isIndeterminate={isIndeterminate}
+          isDisabled={isDisabled}
+          onChange={() => onChecked(node)}
+          mx={2}
+          data-testid={`checkbox-${label}`}
+        >
+          {label}
+        </Checkbox>
+        {hasDescendants ? (
+          <IconButton
+            data-testid={`expand-${label}`}
+            aria-label={isExpanded ? "collapse" : "expand"}
+            icon={isExpanded ? <ArrowUpLineIcon /> : <ArrowDownLineIcon />}
+            variant="ghost"
+            onClick={() => onExpanded(node)}
+            size="sm"
+          />
+        ) : null}
+      </Box>
       {children && <Box ml={5}>{children}</Box>}
     </Box>
   );
@@ -46,17 +119,64 @@ const CheckboxItem = ({
 
 interface CheckboxTreeProps {
   nodes: CheckboxNode[];
-  checked: string[];
-  onChecked: (newChecked: string[]) => void;
+  selected: string[];
+  onSelected: (newSelected: string[]) => void;
 }
 
-const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
+const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
+  const [checked, setChecked] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState<string[]>([]);
+
+  useEffect(() => {
+    // if something is selected, we should expand the checkbox to show it
+    // from i.e. ["account.contact.city"] get ["account", "account.contact", "account.contact.city"]
+    const nestedAncestorNames = selected.map((s) => getAncestorsAndCurrent(s));
+    const ancestorNames = nestedAncestorNames.reduce(
+      (acc, value) => acc.concat(value),
+      []
+    );
+
+    // also, if a parent is selected, check all of its descendants
+    const nestedDescendantNames = selected.map((s) =>
+      getDescendantsAndCurrent(nodes, s)
+    );
+    const descendantNames = nestedDescendantNames
+      .reduce((acc, value) => acc.concat(value), [])
+      .map((d) => d.value);
+
+    const nodeNames = Array.from(
+      new Set([...ancestorNames, ...descendantNames])
+    );
+    setExpanded(nodeNames);
+    setChecked(nodeNames);
+  }, [selected, nodes]);
+
   const handleChecked = (node: CheckboxNode) => {
+    let newChecked: string[] = [];
+    let newSelected: string[] = [];
     if (checked.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unchecking children
-      onChecked(checked.filter((c) => !c.startsWith(node.value)));
+      newChecked = checked.filter((s) => !s.startsWith(node.value));
+      newSelected = selected.filter((s) => !s.startsWith(node.value));
     } else {
-      onChecked([...checked, node.value]);
+      // we need to mark all descendants as checked, though these are not
+      // technically 'selected'
+      const descendants = getDescendantsAndCurrent(nodes, node.value).map(
+        (d) => d.value
+      );
+      newChecked = [...checked, ...descendants];
+      newSelected = [...selected, node.value];
+    }
+    setChecked(newChecked);
+    onSelected(newSelected);
+  };
+
+  const handleExpanded = (node: CheckboxNode) => {
+    if (expanded.indexOf(node.value) >= 0) {
+      // take advantage of dot notation here for unexpanding children
+      setExpanded(expanded.filter((c) => !c.startsWith(node.value)));
+    } else {
+      setExpanded([...expanded, node.value]);
     }
   };
 
@@ -66,13 +186,26 @@ const CheckboxTree = ({ nodes, checked, onChecked }: CheckboxTreeProps) => {
   const createTree = (node: CheckboxNode) => {
     if (node.children) {
       const isChecked = checked.indexOf(node.value) >= 0;
+      const isExpanded = expanded.indexOf(node.value) >= 0;
+      const thisDescendants = getDescendantsAndCurrent(nodes, node.value);
+      const isIndeterminate =
+        isChecked &&
+        node.children.length > 0 &&
+        checked.filter((s) => s.startsWith(node.value)).length !==
+          thisDescendants.length;
+      const isDisabled = ancestorIsSelected(selected, node.value);
+
       return (
         <CheckboxItem
           node={node}
           isChecked={isChecked}
           onChecked={handleChecked}
+          isExpanded={isExpanded}
+          onExpanded={handleExpanded}
+          isDisabled={isDisabled}
+          isIndeterminate={isIndeterminate}
         >
-          {isChecked &&
+          {isExpanded &&
             node.children.map((childNode) => (
               <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
             ))}

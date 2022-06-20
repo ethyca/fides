@@ -3,6 +3,11 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import {
+  setDataCategories,
+  useGetAllDataCategoriesQuery,
+} from "~/features/taxonomy/data-categories.slice";
+
 import { FidesKey } from "../common/fides-types";
 import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";
@@ -14,6 +19,7 @@ import {
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
 import EditCollectionDrawer from "./EditCollectionDrawer";
+import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
 import { ColumnMetadata } from "./types";
 
@@ -41,16 +47,21 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
   const { dataset, isLoading } = useDataset(fidesKey);
   const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
-  const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [columns, setColumns] = useState<ColumnMetadata[]>(
+    ALL_COLUMNS.filter((c) => c.attribute !== "data_categories")
+  );
   const [isModifyingCollection, setIsModifyingCollection] = useState(false);
+  const [isModifyingDataset, setIsModifyingDataset] = useState(false);
+
+  // load data categories into redux
+  const { data: dataCategories } = useGetAllDataCategoriesQuery();
+  useEffect(() => {
+    dispatch(setDataCategories(dataCategories ?? []));
+  }, [dispatch, dataCategories]);
 
   const router = useRouter();
   const toast = useToast();
   const { fromLoad } = router.query;
-
-  if (dataset) {
-    dispatch(setActiveDataset(dataset));
-  }
 
   useEffect(() => {
     if (dataset) {
@@ -103,9 +114,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             />
           </Box>
           <MoreActionsMenu
-            onModifyCollection={() => {
-              setIsModifyingCollection(true);
-            }}
+            onModifyCollection={() => setIsModifyingCollection(true)}
+            onModifyDataset={() => setIsModifyingDataset(true)}
           />
         </Box>
       </Box>
@@ -121,6 +131,13 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             onClose={() => setIsModifyingCollection(false)}
           />
         </>
+      ) : null}
+      {dataset ? (
+        <EditDatasetDrawer
+          dataset={dataset}
+          isOpen={isModifyingDataset}
+          onClose={() => setIsModifyingDataset(false)}
+        />
       ) : null}
     </Box>
   );
