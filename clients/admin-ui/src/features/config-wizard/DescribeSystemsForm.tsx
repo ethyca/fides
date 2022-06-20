@@ -4,9 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
@@ -106,7 +104,7 @@ const DescribeSystemsForm: NextPage<{
   return (
     <Formik
       initialValues={initialValues}
-      enableReinitialize
+      enableReinitialize={true}
       onSubmit={handleSubmit}
     >
       {({ values }) => (
@@ -124,7 +122,7 @@ const DescribeSystemsForm: NextPage<{
             </div>
             <Stack>
               <Stack direction="row">
-                <CustomTextInput name="name" label="System name" />
+                <CustomTextInput id="name" name="name" label="System name" />
                 <Tooltip
                   fontSize="md"
                   label="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
@@ -147,6 +145,7 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomTextInput
+                  id="description"
                   name="description"
                   label="System description"
                 />
@@ -187,6 +186,7 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableMultiSelect
+                  id="system_dependencies"
                   name="system_dependencies"
                   label="System Tags"
                   options={initialValues.system_dependencies.map((s) => ({

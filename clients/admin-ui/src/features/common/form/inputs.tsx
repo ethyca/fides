@@ -9,10 +9,12 @@ import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
 interface InputProps {
+  disabled?: boolean;
   label: string;
 }
 
 export const CustomTextInput = ({
+  disabled,
   label,
   ...props
 }: InputProps & FieldHookConfig<string>) => {
@@ -25,7 +27,13 @@ export const CustomTextInput = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Input {...field} type={type} placeholder={placeholder} size="sm" />
+        <Input
+          {...field}
+          disabled
+          type={type}
+          placeholder={placeholder}
+          size="sm"
+        />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>

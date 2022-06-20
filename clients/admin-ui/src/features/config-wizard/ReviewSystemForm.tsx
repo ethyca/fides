@@ -1,10 +1,9 @@
-import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React from "react";
-
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { useGetOrganizationByFidesKeyQuery } from "../config-wizard/organization.slice";
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { System } from "../system/types";
 
@@ -19,40 +18,33 @@ const ReviewSystemForm: NextPage<{
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(
     "default_organization"
   );
+  const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
+    "default_organization"
+  );
 
   const toast = useToast();
 
   const initialValues = {
-    name: "name",
+    name: existingOrg?.name,
+    system_name: existingSystem?.name,
+    // system_key: existingSystem?.key,
+    system_description: existingSystem?.description,
+    system_type: existingSystem?.system_type,
+    system_tags: existingSystem?.system_dependencies,
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
-    ) => {
-      if ("error" in result) {
-        toast({
-          status: "error",
-          description: "errorMsg",
-        });
-      } else {
-        toast.closeAll();
-        handleChangeStep(6);
-        handleChangeStep(5);
-      }
-    };
-
     // setIsLoading(true);
-
     // handleResult(updateSystemResult);
-
     // setIsLoading(false);
   };
+
+  console.log(existingSystem);
 
   return (
     <Formik
       initialValues={initialValues}
-      enableReinitialize
+      enableReinitialize={true}
       onSubmit={handleSubmit}
     >
       {({ values }) => (
@@ -60,11 +52,42 @@ const ReviewSystemForm: NextPage<{
           <Stack ml="100px" spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
-              {/* Review {existingSystem?.name} */}
-              Review
+              Review {existingOrg?.name}
             </Heading>
             <div>Let’s quickly review our declaration before registering</div>
-            <Stack>Body</Stack>
+            <Stack>
+              <CustomTextInput
+                disabled
+                id="system_name"
+                name="system_name"
+                label="System name"
+              />
+              {/* <CustomTextInput
+                disabled
+                id="system_key"
+                name="system_key"
+                label="System key"
+              /> */}
+              <CustomTextInput
+                disabled
+                id="system_description"
+                name="system_description"
+                label="Description"
+              />
+              <CustomTextInput
+                disabled
+                id="system_type"
+                name="system_type"
+                label="System type"
+              />
+              <CustomTextInput
+                disabled
+                id="system_tags"
+                name="system_tags"
+                label="System tags"
+              />
+              <Text>Privacy declarations:</Text>
+            </Stack>
             <Box>
               <Button
                 onClick={() => handleCancelSetup()}
@@ -79,11 +102,6 @@ const ReviewSystemForm: NextPage<{
                 colorScheme="primary"
                 size="sm"
                 // disabled={
-                //   !values.name ||
-                //   !values.description ||
-                //   !values.system_type ||
-                //   (values.system_dependencies &&
-                //     values.system_dependencies.length <= 0)
                 // }
                 // isLoading={isLoading}
               >

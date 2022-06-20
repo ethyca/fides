@@ -5,7 +5,6 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -27,7 +26,6 @@ import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
-
 import {
   CustomMultiSelect,
   CustomSelect,
@@ -139,7 +137,7 @@ const PrivacyDeclarationForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleChangeReviewStep(3);
+        handleChangeReviewStep(2);
       }
     };
 
@@ -151,13 +149,19 @@ const PrivacyDeclarationForm: NextPage<{
     setIsLoading(false);
   };
 
+  console.log(existingSystem);
+
   const allDataCategories = useSelector(selectDataCategories);
   const allDataSubjects = useSelector(selectDataSubjects);
   const allDataUses = useSelector(selectDataUse);
   const allDataQualifiers = useSelector(selectDataQualifier);
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+    >
       {({ values }) => (
         <Form>
           <Stack ml="100px" spacing={10}>
