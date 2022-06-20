@@ -6,12 +6,13 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: platform.segmentapis.com
     - name: personas_domain
+      default_value: profiles.segment.com
     - name: workspace
     - name: access_token
     - name: namespace_id
     - name: access_secret
-
 
   client_config:
     protocol: https
@@ -26,104 +27,104 @@ saas_config:
     path: /v1beta/workspaces/
 
   endpoints:
-  - name: segment_user
-    requests:
-      read:
-        method: GET
-        path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
-        param_values:
-          - name: namespace_id
-            connector_param: namespace_id
-          - name: user_id
-            identity: email
-        client_config:
-          protocol: https
-          host: <personas_domain>
-          authentication:
-            strategy: basic
+    - name: segment_user
+      requests:
+        read:
+          method: GET
+          path: /v1/spaces/<namespace_id>/collections/users/profiles/user_id:<user_id>/metadata
+          param_values:
+            - name: namespace_id
+              connector_param: namespace_id
+            - name: user_id
+              identity: email
+          client_config:
+            protocol: https
+            host: <personas_domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <access_secret>
+    - name: track_events
+      requests:
+        read:
+          method: GET
+          path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events
+          param_values:
+            - name: namespace_id
+              connector_param: namespace_id
+            - name: segment_id
+              references:
+                - dataset: segment_connector_example
+                  field: segment_user.segment_id
+                  direction: from
+          data_path: data
+          pagination:
+            strategy: link
             configuration:
-              username: <access_secret>
-  - name: track_events
-    requests:
-      read:
-        method: GET
-        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/events
-        param_values:
-          - name: namespace_id
-            connector_param: namespace_id
-          - name: segment_id
-            references:
-              - dataset: segment_connector_example
-                field: segment_user.segment_id
-                direction: from
-        data_path: data
-        pagination:
-          strategy: link
-          configuration:
-            source: body
-            path: cursor.url
-        client_config:
-          protocol: https
-          host: <personas_domain>
-          authentication:
-            strategy: basic
+              source: body
+              path: cursor.url
+          client_config:
+            protocol: https
+            host: <personas_domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <access_secret>
+    - name: traits
+      requests:
+        read:
+          method: GET
+          path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits
+          query_params:
+            - name: limit
+              value: 17
+          param_values:
+            - name: namespace_id
+              connector_param: namespace_id
+            - name: segment_id
+              references:
+                - dataset: segment_connector_example
+                  field: segment_user.segment_id
+                  direction: from
+          data_path: traits
+          pagination:
+            strategy: link
             configuration:
-              username: <access_secret>
-  - name: traits
-    requests:
-      read:
-        method: GET
-        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/traits
-        query_params:
-          - name: limit
-            value: 17
-        param_values:
-          - name: namespace_id
-            connector_param: namespace_id
-          - name: segment_id
-            references:
-              - dataset: segment_connector_example
-                field: segment_user.segment_id
-                direction: from
-        data_path: traits
-        pagination:
-          strategy: link
-          configuration:
-            source: body
-            path: cursor.url
-        client_config:
-          protocol: https
-          host: <personas_domain>
-          authentication:
-            strategy: basic
+              source: body
+              path: cursor.url
+          client_config:
+            protocol: https
+            host: <personas_domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <access_secret>
+    - name: external_ids
+      requests:
+        read:
+          method: GET
+          path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids
+          param_values:
+            - name: namespace_id
+              connector_param: namespace_id
+            - name: segment_id
+              references:
+                - dataset: segment_connector_example
+                  field: segment_user.segment_id
+                  direction: from
+          data_path: data
+          pagination:
+            strategy: link
             configuration:
-              username: <access_secret>
-  - name: external_ids
-    requests:
-      read:
-        method: GET
-        path: /v1/spaces/<namespace_id>/collections/users/profiles/<segment_id>/external_ids
-        param_values:
-          - name: namespace_id
-            connector_param: namespace_id
-          - name: segment_id
-            references:
-              - dataset: segment_connector_example
-                field: segment_user.segment_id
-                direction: from
-        data_path: data
-        pagination:
-          strategy: link
-          configuration:
-            source: body
-            path: cursor.url
-        client_config:
-          protocol: https
-          host: <personas_domain>
-          authentication:
-            strategy: basic
-            configuration:
-              username: <access_secret>
+              source: body
+              path: cursor.url
+          client_config:
+            protocol: https
+            host: <personas_domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <access_secret>
 
   data_protection_request:
     method: POST
@@ -136,7 +137,14 @@ saas_config:
         connector_param: workspace
       - name: user_id
         identity: email
-    body: '{"regulation_type": "Suppress_With_Delete", "attributes": {"name": "userId", "values": ["<user_id>"]}}'
+    body: |
+      {
+        "regulation_type": "Suppress_With_Delete",
+        "attributes": {
+          "name": "userId",
+          "values": ["<user_id>"]
+        }
+      }
     client_config:
       protocol: https
       host: <domain>

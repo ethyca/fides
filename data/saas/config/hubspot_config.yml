@@ -6,6 +6,7 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: api.hubapi.com
     - name: hapikey
 
   client_config:
@@ -27,8 +28,8 @@ saas_config:
         read:
           path: /crm/v3/objects/contacts/search
           method: POST
-          body: 
-            '{
+          body: |
+            {
               "filterGroups": [{
                 "filters": [{
                   "value": "<email>",
@@ -36,7 +37,7 @@ saas_config:
                   "operator": "EQ"
                 }]
               }]
-            }'
+            }
           query_params:
             - name: limit
               value: 100
@@ -55,7 +56,10 @@ saas_config:
         update:
           path: /crm/v3/objects/contacts/<contactId>
           method: PATCH
-          body: '{<masked_object_fields>}'
+          body: |
+            {
+              <masked_object_fields>
+            }
           param_values:
             - name: contactId
               references:
@@ -95,13 +99,13 @@ saas_config:
         update:
           path: /communication-preferences/v3/unsubscribe
           method: POST
-          body:
-            '{
+          body: |
+            {
               "emailAddress": "<email>",
               "subscriptionId": "<subscriptionId>",
               "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
               "legalBasisExplanation": "At users request, we opted them out"
-            }'
+            }
           data_path: subscriptionStatuses
           param_values:
             - name: email

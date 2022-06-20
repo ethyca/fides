@@ -91,6 +91,25 @@ class ConnectionConfig(Base):
         """Returns a SaaSConfig object from a yaml config"""
         return SaaSConfig(**self.saas_config) if self.saas_config else None
 
+    def update_saas_config(
+        self,
+        db: Session,
+        saas_config: SaaSConfig,
+    ) -> None:
+        """
+        Updates the SaaS config and initializes any empty secrets with
+        connector param default values if available (will not override any existing secrets)
+        """
+        default_secrets = {
+            connector_param.name: connector_param.default_value
+            for connector_param in saas_config.connector_params
+            if connector_param.default_value
+        }
+        updated_secrets = {**default_secrets, **(self.secrets or {})}
+        self.secrets = updated_secrets
+        self.saas_config = saas_config.dict()
+        self.save(db)
+
     def update_test_status(
         self, test_status: ConnectionTestStatus, db: Session
     ) -> None:

@@ -19,7 +19,9 @@ class SaaSSchema(BaseModel, abc.ABC):
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied."""
 
-        required_components = cls.__fields__.keys()
+        required_components = [
+            name for name, attributes in cls.__fields__.items() if attributes.required
+        ]
         min_fields_present = all(
             [values.get(component) for component in required_components]
         )
@@ -49,10 +51,13 @@ class SaaSSchemaFactory:
     # Pydantic uses the shorthand of (str, ...) to denote a required field of type str
     def get_saas_schema(self) -> Type[SaaSSchema]:
         """Returns the schema for the current configuration"""
-        field_definitions: Dict[str, Any] = {
-            connector_param.name: (str, ...)
-            for connector_param in self.saas_config.connector_params
-        }
+        field_definitions: Dict[str, Any] = {}
+        for connector_param in self.saas_config.connector_params:
+            field_definitions[connector_param.name] = (
+                connector_param.default_value
+                if connector_param.default_value
+                else (str, ...)
+            )
         return create_model(
             f"{self.saas_config.fides_key}_schema",
             **field_definitions,

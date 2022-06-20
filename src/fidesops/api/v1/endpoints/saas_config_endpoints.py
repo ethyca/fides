@@ -144,7 +144,7 @@ def patch_saas_config(
     logger.info(
         f"Updating SaaS config '{saas_config.fides_key}' on connection config '{connection_config.key}'"
     )
-    connection_config.update(db, data={"saas_config": saas_config.dict()})
+    connection_config.update_saas_config(db, saas_config=saas_config)
     return connection_config.saas_config
 
 

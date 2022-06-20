@@ -5,12 +5,13 @@ saas_config:
   version: 0.0.1
 
   connector_params:
-    - name: host
+    - name: domain
+      default_value: sentry.io
     - name: access_token
 
   client_config:
     protocol: https
-    host: <host>
+    host: <domain>
     authentication:
       strategy: bearer
       configuration:
@@ -78,7 +79,10 @@ saas_config:
                 - dataset: sentry_connector
                   field: issues.id
                   direction: from
-          body: '{"assignedTo": ""}'
+          body: |
+            {
+              "assignedTo": ""
+            }
         read:
           method: GET
           path: /api/0/projects/<organization_slug>/<project_slug>/issues/

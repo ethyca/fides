@@ -21,70 +21,73 @@ saas_config:
   test_request:
     method: GET
     path: /3.0/lists
-    
+
   endpoints:
-  - name: messages
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations/<conversation_id>/messages
-        param_values:
-          - name: conversation_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: conversations.id
-                direction: from
-        data_path: conversation_messages
-        postprocessors:
-          - strategy: filter
+    - name: messages
+      requests:
+        read:
+          method: GET
+          path: /3.0/conversations/<conversation_id>/messages
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: mailchimp_connector_example
+                  field: conversations.id
+                  direction: from
+          data_path: conversation_messages
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: from_email
+                value:
+                  identity: email
+    - name: conversations
+      requests:
+        read:
+          method: GET
+          path: /3.0/conversations
+          query_params:
+            - name: count
+              value: 1000
+            - name: offset
+              value: 0
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: conversations
+          pagination:
+            strategy: offset
             configuration:
-              field: from_email
-              value:
-                identity: email
-  - name: conversations
-    requests:
-      read:
-        method: GET
-        path: /3.0/conversations
-        query_params:
-          - name: count
-            value: 1000
-          - name: offset
-            value: 0
-        param_values:
-          - name: placeholder
-            identity: email
-        data_path: conversations
-        pagination:
-          strategy: offset
-          configuration:
-            incremental_param: offset
-            increment_by: 1000
-            limit: 10000
-  - name: member
-    requests:
-      read:
-        method: GET
-        path: /3.0/search-members
-        query_params:
-          - name: query
-            value: <email>
-        param_values:
-          - name: email
-            identity: email
-        data_path: exact_matches.members
-      update:
-        method: PUT
-        path: /3.0/lists/<list_id>/members/<subscriber_hash>
-        param_values:
-          - name: list_id
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.list_id
-                direction: from
-          - name: subscriber_hash
-            references:
-              - dataset: mailchimp_connector_example
-                field: member.id
-                direction: from
-        body: '{<masked_object_fields>}'
+              incremental_param: offset
+              increment_by: 1000
+              limit: 10000
+    - name: member
+      requests:
+        read:
+          method: GET
+          path: /3.0/search-members
+          query_params:
+            - name: query
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+          data_path: exact_matches.members
+        update:
+          method: PUT
+          path: /3.0/lists/<list_id>/members/<subscriber_hash>
+          param_values:
+            - name: list_id
+              references:
+                - dataset: mailchimp_connector_example
+                  field: member.list_id
+                  direction: from
+            - name: subscriber_hash
+              references:
+                - dataset: mailchimp_connector_example
+                  field: member.id
+                  direction: from
+          body: |
+            {
+              <masked_object_fields>
+            }

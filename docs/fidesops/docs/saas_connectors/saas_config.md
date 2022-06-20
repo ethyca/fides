@@ -125,13 +125,16 @@ And the following complex fields which we will cover in detail below:
 - `data_protection_request`
 
 #### Connector params
-The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. This section should just include the name of the parameter but not the actual value. These are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets).
+The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. A `default_value` can also be used to include values such as a standard base domain for an API or a recommended page size for pagination. Make sure to not include confidential values such as passwords or API keys, these values are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets). When configuring a connector's secrets for the first time, the default values will be used if a value is not provided.
 
 ```yaml
 connector_params:
-  - name: host
+  - name: domain
+    default_value: api.stripe.com
   - name: username
   - name: password
+  - name: page_size
+    default_value: 100
 ```
 
 #### Client config

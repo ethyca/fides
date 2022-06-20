@@ -24,13 +24,14 @@ saas_config = load_toml(["saas_config.toml"])
 @pytest.fixture(scope="function")
 def stripe_secrets():
     return {
-        "host": pydash.get(saas_config, "stripe.host") or os.environ.get("STRIPE_HOST"),
+        "domain": pydash.get(saas_config, "stripe.domain")
+        or os.environ.get("STRIPE_DOMAIN"),
         "api_key": pydash.get(saas_config, "stripe.api_key")
         or os.environ.get("STRIPE_API_KEY"),
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or os.environ.get("STRIPE_PAYMENT_TYPES"),
-        "items_per_page": pydash.get(saas_config, "stripe.items_per_page")
-        or os.environ.get("STRIPE_ITEMS_PER_PAGE"),
+        "page_size": pydash.get(saas_config, "stripe.page_size")
+        or os.environ.get("STRIPE_PAGE_SIZE"),
     }
 
 
