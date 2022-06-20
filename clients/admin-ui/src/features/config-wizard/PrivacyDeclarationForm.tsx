@@ -3,6 +3,7 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -24,6 +25,7 @@ import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
+
 import {
   CustomMultiSelect,
   CustomSelect,
@@ -102,7 +104,7 @@ const PrivacyDeclarationForm: NextPage<{
       } else {
         privacyDeclarations = [
           // @ts-ignore
-          ...existingSystem?.privacy_declarations,
+          ...existingSystem.privacy_declarations,
           {
             name: values.name,
             data_categories: values.data_categories,

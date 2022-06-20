@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
 import type { AppState } from "~/app/store";
+
 import { DataQualifier } from "./types";
 
 export interface State {

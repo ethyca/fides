@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
+
 import {
   organizationApi,
   reducer as organizationReducer,
