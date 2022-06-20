@@ -1,4 +1,6 @@
 import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
@@ -29,6 +31,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -65,9 +68,7 @@ const PrivacyDeclarationForm: NextPage<{
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
-    // @ts-ignore
     dispatch(setDataUse(dataUse ?? []));
-    // @ts-ignore
     dispatch(setDataQualifier(dataQualifier ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
 
@@ -85,7 +86,7 @@ const PrivacyDeclarationForm: NextPage<{
               (declaration) => declaration.name !== "string"
             )
           : [];
-      // If the declaration being created already exists with that name
+      // If the declaration already exists
       if (
         filteredDeclarations &&
         filteredDeclarations.filter(
@@ -94,10 +95,9 @@ const PrivacyDeclarationForm: NextPage<{
       ) {
         privacyDeclarations = filteredDeclarations;
       }
-      // If the declaration does not exist with that name
+      // If the declaration does not exist
       else {
         privacyDeclarations = [
-          // @ts-ignore
           ...filteredDeclarations,
           {
             name: values.name,
@@ -119,23 +119,33 @@ const PrivacyDeclarationForm: NextPage<{
       system_type: existingSystem?.system_type,
     };
 
+    const handleResult = (
+      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+    ) => {
+      if ("error" in result) {
+        let errorMsg =
+          "An unexpected error occurred while creating system. Please try again.";
+        if (isErrorWithDetail(result.error)) {
+          errorMsg = result.error.data.detail;
+        } else if (isErrorWithDetailArray(result.error)) {
+          const { error } = result;
+          errorMsg = error.data.detail[0].msg;
+        }
+        toast({
+          status: "error",
+          description: errorMsg,
+        });
+      } else {
+        toast.closeAll();
+        handleChangeReviewStep(3);
+      }
+    };
+
     setIsLoading(true);
 
-    // @ts-ignore
-    const { error: updateSystemError } = await updateSystem(
-      // @ts-ignore
-      systemBodyWithDeclaration
-    );
+    const updateSystemResult = await updateSystem(systemBodyWithDeclaration);
 
-    if (updateSystemError) {
-      toast({
-        status: "error",
-        description: "Updating system failed.",
-      });
-    } else {
-      toast.closeAll();
-      handleChangeReviewStep(3);
-    }
+    handleResult(updateSystemResult);
     setIsLoading(false);
   };
 
