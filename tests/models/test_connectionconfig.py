@@ -7,6 +7,8 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fidesops.schemas.saas import saas_config
+from fidesops.schemas.saas.saas_config import SaaSConfig
 from fidesops.util.text import to_snake_case
 
 
@@ -109,3 +111,32 @@ class TestConnectionConfigModel:
         connection_config.save(db)
         assert connection_config.disabled_at is not None
         assert connection_config.disabled_at > original_disabled_time
+
+    def test_default_value_saas_config(
+        self, db, saas_example_config, saas_example_secrets
+    ):
+        connection_config: ConnectionConfig = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "not_configured",
+                "name": "not_configured",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.read,
+            },
+        )
+        saas_config = SaaSConfig(**saas_example_config)
+        assert connection_config.secrets is None
+
+        # verify that setting the SaaS config for the first time populates
+        # the secrets with default values
+        connection_config.update_saas_config(db, saas_config=saas_config)
+        assert connection_config.secrets == {"domain": "localhost"}
+
+        # verify that a user-defined secret overrides the default value
+        connection_config.update(db, data={"secrets": saas_example_secrets})
+        assert connection_config.secrets["domain"] == saas_example_secrets["domain"]
+
+        # verify that updating the SaaS config after configuring the secrets
+        # does not override any user-defined values
+        connection_config.update_saas_config(db, saas_config=saas_config)
+        assert connection_config.secrets["domain"] == saas_example_secrets["domain"]

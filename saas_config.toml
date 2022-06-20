@@ -3,7 +3,7 @@ domain = "domain"
 username = "username"
 api_key = "api_key"
 api_version = "2.0"
-page_limit = "10"
+page_size = "10"
 
 [mailchimp]
 domain = ""
@@ -20,7 +20,7 @@ identity_email = ""
 host = ""
 api_key = ""
 payment_types = ""
-page_limit = ""
+page_size = ""
 identity_email = ""
 
 [sentry]

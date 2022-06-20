@@ -668,7 +668,7 @@ class TestSaaSQueryConfig:
         config = SaaSQueryConfig(
             payment_methods,
             endpoints,
-            {"api_version": "2.0", "page_limit": 10, "api_key": "letmein"},
+            {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -688,7 +688,7 @@ class TestSaaSQueryConfig:
 
         # query and path params with connector param references
         config = SaaSQueryConfig(
-            payment_methods, endpoints, {"api_version": "2.0", "page_limit": 10}
+            payment_methods, endpoints, {"api_version": "2.0", "page_size": 10}
         )
         prepared_request = config.generate_query(
             {"email": ["customer-1@example.com"]}, policy
@@ -730,10 +730,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
-                "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
+        assert (
+            prepared_request.body
+            == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
         )
 
     def test_generate_update_stmt_custom_http_method(
@@ -769,10 +768,9 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/3.0/lists/abc/members/123"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps(
-            {
-                "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
-            }
+        assert (
+            prepared_request.body
+            == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
         )
 
     def test_generate_update_stmt_with_request_body(
@@ -849,7 +847,7 @@ class TestSaaSQueryConfig:
         assert prepared_request.path == "/2.0/payment_methods"
         assert prepared_request.headers == {"Content-Type": "application/json"}
         assert prepared_request.query_params == {}
-        assert prepared_request.body == json.dumps({"customer_name": "MASKED"})
+        assert prepared_request.body == '{\n  "customer_name": "MASKED"\n}\n'
 
     def test_generate_update_stmt_with_url_encoded_body(
         self,

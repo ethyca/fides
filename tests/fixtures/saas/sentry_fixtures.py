@@ -22,7 +22,8 @@ saas_config = load_toml(["saas_config.toml"])
 @pytest.fixture(scope="function")
 def sentry_secrets():
     return {
-        "host": pydash.get(saas_config, "sentry.host") or os.environ.get("SENTRY_HOST"),
+        "domain": pydash.get(saas_config, "sentry.domain")
+        or os.environ.get("SENTRY_DOMAIN"),
         "access_token": pydash.get(saas_config, "sentry.access_token")
         or os.environ.get("SENTRY_ACCESS_TOKEN"),
         "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token")

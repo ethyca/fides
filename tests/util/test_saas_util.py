@@ -263,7 +263,7 @@ class TestAssignPlaceholders:
         assert assign_placeholders("<access_key>", {"access_key": "123"}) == "123"
 
     def test_single_placeholder_with_int_value(self):
-        assert assign_placeholders("<page_limit>", {"page_limit": 10}) == "10"
+        assert assign_placeholders("<page_size>", {"page_size": 10}) == "10"
 
     def test_multiple_string_placeholders(self):
         assert (
