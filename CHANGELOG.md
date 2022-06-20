@@ -43,7 +43,6 @@ The types of changes are:
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
 
-
 ### Changed
 
 * Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
@@ -59,7 +58,7 @@ The types of changes are:
 
 * Replaced `make` with `nox`
 * Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
-* Added starting up the frontend server to `nox`
+* Added a UI service to the docker-compose deployment [#757](<https://github.com/ethyca/fides/pull/757>)
 * `TestClient` defined in and shared across test modules via `conftest.py` [#759](https://github.com/ethyca/fides/pull/759)
 
 ### Docs

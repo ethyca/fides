@@ -31,7 +31,7 @@ jobs:
 
       - name: Build Fidesctl
         if: ${{ env.TAG }}
-        run: nox -s build
+        run: nox -s "build(prod)"
 
       - name: Push Fidesctl
         run: nox -s push

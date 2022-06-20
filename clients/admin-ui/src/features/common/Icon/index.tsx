@@ -1,8 +1,10 @@
 export { default as ArrowDownLineIcon } from "./ArrowDownLine";
+export { default as ArrowUpLineIcon } from "./ArrowUpLine";
 export { default as AWSLogoIcon } from "./AWSLogo";
 export { default as CloseSolidIcon } from "./CloseSolid";
 export { default as DownloadSolidIcon } from "./DownloadSolid";
 export { default as GearIcon } from "./Gear";
+export { default as HorizontalLineIcon } from "./HorizontalLine";
 export { default as ManualSetupIcon } from "./ManualSetup";
 export { default as MoreIcon } from "./More";
 export { default as OktaLogoIcon } from "./OktaLogo";
