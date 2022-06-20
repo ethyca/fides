@@ -169,7 +169,11 @@ const PrivacyDeclarationForm: NextPage<{
             <Stack>
               <Stack direction="row">
                 <CustomTextInput name="name" label="Declaration name" />
-                <Tooltip fontSize="md" label="..." placement="right">
+                <Tooltip
+                  fontSize="md"
+                  label="A system may have multiple privacy declarations, so each declaration should have a name to distinguish them clearly."
+                  placement="right"
+                >
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
@@ -184,7 +188,11 @@ const PrivacyDeclarationForm: NextPage<{
                   }))}
                   size="md"
                 />
-                <Tooltip fontSize="md" label="..." placement="right">
+                <Tooltip
+                  fontSize="md"
+                  label="What type of data is your system processing? This could be various types of user or system data."
+                  placement="right"
+                >
                   <QuestionIcon boxSize={5} color="gray.400" />
                 </Tooltip>
               </Stack>
@@ -202,7 +210,11 @@ const PrivacyDeclarationForm: NextPage<{
                   label: data.fides_key,
                 }))}
               />
-              <Tooltip fontSize="md" label="..." placement="right">
+              <Tooltip
+                fontSize="md"
+                label="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
+                placement="right"
+              >
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
@@ -217,7 +229,11 @@ const PrivacyDeclarationForm: NextPage<{
                   label: data.fides_key,
                 }))}
               />
-              <Tooltip fontSize="md" label="..." placement="right">
+              <Tooltip
+                fontSize="md"
+                label="Who’s data are you processing? This could be customers, employees or any other type of user in your system."
+                placement="right"
+              >
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
@@ -234,7 +250,11 @@ const PrivacyDeclarationForm: NextPage<{
                   label: data.fides_key,
                 }))}
               />
-              <Tooltip fontSize="md" label="..." placement="right">
+              <Tooltip
+                fontSize="md"
+                label="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
+                placement="right"
+              >
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
