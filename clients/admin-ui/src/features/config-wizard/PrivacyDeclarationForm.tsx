@@ -197,7 +197,7 @@ const PrivacyDeclarationForm: NextPage<{
                 label="Data use"
                 name="data_use"
                 size="md"
-                options={allDataUses?.map((data) => ({
+                options={allDataUses?.map((data: any) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -212,7 +212,7 @@ const PrivacyDeclarationForm: NextPage<{
                 name="data_subjects"
                 label="Data subjects"
                 size="md"
-                options={allDataSubjects?.map((data) => ({
+                options={allDataSubjects?.map((data: any) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -229,7 +229,7 @@ const PrivacyDeclarationForm: NextPage<{
                 label="Data qualifier"
                 name="data_qualifier"
                 size="md"
-                options={allDataQualifiers?.map((data) => ({
+                options={allDataQualifiers?.map((data: any) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}

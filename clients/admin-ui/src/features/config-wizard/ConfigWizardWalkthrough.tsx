@@ -78,7 +78,6 @@ const ConfigWizardWalkthrough = () => {
                 )}
                 {reviewStep === 2 && (
                   <PrivacyDeclarationForm
-                    handleChangeStep={handleChangeStep}
                     handleCancelSetup={handleCancelSetup}
                     handleChangeReviewStep={handleChangeReviewStep}
                   />
