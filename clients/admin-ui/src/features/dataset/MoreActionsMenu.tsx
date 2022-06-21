@@ -33,8 +33,9 @@ const ActionItem = ({
 
 interface Props {
   onModifyCollection: () => void;
+  onModifyDataset: () => void;
 }
-const MoreActionsMenu = ({ onModifyCollection }: Props) => (
+const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
   <Menu size="sm">
     <MenuButton as={Button} variant="outline">
       <More />
@@ -61,7 +62,7 @@ const MoreActionsMenu = ({ onModifyCollection }: Props) => (
           <NextLink href="/dataset">Select new dataset</NextLink>
         </ActionItem>
         <ActionItem isDisabled>Classify this dataset</ActionItem>
-        <ActionItem isDisabled>Modify dataset</ActionItem>
+        <ActionItem onClick={onModifyDataset}>Modify dataset</ActionItem>
       </MenuGroup>
     </MenuList>
   </Menu>

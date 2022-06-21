@@ -16,42 +16,87 @@ import React, { useState } from "react";
 
 import { QuestionIcon } from "~/features/common/Icon";
 
-import { useCreateOrganizationMutation } from "./organization.slice";
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
+import {
+  useCreateOrganizationMutation,
+  useGetOrganizationByFidesKeyQuery,
+  useUpdateOrganizationMutation,
+} from "./organization.slice";
 
 const useOrganizationInfoForm = (handleChangeStep: Function) => {
   const [createOrganization] = useCreateOrganizationMutation();
+  const [updateOrganization] = useUpdateOrganizationMutation();
+  // FUTURE TODO: Need a way to check for an existing fides_key from the start of the wizard
+  const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
+    "default_organization"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
-      name: "",
-      description: "",
+      name: existingOrg?.name ?? "",
+      description: existingOrg?.description ?? "",
     },
     onSubmit: async (values) => {
       const organizationBody = {
-        name: values.name,
-        description: values.description,
-        fides_key: "default_organization",
+        name: values.name ?? existingOrg?.name,
+        description: values.description ?? existingOrg?.description,
+        fides_key: existingOrg?.fides_key ?? "default_organization",
+        // FUTURE TODO: Need to check with this body that if they have a fides_key assigned,
+        // then assign that existing one
       };
+
       setIsLoading(true);
 
-      // @ts-ignore
-      const { error: createOrganizationError } = await createOrganization(
-        organizationBody
-      );
+      if (!existingOrg) {
+        const createOrganizationResult = await createOrganization(
+          organizationBody
+        );
+
+        if ("error" in createOrganizationResult) {
+          let errorMsg = "An unexpected error occurred. Please try again.";
+          if (isErrorWithDetail(createOrganizationResult.error)) {
+            errorMsg = createOrganizationResult.error.data.detail;
+          } else if (isErrorWithDetailArray(createOrganizationResult.error)) {
+            const { error } = createOrganizationResult;
+            errorMsg = error.data.detail[0].msg;
+          }
+          toast({
+            status: "error",
+            description: errorMsg,
+          });
+          return;
+        } 
+          toast.closeAll();
+          handleChangeStep(1);
+        
+      } else {
+        const updateOrganizationResult = await updateOrganization(
+          organizationBody
+        );
+
+        if ("error" in updateOrganizationResult) {
+          let errorMsg = "An unexpected error occurred. Please try again.";
+          if (isErrorWithDetail(updateOrganizationResult.error)) {
+            errorMsg = updateOrganizationResult.error.data.detail;
+          } else if (isErrorWithDetailArray(updateOrganizationResult.error)) {
+            const { error } = updateOrganizationResult;
+            errorMsg = error.data.detail[0].msg;
+          }
+          toast({
+            status: "error",
+            description: errorMsg,
+          });
+          return;
+        } 
+          toast.closeAll();
+          handleChangeStep(1);
+        
+      }
 
       setIsLoading(false);
-
-      if (createOrganizationError) {
-        toast({
-          status: "error",
-          description: "Creating organization failed.",
-        });
-      } else {
-        handleChangeStep(1);
-        toast.closeAll();
-      }
     },
+    enableReinitialize: true,
     validate: (values) => {
       const errors: {
         name?: string;
@@ -63,7 +108,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
       }
 
       if (!values.description) {
-        errors.description = "Organization description is equired";
+        errors.description = "Organization description is required";
       }
 
       return errors;
@@ -87,8 +132,8 @@ const OrganizationInfoForm: NextPage<{
   } = useOrganizationInfoForm(handleChangeStep);
 
   return (
-    <chakra.form onSubmit={handleSubmit}>
-      <Stack ml="50px" spacing="24px" w="80%">
+    <chakra.form onSubmit={handleSubmit} w="100%">
+      <Stack ml="100px" spacing={10}>
         <Heading as="h3" size="lg">
           Tell us about your business
         </Heading>

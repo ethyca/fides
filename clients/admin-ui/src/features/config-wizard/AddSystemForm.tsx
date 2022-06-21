@@ -27,8 +27,8 @@ import { iconButtonSize } from "./constants";
 const AddSystemForm: NextPage<{
   handleChangeStep: Function;
 }> = ({ handleChangeStep }) => (
-  <chakra.form>
-    <Stack ml="50px" spacing="24px" w="80%">
+  <chakra.form w="100%">
+    <Stack ml="100px" spacing={10}>
       <Heading as="h3" size="lg">
         Add a system
       </Heading>
