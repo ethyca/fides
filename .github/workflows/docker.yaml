@@ -29,12 +29,12 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
-      - name: Build Fidesctl Prod
+      - name: Build Fidesctl Image
         run: nox -s "build(prod)"
 
-      - name: Push Fidesctl Dev
+      - name: Push Fidesctl Dev Tag
         run: nox -s "push(dev)"
 
-      - name: Push Fidesctl Prod
+      - name: Push Fidesctl Prod Tags
         if: ${{ env.TAG }}
         run: nox -s "push(prod)"
