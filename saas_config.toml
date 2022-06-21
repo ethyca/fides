@@ -51,3 +51,9 @@ redirect_uri = ""
 page_size = ""
 requester_email = ""
 identity_email = ""
+
+[zendesk]
+domain = ""
+app_username = ""
+app_password = ""
+identity_email = ""

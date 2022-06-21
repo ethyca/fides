@@ -53,4 +53,7 @@ jobs:
           SEGMENT_NAMESPACE_ID: ${{ secrets.SEGMENT_NAMESPACE_ID }}
           SEGMENT_ACCESS_SECRET: ${{ secrets.SEGMENT_ACCESS_SECRET }}
           SEGMENT_IDENTITY_EMAIL: ${{ secrets.SEGMENT_IDENTITY_EMAIL }}
+          ZENDESK_DOMAIN: ${{ secrets.ZENDESK_DOMAIN }}
+          ZENDESK_USERNAME: ${{ secrets.ZENDESK_USERNAME }}
+          ZENDESK_API_KEY: ${{ secrets.ZENDESK_API_KEY }}
         run: make pytest-saas
