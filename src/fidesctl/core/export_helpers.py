@@ -34,7 +34,7 @@ DATAMAP_COLUMNS = {
     "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "Link to record of legitimate interests assessment (if applicable)",
     "system.privacy_declaration.data_subjects.rights_available": "Rights available to individuals",
     "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "Existence of automated decision-making, including profiling (if applicable)",
-    "dataset.name": "The source of the personal data (if applicable)",
+    "dataset.source_name": "The source of the personal data (if applicable)",
     "system.data_protection_impact_assessment.is_required": "Data Protection Impact Assessment required?",
     "system.data_protection_impact_assessment.progress": "Data Protection Impact Assessment progress",
     "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",

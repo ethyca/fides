@@ -43,7 +43,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
                             "system.data_protection_impact_assessment.is_required": "true",
                             "system.data_protection_impact_assessment.progress": "Complete",
                             "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
-                            "dataset.name": "N/A",
+                            "dataset.source_name": "N/A",
                             "third_country_combined": "GBR, USA, CAN",
                             "unioned_data_categories": "user.provided.identifiable.contact",
                             "dataset.retention": "N/A",
@@ -110,8 +110,9 @@ async def export_datamap(
         raise error
 
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
-
+    print(joined_system_dataset_df.head())
     formatted_datamap = format_datamap_values(joined_system_dataset_df)
+    print(formatted_datamap)
     formatted_datamap = [DATAMAP_COLUMNS] + formatted_datamap
     # log.info("slartibartfast")
     # log.info(type(formatted_datamap))
@@ -123,10 +124,9 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str,
     Formats the joined DataFrame to return the data as records.
     """
 
-    limited_columns_df = joined_system_dataset_df[
-        joined_system_dataset_df.columns[
-            joined_system_dataset_df.columns.isin(list(DATAMAP_COLUMNS.keys()))
-        ]
-    ]
+    limited_columns_df = DataFrame(
+        joined_system_dataset_df,
+        columns=list(DATAMAP_COLUMNS.keys()),
+    )
 
     return limited_columns_df.to_dict("records")
