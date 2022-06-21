@@ -9,6 +9,7 @@ import AddSystemForm from "./AddSystemForm";
 import { STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
+import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
@@ -60,6 +61,7 @@ const ConfigWizardWalkthrough = () => {
                 handleCancelSetup={handleCancelSetup}
               />
             ) : null}
+            {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>
         </Stack>
       </Stack>
