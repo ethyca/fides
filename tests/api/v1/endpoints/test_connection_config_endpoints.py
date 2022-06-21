@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import Dict, List
 from unittest import mock
 from unittest.mock import Mock
@@ -378,6 +379,62 @@ class TestPatchConnections:
             "disabled": False,
             "description": None,
         }
+
+    @mock.patch("fidesops.main.prepare_and_log_request")
+    def test_patch_connections_incorrect_scope_analytics(
+        self,
+        mocked_prepare_and_log_request,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ) -> None:
+        url = V1_URL_PREFIX + CONNECTIONS
+        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+        assert mocked_prepare_and_log_request.called
+        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+
+        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[1] == "testserver"
+        assert call_args[2] == 403
+        assert isinstance(call_args[3], datetime)
+        assert call_args[4] is None
+        assert call_args[5] == "HTTPException"
+
+    @mock.patch("fidesops.main.prepare_and_log_request")
+    def test_patch_http_connection_successful_analytics(
+        self,
+        mocked_prepare_and_log_request,
+        api_client,
+        db: Session,
+        generate_auth_header,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = [
+            {
+                "name": "My Post-Execution Webhook",
+                "key": "webhook_key",
+                "connection_type": "https",
+                "access": "read",
+            }
+        ]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == "https"
+        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
+        http_config.delete(db)
+
+        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+
+        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[1] == "testserver"
+        assert call_args[2] == 200
+        assert isinstance(call_args[3], datetime)
+        assert call_args[4] is None
+        assert call_args[5] is None
 
 
 class TestGetConnections:

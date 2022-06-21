@@ -66,7 +66,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {users?.map((user) => (
+          {users?.map((user: any) => (
             <UserManagementRow user={user} key={user.id} />
           ))}
         </Tbody>
