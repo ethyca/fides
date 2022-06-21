@@ -35,6 +35,7 @@ The types of changes are:
 * Added ConnectionConfig `connection_type` and `disabled` filters [#675](https://github.com/ethyca/fidesops/pull/675)
 * Adds Fideslog integration [#541](https://github.com/ethyca/fidesops/pull/541)
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
+* Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 
 ### Changed
 

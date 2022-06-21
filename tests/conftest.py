@@ -40,6 +40,7 @@ from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
+from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
