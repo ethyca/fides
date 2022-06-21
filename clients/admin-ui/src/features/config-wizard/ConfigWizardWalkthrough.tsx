@@ -12,6 +12,7 @@ import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
+import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
@@ -91,6 +92,7 @@ const ConfigWizardWalkthrough = () => {
                 )}
               </Stack>
             ) : null}
+            {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>
         </Stack>
       </Stack>

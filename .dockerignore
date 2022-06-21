@@ -3,11 +3,31 @@ build/
 dist/
 src/fidesctl.egg-info/
 
+# Ignore Python-Specific Files
+.mypy_cache/
+.nox/
+.pytest_cache/
+__pycache__/
+.coverage
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Editors
+.vscode/
+.idea/
+
 # Ignore the docs
 docs/
 
 # Ignore dev files
+.git/
 .github/
 .devcontainer/
-
 node_modules/

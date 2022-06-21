@@ -19,6 +19,10 @@ export const STEPS = [
     number: 5,
     name: "Describe systems",
   },
+  {
+    number: 6,
+    name: "View your data map",
+  },
 ];
 
 export const HORIZONTAL_STEPS = [
