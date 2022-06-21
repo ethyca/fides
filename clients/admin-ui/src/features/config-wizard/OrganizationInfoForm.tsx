@@ -13,9 +13,7 @@ import {
 import { useFormik } from "formik";
 import type { NextPage } from "next";
 import React, { useState } from "react";
-
 import { QuestionIcon } from "~/features/common/Icon";
-
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useCreateOrganizationMutation,
@@ -66,10 +64,9 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
             description: errorMsg,
           });
           return;
-        } 
-          toast.closeAll();
-          handleChangeStep(1);
-        
+        }
+        toast.closeAll();
+        handleChangeStep(1);
       } else {
         const updateOrganizationResult = await updateOrganization(
           organizationBody
@@ -88,10 +85,9 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
             description: errorMsg,
           });
           return;
-        } 
-          toast.closeAll();
-          handleChangeStep(1);
-        
+        }
+        toast.closeAll();
+        handleChangeStep(1);
       }
 
       setIsLoading(false);

@@ -14,7 +14,6 @@ interface InputProps {
 }
 
 export const CustomTextInput = ({
-  disabled,
   label,
   ...props
 }: InputProps & FieldHookConfig<string>) => {
@@ -27,13 +26,7 @@ export const CustomTextInput = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Input
-          {...field}
-          disabled
-          type={type}
-          placeholder={placeholder}
-          size="sm"
-        />
+        <Input {...field} type={type} placeholder={placeholder} size="sm" />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>

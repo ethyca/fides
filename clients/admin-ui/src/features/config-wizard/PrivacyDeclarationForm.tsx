@@ -1,11 +1,25 @@
-import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  FormLabel,
+  Heading,
+  Stack,
+  Text,
+  Tooltip,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { QuestionIcon } from "~/features/common/Icon";
+import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
   setDataQualifier,
@@ -53,6 +67,7 @@ const PrivacyDeclarationForm: NextPage<{
 }> = ({ handleCancelSetup, handleChangeReviewStep }) => {
   const dispatch = useDispatch();
   const toast = useToast();
+  const [formDeclarations, setFormDeclarations] = useState<any>([]);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
@@ -65,6 +80,11 @@ const PrivacyDeclarationForm: NextPage<{
   const { data: dataQualifier } = useGetDataQualifierQuery();
   const { data: dataUse } = useGetDataUseQuery();
 
+  const allDataCategories = useSelector(selectDataCategories);
+  const allDataSubjects = useSelector(selectDataSubjects);
+  const allDataUses = useSelector(selectDataUse);
+  const allDataQualifiers = useSelector(selectDataQualifier);
+
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
@@ -72,8 +92,15 @@ const PrivacyDeclarationForm: NextPage<{
     dispatch(setDataQualifier(dataQualifier ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
 
+  useEffect(() => {
+    console.log("test");
+  }, [formDeclarations]);
+
   const initialValues = {
-    privacy_declarations: existingSystem?.privacy_declarations ?? [],
+    data_categories: [],
+    data_subjects: [],
+    data_use: "",
+    data_qualifier: "",
   };
 
   let privacyDeclarations: any;
@@ -93,12 +120,13 @@ const PrivacyDeclarationForm: NextPage<{
           (declaration) => declaration.name === values.name
         ).length > 0
       ) {
-        privacyDeclarations = filteredDeclarations;
+        privacyDeclarations = [...filteredDeclarations, ...formDeclarations];
       }
       // If the declaration does not exist
       else {
         privacyDeclarations = [
           ...filteredDeclarations,
+          ...formDeclarations,
           {
             name: values.name,
             data_categories: values.data_categories,
@@ -115,8 +143,9 @@ const PrivacyDeclarationForm: NextPage<{
 
     const systemBodyWithDeclaration = {
       fides_key: existingSystem?.fides_key ?? "default_organization",
-      privacy_declarations: privacyDeclarations,
+      privacy_declarations: Array.from(new Set([...privacyDeclarations])),
       system_type: existingSystem?.system_type,
+      ...existingSystem,
     };
 
     const handleResult = (
@@ -149,20 +178,19 @@ const PrivacyDeclarationForm: NextPage<{
     setIsLoading(false);
   };
 
-  console.log(existingSystem);
-
-  const allDataCategories = useSelector(selectDataCategories);
-  const allDataSubjects = useSelector(selectDataSubjects);
-  const allDataUses = useSelector(selectDataUse);
-  const allDataQualifiers = useSelector(selectDataQualifier);
+  const addAnotherDeclaration = (values: any) => {
+    const declarationToSet = { ...values, dataset_references: ["string"] };
+    setFormDeclarations([...formDeclarations, declarationToSet]);
+    // reset form
+  };
 
   return (
     <Formik
-      enableReinitialize={true}
+      // enableReinitialize
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      {({ values }) => (
+      {({ resetForm, setFieldValue, values }) => (
         <Form>
           <Stack ml="100px" spacing={10}>
             <Heading as="h3" size="lg">
@@ -176,8 +204,38 @@ const PrivacyDeclarationForm: NextPage<{
               that data and finally, how identifiable is the user with this
               data.
             </div>
+            {formDeclarations.length > 0
+              ? formDeclarations.map((declaration: any) => (
+                  <Accordion allowToggle border="transparent">
+                    <AccordionItem>
+                      {({ isExpanded }) => (
+                        <>
+                          <AccordionButton>
+                            <Box flex="1" textAlign="left">
+                              {declaration.name}
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                          <AccordionPanel padding="0px" mt="20px">
+                            <FormLabel>Declaration name</FormLabel>
+                            {declaration.name}
+                            <FormLabel>Declaration categories</FormLabel>
+                            {declaration.data_categories}
+                            <FormLabel>Data use</FormLabel>
+                            {declaration.data_use}
+                            <FormLabel>Data subjects</FormLabel>
+                            {declaration.data_subjects}
+                            <FormLabel>Data qualifier</FormLabel>
+                            {declaration.data_qualifier}
+                          </AccordionPanel>
+                        </>
+                      )}
+                    </AccordionItem>
+                  </Accordion>
+                ))
+              : null}
             <Stack>
-              <Stack direction="row">
+              <Stack direction="row" mb={5}>
                 <CustomTextInput name="name" label="Declaration name" />
                 <Tooltip
                   fontSize="md"
@@ -248,7 +306,7 @@ const PrivacyDeclarationForm: NextPage<{
               </Tooltip>
             </Stack>
 
-            <Stack direction="row" mb={5}>
+            <Stack direction="row">
               <CustomSelect
                 isClearable
                 id="data_qualifier"
@@ -268,6 +326,40 @@ const PrivacyDeclarationForm: NextPage<{
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
+            <Text
+              color={
+                !values.data_use ||
+                !values.data_qualifier ||
+                !values.data_subjects ||
+                !values.data_categories
+                  ? `gray.400`
+                  : `complimentary.700`
+              }
+              cursor={
+                !values.data_use ||
+                !values.data_qualifier ||
+                !values.data_subjects ||
+                !values.data_categories
+                  ? `default`
+                  : `pointer`
+              }
+              onClick={() => {
+                addAnotherDeclaration(values);
+                // resetForm({
+                //   values: {
+                //     name: "",
+                //     data_categories: [],
+                //     data_subjects: [],
+                //   },
+                //   // you can also set the other form states here
+                // });
+                // const { setFieldValue } = useFormikContext();
+                // setFieldValue("data_qualifier", "");
+                // setFieldValue("data_use", "");
+              }}
+            >
+              Add another declaration <AddIcon boxSize={10} />{" "}
+            </Text>
             <Box>
               <Button
                 onClick={() => handleCancelSetup()}

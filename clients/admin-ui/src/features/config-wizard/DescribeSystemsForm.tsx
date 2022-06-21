@@ -104,7 +104,7 @@ const DescribeSystemsForm: NextPage<{
   return (
     <Formik
       initialValues={initialValues}
-      enableReinitialize={true}
+      enableReinitialize
       onSubmit={handleSubmit}
     >
       {({ values }) => (

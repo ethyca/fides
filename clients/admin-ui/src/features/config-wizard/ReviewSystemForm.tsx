@@ -1,8 +1,23 @@
-import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Divider,
+  FormLabel,
+  Heading,
+  HStack,
+  Stack,
+  Tag,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React from "react";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { useGetOrganizationByFidesKeyQuery } from "../config-wizard/organization.slice";
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { System } from "../system/types";
@@ -25,26 +40,23 @@ const ReviewSystemForm: NextPage<{
   const toast = useToast();
 
   const initialValues = {
-    name: existingOrg?.name,
-    system_name: existingSystem?.name,
+    name: existingOrg?.name ?? "",
+    system_name: existingSystem?.name ?? "",
     // system_key: existingSystem?.key,
-    system_description: existingSystem?.description,
-    system_type: existingSystem?.system_type,
-    system_tags: existingSystem?.system_dependencies,
+    system_description: existingSystem?.description ?? "",
+    system_type: existingSystem?.system_type ?? "",
+    system_dependencies: existingSystem?.system_dependencies ?? [],
+    privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
 
-  const handleSubmit = async (values: FormValues) => {
-    // setIsLoading(true);
-    // handleResult(updateSystemResult);
-    // setIsLoading(false);
+  const handleSubmit = () => {
+    handleChangeStep(6);
   };
-
-  console.log(existingSystem);
 
   return (
     <Formik
       initialValues={initialValues}
-      enableReinitialize={true}
+      enableReinitialize
       onSubmit={handleSubmit}
     >
       {({ values }) => (
@@ -54,39 +66,111 @@ const ReviewSystemForm: NextPage<{
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Review {existingOrg?.name}
             </Heading>
-            <div>Let’s quickly review our declaration before registering</div>
+            <Text mt="10px !important">
+              Let’s quickly review our declaration before registering
+            </Text>
             <Stack>
-              <CustomTextInput
-                disabled
-                id="system_name"
-                name="system_name"
-                label="System name"
-              />
-              {/* <CustomTextInput
-                disabled
-                id="system_key"
-                name="system_key"
-                label="System key"
-              /> */}
-              <CustomTextInput
-                disabled
-                id="system_description"
-                name="system_description"
-                label="Description"
-              />
-              <CustomTextInput
-                disabled
-                id="system_type"
-                name="system_type"
-                label="System type"
-              />
-              <CustomTextInput
-                disabled
-                id="system_tags"
-                name="system_tags"
-                label="System tags"
-              />
-              <Text>Privacy declarations:</Text>
+              <HStack>
+                <FormLabel>System name:</FormLabel>
+                <Text>{initialValues.system_name}</Text>
+              </HStack>
+              {/* TODO FUTURE: System key is not currently stored anywhere in the system info
+              <HStack>
+                <FormLabel>System key:</FormLabel>
+                <Text>{initialValues.system_key}</Text>
+              </HStack> */}
+              <HStack>
+                <FormLabel>System description:</FormLabel>
+                <Text>{initialValues.system_description}</Text>
+              </HStack>
+              <HStack>
+                <FormLabel>System type:</FormLabel>
+                <Text>{initialValues.system_type}</Text>
+              </HStack>
+              <HStack>
+                <FormLabel>System tags:</FormLabel>
+                {initialValues.system_dependencies.map((dependency) => (
+                  <Tag
+                    background="primary.400"
+                    color="white"
+                    width="fit-content"
+                  >
+                    {dependency}
+                  </Tag>
+                ))}
+              </HStack>
+              <FormLabel>Privacy declarations:</FormLabel>
+              <Divider />
+              {initialValues.privacy_declarations.length > 0
+                ? initialValues.privacy_declarations.map((declaration: any) => (
+                    <Accordion allowToggle border="transparent">
+                      <AccordionItem>
+                        {({ isExpanded }) => (
+                          <>
+                            <AccordionButton>
+                              <Box flex="1" textAlign="left">
+                                {declaration.name}
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel padding="0px" mt="20px">
+                              <HStack mb="20px">
+                                <Text color="gray.600">
+                                  Declaration categories
+                                </Text>
+                                {declaration.data_categories.map(
+                                  (category: any) => (
+                                    <Tag
+                                      background="primary.400"
+                                      color="white"
+                                      width="fit-content"
+                                    >
+                                      {category}
+                                    </Tag>
+                                  )
+                                )}
+                              </HStack>
+                              <HStack mb="20px">
+                                <Text color="gray.600">Data use</Text>
+                                <Tag
+                                  background="primary.400"
+                                  color="white"
+                                  width="fit-content"
+                                >
+                                  {declaration.data_use}
+                                </Tag>
+                              </HStack>
+                              <HStack mb="20px">
+                                <Text color="gray.600">Data subjects</Text>
+                                {declaration.data_subjects.map(
+                                  (subject: any) => (
+                                    <Tag
+                                      background="primary.400"
+                                      color="white"
+                                      width="fit-content"
+                                    >
+                                      {subject}
+                                    </Tag>
+                                  )
+                                )}
+                              </HStack>
+                              <HStack mb="20px">
+                                <Text color="gray.600">Data qualifier</Text>
+                                <Tag
+                                  background="primary.400"
+                                  color="white"
+                                  width="fit-content"
+                                >
+                                  {declaration.data_qualifier}
+                                </Tag>
+                              </HStack>
+                            </AccordionPanel>
+                          </>
+                        )}
+                      </AccordionItem>
+                    </Accordion>
+                  ))
+                : null}
             </Stack>
             <Box>
               <Button
@@ -97,6 +181,7 @@ const ReviewSystemForm: NextPage<{
               >
                 Cancel
               </Button>
+              {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
               <Button
                 type="submit"
                 colorScheme="primary"
@@ -105,7 +190,7 @@ const ReviewSystemForm: NextPage<{
                 // }
                 // isLoading={isLoading}
               >
-                Confirm and Continue
+                Confirm and Register
               </Button>
             </Box>
           </Stack>
