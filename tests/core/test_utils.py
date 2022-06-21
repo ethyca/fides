@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+from pathlib import PosixPath
 from typing import Generator
 
 import pytest
@@ -59,6 +60,21 @@ def test_nested_fields_unpacked(
 
 
 @pytest.mark.unit
+def test_get_manifest_list(tmp_path: PosixPath) -> None:
+    """Test that the correct number of yml files are returned."""
+    test_dir = tmp_path / "test"
+    test_dir.mkdir()
+    test_files = ["foo.yml", "foo.yaml"]
+
+    for file in test_files:
+        test_file = test_dir / file
+        print(test_file)
+        test_file.write_text("content")
+
+    manifest_list = utils.get_manifest_list(str(test_dir))
+    assert len(manifest_list) == 2
+
+
 @pytest.mark.parametrize(
     "fides_key, sanitized_fides_key",
     [("foo", "foo"), ("@foo#", "_foo_"), (":_foo)bar!123$", "__foo_bar_123_")],

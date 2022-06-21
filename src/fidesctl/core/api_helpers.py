@@ -2,7 +2,7 @@
 Reusable utilities meant to make repetitive api-related tasks easier.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fideslang import FidesModel
 from fideslang.parse import parse_dict
@@ -46,7 +46,8 @@ def get_server_resource(
     resource_type: str,
     resource_key: str,
     headers: Dict[str, str],
-) -> Optional[FidesModel]:
+    raw: bool = False,
+) -> Optional[Union[FidesModel, Dict]]:
     """
     Attempt to get a given resource from the server.
 
@@ -61,15 +62,17 @@ def get_server_resource(
     )
 
     server_resource: Optional[FidesModel] = (
-        parse_dict(
-            resource_type=resource_type,
-            resource=raw_server_response.json(),
-            from_server=True,
-        )
+        raw_server_response.json()
         if raw_server_response.status_code >= 200
         and raw_server_response.status_code <= 299
         else None
     )
+    if not raw and server_resource:
+        server_resource = parse_dict(
+            resource_type=resource_type,
+            resource=raw_server_response.json(),
+            from_server=True,
+        )
 
     return server_resource
 
