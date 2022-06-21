@@ -26,6 +26,8 @@ interface Props {
   values: FormValues;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
+  // NOTE: If you're adding more checks on dataType, refactor this into two
+  // components instead and remove this prop.
   dataType: "collection" | "field";
 }
 
