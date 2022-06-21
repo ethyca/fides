@@ -4,6 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../app/store";
 import { BASE_API_URN } from "../../constants";
 import { selectToken } from "../auth";
+import { addCommonHeaders } from "../common/CommonHeaders";
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
@@ -47,17 +48,13 @@ export function mapFiltersToSearchParams({
 }
 
 // Subject requests API
-export const privacyRequestApi = createApi({
+export const privacyRequestApi: any = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_API_URN,
     prepareHeaders: (headers, { getState }) => {
-      const token = selectToken(getState() as RootState);
-      headers.set("Access-Control-Allow-Origin", "*");
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
+      const token: string | null = selectToken(getState() as RootState);
+      return addCommonHeaders(headers, token);
     },
   }),
   tagTypes: ["Request"],
@@ -130,6 +127,7 @@ export const requestCSVDownload = async ({
       headers: {
         "Access-Control-Allow-Origin": "*",
         Authorization: `Bearer ${token}`,
+        "X-Fides-Source": "fidesops-admin-ui",
       },
     }
   )

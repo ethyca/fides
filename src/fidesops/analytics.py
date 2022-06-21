@@ -1,6 +1,7 @@
 import logging
 import os
 from platform import system
+from typing import Optional
 
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
@@ -17,9 +18,11 @@ def in_docker_container() -> bool:
     return bool(os.getenv("RUNNING_IN_DOCKER") == "true")
 
 
-def running_on_local_host() -> bool:
-    """For events submitted as a result of making API server requests, `True` if the API server is running on the user's local host. Default: `False`."""
-    return True
+def accessed_through_local_host(hostname: Optional[str]) -> bool:
+    """`True`if the event was submitted through a local host, e,g, 127.0.0.1."""
+    # testserver is hostname in unit tests
+    LOCAL_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "testserver"]
+    return hostname in LOCAL_HOSTS
 
 
 analytics_client = AnalyticsClient(

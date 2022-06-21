@@ -75,7 +75,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {requests.map((request) => (
+          {requests.map((request: any) => (
             <RequestRow request={request} key={request.id} />
           ))}
         </Tbody>

@@ -3,6 +3,7 @@ import uuid
 import pytest
 
 from fidesops.common_exceptions import PrivacyRequestPaused
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import PausedStep
 from fidesops.models.privacy_request import (

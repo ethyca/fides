@@ -15,6 +15,7 @@ module.exports = {
     // causes bug in re-exporting default exports, see
     // https://github.com/eslint/eslint/issues/15617
     'no-restricted-exports': [0],
+    'import/prefer-default-export': 'off',
     'react/function-component-definition': [
       2,
       {

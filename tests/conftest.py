@@ -162,3 +162,12 @@ def integration_config() -> MutableMapping[str, Any]:
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
+
+
+@pytest.fixture(autouse=True, scope="session")
+def analytics_opt_out():
+    """Disable sending analytics when running tests."""
+    original_value = config.root_user.ANALYTICS_OPT_OUT
+    config.root_user.ANALYTICS_OPT_OUT = True
+    yield
+    config.root_user.ANALYTICS_OPT_OUT = original_value
