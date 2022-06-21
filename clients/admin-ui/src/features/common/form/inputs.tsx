@@ -195,8 +195,8 @@ export const CustomCreatableSingleSelect = ({
   const selected = { label: field.value, value: field.value };
 
   return (
-    <FormControl>
-      <SimpleGrid columns={[1, 2]}>
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
           options={options}
@@ -232,7 +232,7 @@ export const CustomCreatableSingleSelect = ({
           }}
           isClearable
         />
-      </SimpleGrid>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -251,8 +251,8 @@ export const CustomCreatableMultiSelect = ({
   const { setFieldValue } = useFormikContext();
 
   return (
-    <FormControl>
-      <SimpleGrid columns={[1, 2]}>
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
           name={props.name}
@@ -292,7 +292,7 @@ export const CustomCreatableMultiSelect = ({
             );
           }}
         />
-      </SimpleGrid>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
