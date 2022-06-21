@@ -10,15 +10,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import {
-  DATA_QUALIFIERS,
-  DATASET_DATA_CATEGORY_TOOLTIP,
-  DATASET_DATA_QUALIFIER_TOOLTIP,
-  DATASET_DESCRIPTION_TOOLTIP,
-  DATASET_NAME_TOOLTIP,
-  DATASET_RETENTION_TOOLTIP,
-  DATASET_THIRD_COUNTRY_TRANSFERS_TOOLTIP,
-} from "./constants";
+import { DATA_QUALIFIERS, DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
 
@@ -72,28 +64,28 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
             <CustomTextInput
               name="name"
               label="Name"
-              tooltip={DATASET_NAME_TOOLTIP}
+              tooltip={DATASET.name.tooltip}
             />
             <CustomTextInput
               name="description"
               label="Description"
-              tooltip={DATASET_DESCRIPTION_TOOLTIP}
+              tooltip={DATASET.description.tooltip}
             />
             <CustomTextInput
               name="retention"
               label="Retention period"
-              tooltip={DATASET_RETENTION_TOOLTIP}
+              tooltip={DATASET.retention.tooltip}
             />
             <CustomSelect
               name="data_qualifier"
               label="Identifiability"
               options={DATA_QUALIFIERS_OPTIONS}
-              tooltip={DATASET_DATA_QUALIFIER_TOOLTIP}
+              tooltip={DATASET.data_qualifiers.tooltip}
             />
             <CustomMultiSelect
               name="third_country_transfers"
               label="Geographic location"
-              tooltip={DATASET_THIRD_COUNTRY_TRANSFERS_TOOLTIP}
+              tooltip={DATASET.third_country_transfers.tooltip}
               isSearchable
               options={[]} // TODO
             />
@@ -101,7 +93,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
-              tooltip={DATASET_DATA_CATEGORY_TOOLTIP}
+              tooltip={DATASET.data_categories.tooltip}
             />
           </Stack>
           <Box>

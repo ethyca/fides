@@ -6,15 +6,7 @@ import { useSelector } from "react-redux";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import {
-  DATA_QUALIFIERS,
-  DATASET_COLLECTION_DATA_CATEGORY_TOOLTIP,
-  DATASET_COLLECTION_DATA_QUALIFIER_TOOLTIP,
-  DATASET_COLLECTION_DESCRIPTION_TOOLTIP,
-  DATASET_FIELD_DATA_CATEGORY_TOOLTIP,
-  DATASET_FIELD_DATA_QUALIFIER_TOOLTIP,
-  DATASET_FIELD_DESCRIPTION_TOOLTIP,
-} from "./constants";
+import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DatasetCollection, DatasetField } from "./types";
 
@@ -56,16 +48,16 @@ const EditCollectionOrFieldForm = ({
 
   const descriptionTooltip =
     dataType === "collection"
-      ? DATASET_COLLECTION_DESCRIPTION_TOOLTIP
-      : DATASET_FIELD_DESCRIPTION_TOOLTIP;
+      ? COLLECTION.description.tooltip
+      : FIELD.description.tooltip;
   const dataQualifierTooltip =
     dataType === "collection"
-      ? DATASET_COLLECTION_DATA_QUALIFIER_TOOLTIP
-      : DATASET_FIELD_DATA_QUALIFIER_TOOLTIP;
+      ? COLLECTION.data_qualifiers.tooltip
+      : FIELD.data_qualifier.tooltip;
   const dataCategoryTooltip =
     dataType === "collection"
-      ? DATASET_COLLECTION_DATA_CATEGORY_TOOLTIP
-      : DATASET_FIELD_DATA_CATEGORY_TOOLTIP;
+      ? COLLECTION.data_categories.tooltip
+      : FIELD.data_categories.tooltip;
 
   const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element
