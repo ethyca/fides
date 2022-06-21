@@ -116,7 +116,7 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `FIDESOPS__HOT_RELOAD` | False | If "True", the fidesops server will reload code changes without you needing to restart the server. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__DEV_MODE` | False | If "True", the fidesops server will log error tracebacks, and log details of third party requests. This variable should always be set to "False" in production systems.|
 | `FIDESOPS__CONFIG_PATH` | None | If this variable is set to a path, that path will be used to load .toml files first. That is, any .toml files on this path will override any installed .toml files. |
-| `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection. |
+| `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
 
