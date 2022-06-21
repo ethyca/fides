@@ -92,14 +92,9 @@ const PrivacyDeclarationForm: NextPage<{
     dispatch(setDataSubjects(dataSubjects ?? []));
     dispatch(setDataUse(dataUse ?? []));
     dispatch(setDataQualifier(dataQualifier ?? []));
-  }, [
-    dispatch,
-    dataCategories,
-    dataSubjects,
-    dataUse,
-    dataQualifier,
-    formDeclarations,
-  ]);
+  }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
+
+  useEffect(() => {}, [formDeclarations]);
 
   const initialValues = {
     data_categories: [],
@@ -147,10 +142,12 @@ const PrivacyDeclarationForm: NextPage<{
     handlePrivacyDeclarations();
 
     const systemBodyWithDeclaration = {
+      description: existingSystem?.description,
       fides_key: existingSystem?.fides_key ?? "default_organization",
+      name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
       system_type: existingSystem?.system_type,
-      ...existingSystem,
+      system_dependencies: existingSystem?.system_dependencies,
     };
 
     const handleResult = (
@@ -186,12 +183,12 @@ const PrivacyDeclarationForm: NextPage<{
   const addAnotherDeclaration = (values: any) => {
     const declarationToSet = { ...values, dataset_references: ["string"] };
     setFormDeclarations([...formDeclarations, declarationToSet]);
-    // reset form
+    // TODO: reset form
   };
 
   return (
     <Formik
-      // enableReinitialize
+      enableReinitialize
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
@@ -352,17 +349,6 @@ const PrivacyDeclarationForm: NextPage<{
               }
               onClick={() => {
                 addAnotherDeclaration(values);
-                // resetForm({
-                //   values: {
-                //     name: "",
-                //     data_categories: [],
-                //     data_subjects: [],
-                //   },
-                //   // you can also set the other form states here
-                // });
-                // const { setFieldValue } = useFormikContext();
-                // setFieldValue("data_qualifier", "");
-                // setFieldValue("data_use", "");
               }}
             >
               Add another declaration <AddIcon boxSize={10} />{" "}

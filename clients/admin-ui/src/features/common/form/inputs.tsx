@@ -156,10 +156,22 @@ export const CustomMultiSelect = ({
               ...provided,
               display: "none",
             }),
+            option: (provided) => ({
+              ...provided,
+              // "&:hover": {
+              //   show full tag text
+              // },
+            }),
             multiValue: (provided) => ({
               ...provided,
               background: "primary.400",
               color: "white",
+            }),
+            multiValueLabel: (provided) => ({
+              ...provided,
+              "&:hover": {
+                overflow: "auto",
+              },
             }),
           }}
           isSearchable={isSearchable ?? false}
