@@ -19,6 +19,7 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -40,6 +41,7 @@ import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
+
 import {
   CustomMultiSelect,
   CustomSelect,
@@ -90,11 +92,14 @@ const PrivacyDeclarationForm: NextPage<{
     dispatch(setDataSubjects(dataSubjects ?? []));
     dispatch(setDataUse(dataUse ?? []));
     dispatch(setDataQualifier(dataQualifier ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
-
-  useEffect(() => {
-    console.log("test");
-  }, [formDeclarations]);
+  }, [
+    dispatch,
+    dataCategories,
+    dataSubjects,
+    dataUse,
+    dataQualifier,
+    formDeclarations,
+  ]);
 
   const initialValues = {
     data_categories: [],
@@ -190,7 +195,7 @@ const PrivacyDeclarationForm: NextPage<{
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      {({ resetForm, setFieldValue, values }) => (
+      {({ values }) => (
         <Form>
           <Stack ml="100px" spacing={10}>
             <Heading as="h3" size="lg">
@@ -206,30 +211,32 @@ const PrivacyDeclarationForm: NextPage<{
             </div>
             {formDeclarations.length > 0
               ? formDeclarations.map((declaration: any) => (
-                  <Accordion allowToggle border="transparent">
+                  <Accordion
+                    allowToggle
+                    border="transparent"
+                    key={declaration.name}
+                  >
                     <AccordionItem>
-                      {({ isExpanded }) => (
-                        <>
-                          <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                              {declaration.name}
-                            </Box>
-                            <AccordionIcon />
-                          </AccordionButton>
-                          <AccordionPanel padding="0px" mt="20px">
-                            <FormLabel>Declaration name</FormLabel>
+                      <>
+                        <AccordionButton>
+                          <Box flex="1" textAlign="left">
                             {declaration.name}
-                            <FormLabel>Declaration categories</FormLabel>
-                            {declaration.data_categories}
-                            <FormLabel>Data use</FormLabel>
-                            {declaration.data_use}
-                            <FormLabel>Data subjects</FormLabel>
-                            {declaration.data_subjects}
-                            <FormLabel>Data qualifier</FormLabel>
-                            {declaration.data_qualifier}
-                          </AccordionPanel>
-                        </>
-                      )}
+                          </Box>
+                          <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel padding="0px" mt="20px">
+                          <FormLabel>Declaration name</FormLabel>
+                          {declaration.name}
+                          <FormLabel>Declaration categories</FormLabel>
+                          {declaration.data_categories}
+                          <FormLabel>Data use</FormLabel>
+                          {declaration.data_use}
+                          <FormLabel>Data subjects</FormLabel>
+                          {declaration.data_subjects}
+                          <FormLabel>Data qualifier</FormLabel>
+                          {declaration.data_qualifier}
+                        </AccordionPanel>
+                      </>
                     </AccordionItem>
                   </Accordion>
                 ))
