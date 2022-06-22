@@ -31,6 +31,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "formik": "^2.2.9",
     "framer-motion": "^5",
+    "i18n-iso-countries": "^7.4.0",
     "lodash.debounce": "^4.0.8",
     "msw": "^0.29.0",
     "next": "12.1.0",
