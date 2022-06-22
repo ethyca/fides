@@ -89,7 +89,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
       >
         Update Password
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Update Password</ModalHeader>

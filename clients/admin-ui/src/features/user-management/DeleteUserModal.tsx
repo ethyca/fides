@@ -56,7 +56,7 @@ const DeleteUserModal: React.FC<User> = ({ id, username }) => {
       >
         <Text fontSize="sm">Delete</Text>
       </MenuItem>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete User</ModalHeader>
