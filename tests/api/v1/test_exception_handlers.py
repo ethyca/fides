@@ -38,7 +38,11 @@ class TestExceptionHandlers:
         assert expected_response == response_body
 
         # health endpoint should still work
-        expected_response = {"healthy": True}
+        expected_response = {
+            "webserver": "healthy",
+            "database": "no db configured",
+            "cache": "healthy",
+        }
         response = api_client.get(HEALTH)
         response_body = json.loads(response.text)
         assert 200 == response.status_code
@@ -66,7 +70,11 @@ class TestExceptionHandlers:
         assert expected_response == response_body
 
         # health endpoint should still work
-        expected_response = {"healthy": True}
+        expected_response = {
+            "webserver": "healthy",
+            "database": "healthy",
+            "cache": "no cache configured",
+        }
         response = api_client.get(HEALTH)
         response_body = json.loads(response.text)
         assert 200 == response.status_code

@@ -64,10 +64,6 @@ services:
       dockerfile: Dockerfile
     command: celery -A fidesops.tasks beat -l info --logfile=/var/log/celery.log
     depends_on:
-      fidesops:
-        condition: service_healthy
-      db:
-        condition: service_started
       redis:
         condition: service_started
     restart: always
