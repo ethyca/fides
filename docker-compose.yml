@@ -33,7 +33,7 @@ services:
 
   fidesctl-ui:
     image: ethyca/fidesctl:local-ui
-    command: ["npm", "run", "dev"]
+    command: npm run dev-docker
     depends_on:
       - fidesctl
     expose:
