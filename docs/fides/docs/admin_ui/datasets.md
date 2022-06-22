@@ -70,9 +70,9 @@ To save your changes, select **Save**, and Fidesctl will apply them.
 
 A dataset may be deleted by selecting **Modify collection**, and finding the **trash bin icon** beside the dataset's name.
 
-![delete dataset](../img/admin_ui/admin_ui_delete.png)
-
-You will need to provide and confirm the database's name in order to delete it. **Deleting a dataset cannot be undone.**
+You will need to provide and confirm the dataset's name in order to delete it. **Deleting a dataset cannot be undone.**
 
 To delete a field, find the **trash bin icon** beside the field's name when [modifying it](#modifying-fields). Enter and confirm the field's name to delete it. **Deleting a field cannot be undone.**
+
+![delete dataset](../img/admin_ui/admin_ui_delete.png)
 

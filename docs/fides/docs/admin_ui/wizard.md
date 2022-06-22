@@ -19,7 +19,7 @@ Organization or business information is used to build your [data map](../guides/
 Systems can be added with automated scanning tools, or manually.
 
 ### Automatic scans
-Scanning allows you to connect to your either your AWS cloud infrastructure or your Okta instance and automatically identify systems that should be on your data map. Support for additional systems (e.g. Google, Microsoft Azure, Digital Ocean) is planned shortly.
+Scanning allows you to connect to either your AWS cloud infrastructure or your Okta instance and automatically identify systems that should be on your data map. Support for additional systems (e.g. Google, Microsoft Azure, Digital Ocean) is planned shortly.
 ### Add a system manually
 Systems can be added manually by entering information about them directly. Manual system creation allows you to include information not easily scannable by Fidesctl in your data map.
 ## Step 3: Scan your resources
