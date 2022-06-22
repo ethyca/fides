@@ -110,12 +110,11 @@ async def export_datamap(
         raise error
 
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
-    print(joined_system_dataset_df.head())
+
     formatted_datamap = format_datamap_values(joined_system_dataset_df)
-    print(formatted_datamap)
+
+    # prepend column names
     formatted_datamap = [DATAMAP_COLUMNS] + formatted_datamap
-    # log.info("slartibartfast")
-    # log.info(type(formatted_datamap))
     return formatted_datamap
 
 
