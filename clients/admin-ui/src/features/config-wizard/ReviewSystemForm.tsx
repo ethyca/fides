@@ -46,7 +46,7 @@ const ReviewSystemForm: NextPage<{
   };
 
   const handleSubmit = () => {
-    handleChangeStep(6);
+    handleChangeStep(5);
   };
 
   return (

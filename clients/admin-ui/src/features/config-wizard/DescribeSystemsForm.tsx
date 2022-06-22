@@ -86,7 +86,7 @@ const DescribeSystemsForm: NextPage<{
       } else {
         toast.closeAll();
         handleChangeReviewStep(1);
-        handleChangeStep(5);
+        handleChangeStep(4);
       }
     };
 
