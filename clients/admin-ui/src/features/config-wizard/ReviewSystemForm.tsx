@@ -17,15 +17,20 @@ import {
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React from "react";
-
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
 
 const ReviewSystemForm: NextPage<{
   handleChangeStep: Function;
+  handleChangeReviewStep: Function;
   handleCancelSetup: Function;
   systemFidesKey: string;
-}> = ({ handleCancelSetup, handleChangeStep, systemFidesKey }) => {
+}> = ({
+  handleCancelSetup,
+  handleChangeStep,
+  handleChangeReviewStep,
+  systemFidesKey,
+}) => {
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
@@ -181,11 +186,14 @@ const ReviewSystemForm: NextPage<{
               Cancel
             </Button>
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
-            <Button type="submit" colorScheme="primary" size="sm">
+            <Button type="submit" colorScheme="primary" mr={2} size="sm">
               Confirm and Register
             </Button>
             <Button
-              onClick={() => handleChangeStep(4)}
+              onClick={() => {
+                handleChangeStep(4);
+                handleChangeReviewStep(4);
+              }}
               colorScheme="primary"
               size="sm"
             >

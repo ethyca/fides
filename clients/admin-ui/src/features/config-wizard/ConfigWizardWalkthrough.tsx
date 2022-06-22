@@ -1,9 +1,7 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-
 import { CloseSolidIcon } from "~/features/common/Icon";
-
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
@@ -31,8 +29,8 @@ const ConfigWizardWalkthrough = () => {
   };
 
   const handleChangeReviewStep = (rStep: number) => {
-    if (rStep && reviewStep !== HORIZONTAL_STEPS.length) {
-      setReviewStep(rStep + 1);
+    if (rStep) {
+      rStep === 4 ? setReviewStep(1) : setReviewStep(rStep + 1);
     }
   };
 
@@ -97,6 +95,7 @@ const ConfigWizardWalkthrough = () => {
                   <ReviewSystemForm
                     handleCancelSetup={handleCancelSetup}
                     handleChangeStep={handleChangeStep}
+                    handleChangeReviewStep={handleChangeReviewStep}
                     systemFidesKey={systemFidesKey}
                   />
                 )}
