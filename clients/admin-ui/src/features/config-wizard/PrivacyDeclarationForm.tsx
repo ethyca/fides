@@ -6,6 +6,7 @@ import {
   AccordionPanel,
   Box,
   Button,
+  Divider,
   Heading,
   HStack,
   Input,
@@ -62,16 +63,21 @@ const PrivacyDeclarationForm: NextPage<{
   handleChangeReviewStep: Function;
   handleCancelSetup: Function;
 }> = ({ handleCancelSetup, handleChangeReviewStep }) => {
-  const dispatch = useDispatch();
-  const toast = useToast();
-  const [formDeclarations, setFormDeclarations] = useState<any>([]);
-  const [updateSystem] = useUpdateSystemMutation();
-  const [isLoading, setIsLoading] = useState(false);
   // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
   // not just use this default
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(
     "default_organization"
   );
+  const dispatch = useDispatch();
+  const toast = useToast();
+  const [formDeclarations, setFormDeclarations] = useState<any>(
+    existingSystem && existingSystem?.privacy_declarations
+      ? [...existingSystem.privacy_declarations]
+      : []
+  );
+  const [updateSystem] = useUpdateSystemMutation();
+  const [isLoading, setIsLoading] = useState(false);
+
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
   const { data: dataSubjects } = useGetAllDataSubjectsQuery();
   const { data: dataQualifier } = useGetDataQualifierQuery();
@@ -219,63 +225,72 @@ const PrivacyDeclarationForm: NextPage<{
             </div>
             {formDeclarations.length > 0
               ? formDeclarations.map((declaration: any) => (
-                  <Accordion
-                    allowToggle
-                    border="transparent"
-                    key={declaration.name}
-                  >
-                    <AccordionItem>
-                      <>
-                        <AccordionButton>
-                          <Box flex="1" textAlign="left">
-                            {declaration.name}
-                          </Box>
-                          <AccordionIcon />
-                        </AccordionButton>
-                        <AccordionPanel padding="0px" mt="20px">
-                          <HStack mb="20px">
-                            <Text color="gray.600">Declaration categories</Text>
-                            {declaration.data_categories.map(
-                              (category: any) => (
+                  <>
+                    <Accordion
+                      allowToggle
+                      border="transparent"
+                      key={declaration.name}
+                      m="5px !important"
+                      maxW="500px"
+                      minW="500px"
+                      width="500px"
+                    >
+                      <AccordionItem>
+                        <>
+                          <AccordionButton pr="0px" pl="0px">
+                            <Box flex="1" textAlign="left">
+                              {declaration.name}
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                          <AccordionPanel padding="0px" mt="20px">
+                            <HStack mb="20px">
+                              <Text color="gray.600">
+                                Declaration categories
+                              </Text>
+                              {declaration.data_categories.map(
+                                (category: any) => (
+                                  <Tag
+                                    background="primary.400"
+                                    color="white"
+                                    key={category}
+                                    width="fit-content"
+                                  >
+                                    {category}
+                                  </Tag>
+                                )
+                              )}
+                            </HStack>
+                            <HStack mb="20px">
+                              <Text color="gray.600">Data use</Text>
+                              <Input disabled value={declaration.data_use} />
+                            </HStack>
+                            <HStack mb="20px">
+                              <Text color="gray.600">Data subjects</Text>
+                              {declaration.data_subjects.map((subject: any) => (
                                 <Tag
                                   background="primary.400"
                                   color="white"
-                                  key={category}
+                                  key={subject}
                                   width="fit-content"
                                 >
-                                  {category}
+                                  {subject}
                                 </Tag>
-                              )
-                            )}
-                          </HStack>
-                          <HStack mb="20px">
-                            <Text color="gray.600">Data use</Text>
-                            <Input disabled value={declaration.data_use} />
-                          </HStack>
-                          <HStack mb="20px">
-                            <Text color="gray.600">Data subjects</Text>
-                            {declaration.data_subjects.map((subject: any) => (
-                              <Tag
-                                background="primary.400"
-                                color="white"
-                                key={subject}
-                                width="fit-content"
-                              >
-                                {subject}
-                              </Tag>
-                            ))}
-                          </HStack>
-                          <HStack mb="20px">
-                            <Text color="gray.600">Data qualifier</Text>
-                            <Input
-                              disabled
-                              value={declaration.data_qualifier}
-                            />
-                          </HStack>
-                        </AccordionPanel>
-                      </>
-                    </AccordionItem>
-                  </Accordion>
+                              ))}
+                            </HStack>
+                            <HStack mb="20px">
+                              <Text color="gray.600">Data qualifier</Text>
+                              <Input
+                                disabled
+                                value={declaration.data_qualifier}
+                              />
+                            </HStack>
+                          </AccordionPanel>
+                        </>
+                      </AccordionItem>
+                    </Accordion>
+                    <Divider m="0px !important" />
+                  </>
                 ))
               : null}
             <Stack>
