@@ -70,6 +70,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
         values={field}
         onClose={onClose}
         onSubmit={handleSubmit}
+        dataType="field"
       />
     </EditDrawer>
   );

@@ -2,13 +2,13 @@ import {
   Box,
   Button,
   FormLabel,
+  Grid,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
   MenuOptionGroup,
-  SimpleGrid,
   Stack,
   Text,
 } from "@fidesui/react";
@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
+import QuestionTooltip from "../common/QuestionTooltip";
 import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import { transformDataCategoriesToNodes } from "../taxonomy/helpers";
 import { DataCategory } from "../taxonomy/types";
@@ -24,13 +25,14 @@ interface Props {
   dataCategories: DataCategory[];
   checked: string[];
   onChecked: (newChecked: string[]) => void;
+  tooltip?: string;
 }
 
 const DataCategoryDropdown = ({
   dataCategories,
   checked,
   onChecked,
-}: Props) => {
+}: Omit<Props, "tooltip">) => {
   const dataCategoryNodes = useMemo(
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
@@ -115,7 +117,12 @@ const DataCategoryDropdown = ({
   );
 };
 
-const DataCategoryInput = ({ dataCategories, checked, onChecked }: Props) => {
+const DataCategoryInput = ({
+  dataCategories,
+  checked,
+  onChecked,
+  tooltip,
+}: Props) => {
   const handleRemoveDataCategory = (dataCategoryName: string) => {
     onChecked(checked.filter((dc) => dc !== dataCategoryName));
   };
@@ -125,15 +132,18 @@ const DataCategoryInput = ({ dataCategories, checked, onChecked }: Props) => {
     .sort((a, b) => a.localeCompare(b));
 
   return (
-    <SimpleGrid columns={[1, 2]}>
+    <Grid templateColumns="1fr 3fr">
       <FormLabel>Data Categories</FormLabel>
       <Stack>
-        <Box>
-          <DataCategoryDropdown
-            dataCategories={dataCategories}
-            checked={checked}
-            onChecked={onChecked}
-          />
+        <Box display="flex" alignItems="center">
+          <Box mr="2" width="100%">
+            <DataCategoryDropdown
+              dataCategories={dataCategories}
+              checked={checked}
+              onChecked={onChecked}
+            />
+          </Box>
+          <QuestionTooltip label={tooltip} />
         </Box>
         <Stack>
           {sortedCheckedDataCategories.map((dc) => (
@@ -147,7 +157,7 @@ const DataCategoryInput = ({ dataCategories, checked, onChecked }: Props) => {
           ))}
         </Stack>
       </Stack>
-    </SimpleGrid>
+    </Grid>
   );
 };
 
