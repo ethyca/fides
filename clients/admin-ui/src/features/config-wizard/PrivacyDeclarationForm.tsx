@@ -304,7 +304,6 @@ const PrivacyDeclarationForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomMultiSelect
-                  isClearable
                   name="data_categories"
                   label="Data categories"
                   options={allDataCategories?.map((data) => ({
@@ -345,7 +344,6 @@ const PrivacyDeclarationForm: NextPage<{
 
             <Stack direction="row" mb={5}>
               <CustomMultiSelect
-                isClearable
                 name="data_subjects"
                 label="Data subjects"
                 size="md"

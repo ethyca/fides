@@ -55,7 +55,7 @@ export const CustomSelect = ({
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
 
-  const selected = options.find((o) => o.value === field.value);
+  const selected = options.find((o) => o.value === field.value) || null;
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -156,12 +156,6 @@ export const CustomMultiSelect = ({
               ...provided,
               display: "none",
             }),
-            option: (provided) => ({
-              ...provided,
-              // "&:hover": {
-              //   show full tag text
-              // },
-            }),
             multiValue: (provided) => ({
               ...provided,
               background: "primary.400",
@@ -173,6 +167,9 @@ export const CustomMultiSelect = ({
                 overflow: "auto",
               },
             }),
+          }}
+          components={{
+            ClearIndicator: () => null,
           }}
           isSearchable={isSearchable ?? false}
           isClearable={isClearable}

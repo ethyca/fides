@@ -26,7 +26,6 @@ import {
 const useOrganizationInfoForm = (handleChangeStep: Function) => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
-  // FUTURE TODO: Need a way to check for an existing fides_key from the start of the wizard
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
   );
@@ -43,8 +42,6 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
         description: values.description ?? existingOrg?.description,
         fides_key: existingOrg?.fides_key ?? "default_organization",
         organization_fides_key: "default_organization",
-        // FUTURE TODO: Need to check with this body that if they have a fides_key assigned,
-        // then assign that existing one
       };
 
       setIsLoading(true);
