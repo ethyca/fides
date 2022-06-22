@@ -79,7 +79,7 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" width="100%">
           <Select
             options={options}
             onBlur={(option) => {
