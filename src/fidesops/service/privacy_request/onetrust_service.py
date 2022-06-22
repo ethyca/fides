@@ -31,8 +31,9 @@ from fidesops.service.outbound_urn_registry import (
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.util.cache import get_cache
+from fidesops.service.privacy_request.request_runner_service import (
+    queue_privacy_request,
+)
 from fidesops.util.storage_authenticator import get_onetrust_access_token
 
 logger = logging.getLogger(__name__)
@@ -153,10 +154,7 @@ class OneTrustService:
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.cache_identity(identity)
         try:
-            PrivacyRequestRunner(
-                cache=get_cache(),
-                privacy_request=privacy_request,
-            ).submit()
+            queue_privacy_request(privacy_request_id=privacy_request.id)
             request_status = OneTrustSubtaskStatus.COMPLETED
         except BaseException:  # pylint: disable=W0703
             request_status = OneTrustSubtaskStatus.FAILED

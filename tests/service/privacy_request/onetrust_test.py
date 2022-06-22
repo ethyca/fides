@@ -40,7 +40,7 @@ from fidesops.util.data_category import DataCategory
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_success(
     finish_processing_mock: Mock,
@@ -133,7 +133,7 @@ def test_intake_onetrust_requests_success(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_config(
     finish_processing_mock: Mock,
@@ -190,7 +190,7 @@ def test_intake_onetrust_requests_no_config(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_policy(
     finish_processing_mock: Mock,
@@ -249,7 +249,7 @@ def test_intake_onetrust_requests_no_policy(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_auth_fail(
     finish_processing_mock: Mock,
@@ -310,7 +310,7 @@ def test_intake_onetrust_requests_auth_fail(
     "fidesops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.service.privacy_request.request_runner_service.PrivacyRequestRunner.run"
+    "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_fides_tasks(
     finish_processing_mock: Mock,

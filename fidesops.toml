@@ -29,8 +29,6 @@ DRP_JWT_SECRET = "secret"
 LOG_LEVEL = "INFO"
 
 [execution]
-CELERY_BROKER_URL = "redis://:testpassword@redis:6379"
-CELERY_RESULT_BACKEND = "redis://:testpassword@redis:6379"
 MASKING_STRICT = true
 REQUIRE_MANUAL_REQUEST_APPROVAL = false
 TASK_RETRY_COUNT = 0

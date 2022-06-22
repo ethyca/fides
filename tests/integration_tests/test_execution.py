@@ -65,8 +65,8 @@ class TestDeleteCollection:
         self,
         db,
         policy,
-        cache,
         read_connection_config,
+        run_privacy_request_task,
     ) -> None:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
@@ -79,11 +79,21 @@ class TestDeleteCollection:
             "identity": {"email": customer_email},
         }
 
-        pr = get_privacy_request_results(db, policy, cache, data)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
         assert pr.get_results() != {}
 
         read_connection_config.delete(db)
-        pr = get_privacy_request_results(db, policy, cache, data)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
         assert pr.get_results() == {}
 
     @mock.patch("fidesops.task.graph_task.GraphTask.log_start")
@@ -180,6 +190,7 @@ class TestDeleteCollection:
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
         example_datasets,
+        run_privacy_request_task,
     ) -> None:
         """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
         that does not contain the deleted dataset config and re-run."""
@@ -272,8 +283,8 @@ class TestDeleteCollection:
         self,
         db,
         policy,
-        cache,
         read_connection_config,
+        run_privacy_request_task,
     ) -> None:
         """Delete the connection config on a completed request leaves execution logs untouched"""
         customer_email = "customer-1@example.com"
@@ -283,7 +294,12 @@ class TestDeleteCollection:
             "identity": {"email": customer_email},
         }
 
-        pr = get_privacy_request_results(db, policy, cache, data)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
         assert len(logs) == 22
@@ -530,8 +546,8 @@ class TestSkipDisabledCollection:
         self,
         db,
         policy,
-        cache,
         read_connection_config,
+        run_privacy_request_task,
     ) -> None:
         """Disabling the connection config on a completed request leaves execution logs untouched"""
         customer_email = "customer-1@example.com"
@@ -541,7 +557,12 @@ class TestSkipDisabledCollection:
             "identity": {"email": customer_email},
         }
 
-        pr = get_privacy_request_results(db, policy, cache, data)
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
         assert len(logs) == 22
