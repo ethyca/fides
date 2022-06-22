@@ -66,3 +66,11 @@ export type DatastoreConnectionStatus = {
   test_status?: ConnectionTestStatus;
   failure_reason?: string;
 };
+
+export interface DatastoreConnectionUpdate {
+  name: string;
+  key: string;
+  disabled: boolean;
+  connection_type: ConnectionType;
+  access: AccessLevel;
+}

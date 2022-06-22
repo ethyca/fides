@@ -113,7 +113,13 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         </Text>
         <Spacer />
         <ConnectionStatusBadge disabled={connectionData.disabled} />
-        <ConnectionMenu connection_key={connectionData.key} />
+        <ConnectionMenu
+          connection_key={connectionData.key}
+          disabled={connectionData.disabled}
+          name={connectionData.name}
+          connection_type={connectionData.connection_type}
+          access_type={connectionData.access}
+        />
       </Flex>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         {getConnectorDisplayName(connectionData.connection_type)}
