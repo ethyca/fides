@@ -6,9 +6,11 @@ import {
   AccordionPanel,
   Box,
   Button,
-  FormLabel,
   Heading,
+  HStack,
+  Input,
   Stack,
+  Tag,
   Text,
   Tooltip,
   useToast,
@@ -19,7 +21,6 @@ import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -41,7 +42,6 @@ import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
-
 import {
   CustomMultiSelect,
   CustomSelect,
@@ -181,9 +181,24 @@ const PrivacyDeclarationForm: NextPage<{
   };
 
   const addAnotherDeclaration = (values: any) => {
-    const declarationToSet = { ...values, dataset_references: ["string"] };
-    setFormDeclarations([...formDeclarations, declarationToSet]);
-    // TODO: reset form
+    if (
+      formDeclarations.filter((d: any) => d.name === values.name).length > 0 ||
+      (existingSystem &&
+        existingSystem?.privacy_declarations &&
+        existingSystem?.privacy_declarations?.filter(
+          (d) => d.name === values.name
+        ).length > 0)
+    ) {
+      toast({
+        status: "error",
+        description:
+          "A declaration already exists with that name in this system. Please use a different name.",
+      });
+    } else {
+      toast.closeAll();
+      const declarationToSet = { ...values, dataset_references: ["string"] };
+      setFormDeclarations([...formDeclarations, declarationToSet]);
+    }
   };
 
   return (
@@ -192,7 +207,7 @@ const PrivacyDeclarationForm: NextPage<{
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      {({ values }) => (
+      {({ resetForm, values }) => (
         <Form>
           <Stack ml="100px" spacing={10}>
             <Heading as="h3" size="lg">
@@ -222,16 +237,45 @@ const PrivacyDeclarationForm: NextPage<{
                           <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel padding="0px" mt="20px">
-                          <FormLabel>Declaration name</FormLabel>
-                          {declaration.name}
-                          <FormLabel>Declaration categories</FormLabel>
-                          {declaration.data_categories}
-                          <FormLabel>Data use</FormLabel>
-                          {declaration.data_use}
-                          <FormLabel>Data subjects</FormLabel>
-                          {declaration.data_subjects}
-                          <FormLabel>Data qualifier</FormLabel>
-                          {declaration.data_qualifier}
+                          <HStack mb="20px">
+                            <Text color="gray.600">Declaration categories</Text>
+                            {declaration.data_categories.map(
+                              (category: any) => (
+                                <Tag
+                                  background="primary.400"
+                                  color="white"
+                                  key={category}
+                                  width="fit-content"
+                                >
+                                  {category}
+                                </Tag>
+                              )
+                            )}
+                          </HStack>
+                          <HStack mb="20px">
+                            <Text color="gray.600">Data use</Text>
+                            <Input disabled value={declaration.data_use} />
+                          </HStack>
+                          <HStack mb="20px">
+                            <Text color="gray.600">Data subjects</Text>
+                            {declaration.data_subjects.map((subject: any) => (
+                              <Tag
+                                background="primary.400"
+                                color="white"
+                                key={subject}
+                                width="fit-content"
+                              >
+                                {subject}
+                              </Tag>
+                            ))}
+                          </HStack>
+                          <HStack mb="20px">
+                            <Text color="gray.600">Data qualifier</Text>
+                            <Input
+                              disabled
+                              value={declaration.data_qualifier}
+                            />
+                          </HStack>
                         </AccordionPanel>
                       </>
                     </AccordionItem>
@@ -252,6 +296,7 @@ const PrivacyDeclarationForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomMultiSelect
+                  isClearable
                   name="data_categories"
                   label="Data categories"
                   options={allDataCategories?.map((data) => ({
@@ -293,6 +338,7 @@ const PrivacyDeclarationForm: NextPage<{
 
             <Stack direction="row" mb={5}>
               <CustomMultiSelect
+                isClearable
                 name="data_subjects"
                 label="Data subjects"
                 size="md"
@@ -330,29 +376,34 @@ const PrivacyDeclarationForm: NextPage<{
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
-            <Text
-              color={
+            <Button
+              colorScheme="purple"
+              display="flex"
+              justifyContent="flex-start"
+              variant="link"
+              disabled={
                 !values.data_use ||
                 !values.data_qualifier ||
                 !values.data_subjects ||
                 !values.data_categories
-                  ? `gray.400`
-                  : `complimentary.700`
               }
-              cursor={
-                !values.data_use ||
-                !values.data_qualifier ||
-                !values.data_subjects ||
-                !values.data_categories
-                  ? `default`
-                  : `pointer`
-              }
+              isLoading={isLoading}
               onClick={() => {
                 addAnotherDeclaration(values);
+                resetForm({
+                  values: {
+                    name: "",
+                    data_subjects: [],
+                    data_categories: [],
+                    data_use: "",
+                    data_qualifier: "",
+                  },
+                });
               }}
+              width="40%"
             >
               Add another declaration <AddIcon boxSize={10} />{" "}
-            </Text>
+            </Button>
             <Box>
               <Button
                 onClick={() => handleCancelSetup()}

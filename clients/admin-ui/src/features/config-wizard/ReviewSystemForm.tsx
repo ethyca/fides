@@ -17,7 +17,6 @@ import {
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
 import React from "react";
-
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
 
@@ -104,6 +103,9 @@ const ReviewSystemForm: NextPage<{
                       allowToggle
                       border="transparent"
                       key={declaration.name}
+                      maxW="500px"
+                      minW="500px"
+                      width="500px"
                     >
                       <AccordionItem>
                         <>
