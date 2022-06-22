@@ -39,6 +39,7 @@ The types of changes are:
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
 * Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
 * Added the ability to delete a datastore from the frontend [#683] https://github.com/ethyca/fidesops/pull/683
+* Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
 
 ### Changed
 
