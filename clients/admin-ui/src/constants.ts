@@ -1,7 +1,12 @@
 import { UserPrivileges } from "./features/user-management/types";
 
 export const BASE_API_URN = "/api/v1";
-export const BASE_ASSET_URN = "/static";
+export const BASE_ASSET_URN =
+  process.env.NODE_ENV === "development" ? "" : "/static";
+const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
+  ? process.env.NEXT_PUBLIC_FIDESOPS_API
+  : "";
+export const BASE_URL = API_URL + BASE_API_URN;
 
 export const STORED_CREDENTIALS_KEY = "auth.fidesops-admin-ui";
 
@@ -51,3 +56,12 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "user-permission:read",
   },
 ];
+
+// API ROUTES
+export const INDEX_ROUTE = "/";
+export const LOGIN_ROUTE = "/login";
+export const USER_MANAGEMENT_ROUTE = "/user-management";
+export const CONNECTION_ROUTE = "/connection";
+
+// UI ROUTES
+export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";

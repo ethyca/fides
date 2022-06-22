@@ -11,6 +11,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React from "react";
 
+import { INDEX_ROUTE } from "../../constants";
 import ProtectedRoute from "../../features/auth/ProtectedRoute";
 import Head from "../../features/common/Head";
 import NavBar from "../../features/common/NavBar";
@@ -60,7 +61,9 @@ const SubjectRequestDetails: NextPage = () => {
               <Box mt={2} mb={9}>
                 <Breadcrumb fontWeight="medium" fontSize="sm">
                   <BreadcrumbItem>
-                    <BreadcrumbLink href="/">Subject Request</BreadcrumbLink>
+                    <BreadcrumbLink href={INDEX_ROUTE}>
+                      Subject Request
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
 
                   <BreadcrumbItem>

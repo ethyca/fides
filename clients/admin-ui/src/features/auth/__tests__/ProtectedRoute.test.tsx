@@ -1,4 +1,5 @@
 import { render, screen } from "../../../../__tests__/test-utils";
+import { LOGIN_ROUTE } from "../../../constants";
 import ProtectedRoute from "../ProtectedRoute";
 
 const useRouter = jest.spyOn(require("next/router"), "useRouter");
@@ -33,7 +34,7 @@ describe("ProtectedRoute", () => {
       expect(protectedContent).toBeNull();
     });
 
-    it("should default to redirecting to /login", () => {
+    it(`should default to redirecting to ${LOGIN_ROUTE}`, () => {
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
@@ -48,7 +49,7 @@ describe("ProtectedRoute", () => {
         }
       );
 
-      expect(push).toHaveBeenCalledWith("/login");
+      expect(push).toHaveBeenCalledWith(LOGIN_ROUTE);
     });
 
     it("should redirect to specified route", () => {

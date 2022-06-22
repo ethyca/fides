@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 
+import { LOGIN_ROUTE } from "../../constants";
 import { selectToken } from "./auth.slice";
 
 const useProtectedRoute = (redirectUrl: string) => {
@@ -33,7 +34,7 @@ const ProtectedRoute = ({
 
 ProtectedRoute.defaultProps = {
   authenticatedBlock: null,
-  redirectUrl: "/login",
+  redirectUrl: LOGIN_ROUTE,
 };
 
 export default ProtectedRoute;
