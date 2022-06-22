@@ -10,12 +10,14 @@ import {
 import React from "react";
 
 import { MoreIcon } from "../common/Icon";
+import DeleteConnectionModal from "./DeleteConnectionModal";
 
 interface ConnectionMenuProps {
+  connection_key: string;
   // disabled: boolean;
 }
 
-const ConnectionMenu: React.FC<ConnectionMenuProps> = () => (
+const ConnectionMenu: React.FC<ConnectionMenuProps> = ({ connection_key }) => (
   <Menu>
     <MenuButton
       as={Button}
@@ -39,12 +41,7 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = () => (
         >
           <Text fontSize="sm">Disable</Text>
         </MenuItem>
-        <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
-          // onClick={handleViewDetails}
-        >
-          <Text fontSize="sm">Delete</Text>
-        </MenuItem>
+        <DeleteConnectionModal connection_key={connection_key} />
       </MenuList>
     </Portal>
   </Menu>

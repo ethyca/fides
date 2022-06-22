@@ -167,4 +167,5 @@ export const datastoreConnectionApi = createApi({
 export const {
   useGetAllDatastoreConnectionsQuery,
   useLazyGetDatastoreConnectionStatusQuery,
+  useDeleteDatastoreConnectionMutation,
 } = datastoreConnectionApi;
