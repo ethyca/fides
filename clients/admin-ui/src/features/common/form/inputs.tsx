@@ -187,7 +187,6 @@ export const CustomMultiSelect = ({
 export const CustomCreatableSingleSelect = ({
   label,
   isSearchable,
-  isClearable,
   options,
   ...props
 }: SelectProps & FieldHookConfig<string>) => {
@@ -231,7 +230,6 @@ export const CustomCreatableSingleSelect = ({
               visibility: "hidden",
             }),
           }}
-          isClearable
         />
       </SimpleGrid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}

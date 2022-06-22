@@ -313,7 +313,6 @@ const PrivacyDeclarationForm: NextPage<{
 
             <Stack direction="row" mb={5}>
               <CustomSelect
-                isClearable
                 id="data_use"
                 label="Data use"
                 name="data_use"
@@ -354,7 +353,6 @@ const PrivacyDeclarationForm: NextPage<{
 
             <Stack direction="row">
               <CustomSelect
-                isClearable
                 id="data_qualifier"
                 label="Data qualifier"
                 name="data_qualifier"

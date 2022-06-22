@@ -162,7 +162,6 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableSingleSelect
-                  isClearable
                   id="system_type"
                   label="System Type"
                   name="system_type"
