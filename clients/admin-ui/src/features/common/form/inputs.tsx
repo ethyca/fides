@@ -1,20 +1,25 @@
 import {
+  Box,
   FormControl,
   FormErrorMessage,
   FormLabel,
+  Grid,
   Input,
-  SimpleGrid,
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
+import QuestionTooltip from "~/features/common/QuestionTooltip";
+
 interface InputProps {
   disabled?: boolean;
   label: string;
+  tooltip?: string;
 }
 
 export const CustomTextInput = ({
   label,
+  tooltip,
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
@@ -22,12 +27,21 @@ export const CustomTextInput = ({
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
-      <SimpleGrid columns={[1, 2]}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Input {...field} type={type} placeholder={placeholder} size="sm" />
-      </SimpleGrid>
+        <Box display="flex" alignItems="center">
+          <Input
+            {...field}
+            type={type}
+            placeholder={placeholder}
+            size="sm"
+            mr="2"
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -39,6 +53,7 @@ export interface Option {
 }
 interface SelectProps {
   label: string;
+  tooltip?: string;
   options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
@@ -46,6 +61,7 @@ interface SelectProps {
 }
 export const CustomSelect = ({
   label,
+  tooltip,
   options,
   isSearchable,
   isClearable,
@@ -59,46 +75,49 @@ export const CustomSelect = ({
 
   return (
     <FormControl isInvalid={isInvalid}>
-      <SimpleGrid columns={[1, 2]}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Select
-          options={options}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            if (newValue) {
-              field.onChange(props.name)(newValue.value);
-            }
-          }}
-          name={props.name}
-          value={selected}
-          size={size}
-          chakraStyles={{
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              bg: "transparent",
-              px: 2,
-              cursor: "inherit",
-            }),
-            indicatorSeparator: (provided) => ({
-              ...provided,
-              display: "none",
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              background: "primary.400",
-              color: "white",
-            }),
-          }}
-          isSearchable={isSearchable ?? false}
-          isClearable={isClearable}
-        />
-      </SimpleGrid>
+        <Box display="flex" alignItems="center">
+          <Select
+            options={options}
+            onBlur={(option) => {
+              if (option) {
+                field.onBlur(props.name);
+              }
+            }}
+            onChange={(newValue) => {
+              if (newValue) {
+                field.onChange(props.name)(newValue.value);
+              }
+            }}
+            name={props.name}
+            value={selected}
+            size={size}
+            chakraStyles={{
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                bg: "transparent",
+                px: 2,
+                cursor: "inherit",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
+            }}
+            isSearchable={isSearchable ?? false}
+            isClearable={isClearable}
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -109,6 +128,7 @@ export const CustomSelect = ({
 // extending CustomSelect
 export const CustomMultiSelect = ({
   label,
+  tooltip,
   options,
   isSearchable,
   isClearable,
@@ -125,57 +145,61 @@ export const CustomMultiSelect = ({
 
   return (
     <FormControl isInvalid={isInvalid}>
-      <SimpleGrid columns={[1, 2]}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Select
-          options={options}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            setFieldValue(
-              field.name,
-              newValue.map((v) => v.value)
-            );
-          }}
-          name={props.name}
-          value={selected}
-          size={size}
-          chakraStyles={{
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              bg: "transparent",
-              px: 2,
-              cursor: "inherit",
-            }),
-            indicatorSeparator: (provided) => ({
-              ...provided,
-              display: "none",
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              background: "primary.400",
-              color: "white",
-            }),
-            multiValueLabel: (provided) => ({
-              ...provided,
-              "&:hover": {
-                overflow: "auto",
-              },
-            }),
-          }}
-          components={{
-            ClearIndicator: () => null,
-          }}
-          isSearchable={isSearchable ?? false}
-          isClearable={isClearable}
-          isMulti
-        />
-      </SimpleGrid>
+        <Box display="flex" alignItems="center">
+          <Select
+            options={options}
+            onBlur={(option) => {
+              if (option) {
+                field.onBlur(props.name);
+              }
+            }}
+            onChange={(newValue) => {
+              setFieldValue(
+                field.name,
+                newValue.map((v) => v.value)
+              );
+            }}
+            name={props.name}
+            value={selected}
+            size={size}
+            chakraStyles={{
+              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                bg: "transparent",
+                px: 2,
+                cursor: "inherit",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
+              multiValueLabel: (provided) => ({
+                ...provided,
+                "&:hover": {
+                  overflow: "auto",
+                },
+              }),
+            }}
+            components={{
+              ClearIndicator: () => null,
+            }}
+            isSearchable={isSearchable ?? false}
+            isClearable={isClearable}
+            isMulti
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -192,8 +216,8 @@ export const CustomCreatableSingleSelect = ({
   const selected = { label: field.value, value: field.value };
 
   return (
-    <FormControl>
-      <SimpleGrid columns={[1, 2]}>
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
           options={options}
@@ -228,7 +252,7 @@ export const CustomCreatableSingleSelect = ({
             }),
           }}
         />
-      </SimpleGrid>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
@@ -247,8 +271,8 @@ export const CustomCreatableMultiSelect = ({
   const { setFieldValue } = useFormikContext();
 
   return (
-    <FormControl>
-      <SimpleGrid columns={[1, 2]}>
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
         <CreatableSelect
           name={props.name}
@@ -288,7 +312,7 @@ export const CustomCreatableMultiSelect = ({
             );
           }}
         />
-      </SimpleGrid>
+      </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );

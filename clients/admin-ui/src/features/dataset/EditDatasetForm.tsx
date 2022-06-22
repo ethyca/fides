@@ -10,7 +10,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import { DATA_QUALIFIERS } from "./constants";
+import { DATA_QUALIFIERS, DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
 
@@ -61,23 +61,39 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
           height="75vh"
         >
           <Stack spacing="3">
-            <CustomTextInput name="name" label="Name" />
-            <CustomTextInput name="description" label="Description" />
-            <CustomTextInput name="retention" label="Retention period" />
+            <CustomTextInput
+              name="name"
+              label="Name"
+              tooltip={DATASET.name.tooltip}
+            />
+            <CustomTextInput
+              name="description"
+              label="Description"
+              tooltip={DATASET.description.tooltip}
+            />
+            <CustomTextInput
+              name="retention"
+              label="Retention period"
+              tooltip={DATASET.retention.tooltip}
+            />
             <CustomSelect
               name="data_qualifier"
               label="Identifiability"
               options={DATA_QUALIFIERS_OPTIONS}
+              tooltip={DATASET.data_qualifiers.tooltip}
             />
             <CustomMultiSelect
               name="third_country_transfers"
               label="Geographic location"
+              tooltip={DATASET.third_country_transfers.tooltip}
+              isSearchable
               options={[]} // TODO
             />
             <DataCategoryInput
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
+              tooltip={DATASET.data_categories.tooltip}
             />
           </Stack>
           <Box>

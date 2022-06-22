@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATA_QUALIFIERS } from "./constants";
+import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DatasetCollection, DatasetField } from "./types";
 
@@ -26,9 +26,17 @@ interface Props {
   values: FormValues;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
+  // NOTE: If you're adding more checks on dataType, refactor this into two
+  // components instead and remove this prop.
+  dataType: "collection" | "field";
 }
 
-const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
+const EditCollectionOrFieldForm = ({
+  values,
+  onClose,
+  onSubmit,
+  dataType,
+}: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
     data_qualifier: values.data_qualifier,
@@ -39,6 +47,19 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
     initialValues.data_categories ?? []
   );
+
+  const descriptionTooltip =
+    dataType === "collection"
+      ? COLLECTION.description.tooltip
+      : FIELD.description.tooltip;
+  const dataQualifierTooltip =
+    dataType === "collection"
+      ? COLLECTION.data_qualifiers.tooltip
+      : FIELD.data_qualifier.tooltip;
+  const dataCategoryTooltip =
+    dataType === "collection"
+      ? COLLECTION.data_categories.tooltip
+      : FIELD.data_categories.tooltip;
 
   const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element
@@ -60,13 +81,18 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
         >
           <Stack>
             <Box>
-              <CustomTextInput name="description" label="Description" />
+              <CustomTextInput
+                name="description"
+                label="Description"
+                tooltip={descriptionTooltip}
+              />
             </Box>
             <Box>
               <CustomSelect
                 name="data_qualifier"
                 label="Identifiability"
                 options={IDENTIFIER_OPTIONS}
+                tooltip={dataQualifierTooltip}
                 isSearchable={false}
               />
             </Box>
@@ -75,6 +101,7 @@ const EditCollectionOrFieldForm = ({ values, onClose, onSubmit }: Props) => {
                 dataCategories={allDataCategories}
                 checked={checkedDataCategories}
                 onChecked={setCheckedDataCategories}
+                tooltip={dataCategoryTooltip}
               />
             </Box>
           </Stack>
