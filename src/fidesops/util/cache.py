@@ -147,3 +147,7 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
     return cache.keys(f"{privacy_request_id}-*") + cache.keys(
         f"id-{privacy_request_id}-*"
     )
+
+
+def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
+    return f"id-{privacy_request_id}-async-execution"

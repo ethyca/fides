@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
+from celery.result import AsyncResult
 from pydantic import root_validator
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
@@ -40,6 +41,7 @@ from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
+    get_async_task_tracking_cache_key,
     get_cache,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
@@ -212,6 +214,26 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def cache_task_id(self, task_id: str) -> None:
+        """Sets a task_id for this privacy request's asynchronous execution."""
+        cache: FidesopsRedis = get_cache()
+        cache.set(
+            get_async_task_tracking_cache_key(self.id),
+            task_id,
+        )
+
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached task ID for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        return task_id
+
+    def get_async_execution_task(self) -> Optional[AsyncResult]:
+        """Returns a task reflecting the state of this privacy request's asynchronous execution."""
+        task_id = self.get_cached_task_id()
+        res: AsyncResult = AsyncResult(task_id)
+        return res
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fidesops app cache"""

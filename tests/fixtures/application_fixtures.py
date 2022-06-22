@@ -45,8 +45,6 @@ from fidesops.service.masking.strategy.masking_strategy_nullify import (
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.service.privacy_request.request_runner_service import PrivacyRequestRunner
-from fidesops.util.cache import FidesopsRedis
 from fidesops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
@@ -1015,17 +1013,6 @@ def example_yaml_dataset() -> str:
 def example_invalid_yaml_dataset() -> str:
     example_filename = "data/dataset/example_test_dataset.invalid"
     return load_dataset_as_string(example_filename)
-
-
-@pytest.fixture
-def privacy_request_runner(
-    cache: FidesopsRedis,
-    privacy_request: PrivacyRequest,
-) -> Generator:
-    yield PrivacyRequestRunner(
-        cache=cache,
-        privacy_request=privacy_request,
-    )
 
 
 @pytest.fixture(scope="function")
