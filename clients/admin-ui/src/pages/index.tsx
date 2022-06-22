@@ -1,6 +1,7 @@
 import { Box, Heading } from "@fidesui/react";
 import type { NextPage } from "next";
 
+import { LOGIN_ROUTE } from "../constants";
 import ProtectedRoute from "../features/auth/ProtectedRoute";
 import Head from "../features/common/Head";
 import NavBar from "../features/common/NavBar";
@@ -8,7 +9,7 @@ import RequestFilters from "../features/privacy-requests/RequestFilters";
 import RequestTable from "../features/privacy-requests/RequestTable";
 
 const Home: NextPage = () => (
-  <ProtectedRoute redirectUrl="/login">
+  <ProtectedRoute redirectUrl={LOGIN_ROUTE}>
     <>
       <Head />
       <NavBar />

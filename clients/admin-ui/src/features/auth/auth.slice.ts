@@ -6,7 +6,7 @@ import {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-import { BASE_API_URN, STORED_CREDENTIALS_KEY } from "../../constants";
+import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import { User } from "../user-management/types";
 import { LoginRequest, LoginResponse } from "./types";
@@ -75,7 +75,7 @@ credentialStorage.startListening({
 export const authApi: any = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: BASE_API_URN,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
       return addCommonHeaders(headers, token);

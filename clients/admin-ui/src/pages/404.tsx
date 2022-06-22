@@ -1,6 +1,7 @@
 import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
 import NextLink from "next/link";
 
+import { INDEX_ROUTE } from "../constants";
 import Head from "../features/common/Head";
 import Image from "../features/common/Image";
 
@@ -36,7 +37,7 @@ const Custom404 = () => (
               <Text fontWeight="semibold">
                 We’re sorry but this page doesn’t exist
               </Text>
-              <NextLink href="/" passHref>
+              <NextLink href={INDEX_ROUTE} passHref>
                 <Button
                   width={320}
                   as="a"

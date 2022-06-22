@@ -9,6 +9,10 @@ import {
   reducer as authReducer,
 } from "../features/auth";
 import {
+  datastoreConnectionApi,
+  reducer as datastoreConnectionReducer,
+} from "../features/datastore-connections";
+import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
 } from "../features/privacy-requests";
@@ -23,6 +27,8 @@ const reducer = {
   [userApi.reducerPath]: userApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
   userManagement: userManagementReducer,
+  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  datastoreConnections: datastoreConnectionReducer,
   auth: authReducer,
 };
 
@@ -36,7 +42,8 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         credentialStorage.middleware,
         privacyRequestApi.middleware,
         userApi.middleware,
-        authApi.middleware
+        authApi.middleware,
+        datastoreConnectionApi.middleware
       ),
     devTools: true,
     preloadedState,

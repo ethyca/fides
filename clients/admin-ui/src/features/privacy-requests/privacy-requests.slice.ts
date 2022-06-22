@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "../../app/store";
-import { BASE_API_URN } from "../../constants";
+import { BASE_API_URN, BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import {
@@ -51,7 +51,7 @@ export function mapFiltersToSearchParams({
 export const privacyRequestApi: any = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: BASE_API_URN,
+    baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
       return addCommonHeaders(headers, token);

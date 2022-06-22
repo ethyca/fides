@@ -14,7 +14,7 @@ import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { BASE_ASSET_URN } from "../../constants";
+import { BASE_ASSET_URN, INDEX_ROUTE } from "../../constants";
 import { logout, selectUser } from "../auth";
 import { UserIcon } from "./Icon";
 import Image from "./Image";
@@ -41,7 +41,7 @@ const Header: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
       >
-        <NextLink href="/" passHref>
+        <NextLink href={INDEX_ROUTE} passHref>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link display="flex">
             <Image

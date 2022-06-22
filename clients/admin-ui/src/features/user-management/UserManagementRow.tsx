@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/router";
 import React from "react";
 
+import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import { MoreIcon } from "../common/Icon";
 import DeleteUserModal from "./DeleteUserModal";
 import { User } from "./types";
@@ -25,7 +26,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const router = useRouter();
 
   const handleEditUser = () => {
-    router.push(`/user-management/profile/${user.id}`);
+    router.push(`${USER_MANAGEMENT_ROUTE}/profile/${user.id}`);
   };
 
   return (

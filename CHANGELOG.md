@@ -37,6 +37,7 @@ The types of changes are:
 * Adds endpoint analytics events [#622](https://github.com/ethyca/fidesops/pull/622)
 * Sample dataset and access configuration for Zendesk (ticket endpoints) [#677](https://github.com/ethyca/fidesops/pull/677)
 * Include number of records to be masked in masking endpoint's log message [#692](https://github.com/ethyca/fidesops/pull/692)
+* Datastore Connection Landing Page [#674](https://github.com/ethyca/fidesops/pull/674)
 
 ### Changed
 
