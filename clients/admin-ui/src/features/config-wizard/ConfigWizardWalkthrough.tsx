@@ -18,6 +18,7 @@ const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [reviewStep, setReviewStep] = useState<number>(1);
+  const [systemFidesKey, setSystemFidesKey] = useState("");
 
   const handleCancelSetup = () => {
     router.push("/");
@@ -32,6 +33,12 @@ const ConfigWizardWalkthrough = () => {
   const handleChangeReviewStep = (rStep: number) => {
     if (rStep && reviewStep !== HORIZONTAL_STEPS.length) {
       setReviewStep(rStep + 1);
+    }
+  };
+
+  const handleSystemFidesKey = (key: string) => {
+    if (key) {
+      setSystemFidesKey(key);
     }
   };
 
@@ -76,18 +83,21 @@ const ConfigWizardWalkthrough = () => {
                     handleChangeStep={handleChangeStep}
                     handleCancelSetup={handleCancelSetup}
                     handleChangeReviewStep={handleChangeReviewStep}
+                    handleSystemFidesKey={handleSystemFidesKey}
                   />
                 )}
                 {reviewStep === 2 && (
                   <PrivacyDeclarationForm
                     handleCancelSetup={handleCancelSetup}
                     handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
                   />
                 )}
                 {reviewStep === 3 && (
                   <ReviewSystemForm
                     handleCancelSetup={handleCancelSetup}
                     handleChangeStep={handleChangeStep}
+                    systemFidesKey={systemFidesKey}
                   />
                 )}
               </Stack>

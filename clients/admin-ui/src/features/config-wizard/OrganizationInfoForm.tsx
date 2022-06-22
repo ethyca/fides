@@ -42,6 +42,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
         fides_key: existingOrg?.fides_key ?? "default_organization",
+        organization_fides_key: "default_organization",
         // FUTURE TODO: Need to check with this body that if they have a fides_key assigned,
         // then assign that existing one
       };

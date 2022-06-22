@@ -24,12 +24,9 @@ import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
 const ReviewSystemForm: NextPage<{
   handleChangeStep: Function;
   handleCancelSetup: Function;
-}> = ({ handleCancelSetup, handleChangeStep }) => {
-  // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
-  // not just use this default
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(
-    "default_organization"
-  );
+  systemFidesKey: string;
+}> = ({ handleCancelSetup, handleChangeStep, systemFidesKey }) => {
+  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
   );
@@ -37,8 +34,7 @@ const ReviewSystemForm: NextPage<{
   const initialValues = {
     name: existingOrg?.name ?? "",
     system_name: existingSystem?.name ?? "",
-    // TODO FUTURE:
-    // system_key: existingSystem?.key,
+    system_key: existingSystem?.fides_key ?? "",
     system_description: existingSystem?.description ?? "",
     system_type: existingSystem?.system_type ?? "",
     system_dependencies: existingSystem?.system_dependencies ?? [],
@@ -69,11 +65,11 @@ const ReviewSystemForm: NextPage<{
               <FormLabel>System name:</FormLabel>
               <Text>{initialValues.system_name}</Text>
             </HStack>
-            {/* TODO FUTURE: System key is not currently stored anywhere in the system info
-              <HStack>
-                <FormLabel>System key:</FormLabel>
-                <Text>{initialValues.system_key}</Text>
-              </HStack> */}
+
+            <HStack>
+              <FormLabel>System key:</FormLabel>
+              <Text>{initialValues.system_key}</Text>
+            </HStack>
             <HStack>
               <FormLabel>System description:</FormLabel>
               <Text>{initialValues.system_description}</Text>
@@ -187,6 +183,13 @@ const ReviewSystemForm: NextPage<{
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
             <Button type="submit" colorScheme="primary" size="sm">
               Confirm and Register
+            </Button>
+            <Button
+              onClick={() => handleChangeStep(4)}
+              colorScheme="primary"
+              size="sm"
+            >
+              Add another system manually
             </Button>
           </Box>
         </Stack>

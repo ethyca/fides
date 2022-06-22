@@ -62,12 +62,9 @@ type FormValues = Partial<PrivacyDeclaration>;
 const PrivacyDeclarationForm: NextPage<{
   handleChangeReviewStep: Function;
   handleCancelSetup: Function;
-}> = ({ handleCancelSetup, handleChangeReviewStep }) => {
-  // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
-  // not just use this default
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(
-    "default_organization"
-  );
+  systemFidesKey: string;
+}> = ({ handleCancelSetup, handleChangeReviewStep, systemFidesKey }) => {
+  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const dispatch = useDispatch();
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<any>(
