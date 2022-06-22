@@ -16,7 +16,7 @@ Ensure nothing is running on ports `8080`, `5432`, or `6379` prior to these step
    
 2. Run `docker compose up` from the root of the Fidesops project directory. The provided `docker-compose.yml` will create the necessary databases and spin up the server.
    
-3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{ "healthy": true }` indicates a successful deployment.
+3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.
    
 ## Build From Your Project
 
@@ -86,7 +86,7 @@ Ensure nothing is running on ports `8080`, `5432`, or `6379` prior to these step
    
 2. Ensure Docker is running, and run `docker compose up` from the project's root directory. This will pull the latest Fidesops Docker image, create the sample databases, and start the server.
 
-3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{ "healthy": true }` indicates a successful deployment.
+3. Visit `http://0.0.0.0:8080/health` in your browser. A response of `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}` indicates a successful deployment.
 
 ## Next Steps
 You now have a working test installation of Fidesops! From here, use the available [How-To Guides](guides/oauth.md) to view examples of authenticating, connecting to databases, configuring policies, and more. 
