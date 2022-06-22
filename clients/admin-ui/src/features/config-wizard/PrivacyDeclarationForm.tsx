@@ -38,6 +38,7 @@ import {
   setDataUse,
   useGetDataUseQuery,
 } from "~/features/data-use/data-use.slice";
+import { PrivacyDeclaration } from "~/features/system/types";
 import {
   selectDataCategories,
   setDataCategories,
@@ -54,14 +55,6 @@ import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
 } from "../system/system.slice";
-
-interface PrivacyDeclaration {
-  name: string;
-  data_categories: string[];
-  data_use: string;
-  data_qualifier: string;
-  data_subjects: string[];
-}
 
 type FormValues = Partial<PrivacyDeclaration>;
 
@@ -184,6 +177,7 @@ const PrivacyDeclarationForm: NextPage<{
 
   const addAnotherDeclaration = (values: any) => {
     if (
+      values.name === "" ||
       formDeclarations.filter((d: any) => d.name === values.name).length > 0 ||
       (existingSystem &&
         existingSystem?.privacy_declarations &&
@@ -420,10 +414,11 @@ const PrivacyDeclarationForm: NextPage<{
                 colorScheme="primary"
                 size="sm"
                 disabled={
-                  !values.data_use ||
-                  !values.data_qualifier ||
-                  !values.data_subjects ||
-                  !values.data_categories
+                  (!values.data_use ||
+                    !values.data_qualifier ||
+                    !values.data_subjects ||
+                    !values.data_categories) &&
+                  formDeclarations.length === 0
                 }
                 isLoading={isLoading}
               >

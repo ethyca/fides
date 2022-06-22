@@ -26,7 +26,7 @@ interface SystemMetadata {
   endpoint_port?: string;
 }
 
-interface PrivacyDeclaration {
+export interface PrivacyDeclaration {
   name: string;
   data_categories: FidesKey[];
   data_use: FidesKey;
