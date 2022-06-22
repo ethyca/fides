@@ -48,6 +48,7 @@ The types of changes are:
 * Matched the path to the migrations in the mypy settings with the new location [#634](https://github.com/ethyca/fidesops/pull/634)
 * Sort ConnectionConfig by name ascending [#668](https://github.com/ethyca/fidesops/pull/672)
 * Install MSSQL By Default [#664] (https://github.com/ethyca/fidesops/pull/664)
+* [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
 
 ### Developer Experience
 
