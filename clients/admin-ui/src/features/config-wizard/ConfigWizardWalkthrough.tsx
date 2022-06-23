@@ -12,6 +12,7 @@ import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
+import SuccessPage from "./SuccessPage";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -32,7 +33,7 @@ const ConfigWizardWalkthrough = () => {
 
   const handleChangeReviewStep = (rStep: number) => {
     if (rStep) {
-      if (rStep === 4) {
+      if (rStep === 5) {
         setReviewStep(1);
       } else {
         setReviewStep(rStep + 1);
@@ -78,10 +79,12 @@ const ConfigWizardWalkthrough = () => {
             ) : null}
             {step === 5 ? (
               <Stack direction="column">
-                <HorizontalStepper
-                  activeStep={reviewStep}
-                  steps={HORIZONTAL_STEPS}
-                />
+                {reviewStep <= 3 ? (
+                  <HorizontalStepper
+                    activeStep={reviewStep}
+                    steps={HORIZONTAL_STEPS}
+                  />
+                ) : null}
                 {reviewStep === 1 && (
                   <DescribeSystemsForm
                     handleChangeStep={handleChangeStep}
@@ -100,6 +103,12 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 3 && (
                   <ReviewSystemForm
                     handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+                {reviewStep === 4 && (
+                  <SuccessPage
                     handleChangeStep={handleChangeStep}
                     handleChangeReviewStep={handleChangeReviewStep}
                     systemFidesKey={systemFidesKey}

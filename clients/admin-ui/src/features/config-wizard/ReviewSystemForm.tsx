@@ -22,16 +22,10 @@ import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
 
 const ReviewSystemForm: NextPage<{
-  handleChangeStep: Function;
   handleChangeReviewStep: Function;
   handleCancelSetup: Function;
   systemFidesKey: string;
-}> = ({
-  handleCancelSetup,
-  handleChangeStep,
-  handleChangeReviewStep,
-  systemFidesKey,
-}) => {
+}> = ({ handleCancelSetup, handleChangeReviewStep, systemFidesKey }) => {
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
@@ -48,7 +42,7 @@ const ReviewSystemForm: NextPage<{
   };
 
   const handleSubmit = () => {
-    handleChangeStep(5);
+    handleChangeReviewStep(3);
   };
 
   return (
@@ -190,16 +184,6 @@ const ReviewSystemForm: NextPage<{
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
             <Button type="submit" colorScheme="primary" mr={2} size="sm">
               Confirm and Register
-            </Button>
-            <Button
-              onClick={() => {
-                handleChangeStep(4);
-                handleChangeReviewStep(4);
-              }}
-              colorScheme="primary"
-              size="sm"
-            >
-              Add another system manually
             </Button>
           </Box>
         </Stack>
