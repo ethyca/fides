@@ -63,6 +63,7 @@ The types of changes are:
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
 * Fixed error with mypy on Python versions greater than 3.9.6 [#630](https://github.com/ethyca/fidesops/pull/630)
 * Bumped fideslib to 2.0.4. This fixes the issue where alembic couldn't find the `fidesops.toml` file from its new location [#643](https://github.com/ethyca/fidesops/pull/643)
+* Fixes Postman Collection inconsistencies [#704](https://github.com/ethyca/fidesops/pull/704)
 
 ## [1.5.3](https://github.com/ethyca/fidesops/compare/1.5.2...1.5.3)
 
