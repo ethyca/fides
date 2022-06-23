@@ -42,6 +42,7 @@ The types of changes are:
 * Added the ability to disable/enable a datastore from the frontend [#693] https://github.com/ethyca/fidesops/pull/693
 * Adds Postgres and Redis health checks to health endpoint [#690](https://github.com/ethyca/fidesops/pull/690)
 * Added health checks and better error messages on app startup for both db and cache [#686](https://github.com/ethyca/fidesops/pull/686)
+* Datastore Connection Filters [#691](https://github.com/ethyca/fidesops/pull/691)
 
 ### Changed
 

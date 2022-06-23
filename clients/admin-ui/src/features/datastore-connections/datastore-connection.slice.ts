@@ -5,22 +5,59 @@ import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import {
+  ConnectionType,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
+  DisabledStatus,
+  SystemType,
+  TestingStatus,
 } from "./types";
 
 function mapFiltersToSearchParams({
   search,
   page,
   size,
-}: Partial<DatastoreConnectionParams>): any {
-  return {
-    ...(search ? { search } : {}),
-    ...(page ? { page: `${page}` } : {}),
-    ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
-  };
+  connection_type,
+  test_status,
+  system_type,
+  disabled_status,
+}: Partial<DatastoreConnectionParams>): string {
+  let queryString = "";
+  if (connection_type) {
+    connection_type.forEach((d) => {
+      queryString += queryString
+        ? `&connection_type=${d}`
+        : `connection_type=${d}`;
+    });
+  }
+
+  if (search) {
+    queryString += queryString ? `&search=${search}` : `search=${search}`;
+  }
+  if (typeof size !== "undefined") {
+    queryString += queryString ? `&size=${size}` : `size=${size}`;
+  }
+  if (page) {
+    queryString += queryString ? `&page=${page}` : `page=${page}`;
+  }
+  if (test_status) {
+    queryString += queryString
+      ? `&test_status=${test_status}`
+      : `test_status=${test_status}`;
+  }
+  if (system_type) {
+    queryString += queryString
+      ? `&system_type=${system_type}`
+      : `system_type=${system_type}`;
+  }
+  if (disabled_status) {
+    const value = disabled_status === DisabledStatus.DISABLED;
+    queryString += queryString ? `&disabled=${value}` : `disabled=${value}`;
+  }
+
+  return queryString ? `?${queryString}` : "";
 }
 const initialState: DatastoreConnectionParams = {
   search: "",
@@ -37,6 +74,32 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       search: action.payload,
     }),
+    setConnectionType: (state, action: PayloadAction<ConnectionType[]>) => ({
+      ...state,
+      page: initialState.page,
+      connection_type: action.payload,
+    }),
+    setTestingStatus: (
+      state,
+      action: PayloadAction<TestingStatus | string>
+    ) => ({
+      ...state,
+      page: initialState.page,
+      test_status: action.payload as TestingStatus,
+    }),
+    setSystemType: (state, action: PayloadAction<SystemType | string>) => ({
+      ...state,
+      page: initialState.page,
+      system_type: action.payload as SystemType,
+    }),
+    setDisabledStatus: (
+      state,
+      action: PayloadAction<DisabledStatus | string>
+    ) => ({
+      ...state,
+      page: initialState.page,
+      disabled_status: action.payload as DisabledStatus,
+    }),
     setPage: (state, action: PayloadAction<number>) => ({
       ...state,
       page: action.payload,
@@ -49,13 +112,25 @@ export const datastoreConnectionSlice = createSlice({
   },
 });
 
-export const { setSearch, setSize, setPage } = datastoreConnectionSlice.actions;
+export const {
+  setSearch,
+  setSize,
+  setPage,
+  setConnectionType,
+  setSystemType,
+  setTestingStatus,
+  setDisabledStatus,
+} = datastoreConnectionSlice.actions;
 export const selectDatastoreConnectionFilters = (
   state: RootState
 ): DatastoreConnectionParams => ({
   search: state.datastoreConnections.search,
   page: state.datastoreConnections.page,
   size: state.datastoreConnections.size,
+  connection_type: state.datastoreConnections.connection_type,
+  system_type: state.datastoreConnections.system_type,
+  test_status: state.datastoreConnections.test_status,
+  disabled_status: state.datastoreConnections.disabled_status,
 });
 
 export const { reducer } = datastoreConnectionSlice;
@@ -80,8 +155,7 @@ export const datastoreConnectionApi = createApi({
       Partial<DatastoreConnectionParams>
     >({
       query: (filters) => ({
-        url: CONNECTION_ROUTE,
-        params: mapFiltersToSearchParams(filters),
+        url: CONNECTION_ROUTE + mapFiltersToSearchParams(filters),
       }),
       providesTags: () => ["DatastoreConnection"],
     }),

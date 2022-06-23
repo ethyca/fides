@@ -56,66 +56,80 @@ const ConnectionGrid: React.FC = () => {
     total,
     handleNextPage,
     handlePreviousPage,
+    search,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    connection_type,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    system_type,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    test_status,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    disabled_status,
   } = useConnectionGrid();
   if (isUninitialized || isLoading) {
     return <Spinner />;
   }
 
-  let body = (
-    <Flex
-      bg="gray.50"
-      width="100%"
-      height="340px"
-      justifyContent="center"
-      alignItems="center"
-      flexDirection="column"
-    >
-      <Text
-        color="black"
-        fontSize="x-large"
-        lineHeight="32px"
-        fontWeight="600"
-        mb="7px"
+  if (
+    !search &&
+    !test_status &&
+    !disabled_status &&
+    !connection_type &&
+    !system_type &&
+    data!.items.length === 0
+  ) {
+    return (
+      <Flex
+        bg="gray.50"
+        width="100%"
+        height="340px"
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
       >
-        Welcome to your Datastore!
-      </Text>
-      <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
-        You don&lsquo;t have any Connections set up yet.
-      </Text>
-      <Button
-        variant="solid"
-        bg="primary.800"
-        _hover={{ bg: "primary.800" }}
-        color="white"
-        flexShrink={0}
-        size="sm"
-        disabled
-      >
-        Create New Connection
-      </Button>
-    </Flex>
-  );
-
-  // @ts-ignore
-  if (data?.items.length > 0) {
-    const gridItems = data!.items.map((d) => (
-      <ConnectionGridItem key={d.key} connectionData={d} />
-    ));
-    body = (
-      <>
-        <SimpleGrid minChildWidth={400}>{gridItems}</SimpleGrid>
-        <PaginationFooter
-          page={page}
-          size={size}
-          total={total}
-          handleNextPage={handleNextPage}
-          handlePreviousPage={handlePreviousPage}
-        />
-      </>
+        <Text
+          color="black"
+          fontSize="x-large"
+          lineHeight="32px"
+          fontWeight="600"
+          mb="7px"
+        >
+          Welcome to your Datastore!
+        </Text>
+        <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
+          You don&lsquo;t have any Connections set up yet.
+        </Text>
+        <Button
+          variant="solid"
+          bg="primary.800"
+          _hover={{ bg: "primary.800" }}
+          color="white"
+          flexShrink={0}
+          size="sm"
+          disabled
+        >
+          Create New Connection
+        </Button>
+      </Flex>
     );
   }
 
-  return body;
+  // @ts-ignore
+  const gridItems = data!.items.map((d) => (
+    <ConnectionGridItem key={d.key} connectionData={d} />
+  ));
+  return (
+    <>
+      <SimpleGrid minChildWidth={400}>{gridItems}</SimpleGrid>
+      <PaginationFooter
+        page={page}
+        size={size}
+        total={total}
+        handleNextPage={handleNextPage}
+        handlePreviousPage={handlePreviousPage}
+      />
+    </>
+  );
 };
 
 export default ConnectionGrid;
