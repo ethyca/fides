@@ -145,7 +145,7 @@ const PrivacyDeclarationForm: NextPage<{
       name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
       system_type: existingSystem?.system_type,
-      system_dependencies: existingSystem?.system_dependencies,
+      meta: existingSystem?.meta,
     };
 
     const handleResult = (
