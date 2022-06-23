@@ -15,24 +15,26 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.6.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
+
+## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added
 
 * Added dependabot to keep dependencies updated
-* Include a warning for any orphan datasets as part of the `apply` command.
+* A warning now issues for any orphan datasets as part of the `apply` command [543](https://github.com/ethyca/fides/pull/543)
 * Initial scaffolding of management UI [#561](https://github.com/ethyca/fides/pull/624)
-* New `audit` command for `system` and `organization` resources, checking data map attribute compliance. [#548](https://github.com/ethyca/fides/pull/548)
-* UI static assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
+* A new `audit` command for `system` and `organization` resources, checking data map attribute compliance [#548](https://github.com/ethyca/fides/pull/548)
+* Static UI assets are now built with the docker container [#663](https://github.com/ethyca/fides/issues/663)
 * Host static files via fidesapi [#621](https://github.com/ethyca/fides/pull/621)
-* New `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
-* New `datamap` endpoint to enable visualizing a data map from the UI [#721](https://github.com/ethyca/fides/pull/721)
-* Navigation bar for management UI
-* Integration for management UI
+* A new `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
+* A new `datamap` endpoint to enable visualizing a data map from the UI [#721](https://github.com/ethyca/fides/pull/721)
+* Management UI navigation bar [#679](https://github.com/ethyca/fides/issues/679)
+* Management UI integration [#736](https://github.com/ethyca/fides/pull/736) 
   * Datasets
   * Systems
   * Taxonomy (data categories)
-* Initial dataset UI view
+* Initial dataset UI view [#768](https://github.com/ethyca/fides/pull/768)
   * Add interaction for viewing a dataset collection
   * Add column picker
   * Add a data category checklist tree  
@@ -51,19 +53,19 @@ The types of changes are:
 
 ### Changed
 
-* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands
-* Migrate all endpoints to be prefixed by `/api/v1` [#623](https://github.com/ethyca/fides/issues/623)
-* Allow credentials to be passed to the generate systems from aws functionality via the API [#645](https://github.com/ethyca/fides/pull/645)
-* Update the export of a datamap to load resources from the server instead of a manifest directory[#662](https://github.com/ethyca/fides/pull/662)
+* Comparing server and CLI versions ignores `.dirty` only differences, and is quiet on success when running general CLI commands [621](https://github.com/ethyca/fides/pull/621)
+* All endpoints now prefixed by `/api/v1` [#623](https://github.com/ethyca/fides/issues/623)
+* Allow AWS credentials to be passed to `generate system` via the API [#645](https://github.com/ethyca/fides/pull/645)
+* Update the export of a datamap to load resources from the server instead of a manifest directory [#662](https://github.com/ethyca/fides/pull/662)
 * Refactor `export` to remove CLI specific uses from the core modules and load resources[#725](https://github.com/ethyca/fides/pull/725)
 * Bump version of FastAPI in `setup.py` to 0.77.1 to match `optional-requirements.txt` [#734](https://github.com/ethyca/fides/pull/734)
-* Docker images are now only built and pushed on tags to match when we release to pypi [#740](https://github.com/ethyca/fides/pull/740)
+* Docker images are now only built and pushed on tags to match when released to pypi [#740](https://github.com/ethyca/fides/pull/740)
 * Okta resource scanning and generation now works with systems instead of datasets [#751](https://github.com/ethyca/fides/pull/751)
 
 ### Developer Experience
 
-* Replaced `make` with `nox`
-* Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects
+* Replaced `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
+* Removed usage of `fideslang` module in favor of new [external package](https://github.com/ethyca/fideslang) shared across projects [#619](https://github.com/ethyca/fides/issues/619)
 * Added a UI service to the docker-compose deployment [#757](<https://github.com/ethyca/fides/pull/757>)
 * `TestClient` defined in and shared across test modules via `conftest.py` [#759](https://github.com/ethyca/fides/pull/759)
 
@@ -72,14 +74,15 @@ The types of changes are:
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
 * Dataset UI and config wizard docs added (https://github.com/ethyca/fides/pull/697)
+* The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed
 
-* Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected
+* Updated `fideslog` to v1.1.5, resolving an issue where some exceptions thrown by the SDK were not handled as expected [#609](https://github.com/ethyca/fides/issues/609)
 * Updated the webserver so that it won't fail if the database is inaccessible [#649](https://github.com/ethyca/fides/pull/649)
-* Handle complex characters in external tests  [#661](https://github.com/ethyca/fides/pull/661)
+* Updated external tests to handle complex characters [#661](https://github.com/ethyca/fides/pull/661)
 * Evaluations now properly merge the default taxonomy into the user-defined taxonomy [#684](https://github.com/ethyca/fides/pull/684)
-* The CLI can be run without installing the webserver components [#715](https://github.com/ethyca/fides/pull/715)
+* The CLI can now be run without installing the webserver components [#715](https://github.com/ethyca/fides/pull/715)
 
 ## [1.6.1](https://github.com/ethyca/fides/compare/1.6.0...1.6.1) - 2022-06-15
 
