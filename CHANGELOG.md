@@ -41,6 +41,7 @@ The types of changes are:
   * Edit datasets
   * Add a component for Identifiability tags
   * Add tooltips for help on forms
+  * Add geographic location (third_country_transfers) country selection. Supported by new dependency `i18n-iso-countries`.
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
 * Initial configuration wizard UI view

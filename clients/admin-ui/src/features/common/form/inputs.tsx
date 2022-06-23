@@ -112,7 +112,7 @@ export const CustomSelect = ({
                 color: "white",
               }),
             }}
-            isSearchable={isSearchable ?? false}
+            isSearchable={isSearchable}
             isClearable={isClearable}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -193,7 +193,7 @@ export const CustomMultiSelect = ({
             components={{
               ClearIndicator: () => null,
             }}
-            isSearchable={isSearchable ?? false}
+            isSearchable={isSearchable}
             isClearable={isClearable}
             isMulti
           />
