@@ -21,8 +21,17 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     if (dataset) {
       const updatedDataset = { ...dataset, ...values };
       try {
-        await updateDataset(updatedDataset);
-        toast(successToastParams("Successfully modified dataset"));
+        const result = await updateDataset(updatedDataset);
+        // TODO: we should systematically coerce errors into their types (see fidesops)
+        if ("error" in result && "data" in result.error) {
+          if ("data" in result.error) {
+            toast(errorToastParams(result.error.data as string));
+          } else {
+            toast(errorToastParams("An unknown error occurred"));
+          }
+        } else {
+          toast(successToastParams("Successfully modified dataset"));
+        }
       } catch (error) {
         toast(errorToastParams(error as string));
       }
