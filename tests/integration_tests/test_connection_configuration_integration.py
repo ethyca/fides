@@ -1221,8 +1221,8 @@ class TestSaaSConnectionPutSecretsAPI:
         )
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to '{mailchimp_connection_config.key}'."
-            == body["failure_reason"]
+            f"Operational Error connecting to '{mailchimp_connection_config.key}'"
+            in body["failure_reason"]
         )
 
         db.refresh(mailchimp_connection_config)
@@ -1241,10 +1241,9 @@ class TestSaaSConnectionPutSecretsAPI:
         db: Session,
         generate_auth_header,
         mailchimp_connection_config,
-        mailchimp_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = mailchimp_secrets
+        payload = mailchimp_connection_config.secrets
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1261,7 +1260,7 @@ class TestSaaSConnectionPutSecretsAPI:
         assert body["failure_reason"] is None
 
         db.refresh(mailchimp_connection_config)
-        assert mailchimp_connection_config.secrets == mailchimp_secrets
+        assert mailchimp_connection_config.secrets == payload
         assert mailchimp_connection_config.last_test_timestamp is not None
         assert mailchimp_connection_config.last_test_succeeded is True
 
@@ -1292,10 +1291,10 @@ class TestSaaSConnectionPutSecretsAPI:
         url,
         api_client: TestClient,
         generate_auth_header,
-        mailchimp_secrets,
+        mailchimp_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {**mailchimp_secrets, "extra": "junk"}
+        payload = {**mailchimp_connection_config.secrets, "extra": "junk"}
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1380,8 +1379,8 @@ class TestSaaSConnectionTestSecretsAPI:
         body = json.loads(resp.text)
         assert body["test_status"] == "failed"
         assert (
-            f"Operational Error connecting to '{mailchimp_connection_config.key}'."
-            == body["failure_reason"]
+            f"Operational Error connecting to '{mailchimp_connection_config.key}'"
+            in body["failure_reason"]
         )
         assert (
             body["msg"]

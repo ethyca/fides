@@ -54,6 +54,6 @@ identity_email = ""
 
 [zendesk]
 domain = ""
-app_username = ""
-app_password = ""
+username = ""
+api_key = ""
 identity_email = ""

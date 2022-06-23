@@ -104,7 +104,7 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
 
     stripe_secrets = stripe_connection_config.secrets
 
-    base_url = f"https://{stripe_secrets['host']}"
+    base_url = f"https://{stripe_secrets['domain']}"
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",

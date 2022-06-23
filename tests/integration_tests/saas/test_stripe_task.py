@@ -1101,7 +1101,7 @@ def test_stripe_erasure_request_task(
     }
 
     stripe_secrets = stripe_connection_config.secrets
-    base_url = f"https://{stripe_secrets['host']}"
+    base_url = f"https://{stripe_secrets['domain']}"
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": f"Bearer {stripe_secrets['api_key']}",
