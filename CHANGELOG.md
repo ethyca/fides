@@ -17,7 +17,10 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.5.3...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+
+
+## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
 ### Added
 * Subject Request Details page [#563](https://github.com/ethyca/fidesops/pull/563)
@@ -59,6 +62,7 @@ The types of changes are:
 ### Developer Experience
 
 * Add celerybeat-schedule file to gitignore [#639](https://github.com/ethyca/fidesops/pull/639)
+* Use `v2.1.0` of `fideslib` [#705](https://github.com/ethyca/fidesops/pull/705)
 
 ### Fixed
 * Fixed error with running mypy on M1 Macs [#630](https://github.com/ethyca/fidesops/pull/630)
