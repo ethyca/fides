@@ -8,6 +8,6 @@ The fidesops [Privacy Center](privacy_center.md) is a configurable webpage where
 ![privacy center](../img/admin_ui/privacy_center.png)
 
 ## Admin UI
-The [Admin UI](admin_ui.md) organizes processes like fulfilling data subject requests, customizing database connections, and managing user access into a single control panel. Once configured, the Admin UI allows [authorized users](user_management.md) to approve or deny privacy requests, manage datastores, and create or update fidesops [policies](../guides/policies.md).
+The Admin UI organizes processes like fulfilling [data subject requests](subject_requests.md), customizing [database connections](datastores.md), and [managing user access](user_management.md) into a single control panel. Once configured, the Admin UI allows authorized users to approve or deny privacy requests, manage datastores, and create or update fidesops [policies](../guides/policies.md).
 
 ![admin ui](../img/admin_ui/admin_ui.png)
