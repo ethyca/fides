@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9019796e-9107-41a1-a268-4d2cda117e85",
+		"_postman_id": "cf453252-ec57-421a-8be4-27d148d03dca",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -482,51 +482,6 @@
 							"path": [
 								"connection",
 								"{{postgres_key}}",
-								"dataset"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create/Update Postgres Dataset YAML",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/x-yaml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "dataset:\n  - fides_key: bigquery_example_test_dataset\n    name: BigQuery Example Test Dataset\n    description: Example of a BigQuery dataset containing a variety of related tables like customers, products, addresses, etc.\n    collections:\n      - name: address\n        fields:\n          - name: city\n            data_categories: [user.provided.identifiable.contact.city]\n          - name: house\n            data_categories: [user.provided.identifiable.contact.street]\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: state\n            data_categories: [user.provided.identifiable.contact.state]\n          - name: street\n            data_categories: [user.provided.identifiable.contact.street]\n          - name: zip\n            data_categories: [user.provided.identifiable.contact.postal_code]\n\n      - name: customer\n        fields:\n          - name: address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: created\n            data_categories: [system.operations]\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.name]\n            fidesops_meta:\n              data_type: string\n              length: 40\n\n      - name: employee\n        fields:\n          - name: address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.name]\n            fidesops_meta:\n              data_type: string\n\n      - name: login\n        fields:\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: time\n            data_categories: [user.derived.nonidentifiable.sensor]\n\n      - name: order\n        fields:\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: shipping_address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n\n      # order_item\n      - name: order_item\n        fields:\n          - name: order_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: order.id\n                  direction: from\n          - name: product_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: product.id\n                  direction: to\n          - name: quantity\n            data_categories: [system.operations]\n\n      - name: payment_card\n        fields:\n          - name: billing_address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: ccn\n            data_categories: [user.provided.identifiable.financial.account_number]\n          - name: code\n            data_categories: [user.provided.identifiable.financial]\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.financial]\n          - name: preferred\n            data_categories: [user.provided.nonidentifiable]\n\n      - name: product\n        fields:\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [system.operations]\n          - name: price\n            data_categories: [system.operations]\n\n      - name: report\n        fields:\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: month\n            data_categories: [system.operations]\n          - name: name\n            data_categories: [system.operations]\n          - name: total_visits\n            data_categories: [system.operations]\n          - name: year\n            data_categories: [system.operations]\n\n      - name: service_request\n        fields:\n          - name: alt_email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: closed\n            data_categories: [system.operations]\n          - name: email\n            data_categories: [system.operations]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: employee_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: employee.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: opened\n            data_categories: [system.operations]\n\n      - name: visit\n        fields:\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: last_visit\n            data_categories: [system.operations]\n",
-							"options": {
-								"raw": {
-									"language": "text"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/yml/connection/test_application_postgres_db/dataset",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"yml",
-								"connection",
-								"test_application_postgres_db",
 								"dataset"
 							]
 						}
@@ -1918,6 +1873,51 @@
 								"webhook",
 								"post_execution",
 								"{{post_webhook_two}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Postgres Dataset YAML",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-yaml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "dataset:\n  - fides_key: bigquery_example_test_dataset\n    name: BigQuery Example Test Dataset\n    description: Example of a BigQuery dataset containing a variety of related tables like customers, products, addresses, etc.\n    collections:\n      - name: address\n        fields:\n          - name: city\n            data_categories: [user.provided.identifiable.contact.city]\n          - name: house\n            data_categories: [user.provided.identifiable.contact.street]\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: state\n            data_categories: [user.provided.identifiable.contact.state]\n          - name: street\n            data_categories: [user.provided.identifiable.contact.street]\n          - name: zip\n            data_categories: [user.provided.identifiable.contact.postal_code]\n\n      - name: customer\n        fields:\n          - name: address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: created\n            data_categories: [system.operations]\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.name]\n            fidesops_meta:\n              data_type: string\n              length: 40\n\n      - name: employee\n        fields:\n          - name: address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.name]\n            fidesops_meta:\n              data_type: string\n\n      - name: login\n        fields:\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: time\n            data_categories: [user.derived.nonidentifiable.sensor]\n\n      - name: order\n        fields:\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: shipping_address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n\n      # order_item\n      - name: order_item\n        fields:\n          - name: order_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: order.id\n                  direction: from\n          - name: product_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: product.id\n                  direction: to\n          - name: quantity\n            data_categories: [system.operations]\n\n      - name: payment_card\n        fields:\n          - name: billing_address_id\n            data_categories: [system.operations]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: address.id\n                  direction: to\n          - name: ccn\n            data_categories: [user.provided.identifiable.financial.account_number]\n          - name: code\n            data_categories: [user.provided.identifiable.financial]\n          - name: customer_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: customer.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [user.provided.identifiable.financial]\n          - name: preferred\n            data_categories: [user.provided.nonidentifiable]\n\n      - name: product\n        fields:\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: name\n            data_categories: [system.operations]\n          - name: price\n            data_categories: [system.operations]\n\n      - name: report\n        fields:\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: month\n            data_categories: [system.operations]\n          - name: name\n            data_categories: [system.operations]\n          - name: total_visits\n            data_categories: [system.operations]\n          - name: year\n            data_categories: [system.operations]\n\n      - name: service_request\n        fields:\n          - name: alt_email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: closed\n            data_categories: [system.operations]\n          - name: email\n            data_categories: [system.operations]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: employee_id\n            data_categories: [user.derived.identifiable.unique_id]\n            fidesops_meta:\n              references:\n                - dataset: bigquery_example_test_dataset\n                  field: employee.id\n                  direction: from\n          - name: id\n            data_categories: [system.operations]\n            fidesops_meta:\n              primary_key: True\n          - name: opened\n            data_categories: [system.operations]\n\n      - name: visit\n        fields:\n          - name: email\n            data_categories: [user.provided.identifiable.contact.email]\n            fidesops_meta:\n              identity: email\n              data_type: string\n          - name: last_visit\n            data_categories: [system.operations]\n",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/yml/connection/{{postgres_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"yml",
+								"connection",
+								"{{postgres_key}}",
+								"dataset"
 							]
 						}
 					},
@@ -3427,7 +3427,12 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"meta\": {\"version\": \"0.5\"},\n    \"regime\": \"ccpa\",\n    \"exercise\": [\n        \"access\"\n    ],\n    \"identity\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI\",\n}"
+							"raw": "{\n    \"meta\": {\"version\": \"0.5\"},\n    \"regime\": \"ccpa\",\n    \"exercise\": [\n        \"access\"\n    ],\n    \"identity\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{host}}/drp/exercise",
