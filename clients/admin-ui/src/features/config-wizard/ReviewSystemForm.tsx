@@ -87,7 +87,7 @@ const ReviewSystemForm: NextPage<{
             <HStack>
               <FormLabel>System tags:</FormLabel>
               {initialValues.meta.tags &&
-                initialValues?.meta?.tags.split(" ").map((tag) => (
+                initialValues?.meta?.tags.split(",").map((tag) => (
                   <Tag
                     background="primary.400"
                     color="white"
