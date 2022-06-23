@@ -1,4 +1,4 @@
-import { Box, Flex, IconButton, Spacer, Text } from "@fidesui/react";
+import { Box, Button, Flex, IconButton, Spacer, Text } from "@fidesui/react";
 import React, { useCallback, useState } from "react";
 
 import { useOutsideClick } from "../common/hooks";
@@ -107,6 +107,21 @@ const ConnectionDropdown: React.FC<ConnectionDropdownProps> = ({
           position="absolute"
           zIndex={1}
         >
+          <Flex borderBottom="1px" borderColor="gray.200" padding="8px">
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() => {
+                if (value) {
+                  setValue("");
+                }
+                toggleMenu();
+              }}
+            >
+              Clear
+            </Button>
+            <Spacer />
+          </Flex>
           {options}
         </Flex>
       ) : null}

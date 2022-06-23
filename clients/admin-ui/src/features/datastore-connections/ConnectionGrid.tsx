@@ -31,16 +31,30 @@ const useConnectionGrid = () => {
     dispatch(setPage(filters.page + 1));
   };
 
-  const { data, isLoading, isUninitialized } =
+  const { data, isLoading, isUninitialized, isFetching, isSuccess } =
     useGetAllDatastoreConnectionsQuery(cachedFilters);
-  const { items: connections, total } = data || { items: [], total: 0 };
+  // The result of the initial request data is being cached due to an issue with
+  // RTK query. Not doing this will result in the welcome screen being showed
+  // when it shouldn't sometimes
+  const isInitialDataEmpty = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (isInitialDataEmpty.current === undefined && isSuccess) {
+      isInitialDataEmpty.current =
+        !filters.search &&
+        !filters.test_status &&
+        !filters.disabled_status &&
+        !filters.connection_type &&
+        !filters.system_type &&
+        data!.items.length === 0;
+    }
+  }, [data, filters, isSuccess]);
   return {
     ...filters,
+    isInitialRenderEmpty: isInitialDataEmpty,
     data,
     isLoading,
     isUninitialized,
-    connections,
-    total,
+    isFetching,
     handleNextPage,
     handlePreviousPage,
   };
@@ -51,33 +65,18 @@ const ConnectionGrid: React.FC = () => {
     data,
     isUninitialized,
     isLoading,
+    isFetching,
+    isInitialRenderEmpty,
     page,
     size,
-    total,
     handleNextPage,
     handlePreviousPage,
-    search,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    connection_type,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    system_type,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    test_status,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    disabled_status,
   } = useConnectionGrid();
-  if (isUninitialized || isLoading) {
+  if (isUninitialized || isLoading || isFetching) {
     return <Spinner />;
   }
 
-  if (
-    !search &&
-    !test_status &&
-    !disabled_status &&
-    !connection_type &&
-    !system_type &&
-    data!.items.length === 0
-  ) {
+  if (isInitialRenderEmpty.current) {
     return (
       <Flex
         bg="gray.50"
@@ -124,7 +123,7 @@ const ConnectionGrid: React.FC = () => {
       <PaginationFooter
         page={page}
         size={size}
-        total={total}
+        total={data!.total}
         handleNextPage={handleNextPage}
         handlePreviousPage={handlePreviousPage}
       />
