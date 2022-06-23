@@ -40,4 +40,4 @@ export const HORIZONTAL_STEPS = [
   },
 ];
 
-export const iconButtonSize = "107";
+export const iconButtonSize = 107;

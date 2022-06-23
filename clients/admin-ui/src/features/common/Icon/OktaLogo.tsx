@@ -1,11 +1,10 @@
-import { Icon } from "@fidesui/react";
+import { createIcon } from "@fidesui/react";
 
-const OktaLogo = (props: any) => (
-  <Icon height="107px" width="107px" viewBox="0 0 113 113" {...props}>
-    <g filter="url(#filter0_dd_42_1091)">
-      <rect x="3" y="2" width="107" height="107" rx="10" fill="white" />
-    </g>
-    <g clipPath="url(#clip0_42_1091)">
+const OktaLogo = createIcon({
+  displayName: "OktaLogo",
+  viewBox: "0 0 113 113",
+  path: (
+    <>
       <path
         d="M37.039 51.1827C33.425 51.1827 30.5 54.0781 30.5 57.6554C30.5 61.2327 33.425 64.128 37.039 64.128C40.653 64.128 43.578 61.2327 43.578 57.6554C43.578 54.0781 40.653 51.1827 37.039 51.1827ZM37.039 60.8982C35.232 60.8982 33.763 59.4441 33.763 57.6554C33.763 55.8667 35.232 54.4126 37.039 54.4126C38.846 54.4126 40.315 55.8667 40.315 57.6554C40.315 59.4441 38.846 60.8982 37.039 60.8982Z"
         fill="#007DC1"
@@ -22,69 +21,8 @@ const OktaLogo = (props: any) => (
         d="M82.1229 60.7952C80.2769 60.7952 79.9909 60.1389 79.9909 57.6811C79.9909 57.6683 79.9909 57.6683 79.9909 57.6554V51.7489C79.9909 51.543 79.8349 51.1956 79.4189 51.1956H77.2349C76.9619 51.1956 76.6629 51.4144 76.6629 51.7489V52.0192C75.7139 51.4787 74.6089 51.1699 73.4389 51.1699C69.8249 51.1699 66.8999 54.0652 66.8999 57.6425C66.8999 61.2198 69.8249 64.1152 73.4389 64.1152C75.0639 64.1152 76.5459 63.5232 77.6899 62.5581C78.3009 63.4846 79.2889 64.1023 80.8359 64.1152C81.0959 64.1152 82.4999 64.1666 82.4999 63.5104V61.207C82.4999 61.014 82.3439 60.7952 82.1229 60.7952ZM73.4519 60.8981C71.6449 60.8981 70.1759 59.444 70.1759 57.6554C70.1759 55.8667 71.6449 54.4126 73.4519 54.4126C75.2589 54.4126 76.7279 55.8667 76.7279 57.6554C76.7149 59.444 75.2459 60.8981 73.4519 60.8981Z"
         fill="#007DC1"
       />
-    </g>
-    <defs>
-      <filter
-        id="filter0_dd_42_1091"
-        x="0"
-        y="0"
-        width="113"
-        height="113"
-        filterUnits="userSpaceOnUse"
-        colorInterpolationFilters="sRGB"
-      >
-        <feFlood floodOpacity="0" result="BackgroundImageFix" />
-        <feColorMatrix
-          in="SourceAlpha"
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-          result="hardAlpha"
-        />
-        <feOffset dy="1" />
-        <feGaussianBlur stdDeviation="1" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="BackgroundImageFix"
-          result="effect1_dropShadow_42_1091"
-        />
-        <feColorMatrix
-          in="SourceAlpha"
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-          result="hardAlpha"
-        />
-        <feOffset dy="1" />
-        <feGaussianBlur stdDeviation="1.5" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="effect1_dropShadow_42_1091"
-          result="effect2_dropShadow_42_1091"
-        />
-        <feBlend
-          mode="normal"
-          in="SourceGraphic"
-          in2="effect2_dropShadow_42_1091"
-          result="shape"
-        />
-      </filter>
-      <clipPath id="clip0_42_1091">
-        <rect
-          width="52"
-          height="17.3333"
-          fill="white"
-          transform="translate(30.5 46.8333)"
-        />
-      </clipPath>
-    </defs>
-  </Icon>
-);
+    </>
+  ),
+});
 
 export default OktaLogo;

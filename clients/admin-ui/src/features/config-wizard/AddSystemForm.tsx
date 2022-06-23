@@ -66,11 +66,12 @@ const AddSystemForm: NextPage<{
           <Stack direction="row" display="flex" alignItems="center" mb={5}>
             <IconButton
               aria-label="AWS"
-              background="white"
-              height={`${iconButtonSize}px`}
-              icon={<AWSLogoIcon />}
+              boxSize={iconButtonSize}
+              minW={iconButtonSize}
+              boxShadow="base"
+              variant="ghost"
+              icon={<AWSLogoIcon boxSize="full" />}
               onClick={() => handleChangeStep(2)}
-              width={`${iconButtonSize}px`}
             />
             <Text>Infrastructure Scan (AWS)</Text>
             <Tooltip
@@ -84,11 +85,12 @@ const AddSystemForm: NextPage<{
           <Stack direction="row" display="flex" alignItems="center" mb={5}>
             <IconButton
               aria-label="Okta"
-              background="white"
-              height={`${iconButtonSize}px`}
-              icon={<OktaLogoIcon />}
+              boxSize={iconButtonSize}
+              minW={iconButtonSize}
+              boxShadow="base"
+              variant="ghost"
+              icon={<OktaLogoIcon boxSize="full" />}
               onClick={() => handleChangeStep(2)}
-              width={`${iconButtonSize}px`}
             />
             <Text>System Scan (Okta)</Text>
             <Tooltip
@@ -103,11 +105,12 @@ const AddSystemForm: NextPage<{
             <HStack>
               <IconButton
                 aria-label="Manual setup"
-                background="white"
-                height={`${iconButtonSize}px`}
-                icon={<ManualSetupIcon />}
+                boxSize={iconButtonSize}
+                minW={iconButtonSize}
+                boxShadow="base"
+                variant="ghost"
+                icon={<ManualSetupIcon boxSize="full" />}
                 onClick={() => handleChangeStep(4)}
-                width={`${iconButtonSize}px`}
               />
             </HStack>
             <Text>Add a system manually</Text>
