@@ -8,7 +8,6 @@ import {
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
-
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 interface InputProps {
@@ -79,44 +78,42 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Box display="flex" alignItems="center" width="100%">
-          <Select
-            options={options}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
-            }}
-            onChange={(newValue) => {
-              if (newValue) {
-                field.onChange(props.name)(newValue.value);
-              }
-            }}
-            name={props.name}
-            value={selected}
-            size={size}
-            chakraStyles={{
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                bg: "transparent",
-                px: 2,
-                cursor: "inherit",
-              }),
-              indicatorSeparator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-              multiValue: (provided) => ({
-                ...provided,
-                background: "primary.400",
-                color: "white",
-              }),
-            }}
-            isSearchable={isSearchable}
-            isClearable={isClearable}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
+        <Select
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            if (newValue) {
+              field.onChange(props.name)(newValue.value);
+            }
+          }}
+          name={props.name}
+          value={selected}
+          size={size}
+          chakraStyles={{
+            dropdownIndicator: (provided) => ({
+              ...provided,
+              bg: "transparent",
+              px: 2,
+              cursor: "inherit",
+            }),
+            indicatorSeparator: (provided) => ({
+              ...provided,
+              display: "none",
+            }),
+            multiValue: (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+            }),
+          }}
+          isSearchable={isSearchable ?? false}
+          isClearable={isClearable}
+        />
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
@@ -182,12 +179,6 @@ export const CustomMultiSelect = ({
                 ...provided,
                 background: "primary.400",
                 color: "white",
-              }),
-              multiValueLabel: (provided) => ({
-                ...provided,
-                "&:hover": {
-                  overflow: "auto",
-                },
               }),
             }}
             components={{
