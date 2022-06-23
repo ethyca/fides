@@ -39,7 +39,7 @@ const DescribeSystemsForm: NextPage<{
     fides_key: "",
     name: "",
     organization_fides_key: "default_organization",
-    meta: { tags: [] },
+    tags: [],
     system_type: "",
   };
 
@@ -61,7 +61,7 @@ const DescribeSystemsForm: NextPage<{
         },
       ],
       system_type: values.system_type,
-      meta: { tags: values.meta?.tags },
+      meta: { tags: values.tags?.toString() },
     };
 
     const handleResult = (
@@ -185,10 +185,10 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableMultiSelect
-                  id="system_tags"
-                  name="system_tags"
+                  id="tags"
+                  name="tags"
                   label="System Tags"
-                  options={initialValues.meta?.tags.map((s: any) => ({
+                  options={initialValues.tags.map((s: any) => ({
                     value: s,
                     label: s,
                   }))}

@@ -43,7 +43,7 @@ const ReviewSystemForm: NextPage<{
     system_key: existingSystem?.fides_key ?? "",
     system_description: existingSystem?.description ?? "",
     system_type: existingSystem?.system_type ?? "",
-    meta: existingSystem?.meta ?? { tags: [] },
+    meta: existingSystem?.meta ?? { tags: "" },
     privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
 
@@ -87,7 +87,7 @@ const ReviewSystemForm: NextPage<{
             <HStack>
               <FormLabel>System tags:</FormLabel>
               {initialValues.meta.tags &&
-                initialValues?.meta?.tags.map((tag) => (
+                initialValues?.meta?.tags.split(" ").map((tag) => (
                   <Tag
                     background="primary.400"
                     color="white"
