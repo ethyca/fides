@@ -71,6 +71,7 @@ The types of changes are:
 
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
+* Dataset UI and config wizard docs added (https://github.com/ethyca/fides/pull/697)
 
 ### Fixed
 
