@@ -39,7 +39,7 @@ const DescribeSystemsForm: NextPage<{
     fides_key: "",
     name: "",
     organization_fides_key: "default_organization",
-    system_dependencies: [],
+    tags: [],
     system_type: "",
   };
 
@@ -61,7 +61,7 @@ const DescribeSystemsForm: NextPage<{
         },
       ],
       system_type: values.system_type,
-      system_dependencies: values.system_dependencies,
+      meta: { tags: values.tags?.toString() },
     };
 
     const handleResult = (
@@ -185,10 +185,10 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableMultiSelect
-                  id="system_dependencies"
-                  name="system_dependencies"
+                  id="tags"
+                  name="tags"
                   label="System Tags"
-                  options={initialValues.system_dependencies.map((s) => ({
+                  options={initialValues.tags.map((s: any) => ({
                     value: s,
                     label: s,
                   }))}
@@ -216,11 +216,7 @@ const DescribeSystemsForm: NextPage<{
                 colorScheme="primary"
                 size="sm"
                 disabled={
-                  !values.name ||
-                  !values.description ||
-                  !values.system_type ||
-                  (values.system_dependencies &&
-                    values.system_dependencies.length <= 0)
+                  !values.name || !values.description || !values.system_type
                 }
                 isLoading={isLoading}
               >

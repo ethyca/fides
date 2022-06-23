@@ -37,7 +37,7 @@ const ReviewSystemForm: NextPage<{
     system_key: existingSystem?.fides_key ?? "",
     system_description: existingSystem?.description ?? "",
     system_type: existingSystem?.system_type ?? "",
-    system_dependencies: existingSystem?.system_dependencies ?? [],
+    meta: existingSystem?.meta ?? { tags: "" },
     privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
 
@@ -80,16 +80,17 @@ const ReviewSystemForm: NextPage<{
             </HStack>
             <HStack>
               <FormLabel>System tags:</FormLabel>
-              {initialValues.system_dependencies.map((dependency) => (
-                <Tag
-                  background="primary.400"
-                  color="white"
-                  key={dependency}
-                  width="fit-content"
-                >
-                  {dependency}
-                </Tag>
-              ))}
+              {initialValues.meta.tags &&
+                initialValues?.meta?.tags.split(",").map((tag) => (
+                  <Tag
+                    background="primary.400"
+                    color="white"
+                    key={tag}
+                    width="fit-content"
+                  >
+                    {tag}
+                  </Tag>
+                ))}
             </HStack>
             <FormLabel>Privacy declarations:</FormLabel>
             {initialValues.privacy_declarations.length > 0

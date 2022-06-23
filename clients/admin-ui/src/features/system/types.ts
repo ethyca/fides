@@ -6,7 +6,7 @@ import {
 
 export interface System extends FidesBase {
   registry_id?: number;
-  meta?: Record<string, string>;
+  meta?: { tags: string | undefined };
   fidesctl_meta?: SystemMetadata;
   system_type: string;
   data_responsibility_title: DataResponsibilityTitle;
