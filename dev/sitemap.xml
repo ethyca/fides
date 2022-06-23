@@ -21,6 +21,31 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://ethyca.github.io/fides/dev/admin_ui/datasets/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/admin_ui/local_dev/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/admin_ui/overview/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/admin_ui/user_management/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/admin_ui/wizard/</loc>
+         <lastmod>2022-06-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://ethyca.github.io/fides/dev/api/</loc>
          <lastmod>2022-06-23</lastmod>
          <changefreq>daily</changefreq>
