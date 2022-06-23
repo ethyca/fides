@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev-docker": "test -d node_modules || npm install && npm run dev",
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
     "build": "next build",
     "start": "next start",
