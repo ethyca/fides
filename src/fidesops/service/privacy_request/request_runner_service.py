@@ -173,6 +173,11 @@ def run_privacy_request(
     with SessionLocal() as session:
 
         privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
+        if privacy_request.status == PrivacyRequestStatus.canceled:
+            logging.info(
+                f"Terminating privacy request {privacy_request.id}: request canceled."
+            )
+            return
         logging.info(f"Dispatching privacy request {privacy_request.id}")
         privacy_request.start_processing(session)
 

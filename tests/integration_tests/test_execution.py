@@ -5,7 +5,6 @@ import pytest
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
-from fidesops.core.config import config
 from fidesops.db.session import get_db_session
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph

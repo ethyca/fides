@@ -5,6 +5,7 @@ export type PrivacyRequestStatus =
   | "error"
   | "in_processing"
   | "paused"
+  | "canceled"
   | "pending";
 
 export enum ActionType {

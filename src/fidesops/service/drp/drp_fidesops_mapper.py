@@ -50,6 +50,7 @@ class DrpFidesopsMapper:
             PrivacyRequestStatus.complete: PrivacyRequestDRPStatus.fulfilled,
             PrivacyRequestStatus.paused: PrivacyRequestDRPStatus.in_progress,
             PrivacyRequestStatus.error: PrivacyRequestDRPStatus.expired,
+            PrivacyRequestStatus.canceled: PrivacyRequestDRPStatus.revoked,
         }
         try:
             return PRIVACY_REQUEST_STATUS_TO_DRP_MAPPING[status]

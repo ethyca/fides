@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.db.session import get_db_session
 from fidesops.models.policy import PausedStep, PolicyPostWebhook
 from fidesops.models.privacy_request import (
     ActionType,
@@ -66,18 +65,15 @@ def test_start_processing_sets_started_processing_at(
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
 ) -> None:
+    updated_at = privacy_request_status_pending.updated_at
     assert privacy_request_status_pending.started_processing_at is None
     run_privacy_request_task.delay(privacy_request_status_pending.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-    assert (
-        PrivacyRequest.get(
-            db=db, id=privacy_request_status_pending.id
-        ).started_processing_at
-        is not None
-    )
+
+    db.refresh(privacy_request_status_pending)
+    assert privacy_request_status_pending.started_processing_at is not None
+    assert privacy_request_status_pending.updated_at > updated_at
 
 
 def test_start_processing_doesnt_overwrite_started_processing_at(
@@ -87,16 +83,35 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 ) -> None:
     before = privacy_request.started_processing_at
     assert before is not None
+    updated_at = privacy_request.updated_at
 
     run_privacy_request_task.delay(privacy_request.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at == before
+    assert privacy_request.updated_at > updated_at
+
+
+@mock.patch(
+    "fidesops.service.privacy_request.request_runner_service.upload_access_results"
+)
+def test_halts_proceeding_if_cancelled(
+    upload_access_results_mock,
+    db: Session,
+    privacy_request_status_canceled: PrivacyRequest,
+    run_privacy_request_task,
+) -> None:
+    assert privacy_request_status_canceled.status == PrivacyRequestStatus.canceled
+    run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+    db.refresh(privacy_request_status_canceled)
+    reloaded_pr = PrivacyRequest.get(db=db, id=privacy_request_status_canceled.id)
+    assert reloaded_pr.started_processing_at is None
+    assert reloaded_pr.status == PrivacyRequestStatus.canceled
+    assert not upload_access_results_mock.called
 
 
 @mock.patch(
@@ -118,17 +133,16 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
+    updated_at = privacy_request.updated_at
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
         from_step=PausedStep.access.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at is not None
+    assert privacy_request.updated_at > updated_at
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
     assert run_webhooks.call_count == 1
@@ -157,17 +171,16 @@ def test_resume_privacy_request_from_erasure(
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
     privacy_request.save(db)
+    updated_at = privacy_request.updated_at
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
         from_step=PausedStep.erasure.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
-    _sessionmaker = get_db_session()
-    db = _sessionmaker()
-
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request.id)
+    db.refresh(privacy_request)
     assert privacy_request.started_processing_at is not None
+    assert privacy_request.updated_at > updated_at
 
     # Starting privacy request in the middle of the graph means we don't run pre-webhooks again
     assert run_webhooks.call_count == 1

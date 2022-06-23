@@ -3508,6 +3508,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Revoke request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request_id\": \"{{privacy_request_id}}\", \n    \"reason\": \"Accidentally submitted\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/drp/revoke",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"drp",
+								"revoke"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
