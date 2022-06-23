@@ -44,12 +44,11 @@ const AddSystemForm: NextPage<{
                 <AccordionButton
                   display="inline"
                   padding="0px"
-                  ml="5px !important"
+                  ml="5px"
                   width="auto"
+                  color="complimentary.500"
                 >
-                  <Text display="inline" color="complimentary.500">
-                    {isExpanded ? `(show less)` : `(show more)`}
-                  </Text>
+                  {isExpanded ? `(show less)` : `(show more)`}
                 </AccordionButton>
               </h2>
               <AccordionPanel padding="0px" mt="20px">
