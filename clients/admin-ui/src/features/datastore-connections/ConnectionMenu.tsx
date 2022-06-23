@@ -1,12 +1,4 @@
-import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Portal,
-  Text,
-} from "@fidesui/react";
+import { Button, Menu, MenuButton, MenuList, Portal } from "@fidesui/react";
 import React from "react";
 
 import { MoreIcon } from "../common/Icon";
@@ -30,22 +22,11 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
   name,
 }) => (
   <Menu>
-    <MenuButton
-      as={Button}
-      size="xs"
-      bg="white"
-      // ref={request.status !== "pending" ? hoverButtonRef : null}
-    >
+    <MenuButton as={Button} size="xs" bg="white">
       <MoreIcon color="gray.700" w={18} h={18} />
     </MenuButton>
     <Portal>
       <MenuList shadow="xl">
-        <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
-          // onClick={handleIdCopy}
-        >
-          <Text fontSize="sm">Edit</Text>
-        </MenuItem>
         <DisableConnectionModal
           connection_key={connection_key}
           disabled={disabled}

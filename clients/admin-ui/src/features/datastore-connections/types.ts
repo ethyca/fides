@@ -29,6 +29,11 @@ export enum AccessLevel {
   WRITE = "write",
 }
 
+export enum DisabledStatus {
+  ACTIVE = "active",
+  DISABLED = "disabled",
+}
+
 export type DatastoreConnection = {
   name: string;
   key: string;
@@ -51,6 +56,10 @@ export type DatastoreConnectionResponse = {
 
 export type DatastoreConnectionParams = {
   search: string;
+  connection_type?: ConnectionType[];
+  test_status?: TestingStatus;
+  system_type?: SystemType;
+  disabled_status?: DisabledStatus;
   page: number;
   size: number;
 };
