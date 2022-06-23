@@ -27,7 +27,7 @@ def test_saas_access_request_task(
     """Full access request based on the Hubspot SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_hubspot_access_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
     identity_value = hubspot_identity_email
@@ -136,7 +136,7 @@ def test_saas_erasure_request_task(
 ) -> None:
     """Full erasure request based on the Hubspot SaaS config"""
     privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
+        id=f"test_hubspot_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
     identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
