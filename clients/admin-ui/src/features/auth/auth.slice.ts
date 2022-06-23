@@ -72,13 +72,14 @@ credentialStorage.startListening({
 });
 
 // Auth API
-export const authApi: any = createApi({
+export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token);
+      addCommonHeaders(headers, token);
+      return headers;
     },
   }),
   tagTypes: ["Auth"],

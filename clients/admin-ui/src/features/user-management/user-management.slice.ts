@@ -77,13 +77,14 @@ export const mapFiltersToSearchParams = ({
   ...(username ? { username } : {}),
 });
 
-export const userApi: any = createApi({
+export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token);
+      addCommonHeaders(headers, token);
+      return headers;
     },
   }),
   tagTypes: ["User"],

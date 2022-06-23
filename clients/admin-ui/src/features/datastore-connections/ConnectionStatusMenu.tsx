@@ -86,8 +86,11 @@ const useConnectionStatusMenu = () => {
     setCheckBoxStates(newList);
   };
 
-  const resetCheckboxStates = () => {
-    setCheckBoxStates([...initialCheckListState]);
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+  const closeMenu = () => {
+    setIsOpen(false);
   };
 
   const updateConnectionTypeFilter = () => {
@@ -95,18 +98,20 @@ const useConnectionStatusMenu = () => {
       .filter((d) => d.checked)
       .map((d) => d.type);
     disbatch(setConnectionType(connectionTypes));
+    closeMenu();
   };
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-  const closeMenu = () => {
-    setIsOpen(false);
+  const resetCheckboxStates = () => {
+    const falseCheckboxes = checkboxStates.filter((d) => !d.checked);
+    if (falseCheckboxes.length !== checkboxStates.length) {
+      setCheckBoxStates([...initialCheckListState]);
+      disbatch(setConnectionType([]));
+    }
+    closeMenu();
   };
   return {
     isOpen,
     toggleMenu,
-    closeMenu,
     checkboxStates,
     updateCheckBoxStates,
     resetCheckboxStates,
@@ -119,7 +124,6 @@ const ConnectionStatusMenu: React.FC = () => {
   const {
     isOpen,
     toggleMenu,
-    closeMenu,
     checkboxStates,
     updateCheckBoxStates,
     resetCheckboxStates,
@@ -208,7 +212,6 @@ const ConnectionStatusMenu: React.FC = () => {
               color="white"
               onClick={() => {
                 updateConnectionTypeFilter();
-                closeMenu();
               }}
             >
               Done

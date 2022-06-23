@@ -58,6 +58,7 @@ The types of changes are:
 * Install MSSQL By Default [#664](https://github.com/ethyca/fidesops/pull/664)
 * [Admin UI] Change "Policy Name" to "Request Type" on SR list page.[#546](https://github.com/ethyca/fidesops/pull/696)
 * Queue PrivacyRequests into a Celery queue for execution [#621](https://github.com/ethyca/fidesops/pull/621)
+* Added filtering clearing in datastore connections [#701](https://github.com/ethyca/fidesops/pull/701)
 
 ### Developer Experience
 

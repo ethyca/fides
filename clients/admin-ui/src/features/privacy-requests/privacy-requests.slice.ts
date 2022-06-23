@@ -48,13 +48,14 @@ export function mapFiltersToSearchParams({
 }
 
 // Subject requests API
-export const privacyRequestApi: any = createApi({
+export const privacyRequestApi = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
-      return addCommonHeaders(headers, token);
+      addCommonHeaders(headers, token);
+      return headers;
     },
   }),
   tagTypes: ["Request"],
