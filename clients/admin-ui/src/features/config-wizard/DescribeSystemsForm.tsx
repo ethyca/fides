@@ -13,46 +13,43 @@ import {
   CustomTextInput,
 } from "../common/form/inputs";
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
-import HorizontalStepper from "../common/HorizontalStepper";
-import {
-  useCreateSystemMutation,
-  useGetSystemByFidesKeyQuery,
-  useUpdateSystemMutation,
-} from "../system/system.slice";
+import { useCreateSystemMutation } from "../system/system.slice";
 import { System } from "../system/types";
-import { HORIZONTAL_STEPS } from "./constants";
 
 type FormValues = Partial<System>;
 
 const DescribeSystemsForm: NextPage<{
   handleChangeStep: Function;
+  handleChangeReviewStep: Function;
   handleCancelSetup: Function;
-}> = ({ handleCancelSetup, handleChangeStep }) => {
-  const [updateSystem] = useUpdateSystemMutation();
+  handleSystemFidesKey: Function;
+}> = ({
+  handleCancelSetup,
+  handleChangeStep,
+  handleChangeReviewStep,
+  handleSystemFidesKey,
+}) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-  // TODO FUTURE: Need a way to check for an existing fides key from the start of the wizard
-  // not just use this default
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(
-    "default_organization"
-  );
 
   const toast = useToast();
 
-  // TODO FUTURE: is key stored? If so, where does it exist in the system API?
   const initialValues = {
-    name: existingSystem?.name ?? "",
-    description: existingSystem?.description ?? "",
-    system_dependencies: existingSystem?.system_dependencies ?? [],
-    system_type: existingSystem?.system_type ?? "",
+    description: "",
+    fides_key: "",
+    name: "",
+    organization_fides_key: "default_organization",
+    tags: [],
+    system_type: "",
   };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = {
-      fides_key: existingSystem?.fides_key ?? "default_organization",
-      name: values.name ?? existingSystem?.name,
-      description: values.description ?? existingSystem?.description,
-      privacy_declarations: existingSystem?.privacy_declarations ?? [
+      description: values.description,
+      fides_key: values.fides_key,
+      name: values.name,
+      organization_fides_key: "default_organization",
+      privacy_declarations: [
         {
           name: "string",
           data_categories: ["string"],
@@ -63,9 +60,8 @@ const DescribeSystemsForm: NextPage<{
           dataset_references: ["string"],
         },
       ],
-      system_type: values.system_type ?? existingSystem?.system_type,
-      system_dependencies:
-        values.system_dependencies ?? existingSystem?.system_dependencies,
+      system_type: values.system_type,
+      meta: { tags: values.tags?.toString() },
     };
 
     const handleResult = (
@@ -86,20 +82,16 @@ const DescribeSystemsForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleChangeStep(5);
+        handleSystemFidesKey(values.fides_key);
+        handleChangeReviewStep(1);
+        handleChangeStep(4);
       }
     };
 
     setIsLoading(true);
 
-    if (!existingSystem) {
-      const createSystemResult = await createSystem(systemBody);
-      handleResult(createSystemResult);
-      return;
-    } 
-      const updateSystemResult = await updateSystem(systemBody);
-      handleResult(updateSystemResult);
-    
+    const createSystemResult = await createSystem(systemBody);
+    handleResult(createSystemResult);
 
     setIsLoading(false);
   };
@@ -113,7 +105,6 @@ const DescribeSystemsForm: NextPage<{
       {({ values }) => (
         <Form>
           <Stack ml="100px" spacing={10}>
-            <HorizontalStepper activeStep={1} steps={HORIZONTAL_STEPS} />
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Describe your system
@@ -126,7 +117,7 @@ const DescribeSystemsForm: NextPage<{
             </div>
             <Stack>
               <Stack direction="row">
-                <CustomTextInput name="name" label="System name" />
+                <CustomTextInput id="name" name="name" label="System name" />
                 <Tooltip
                   fontSize="md"
                   label="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
@@ -137,9 +128,14 @@ const DescribeSystemsForm: NextPage<{
               </Stack>
 
               <Stack direction="row" mb={5}>
-                <CustomTextInput name="key" label="System key" />
+                <CustomTextInput
+                  id="fides_key"
+                  name="fides_key"
+                  label="System key"
+                />
                 <Tooltip
                   fontSize="md"
+                  // TODO FUTURE: This tooltip text is misleading since at the moment for MVP we are manually creating a fides key for this resource
                   label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
                   placement="right"
                 >
@@ -149,6 +145,7 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomTextInput
+                  id="description"
                   name="description"
                   label="System description"
                 />
@@ -163,7 +160,6 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableSingleSelect
-                  isClearable
                   id="system_type"
                   label="System Type"
                   name="system_type"
@@ -189,9 +185,10 @@ const DescribeSystemsForm: NextPage<{
 
               <Stack direction="row" mb={5}>
                 <CustomCreatableMultiSelect
-                  name="system_dependencies"
+                  id="tags"
+                  name="tags"
                   label="System Tags"
-                  options={initialValues.system_dependencies.map((s) => ({
+                  options={initialValues.tags.map((s: any) => ({
                     value: s,
                     label: s,
                   }))}
@@ -219,11 +216,7 @@ const DescribeSystemsForm: NextPage<{
                 colorScheme="primary"
                 size="sm"
                 disabled={
-                  !values.name ||
-                  !values.description ||
-                  !values.system_type ||
-                  (values.system_dependencies &&
-                    values.system_dependencies.length <= 0)
+                  !values.name || !values.description || !values.system_type
                 }
                 isLoading={isLoading}
               >

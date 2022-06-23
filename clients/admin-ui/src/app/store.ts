@@ -6,6 +6,18 @@ import {
   organizationApi,
   reducer as organizationReducer,
 } from "~/features/config-wizard/organization.slice";
+import {
+  dataQualifierApi,
+  reducer as dataQualifierReducer,
+} from "~/features/data-qualifier/data-qualifier.slice";
+import {
+  dataSubjectsApi,
+  reducer as dataSubjectsReducer,
+} from "~/features/data-subjects/data-subject.slice";
+import {
+  dataUseApi,
+  reducer as dataUseReducer,
+} from "~/features/data-use/data-use.slice";
 import { datasetApi, reducer as datasetReducer } from "~/features/dataset";
 import { systemApi } from "~/features/system";
 import {
@@ -20,18 +32,27 @@ const makeStore = () => {
       user: userReducer,
       dataset: datasetReducer,
       dataCategories: dataCategoriesReducer,
+      dataQualifier: dataQualifierReducer,
+      dataSubjects: dataSubjectsReducer,
+      dataUse: dataUseReducer,
       organization: organizationReducer,
       [datasetApi.reducerPath]: datasetApi.reducer,
       [organizationApi.reducerPath]: organizationApi.reducer,
       [systemApi.reducerPath]: systemApi.reducer,
       [dataCategoriesApi.reducerPath]: dataCategoriesApi.reducer,
+      [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
+      [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
+      [dataUseApi.reducerPath]: dataUseApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
         datasetApi.middleware,
         organizationApi.middleware,
         systemApi.middleware,
-        dataCategoriesApi.middleware
+        dataCategoriesApi.middleware,
+        dataQualifierApi.middleware,
+        dataSubjectsApi.middleware,
+        dataUseApi.middleware
       ),
   });
   setupListeners(store.dispatch);

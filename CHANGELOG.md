@@ -44,6 +44,8 @@ The types of changes are:
   * Add geographic location (third_country_transfers) country selection. Supported by new dependency `i18n-iso-countries`.
 * Okta, aws and database credentials can now come from `fidesctl.toml` config [#694](https://github.com/ethyca/fides/pull/694)
 * New `validate` endpoint to test aws and okta credentials [#722](https://github.com/ethyca/fides/pull/722)
+* Initial configuration wizard UI view
+  * Manual entry steps added (name and describe organization, pick entry route, and describe system manually including privacy declarations)
 * A new image tagged `ethyca/fidesctl:dev` is published on each push to `main` [781](https://github.com/ethyca/fides/pull/781)
 * A new cli command (`fidesctl sync`) [#765](https://github.com/ethyca/fides/pull/765)
 

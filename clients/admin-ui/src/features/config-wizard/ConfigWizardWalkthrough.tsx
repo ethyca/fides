@@ -4,16 +4,21 @@ import React, { useState } from "react";
 
 import { CloseSolidIcon } from "~/features/common/Icon";
 
+import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
-import { STEPS } from "./constants";
+import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
+import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
+import ReviewSystemForm from "./ReviewSystemForm";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  const [reviewStep, setReviewStep] = useState<number>(1);
+  const [systemFidesKey, setSystemFidesKey] = useState("");
 
   const handleCancelSetup = () => {
     router.push("/");
@@ -22,6 +27,22 @@ const ConfigWizardWalkthrough = () => {
   const handleChangeStep = (formStep: number) => {
     if (formStep && step !== STEPS.length) {
       setStep(formStep + 1);
+    }
+  };
+
+  const handleChangeReviewStep = (rStep: number) => {
+    if (rStep) {
+      if (rStep === 4) {
+        setReviewStep(1);
+      } else {
+        setReviewStep(rStep + 1);
+      }
+    }
+  };
+
+  const handleSystemFidesKey = (key: string) => {
+    if (key) {
+      setSystemFidesKey(key);
     }
   };
 
@@ -56,10 +77,35 @@ const ConfigWizardWalkthrough = () => {
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
             {step === 5 ? (
-              <DescribeSystemsForm
-                handleChangeStep={handleChangeStep}
-                handleCancelSetup={handleCancelSetup}
-              />
+              <Stack direction="column">
+                <HorizontalStepper
+                  activeStep={reviewStep}
+                  steps={HORIZONTAL_STEPS}
+                />
+                {reviewStep === 1 && (
+                  <DescribeSystemsForm
+                    handleChangeStep={handleChangeStep}
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    handleSystemFidesKey={handleSystemFidesKey}
+                  />
+                )}
+                {reviewStep === 2 && (
+                  <PrivacyDeclarationForm
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+                {reviewStep === 3 && (
+                  <ReviewSystemForm
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeStep={handleChangeStep}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+              </Stack>
             ) : null}
             {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>

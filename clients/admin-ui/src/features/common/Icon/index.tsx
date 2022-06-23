@@ -1,3 +1,4 @@
+export { default as AddIcon } from "./Add";
 export { default as ArrowDownLineIcon } from "./ArrowDownLine";
 export { default as ArrowUpLineIcon } from "./ArrowUpLine";
 export { default as AWSLogoIcon } from "./AWSLogo";

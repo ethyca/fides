@@ -6,12 +6,13 @@ import {
   Grid,
   Input,
 } from "@fidesui/react";
-import { CreatableSelect, Select } from "chakra-react-select";
+import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 interface InputProps {
+  disabled?: boolean;
   label: string;
   tooltip?: string;
 }
@@ -56,6 +57,7 @@ interface SelectProps {
   options: Option[];
   isSearchable?: boolean;
   isClearable?: boolean;
+  size?: Size;
 }
 export const CustomSelect = ({
   label,
@@ -63,12 +65,13 @@ export const CustomSelect = ({
   options,
   isSearchable,
   isClearable,
+  size = "sm",
   ...props
 }: SelectProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
 
-  const selected = options.find((o) => o.value === field.value);
+  const selected = options.find((o) => o.value === field.value) || null;
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -76,40 +79,42 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Box display="flex" alignItems="center">
-          <Select
-            options={options}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
-            }}
-            onChange={(newValue) => {
-              if (newValue) {
-                field.onChange(props.name)(newValue.value);
-              }
-            }}
-            name={props.name}
-            value={selected}
-            size="sm"
-            chakraStyles={{
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                bg: "transparent",
-                px: 2,
-                cursor: "inherit",
-              }),
-              indicatorSeparator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
-            }}
-            isSearchable={isSearchable}
-            isClearable={isClearable}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
+        <Select
+          options={options}
+          onBlur={(option) => {
+            if (option) {
+              field.onBlur(props.name);
+            }
+          }}
+          onChange={(newValue) => {
+            if (newValue) {
+              field.onChange(props.name)(newValue.value);
+            }
+          }}
+          name={props.name}
+          value={selected}
+          size={size}
+          chakraStyles={{
+            dropdownIndicator: (provided) => ({
+              ...provided,
+              bg: "transparent",
+              px: 2,
+              cursor: "inherit",
+            }),
+            indicatorSeparator: (provided) => ({
+              ...provided,
+              display: "none",
+            }),
+            multiValue: (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+            }),
+          }}
+          isSearchable={isSearchable ?? false}
+          isClearable={isClearable}
+        />
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
@@ -125,6 +130,7 @@ export const CustomMultiSelect = ({
   options,
   isSearchable,
   isClearable,
+  size = "sm",
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
@@ -157,8 +163,9 @@ export const CustomMultiSelect = ({
             }}
             name={props.name}
             value={selected}
-            size="sm"
+            size={size}
             chakraStyles={{
+              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
               dropdownIndicator: (provided) => ({
                 ...provided,
                 bg: "transparent",
@@ -169,12 +176,14 @@ export const CustomMultiSelect = ({
                 ...provided,
                 display: "none",
               }),
-              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
               multiValue: (provided) => ({
                 ...provided,
                 background: "primary.400",
                 color: "white",
               }),
+            }}
+            components={{
+              ClearIndicator: () => null,
             }}
             isSearchable={isSearchable}
             isClearable={isClearable}
@@ -191,7 +200,6 @@ export const CustomMultiSelect = ({
 export const CustomCreatableSingleSelect = ({
   label,
   isSearchable,
-  isClearable,
   options,
   ...props
 }: SelectProps & FieldHookConfig<string>) => {
@@ -235,7 +243,6 @@ export const CustomCreatableSingleSelect = ({
               visibility: "hidden",
             }),
           }}
-          isClearable
         />
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
