@@ -107,6 +107,7 @@ const RequestFilters: React.FC = () => {
         <StatusOption status="approved" />
         <StatusOption status="complete" />
         <StatusOption status="denied" />
+        <StatusOption status="canceled" />
         <StatusOption status="error" />
         <StatusOption status="in_processing" />
         <StatusOption status="paused" />

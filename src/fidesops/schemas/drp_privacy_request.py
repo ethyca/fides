@@ -66,3 +66,10 @@ class DrpDataRightsResponse(BaseSchema):
     api_base: Optional[str]
     actions: List[DrpAction]
     user_relationships: Optional[List[str]]
+
+
+class DrpRevokeRequest(BaseSchema):
+    """DRP Data Rights Revoke Request Body"""
+
+    request_id: str
+    reason: Optional[str]

@@ -1432,13 +1432,24 @@ class TestApprovePrivacyRequest:
         )
         assert not submit_mock.called
 
+    @pytest.mark.parametrize(
+        "privacy_request_status",
+        [PrivacyRequestStatus.complete, PrivacyRequestStatus.canceled],
+    )
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_approve_completed_privacy_request(
-        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    def test_approve_privacy_request_in_non_pending_state(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+        privacy_request_status,
     ):
-        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.status = privacy_request_status
         privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
 
@@ -1450,7 +1461,9 @@ class TestApprovePrivacyRequest:
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 1
         assert response_body["failed"][0]["message"] == "Cannot transition status"
-        assert response_body["failed"][0]["data"]["status"] == "complete"
+        assert (
+            response_body["failed"][0]["data"]["status"] == privacy_request_status.value
+        )
         assert not submit_mock.called
 
     @mock.patch(

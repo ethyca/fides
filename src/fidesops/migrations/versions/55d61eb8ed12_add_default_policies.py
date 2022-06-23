@@ -37,7 +37,6 @@ from fidesops.util.data_category import DataCategory
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 revision = "55d61eb8ed12"
 down_revision = "b3b68c87c4a0"

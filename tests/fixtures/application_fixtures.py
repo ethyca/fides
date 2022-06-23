@@ -800,6 +800,19 @@ def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.canceled,
+    )
+    privacy_request.started_processing_at = None
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_drp_action(
     db: Session, policy_drp_action: Policy
 ) -> PrivacyRequest:

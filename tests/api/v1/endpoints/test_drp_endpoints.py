@@ -9,11 +9,13 @@ from starlette.testclient import TestClient
 from fidesops.api.v1.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
 from fidesops.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
     DRP_EXERCISE,
+    DRP_REVOKE,
     DRP_STATUS,
     V1_URL_PREFIX,
 )
@@ -424,3 +426,64 @@ class TestGetDrpDataRights:
         )
         assert 200 == response.status_code
         assert response.json() == expected_response
+
+
+class TestDrpRevoke:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + DRP_REVOKE
+
+    def test_revoke_not_authenticated(
+        self, api_client: TestClient, privacy_request, url
+    ):
+        response = api_client.post(url, headers={})
+        assert 401 == response.status_code
+
+    def test_revoke_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(url, headers=auth_header, json={})
+        assert 403 == response.status_code
+
+    def test_revoke_wrong_status(
+        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        response = api_client.post(
+            url, headers=auth_header, json={"request_id": privacy_request.id}
+        )
+        assert 400 == response.status_code
+        assert response.json()[
+            "detail"
+        ] == "Invalid revoke request. Can only revoke `pending` requests. Privacy request '{}' status = in_processing.".format(
+            privacy_request.id
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.in_processing
+        assert privacy_request.canceled_at is None
+
+    def test_revoke(
+        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db)
+        canceled_reason = "Accidentally submitted"
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"request_id": privacy_request.id, "reason": canceled_reason},
+        )
+        assert 200 == response.status_code
+        db.refresh(privacy_request)
+
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.cancel_reason == canceled_reason
+        assert privacy_request.canceled_at is not None
+
+        data = response.json()
+        assert data["request_id"] == privacy_request.id
+        assert data["status"] == "revoked"
+        assert data["reason"] == canceled_reason
