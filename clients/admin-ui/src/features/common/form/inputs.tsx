@@ -180,12 +180,6 @@ export const CustomMultiSelect = ({
                 background: "primary.400",
                 color: "white",
               }),
-              multiValueLabel: (provided) => ({
-                ...provided,
-                "&:hover": {
-                  overflow: "auto",
-                },
-              }),
             }}
             components={{
               ClearIndicator: () => null,
