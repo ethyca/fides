@@ -120,7 +120,7 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
 
-## - Reporting a running application's configuration
+## Reporting a running application's configuration
 
 You can view the currently running configuration of a Fidesops application with the following request:
 
