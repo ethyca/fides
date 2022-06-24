@@ -135,6 +135,7 @@ def test_segment_saas_access_request_task(
     assert filtered_results[f"{dataset_name}:segment_user"][0]["segment_id"]
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 def test_segment_saas_erasure_request_task(

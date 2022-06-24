@@ -19,6 +19,7 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
+from tests.test_helpers.saas_test_utils import poll_for_existence
 
 saas_config = load_toml(["saas_config.toml"])
 
@@ -196,14 +197,10 @@ def segment_erasure_data(
     assert response.ok
 
     # Wait until user returns data
-    retries = 10
-    while (segment_id := _get_user_id(email, segment_secrets)) is None:
-        if not retries:
-            raise Exception(
-                "The user endpoint did not return the required data for testing during the time limit"
-            )
-        retries -= 1
-        time.sleep(10)
+    error_message = "The user endpoint did not return the required data for testing during the time limit"
+    segment_id = poll_for_existence(
+        _get_user_id, (email, segment_secrets), error_message=error_message, interval=10
+    )
 
     # Create event
     body = {
@@ -218,11 +215,7 @@ def segment_erasure_data(
     assert response.ok
 
     # Wait until track_events returns data
-    retries = 10
-    while _get_track_events(segment_id, segment_secrets) is None:
-        if not retries:
-            raise Exception(
-                "The track_events endpoint did not return the required data for testing during the time limit"
-            )
-        retries -= 1
-        time.sleep(5)
+    error_message = "The track_events endpoint did not return the required data for testing during the time limit"
+    poll_for_existence(
+        _get_track_events, (segment_id, segment_secrets), error_message=error_message
+    )
