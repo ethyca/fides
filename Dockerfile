@@ -13,7 +13,7 @@ ARG SKIP_MSSQL_INSTALLATION
 
 # Install auxiliary software
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     git \
     make \
     ipython \
@@ -21,22 +21,26 @@ RUN apt-get update && \
     curl \
     g++ \
     gnupg \
-    gcc
+    gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 
 RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
 
 # SQL Server (MS SQL)
 # https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get install apt-transport-https ; fi
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get install -y --no-install-recommends apt-transport-https && apt-get clean && rm -rf /var/lib/apt/lists/* ; fi
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - ; fi
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list ; fi
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get update ; fi
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y install \
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-recommends install \
     unixodbc-dev \
     msodbcsql17 \
-    mssql-tools ; fi
+    mssql-tools \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* ; fi
 
 # Update pip and install requirements
 COPY requirements.txt dev-requirements.txt mssql-requirements.txt ./
