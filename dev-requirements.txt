@@ -3,7 +3,7 @@ Faker==8.12.1
 ipython
 isort
 mypy==0.961
-packaging==20.9
+packaging==21.3
 pdbpp
 pre-commit==2.9.3
 pylint==2.6.0
