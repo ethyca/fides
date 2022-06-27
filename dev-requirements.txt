@@ -12,6 +12,6 @@ pytest-env==0.6.2
 pytest==6.2.2
 requests-mock==1.9.3
 types-PyYAML==6.0.8
-types-redis==4.2.6
+types-redis==4.3.2
 types-toml==0.10.7
 types-ujson==5.2.0
