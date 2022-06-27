@@ -140,9 +140,9 @@ class FidesopsConfig(FidesSettings):
     admin_ui: AdminUiSettings
 
     PORT: int
-    is_test_mode: bool = os.getenv("TESTING") == "True"
-    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD") == "True"
-    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE") == "True"
+    is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
+    hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
+    dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -151,7 +151,7 @@ class FidesopsConfig(FidesSettings):
         f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII") == "True"}'
+        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"}'
     )
 
     def log_all_config_values(self) -> None:

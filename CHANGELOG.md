@@ -25,6 +25,9 @@ The types of changes are:
 * ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 
+### Fixed
+* Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
