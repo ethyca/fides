@@ -1,3 +1,4 @@
+import { Text } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
 import {
@@ -25,6 +26,15 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
   const [updateDataset] = useUpdateDatasetMutation();
+  const deleteMessage = (
+    <Text>
+      You are about to permanently delete the field named{" "}
+      <Text color="complimentary.500" as="span" fontWeight="bold">
+        {field.name}
+      </Text>{" "}
+      from this dataset. Are you sure you would like to continue?
+    </Text>
+  );
 
   const handleSubmit = (
     values: Pick<
@@ -65,6 +75,8 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
       header={`Field Name: ${field.name}`}
       description={DESCRIPTION}
       onDelete={handleDelete}
+      deleteTitle="Delete Field"
+      deleteMessage={deleteMessage}
     >
       <EditCollectionOrFieldForm
         values={field}

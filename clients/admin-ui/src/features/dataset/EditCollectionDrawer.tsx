@@ -1,4 +1,4 @@
-import { useToast } from "@fidesui/react";
+import { Text, useToast } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
 import { errorToastParams, successToastParams } from "../common/toast";
@@ -28,6 +28,15 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
+  const deleteMessage = (
+    <Text>
+      You are about to permanently delete the collection named{" "}
+      <Text color="complimentary.500" as="span" fontWeight="bold">
+        {collection.name}
+      </Text>{" "}
+      from this dataset. Are you sure you would like to continue?
+    </Text>
+  );
 
   const handleSubmit = async (
     values: Pick<
@@ -78,6 +87,8 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
       header={`Collection Name: ${collection.name}`}
       onDelete={handleDelete}
+      deleteTitle="Delete Collection"
+      deleteMessage={deleteMessage}
     >
       <EditCollectionOrFieldForm
         values={collection}
