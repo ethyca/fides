@@ -1,5 +1,5 @@
 black==22.3.0
-Faker==8.12.1
+Faker==13.14.0
 ipython
 isort
 mypy==0.961
