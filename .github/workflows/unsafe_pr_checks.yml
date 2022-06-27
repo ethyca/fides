@@ -12,7 +12,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Integration Tests (External)
         env:
