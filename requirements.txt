@@ -10,7 +10,7 @@ openpyxl==3.0.9
 pandas==1.4
 plotly==5.4
 pydantic>=1.8.1,<2.0.0 # Required by fastapi
-PyJWT==2
+PyJWT==2.4.0
 pyyaml>=5,<6
 requests>=2,<3
 sqlalchemy==1.4.36
