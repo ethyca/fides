@@ -22,7 +22,7 @@ A connection string can be supplied using the `connection-string` option:
 ...
 ```
 
-The appropriate `connection-string` format for your database connector can be found in the [Sqlalchemy Documentation](https://docs.sqlalchemy.org/en/14/dialects/mysql.html#dialect-mysql-aiomysql-connect).
+The appropriate `connection-string` format for your database connector can be found in the [SQLAlchemy Documentation](https://docs.sqlalchemy.org/en/14/dialects/).
 
 #### Fides Config
 A connection string can also be defined within your fides config under the credentials section.
