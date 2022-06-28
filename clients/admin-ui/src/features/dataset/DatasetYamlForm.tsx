@@ -1,17 +1,58 @@
-import { Box, Button, Text } from "@fidesui/react";
-import { Form, Formik } from "formik";
+import { Box, Button, Text, useToast } from "@fidesui/react";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import yaml from "js-yaml";
+import { useRouter } from "next/router";
 
 import { CustomTextArea } from "../common/form/inputs";
-import { isYamlException } from "../common/helpers";
+import { getErrorFromResult, isYamlException } from "../common/helpers";
+import { successToastParams } from "../common/toast";
+import { setActiveDataset, useCreateDatasetMutation } from "./dataset.slice";
+import { Dataset } from "./types";
 
 const initialValues = { datasetYaml: "" };
 type FormValues = typeof initialValues;
 
+// handle the common case where everything is nested under a `dataset` key
+interface NestedDataset {
+  dataset: Dataset[];
+}
+export function isDatasetArray(value: unknown): value is NestedDataset {
+  return (
+    typeof value === "object" &&
+    value != null &&
+    "dataset" in value &&
+    Array.isArray((value as any).dataset)
+  );
+}
+
 const DatasetYamlForm = () => {
-  const handleCreate = (newValues: FormValues) => {
+  const [createDataset] = useCreateDatasetMutation();
+  const toast = useToast();
+  const router = useRouter();
+
+  const handleCreate = async (
+    newValues: FormValues,
+    formikHelpers: FormikHelpers<FormValues>
+  ) => {
+    const { setErrors } = formikHelpers;
     const parsedYaml = yaml.load(newValues.datasetYaml, { json: true });
-    console.log({ parsedYaml });
+    let dataset: Dataset;
+    if (isDatasetArray(parsedYaml)) {
+      [dataset] = parsedYaml.dataset;
+    } else {
+      // cast to a Dataset and let the backend do validation
+      dataset = parsedYaml as Dataset;
+    }
+
+    const result = await createDataset(dataset);
+    const error = getErrorFromResult(result);
+    if (error) {
+      setErrors({ datasetYaml: error });
+    } else if ("data" in result) {
+      toast(successToastParams("Successfully loaded new dataset YAML"));
+      setActiveDataset(result.data);
+      router.push(`/dataset/${result.data.fides_key}`);
+    }
   };
 
   const validate = (newValues: FormValues) => {

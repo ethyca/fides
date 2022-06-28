@@ -49,6 +49,13 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Dataset"],
     }),
+    createDataset: build.mutation<Dataset, Dataset>({
+      query: (dataset) => ({
+        url: `dataset/`,
+        method: "POST",
+        body: dataset,
+      }),
+    }),
   }),
 });
 
@@ -56,6 +63,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useCreateDatasetMutation,
 } = datasetApi;
 
 export const datasetSlice = createSlice({
