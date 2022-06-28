@@ -24,6 +24,7 @@ fastapi = "fastapi==0.77.1"
 uvicorn = "uvicorn==0.17.6"
 aws_connector = "boto3==1.20.54"
 okta_connector = "okta==2.5.0"
+bigquery_connector = "sqlalchemy-bigquery==1.4.4"
 
 extras = {
     "aws": [aws_connector],
@@ -33,6 +34,7 @@ extras = {
     "okta": [okta_connector],
     "snowflake": [snowflake_connector],
     "redshift": [redshift_connector],
+    "bigquery": [bigquery_connector],
     "webserver": [fastapi, uvicorn, psycopg_connector, asyncpg],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
