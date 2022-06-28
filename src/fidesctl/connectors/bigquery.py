@@ -1,4 +1,3 @@
-from google.api_core.exceptions import ClientError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine import Engine
 
@@ -24,6 +23,8 @@ def validate_bigquery_engine(bigquery_config: BigQueryConfig) -> None:
 
     Using the .connect() method does not produce an exception
     """
+    from google.api_core.exceptions import ClientError
+
     engine = get_bigquery_engine(bigquery_config)
     inspector = inspect(engine)
     try:

@@ -1,4 +1,5 @@
 """Contains the generate group of CLI commands for Fidesctl."""
+from json import load
 
 import click
 
@@ -18,6 +19,8 @@ from fidesctl.cli.utils import (
     handle_okta_credentials_options,
     with_analytics,
 )
+from fidesctl.connectors.bigquery import get_bigquery_engine
+from fidesctl.connectors.models import BigQueryConfig
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -71,6 +74,49 @@ def generate_dataset_db(
         connection_string=actual_connection_string,
         file_name=output_filename,
         include_null=include_null,
+    )
+
+
+@generate_dataset.command(name="bigquery")
+@click.pass_context
+@click.argument("dataset_name", type=str)
+@click.argument("output_filename", type=str)
+@credentials_id_option
+@click.option("--keyfile-path", type=str, default=".fides/bigquery.json")
+@include_null_flag
+@with_analytics
+def generate_dataset_bigquery(
+    ctx: click.Context,
+    dataset_name: str,
+    output_filename: str,
+    keyfile_path: str,
+    credentials_id: str,
+    include_null: bool,
+) -> None:
+    """
+    Connect to a BigQuery dataset directly via a SQLAlchemy connection and
+    generate a dataset manifest file that consists of every schema/table/field.
+    A path to a google authorization keyfile can be supplied as an option, or a
+    credentials reference to fidesctl config.
+
+    This is a one-time operation that does not track the state of the dataset.
+    It will need to be run again if the dataset schema changes.
+    """
+
+    if keyfile_path:
+        with open(keyfile_path, "r", encoding="utf-8") as credential_file:
+            bigquery_config = BigQueryConfig(
+                **{
+                    "dataset": dataset_name,
+                    "keyfile_creds": load(credential_file),
+                }
+            )
+
+    bigquery_engine = get_bigquery_engine(bigquery_config)
+    bigquery_schemas = _dataset.get_db_schemas(engine=bigquery_engine)
+    bigquery_datasets = _dataset.create_db_datasets(db_schemas=bigquery_schemas)
+    _dataset.write_dataset_manifest(
+        file_name=output_filename, include_null=include_null, datasets=bigquery_datasets
     )
 
 
