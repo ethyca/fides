@@ -1,5 +1,5 @@
 services:
-  fidesops:
+  webserver:
     depends_on:
       - mssql_example
 

@@ -1,11 +1,10 @@
 services:
-  fidesops:
-    container_name: fidesops
+  webserver:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
     depends_on:
-      - celery
+      - worker
       - db
       - redis
     expose:
@@ -59,11 +58,11 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
-  celery:
+  worker:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: celery -A fidesops.tasks.celery_app worker --loglevel=info
+      dockerfile: Dockerfile.worker
+    command: fidesops worker
     depends_on:
       redis:
         condition: service_started
@@ -73,11 +72,12 @@ services:
         source: ./
         target: /fidesops
         read_only: False
+      - /fidesops/src/fidesops.egg-info
 
   docs:
     build:
       context: docs/fidesops/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.docs
     volumes:
       - ./docs/fidesops:/docs
     expose:
