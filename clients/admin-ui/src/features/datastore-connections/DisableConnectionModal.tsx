@@ -38,15 +38,13 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
 
   const handleDisableConnection = async () => {
     const shouldDisable = !disabled;
-    return patchConnection({
+    patchConnection({
       key: connection_key,
       name,
       disabled: shouldDisable,
       access: access_type,
       connection_type,
-    })
-      .unwrap()
-      .then(() => onClose());
+    });
   };
 
   const closeIfComplete = () => {

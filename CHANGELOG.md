@@ -33,6 +33,7 @@ The types of changes are:
 
 ### Fixed
 * Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
+* Fix console warning in disable connection modal [750](https://github.com/ethyca/fidesops/pull/750)
 
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
