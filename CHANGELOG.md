@@ -18,6 +18,10 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.0...main)
+
+### Added
+* `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
+
 ### Developer Experience
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)

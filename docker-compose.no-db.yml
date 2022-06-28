@@ -1,9 +1,8 @@
 services:
-  fidesops:
-    container_name: fidesops
+  webserver:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.app
     expose:
       - 8080
     healthcheck:
@@ -29,7 +28,7 @@ services:
   docs:
     build:
       context: docs/fidesops/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.docs
     volumes:
       - ./docs/fidesops:/docs
     expose:

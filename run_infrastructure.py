@@ -24,7 +24,7 @@ EXTERNAL_DATASTORE_CONFIG = {
     "bigquery": ["BIGQUERY_KEYFILE_CREDS", "BIGQUERY_DATASET"],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
-IMAGE_NAME = "fidesops"
+IMAGE_NAME = "webserver"
 
 
 def run_infrastructure(

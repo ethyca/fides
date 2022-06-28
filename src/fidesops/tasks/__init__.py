@@ -28,6 +28,10 @@ def _create_celery() -> Celery:
 celery_app = _create_celery()
 
 
-if __name__ == "__main__":
+def start_worker() -> None:
     logger.info("Running Celery worker...")
-    celery_app.worker_main()
+    celery_app.worker_main(argv=["worker", "--loglevel=info"])
+
+
+if __name__ == "__main__":
+    start_worker()
