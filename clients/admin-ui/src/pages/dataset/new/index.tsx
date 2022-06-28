@@ -12,7 +12,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import YamlInput from "~/features/dataset/YamlInput";
+import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
 const NewDataset: NextPage = () => {
   const [generateMethod, setGenerateMethod] = useState<
@@ -65,11 +65,9 @@ const NewDataset: NextPage = () => {
             Manually generate a dataset
           </Button>
         </Box>
-        {generateMethod === "yaml" ? (
-          <Box w={["100%", "100%", "50%"]}>
-            <YamlInput />
-          </Box>
-        ) : null}
+        <Box w={["100%", "100%", "50%"]}>
+          {generateMethod === "yaml" ? <DatasetYamlForm /> : null}
+        </Box>
       </Stack>
     </Layout>
   );

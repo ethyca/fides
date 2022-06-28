@@ -2,6 +2,8 @@
  * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
  */
 
+import { YAMLException } from "js-yaml";
+
 // generic error of the structure we expect from the Fides backend
 interface ResponseError {
   data: {
@@ -42,5 +44,14 @@ export function isErrorWithDetailArray(
     error != null &&
     "data" in error &&
     Array.isArray((error as any).data.detail)
+  );
+}
+
+export function isYamlException(error: unknown): error is YAMLException {
+  return (
+    typeof error === "object" &&
+    error != null &&
+    "name" in error &&
+    (error as any).name === "YAMLException"
   );
 }

@@ -5,6 +5,8 @@ import {
   FormLabel,
   Grid,
   Input,
+  Textarea,
+  TextareaProps,
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
@@ -305,6 +307,20 @@ export const CustomCreatableMultiSelect = ({
           }}
         />
       </Grid>
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+    </FormControl>
+  );
+};
+
+export const CustomTextArea = ({
+  textAreaProps,
+  ...props
+}: { textAreaProps?: TextareaProps } & FieldHookConfig<string>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Textarea {...field} size="sm" mb={2} {...textAreaProps} />
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );
