@@ -7,6 +7,7 @@ import { CloseSolidIcon } from "~/features/common/Icon";
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
+import AuthenticateScanner from "./AuthenticateScanner";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
@@ -77,6 +78,7 @@ const ConfigWizardWalkthrough = () => {
             {step === 2 ? (
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
+            {step === 3 ? <AuthenticateScanner /> : null}
             {step === 5 ? (
               <Stack direction="column">
                 {reviewStep <= 3 ? (

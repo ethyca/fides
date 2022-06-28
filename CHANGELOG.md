@@ -17,6 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
+### Added
+
+* Initial configuration wizard UI view
+  * System scanning step: AWS credentials form and initial `generate` API usage.
+
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added
