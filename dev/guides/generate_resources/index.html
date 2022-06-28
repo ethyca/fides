@@ -771,6 +771,19 @@ You're not viewing the latest version.
     Required Permissions
   </a>
   
+    <nav class="md-nav" aria-label="Required Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sample-iam-policy" class="md-nav__link">
+    Sample IAM Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1732,6 +1745,19 @@ You're not viewing the latest version.
     Required Permissions
   </a>
   
+    <nav class="md-nav" aria-label="Required Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sample-iam-policy" class="md-nav__link">
+    Sample IAM Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2042,11 +2068,14 @@ Annotation coverage: <span class="m">100</span>%
 <span class="nb">export</span> <span class="nv">FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="required-permissions">Required Permissions</h3>
-<p>The identity which is authenticated must be allowed to invoke the following actions:
-* redshift:DescribeClusters
-* rds:DescribeDBInstances
-* rds:DescribeDBClusters</p>
-<p>These can be supplied in an IAM policy:
+<p>The identity which is authenticated must be allowed to invoke the following actions:</p>
+<ul>
+<li>redshift:DescribeClusters</li>
+<li>rds:DescribeDBInstances</li>
+<li>rds:DescribeDBClusters</li>
+</ul>
+<h4 id="sample-iam-policy">Sample IAM Policy</h4>
+<p>These permissions can be supplied in an IAM policy:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2074,7 +2103,7 @@ Annotation coverage: <span class="m">100</span>%
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div></td></tr></table></div></p>
+</code></pre></div></td></tr></table></div>
 <h3 id="filtering-aws-resources">Filtering AWS Resources</h3>
 <p>It is possible to filter resources at the organization level by adding a resource filter within <code>fidesctl_meta</code>. The <code>ignore_resource_arn</code> filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.</p>
 <p>The filter can be added to the organization model within your manifest file:
