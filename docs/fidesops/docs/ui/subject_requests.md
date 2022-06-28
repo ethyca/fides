@@ -7,7 +7,7 @@ The FidesOps Admin UI is designed to provide easy, at-a-glance access to submitt
 ### Panel Options
 | Option | Description |
 |----|----|
-| Status | Requests can be filtered by their current status: **Error**, **Denied**, **In Progress**, **New**, *Cancelled*, and **Complete**.|
+| Status | Requests can be filtered by their current status: **Error**, **Denied**, **In Progress**, **New**, **Canceled**, and **Complete**.|
 | Search | The search bar filters on a given field: status, reviewer, etc. |
 | Date Filter | Retrieve requests received within a certain date window. |
 | Reveal PII | Toggling **Reveal PII** will display all personal information for the shown requests. |
@@ -24,7 +24,7 @@ Hovering over a request row will provide access to the **approve** and **deny** 
 
 **Denying** a request allows the user to input a denial reason before confirming the action.
 
-![request denial](request_denial.png)
+![request denial](../img/admin_ui/request_denial.png)
 
 ## View Request Details
 ![subject request details](../img/admin_ui/subject_request_details.png)
