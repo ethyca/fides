@@ -1,5 +1,5 @@
 import { Box, Button, Text, useToast } from "@fidesui/react";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import yaml from "js-yaml";
 import { useRouter } from "next/router";
 

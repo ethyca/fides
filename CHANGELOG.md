@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
+### Added
+* Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
+
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added
