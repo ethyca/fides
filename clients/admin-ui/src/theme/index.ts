@@ -1,5 +1,7 @@
 import { extendTheme } from "@fidesui/react";
 
+import Button from "./components/button";
+
 const theme = extendTheme({
   styles: {
     global: {
@@ -10,6 +12,9 @@ const theme = extendTheme({
         height: "100%",
       },
     },
+  },
+  components: {
+    Button,
   },
 });
 
