@@ -6,6 +6,7 @@ from pydantic import validator
 
 from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.oauth import AccessToken
+from fidesops.util.cryptographic_util import b64_str_to_str
 
 
 class UserUpdate(BaseSchema):
@@ -33,18 +34,19 @@ class UserCreate(UserUpdate):
     @validator("password")
     def validate_password(cls, password: str) -> str:
         """Add some password requirements"""
-        if len(password) < 8:
+        decoded_password = b64_str_to_str(password)
+        if len(decoded_password) < 8:
             raise ValueError("Password must have at least eight characters.")
-        if re.search("[0-9]", password) is None:
+        if re.search("[0-9]", decoded_password) is None:
             raise ValueError("Password must have at least one number.")
-        if re.search("[A-Z]", password) is None:
+        if re.search("[A-Z]", decoded_password) is None:
             raise ValueError("Password must have at least one capital letter.")
-        if re.search("[a-z]", password) is None:
+        if re.search("[a-z]", decoded_password) is None:
             raise ValueError("Password must have at least one lowercase letter.")
-        if re.search(r"[\W]", password) is None:
+        if re.search(r"[\W]", decoded_password) is None:
             raise ValueError("Password must have at least one symbol.")
 
-        return password
+        return decoded_password
 
 
 class UserLogin(BaseSchema):
@@ -53,12 +55,27 @@ class UserLogin(BaseSchema):
     username: str
     password: str
 
+    @validator("password")
+    def validate_password(cls, password: str) -> str:
+        """Convert b64 encoded password to normal string"""
+        return b64_str_to_str(password)
+
 
 class UserPasswordReset(BaseSchema):
     """Contains both old and new passwords when resetting a password"""
 
     old_password: str
     new_password: str
+
+    @validator("old_password")
+    def validate_old_password(cls, old_password: str) -> str:
+        """Convert b64 encoded old_password to normal string"""
+        return b64_str_to_str(old_password)
+
+    @validator("new_password")
+    def validate_new_password(cls, new_password: str) -> str:
+        """Convert b64 encoded new_password to normal string"""
+        return b64_str_to_str(new_password)
 
 
 class UserResponse(BaseSchema):

@@ -1,5 +1,11 @@
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import hash_with_salt
+from fidesops.util.cryptographic_util import (
+    b64_str_to_bytes,
+    b64_str_to_str,
+    bytes_to_b64_str,
+    hash_with_salt,
+    str_to_b64_str,
+)
 
 
 def test_hash_with_salt() -> None:
@@ -13,3 +19,29 @@ def test_hash_with_salt() -> None:
     )
 
     assert hashed == expected_hash
+
+
+def test_bytes_to_b64_str() -> None:
+    byte_string = b"https://www.google.com"
+    b64_string = "aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbQ=="
+    result = bytes_to_b64_str(byte_string)
+    assert b64_string == result
+
+
+def test_b64_str_to_bytes() -> None:
+    b64_string = "aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbQ=="
+    result = b64_str_to_bytes(b64_string)
+    assert b"https://www.google.com" == result
+
+
+def test_b64_str_to_str() -> None:
+    b64_string = "aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbQ=="
+    result = b64_str_to_str(b64_string)
+    assert "https://www.google.com" == result
+
+
+def test_str_to_b64_str() -> None:
+    orig_string = "https://www.google.com"
+    b64_string = "aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbQ=="
+    result = str_to_b64_str(orig_string)
+    assert b64_string == result
