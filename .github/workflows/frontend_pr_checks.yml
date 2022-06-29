@@ -43,6 +43,12 @@ jobs:
 
   Admin-UI-Cypress:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: clients/admin-ui
     steps:
       - name: Checkout
         uses: actions/checkout@v2
