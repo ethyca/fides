@@ -17,16 +17,6 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
 
-  const deleteMessage = (
-    <Text>
-      You are about to permanently delete the collection named{" "}
-      <Text color="complimentary.500" as="span" fontWeight="bold">
-        {dataset.name}
-      </Text>{" "}
-      from this dataset. Are you sure you would like to continue?
-    </Text>
-  );
-
   const handleSubmit = async (values: Partial<Dataset>) => {
     if (dataset) {
       const updatedDataset = { ...dataset, ...values };
@@ -56,7 +46,15 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
       header={`Dataset Name: ${dataset.name}`}
       onDelete={() => {}} // TODO #769
-      deleteMessage={deleteMessage}
+      deleteMessage={
+        <Text>
+          You are about to permanently delete the collection named{" "}
+          <Text color="complimentary.500" as="span" fontWeight="bold">
+            {dataset.name}
+          </Text>{" "}
+          from this dataset. Are you sure you would like to continue?
+        </Text>
+      }
       deleteTitle="Delete Dataset"
     >
       <EditDatasetForm

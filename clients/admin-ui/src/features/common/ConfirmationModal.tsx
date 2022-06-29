@@ -17,7 +17,7 @@ interface Props {
   title: string;
   message: ReactNode;
 }
-const DeleteConfirmation = ({
+const ConfirmationModal = ({
   isOpen,
   onClose,
   onDelete,
@@ -43,4 +43,4 @@ const DeleteConfirmation = ({
   </Modal>
 );
 
-export default DeleteConfirmation;
+export default ConfirmationModal;

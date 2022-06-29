@@ -14,7 +14,7 @@ import { ReactNode } from "react";
 
 import { CloseSolidIcon, TrashCanSolidIcon } from "~/features/common/Icon";
 
-import DeleteConfirmation from "../common/DeleteConfirmation";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 interface Props {
   header: string;
@@ -72,7 +72,7 @@ const EditDrawer = ({
           </Box>
         </DrawerContent>
       </Drawer>
-      <DeleteConfirmation
+      <ConfirmationModal
         isOpen={deleteIsOpen}
         onClose={onDeleteClose}
         onDelete={onDelete}
