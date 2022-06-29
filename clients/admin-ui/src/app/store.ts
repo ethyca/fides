@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
+import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import {
   organizationApi,
   reducer as organizationReducer,
@@ -30,6 +31,7 @@ import { reducer as userReducer } from "~/features/user";
 const makeStore = () => {
   const store = configureStore({
     reducer: {
+      configWizard: configWizardReducer,
       user: userReducer,
       dataset: datasetReducer,
       dataCategories: dataCategoriesReducer,
