@@ -26,15 +26,6 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
   const [updateDataset] = useUpdateDatasetMutation();
-  const deleteMessage = (
-    <Text>
-      You are about to permanently delete the field named{" "}
-      <Text color="complimentary.500" as="span" fontWeight="bold">
-        {field.name}
-      </Text>{" "}
-      from this dataset. Are you sure you would like to continue?
-    </Text>
-  );
 
   const handleSubmit = (
     values: Pick<
@@ -76,7 +67,15 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
       onDelete={handleDelete}
       deleteTitle="Delete Field"
-      deleteMessage={deleteMessage}
+      deleteMessage={
+        <Text>
+          You are about to permanently delete the field named{" "}
+          <Text color="complimentary.500" as="span" fontWeight="bold">
+            {field.name}
+          </Text>{" "}
+          from this dataset. Are you sure you would like to continue?
+        </Text>
+      }
     >
       <EditCollectionOrFieldForm
         values={field}

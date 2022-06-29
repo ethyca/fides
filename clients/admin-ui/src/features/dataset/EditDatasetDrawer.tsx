@@ -24,16 +24,6 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const router = useRouter();
   const toast = useToast();
 
-  const deleteMessage = (
-    <Text>
-      You are about to permanently delete the dataset named{" "}
-      <Text color="complimentary.500" as="span" fontWeight="bold">
-        {dataset.name}
-      </Text>
-      . Are you sure you would like to continue?
-    </Text>
-  );
-
   const handleSubmit = async (values: Partial<Dataset>) => {
     const updatedDataset = { ...dataset, ...values };
     try {
@@ -79,7 +69,15 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
       header={`Dataset Name: ${dataset.name}`}
       onDelete={handleDelete}
-      deleteMessage={deleteMessage}
+      deleteMessage={
+        <Text>
+          You are about to permanently delete the dataset named{" "}
+          <Text color="complimentary.500" as="span" fontWeight="bold">
+            {dataset.name}
+          </Text>
+          . Are you sure you would like to continue?
+        </Text>
+      }
       deleteTitle="Delete Dataset"
     >
       <EditDatasetForm

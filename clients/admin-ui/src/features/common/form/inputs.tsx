@@ -4,11 +4,16 @@ import {
   FormErrorMessage,
   FormLabel,
   Grid,
+  IconButton,
   Input,
+  InputGroup,
+  InputRightElement,
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
+import { useState } from "react";
 
+import { EyeIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 interface InputProps {
@@ -23,8 +28,17 @@ export const CustomTextInput = ({
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
-  const { type, placeholder } = props;
+  const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
+
+  const isPassword = initialType === "password";
+  const [type, setType] = useState<"text" | "password">(
+    isPassword ? "password" : "text"
+  );
+
+  const handleClickReveal = () =>
+    setType(type === "password" ? "text" : "password");
+
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
@@ -32,13 +46,30 @@ export const CustomTextInput = ({
           {label}
         </FormLabel>
         <Box display="flex" alignItems="center">
-          <Input
-            {...field}
-            type={type}
-            placeholder={placeholder}
-            size="sm"
-            mr="2"
-          />
+          <InputGroup size="sm" mr="2">
+            <Input
+              {...field}
+              type={type}
+              placeholder={placeholder}
+              pr={isPassword ? "10" : "3"}
+            />
+            {isPassword ? (
+              <InputRightElement pr="2">
+                <IconButton
+                  size="xs"
+                  variant="unstyled"
+                  aria-label="Reveal/Hide Secret"
+                  icon={
+                    <EyeIcon
+                      boxSize="full"
+                      color={type === "password" ? "gray.400" : "gray.700"}
+                    />
+                  }
+                  onClick={handleClickReveal}
+                />
+              </InputRightElement>
+            ) : null}
+          </InputGroup>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
