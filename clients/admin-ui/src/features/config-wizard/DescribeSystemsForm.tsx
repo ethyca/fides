@@ -213,9 +213,9 @@ const DescribeSystemsForm: NextPage<{
               </Button>
               <Button
                 type="submit"
-                colorScheme="primary"
+                variant="primary"
                 size="sm"
-                disabled={
+                isDisabled={
                   !values.name || !values.description || !values.system_type
                 }
                 isLoading={isLoading}

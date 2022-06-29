@@ -183,11 +183,15 @@ export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws
 ### Required Permissions
 
 The identity which is authenticated must be allowed to invoke the following actions:
-* redshift:DescribeClusters
-* rds:DescribeDBInstances
-* rds:DescribeDBClusters
 
-These can be supplied in an IAM policy:
+- redshift:DescribeClusters
+- rds:DescribeDBInstances
+- rds:DescribeDBClusters
+
+#### Sample IAM Policy
+
+These permissions can be supplied in an IAM policy:
+
 ```json
 {
     "Version": "2012-10-17",
