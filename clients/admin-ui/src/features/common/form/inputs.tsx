@@ -79,42 +79,46 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Select
-          options={options}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            if (newValue) {
-              field.onChange(props.name)(newValue.value);
-            }
-          }}
-          name={props.name}
-          value={selected}
-          size={size}
-          chakraStyles={{
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              bg: "transparent",
-              px: 2,
-              cursor: "inherit",
-            }),
-            indicatorSeparator: (provided) => ({
-              ...provided,
-              display: "none",
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              background: "primary.400",
-              color: "white",
-            }),
-          }}
-          isSearchable={isSearchable ?? false}
-          isClearable={isClearable}
-        />
-        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        <Box display="flex" alignItems="center">
+          <Select
+            options={options}
+            onBlur={(option) => {
+              if (option) {
+                field.onBlur(props.name);
+              }
+            }}
+            onChange={(newValue) => {
+              if (newValue) {
+                field.onChange(props.name)(newValue.value);
+              }
+            }}
+            name={props.name}
+            value={selected}
+            size={size}
+            chakraStyles={{
+              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                bg: "transparent",
+                px: 2,
+                cursor: "inherit",
+              }),
+              indicatorSeparator: (provided) => ({
+                ...provided,
+                display: "none",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
+            }}
+            isSearchable={isSearchable ?? false}
+            isClearable={isClearable}
+          />
+
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
