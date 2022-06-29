@@ -80,30 +80,24 @@ const EditCollectionOrFieldForm = ({
           height="80vh"
         >
           <Stack>
-            <Box>
-              <CustomTextInput
-                name="description"
-                label="Description"
-                tooltip={descriptionTooltip}
-              />
-            </Box>
-            <Box>
-              <CustomSelect
-                name="data_qualifier"
-                label="Identifiability"
-                options={IDENTIFIER_OPTIONS}
-                tooltip={dataQualifierTooltip}
-                isSearchable={false}
-              />
-            </Box>
-            <Box>
-              <DataCategoryInput
-                dataCategories={allDataCategories}
-                checked={checkedDataCategories}
-                onChecked={setCheckedDataCategories}
-                tooltip={dataCategoryTooltip}
-              />
-            </Box>
+            <CustomTextInput
+              name="description"
+              label="Description"
+              tooltip={descriptionTooltip}
+            />
+            <CustomSelect
+              name="data_qualifier"
+              label="Identifiability"
+              options={IDENTIFIER_OPTIONS}
+              tooltip={dataQualifierTooltip}
+              isSearchable={false}
+            />
+            <DataCategoryInput
+              dataCategories={allDataCategories}
+              checked={checkedDataCategories}
+              onChecked={setCheckedDataCategories}
+              tooltip={dataCategoryTooltip}
+            />
           </Stack>
           <Box>
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
