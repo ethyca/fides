@@ -116,7 +116,6 @@ export const CustomSelect = ({
             isSearchable={isSearchable ?? false}
             isClearable={isClearable}
           />
-
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
