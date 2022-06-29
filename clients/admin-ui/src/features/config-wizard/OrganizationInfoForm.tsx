@@ -197,13 +197,10 @@ const OrganizationInfoForm: NextPage<{
           </FormControl>
         </Stack>
         <Button
-          bg="primary.800"
-          _hover={{ bg: "primary.400" }}
-          _active={{ bg: "primary.500" }}
-          colorScheme="primary"
-          disabled={!values.name || !values.description}
-          isLoading={isLoading}
           type="submit"
+          variant="primary"
+          isDisabled={!values.name || !values.description}
+          isLoading={isLoading}
         >
           Save and Continue
         </Button>
