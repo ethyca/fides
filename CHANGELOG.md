@@ -21,6 +21,7 @@ The types of changes are:
 
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+* CustomInput type "password" with show/hide icon.
 
 ### Fixed
 
