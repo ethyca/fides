@@ -31,3 +31,7 @@ docs/
 .github/
 .devcontainer/
 node_modules/
+
+# Ignore cypress artifacts
+videos/
+screenshots/
