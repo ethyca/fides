@@ -14,6 +14,7 @@ from fidesops.models.client import ADMIN_UI_ROOT, ClientDetail
 from fidesops.models.fidesops_user import FidesopsUser
 from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.schemas.user import UserCreate
+from fidesops.util.cryptographic_util import str_to_b64_str
 
 
 def get_username(prompt: str) -> str:
@@ -25,7 +26,7 @@ def get_username(prompt: str) -> str:
 def get_password(prompt: str) -> str:
     """Prompt the user for a password"""
     password = getpass.getpass(prompt)
-    return password
+    return str_to_b64_str(password)
 
 
 def get_input(prompt: str) -> str:

@@ -8,6 +8,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../app/store";
 import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
+import { utf8ToB64 } from "../common/utils";
 import { User } from "../user-management/types";
 import { LoginRequest, LoginResponse } from "./types";
 
@@ -88,7 +89,7 @@ export const authApi = createApi({
       query: (credentials) => ({
         url: "login",
         method: "POST",
-        body: credentials,
+        body: { ...credentials, password: utf8ToB64(credentials.password) },
       }),
       invalidatesTags: () => ["Auth"],
     }),
