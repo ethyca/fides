@@ -129,6 +129,7 @@ const AuthenticateAwsForm = () => {
                 tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
               />
               <CustomTextInput
+                type="password"
                 name="aws_secret_access_key"
                 label="Secret"
                 // "You can find more about creating access keys and secrets on AWS docs here."

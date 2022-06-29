@@ -108,32 +108,7 @@ def test_xlsx_export(tmpdir: LocalPath) -> None:
     """
     Asserts that the xlsx template is successfully copied and appended to
     """
-    output_columns = [
-        "dataset.name",
-        "system.name",
-        "system.administrating_department",
-        "system.privacy_declaration.data_use.name",
-        "system.joint_controller",
-        "system.privacy_declaration.data_subjects.name",
-        "unioned_data_categories",
-        "system.privacy_declaration.data_use.recipients",
-        "system.link_to_processor_contract",
-        "third_country_combined",
-        "system.third_country_safeguards",
-        "dataset.retention",
-        "organization.link_to_security_policy",
-        "system.data_responsibility_title",
-        "system.privacy_declaration.data_use.legal_basis",
-        "system.privacy_declaration.data_use.special_category",
-        "system.privacy_declaration.data_use.legitimate_interest",
-        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-        "system.privacy_declaration.data_subjects.rights_available",
-        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-        "dataset.name",
-        "system.data_protection_impact_assessment.is_required",
-        "system.data_protection_impact_assessment.progress",
-        "system.data_protection_impact_assessment.link",
-    ]
+    output_columns = list(export_helpers.DATAMAP_COLUMNS.keys())
 
     organization_df = pd.DataFrame()
     joined_system_dataset_df = pd.DataFrame(columns=output_columns)
