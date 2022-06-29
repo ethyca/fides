@@ -32,11 +32,11 @@ export const datasetApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Dataset"],
+  tagTypes: ["Dataset", "Datasets"],
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset/` }),
-      providesTags: () => ["Dataset"],
+      providesTags: () => ["Datasets"],
     }),
     getDatasetByKey: build.query<Dataset, FidesKey>({
       query: (key) => ({ url: `dataset/${key}` }),
@@ -60,6 +60,7 @@ export const datasetApi = createApi({
         params: { resource_type: "dataset" },
         method: "DELETE",
       }),
+      invalidatesTags: ["Datasets"],
     }),
   }),
 });
