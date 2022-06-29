@@ -17,6 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
+## [1.7.1](https://github.com/ethyca/fides/compare/1.6.1...1.7.1) - 2022-07-28
+### Added
+
+### Fixed
+
+* CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added
