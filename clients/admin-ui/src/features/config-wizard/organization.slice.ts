@@ -24,7 +24,7 @@ export const organizationApi = createApi({
       }),
       invalidatesTags: () => ["Organization"],
     }),
-    getOrganizationByFidesKey: build.query<object, string>({
+    getOrganizationByFidesKey: build.query<Partial<Organization>, string>({
       query: (fides_key) => ({ url: `organization/${fides_key}/` }),
       providesTags: ["Organization"],
     }),
@@ -44,7 +44,6 @@ export const organizationApi = createApi({
         { dispatch, queryFulfilled }
       ) {
         const patchResult = dispatch(
-          // @ts-ignore
           organizationApi.util.updateQueryData(
             "getOrganizationByFidesKey",
             fides_key,

@@ -3,7 +3,13 @@ services:
     image: ethyca/fidesctl:local
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/api/v1/health" ]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://0.0.0.0:8080/api/v1/health"
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -24,6 +30,23 @@ services:
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
       FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
+
+  fidesctl-ui:
+    image: ethyca/fidesctl:local-ui
+    command: npm run dev-docker
+    depends_on:
+      - fidesctl
+    expose:
+      - 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
+    environment:
+      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fidesctl:8080
 
   fidesctl-db:
     image: postgres:12

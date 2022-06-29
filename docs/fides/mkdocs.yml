@@ -34,6 +34,10 @@ nav:
       - Example Policies: guides/policies.md
       - Extending the Taxonomy: guides/extending_taxonomy.md
       - Generating a Data Map: guides/generating_datamap.md
+  - Fides UI:
+      - Overview: admin_ui/overview.md
+      - Configuration Wizard: admin_ui/wizard.md
+      - Managing Datasets: admin_ui/datasets.md
   - CI/CD Integration:
       - Overview: cicd/overview.md
       - Example Integrations: cicd/examples.md

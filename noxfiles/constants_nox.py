@@ -23,6 +23,8 @@ REGISTRY = "ethyca"
 IMAGE_NAME = "fidesctl"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
+IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
+IMAGE_DEV = f"{IMAGE}:dev"
 IMAGE_LATEST = f"{IMAGE}:latest"
 
 # Disable TTY to perserve output within Github Actions logs
@@ -44,4 +46,15 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", IMAGE_NAME)
+START_APP = ("docker-compose", "up", "-d", "fidesctl")
+START_APP_UI = ("docker-compose", "up", "-d", "fidesctl-ui")
+START_APP_EXTERNAL = (
+    "docker-compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    INTEGRATION_COMPOSE_FILE,
+    "up",
+    "-d",
+    IMAGE_NAME,
+)

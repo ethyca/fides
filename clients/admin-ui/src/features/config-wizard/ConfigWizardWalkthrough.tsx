@@ -4,25 +4,47 @@ import React, { useState } from "react";
 
 import { CloseSolidIcon } from "~/features/common/Icon";
 
+import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
-import { STEPS } from "./constants";
+import AuthenticateScanner from "./AuthenticateScanner";
+import { HORIZONTAL_STEPS, STEPS } from "./constants";
+import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
+import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
+import ReviewSystemForm from "./ReviewSystemForm";
+import SuccessPage from "./SuccessPage";
+import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
+  const [reviewStep, setReviewStep] = useState<number>(1);
+  const [systemFidesKey, setSystemFidesKey] = useState("");
 
   const handleCancelSetup = () => {
-    // Save progress
     router.push("/");
   };
 
   const handleChangeStep = (formStep: number) => {
-    // Save info between steps for submission to API with all info
-    // or are they different api calls at each step?
     if (formStep && step !== STEPS.length) {
       setStep(formStep + 1);
+    }
+  };
+
+  const handleChangeReviewStep = (rStep: number) => {
+    if (rStep) {
+      if (rStep === 5) {
+        setReviewStep(1);
+      } else {
+        setReviewStep(rStep + 1);
+      }
+    }
+  };
+
+  const handleSystemFidesKey = (key: string) => {
+    if (key) {
+      setSystemFidesKey(key);
     }
   };
 
@@ -56,6 +78,47 @@ const ConfigWizardWalkthrough = () => {
             {step === 2 ? (
               <AddSystemForm handleChangeStep={handleChangeStep} />
             ) : null}
+            {step === 3 ? <AuthenticateScanner /> : null}
+            {step === 5 ? (
+              <Stack direction="column">
+                {reviewStep <= 3 ? (
+                  <HorizontalStepper
+                    activeStep={reviewStep}
+                    steps={HORIZONTAL_STEPS}
+                  />
+                ) : null}
+                {reviewStep === 1 && (
+                  <DescribeSystemsForm
+                    handleChangeStep={handleChangeStep}
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    handleSystemFidesKey={handleSystemFidesKey}
+                  />
+                )}
+                {reviewStep === 2 && (
+                  <PrivacyDeclarationForm
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+                {reviewStep === 3 && (
+                  <ReviewSystemForm
+                    handleCancelSetup={handleCancelSetup}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+                {reviewStep === 4 && (
+                  <SuccessPage
+                    handleChangeStep={handleChangeStep}
+                    handleChangeReviewStep={handleChangeReviewStep}
+                    systemFidesKey={systemFidesKey}
+                  />
+                )}
+              </Stack>
+            ) : null}
+            {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>
         </Stack>
       </Stack>

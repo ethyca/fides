@@ -22,6 +22,7 @@ A connection string can be supplied using the `connection-string` option:
 ...
 ```
 
+The appropriate `connection-string` format for your database connector can be found in the [SQLAlchemy Documentation](https://docs.sqlalchemy.org/en/14/dialects/).
 
 #### Fides Config
 A connection string can also be defined within your fides config under the credentials section.
@@ -182,11 +183,15 @@ export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws
 ### Required Permissions
 
 The identity which is authenticated must be allowed to invoke the following actions:
-* redshift:DescribeClusters
-* rds:DescribeDBInstances
-* rds:DescribeDBClusters
 
-These can be supplied in an IAM policy:
+- redshift:DescribeClusters
+- rds:DescribeDBInstances
+- rds:DescribeDBClusters
+
+#### Sample IAM Policy
+
+These permissions can be supplied in an IAM policy:
+
 ```json
 {
     "Version": "2012-10-17",

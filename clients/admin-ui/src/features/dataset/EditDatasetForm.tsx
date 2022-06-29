@@ -3,12 +3,22 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
+import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATA_QUALIFIERS } from "./constants";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "../common/form/inputs";
+import { DATA_QUALIFIERS, DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { Dataset } from "./types";
+
+const DATA_QUALIFIERS_OPTIONS = DATA_QUALIFIERS.map((qualifier) => ({
+  label: qualifier.label,
+  value: qualifier.key,
+}));
 
 type FormValues = Partial<Dataset>;
 
@@ -52,26 +62,39 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
           height="75vh"
         >
           <Stack spacing="3">
-            <CustomTextInput name="name" label="Name" />
-            <CustomTextInput name="description" label="Description" />
-            <CustomTextInput name="retention" label="Retention period" />
-            <CustomSelect name="data_qualifier" label="Identifiability">
-              {DATA_QUALIFIERS.map((qualifier) => (
-                <option key={qualifier.key} value={qualifier.key}>
-                  {qualifier.label}
-                </option>
-              ))}
-            </CustomSelect>
+            <CustomTextInput
+              name="name"
+              label="Name"
+              tooltip={DATASET.name.tooltip}
+            />
+            <CustomTextInput
+              name="description"
+              label="Description"
+              tooltip={DATASET.description.tooltip}
+            />
+            <CustomTextInput
+              name="retention"
+              label="Retention period"
+              tooltip={DATASET.retention.tooltip}
+            />
             <CustomSelect
+              name="data_qualifier"
+              label="Identifiability"
+              options={DATA_QUALIFIERS_OPTIONS}
+              tooltip={DATASET.data_qualifiers.tooltip}
+            />
+            <CustomMultiSelect
               name="third_country_transfers"
               label="Geographic location"
-            >
-              {/* TODO: where do these fields come from? */}
-            </CustomSelect>
+              tooltip={DATASET.third_country_transfers.tooltip}
+              isSearchable
+              options={COUNTRY_OPTIONS}
+            />
             <DataCategoryInput
               dataCategories={allDataCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
+              tooltip={DATASET.data_categories.tooltip}
             />
           </Stack>
           <Box>

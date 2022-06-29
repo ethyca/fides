@@ -1,4 +1,4 @@
-import { useToast } from "@fidesui/react";
+import { Text, useToast } from "@fidesui/react";
 
 import { errorToastParams, successToastParams } from "../common/toast";
 import { useUpdateDatasetMutation } from "./dataset.slice";
@@ -21,8 +21,17 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     if (dataset) {
       const updatedDataset = { ...dataset, ...values };
       try {
-        await updateDataset(updatedDataset);
-        toast(successToastParams("Successfully modified dataset"));
+        const result = await updateDataset(updatedDataset);
+        // TODO: we should systematically coerce errors into their types (see fidesops)
+        if ("error" in result && "data" in result.error) {
+          if ("data" in result.error) {
+            toast(errorToastParams(result.error.data as string));
+          } else {
+            toast(errorToastParams("An unknown error occurred"));
+          }
+        } else {
+          toast(successToastParams("Successfully modified dataset"));
+        }
       } catch (error) {
         toast(errorToastParams(error as string));
       }
@@ -37,6 +46,16 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
       description={DESCRIPTION}
       header={`Dataset Name: ${dataset.name}`}
       onDelete={() => {}} // TODO #769
+      deleteMessage={
+        <Text>
+          You are about to permanently delete the collection named{" "}
+          <Text color="complimentary.500" as="span" fontWeight="bold">
+            {dataset.name}
+          </Text>{" "}
+          from this dataset. Are you sure you would like to continue?
+        </Text>
+      }
+      deleteTitle="Delete Dataset"
     >
       <EditDatasetForm
         values={dataset}

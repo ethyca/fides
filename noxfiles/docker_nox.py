@@ -1,6 +1,13 @@
 """Contains the nox sessions for docker-related tasks."""
 import nox
-from constants_nox import IMAGE, IMAGE_LATEST, IMAGE_LOCAL, get_current_tag
+from constants_nox import (
+    IMAGE,
+    IMAGE_DEV,
+    IMAGE_LATEST,
+    IMAGE_LOCAL,
+    IMAGE_LOCAL_UI,
+    get_current_tag,
+)
 
 
 def get_current_image() -> str:
@@ -9,38 +16,57 @@ def get_current_image() -> str:
 
 
 @nox.session()
-def build(session: nox.Session) -> None:
+@nox.parametrize(
+    "image",
+    [
+        nox.param("prod", id="prod"),
+        nox.param("dev", id="dev"),
+        nox.param("test", id="test"),
+        nox.param("ui", id="ui"),
+    ],
+)
+def build(session: nox.Session, image: str) -> None:
     """Build the Docker container for fidesctl."""
+
+    # The lambdas are a workaround to lazily evaluate get_current_image
+    # This allows the dev deployment to run without needing other dev requirements
+    build_matrix = {
+        "prod": {"tag": get_current_image, "target": "prod"},
+        "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
+        "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
+        "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
+    }
+    target = build_matrix[image]["target"]
+    tag = build_matrix[image]["tag"]
     session.run(
         "docker",
         "build",
-        "--target=prod",
+        f"--target={target}",
         "--tag",
-        get_current_image(),
+        tag(),
         ".",
         external=True,
     )
 
 
 @nox.session()
-def build_local(session: nox.Session) -> None:
-    """Build the Docker container for fidesctl tagged 'local'."""
-    session.run(
-        "docker", "build", "--target=dev", "--tag", IMAGE_LOCAL, ".", external=True
-    )
-
-
-@nox.session()
-def build_local_prod(session: nox.Session) -> None:
-    """Build the Docker container for fidesctl tagged 'local' with the prod stage target."""
-    session.run(
-        "docker", "build", "--target=prod", "--tag", IMAGE_LOCAL, ".", external=True
-    )
-
-
-@nox.session()
-def push(session: nox.Session) -> None:
+@nox.parametrize(
+    "tag",
+    [
+        nox.param("prod", id="prod"),
+        nox.param("dev", id="dev"),
+    ],
+)
+def push(session: nox.Session, tag: str) -> None:
     """Push the fidesctl Docker image to Dockerhub."""
-    session.run("docker", "tag", get_current_image(), IMAGE_LATEST, external=True)
-    session.run("docker", "push", IMAGE, external=True)
-    session.run("docker", "push", IMAGE_LATEST, external=True)
+
+    tag_matrix = {"prod": IMAGE_LATEST, "dev": IMAGE_DEV}
+
+    # Push either "ethyca/fidesctl:dev" or "ethyca/fidesctl:latest"
+    session.run("docker", "tag", get_current_image(), tag_matrix[tag], external=True)
+    session.run("docker", "push", tag_matrix[tag], external=True)
+
+    # Only push the tagged version if its for prod
+    # Example: "ethyca/fidesctl:1.7.0"
+    if tag == "prod":
+        session.run("docker", "push", IMAGE, external=True)
