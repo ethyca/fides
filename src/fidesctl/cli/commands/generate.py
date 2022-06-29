@@ -1,6 +1,4 @@
 """Contains the generate group of CLI commands for Fidesctl."""
-from json import load
-
 import click
 
 from fidesctl.cli.options import (
@@ -15,12 +13,12 @@ from fidesctl.cli.options import (
 )
 from fidesctl.cli.utils import (
     handle_aws_credentials_options,
+    handle_bigquery_config_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
     with_analytics,
 )
 from fidesctl.connectors.bigquery import get_bigquery_engine
-from fidesctl.connectors.models import BigQueryConfig
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -103,14 +101,12 @@ def generate_dataset_bigquery(
     It will need to be run again if the dataset schema changes.
     """
 
-    if keyfile_path:
-        with open(keyfile_path, "r", encoding="utf-8") as credential_file:
-            bigquery_config = BigQueryConfig(
-                **{
-                    "dataset": dataset_name,
-                    "keyfile_creds": load(credential_file),
-                }
-            )
+    bigquery_config = handle_bigquery_config_options(
+        fides_config=ctx.obj["CONFIG"],
+        dataset=dataset_name,
+        keyfile_path=keyfile_path,
+        credentials_id=credentials_id,
+    )
 
     bigquery_engine = get_bigquery_engine(bigquery_config)
     bigquery_schemas = _dataset.get_db_schemas(engine=bigquery_engine)

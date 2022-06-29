@@ -22,11 +22,12 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesctl.connectors.models import AWSConfig, OktaConfig
+from fidesctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.credentials_settings import (
     get_config_aws_credentials,
+    get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
@@ -300,3 +301,31 @@ def handle_aws_credentials_options(
                 f"credentials-id {credentials_id} does not exist in fides config"
             )
     return aws_config
+
+
+def handle_bigquery_config_options(
+    fides_config: FidesctlConfig,
+    dataset: str,
+    # keyfile_credentials: KeyfileCreds,
+    keyfile_path: str,
+    credentials_id: str,
+) -> Optional[BigQueryConfig]:
+    """
+    Handles the connections options for passing a keyfile, dictionary, or credentials-id.
+    """
+    bigquery_config = None
+    if keyfile_path:
+        with open(keyfile_path, "r", encoding="utf-8") as credential_file:
+            bigquery_config = BigQueryConfig(
+                **{
+                    "dataset": dataset,
+                    "keyfile_creds": json.load(credential_file),
+                }
+            )
+    if credentials_id:
+        bigquery_config = get_config_bigquery_credentials(
+            dataset=dataset,
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+    return bigquery_config
