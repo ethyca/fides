@@ -93,6 +93,12 @@ def get_config_bigquery_credentials(
     dataset: str, credentials_config: Dict[str, Dict], credentials_id: str
 ) -> Optional[BigQueryConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
-    parsed_credentials = KeyfileCreds.parse_obj(credentials_dict)
-    parsed_config = BigQueryConfig(dataset=dataset, keyfile_creds=parsed_credentials)
+    parsed_credentials = (
+        KeyfileCreds.parse_obj(credentials_dict) if credentials_dict else None
+    )
+    parsed_config = (
+        BigQueryConfig(dataset=dataset, keyfile_creds=parsed_credentials)
+        if parsed_credentials
+        else None
+    )
     return parsed_config
