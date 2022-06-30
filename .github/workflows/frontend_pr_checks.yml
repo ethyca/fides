@@ -64,6 +64,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
+          working-directory: clients/admin-ui
           install: false
           start: npm run dev
           wait-on: "https://localhost:3000"
