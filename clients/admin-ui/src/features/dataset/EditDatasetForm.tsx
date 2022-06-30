@@ -66,22 +66,26 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               name="name"
               label="Name"
               tooltip={DATASET.name.tooltip}
+              data-testid="name-input"
             />
             <CustomTextInput
               name="description"
               label="Description"
               tooltip={DATASET.description.tooltip}
+              data-testid="description-input"
             />
             <CustomTextInput
               name="retention"
               label="Retention period"
               tooltip={DATASET.retention.tooltip}
+              data-testid="retention-input"
             />
             <CustomSelect
               name="data_qualifier"
               label="Identifiability"
               options={DATA_QUALIFIERS_OPTIONS}
               tooltip={DATASET.data_qualifiers.tooltip}
+              data-testid="identifiability-input"
             />
             <CustomMultiSelect
               name="third_country_transfers"
@@ -89,6 +93,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               tooltip={DATASET.third_country_transfers.tooltip}
               isSearchable
               options={COUNTRY_OPTIONS}
+              data-testid="geography-input"
             />
             <DataCategoryInput
               dataCategories={allDataCategories}

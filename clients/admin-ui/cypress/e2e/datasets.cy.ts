@@ -47,10 +47,44 @@ describe("Dataset", () => {
         "User's unique ID"
       );
       cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("selected-categories").children().should("have.length", 1);
       // cypress has trouble with testid's that have special characters, so put it in quotes and use regular cy.get
       cy.get(
         "[data-testid='data-category-user.derived.identifiable.unique_id']"
       );
+    });
+
+    it("Can render an edit form for a dataset collection with existing values", () => {
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-collection").click();
+      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("description-input").should(
+        "have.value",
+        "User information"
+      );
+      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("selected-categories").children().should("have.length", 0);
+    });
+
+    it("Can render an edit form for a dataset with existing values", () => {
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-dataset").click();
+      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("name-input").should("have.value", "Demo Users Dataset");
+      cy.getByTestId("description-input").should(
+        "have.value",
+        "Data collected about users for our analytics system."
+      );
+      cy.getByTestId("retention-input").should(
+        "have.value",
+        "30 days after account deletion"
+      );
+      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("geography-input").should("contain", "Canada");
+      cy.getByTestId("geography-input").should("contain", "United Kingdom");
+      cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
   });
 });
