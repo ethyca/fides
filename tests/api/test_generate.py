@@ -6,14 +6,14 @@ import pytest
 from starlette.testclient import TestClient
 
 from fidesapi.routes.generate import GenerateResponse
-from fidesapi.routes.util import API_PREFIX, obscure_string
+from fidesapi.routes.util import API_PREFIX
 from fidesctl.core.config import FidesctlConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
         "region_name": getenv("AWS_DEFAULT_REGION", ""),
-        "aws_access_key_id": obscure_string(getenv("AWS_ACCESS_KEY_ID", "")),
-        "aws_secret_access_key": obscure_string(getenv("AWS_SECRET_ACCESS_KEY", "")),
+        "aws_access_key_id": getenv("AWS_ACCESS_KEY_ID", ""),
+        "aws_secret_access_key": getenv("AWS_SECRET_ACCESS_KEY", ""),
     }
 }
 

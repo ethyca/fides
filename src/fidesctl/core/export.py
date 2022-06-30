@@ -407,6 +407,7 @@ def build_joined_dataframe(
     joined_df["organization.link_to_security_policy"] = (
         server_resource_dict["organization"][0].security_policy or ""
     )
+    joined_df["dataset.source_name"] = joined_df["dataset.name"]
 
     return joined_df
 
