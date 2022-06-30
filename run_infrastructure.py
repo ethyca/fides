@@ -5,10 +5,7 @@ and related workflows.
 import argparse
 import subprocess
 import sys
-from typing import (
-    List,
-)
-
+from typing import List
 
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
