@@ -36,16 +36,8 @@ const NewDataset: NextPage = () => {
       <Stack spacing={8}>
         <Box w={["100%", "100%", "50%"]}>
           <Text>
-            Choose whether to{" "}
-            <Text as="span" color="complimentary.500">
-              upload a new dataset YAML, connect to a database using a
-              connection URL
-            </Text>{" "}
-            or{" "}
-            <Text as="span" color="complimentary.500">
-              manually generate a dataset
-            </Text>
-            .
+            Choose whether to upload a new dataset YAML, connect to a database
+            using a connection URL or manually generate a dataset.
           </Text>
         </Box>
         <Box>
