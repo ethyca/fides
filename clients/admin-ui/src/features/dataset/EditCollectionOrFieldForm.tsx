@@ -105,7 +105,12 @@ const EditCollectionOrFieldForm = ({
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
             </Button>
-            <Button type="submit" colorScheme="primary" size="sm">
+            <Button
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              data-testid="save-btn"
+            >
               Save
             </Button>
           </Box>

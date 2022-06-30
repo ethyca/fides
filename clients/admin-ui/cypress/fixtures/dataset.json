@@ -67,6 +67,39 @@
           "fields": null
         }
       ]
+    },
+    {
+      "name": "products",
+      "description": "Product information",
+      "data_categories": [],
+      "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+      "retention": null,
+      "fields": [
+        {
+          "name": "created_at",
+          "description": "Product creation timestamp",
+          "data_categories": ["system.operations"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        },
+        {
+          "name": "name",
+          "description": "Name of the product",
+          "data_categories": ["user.provided.identifiable.name"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": "Account termination",
+          "fields": null
+        },
+        {
+          "name": "price",
+          "description": "Price of the product",
+          "data_categories": ["system.operations"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        }
+      ]
     }
   ]
 }

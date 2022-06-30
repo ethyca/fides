@@ -38,6 +38,13 @@ describe("Dataset", () => {
       cy.getByTestId("dataset-fields-table");
     });
 
+    it("Can choose a different collection", () => {
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("field-row-price").should("not.exist");
+      cy.getByTestId("collection-select").select("products");
+      cy.getByTestId("field-row-price").should("exist");
+    });
+
     it("Can render an edit form for a dataset field with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
@@ -85,6 +92,25 @@ describe("Dataset", () => {
       cy.getByTestId("geography-input").should("contain", "Canada");
       cy.getByTestId("geography-input").should("contain", "United Kingdom");
       cy.getByTestId("selected-categories").children().should("have.length", 0);
+    });
+  });
+
+  describe("Can edit datasets", () => {
+    it("Can edit dataset fields", () => {
+      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+        "putDataset"
+      );
+      const newDescription = "new description";
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields[5].description).to.eql(
+          newDescription
+        );
+      });
     });
   });
 });
