@@ -21,6 +21,7 @@ The types of changes are:
 
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+* Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
