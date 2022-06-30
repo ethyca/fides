@@ -27,7 +27,6 @@ venv/
 docs/
 
 # Ignore dev files
-.git/
 .github/
 .devcontainer/
 node_modules/
