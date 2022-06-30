@@ -20,6 +20,8 @@ The types of changes are:
 ## [1.7.1](https://github.com/ethyca/fides/compare/1.6.1...1.7.1) - 2022-07-28
 ### Added
 * Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
+* Add ability to delete datasets from the UI [#827](https://github.com/ethyca/fides/pull/827)
+
 
 ### Fixed
 
