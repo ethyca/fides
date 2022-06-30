@@ -1,0 +1,72 @@
+{
+  "fides_key": "demo_users_dataset",
+  "organization_fides_key": "default_organization",
+  "name": "Demo Users Dataset",
+  "description": "Data collected about users for our analytics system.",
+  "meta": null,
+  "data_categories": [],
+  "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+  "fidesctl_meta": null,
+  "joint_controller": null,
+  "retention": "30 days after account deletion",
+  "third_country_transfers": ["GBR", "CAN"],
+  "collections": [
+    {
+      "name": "users",
+      "description": "User information",
+      "data_categories": [],
+      "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+      "retention": null,
+      "fields": [
+        {
+          "name": "created_at",
+          "description": "User's creation timestamp",
+          "data_categories": ["system.operations"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        },
+        {
+          "name": "email",
+          "description": "User's Email",
+          "data_categories": ["user.provided.identifiable.contact.email"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": "Account termination",
+          "fields": null
+        },
+        {
+          "name": "first_name",
+          "description": "User's first name",
+          "data_categories": ["user.provided.identifiable.name"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": "Account termination",
+          "fields": null
+        },
+        {
+          "name": "food_preference",
+          "description": "User's favorite food",
+          "data_categories": [],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        },
+        {
+          "name": "state",
+          "description": "User's State",
+          "data_categories": ["user.provided.identifiable.contact.state"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        },
+        {
+          "name": "uuid",
+          "description": "User's unique ID",
+          "data_categories": ["user.derived.identifiable.unique_id"],
+          "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+          "retention": null,
+          "fields": null
+        }
+      ]
+    }
+  ]
+}

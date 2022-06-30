@@ -47,7 +47,7 @@ const EditDrawer = ({
     <>
       <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="lg">
         <DrawerOverlay />
-        <DrawerContent>
+        <DrawerContent data-testid="edit-drawer-content">
           <Box py={2}>
             <Box display="flex" justifyContent="flex-end" mr={2}>
               <Button variant="ghost" onClick={onClose}>
