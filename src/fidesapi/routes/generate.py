@@ -10,11 +10,7 @@ from loguru import logger as log
 from pydantic import BaseModel, root_validator
 
 from fidesapi.routes.crud import get_resource
-from fidesapi.routes.util import (
-    API_PREFIX,
-    route_requires_aws_connector,
-    unobscure_aws_config,
-)
+from fidesapi.routes.util import API_PREFIX, route_requires_aws_connector
 from fidesapi.sql_models import sql_model_map
 from fidesctl.connectors.models import (
     AWSConfig,
@@ -114,9 +110,6 @@ async def generate(
     * Okta: Systems
     * Snowflake: Datasets
 
-    All config secrets should be encoded as a minor security precaution, using the
-    `obscure_string` function in `fidesapi.routes.util`
-
     All production deployments should implement HTTPS for security purposes
     """
     organization = await get_resource(
@@ -138,11 +131,10 @@ def generate_aws(
     Returns a list of Systems found in AWS.
     """
     log.info("Setting config for AWS")
-    unobscured_config = unobscure_aws_config(aws_config=aws_config)
     try:
         log.info("Generating systems from AWS")
         aws_systems = generate_aws_systems(
-            organization=organization, aws_config=unobscured_config
+            organization=organization, aws_config=aws_config
         )
     except ConnectorAuthFailureException as error:
         raise HTTPException(

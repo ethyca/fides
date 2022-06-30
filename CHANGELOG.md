@@ -37,6 +37,9 @@ The types of changes are:
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 
+### Changed
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added

@@ -5,19 +5,19 @@ from os import getenv
 import pytest
 from starlette.testclient import TestClient
 
-from fidesapi.routes.util import API_PREFIX, obscure_string
+from fidesapi.routes.util import API_PREFIX
 from fidesapi.routes.validate import ValidateResponse
 from fidesctl.core.config import FidesctlConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
         "region_name": getenv("AWS_DEFAULT_REGION", ""),
-        "aws_access_key_id": obscure_string(getenv("AWS_ACCESS_KEY_ID", "")),
-        "aws_secret_access_key": obscure_string(getenv("AWS_SECRET_ACCESS_KEY", "")),
+        "aws_access_key_id": getenv("AWS_ACCESS_KEY_ID", ""),
+        "aws_secret_access_key": getenv("AWS_SECRET_ACCESS_KEY", ""),
     },
     "okta": {
         "orgUrl": "https://dev-78908748.okta.com",
-        "token": obscure_string(getenv("OKTA_CLIENT_TOKEN", "")),
+        "token": getenv("OKTA_CLIENT_TOKEN", ""),
     },
 }
 
@@ -50,12 +50,12 @@ def test_validate_success(
 EXTERNAL_FAILURE_CONFIG_BODY = {
     "aws": {
         "region_name": getenv("AWS_DEFAULT_REGION", ""),
-        "aws_access_key_id": obscure_string("ILLEGAL_ACCESS_KEY_ID"),
-        "aws_secret_access_key": obscure_string("ILLEGAL_SECRET_ACCESS_KEY_ID"),
+        "aws_access_key_id": "ILLEGAL_ACCESS_KEY_ID",
+        "aws_secret_access_key": "ILLEGAL_SECRET_ACCESS_KEY_ID",
     },
     "okta": {
         "orgUrl": "https://dev-78908748.okta.com",
-        "token": obscure_string("INVALID_TOKEN"),
+        "token": "INVALID_TOKEN",
     },
 }
 
