@@ -3454,7 +3454,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Okta: Systems\n* Snowflake: Datasets\n\nAll config secrets should be encoded as a minor security precaution, using the\n`obscure_string` function in `fidesapi.routes.util`\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Okta: Systems\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate__post",
         "requestBody": {
           "content": {
