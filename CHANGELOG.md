@@ -18,10 +18,21 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
 ### Added
-
+* Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
 * Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
+* CustomInput type "password" with show/hide icon.
+
+### Changed
+* Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+
+### Fixed
+
+* CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+
+### Changed
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
@@ -36,14 +47,14 @@ The types of changes are:
 * A new `generate` endpoint to enable capturing systems from infrastructure from the UI [#642](https://github.com/ethyca/fides/pull/642)
 * A new `datamap` endpoint to enable visualizing a data map from the UI [#721](https://github.com/ethyca/fides/pull/721)
 * Management UI navigation bar [#679](https://github.com/ethyca/fides/issues/679)
-* Management UI integration [#736](https://github.com/ethyca/fides/pull/736) 
+* Management UI integration [#736](https://github.com/ethyca/fides/pull/736)
   * Datasets
   * Systems
   * Taxonomy (data categories)
 * Initial dataset UI view [#768](https://github.com/ethyca/fides/pull/768)
   * Add interaction for viewing a dataset collection
   * Add column picker
-  * Add a data category checklist tree  
+  * Add a data category checklist tree
   * Edit/delete dataset fields
   * Edit/delete dataset collections
   * Edit datasets
