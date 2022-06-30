@@ -66,4 +66,4 @@ jobs:
           working-directory: clients/admin-ui
           install: false
           start: npm run dev
-          wait-on: "https://localhost:3000"
+          wait-on: "http://localhost:3000"
