@@ -1,5 +1,6 @@
 services:
   webserver:
+    container_name: webserver
     build:
       context: .
       dockerfile: Dockerfile.app
