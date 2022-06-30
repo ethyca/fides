@@ -30,6 +30,9 @@ The types of changes are:
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 
+### Changed
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
 ### Added

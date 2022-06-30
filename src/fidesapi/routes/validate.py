@@ -11,8 +11,6 @@ from fidesapi.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_okta_connector,
-    unobscure_aws_config,
-    unobscure_okta_config,
 )
 from fidesctl.connectors.models import (
     AWSConfig,
@@ -104,8 +102,7 @@ async def validate_aws(aws_config: AWSConfig) -> None:
     """
     import fidesctl.connectors.aws as aws_connector
 
-    unobscured_config = unobscure_aws_config(aws_config=aws_config)
-    aws_connector.validate_credentials(aws_config=unobscured_config)
+    aws_connector.validate_credentials(aws_config=aws_config)
 
 
 @route_requires_okta_connector
@@ -116,5 +113,4 @@ async def validate_okta(okta_config: OktaConfig) -> None:
     """
     import fidesctl.connectors.okta as okta_connector
 
-    unobscured_config = unobscure_okta_config(okta_config=okta_config)
-    await okta_connector.validate_credentials(okta_config=unobscured_config)
+    await okta_connector.validate_credentials(okta_config=okta_config)
