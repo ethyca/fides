@@ -1,12 +1,17 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { AppState } from "~/app/store";
+import {
+  DEFAULT_ORGANIZATION_FIDES_KEY,
+  Organization,
+} from "~/features/organization";
 
 import { REVIEW_STEPS, STEPS } from "./constants";
 
 export interface State {
   step: number;
   reviewStep: number;
+  organization?: Organization;
   systemFidesKey: string;
 }
 
@@ -63,14 +68,21 @@ export const slice = createSlice({
         draftState.reviewStep = REVIEW_STEPS - 1;
       }
     },
+    setOrganization: (draftState, action: PayloadAction<Organization>) => {
+      draftState.organization = action.payload;
+    },
     setSystemFidesKey: (draftState, action: PayloadAction<string>) => {
       draftState.systemFidesKey = action.payload;
     },
   },
 });
 
-export const { changeStep, changeReviewStep, setSystemFidesKey } =
-  slice.actions;
+export const {
+  changeStep,
+  changeReviewStep,
+  setSystemFidesKey,
+  setOrganization,
+} = slice.actions;
 
 export const { reducer } = slice;
 
@@ -84,6 +96,11 @@ export const selectStep = createSelector(
 export const selectReviewStep = createSelector(
   selectConfigWizard,
   (state) => state.reviewStep
+);
+
+export const selectOrganizationFidesKey = createSelector(
+  selectConfigWizard,
+  (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY
 );
 
 export const selectSystemFidesKey = createSelector(

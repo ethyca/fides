@@ -17,17 +17,21 @@ import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
+  Organization,
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "~/features/organization";
 
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
-import { changeStep } from "./config-wizard.slice";
+import { changeStep, setOrganization } from "./config-wizard.slice";
 
 const useOrganizationInfoForm = () => {
   const dispatch = useAppDispatch();
-  const handleSuccess = () => dispatch(changeStep());
+  const handleSuccess = (organization: Organization) => {
+    dispatch(setOrganization(organization));
+    dispatch(changeStep());
+  };
 
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
@@ -71,7 +75,7 @@ const useOrganizationInfoForm = () => {
           return;
         }
         toast.closeAll();
-        handleSuccess();
+        handleSuccess(organizationBody);
       } else {
         const updateOrganizationResult = await updateOrganization(
           organizationBody
@@ -92,7 +96,7 @@ const useOrganizationInfoForm = () => {
           return;
         }
         toast.closeAll();
-        handleSuccess();
+        handleSuccess(organizationBody);
       }
 
       setIsLoading(false);
