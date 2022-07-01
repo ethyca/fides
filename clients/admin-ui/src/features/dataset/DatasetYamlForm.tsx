@@ -36,12 +36,11 @@ const DatasetYamlForm = () => {
   ) => {
     const { setErrors } = formikHelpers;
     const parsedYaml = yaml.load(newValues.datasetYaml, { json: true });
-    let dataset: Dataset;
+    let dataset;
     if (isDatasetArray(parsedYaml)) {
       [dataset] = parsedYaml.dataset;
     } else {
-      // cast to a Dataset and let the backend do validation
-      dataset = parsedYaml as Dataset;
+      dataset = parsedYaml;
     }
 
     const result = await createDataset(dataset);

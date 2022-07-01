@@ -54,7 +54,9 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Dataset"],
     }),
-    createDataset: build.mutation<Dataset, Dataset>({
+    // we accept 'unknown' as well since the user can paste anything in, and we rely
+    // on the backend to do the validation for us
+    createDataset: build.mutation<Dataset, Dataset | unknown>({
       query: (dataset) => ({
         url: `dataset/`,
         method: "POST",
