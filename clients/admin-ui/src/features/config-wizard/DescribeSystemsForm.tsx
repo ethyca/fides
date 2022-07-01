@@ -6,6 +6,7 @@ import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 
 import {
   CustomCreatableMultiSelect,
@@ -35,7 +36,7 @@ const DescribeSystemsForm = ({
     description: "",
     fides_key: "",
     name: "",
-    organization_fides_key: "default_organization",
+    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
     tags: [],
     system_type: "",
   };
@@ -45,7 +46,7 @@ const DescribeSystemsForm = ({
       description: values.description,
       fides_key: values.fides_key,
       name: values.name,
-      organization_fides_key: "default_organization",
+      organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       privacy_declarations: [
         {
           name: "string",

@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
+  DEFAULT_ORGANIZATION_FIDES_KEY,
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
@@ -31,7 +32,7 @@ const useOrganizationInfoForm = () => {
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    "default_organization"
+    DEFAULT_ORGANIZATION_FIDES_KEY
   );
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -44,8 +45,8 @@ const useOrganizationInfoForm = () => {
       const organizationBody = {
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
-        fides_key: existingOrg?.fides_key ?? "default_organization",
-        organization_fides_key: "default_organization",
+        fides_key: existingOrg?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY,
+        organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       };
 
       setIsLoading(true);

@@ -142,6 +142,7 @@ const PrivacyDeclarationForm = ({
 
     const systemBodyWithDeclaration = {
       description: existingSystem?.description,
+      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
