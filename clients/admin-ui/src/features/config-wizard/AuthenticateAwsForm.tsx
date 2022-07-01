@@ -13,7 +13,10 @@ import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import { useAppSelector } from "~/app/hooks";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+
+import { selectOrganizationFidesKey } from "./config-wizard.slice";
 import {
   AWS_REGION_OPTIONS,
   DOCS_URL_AWS_PERMISSIONS,
@@ -42,8 +45,8 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const AuthenticateAwsForm = () => {
-  // TODO: The organization key needs to come from the shared wizard state.
-  const organizationKey = "default_organization";
+  const organizationKey = useAppSelector(selectOrganizationFidesKey);
+
   // TODO: These callbacks need to write to some shared wizard state so that that the data  passed
   // through the wizard (in addition to the step number).
   const handleResults: (
