@@ -147,7 +147,14 @@ describe("Dataset", () => {
   describe("Deleting datasets", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/dataset/*").as("putDataset");
-      cy.intercept("DELETE", "/api/v1/dataset/*").as("deleteDataset");
+      cy.fixture("dataset.json").then((dataset) => {
+        cy.intercept("DELETE", "/api/v1/dataset/*", {
+          body: {
+            message: "resource deleted",
+            resource: dataset,
+          },
+        }).as("deleteDataset");
+      });
     });
 
     it("Can delete a field from a dataset", () => {
@@ -182,15 +189,16 @@ describe("Dataset", () => {
       });
     });
 
-    it.only("Can delete a dataset", () => {
+    it("Can delete a dataset", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset").click();
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataset").then((interception) => {
-        console.log({ interception });
+        expect(interception.request.url).to.contain("demo_users_dataset");
       });
+      cy.getByTestId("toast-success-msg");
     });
   });
 });

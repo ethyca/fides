@@ -1,13 +1,13 @@
 import { Text, UseToastOptions } from "@fidesui/react";
 
 const SuccessMessage = ({ message }: { message: string }) => (
-  <Text>
+  <Text data-testid="toast-success-msg">
     <strong>Success:</strong> {message}
   </Text>
 );
 
 const ErrorMessage = ({ message }: { message: string }) => (
-  <Text>
+  <Text data-testid="toast-error-msg">
     <strong>Error:</strong> {message}
   </Text>
 );
