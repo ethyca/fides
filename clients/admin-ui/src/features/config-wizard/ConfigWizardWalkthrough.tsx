@@ -9,7 +9,11 @@ import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
-import { changeStep } from "./config-wizard.slice";
+import {
+  changeStep,
+  selectReviewStep,
+  selectStep,
+} from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
@@ -21,8 +25,8 @@ import ViewYourDataMapPage from "./ViewYourDataMapPage";
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
 
-  const step = useAppSelector((state) => state.configWizard.step);
-  const reviewStep = useAppSelector((state) => state.configWizard.reviewStep);
+  const step = useAppSelector(selectStep);
+  const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
 
   const handleCancelSetup = () => {

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { AppState } from "~/app/store";
 
@@ -74,8 +74,19 @@ export const { changeStep, changeReviewStep, setSystemFidesKey } =
 
 export const { reducer } = slice;
 
-export const selectStep = (state: AppState) => state.configWizard.step;
-export const selectReviewStep = (state: AppState) =>
-  state.configWizard.reviewStep;
-export const selectSystemFidesKey = (state: AppState) =>
-  state.configWizard.systemFidesKey;
+const selectConfigWizard = (state: AppState) => state.configWizard;
+
+export const selectStep = createSelector(
+  selectConfigWizard,
+  (state) => state.step
+);
+
+export const selectReviewStep = createSelector(
+  selectConfigWizard,
+  (state) => state.reviewStep
+);
+
+export const selectSystemFidesKey = createSelector(
+  selectConfigWizard,
+  (state) => state.systemFidesKey
+);
