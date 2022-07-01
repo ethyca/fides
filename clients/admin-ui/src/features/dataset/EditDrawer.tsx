@@ -76,7 +76,7 @@ const EditDrawer = ({
       <ConfirmationModal
         isOpen={deleteIsOpen}
         onClose={onDeleteClose}
-        onDelete={onDelete}
+        onConfirm={onDelete}
         title={deleteTitle}
         message={deleteMessage}
       />
