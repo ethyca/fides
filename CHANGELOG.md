@@ -21,6 +21,7 @@ The types of changes are:
 * Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
+* Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
 * CustomInput type "password" with show/hide icon.
