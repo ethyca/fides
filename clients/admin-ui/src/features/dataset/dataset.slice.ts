@@ -22,6 +22,11 @@ const initialState: State = {
   activeFieldIndex: null,
 };
 
+interface DatasetDeleteResponse {
+  message: string;
+  resource: Dataset;
+}
+
 export const datasetApi = createApi({
   reducerPath: "datasetApi",
   baseQuery: fetchBaseQuery({
@@ -57,6 +62,14 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
+    deleteDataset: build.mutation<DatasetDeleteResponse, FidesKey>({
+      query: (key) => ({
+        url: `dataset/${key}`,
+        params: { resource_type: "dataset" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
   }),
 });
 
@@ -65,6 +78,7 @@ export const {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
   useCreateDatasetMutation,
+  useDeleteDatasetMutation,
 } = datasetApi;
 
 export const datasetSlice = createSlice({
