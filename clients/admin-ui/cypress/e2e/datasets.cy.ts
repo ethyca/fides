@@ -143,4 +143,54 @@ describe("Dataset", () => {
       });
     });
   });
+
+  describe("Deleting datasets", () => {
+    beforeEach(() => {
+      cy.intercept("PUT", "/api/v1/dataset/*").as("putDataset");
+      cy.intercept("DELETE", "/api/v1/dataset/*").as("deleteDataset");
+    });
+
+    it("Can delete a field from a dataset", () => {
+      const fieldName = "uuid";
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId(`field-row-${fieldName}`).click();
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields.length).to.eql(5);
+        expect(
+          body.collections[0].fields.filter((f) => f.name === fieldName).length
+        ).to.eql(0);
+      });
+    });
+
+    it("Can delete a collection from a dataset", () => {
+      const collectionName = "users";
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("collection-select").select(collectionName);
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-collection").click();
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections.length).to.eql(1);
+        expect(
+          body.collections.filter((c) => c.name === collectionName).length
+        ).to.eql(0);
+      });
+    });
+
+    it.only("Can delete a dataset", () => {
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-dataset").click();
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataset").then((interception) => {
+        console.log({ interception });
+      });
+    });
+  });
 });
