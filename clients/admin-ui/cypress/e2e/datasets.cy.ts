@@ -96,10 +96,12 @@ describe("Dataset", () => {
   });
 
   describe("Can edit datasets", () => {
-    it("Can edit dataset fields", () => {
+    beforeEach(() => {
       cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
         "putDataset"
       );
+    });
+    it("Can edit dataset fields", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
@@ -110,6 +112,34 @@ describe("Dataset", () => {
         expect(body.collections[0].fields[5].description).to.eql(
           newDescription
         );
+      });
+    });
+
+    it("Can edit dataset collections", () => {
+      const newDescription = "new collection description";
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("collection-select").select("products");
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-collection").click();
+      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[1].description).to.eql(newDescription);
+      });
+    });
+
+    it("Can edit datasets", () => {
+      const newDescription = "new dataset description";
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("collection-select").select("products");
+      cy.getByTestId("more-actions-btn").click();
+      cy.getByTestId("modify-dataset").click();
+      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.description).to.eql(newDescription);
       });
     });
   });
