@@ -1,5 +1,5 @@
 alembic==1.8.0
-APScheduler==3.8.0
+APScheduler==3.9.1
 boto3~=1.18.14
 celery[pytest]==5.2.7
 click==8.1.3
