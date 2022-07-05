@@ -77,7 +77,9 @@ async def list_okta_applications(okta_client: OktaClient) -> List[OktaApplicatio
     return applications
 
 
-def create_okta_systems(okta_applications: List[OktaApplication]) -> List[System]:
+def create_okta_systems(
+    okta_applications: List[OktaApplication], organization_key: str
+) -> List[System]:
     """
     Returns a list of system objects given a list of Okta applications
     """
@@ -90,6 +92,7 @@ def create_okta_systems(okta_applications: List[OktaApplication]) -> List[System
             ),
             description=f"Fides Generated Description for Okta Application: {application.label}",
             system_type="okta_application",
+            organization_fides_key=organization_key,
             privacy_declarations=[],
         )
         for application in okta_applications
