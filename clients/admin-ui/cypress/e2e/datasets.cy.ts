@@ -33,9 +33,10 @@ describe("Dataset", () => {
       cy.getByTestId("dataset-row-demo_users_dataset").click();
       cy.getByTestId("load-dataset-btn").should("not.be.disabled");
       cy.getByTestId("load-dataset-btn").click();
-      cy.wait("@getDataset");
-      cy.wait("@getDataCategory");
-      cy.url().should("contain", "/dataset/demo_users_dataset");
+      cy.url({ timeout: 10000 }).should(
+        "contain",
+        "/dataset/demo_users_dataset"
+      );
       cy.getByTestId("dataset-fields-table");
     });
   });
