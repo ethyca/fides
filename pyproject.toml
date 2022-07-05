@@ -7,7 +7,6 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 [tool.mypy]
 exclude = ["fidesops.migrations.*"]
 warn_unused_configs = true
-ignore_missing_imports = true
 pretty = true
 plugins = ["pydantic.mypy", "sqlmypy"]
 disallow_untyped_defs = true
@@ -16,6 +15,30 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+  "alembic.*",
+  "apscheduler.*",
+  "boto3.*",
+  "botocore.*",
+  "bson.*",
+  "celery.*",
+  "dask.*",
+  "fideslang.*",
+  "fideslib.*",
+  "fideslog.*",
+  "jose.*",
+  "jwt.*",
+  "multidimensional_urlencode.*",
+  "pandas.*",
+  "pydash.*",
+  "pymongo.*",
+  "snowflake.*",
+  "sqlalchemy_utils.*",
+  "uvicorn.*"
+]
+ignore_missing_imports = true
 
 #######
 # Black

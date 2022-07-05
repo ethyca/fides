@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import pydash
 from requests import Response
@@ -48,7 +48,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
             )
 
         # increment param value and return None if limit has been reached to indicate there are no more pages
-        limit = self.limit
+        limit: Optional[Union[int, ConnectorParamRef]] = self.limit
         if isinstance(self.limit, ConnectorParamRef):
             limit = connector_params.get(self.limit.connector_param)
             if limit is None:
@@ -70,7 +70,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return OffsetPaginationConfiguration
+        return OffsetPaginationConfiguration  # type: ignore
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """Ensures that the query param specified by 'incremental_param' exists in the request"""

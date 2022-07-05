@@ -49,7 +49,7 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return StringRewriteMaskingConfiguration
+        return StringRewriteMaskingConfiguration  # type: ignore
 
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate

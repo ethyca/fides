@@ -104,7 +104,8 @@ class TraversalNode:
         out = {}
         for key, values in input_data.items():
             path: FieldPath = FieldPath.parse(key)
-            field: Field = self.node.collection.field(path)
+            field: Field | None = self.node.collection.field(path)
+
             if field and path in self.query_field_paths and isinstance(values, list):
                 cast_values = [field.cast(v) for v in values]
                 filtered = list(filter(lambda x: x is not None, cast_values))

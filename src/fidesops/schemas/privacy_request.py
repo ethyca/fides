@@ -115,7 +115,7 @@ class RowCountRequest(BaseSchema):
 
 class StoppedCollectionDetails(StoppedCollection):
 
-    collection: Optional[str] = None
+    collection: Optional[str] = None  # type: ignore
 
 
 class PrivacyRequestResponse(BaseSchema):

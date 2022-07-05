@@ -28,14 +28,15 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     ) -> PreparedRequest:
         """Add basic authentication to the request"""
         secrets = connection_config.secrets
+
         request.prepare_auth(
             auth=(
-                assign_placeholders(self.username, secrets),
-                assign_placeholders(self.password, secrets),
+                assign_placeholders(self.username, secrets),  # type: ignore
+                assign_placeholders(self.password, secrets),  # type: ignore
             )
         )
         return request
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return BasicAuthenticationConfiguration
+        return BasicAuthenticationConfiguration  # type: ignore

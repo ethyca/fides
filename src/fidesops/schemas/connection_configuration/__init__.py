@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from fidesops.models.connectionconfig import ConnectionType
 from fidesops.schemas.connection_configuration.connection_secrets import (
@@ -60,7 +60,7 @@ secrets_validators: Dict[str, Any] = {
 
 
 def get_connection_secrets_validator(
-    connection_type: str, saas_config: SaaSConfig
+    connection_type: str, saas_config: Optional[SaaSConfig]
 ) -> ConnectionConfigSecretsSchema:
     """
     Returns a validation schema for the connection "secrets" depending on the connection_type.
@@ -68,6 +68,10 @@ def get_connection_secrets_validator(
     For example, a "postgres" connection_type would need to have its secrets
     validated against a PostgreSQL schema.
     """
+    if connection_type == "saas" and not saas_config:
+        raise ValueError(
+            "A SaaS config to validate the secrets is required for a saas connection"
+        )
     try:
         schema = (
             SaaSSchemaFactory(saas_config).get_saas_schema()

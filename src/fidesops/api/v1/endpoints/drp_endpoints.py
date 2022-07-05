@@ -110,7 +110,7 @@ def create_drp_privacy_request(
         return PrivacyRequestDRPStatusResponse(
             request_id=privacy_request.id,
             received_at=privacy_request.requested_at,
-            status=DrpFidesopsMapper.map_status(privacy_request.status),
+            status=DrpFidesopsMapper.map_status(privacy_request.status),  # type: ignore
         )
 
     except common_exceptions.RedisConnectionError as exc:
@@ -174,7 +174,7 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
 
     logger.info("Fetching available DRP data rights")
     actions: List[DrpAction] = [
-        item.drp_action
+        item.drp_action  # type: ignore
         for item in db.query(Policy.drp_action).filter(Policy.drp_action.isnot(None))
     ]
 
@@ -201,8 +201,7 @@ def revoke_request(
     if privacy_request.status != PrivacyRequestStatus.pending:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid revoke request. Can only revoke `pending` requests. "
-            f"Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Invalid revoke request. Can only revoke `pending` requests. Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     logger.info(f"Canceling privacy request '{privacy_request.id}'")
@@ -211,6 +210,6 @@ def revoke_request(
     return PrivacyRequestDRPStatusResponse(
         request_id=privacy_request.id,
         received_at=privacy_request.requested_at,
-        status=DrpFidesopsMapper.map_status(privacy_request.status),
+        status=DrpFidesopsMapper.map_status(privacy_request.status),  # type: ignore
         reason=data.reason,
     )

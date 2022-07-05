@@ -52,12 +52,12 @@ class MaskingStrategyFactory:
                 f"Strategy '{strategy_name}' does not exist. Valid strategies are [{cls.valid_strategies}]"
             )
         try:
-            strategy_config = strategy.get_configuration_model()(**configuration)
+            strategy_config = strategy.get_configuration_model()(**configuration)  # type: ignore
         except ValidationError as e:
             raise FidesopsValidationError(message=str(e))
-        return strategy(configuration=strategy_config)
+        return strategy(configuration=strategy_config)  # type: ignore
 
     @classmethod
     def get_strategies(cls) -> ValuesView[MaskingStrategy]:
         """Returns all supported masking strategies"""
-        return cls.registry.values()
+        return cls.registry.values()  # type: ignore

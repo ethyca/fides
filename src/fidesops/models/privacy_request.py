@@ -71,7 +71,7 @@ class ManualAction(BaseSchema):
 
     @root_validator
     @classmethod
-    def get_or_update_details(
+    def get_or_update_details(  # type: ignore
         cls: BaseSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that 'get' or 'update' details are supplied."""
@@ -390,7 +390,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
-        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(
+        value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
             prefix
         )
         return list(value_dict.values())[0] if value_dict else None
@@ -405,10 +405,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         # temp fix for circular dependency
         from fidesops.service.connectors import HTTPSConnector, get_connector
 
-        https_connector: HTTPSConnector = get_connector(webhook.connection_config)
+        https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
-            direction=webhook.direction.value,
+            direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
         )
@@ -423,7 +423,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             }
 
         logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
-        response: Optional[SecondPartyResponseFormat] = https_connector.execute(
+        response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
             additional_headers=headers,
@@ -431,7 +431,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         if not response:
             return
 
-        response_body = SecondPartyResponseFormat(**response)
+        response_body = SecondPartyResponseFormat(**response)  # type: ignore
 
         # Cache any new identities
         if response_body.derived_identity and any(

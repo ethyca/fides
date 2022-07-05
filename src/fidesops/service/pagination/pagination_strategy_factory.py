@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import logging
 from enum import Enum
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from pydantic import ValidationError
 
 from fidesops.common_exceptions import NoSuchStrategyException
 from fidesops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
@@ -15,6 +15,10 @@ from fidesops.service.pagination.pagination_strategy_link import LinkPaginationS
 from fidesops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+
+if TYPE_CHECKING:
+    from fidesops.schemas.saas.strategy_configuration import StrategyConfiguration
+    from fidesops.service.pagination.pagination_strategy import PaginationStrategy
 
 logger = logging.getLogger(__name__)
 

@@ -400,9 +400,9 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
         resume_endpoint = PRIVACY_REQUEST_RETRY
 
     if stopped_collection_details:
-        stopped_collection_details.step = stopped_collection_details.step.value
+        stopped_collection_details.step = stopped_collection_details.step.value  # type: ignore
         stopped_collection_details.collection = (
-            stopped_collection_details.collection.value
+            stopped_collection_details.collection.value  # type: ignore
         )
 
     privacy_request.stopped_collection_details = stopped_collection_details
@@ -613,12 +613,12 @@ def resume_privacy_request(
 ) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
-    privacy_request.cache_identity(webhook_callback.derived_identity)
+    privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     logger.info(
@@ -670,7 +670,7 @@ def resume_privacy_request_with_manual_input(
     if privacy_request.status != PrivacyRequestStatus.paused:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "
+            detail=f"Invalid resume request: privacy request '{privacy_request.id}' "  # type: ignore
             f"status = {privacy_request.status.value}. Privacy request is not paused.",
         )
 
@@ -715,7 +715,7 @@ def resume_privacy_request_with_manual_input(
         logger.info(
             f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
         )
-        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)
+        privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
 
     logger.info(
         f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
@@ -811,7 +811,7 @@ def restart_privacy_request_from_failure(
     if privacy_request.status != PrivacyRequestStatus.error:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+            detail=f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
     failed_details: Optional[

@@ -32,7 +32,7 @@ def upload(
     if config.secrets is None and config.type != StorageType.local:
         logger.warning(f"Storage secrets not found: {storage_key}")
         raise StorageUploadError("Storage secrets not found")
-    uploader: Any = _get_uploader_from_config_type(config.type)
+    uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
     return uploader(db, config, data, request_id)
 
 
@@ -59,7 +59,7 @@ def _construct_file_key(request_id: str, config: StorageConfig) -> str:
     if naming != FileNaming.request_id.value:
         raise ValueError(f"File naming of {naming} not supported")
 
-    return f"{request_id}.{get_extension(config.format)}"
+    return f"{request_id}.{get_extension(config.format)}"  # type: ignore
 
 
 def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
@@ -77,7 +77,7 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, request_id
+        config.secrets, data, bucket_name, file_key, config.format.value, request_id  # type: ignore
     )
 
 
@@ -93,6 +93,7 @@ def _onetrust_uploader(
         raise StorageUploadError(
             f"Request could not be found for request_id: {request_id}"
         )
+
     payload_data = {
         "language": "en-us",
         "system": config.details[StorageDetails.SERVICE_NAME.value],
@@ -100,8 +101,8 @@ def _onetrust_uploader(
     }
     return upload_to_onetrust(
         payload_data,
-        config.secrets,
-        request_details.external_id,
+        config.secrets,  # type: ignore
+        request_details.external_id,  # type: ignore
     )
 
 

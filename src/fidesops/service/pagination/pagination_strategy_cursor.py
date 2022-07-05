@@ -54,4 +54,4 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return CursorPaginationConfiguration
+        return CursorPaginationConfiguration  # type: ignore

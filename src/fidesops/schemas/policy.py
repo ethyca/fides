@@ -31,7 +31,7 @@ class RuleTarget(BaseSchema):
 
     name: Optional[str]
     key: Optional[FidesOpsKey]
-    data_category: DataCategory
+    data_category: DataCategory  # type: ignore
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

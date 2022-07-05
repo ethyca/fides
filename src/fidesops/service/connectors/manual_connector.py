@@ -32,7 +32,7 @@ class ManualConnector(BaseConnector[None]):
         """No automated test_connection available for the Manual Connector"""
         return None
 
-    def retrieve_data(
+    def retrieve_data(  # type: ignore
         self,
         node: TraversalNode,
         policy: Policy,
@@ -67,7 +67,7 @@ class ManualConnector(BaseConnector[None]):
             f"Collection '{node.address.value}' waiting on manual data for privacy request '{privacy_request.id}'"
         )
 
-    def mask_data(
+    def mask_data(  # type: ignore
         self,
         node: TraversalNode,
         policy: Policy,

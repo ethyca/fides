@@ -77,16 +77,17 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            FidesopsDataset(**self.dataset), self.connection_config.key
+            FidesopsDataset(**self.dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
             and self.connection_config.saas_config is not None
             and self.connection_config.saas_config["fides_key"] == self.fides_key
         ):
+
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(),
+                self.connection_config.get_saas_config().get_graph(),  # type: ignore
             )
         else:
             logger.debug(
@@ -164,7 +165,7 @@ def to_graph_field(
         name=field.name,
         data_categories=field.data_categories,
         identity=identity,
-        data_type_name=data_type_name,
+        data_type_name=data_type_name,  # type: ignore
         references=references,
         is_pk=is_pk,
         length=length,

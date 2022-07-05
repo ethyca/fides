@@ -70,4 +70,4 @@ class LinkPaginationStrategy(PaginationStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return LinkPaginationConfiguration
+        return LinkPaginationConfiguration  # type: ignore

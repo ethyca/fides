@@ -82,4 +82,4 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return UnwrapPostProcessorConfiguration
+        return UnwrapPostProcessorConfiguration  # type: ignore
