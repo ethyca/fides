@@ -21,17 +21,15 @@ from .commands.util import init, status, webserver
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, init, parse, view, webserver]
+LOCAL_COMMANDS = [evaluate, init, parse, view, webserver, generate, scan]
 API_COMMANDS = [
     annotate,
     apply,
     database,
     delete,
     export,
-    generate,
     get,
     ls,
-    scan,
     status,
     sync,
 ]
