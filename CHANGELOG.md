@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
 ### Added
+* Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
 * Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
@@ -27,10 +28,13 @@ The types of changes are:
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Initial configuration wizard UI view
+  * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+* Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 
 ### Changed
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)

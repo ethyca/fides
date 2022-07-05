@@ -1,16 +1,21 @@
 describe("Dataset", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" });
-    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" });
+    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+      "getDatasets"
+    );
+    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+      "getDataset"
+    );
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_category.json",
-    });
+    }).as("getDataCategory");
   });
 
   describe("List of datasets view", () => {
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
+      cy.wait("@getDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
       cy.url().should("contain", "/dataset");
@@ -23,12 +28,17 @@ describe("Dataset", () => {
 
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
+      cy.wait("@getDatasets");
       cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
       cy.getByTestId("load-dataset-btn").should("not.be.disabled");
       cy.getByTestId("load-dataset-btn").click();
+      // for some reason this is slow in CI, so add a timeout :(
+      cy.url({ timeout: 10000 }).should(
+        "contain",
+        "/dataset/demo_users_dataset"
+      );
       cy.getByTestId("dataset-fields-table");
-      cy.url().should("contain", "/dataset/demo_users_dataset");
     });
   });
 
@@ -48,17 +58,15 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset field with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
+      cy.wait("@getDataCategory");
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-description").should(
         "have.value",
         "User's unique ID"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
-      // cypress has trouble with testid's that have special characters, so put it in quotes and use regular cy.get
-      cy.get(
-        "[data-testid='data-category-user.derived.identifiable.unique_id']"
-      );
+      cy.getByTestId("data-category-user.derived.identifiable.unique_id");
     });
 
     it("Can render an edit form for a dataset collection with existing values", () => {
@@ -66,11 +74,11 @@ describe("Dataset", () => {
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-description").should(
         "have.value",
         "User information"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
 
@@ -79,18 +87,24 @@ describe("Dataset", () => {
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset").click();
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("name-input").should("have.value", "Demo Users Dataset");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
+      cy.getByTestId("input-description").should(
         "have.value",
         "Data collected about users for our analytics system."
       );
-      cy.getByTestId("retention-input").should(
+      cy.getByTestId("input-retention").should(
         "have.value",
         "30 days after account deletion"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
-      cy.getByTestId("geography-input").should("contain", "Canada");
-      cy.getByTestId("geography-input").should("contain", "United Kingdom");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
+      cy.getByTestId("input-third_country_transfers").should(
+        "contain",
+        "Canada"
+      );
+      cy.getByTestId("input-third_country_transfers").should(
+        "contain",
+        "United Kingdom"
+      );
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
   });
@@ -105,7 +119,7 @@ describe("Dataset", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
@@ -121,7 +135,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
@@ -135,7 +149,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;

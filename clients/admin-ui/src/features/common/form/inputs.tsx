@@ -8,6 +8,8 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Textarea,
+  TextareaProps,
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
@@ -20,7 +22,6 @@ interface InputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
-  "data-testid"?: string;
 }
 
 export const CustomTextInput = ({
@@ -29,7 +30,7 @@ export const CustomTextInput = ({
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
-  const { type: initialType, placeholder, "data-testid": dataTestId } = props;
+  const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
 
   const isPassword = initialType === "password";
@@ -50,7 +51,7 @@ export const CustomTextInput = ({
           <InputGroup size="sm" mr="2">
             <Input
               {...field}
-              data-testid={dataTestId}
+              data-testid={`input-${field.name}`}
               type={type}
               placeholder={placeholder}
               pr={isPassword ? "10" : "3"}
@@ -116,7 +117,7 @@ export const CustomSelect = ({
         <Box
           display="flex"
           alignItems="center"
-          data-testid={props["data-testid"]}
+          data-testid={`input-${field.name}`}
         >
           <Select
             options={options}
@@ -176,9 +177,8 @@ export const CustomMultiSelect = ({
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = field.value
-    ? options.filter((o) => field.value.indexOf(o.value) >= 0)
-    : [];
+  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
+
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
   // because field.onChange only accepts strings or events right now, not string[]
   // https://github.com/jaredpalmer/formik/issues/1667
@@ -193,7 +193,7 @@ export const CustomMultiSelect = ({
         <Box
           display="flex"
           alignItems="center"
-          data-testid={props["data-testid"]}
+          data-testid={`input-${field.name}`}
         >
           <Select
             options={options}
@@ -352,6 +352,20 @@ export const CustomCreatableMultiSelect = ({
           }}
         />
       </Grid>
+      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+    </FormControl>
+  );
+};
+
+export const CustomTextArea = ({
+  textAreaProps,
+  ...props
+}: { textAreaProps?: TextareaProps } & FieldHookConfig<string>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Textarea {...field} size="sm" mb={2} {...textAreaProps} />
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
   );

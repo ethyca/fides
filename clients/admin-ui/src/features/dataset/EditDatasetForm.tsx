@@ -34,7 +34,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
     description: values.description ?? "",
     retention: values.retention ?? "",
     data_qualifier: values.data_qualifier,
-    third_country_transfers: values.third_country_transfers,
+    third_country_transfers: values.third_country_transfers ?? [],
     data_categories: values.data_categories,
   };
   const allDataCategories = useSelector(selectDataCategories);
