@@ -22,16 +22,21 @@ const initialState: State = {
   activeFieldIndex: null,
 };
 
+interface DatasetDeleteResponse {
+  message: string;
+  resource: Dataset;
+}
+
 export const datasetApi = createApi({
   reducerPath: "datasetApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Dataset"],
+  tagTypes: ["Dataset", "Datasets"],
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset/` }),
-      providesTags: () => ["Dataset"],
+      providesTags: () => ["Datasets"],
     }),
     getDatasetByKey: build.query<Dataset, FidesKey>({
       query: (key) => ({ url: `dataset/${key}` }),
@@ -49,6 +54,14 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Dataset"],
     }),
+    deleteDataset: build.mutation<DatasetDeleteResponse, FidesKey>({
+      query: (key) => ({
+        url: `dataset/${key}`,
+        params: { resource_type: "dataset" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
   }),
 });
 
@@ -56,6 +69,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useDeleteDatasetMutation,
 } = datasetApi;
 
 export const datasetSlice = createSlice({
