@@ -1,4 +1,5 @@
 """Contains the groups and setup for the CLI."""
+from copy import deepcopy
 from importlib.metadata import version
 from os import getenv
 from platform import system
@@ -21,7 +22,7 @@ from .commands.util import init, status, webserver
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, init, parse, view, webserver, generate, scan]
+LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
 API_COMMANDS = [
     annotate,
     apply,
@@ -107,7 +108,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
 # This is a special section used for auto-generating the CLI docs
 # This has to be done due to the dynamic way in which commands are added for the real CLI group
-cli_docs = cli
-
+cli_docs = deepcopy(cli)
 for cli_command in ALL_COMMANDS:
     cli_docs.add_command(cli_command)

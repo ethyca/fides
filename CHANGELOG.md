@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
 ### Added
+
 * Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
@@ -25,13 +26,16 @@ The types of changes are:
 * CustomInput type "password" with show/hide icon.
 
 ### Changed
+
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
 
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 
 ### Changed
+
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
@@ -90,7 +94,7 @@ The types of changes are:
 
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
-* Dataset UI and config wizard docs added (https://github.com/ethyca/fides/pull/697)
+* Dataset UI and config wizard docs added (<https://github.com/ethyca/fides/pull/697>)
 * The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed
