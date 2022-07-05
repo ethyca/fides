@@ -1,10 +1,14 @@
 describe("Dataset", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" });
-    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" });
+    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+      "getDataset"
+    );
+    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+      "getDatasets"
+    );
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_category.json",
-    });
+    }).as("getDataCategory");
   });
 
   describe("List of datasets view", () => {
@@ -25,6 +29,8 @@ describe("Dataset", () => {
       cy.visit("/dataset");
       cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
+      // add waits to reduce flakiness
+      cy.wait("@getDataset");
       cy.getByTestId("load-dataset-btn").should("not.be.disabled");
       cy.getByTestId("load-dataset-btn").click();
       cy.getByTestId("dataset-fields-table");
@@ -48,6 +54,7 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset field with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
+      cy.wait("@getDataCategory");
       cy.getByTestId("edit-drawer-content");
       cy.getByTestId("input-description").should(
         "have.value",
