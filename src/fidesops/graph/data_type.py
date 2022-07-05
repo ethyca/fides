@@ -107,8 +107,8 @@ class BooleanTypeConverter(DataTypeConverter[bool]):
     def __init__(self) -> None:
         super().__init__(name="boolean", empty_val=False)
 
-    true_vals = {"True", "true", True, 1}
-    false_vals = {"False", "false", False, 0}
+    true_vals = ("True", "true", True, 1)
+    false_vals = ("False", "false", False, 0)
 
     def to_value(self, other: Any) -> Optional[bool]:
         """Convert to bool"""

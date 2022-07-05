@@ -9,19 +9,19 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 from fidesops.models.policy import (
     ActionType,
     Policy,
@@ -846,7 +846,7 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
 
 @pytest.fixture(scope="function")
 def user(db: Session):
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": "test_fidesops_user",
@@ -860,7 +860,7 @@ def user(db: Session):
         user_id=user.id,
     )
 
-    FidesopsUserPermissions.create(
+    FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
 
@@ -1095,9 +1095,9 @@ def sample_data():
 def application_user(
     db,
     oauth_client,
-) -> FidesopsUser:
+) -> FidesUser:
     unique_username = f"user-{uuid4()}"
-    user = FidesopsUser.create(
+    user = FidesUser.create(
         db=db,
         data={
             "username": unique_username,

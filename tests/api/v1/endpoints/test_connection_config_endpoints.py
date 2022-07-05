@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -17,7 +18,6 @@ from fidesops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
@@ -25,7 +25,7 @@ page_size = Params().size
 
 class TestPatchConnections:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + CONNECTIONS
 
     @pytest.fixture(scope="function")
@@ -41,7 +41,7 @@ class TestPatchConnections:
         ]
 
     def test_patch_connections_not_authenticated(
-        self, api_client: TestClient, generate_auth_header, url, payload
+        self, api_client: TestClient, url, payload
     ) -> None:
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
@@ -134,7 +134,7 @@ class TestPatchConnections:
         mongo_resource.delete(db)
 
     def test_patch_connections_bulk_update_key_error(
-        self, url, api_client: TestClient, db: Session, generate_auth_header, payload
+        self, url, api_client: TestClient, generate_auth_header, payload
     ) -> None:
         # Create resources first
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -334,7 +334,7 @@ class TestPatchConnections:
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
 
-    @mock.patch("fidesops.db.base_class.OrmWrappedFidesopsBase.create_or_update")
+    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:

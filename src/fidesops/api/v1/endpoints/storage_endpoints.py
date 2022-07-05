@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session
@@ -31,7 +32,7 @@ from fidesops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError
+from fidesops.common_exceptions import StorageUploadError
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig, get_schema_for_secrets
@@ -75,7 +76,7 @@ def upload_data(
     """
     logger.info(f"Finding privacy request with id '{request_id}'")
 
-    privacy_request = PrivacyRequest.get(db, id=request_id)
+    privacy_request = PrivacyRequest.get(db, object_id=request_id)
     if not privacy_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

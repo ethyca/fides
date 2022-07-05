@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from fideslib.models.client import ClientDetail
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -13,7 +14,6 @@ from fidesops.api.v1.scope_registry import (
 )
 from fidesops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fidesops.common_exceptions import ConnectionException
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionTestStatus
 from fidesops.service.connectors import (
     MongoDBConnector,

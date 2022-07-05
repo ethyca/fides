@@ -45,7 +45,7 @@ def filter_data_categories(
                     for cat, field_paths in data_category_fields[
                         CollectionAddress.from_string(node_address)
                     ].items()
-                    if any([cat.startswith(tar) for tar in target_categories])
+                    if any(cat.startswith(tar) for tar in target_categories)
                 ]
             )
         )

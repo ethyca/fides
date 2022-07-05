@@ -37,7 +37,7 @@ def _hmac_encrypt(
         HmacMaskingConfiguration.Algorithm.sha_512: _hmac_sha512,
     }
 
-    if hashing_algorithm not in algorithm_function_mapping.keys():
+    if hashing_algorithm not in algorithm_function_mapping:
         raise ValueError(f"{hashing_algorithm} is an unsupported hashing_algorithm")
 
     algorithm_function = algorithm_function_mapping[hashing_algorithm]

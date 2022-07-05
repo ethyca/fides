@@ -21,7 +21,7 @@ paused_location = CollectionAddress("test_dataset", "test_collection")
 def test_privacy_request(
     db: Session, policy: Policy, privacy_request: PrivacyRequest
 ) -> None:
-    from_db = PrivacyRequest.get(db=db, id=privacy_request.id)
+    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is not None
     assert from_db.id is not None
     assert from_db.policy.id == policy.id
@@ -78,7 +78,7 @@ def test_update_privacy_requests(db: Session, privacy_requests: PrivacyRequest) 
         },
     )
     assert updated == 1
-    from_db = PrivacyRequest.get(db, id=privacy_request.id)
+    from_db = PrivacyRequest.get(db, object_id=privacy_request.id)
     assert from_db.external_id == NEW_EXTERNAL_ID
 
 
@@ -119,7 +119,7 @@ def test_save_privacy_request(db: Session, privacy_request: PrivacyRequest) -> N
     EXTERNAL_ID = "testing"
     privacy_request.external_id = EXTERNAL_ID
     privacy_request.save(db)
-    from_db = PrivacyRequest.get(db=db, id=privacy_request.id)
+    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db.external_id == EXTERNAL_ID
 
 
@@ -137,7 +137,7 @@ def test_delete_privacy_request(db: Session, policy: Policy) -> None:
         },
     )
     privacy_request.delete(db)
-    from_db = PrivacyRequest.get(db=db, id=privacy_request.id)
+    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
 
 
@@ -169,7 +169,7 @@ def test_delete_privacy_request_removes_cached_data(
     )
     assert cache.get(key) == identity_value
     privacy_request.delete(db)
-    from_db = PrivacyRequest.get(db=db, id=privacy_request.id)
+    from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
     assert cache.get(key) is None
 

@@ -1,9 +1,9 @@
 import random
 from typing import Iterable
 
+from fideslib.db.base_class import FidesBase
 from sqlalchemy.engine import Engine
 
-from fidesops.db.base_class import FidesopsBase
 from fidesops.graph.config import *
 from fidesops.graph.traversal import *
 from fidesops.graph.traversal import Traversal, TraversalNode
@@ -81,7 +81,7 @@ def erasure_policy(*erasure_categories: str) -> Policy:
     return policy
 
 
-def records_matching_fields(records: List[FidesopsBase], **args):
+def records_matching_fields(records: List[FidesBase], **args):
     """records that match parameters passed in from a list of returned records"""
     return [
         record for record in records if all([record[k] == v for k, v in args.items()])

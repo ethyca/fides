@@ -6,6 +6,8 @@ from typing import Callable, Optional
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
+from fideslib.oauth.api.deps import get_db as lib_get_db
+from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
@@ -27,6 +29,7 @@ from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
+from fidesops.util.oauth_util import get_db, verify_oauth_client
 
 logging.basicConfig(level=config.security.LOG_LEVEL)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -112,6 +115,8 @@ def prepare_and_log_request(
 
 
 app.include_router(api_router)
+app.dependency_overrides[lib_get_db] = get_db
+app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
@@ -124,7 +129,9 @@ async def create_webapp_dir_if_not_exists() -> None:
         WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
         if not WEBAPP_INDEX.is_file():
             WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-            with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+            with open(  # pylint: disable=W1514
+                WEBAPP_DIRECTORY / "index.html", "w"
+            ) as index_file:
                 index_file.write("<h1>Privacy is a Human Right!</h1>")
 
         app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")

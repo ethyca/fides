@@ -3,6 +3,8 @@ from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
+from fideslib.models.client import ClientDetail
+from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -36,11 +38,10 @@ from fidesops.common_exceptions import (
     FidesopsException,
     OAuth2TokenException,
 )
+from fidesops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.client import ClientCreatedResponse
-from fidesops.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fidesops.service.authentication.authentication_strategy_factory import get_strategy
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
@@ -75,7 +76,7 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
-    client_detail = ClientDetail.get(db, id=client_id)
+    client_detail = ClientDetail.get(db, object_id=client_id, config=config)
 
     if client_detail is None:
         raise AuthenticationFailure(detail="Authentication Failure")
@@ -84,7 +85,9 @@ async def acquire_access_token(
         raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
-    access_code = client_detail.create_access_code_jwe()
+    access_code = client_detail.create_access_code_jwe(
+        config.security.APP_ENCRYPTION_KEY
+    )
     return AccessToken(access_token=access_code)
 
 
@@ -100,7 +103,7 @@ def create_client(
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials"""
     logging.info("Creating new client")
-    if not all([scope in SCOPE_REGISTRY for scope in scopes]):
+    if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
@@ -108,7 +111,9 @@ def create_client(
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
-        scopes,
+        config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
+        config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        scopes=scopes,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)
 
@@ -119,7 +124,7 @@ def create_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = ClientDetail.get(db, id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return
     logging.info("Deleting client")
@@ -133,7 +138,7 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
 )
 def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
     """Returns a list of the scopes associated with the client. Returns an empty list if client does not exist."""
-    client = ClientDetail.get(db, id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return []
 
@@ -152,7 +157,7 @@ def set_client_scopes(
     db: Session = Depends(get_db),
 ) -> None:
     """Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist"""
-    client = ClientDetail.get(db, id=client_id)
+    client = ClientDetail.get(db, object_id=client_id, config=config)
     if not client:
         return
 

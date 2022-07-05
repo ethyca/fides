@@ -144,7 +144,7 @@ def get_request_status_drp(
     logger.info(f"Finding request for DRP with ID: {request_id}")
     request = PrivacyRequest.get(
         db=db,
-        id=request_id,
+        object_id=request_id,
     )
     if not request or not request.policy or not request.policy.drp_action:
         # If no request is found with this ID, or that request has no policy,

@@ -1,23 +1,14 @@
 import random
-from string import ascii_letters, digits
-from typing import Any, Dict, List
+from string import ascii_letters
+from typing import Dict, List
 
 from faker import Faker
 from sqlalchemy import Boolean, Column, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from fidesops.db.session import ENGINE
-from fidesops.graph.config import (
-    Collection,
-    CollectionAddress,
-    Field,
-    FieldAddress,
-    ScalarField,
-)
+from fidesops.graph.config import CollectionAddress, Field, ScalarField
 from fidesops.graph.data_type import DataType
-from fidesops.graph.graph import BidirectionalEdge, DatasetGraph, Edge
 from fidesops.graph.traversal import Row, Traversal, TraversalNode
-from tests.graph.graph_test_util import field, generate_graph_resources
 
 Base = declarative_base()
 

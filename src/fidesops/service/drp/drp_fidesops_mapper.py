@@ -27,7 +27,7 @@ class DrpFidesopsMapper:
             "phone_number": "phone_number",
         }
         for attr, val in drp_identity.__dict__.items():
-            if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP.keys():
+            if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
                 logger.warning(
                     f"Identity attribute of {attr} is not supported by Fidesops at this time. Continuing to use other identity props, if provided."
                 )

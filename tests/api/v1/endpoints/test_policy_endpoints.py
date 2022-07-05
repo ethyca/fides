@@ -2,6 +2,7 @@ import json
 from uuid import uuid4
 
 import pytest
+from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fidesops.api.v1 import scope_registry as scopes
@@ -14,7 +15,6 @@ from fidesops.api.v1.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fidesops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
@@ -264,7 +264,6 @@ class TestCreatePolicies:
 
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
-
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
@@ -774,7 +773,7 @@ class TestCreateRules:
             == f"Rule with identifier {rule.key} belongs to another policy."
         )
 
-        updated_rule = Rule.get(db=db, id=rule.id)
+        updated_rule = Rule.get(db=db, object_id=rule.id)
         db.expire(updated_rule)
         assert updated_rule.policy_id == policy.id
 
@@ -975,7 +974,7 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
 
-        updated_target = RuleTarget.get(db=db, id=existing_target.id)
+        updated_target = RuleTarget.get(db=db, object_id=existing_target.id)
         db.expire(updated_target)
 
         assert updated_target.data_category == updated_data_category
@@ -1027,7 +1026,7 @@ class TestRuleTargets:
             == f"RuleTarget with identifier {existing_target.key} belongs to another rule."
         )
 
-        updated_target = RuleTarget.get(db=db, id=existing_target.id)
+        updated_target = RuleTarget.get(db=db, object_id=existing_target.id)
         db.expire(updated_target)
         assert updated_target.rule_id == existing_target.rule_id
 

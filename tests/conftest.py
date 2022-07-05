@@ -2,27 +2,28 @@
 
 import json
 import logging
-from typing import Any, Callable, Dict, Generator, List, MutableMapping
+from typing import Any, Callable, Dict, Generator, List
 
 import pytest
 from fastapi.testclient import TestClient
 from fideslib.core.config import load_toml
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.db.session import Session, get_db_engine, get_db_session
+from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.db.session import Session, get_db_engine, get_db_session
 from fidesops.main import app
 from fidesops.models.privacy_request import generate_request_callback_jwe
-from fidesops.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
 from fidesops.tasks.scheduled.scheduler import scheduler
 from fidesops.util.cache import get_cache
-from fidesops.util.oauth_util import generate_jwe
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -65,6 +66,7 @@ def db() -> Generator:
     engine = get_db_engine(
         database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,
     )
+
     logger.debug(f"Configuring database at: {engine.url}")
     if not database_exists(engine.url):
         logger.debug(f"Creating database at: {engine.url}")
@@ -75,7 +77,7 @@ def db() -> Generator:
 
     migrate_test_db()
     scheduler.start()
-    SessionLocal = get_db_session(engine=engine)
+    SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
     # Setup above...
     yield the_session
@@ -122,7 +124,7 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload))
+    jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
     return {"Authorization": "Bearer " + jwe}
 
 
@@ -140,7 +142,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload))
+        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
@@ -156,7 +158,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 
 @pytest.fixture(scope="session")
-def integration_config() -> MutableMapping[str, Any]:
+def integration_config():
     yield load_toml(["fidesops-integration.toml"])
 
 

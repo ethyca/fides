@@ -23,7 +23,7 @@ class SaaSSchema(BaseModel, abc.ABC):
             name for name, attributes in cls.__fields__.items() if attributes.required
         ]
         min_fields_present = all(
-            [values.get(component) for component in required_components]
+            values.get(component) for component in required_components
         )
         if not min_fields_present:
             raise ValueError(

@@ -10,6 +10,7 @@ from typing import Optional, Tuple
 from uuid import uuid4
 
 from alembic import op
+from fideslib.db.base_class import FidesBase
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import LegacyRow
@@ -21,7 +22,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.core.config import config
 from fidesops.db.base import Policy, Rule, RuleTarget, StorageConfig
-from fidesops.db.base_class import FidesopsBase, JSONTypeOverride
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.models.policy import ActionType, DrpAction
 from fidesops.schemas.storage.storage import StorageType
 from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
@@ -106,7 +107,7 @@ delete_rule_query = text("""DELETE FROM rule WHERE policy_id = :policy_id""")
 delete_target_query = text("""DELETE FROM ruletarget WHERE rule_id IN :rule_ids""")
 
 
-def generate_uuid(cls: FidesopsBase) -> str:
+def generate_uuid(cls: FidesBase) -> str:
     """
     Generates a uuid with a prefix based on the tablename to be used as the
     record's ID value

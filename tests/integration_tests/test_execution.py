@@ -2,10 +2,11 @@ import uuid
 from unittest import mock
 
 import pytest
+from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
-from fidesops.db.session import get_db_session
+from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import (
@@ -70,7 +71,6 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -132,7 +132,7 @@ class TestDeleteCollection:
             Delete the mongo connection in a separate session, for testing purposes, while the privacy request
             is in progress. Arbitrarily hooks into the log_start method to do this.
             """
-            SessionLocal = get_db_session()
+            SessionLocal = get_db_session(config)
             new_session = SessionLocal()
             try:
                 reloaded_config = new_session.query(ConnectionConfig).get(
@@ -396,7 +396,7 @@ class TestSkipDisabledCollection:
             in a new session, to mimic the ConnectionConfig being disabled by a separate request while request
             is in progress.
             """
-            SessionLocal = get_db_session()
+            SessionLocal = get_db_session(config)
             new_session = SessionLocal()
             reloaded_config = new_session.query(ConnectionConfig).get(
                 mongo_connection_config.id
@@ -663,11 +663,13 @@ def test_restart_graph_from_failure(
             CollectionAddress(log.dataset_name, log.collection_name).value,
             log.status.value,
         )
-        for log in db.query(ExecutionLog).filter_by(
+        for log in db.query(ExecutionLog)
+        .filter_by(
             privacy_request_id=privacy_request.id,
             dataset_name="mongo_test",
             collection_name="customer_details",
         )
+        .order_by("created_at")
     ]
 
     assert customer_detail_logs == [

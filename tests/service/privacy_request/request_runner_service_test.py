@@ -38,12 +38,11 @@ from fidesops.service.masking.strategy.masking_strategy_factory import (
 )
 from fidesops.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fidesops.service.privacy_request.request_runner_service import (
-    run_privacy_request,
     run_webhooks_and_report_status,
 )
 from fidesops.util.data_category import DataCategory
 
-PRIVACY_REQUEST_TASK_TIMEOUT = 2
+PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 15
 
@@ -108,7 +107,9 @@ def test_halts_proceeding_if_cancelled(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
     db.refresh(privacy_request_status_canceled)
-    reloaded_pr = PrivacyRequest.get(db=db, id=privacy_request_status_canceled.id)
+    reloaded_pr = PrivacyRequest.get(
+        db=db, object_id=privacy_request_status_canceled.id
+    )
     assert reloaded_pr.started_processing_at is None
     assert reloaded_pr.status == PrivacyRequestStatus.canceled
     assert not upload_access_results_mock.called
@@ -241,7 +242,7 @@ def get_privacy_request_results(
         timeout=task_timeout,
     )
 
-    return PrivacyRequest.get(db=db, id=privacy_request.id)
+    return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
 
 @pytest.mark.integration_postgres
@@ -299,7 +300,7 @@ def test_create_and_process_access_request(
     policy.delete(db=db)
     pr.delete(db=db)
     assert not pr in db  # Check that `pr` has been expunged from the session
-    assert ExecutionLog.get(db, id=log_id).privacy_request_id == pr_id
+    assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
 
 
 @pytest.mark.integration

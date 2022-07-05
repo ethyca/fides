@@ -1,4 +1,5 @@
 import pytest
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
@@ -6,7 +7,6 @@ from fidesops.common_exceptions import (
     PolicyValidationError,
     RuleValidationError,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import (
     ActionType,
     Policy,
@@ -67,9 +67,9 @@ def test_delete_policy_cascades(db: Session, policy: Policy) -> None:
     rule = policy.rules[0]
     target = rule.targets[0]
     policy.delete(db=db)
-    assert Rule.get(db=db, id=rule.id) is None
-    assert RuleTarget.get(db=db, id=target.id) is None
-    assert Policy.get(db=db, id=policy.id) is None
+    assert Rule.get(db=db, object_id=rule.id) is None
+    assert RuleTarget.get(db=db, object_id=target.id) is None
+    assert Policy.get(db=db, object_id=policy.id) is None
 
 
 def test_create_erasure_rule_with_destination_is_invalid(
@@ -198,7 +198,7 @@ def test_create_access_rule(
             "storage_destination_id": policy.rules[0].storage_destination.id,
         },
     )
-    assert Rule.get(db=db, id=rule.id) is not None
+    assert Rule.get(db=db, object_id=rule.id) is not None
     rule.delete(db=db)
 
 
@@ -219,7 +219,7 @@ def test_create_erasure_rule(
             },
         },
     )
-    assert Rule.get(db=db, id=rule.id) is not None
+    assert Rule.get(db=db, object_id=rule.id) is not None
     rule.delete(db=db)
 
 
@@ -256,7 +256,7 @@ def test_create_rule_target_valid_data_category(
             "rule_id": policy.rules[0].id,
         },
     )
-    assert RuleTarget.get(db=db, id=target.id) is not None
+    assert RuleTarget.get(db=db, object_id=target.id) is not None
     target.delete(db=db)
 
 

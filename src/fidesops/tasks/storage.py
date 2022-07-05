@@ -121,7 +121,7 @@ def upload_to_s3(  # pylint: disable=R0913
             Key=file_key,
         )
         # todo- move to outbound_urn_registry
-        return "https://%s.s3.amazonaws.com/%s" % (bucket_name, file_key)
+        return f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
     except ClientError as e:
         raise e
     except ParamValidationError as e:
@@ -168,7 +168,7 @@ def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
     data_str: str = encrypt_access_request_results(
         json.dumps(payload, default=_handle_json_encoding), request_id
     )
-    with open(filename, "w") as file:
+    with open(filename, "w") as file:  # pylint: disable=W1514
         file.write(data_str)
 
     return "success"

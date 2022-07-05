@@ -1,20 +1,19 @@
-import psycopg2.errors as db_errors
 import pytest
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fidesops.models.fidesops_user import FidesopsUser
-from fidesops.models.fidesops_user_permissions import FidesopsUserPermissions
 
 
-class TestFidesopsUserPermissions:
+class TestFidesUserPermissions:
     def test_create_user_permissions(self, db: Session) -> None:
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
 
-        permissions: FidesopsUserPermissions = FidesopsUserPermissions.create(
+        permissions: FidesUserPermissions = FidesUserPermissions.create(
             db=db,
             data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]},
         )
@@ -28,7 +27,7 @@ class TestFidesopsUserPermissions:
 
     def test_create_user_permissions_bad_payload(self, db: Session) -> None:
         with pytest.raises(Exception):
-            FidesopsUserPermissions.create(
+            FidesUserPermissions.create(
                 db=db,
                 data={},
             )

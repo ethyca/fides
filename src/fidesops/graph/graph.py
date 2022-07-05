@@ -254,4 +254,4 @@ class DatasetGraph:
         return mapping
 
     def __repr__(self) -> str:
-        return "Graph: nodes = %s" % self.nodes.keys()
+        return f"Graph: nodes = {self.nodes.keys()}"

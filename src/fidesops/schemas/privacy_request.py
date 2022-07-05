@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Dict, List, Optional
 
+from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
 from fidesops.core.config import config
@@ -16,7 +17,6 @@ from fidesops.schemas.base_class import BaseSchema
 from fidesops.schemas.policy import PolicyResponse as PolicySchema
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.shared_schemas import FidesOpsKey
-from fidesops.schemas.user import PrivacyRequestReviewer
 from fidesops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
 

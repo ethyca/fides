@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 from fastapi_pagination import Params
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -20,7 +21,6 @@ from fidesops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.storage.data_upload_location_response import DataUpload
 from fidesops.schemas.storage.storage import (
