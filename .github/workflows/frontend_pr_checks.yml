@@ -40,3 +40,30 @@ jobs:
 
       - name: Build
         run: npm run export
+
+  Admin-UI-Cypress:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: |
+          cd clients/admin-ui
+          npm install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        with:
+          working-directory: clients/admin-ui
+          install: false
+          start: npm run dev
+          wait-on: "http://localhost:3000"

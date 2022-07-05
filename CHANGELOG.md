@@ -21,6 +21,7 @@ The types of changes are:
 ### Added
 * Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
 * Add ability to delete datasets from the UI [#827](https://github.com/ethyca/fides/pull/827)
+* Add Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 
 
 ### Fixed

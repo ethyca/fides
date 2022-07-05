@@ -15,7 +15,9 @@
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
     "export": "next build && next export",
     "copy-export": "rsync -a --delete out/ ../../src/fidesapi/build/static/",
-    "prod-export": "npm run export && npm run copy-export"
+    "prod-export": "npm run export && npm run copy-export",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.8.0",
@@ -55,11 +57,13 @@
     "@typescript-eslint/parser": "^5.12.0",
     "babel-jest": "^27.5.1",
     "cross-env": "^7.0.3",
+    "cypress": "^10.3.0",
     "eslint": "^8.9.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^16.1.0",
     "eslint-config-next": "12.0.8",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
