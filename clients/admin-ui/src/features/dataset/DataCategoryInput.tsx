@@ -145,7 +145,7 @@ const DataCategoryInput = ({
           </Box>
           <QuestionTooltip label={tooltip} />
         </Box>
-        <Stack>
+        <Stack data-testid="selected-categories">
           {sortedCheckedDataCategories.map((dc) => (
             <DataCategoryTag
               key={dc}
