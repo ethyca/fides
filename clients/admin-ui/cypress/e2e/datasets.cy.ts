@@ -25,16 +25,16 @@ describe("Dataset", () => {
       cy.getByTestId("dataset-table");
     });
 
-    it("Can load an individual dataset", () => {
+    it.only("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
-      // add waits to reduce flakiness
-      cy.wait("@getDataset");
       cy.getByTestId("load-dataset-btn").should("not.be.disabled");
       cy.getByTestId("load-dataset-btn").click();
-      cy.getByTestId("dataset-fields-table");
+      // add waits to reduce flakiness
+      cy.wait("@getDataset");
       cy.url().should("contain", "/dataset/demo_users_dataset");
+      cy.getByTestId("dataset-fields-table");
     });
   });
 
