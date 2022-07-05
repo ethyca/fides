@@ -34,7 +34,7 @@ supported_connectors: Dict[str, Any] = {
 def get_connector(conn_config: ConnectionConfig) -> BaseConnector:
     """Return the Connector class corresponding to the connection_type."""
     try:
-        return supported_connectors[conn_config.connection_type.value](conn_config)
+        return supported_connectors[conn_config.connection_type.value](conn_config)  # type: ignore
     except KeyError:
         raise NotImplementedError(
             f"Add {conn_config.connection_type} to the 'supported_connectors' mapping."

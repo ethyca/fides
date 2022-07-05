@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
@@ -41,24 +43,25 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             masking_meta: Dict[
                 SecretType, MaskingSecretMeta
             ] = self._build_masking_secret_meta()
-            key: bytes = SecretsUtil.get_or_generate_secret(
+            key: bytes | None = SecretsUtil.get_or_generate_secret(
                 request_id, SecretType.key, masking_meta[SecretType.key]
             )
-            key_hmac: str = SecretsUtil.get_or_generate_secret(
+            key_hmac: str | None = SecretsUtil.get_or_generate_secret(
                 request_id,
                 SecretType.key_hmac,
                 masking_meta[SecretType.key_hmac],
             )
+
             # The nonce is generated deterministically such that the same input val will result in same nonce
             # and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
             # implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
 
             masked_values: List[str] = []
             for value in values:
-                nonce: bytes = self._generate_nonce(
-                    value, key_hmac, request_id, masking_meta
+                nonce: bytes | None = self._generate_nonce(
+                    value, key_hmac, request_id, masking_meta  # type: ignore
                 )
-                masked: str = encrypt(value, key, nonce)
+                masked: str = encrypt(value, key, nonce)  # type: ignore
                 if self.format_preservation is not None:
                     formatter = FormatPreservation(self.format_preservation)
                     masked = formatter.format(masked)
@@ -79,7 +82,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
         """Used to get the configuration model to configure the strategy"""
-        return AesEncryptionMaskingConfiguration
+        return AesEncryptionMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:
@@ -108,18 +111,18 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def _generate_nonce(
-        value: Optional[str],
+        value: str,
         key: str,
         privacy_request_id: Optional[str],
         masking_meta: Dict[SecretType, MaskingSecretMeta],
     ) -> bytes:
-        salt: str = SecretsUtil.get_or_generate_secret(
+        salt = SecretsUtil.get_or_generate_secret(
             privacy_request_id, SecretType.salt_hmac, masking_meta[SecretType.salt_hmac]
         )
         # Trim to 12 bytes, which is recommended length from aes gcm lib:
         # https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
         return hmac_encrypt_return_bytes(
-            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256
+            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256  # type: ignore
         )[:12]
 
     @staticmethod

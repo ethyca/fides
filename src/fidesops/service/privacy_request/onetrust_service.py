@@ -94,14 +94,14 @@ class OneTrustService:
             identity_kwargs = {"email": request.email}
             identity = PrivacyRequestIdentity(**identity_kwargs)
             fides_task: Optional[OneTrustSubtask] = OneTrustService._get_fides_subtask(
-                hostname, request.requestQueueRefId, access_token
+                hostname, request.requestQueueRefId, access_token  # type: ignore
             )
             if fides_task is None:
                 # no fides task associated with this request
                 continue
             OneTrustService._create_privacy_request(
-                fides_task.subTaskId,
-                request.dateCreated,
+                fides_task.subTaskId,  # type: ignore
+                request.dateCreated,  # type: ignore
                 identity,
                 onetrust_policy,
                 hostname,

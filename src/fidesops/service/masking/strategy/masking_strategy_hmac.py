@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from fidesops.schemas.masking.masking_configuration import (
@@ -49,15 +51,16 @@ class HmacMaskingStrategy(MaskingStrategy):
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
-        key: str = SecretsUtil.get_or_generate_secret(
+        key: str | None = SecretsUtil.get_or_generate_secret(
             request_id, SecretType.key, masking_meta[SecretType.key]
         )
-        salt: str = SecretsUtil.get_or_generate_secret(
+        salt: str | None = SecretsUtil.get_or_generate_secret(
             request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
+
         masked_values: List[str] = []
         for value in values:
-            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)
+            masked: str = hmac_encrypt_return_str(value, key, salt, self.algorithm)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)
@@ -75,7 +78,7 @@ class HmacMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return HmacMaskingConfiguration
+        return HmacMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

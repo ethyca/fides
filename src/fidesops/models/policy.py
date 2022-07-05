@@ -191,7 +191,7 @@ def _validate_rule_target_collection(target_categories: List[str]) -> None:
     for cat in target_categories:
         # Here we check that `cat` is not an ancestor of any other category within `target_categories`
         is_ancestor, ancestor_fides_key = _is_ancestor_of_contained_categories(
-            fides_key=cat,
+            fides_key=cat,  # type: ignore
             data_categories=target_categories,
         )
         if is_ancestor:

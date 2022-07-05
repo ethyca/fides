@@ -56,7 +56,7 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
 
     encrypted_value: str = aes_gcm_encrypt(
         encryption_request.value,
-        encryption_request.key,
+        encryption_request.key,  # type: ignore
         nonce,
     )
     return AesEncryptionResponse(

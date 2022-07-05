@@ -26,11 +26,11 @@ class BearerAuthenticationStrategy(AuthenticationStrategy):
         self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """Add bearer authentication to the request"""
-        request.headers["Authorization"] = "Bearer " + assign_placeholders(
-            self.token, connection_config.secrets
+        request.headers["Authorization"] = "Bearer " + assign_placeholders(  # type: ignore
+            self.token, connection_config.secrets  # type: ignore
         )
         return request
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return BearerAuthenticationConfiguration
+        return BearerAuthenticationConfiguration  # type: ignore

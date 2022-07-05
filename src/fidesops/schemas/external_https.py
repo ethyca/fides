@@ -46,7 +46,7 @@ class SecondPartyResponseFormat(BaseModel):
 class PrivacyRequestResumeFormat(BaseModel):
     """Expected request body to resume a privacy request after it was paused by a webhook"""
 
-    derived_identity: Optional[PrivacyRequestIdentity] = {}
+    derived_identity: Optional[PrivacyRequestIdentity] = {}  # type: ignore
 
     class Config:
         """Using enum values"""

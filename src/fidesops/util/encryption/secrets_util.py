@@ -19,9 +19,9 @@ class SecretsUtil:
         privacy_request_id: Optional[str],
         secret_type: SecretType,
         masking_secret_meta: MaskingSecretMeta[T],
-    ) -> T:
+    ) -> Optional[T]:
         if privacy_request_id is not None:
-            secret: T = SecretsUtil._get_secret_from_cache(
+            secret = SecretsUtil._get_secret_from_cache(
                 privacy_request_id, secret_type, masking_secret_meta
             )
             if not secret:
@@ -40,7 +40,7 @@ class SecretsUtil:
         privacy_request_id: str,
         secret_type: SecretType,
         masking_secret_meta: MaskingSecretMeta[T],
-    ) -> T:
+    ) -> Optional[T]:
         cache = get_cache()
         masking_secret_cache_key: str = get_masking_secret_cache_key(
             privacy_request_id=privacy_request_id,

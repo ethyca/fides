@@ -54,7 +54,7 @@ def run_webhooks_and_report_status(
     Updates privacy request status if execution is paused/errored.
     Returns True if execution should proceed.
     """
-    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)
+    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
 
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
@@ -119,7 +119,7 @@ def upload_access_results(
                 db=session,
                 request_id=privacy_request.id,
                 data=filtered_results,
-                storage_key=rule.storage_destination.key,
+                storage_key=rule.storage_destination.key,  # type: ignore
             )
         except common_exceptions.StorageUploadError as exc:
             logging.error(
@@ -167,7 +167,7 @@ def run_privacy_request(
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks
-        from_step = PausedStep(from_step)
+        from_step = PausedStep(from_step)  # type: ignore
 
     SessionLocal = get_db_session(config)
     with SessionLocal() as session:
@@ -186,7 +186,7 @@ def run_privacy_request(
             proceed = run_webhooks_and_report_status(
                 session,
                 privacy_request=privacy_request,
-                webhook_cls=PolicyPreWebhook,
+                webhook_cls=PolicyPreWebhook,  # type: ignore
                 after_webhook_id=from_webhook_id,
             )
             if not proceed:
@@ -209,7 +209,7 @@ def run_privacy_request(
             connection_configs = ConnectionConfig.all(db=session)
 
             if (
-                not from_step == PausedStep.erasure
+                from_step != PausedStep.erasure
             ):  # Skip if we're resuming from erasure step
                 access_result: Dict[str, List[Row]] = run_access_request(
                     privacy_request=privacy_request,
@@ -257,7 +257,7 @@ def run_privacy_request(
         proceed = run_webhooks_and_report_status(
             db=session,
             privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,
+            webhook_cls=PolicyPostWebhook,  # type: ignore
         )
         if not proceed:
             session.close()

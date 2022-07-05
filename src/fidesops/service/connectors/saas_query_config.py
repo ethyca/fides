@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from typing import Any, Dict, List, Optional, TypeVar
@@ -48,7 +50,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             # store action name for logging purposes
             self.action = action
             collection_name = self.node.address.collection
-            request = self.endpoints[collection_name].requests[action]
+            request = self.endpoints[collection_name].requests[action]  # type: ignore
             logger.info(
                 f"Found matching endpoint to {action} '{collection_name}' collection"
             )
@@ -128,7 +130,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         query statement (select statement, where clause, limit, offset, etc.)
         """
 
-        current_request: SaaSRequest = self.get_request_by_action("read")
+        current_request: SaaSRequest | None = self.get_request_by_action("read")
         if not current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
@@ -152,7 +154,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")
@@ -168,7 +170,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if specified by the body field of the masking request.
         """
 
-        current_request: SaaSRequest = self.get_masking_request()
+        current_request: SaaSRequest = self.get_masking_request()  # type: ignore
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = request.get_cached_identity_data()
@@ -208,7 +210,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values
+            self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
         logger.info(f"Populated request params for {current_request.path}")

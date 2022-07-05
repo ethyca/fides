@@ -84,7 +84,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated"""
 
-    def dry_run_query(self, node: TraversalNode) -> str:
+    def dry_run_query(self, node: TraversalNode) -> Optional[str]:
         """Generate a dry-run query to display action that will be taken"""
         return self.query_config(node).dry_run_query()
 

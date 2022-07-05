@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from requests import PreparedRequest, Request, Response, Session
 
 from fidesops.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fidesops.core.config import config
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.schemas.saas.saas_config import ClientConfig
-from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
+
+if TYPE_CHECKING:
+    from fidesops.models.connectionconfig import ConnectionConfig
+    from fidesops.schemas.saas.saas_config import ClientConfig
+    from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +27,9 @@ class AuthenticatedClient:
         self,
         uri: str,
         configuration: ConnectionConfig,
-        request_client_config: ClientConfig = None,
+        request_client_config: Optional[ClientConfig] = None,
     ):
+        saas_config = configuration.get_saas_config()
         self.configuration = configuration
         self.session = Session()
         self.uri = uri
@@ -32,7 +37,7 @@ class AuthenticatedClient:
         self.client_config = (
             request_client_config
             if request_client_config
-            else configuration.get_saas_config().client_config
+            else saas_config.client_config  # type: ignore
         )
         self.secrets = configuration.secrets
 
@@ -44,7 +49,7 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.service.authentication.authentication_strategy_factory import (
+        from fidesops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

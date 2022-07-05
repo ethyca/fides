@@ -29,12 +29,12 @@ class QueryParamAuthenticationStrategy(AuthenticationStrategy):
     ) -> PreparedRequest:
         """Add token to the request as a query param"""
         request.url = set_query_parameter(
-            request.url,
+            request.url,  # type: ignore
             self.name,
-            assign_placeholders(self.value, connection_config.secrets),
+            assign_placeholders(self.value, connection_config.secrets),  # type: ignore
         )
         return request
 
     @staticmethod
     def get_configuration_model() -> StrategyConfiguration:
-        return QueryParamAuthenticationConfiguration
+        return QueryParamAuthenticationConfiguration  # type: ignore

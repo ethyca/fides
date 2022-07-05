@@ -218,9 +218,11 @@ class DatasetGraph:
                     )
 
         # collect all seed references
-        self.identity_keys: Dict[FieldAddress, SeedAddress] = {
+        self.identity_keys: dict[FieldAddress, SeedAddress] = {
             FieldAddress(
-                node.address.dataset, node.address.collection, *field_path.levels
+                node.address.dataset,
+                node.address.collection,
+                *field_path.levels,
             ): seed_address
             for node in nodes
             for field_path, seed_address in node.collection.identities().items()

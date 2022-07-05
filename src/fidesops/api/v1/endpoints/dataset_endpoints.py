@@ -102,15 +102,14 @@ def validate_dataset(
     try:
         # Attempt to generate a traversal for this dataset by providing an empty
         # dictionary of all unique identity keys
-        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        graph = convert_dataset_to_graph(dataset, connection_config.key)  # type: ignore
 
         # Datasets for SaaS connections need to be merged with a SaaS config to
         # be able to generate a valid traversal
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
             graph = merge_datasets(
-                graph,
-                connection_config.get_saas_config().get_graph(),
+                graph, connection_config.get_saas_config().get_graph()  # type: ignore
             )
         complete_graph = DatasetGraph(graph)
         unique_identities = set(complete_graph.identity_keys.values())
@@ -247,7 +246,7 @@ def create_or_update_dataset(
 ) -> None:
     try:
         if connection_config.connection_type == ConnectionType.saas:
-            _validate_saas_dataset(connection_config, dataset)
+            _validate_saas_dataset(connection_config, dataset)  # type: ignore
         # Try to find an existing DatasetConfig matching the given connection & key
         dataset_config = DatasetConfig.create_or_update(db, data=data)
         created_or_updated.append(dataset_config.dataset)

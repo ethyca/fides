@@ -41,7 +41,7 @@ class NullMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return NullMaskingConfiguration
+        return NullMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

@@ -44,7 +44,7 @@ def get_schema_for_secrets(
         )
 
     try:
-        return schema.parse_obj(secrets)
+        return schema.parse_obj(secrets)  # type: ignore
     except ValidationError as exc:
         # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
         # so this exception is cast into a `ValueError`.
@@ -90,7 +90,7 @@ class StorageConfig(Base):
 
         try:
             get_schema_for_secrets(
-                storage_type=storage_type,
+                storage_type=storage_type,  # type: ignore
                 secrets=storage_secrets,
             )
         except (

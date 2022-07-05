@@ -37,8 +37,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         super().__init__(configuration)
         self.secrets = configuration.secrets
         self.saas_config = configuration.get_saas_config()
-        self.client_config = self.saas_config.client_config
-        self.endpoints = self.saas_config.top_level_endpoint_dict
+        self.client_config = self.saas_config.client_config  # type: ignore
+        self.endpoints = self.saas_config.top_level_endpoint_dict  # type: ignore
         self.collection_name: Optional[str] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
@@ -49,12 +49,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # store collection_name for logging purposes
         self.collection_name = node.address.collection
         return SaaSQueryConfig(
-            node, self.endpoints, self.secrets, self.saas_config.data_protection_request
+            node, self.endpoints, self.secrets, self.saas_config.data_protection_request  # type: ignore
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request: SaaSRequest = self.saas_config.test_request
+        test_request: SaaSRequest = self.saas_config.test_request  # type: ignore
         prepared_request: SaaSRequestParams = SaaSRequestParams(
             method=test_request.method, path=test_request.path
         )
@@ -65,9 +65,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def build_uri(self) -> str:
         """Build base URI for the given connector"""
         host = self.client_config.host
-        return (
-            f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"
-        )
+        return f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"  # type: ignore
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
@@ -95,7 +93,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if saas_request.client_config:
             return self._build_client_with_config(saas_request.client_config)
 
-        return self._build_client_with_config(self.saas_config.client_config)
+        return self._build_client_with_config(self.saas_config.client_config)  # type: ignore
 
     def retrieve_data(
         self,
@@ -105,13 +103,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-
         # generate initial set of requests if read request is defined, otherwise raise an exception
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
             raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}' "
+                f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
                 f"endpoint in {self.saas_config.fides_key}"
             )
         prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
@@ -124,7 +121,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows: List[Row] = []
         for next_request in prepared_requests:
             while next_request:
-                processed_rows, next_request = self.execute_prepared_request(
+                processed_rows, next_request = self.execute_prepared_request(  # type: ignore
                     next_request,
                     privacy_request.get_cached_identity_data(),
                     read_request,
@@ -143,7 +140,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
-        response: Response = client.send(prepared_request, saas_request)
+        response: Response = client.send(prepared_request, saas_request.ignore_errors)
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
 
@@ -151,7 +148,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             response_data,
             identity_data,
-            saas_request.postprocessors,
+            saas_request.postprocessors,  # type: ignore
         )
 
         logger.info(
@@ -166,12 +163,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 saas_request.pagination.configuration,
             )
             next_request = strategy.get_next_request(
-                prepared_request, self.secrets, response, saas_request.data_path
+                prepared_request, self.secrets, response, saas_request.data_path  # type: ignore
             )
 
         if next_request:
             logger.info(
-                f"Using '{saas_request.pagination.strategy}' "
+                f"Using '{saas_request.pagination.strategy}' "  # type: ignore
                 f"pagination strategy to get next page for '{self.collection_name}'."
             )
 
@@ -193,17 +190,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         processed_data = response_data
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = get_postprocessor_strategy(
-                postprocessor.strategy, postprocessor.configuration
+                postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                f"Starting postprocessing of '{self.collection_name}' collection with "
+                f"Starting postprocessing of '{self.collection_name}' collection with "  # type: ignore
                 f"'{postprocessor.strategy}' strategy."
             )
             try:
                 processed_data = strategy.process(processed_data, identity_data)
             except Exception as exc:
                 raise PostProcessingException(
-                    f"Exception occurred during the '{postprocessor.strategy}' postprocessor "
+                    f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
                     f"on the '{self.collection_name}' collection: {exc}"
                 )
         if not processed_data:
@@ -251,7 +248,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             rows,
             privacy_request.get_cached_identity_data(),
-            masking_request.postprocessors,
+            masking_request.postprocessors,  # type: ignore
         )
 
         prepared_requests = [

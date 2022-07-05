@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import List, Optional
 
@@ -246,7 +248,7 @@ def validate_secrets(
         )
 
     try:
-        schema = get_connection_secrets_validator(connection_type.value, saas_config)
+        schema = get_connection_secrets_validator(connection_type.value, saas_config)  # type: ignore
         logger.info(
             f"Validating secrets on connection config with key '{connection_config.key}'"
         )
@@ -266,7 +268,8 @@ def connection_status(
 
     connector = get_connector(connection_config)
     try:
-        status: ConnectionTestStatus = connector.test_connection()
+        status: ConnectionTestStatus | None = connector.test_connection()
+
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",
@@ -282,8 +285,8 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test {status.value} on {connection_config.key}")
-    connection_config.update_test_status(test_status=status, db=db)
+    logger.info(f"Connection test {status.value} on {connection_config.key}")  # type: ignore
+    connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
         msg=msg,

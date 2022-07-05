@@ -71,7 +71,7 @@ class QueryConfig(Generic[T], ABC):
             targeted_field_paths = []
             collection_categories: Dict[
                 str, List[FieldPath]
-            ] = self.node.node.collection.field_paths_by_category
+            ] = self.node.node.collection.field_paths_by_category  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -125,7 +125,7 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
-    def update_value_map(
+    def update_value_map(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
         """Map the relevant field (as strings) to be updated on the row with their masked values from Policy Rules
@@ -162,7 +162,7 @@ class QueryConfig(Generic[T], ABC):
                     masking_override, null_masking, strategy
                 ):
                     logger.warning(
-                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "
+                        f"Unable to generate a query for field {rule_field_path.string_path}: data_type is either not "  # type: ignore
                         f"present on the field or not supported for the {strategy_config['strategy']} masking "
                         f"strategy. Received data type: {masking_override.data_type_converter.name}"
                     )
@@ -210,7 +210,7 @@ class QueryConfig(Generic[T], ABC):
         str_field_path: str,
     ) -> T:
         # masking API takes and returns lists, but here we are only leveraging single elements
-        masked_val = strategy.mask([val], request_id)[0]
+        masked_val = strategy.mask([val], request_id)[0]  # type: ignore
 
         logger.debug(
             f"Generated the following masked val for field {str_field_path}: {masked_val}"
@@ -226,7 +226,7 @@ class QueryConfig(Generic[T], ABC):
                 f"of masked value to match, regardless of masking strategy"
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
-            masked_val = masking_override.data_type_converter.truncate(
+            masked_val = masking_override.data_type_converter.truncate(  # type: ignore
                 masking_override.length, masked_val
             )
         return masked_val
@@ -291,7 +291,7 @@ class ManualQueryConfig(QueryConfig[Executable]):
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> None:
         """Not used for ManualQueryConfig, we output the dry run query as a dictionary instead of a string"""
 
-    def dry_run_query(self) -> Optional[ManualAction]:
+    def dry_run_query(self) -> Optional[ManualAction]:  # type: ignore
         """Displays the ManualAction needed with question marks instead of action data for the locators
         as a dry run query"""
         fake_data: Dict[str, Any] = self.display_query_data()
@@ -718,7 +718,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         return None
 
     def generate_update_stmt(
-        self, row: Row, policy: Policy, request: PrivacyRequest = None
+        self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Optional[MongoStatement]:
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy, request)

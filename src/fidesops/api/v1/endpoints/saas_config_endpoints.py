@@ -85,7 +85,7 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain a SaaS config.",
         )
 
-    authentication = connection_config.get_saas_config().client_config.authentication
+    authentication = saas_config.client_config.authentication
     if not authentication:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -145,7 +145,7 @@ def patch_saas_config(
         f"Updating SaaS config '{saas_config.fides_key}' on connection config '{connection_config.key}'"
     )
     connection_config.update_saas_config(db, saas_config=saas_config)
-    return connection_config.saas_config
+    return connection_config.saas_config  # type: ignore
 
 
 @router.get(
@@ -165,7 +165,7 @@ def get_saas_config(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No SaaS config found for connection '{connection_config.key}'",
         )
-    return connection_config.saas_config
+    return saas_config
 
 
 @router.delete(
@@ -233,11 +233,11 @@ def authorize_connection(
     """Returns the authorization URL for the SaaS Connector (if available)"""
 
     verify_oauth_connection_config(connection_config)
-    authentication = connection_config.get_saas_config().client_config.authentication
+    authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
         auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
-            authentication.strategy, authentication.configuration
+            authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)
     except FidesopsException as exc:

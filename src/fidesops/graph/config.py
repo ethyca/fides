@@ -344,7 +344,7 @@ class ObjectField(Field):
             *[field.collect_matching(func) for field in self.fields.values()]
         )
         return merge_dicts(
-            base,
+            base,  # type: ignore
             {
                 field_path.prepend(self.name): field  # pylint: disable=no-member
                 for field_path, field in child_dicts.items()
@@ -367,7 +367,7 @@ def generate_field(
     data_categories: Optional[List[str]],
     identity: Optional[str],
     data_type_name: str,
-    references: List[Tuple[FieldAddress, EdgeDirection]],
+    references: List[Tuple[FieldAddress, Optional[EdgeDirection]]],
     is_pk: bool,
     length: Optional[int],
     is_array: bool,
@@ -452,7 +452,7 @@ class Collection(BaseModel):
             if field.references
         }
 
-    def identities(self) -> Dict[FieldPath, Tuple[str, ...]]:
+    def identities(self) -> Dict[FieldPath, str]:
         """return identity pointers included in the table"""
         return {
             field_path: field.identity  # type: ignore

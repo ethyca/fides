@@ -146,7 +146,7 @@ class TaskResources:
             f"{self.request.id}__erasure_request"
         )
         # extract request id to return a map of address:value
-        return {k.split("__")[-1]: v for k, v in value_dict.items()}
+        return {k.split("__")[-1]: v for k, v in value_dict.items()}  # type: ignore
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,

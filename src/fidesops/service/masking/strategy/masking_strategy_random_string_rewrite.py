@@ -55,7 +55,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def get_configuration_model() -> MaskingConfiguration:
-        return RandomStringMaskingConfiguration
+        return RandomStringMaskingConfiguration  # type: ignore
 
     @staticmethod
     def get_description() -> MaskingStrategyDescription:

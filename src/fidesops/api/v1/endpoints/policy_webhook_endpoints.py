@@ -139,7 +139,9 @@ def put_webhooks(
     staged_webhook_keys = [webhook.key for webhook in staged_webhooks]
     webhooks_to_remove = getattr(
         policy, f"{webhook_cls.prefix}_execution_webhooks"
-    ).filter(webhook_cls.key.not_in(staged_webhook_keys))
+    ).filter(
+        webhook_cls.key.not_in(staged_webhook_keys)  # type: ignore
+    )
 
     if webhooks_to_remove.count():
         logger.info(
@@ -177,7 +179,7 @@ def create_or_update_pre_execution_webhooks(
     All webhooks must be included in the request in the desired order. Any missing webhooks
     from the request body will be removed.
     """
-    return put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)
+    return put_webhooks(PolicyPreWebhook, policy_key, db, webhooks)  # type: ignore
 
 
 @router.put(
@@ -200,7 +202,7 @@ def create_or_update_post_execution_webhooks(
     All webhooks must be included in the request in the desired order. Any missing webhooks
     from the request body will be removed.
     """
-    return put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)
+    return put_webhooks(PolicyPostWebhook, policy_key, db, webhooks)  # type: ignore
 
 
 def get_policy_webhook_or_error(
@@ -246,7 +248,7 @@ def get_policy_pre_execution_webhook(
     Loads the given Pre-Execution Webhook on the Policy
     """
     policy = get_policy_or_error(db, policy_key)
-    return get_policy_webhook_or_error(db, policy, pre_webhook_key, PolicyPreWebhook)
+    return get_policy_webhook_or_error(db, policy, pre_webhook_key, PolicyPreWebhook)  # type: ignore
 
 
 @router.get(
@@ -265,7 +267,7 @@ def get_policy_post_execution_webhook(
     Loads the given Post-Execution Webhook on the Policy
     """
     policy = get_policy_or_error(db, policy_key)
-    return get_policy_webhook_or_error(db, policy, post_webhook_key, PolicyPostWebhook)
+    return get_policy_webhook_or_error(db, policy, post_webhook_key, PolicyPostWebhook)  # type: ignore
 
 
 def _patch_webhook(
@@ -286,7 +288,7 @@ def _patch_webhook(
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(
-            db, data.get("connection_config_key")
+            db, data.get("connection_config_key")  # type: ignore
         )
         data["connection_config_id"] = connection_config.id
 
@@ -355,7 +357,7 @@ def update_pre_execution_webhook(
         policy_key=policy_key,
         webhook_key=pre_webhook_key,
         webhook_body=webhook_body,
-        webhook_cls=PolicyPreWebhook,
+        webhook_cls=PolicyPreWebhook,  # type: ignore
     )
 
 
@@ -383,7 +385,7 @@ def update_post_execution_webhook(
         policy_key=policy_key,
         webhook_key=post_webhook_key,
         webhook_body=webhook_body,
-        webhook_cls=PolicyPostWebhook,
+        webhook_cls=PolicyPostWebhook,  # type: ignore
     )
 
 
@@ -442,7 +444,7 @@ def delete_pre_execution_webhook(
         db=db,
         policy_key=policy_key,
         webhook_key=pre_webhook_key,
-        webhook_cls=PolicyPreWebhook,
+        webhook_cls=PolicyPreWebhook,  # type: ignore
     )
 
 
@@ -463,5 +465,5 @@ def delete_post_execution_webhook(
         db=db,
         policy_key=policy_key,
         webhook_key=post_webhook_key,
-        webhook_cls=PolicyPostWebhook,
+        webhook_cls=PolicyPostWebhook,  # type: ignore
     )

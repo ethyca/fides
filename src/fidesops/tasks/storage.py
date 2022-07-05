@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -40,7 +42,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(config.security.ENCODING)
 
-    encryption_key: str = cache.get(encryption_cache_key)
+    encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
@@ -106,9 +108,9 @@ def upload_to_s3(  # pylint: disable=R0913
     logger.info(f"Starting S3 Upload of {file_key}")
     try:
         my_session = get_s3_session(
-            aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],
+            aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],  # type: ignore
             aws_secret_access_key=storage_secrets[
-                StorageSecrets.AWS_SECRET_ACCESS_KEY.value
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
             ],
         )
 
@@ -136,10 +138,10 @@ def upload_to_onetrust(
     """Uploads arbitrary data to onetrust returned from an access request"""
     logger.info(f"Starting OneTrust Upload for ref_id {ref_id}")
 
-    onetrust_hostname = storage_secrets[StorageSecrets.ONETRUST_HOSTNAME.value]
+    onetrust_hostname = storage_secrets[StorageSecrets.ONETRUST_HOSTNAME.value]  # type: ignore
     access_token = get_onetrust_access_token(
-        client_id=storage_secrets[StorageSecrets.ONETRUST_CLIENT_ID.value],
-        client_secret=storage_secrets[StorageSecrets.ONETRUST_CLIENT_SECRET.value],
+        client_id=storage_secrets[StorageSecrets.ONETRUST_CLIENT_ID.value],  # type: ignore
+        client_secret=storage_secrets[StorageSecrets.ONETRUST_CLIENT_SECRET.value],  # type: ignore
         hostname=onetrust_hostname,
     )
     headers = {"Authorization": f"Bearer {access_token}"}

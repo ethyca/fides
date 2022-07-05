@@ -206,10 +206,10 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
 
     try:
         authentication = (
-            connection_config.get_saas_config().client_config.authentication
+            connection_config.get_saas_config().client_config.authentication  # type: ignore
         )
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
-            authentication.strategy, authentication.configuration
+        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(  # type: ignore
+            authentication.strategy, authentication.configuration  # type: ignore
         )
         auth_strategy.get_access_token(db, code, connection_config)
     except (OAuth2TokenException, FidesopsException) as exc:
