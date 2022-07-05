@@ -26,6 +26,7 @@ The types of changes are:
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+* Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
