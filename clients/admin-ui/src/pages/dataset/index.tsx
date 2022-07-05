@@ -79,6 +79,7 @@ const DataSets: NextPage = () => {
           colorScheme="primary"
           disabled={!activeDataset}
           onClick={handleLoadDataset}
+          data-testid="load-dataset-btn"
         >
           Load dataset
         </Button>
