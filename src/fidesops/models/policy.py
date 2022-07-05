@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
+from fideslib.db.base_class import Base, FidesBase
+from fideslib.models.client import ClientDetail
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -17,8 +19,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops import common_exceptions
 from fidesops.common_exceptions import WebhookOrderException
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, FidesopsBase, JSONTypeOverride
-from fidesops.models.client import ClientDetail
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
@@ -114,7 +115,7 @@ class Policy(Base):
     )  # Which client created the Policy
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """Overrides base create or update to add custom error for drp action already exists"""
         db_obj = cls.get_by_key_or_id(db=db, data=data)
         if hasattr(cls, "drp_action"):
@@ -126,7 +127,7 @@ class Policy(Base):
             db_obj = cls.create(db=db, data=data)
         return db_obj
 
-    def delete(self, db: Session) -> Optional[FidesopsBase]:
+    def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all rules on deletion of a Policy."""
         _ = [rule.delete(db=db) for rule in self.rules]
         return super().delete(db=db)
@@ -251,7 +252,7 @@ class Rule(Base):
         backref="rules",
     )  # Which client created the Rule
 
-    def save(self, db: Session) -> FidesopsBase:
+    def save(self, db: Session) -> FidesBase:
         """Validate this object's data before deferring to the superclass on save"""
         _validate_rule(
             action_type=self.action_type,
@@ -261,7 +262,7 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """Validate this object's data before deferring to the superclass on update"""
         _validate_rule(
             action_type=data.get("action_type"),
@@ -270,7 +271,7 @@ class Rule(Base):
         )
         return super().create(db=db, data=data)
 
-    def delete(self, db: Session) -> Optional[FidesopsBase]:
+    def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all targets on deletion of a Rule."""
         _ = [target.delete(db=db) for target in self.targets]
         return super().delete(db=db)
@@ -283,16 +284,16 @@ class Rule(Base):
         return [target.data_category for target in self.targets]
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
-        An override of `FidesopsBase.create_or_update` that handles the specific edge case where
+        An override of `FidesBase.create_or_update` that handles the specific edge case where
         a `Rule` getting updated may be having its `policy_id` changed, potentially causing
         `Rule`s to unexpectedly bounce between `Policy`ies.
         """
         db_obj = None
         if data.get("id") is not None:
             # If `id` has been included in `data`, preference that
-            db_obj = cls.get(db=db, id=data["id"])
+            db_obj = cls.get(db=db, object_id=data["id"])
             identifier = data.get("id")
         elif data.get("key") is not None:
             # Otherwise, try with `key`
@@ -353,16 +354,16 @@ class RuleTarget(Base):
     )
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
-        An override of `FidesopsBase.create_or_update` that handles the specific edge case where
+        An override of `FidesBase.create_or_update` that handles the specific edge case where
         a `RuleTarget` getting updated may be having its `rule_id` changed, potentially causing
         `RuleTarget`s to unexpectedly bounce between `Rule`s.
         """
         db_obj = None
         if data.get("id") is not None:
             # If `id` has been included in `data`, preference that
-            db_obj = cls.get(db=db, id=data["id"])
+            db_obj = cls.get(db=db, object_id=data["id"])
             identifier = data.get("id")
         elif data.get("key") is not None:
             # Otherwise, try with `key`
@@ -381,7 +382,7 @@ class RuleTarget(Base):
         return db_obj
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:
@@ -402,7 +403,7 @@ class RuleTarget(Base):
 
         # This database query is necessary since we need to access all Rules and their Targets
         # associated with any given Policy, not just those in the local scope of this object.
-        rule = Rule.get(db=db, id=rule_id)
+        rule = Rule.get(db=db, object_id=rule_id)
         if not rule:
             raise common_exceptions.RuleTargetValidationError(
                 f"Rule with ID {rule_id} does not exist."
@@ -420,13 +421,13 @@ class RuleTarget(Base):
 
         return super().create(db=db, data=data)
 
-    def save(self, db: Session) -> FidesopsBase:
+    def save(self, db: Session) -> FidesBase:
         """Validate data_category on object save."""
         _validate_data_category(data_category=self.data_category)
         _validate_rule_target_name(name=self.name)
         return super().save(db=db)
 
-    def update(self, db: Session, *, data: Dict[str, Any]) -> FidesopsBase:
+    def update(self, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """Validate data_category on object update."""
         updated_data_category = data.get("data_category")
         if data.get("name") is None:

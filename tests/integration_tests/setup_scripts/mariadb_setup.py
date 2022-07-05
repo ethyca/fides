@@ -4,8 +4,9 @@ from uuid import uuid4
 import pydash
 import sqlalchemy
 from fideslib.core.config import load_toml
+from fideslib.db.session import get_db_engine, get_db_session
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -61,6 +62,7 @@ def setup():
 
     engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,

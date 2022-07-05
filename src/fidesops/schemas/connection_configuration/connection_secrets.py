@@ -31,7 +31,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
         Connection configurations either 1) need the entire URL
         *OR* 2) all of the required components to *build* that URL."""
         min_fields_present = values.get("url") or all(
-            [values.get(component) for component in cls._required_components]
+            values.get(component) for component in cls._required_components
         )
         if not min_fields_present:
             raise ValueError(

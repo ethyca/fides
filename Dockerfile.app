@@ -51,7 +51,6 @@ RUN pip install -U pip  \
 
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
 
-
 # Copy in the application files and install it locally
 COPY . /fidesops
 WORKDIR /fidesops

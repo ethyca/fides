@@ -2,8 +2,9 @@ import logging
 from typing import Optional
 
 from apscheduler.jobstores.base import JobLookupError
+from fideslib.db.session import get_db_session
 
-from fidesops.db.session import get_db_session
+from fidesops.core.config import config
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas.shared_schemas import FidesOpsKey
 from fidesops.schemas.storage.storage import StorageDetails, StorageType
@@ -17,7 +18,7 @@ ONETRUST_INTAKE_TASK = "onetrust_intake"
 
 def initiate_scheduled_request_intake() -> None:
     """Initiates scheduler to add request intake tasks"""
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     db = SessionLocal()
     onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="type", value=StorageType.onetrust

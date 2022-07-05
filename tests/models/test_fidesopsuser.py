@@ -1,12 +1,11 @@
 import pytest
+from fideslib.models.fides_user import FidesUser
 from sqlalchemy.orm import Session
 
-from fidesops.models.fidesops_user import FidesopsUser
 
-
-class TestFidesopsUser:
+class TestFidesUser:
     def test_create_user(self, db: Session) -> None:
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
@@ -25,13 +24,13 @@ class TestFidesopsUser:
 
     def test_create_user_bad_payload(self, db: Session) -> None:
         with pytest.raises(KeyError):
-            FidesopsUser.create(
+            FidesUser.create(
                 db=db,
                 data={},
             )
 
     def test_update_user_password(self, db: Session) -> None:
-        user = FidesopsUser.create(
+        user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )

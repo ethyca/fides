@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
 
@@ -78,24 +77,12 @@ class ConnectorNotFoundException(Exception):
     """Connector could not be found"""
 
 
-class KeyOrNameAlreadyExists(Exception):
-    """A resource already exists with this key or name."""
-
-
 class DrpActionValidationError(Exception):
     """A resource already exists with this DRP Action."""
 
 
-class KeyValidationError(Exception):
-    """The resource you're trying to create has a key specified but not a name specified."""
-
-
 class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
-
-
-class AuthenticationException(BaseException):
-    """Custom Exception - Authentication Failed"""
 
 
 class WebhookOrderException(BaseException):
@@ -143,14 +130,6 @@ class NotFoundException(HTTPException):
         super().__init__(status_code=HTTP_404_NOT_FOUND, detail=detail)
 
 
-class AuthorizationError(HTTPException):
-    """Throws an HTTP 403"""
-
-    def __init__(self, detail: str) -> None:
-        """Override the regular HTTPException throwing only a 403"""
-        super().__init__(status_code=HTTP_403_FORBIDDEN, detail=detail)
-
-
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
@@ -160,10 +139,6 @@ class ClientUnsuccessfulException(FidesopsException):
 
 class NoSuchStrategyException(ValueError):
     """Exception for when a masking strategy does not exist"""
-
-
-class MissingConfig(Exception):
-    """Custom exception for when no valid configuration file is provided."""
 
 
 class FunctionalityNotConfigured(Exception):

@@ -51,7 +51,7 @@ Once you've added database tables via project models, you're ready to read, writ
 - Import our application's database session: `from fidesops.db.session import get_db_session`
 - Instantiate the database interaction object:
 ```
-SessionLocal = get_db_session()
+SessionLocal = get_db_session(config)
 db = SessionLocal()
 ```
 - Create a new row in a table:

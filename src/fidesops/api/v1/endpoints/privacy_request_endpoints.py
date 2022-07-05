@@ -11,6 +11,8 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
@@ -49,8 +51,6 @@ from fidesops.core.config import config
 from fidesops.graph.config import CollectionAddress
 from fidesops.graph.graph import DatasetGraph, Node
 from fidesops.graph.traversal import Traversal
-from fidesops.models.audit_log import AuditLog, AuditLogAction
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.models.policy import PausedStep, Policy, PolicyPreWebhook
@@ -97,7 +97,7 @@ def get_privacy_request_or_error(
     """Load the privacy request or throw a 404"""
     logger.info(f"Finding privacy request with id '{privacy_request_id}'")
 
-    privacy_request = PrivacyRequest.get(db, id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(
@@ -551,7 +551,7 @@ def get_request_preview_queries(
             dataset_configs.append(dataset_config)
     try:
         connection_configs: List[ConnectionConfig] = [
-            ConnectionConfig.get(db=db, id=dataset.connection_config_id)
+            ConnectionConfig.get(db=db, object_id=dataset.connection_config_id)
             for dataset in dataset_configs
         ]
 
@@ -846,7 +846,7 @@ def review_privacy_request(
     failed: List[Dict[str, Any]] = []
 
     for request_id in request_ids:
-        privacy_request = PrivacyRequest.get(db, id=request_id)
+        privacy_request = PrivacyRequest.get(db, object_id=request_id)
         if not privacy_request:
             failed.append(
                 {

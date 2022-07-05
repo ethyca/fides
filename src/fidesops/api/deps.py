@@ -1,8 +1,9 @@
 from typing import Generator
 
+from fideslib.db.session import get_db_session
+
 from fidesops.common_exceptions import FunctionalityNotConfigured
 from fidesops.core.config import config
-from fidesops.db.session import get_db_session
 from fidesops.util.cache import get_cache as get_redis_connection
 
 
@@ -13,7 +14,7 @@ def get_db() -> Generator:
             "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
         )
     try:
-        SessionLocal = get_db_session()
+        SessionLocal = get_db_session(config)
         db = SessionLocal()
         yield db
     finally:

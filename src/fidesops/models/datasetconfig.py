@@ -2,12 +2,12 @@ import logging
 from typing import Any, Dict, Optional, Set
 
 from boto3 import Session
+from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from fidesops.db.base_class import Base
 from fidesops.graph.config import (
     Collection,
     CollectionAddress,

@@ -1,33 +1,19 @@
+from __future__ import annotations
+
+from typing import Any
+
 import pytest
+from fideslang.validation import FidesValidationError
+from fideslib.db.base_class import get_key_from_data
+from fideslib.exceptions import KeyValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.common_exceptions import KeyValidationError
-from fidesops.db.base_class import get_key_from_data
 from fidesops.models.storage import StorageConfig
-
-
-def test_get_key_from_data_method() -> None:
-    # Test key in data
-    key = get_key_from_data({"key": "test_key", "name": "config name"}, "StorageConfig")
-    assert key == "test_key"
-
-
-def test_get_key_from_data_method_no_key() -> None:
-    # Test no key
-    key = get_key_from_data({"name": "config name"}, "StorageConfig")
-    assert key == "config_name"
-
-
-def test_get_key_from_data_method_no_data() -> None:
-    # Test no data
-    with pytest.raises(KeyValidationError) as exc:
-        get_key_from_data({}, "StorageConfig")
-    assert str(exc.value) == "StorageConfig requires a name."
 
 
 def test_get_key_from_data_method_invalid_key() -> None:
     # Test key not valid
-    with pytest.raises(ValueError) as exc:
+    with pytest.raises(FidesValidationError) as exc:
         get_key_from_data({"key": "test*key", "name": "config name"}, "StorageConfig")
     assert (
         str(exc.value)
@@ -70,7 +56,7 @@ def test_create_key(db: Session):
 
 def test_update_key(db: Session, storage_config, privacy_request):
     # Test happy path
-    data = {"key": "test_key", "name": "test name"}
+    data: dict[str, Any] = {"key": "test_key", "name": "test name"}
 
     sc = storage_config.update(db, data=data)
     assert sc.key == "test_key"
@@ -113,4 +99,4 @@ def test_save_key(db: Session, storage_config, privacy_request):
     assert hasattr(privacy_request, "key") is False
     privacy_request.status = "complete"
     privacy_request.save(db)
-    assert "complete" == privacy_request.status.value
+    assert "complete" == privacy_request.status.value  # type: ignore

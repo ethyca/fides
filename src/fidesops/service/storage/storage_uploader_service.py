@@ -86,7 +86,9 @@ def _onetrust_uploader(
 ) -> str:
 
     """Constructs necessary info needed for onetrust before calling upload"""
-    request_details: Optional[PrivacyRequest] = PrivacyRequest.get(db, id=request_id)
+    request_details: Optional[PrivacyRequest] = PrivacyRequest.get(
+        db, object_id=request_id
+    )
     if request_details is None:
         raise StorageUploadError(
             f"Request could not be found for request_id: {request_id}"

@@ -1,5 +1,6 @@
 import logging
 
+from fideslib.db.base import Base
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -11,7 +12,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fidesops.core.config import config
-from fidesops.db.base_class import Base, JSONTypeOverride
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,

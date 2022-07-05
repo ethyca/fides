@@ -3,9 +3,10 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fidesops.db.session import get_db_engine, get_db_session
+from fidesops.core.config import config
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -63,6 +64,7 @@ def mssql_integration_session_cls(connection_config_mssql):
     uri = MicrosoftSQLServerConnector(connection_config_mssql).build_uri()
     engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
+        config=config,
         engine=engine,
         autocommit=True,
         autoflush=True,

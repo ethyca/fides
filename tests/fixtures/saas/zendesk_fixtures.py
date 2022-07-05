@@ -6,7 +6,6 @@ import pytest
 from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
-from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -50,7 +49,7 @@ def zendesk_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def zendesk_connection_config(
-    db: session, zendesk_config, zendesk_secrets
+    db: Session, zendesk_config, zendesk_secrets
 ) -> Generator:
     fides_key = zendesk_config["fides_key"]
     connection_config = ConnectionConfig.create(

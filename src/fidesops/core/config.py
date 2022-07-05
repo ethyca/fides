@@ -235,7 +235,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
         else:
             current_config.update({key: value})
 
-    with open(config_path, "w") as config_file:
+    with open(config_path, "w") as config_file:  # pylint: disable=W1514
         toml.dump(current_config, config_file)
 
     logger.info(f"Updated {config_path}:")

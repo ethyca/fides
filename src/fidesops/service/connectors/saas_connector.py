@@ -209,7 +209,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if not processed_data:
             return rows
         if isinstance(processed_data, list):
-            if not all([isinstance(item, dict) for item in processed_data]):
+            if not all(isinstance(item, dict) for item in processed_data):
                 raise PostProcessingException(
                     "The list returned after postprocessing did not contain elements of the same type."
                 )

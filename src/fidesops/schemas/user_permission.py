@@ -1,19 +1,26 @@
 from typing import List
 
 from fastapi import HTTPException
+from fideslib.oauth.schemas.user_permission import (
+    UserPermissionsCreate as UserPermissionsCreateLib,
+)
+from fideslib.oauth.schemas.user_permission import (
+    UserPermissionsEdit as UserPermissionsEditLib,
+)
+from fideslib.oauth.schemas.user_permission import (
+    UserPermissionsResponse as UserPermissionsResponseLib,
+)
 from pydantic import validator
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fidesops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesops.schemas.base_class import BaseSchema
 
 
-class UserPermissionsCreate(BaseSchema):
-    """Data required to create a FidesopsUserPermissions record"""
-
-    scopes: List[str]
+class UserPermissionsCreate(UserPermissionsCreateLib):
+    """Data required to create a FidesUserPermissions record"""
 
     @validator("scopes")
+    @classmethod
     def validate_scopes(cls, scopes: List[str]) -> List[str]:
         """Validates that all incoming scopes are valid"""
         diff = set(scopes).difference(set(SCOPE_REGISTRY))
@@ -25,14 +32,9 @@ class UserPermissionsCreate(BaseSchema):
         return scopes
 
 
-class UserPermissionsEdit(UserPermissionsCreate):
-    """Data required to edit a FidesopsUserPermissions record"""
-
-    id: str
+class UserPermissionsEdit(UserPermissionsEditLib):
+    """Data required to edit a FidesUserPermissions record"""
 
 
-class UserPermissionsResponse(UserPermissionsCreate):
-    """Response after creating, editing, or retrieving a FidesopsUserPermissions record"""
-
-    id: str
-    user_id: str
+class UserPermissionsResponse(UserPermissionsResponseLib):
+    """Response after creating, editing, or retrieving a FidesUserPermissions record"""

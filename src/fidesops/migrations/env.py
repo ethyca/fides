@@ -19,10 +19,11 @@ from sqlalchemy import engine_from_config, pool
 # access to the values within the .ini file in use.
 config = context.config
 
+from fideslib.db.base import Base  # pylint: disable=W0611
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 from fidesops.core.config import config as fides_config
-from fidesops.db.base import Base  # pylint: disable=W0611
 
 # Load the correct environment
 target_metadata = Base.metadata

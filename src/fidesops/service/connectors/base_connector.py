@@ -22,7 +22,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     from fidesops.models.connectionconfig import ConnectionConfig
     from fidesops.service.connectors import get_connector
 
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     db = SessionLocal()
 
     config = db.query(ConnectionConfig).filter_by(key='my_postgres_db').first()

@@ -4,9 +4,9 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 from fideslib.core.config import load_toml
+from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesops.db import session
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,

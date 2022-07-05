@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 
 from celery.utils.log import get_task_logger
+from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -10,7 +11,6 @@ from sqlalchemy.orm import Session
 from fidesops import common_exceptions
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
-from fidesops.db.session import get_db_session
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -58,7 +58,7 @@ def run_webhooks_and_report_status(
 
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
-        pre_webhook = PolicyPreWebhook.get(db=db, id=after_webhook_id)
+        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
         webhooks = webhooks.filter(
             webhook_cls.order > pre_webhook.order,
         )
@@ -169,10 +169,10 @@ def run_privacy_request(
         # can't be passed into and between tasks
         from_step = PausedStep(from_step)
 
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     with SessionLocal() as session:
 
-        privacy_request = PrivacyRequest.get(db=session, id=privacy_request_id)
+        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logging.info(
                 f"Terminating privacy request {privacy_request.id}: request canceled."
@@ -284,9 +284,9 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
 
 def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
-    SessionLocal = get_db_session()
+    SessionLocal = get_db_session(config)
     db = SessionLocal()
-    privacy_request = PrivacyRequest.get(db=db, id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:
         logger.info(
             f"Attempted to mark as expired. No privacy request with id'{privacy_request_id}' found."

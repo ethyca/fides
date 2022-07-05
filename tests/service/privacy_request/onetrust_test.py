@@ -2,14 +2,14 @@ from unittest import mock
 from unittest.mock import Mock, call
 
 import pytest
+from fideslib.exceptions import AuthenticationError
+from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import (
-    AuthenticationException,
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest
 from fidesops.models.storage import StorageConfig
@@ -285,7 +285,7 @@ def test_intake_onetrust_requests_auth_fail(
     mock_subtask_2.subTaskId = "4444"
     mock_get_all_subtasks.side_effect = [[mock_subtask_1], [mock_subtask_2]]
 
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         OneTrustService.intake_onetrust_requests(storage_config_onetrust.key)
 
     pr = PrivacyRequest.get_by(

@@ -5,6 +5,8 @@ from fastapi import APIRouter, Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslib.exceptions import KeyOrNameAlreadyExists
+from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,17 +14,15 @@ from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fidesops.api import deps
-from fidesops.api.v1 import scope_registry as scopes
+from fidesops.api.v1 import scope_registry
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
-    KeyOrNameAlreadyExists,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fidesops.models.client import ClientDetail
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.storage import StorageConfig
 from fidesops.schemas import policy as schemas
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
     urls.POLICY_LIST,
     status_code=HTTP_200_OK,
     response_model=Page[schemas.PolicyResponse],
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.POLICY_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_READ])],
 )
 def get_policy_list(
     *,
@@ -71,7 +71,7 @@ def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
     urls.POLICY_DETAIL,
     status_code=HTTP_200_OK,
     response_model=schemas.PolicyResponse,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.POLICY_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_READ])],
 )
 def get_policy(
     *,
@@ -93,7 +93,7 @@ def create_or_update_policies(
     *,
     client: ClientDetail = Security(
         verify_oauth_client,
-        scopes=[scopes.POLICY_CREATE_OR_UPDATE],
+        scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
     data: conlist(schemas.Policy, max_items=50) = Body(...),  # type: ignore
@@ -156,7 +156,7 @@ def create_or_update_rules(
     *,
     client: ClientDetail = Security(
         verify_oauth_client,
-        scopes=[scopes.RULE_CREATE_OR_UPDATE],
+        scopes=[scope_registry.RULE_CREATE_OR_UPDATE],
     ),
     policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
@@ -259,7 +259,7 @@ def create_or_update_rules(
 @router.delete(
     urls.RULE_DETAIL,
     status_code=HTTP_204_NO_CONTENT,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.RULE_DELETE])],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_DELETE])],
 )
 def delete_rule(
     *,
@@ -295,7 +295,7 @@ def delete_rule(
 def create_or_update_rule_targets(
     *,
     client: ClientDetail = Security(
-        verify_oauth_client, scopes=[scopes.RULE_CREATE_OR_UPDATE]
+        verify_oauth_client, scopes=[scope_registry.RULE_CREATE_OR_UPDATE]
     ),
     policy_key: FidesOpsKey,
     rule_key: FidesOpsKey,
@@ -380,7 +380,7 @@ def create_or_update_rule_targets(
 @router.delete(
     urls.RULE_TARGET_DETAIL,
     status_code=HTTP_204_NO_CONTENT,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.RULE_DELETE])],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_DELETE])],
 )
 def delete_rule_target(
     *,
