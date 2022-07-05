@@ -31,6 +31,7 @@ The types of changes are:
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+* Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 
 ### Changed
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
