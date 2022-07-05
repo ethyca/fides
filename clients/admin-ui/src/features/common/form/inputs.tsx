@@ -22,7 +22,6 @@ interface InputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
-  "data-testid"?: string;
 }
 
 export const CustomTextInput = ({
@@ -31,7 +30,7 @@ export const CustomTextInput = ({
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
-  const { type: initialType, placeholder, "data-testid": dataTestId } = props;
+  const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
 
   const isPassword = initialType === "password";
@@ -52,7 +51,7 @@ export const CustomTextInput = ({
           <InputGroup size="sm" mr="2">
             <Input
               {...field}
-              data-testid={dataTestId}
+              data-testid={`input-${field.name}`}
               type={type}
               placeholder={placeholder}
               pr={isPassword ? "10" : "3"}
@@ -118,7 +117,7 @@ export const CustomSelect = ({
         <Box
           display="flex"
           alignItems="center"
-          data-testid={props["data-testid"]}
+          data-testid={`input-${field.name}`}
         >
           <Select
             options={options}
@@ -194,7 +193,7 @@ export const CustomMultiSelect = ({
         <Box
           display="flex"
           alignItems="center"
-          data-testid={props["data-testid"]}
+          data-testid={`input-${field.name}`}
         >
           <Select
             options={options}

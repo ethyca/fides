@@ -49,11 +49,11 @@ describe("Dataset", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-description").should(
         "have.value",
         "User's unique ID"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
       cy.getByTestId("data-category-user.derived.identifiable.unique_id");
     });
@@ -63,11 +63,11 @@ describe("Dataset", () => {
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-description").should(
         "have.value",
         "User information"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
 
@@ -76,18 +76,24 @@ describe("Dataset", () => {
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset").click();
       cy.getByTestId("edit-drawer-content");
-      cy.getByTestId("name-input").should("have.value", "Demo Users Dataset");
-      cy.getByTestId("description-input").should(
+      cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
+      cy.getByTestId("input-description").should(
         "have.value",
         "Data collected about users for our analytics system."
       );
-      cy.getByTestId("retention-input").should(
+      cy.getByTestId("input-retention").should(
         "have.value",
         "30 days after account deletion"
       );
-      cy.getByTestId("identifiability-input").should("contain", "Identified");
-      cy.getByTestId("geography-input").should("contain", "Canada");
-      cy.getByTestId("geography-input").should("contain", "United Kingdom");
+      cy.getByTestId("input-data_qualifier").should("contain", "Identified");
+      cy.getByTestId("input-third_country_transfers").should(
+        "contain",
+        "Canada"
+      );
+      cy.getByTestId("input-third_country_transfers").should(
+        "contain",
+        "United Kingdom"
+      );
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
   });
@@ -102,7 +108,7 @@ describe("Dataset", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
@@ -118,7 +124,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
@@ -132,7 +138,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("description-input").clear().type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
