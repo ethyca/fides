@@ -22,6 +22,7 @@ The types of changes are:
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+* Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
 
 ### Changed

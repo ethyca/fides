@@ -25,7 +25,7 @@ const DatasetsTable = ({ datasets }: Props) => {
     return <div>Empty state</div>;
   }
   return (
-    <Table size="sm">
+    <Table size="sm" data-testid="dataset-table">
       <Thead>
         <Tr>
           <Th pl={0}>Name</Th>
@@ -51,6 +51,7 @@ const DatasetsTable = ({ datasets }: Props) => {
                 }
               }}
               cursor="pointer"
+              data-testid={`dataset-row-${dataset.fides_key}`}
             >
               <Td pl={0}>{dataset.name}</Td>
               <Td pl={0}>{dataset.fides_key}</Td>
