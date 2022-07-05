@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -290,7 +291,7 @@ def execution_logs_by_dataset_name(
 def _filter_privacy_request_queryset(
     query: Query,
     request_id: Optional[str] = None,
-    status: Optional[PrivacyRequestStatus] = None,
+    status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -302,7 +303,10 @@ def _filter_privacy_request_queryset(
     external_id: Optional[str] = None,
 ) -> Query:
     """
-    Utility method to apply filters to our privacy request query
+    Utility method to apply filters to our privacy request query.
+
+    Status supports "or" filtering:
+    ?status=approved&status=pending will be translated into an "or" query.
     """
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
@@ -336,7 +340,7 @@ def _filter_privacy_request_queryset(
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
     if status:
-        query = query.filter(PrivacyRequest.status == status)
+        query = query.filter(PrivacyRequest.status.in_(status))
     if created_lt:
         query = query.filter(PrivacyRequest.created_at < created_lt)
     if created_gt:
@@ -425,7 +429,9 @@ def get_request_status(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     request_id: Optional[str] = None,
-    status: Optional[PrivacyRequestStatus] = None,
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
+        default=None
+    ),  # type:ignore
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,

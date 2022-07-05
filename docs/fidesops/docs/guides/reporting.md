@@ -71,6 +71,11 @@ Use the following query params to further filter your privacy requests.  Filters
 - errored_lt
 - errored_gt
 
+You can filter for multiple statuses by repeating the status query param:
+
+`GET api/v1/privacy-request?status=paused&status=complete`
+
+
 
 ## View All Privacy Request Logs
 
