@@ -34,7 +34,7 @@ const NewDataset: NextPage = () => {
         </Breadcrumb>
       </Box>
       <Stack spacing={8}>
-        <Box w={["100%", "100%", "50%"]}>
+        <Box w={{ base: "100%", lg: "50%" }}>
           <Text>
             Choose whether to upload a new dataset YAML, connect to a database
             using a connection URL or manually generate a dataset.
@@ -57,7 +57,7 @@ const NewDataset: NextPage = () => {
             Manually generate a dataset
           </Button>
         </Box>
-        <Box w={["100%", "100%", "50%"]}>
+        <Box w={{ base: "100%", lg: "50%" }}>
           {generateMethod === "yaml" ? <DatasetYamlForm /> : null}
         </Box>
       </Stack>
