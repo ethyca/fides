@@ -28,6 +28,8 @@ The types of changes are:
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Initial configuration wizard UI view
+  * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Fixed
 
