@@ -173,6 +173,7 @@ const OrganizationInfoForm = () => {
                 isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
                 w="65%"
+                data-testid="input-name"
               />
               <Tooltip
                 fontSize="md"
@@ -195,6 +196,7 @@ const OrganizationInfoForm = () => {
                 isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"
                 w="65%"
+                data-testid="input-description"
               />
               <Tooltip
                 fontSize="md"
@@ -212,6 +214,7 @@ const OrganizationInfoForm = () => {
           variant="primary"
           isDisabled={!values.name || !values.description}
           isLoading={isLoading}
+          data-testid="submit-btn"
         >
           Save and Continue
         </Button>
