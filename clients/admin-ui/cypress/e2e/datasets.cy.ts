@@ -135,10 +135,7 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
-      // add timeout for CI flakiness :(
-      cy.getByTestId("input-description", { timeout: 6000 })
-        .clear()
-        .type(newDescription);
+      cy.getByTestId("input-description").clear().type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
@@ -151,13 +148,16 @@ describe("Dataset", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("input-description").clear().type(newDescription);
-      cy.getByTestId("save-btn").click({ force: true });
-      cy.wait("@putDataset").then((interception) => {
-        const { body } = interception.request;
-        expect(body.description).to.eql(newDescription);
-      });
+      cy.getByTestId("modify-dataset")
+        .click()
+        .then(() => {
+          cy.getByTestId("input-description").clear().type(newDescription);
+          cy.getByTestId("save-btn").click({ force: true });
+          cy.wait("@putDataset").then((interception) => {
+            const { body } = interception.request;
+            expect(body.description).to.eql(newDescription);
+          });
+        });
     });
   });
 
@@ -177,16 +177,20 @@ describe("Dataset", () => {
     it("Can delete a field from a dataset", () => {
       const fieldName = "uuid";
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId(`field-row-${fieldName}`).click();
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@putDataset").then((interception) => {
-        const { body } = interception.request;
-        expect(body.collections[0].fields.length).to.eql(5);
-        expect(
-          body.collections[0].fields.filter((f) => f.name === fieldName).length
-        ).to.eql(0);
-      });
+      cy.getByTestId(`field-row-${fieldName}`)
+        .click()
+        .then(() => {
+          cy.getByTestId("delete-btn").click();
+          cy.getByTestId("continue-btn").click();
+          cy.wait("@putDataset").then((interception) => {
+            const { body } = interception.request;
+            expect(body.collections[0].fields.length).to.eql(5);
+            expect(
+              body.collections[0].fields.filter((f) => f.name === fieldName)
+                .length
+            ).to.eql(0);
+          });
+        });
     });
 
     it("Can delete a collection from a dataset", () => {
