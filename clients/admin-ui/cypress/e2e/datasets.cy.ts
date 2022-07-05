@@ -1,10 +1,10 @@
 describe("Dataset", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-      "getDataset"
+      "getDatasets"
     );
     cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-      "getDatasets"
+      "getDataset"
     );
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_category.json",
@@ -15,6 +15,7 @@ describe("Dataset", () => {
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
+      cy.wait("@getDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
       cy.url().should("contain", "/dataset");
@@ -27,12 +28,13 @@ describe("Dataset", () => {
 
     it.only("Can load an individual dataset", () => {
       cy.visit("/dataset");
+      cy.wait("@getDatasets");
       cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
       cy.getByTestId("load-dataset-btn").should("not.be.disabled");
       cy.getByTestId("load-dataset-btn").click();
-      // add waits to reduce flakiness
       cy.wait("@getDataset");
+      cy.wait("@getDataCategory");
       cy.url().should("contain", "/dataset/demo_users_dataset");
       cy.getByTestId("dataset-fields-table");
     });
