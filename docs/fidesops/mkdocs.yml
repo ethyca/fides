@@ -56,6 +56,7 @@ nav:
       - Contributing Details: development/contributing_details.md
       - Code Style: development/code_style.md
       - Documentation: development/documentation.md
+      - Fideslog Analytics: development/fideslog.md
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
