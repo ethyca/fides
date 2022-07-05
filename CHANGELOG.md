@@ -23,6 +23,7 @@ The types of changes are:
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
 * CustomInput type "password" with show/hide icon.
+* Add Okta support to generate endpoint
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
