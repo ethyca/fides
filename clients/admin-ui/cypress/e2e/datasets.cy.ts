@@ -55,10 +55,7 @@ describe("Dataset", () => {
       );
       cy.getByTestId("identifiability-input").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
-      // cypress has trouble with testid's that have special characters, so put it in quotes and use regular cy.get
-      cy.get(
-        "[data-testid='data-category-user.derived.identifiable.unique_id']"
-      );
+      cy.getByTestId("data-category-user.derived.identifiable.unique_id");
     });
 
     it("Can render an edit form for a dataset collection with existing values", () => {
