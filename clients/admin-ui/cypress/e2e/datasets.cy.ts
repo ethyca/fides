@@ -135,7 +135,10 @@ describe("Dataset", () => {
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
       cy.getByTestId("modify-collection").click();
-      cy.getByTestId("input-description").clear().type(newDescription);
+      // add timeout for CI flakiness :(
+      cy.getByTestId("input-description", { timeout: 6000 })
+        .clear()
+        .type(newDescription);
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
