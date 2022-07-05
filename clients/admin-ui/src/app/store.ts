@@ -3,10 +3,6 @@ import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
-import {
-  organizationApi,
-  reducer as organizationReducer,
-} from "~/features/config-wizard/organization.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
   dataQualifierApi,
@@ -21,6 +17,10 @@ import {
   reducer as dataUseReducer,
 } from "~/features/data-use/data-use.slice";
 import { datasetApi, reducer as datasetReducer } from "~/features/dataset";
+import {
+  organizationApi,
+  reducer as organizationReducer,
+} from "~/features/organization";
 import { systemApi } from "~/features/system";
 import {
   dataCategoriesApi,

@@ -15,14 +15,14 @@ import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
-
-import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
-import { changeStep } from "./config-wizard.slice";
 import {
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
-} from "./organization.slice";
+} from "~/features/organization";
+
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
+import { changeStep } from "./config-wizard.slice";
 
 const useOrganizationInfoForm = () => {
   const dispatch = useAppDispatch();
