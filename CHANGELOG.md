@@ -35,6 +35,7 @@ The types of changes are:
 ### Docs
 * Updated the tutorial installation to use main in fidesdemo [#715](https://github.com/ethyca/fidesops/pull/715)
 * Added a page on how to use the datastore UI [#742](https://github.com/ethyca/fidesops/pull/742)
+* Added a page on implementing and opting out of fideslog analytics [#751](https://github.com/ethyca/fidesops/pull/751)
 
 ### Fixed
 * Make reading of environment variables case insensitive [712](https://github.com/ethyca/fidesops/pull/712)
