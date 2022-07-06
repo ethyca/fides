@@ -15,6 +15,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { GenerateResponse, GenerateTypes, ValidTargets } from "~/types/api";
 
 import { selectOrganizationFidesKey } from "./config-wizard.slice";
 import {
@@ -23,7 +24,6 @@ import {
   DOCS_URL_IAM_POLICY,
 } from "./constants";
 import { useGenerateMutation } from "./scanner.slice";
-import { ScannerGenerateResponse } from "./types";
 
 // TODO: There should just be a theme/variant for blue links.
 const DocsLink = (props: React.ComponentProps<typeof Link>) => (
@@ -47,10 +47,8 @@ const ValidationSchema = Yup.object().shape({
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
 
-  // TODO: These callbacks need to write to some shared wizard state so that that the data  passed
-  // through the wizard (in addition to the step number).
   const handleResults: (
-    results: ScannerGenerateResponse["generate_results"]
+    results: GenerateResponse["generate_results"]
   ) => void = () => {};
   const handleError: (error: unknown) => void = () => {};
   const handleCancel = () => {};
@@ -62,8 +60,8 @@ const AuthenticateAwsForm = () => {
       organization_key: organizationKey,
       generate: {
         config: values,
-        target: "aws",
-        type: "systems",
+        target: ValidTargets.AWS,
+        type: GenerateTypes.SYSTEMS,
       },
     });
 
