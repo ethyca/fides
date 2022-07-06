@@ -22,7 +22,6 @@ interface InputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
-  "data-testid"?: string;
 }
 
 export const CustomTextInput = ({
