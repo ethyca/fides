@@ -14,12 +14,18 @@ EXTERNAL_CONFIG_BODY = {
         "region_name": getenv("AWS_DEFAULT_REGION", ""),
         "aws_access_key_id": getenv("AWS_ACCESS_KEY_ID", ""),
         "aws_secret_access_key": getenv("AWS_SECRET_ACCESS_KEY", ""),
-    }
+    },
+    "okta": {
+        "orgUrl": "https://dev-78908748.okta.com",
+        "token": getenv("OKTA_CLIENT_TOKEN", ""),
+    },
 }
 
 
 @pytest.mark.external
-@pytest.mark.parametrize("generate_type, generate_target", [("systems", "aws")])
+@pytest.mark.parametrize(
+    "generate_type, generate_target", [("systems", "aws"), ("systems", "okta")]
+)
 def test_generate(
     test_config: FidesctlConfig,
     generate_type: str,

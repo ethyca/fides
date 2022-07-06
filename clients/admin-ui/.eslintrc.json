@@ -23,15 +23,29 @@
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [".tsx"]
+        "extensions": [
+          ".tsx"
+        ]
       }
     ],
-    "react/jsx-props-no-spreading": [0],
+    "react/jsx-props-no-spreading": [
+      0
+    ],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     // since we are using static site export
     "@next/next/no-img-element": "off",
     // since defaultProps are deprecated for function components
-    "react/require-default-props": "off"
+    "react/require-default-props": "off",
+    // Redux Toolkit reducers pass writable drafts for state updates which are cleaner than object spreading.
+    "no-param-reassign": [
+      "error",
+      {
+        "props": true,
+        "ignorePropertyModificationsForRegex": [
+          "^draft"
+        ]
+      }
+    ]
   }
 }

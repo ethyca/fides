@@ -98,7 +98,12 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   return (
     <Box>
       <Box mb={4} display="flex" justifyContent="space-between">
-        <Select onChange={handleChangeCollection} mr={2} width="auto">
+        <Select
+          onChange={handleChangeCollection}
+          mr={2}
+          width="auto"
+          data-testid="collection-select"
+        >
           {collections.map((collection) => (
             <option key={collection.name} value={collection.name}>
               {collection.name}

@@ -33,7 +33,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
 
   return (
     <Box>
-      <Table size="sm">
+      <Table size="sm" data-testid="dataset-fields-table">
         <Thead>
           <Tr>
             {columns.map((c) => (
@@ -56,6 +56,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
                   handleClick(idx);
                 }
               }}
+              data-testid={`field-row-${field.name}`}
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>

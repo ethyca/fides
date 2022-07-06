@@ -24,14 +24,20 @@ The types of changes are:
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+* Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
+* Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Initial configuration wizard UI view
+  * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+* Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
+* Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 
 ### Changed
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
