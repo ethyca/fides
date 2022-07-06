@@ -22,6 +22,7 @@ RUN apt-get update && \
     g++ \
     gnupg \
     gcc \
+    python3-wheel \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,8 +46,6 @@ RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-r
 # Update pip and install requirements
 COPY requirements.txt dev-requirements.txt mssql-requirements.txt ./
 RUN pip install -U pip  \
-    && pip install 'cryptography~=3.4.8' \
-    && pip install snowflake-connector-python --no-use-pep517  \
     && pip install -r requirements.txt -r dev-requirements.txt
 
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip install -U pip -r mssql-requirements.txt ; fi
