@@ -130,14 +130,12 @@ async def generate(
     try:
         if generate_request_payload.generate.target.lower() == "aws":
             generate_results = generate_aws(
-                aws_config=AWSConfig(**generate_request_payload.generate.config.dict()),
+                aws_config=generate_request_payload.generate.config,
                 organization=organization,
             )
         elif generate_request_payload.generate.target.lower() == "db":
             generate_results = generate_db(
                 db_config=generate_request_payload.generate.config,
-                aws_config=generate_request_payload.generate.config,
-                organization=organization,
             )
         elif generate_request_payload.generate.target.lower() == "okta":
             generate_results = await generate_okta(
