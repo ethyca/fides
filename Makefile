@@ -46,6 +46,9 @@ reset-db:
 server: compose-build
 	@docker-compose up
 
+server-with-worker: compose-build
+	@docker-compose -f docker-compose.yml -f docker-compose.worker.yml up
+
 server-no-db: compose-build
 	@docker-compose -f docker-compose.no-db.yml up
 

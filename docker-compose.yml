@@ -5,7 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile.app
     depends_on:
-      - worker
       - db
       - redis
     expose:
@@ -29,6 +28,7 @@ services:
       - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
       - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=False
 
   db:
     image: postgres:12
@@ -58,22 +58,6 @@ services:
       - 6379
     ports:
       - "0.0.0.0:6379:6379"
-
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    command: fidesops worker
-    depends_on:
-      redis:
-        condition: service_started
-    restart: always
-    volumes:
-      - type: bind
-        source: ./
-        target: /fidesops
-        read_only: False
-      - /fidesops/src/fidesops.egg-info
 
   docs:
     build:

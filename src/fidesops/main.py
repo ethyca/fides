@@ -1,4 +1,5 @@
 import logging
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
@@ -178,6 +179,10 @@ def start_webserver() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
+
+    if not config.execution.WORKER_ENABLED:
+        logger.info("Starting worker...")
+        subprocess.Popen(["fidesops", "worker"])
 
     logger.info("Starting web server...")
     uvicorn.run(
