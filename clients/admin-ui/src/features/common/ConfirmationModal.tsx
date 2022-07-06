@@ -13,14 +13,14 @@ import { ReactNode } from "react";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onDelete: () => void;
+  onConfirm: () => void;
   title: string;
   message: ReactNode;
 }
 const ConfirmationModal = ({
   isOpen,
   onClose,
-  onDelete,
+  onConfirm,
   title,
   message,
 }: Props) => (
@@ -34,7 +34,7 @@ const ConfirmationModal = ({
           <Button variant="outline" mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme="primary" onClick={onDelete}>
+          <Button colorScheme="primary" onClick={onConfirm}>
             Continue
           </Button>
         </SimpleGrid>

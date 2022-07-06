@@ -68,6 +68,7 @@ def test_create_okta_systems(okta_list_applications: Generator) -> None:
             fidesctl_meta=SystemMetadata(
                 resource_id="okta_id_1",
             ),
+            organization_fides_key="default_organization",
             description="Fides Generated Description for Okta Application: okta_label_1",
             system_type="okta_application",
             privacy_declarations=[],
@@ -78,13 +79,15 @@ def test_create_okta_systems(okta_list_applications: Generator) -> None:
             fidesctl_meta=SystemMetadata(
                 resource_id="okta_id_2",
             ),
+            organization_fides_key="default_organization",
             description="Fides Generated Description for Okta Application: okta_label_2",
             system_type="okta_application",
             privacy_declarations=[],
         ),
     ]
     okta_systems = okta_connector.create_okta_systems(
-        okta_applications=okta_list_applications
+        okta_applications=okta_list_applications,
+        organization_key="default_organization",
     )
     assert okta_systems == expected_result
 
@@ -102,11 +105,13 @@ def test_create_okta_datasets_filters_inactive(
             ),
             description="Fides Generated Description for Okta Application: okta_label_1",
             system_type="okta_application",
+            organization_fides_key="default_organization",
             privacy_declarations=[],
         ),
     ]
     okta_systems = okta_connector.create_okta_systems(
-        okta_applications=okta_list_applications_with_inactive
+        okta_applications=okta_list_applications_with_inactive,
+        organization_key="default_organization",
     )
     assert okta_systems == expected_result
 

@@ -16,6 +16,7 @@ const ActionItem = ({
   children,
   isDisabled,
   onClick,
+  ...props
 }: {
   children: ReactNode;
   isDisabled?: boolean;
@@ -26,6 +27,7 @@ const ActionItem = ({
     _hover={{ backgroundColor: "gray.100" }}
     fontSize="sm"
     onClick={onClick}
+    {...props}
   >
     {children}
   </MenuItem>
@@ -37,7 +39,7 @@ interface Props {
 }
 const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
   <Menu size="sm">
-    <MenuButton as={Button} variant="outline">
+    <MenuButton as={Button} variant="outline" data-testid="more-actions-btn">
       <More />
     </MenuButton>
     <MenuList>
@@ -49,7 +51,12 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
       >
         <MenuDivider />
         <ActionItem isDisabled>Add a collection</ActionItem>
-        <ActionItem onClick={onModifyCollection}>Modify collection</ActionItem>
+        <ActionItem
+          onClick={onModifyCollection}
+          data-testid="modify-collection"
+        >
+          Modify collection
+        </ActionItem>
       </MenuGroup>
       <MenuGroup
         title="Datasets"
@@ -62,7 +69,9 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
           <NextLink href="/dataset">Select new dataset</NextLink>
         </ActionItem>
         <ActionItem isDisabled>Classify this dataset</ActionItem>
-        <ActionItem onClick={onModifyDataset}>Modify dataset</ActionItem>
+        <ActionItem onClick={onModifyDataset} data-testid="modify-dataset">
+          Modify dataset
+        </ActionItem>
       </MenuGroup>
     </MenuList>
   </Menu>

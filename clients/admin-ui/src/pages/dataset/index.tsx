@@ -71,14 +71,15 @@ const DataSets: NextPage = () => {
         {isLoading ? <Spinner /> : <DatasetsTable datasets={datasets} />}
       </Box>
       <Box>
-        <Button size="sm" mr={2} variant="outline" disabled>
-          Create new dataset
+        <Button size="sm" mr={2} variant="outline">
+          <NextLink href="/dataset/new">Create new dataset</NextLink>
         </Button>
         <Button
           size="sm"
           colorScheme="primary"
           disabled={!activeDataset}
           onClick={handleLoadDataset}
+          data-testid="load-dataset-btn"
         >
           Load dataset
         </Button>

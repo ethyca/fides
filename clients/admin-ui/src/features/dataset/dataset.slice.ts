@@ -22,16 +22,21 @@ const initialState: State = {
   activeFieldIndex: null,
 };
 
+interface DatasetDeleteResponse {
+  message: string;
+  resource: Dataset;
+}
+
 export const datasetApi = createApi({
   reducerPath: "datasetApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Dataset"],
+  tagTypes: ["Dataset", "Datasets"],
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset/` }),
-      providesTags: () => ["Dataset"],
+      providesTags: () => ["Datasets"],
     }),
     getDatasetByKey: build.query<Dataset, FidesKey>({
       query: (key) => ({ url: `dataset/${key}` }),
@@ -49,6 +54,24 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Dataset"],
     }),
+    // we accept 'unknown' as well since the user can paste anything in, and we rely
+    // on the backend to do the validation for us
+    createDataset: build.mutation<Dataset, Dataset | unknown>({
+      query: (dataset) => ({
+        url: `dataset/`,
+        method: "POST",
+        body: dataset,
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
+    deleteDataset: build.mutation<DatasetDeleteResponse, FidesKey>({
+      query: (key) => ({
+        url: `dataset/${key}`,
+        params: { resource_type: "dataset" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
   }),
 });
 
@@ -56,6 +79,8 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useCreateDatasetMutation,
+  useDeleteDatasetMutation,
 } = datasetApi;
 
 export const datasetSlice = createSlice({

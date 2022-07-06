@@ -9,7 +9,7 @@ import {
 
 interface Props {
   activeStep: number | null;
-  setActiveStep: Function;
+  setActiveStep: (step: number) => void;
   steps: { number: number; name: string }[];
 }
 
