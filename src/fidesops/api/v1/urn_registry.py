@@ -63,7 +63,7 @@ POLICY_POST_WEBHOOK_DETAIL = (
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"
-
+CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"

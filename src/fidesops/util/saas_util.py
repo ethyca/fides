@@ -7,6 +7,8 @@ from collections import defaultdict
 from functools import reduce
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import yaml
+from fideslib.core.config import load_file
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fidesops.common_exceptions import FidesopsException
@@ -17,6 +19,13 @@ from fidesops.schemas.saas.shared_schemas import SaaSRequestParams
 logger = logging.getLogger(__name__)
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
+
+
+def load_config(filename: str) -> Dict:
+    """Loads the saas config from the yaml file"""
+    yaml_file = load_file([filename])
+    with open(yaml_file, "r") as file:
+        return yaml.safe_load(file).get("saas_config", [])
 
 
 def merge_fields(target: Field, source: Field) -> Field:

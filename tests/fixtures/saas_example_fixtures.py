@@ -2,7 +2,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-import yaml
 from fideslib.core.config import load_file, load_toml
 from sqlalchemy.orm import Session
 
@@ -15,14 +14,8 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
+from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
-
-
-def load_config(filename: str) -> Dict:
-    yaml_file = load_file([filename])
-    with open(yaml_file, "r") as file:
-        return yaml.safe_load(file).get("saas_config", [])
-
 
 saas_config = load_toml(["saas_config.toml"])
 
