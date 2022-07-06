@@ -57,9 +57,11 @@ describe("Dataset", () => {
 
     it("Can render an edit form for a dataset field with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("field-row-uuid").click();
-      cy.wait("@getDataCategory");
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("field-row-uuid")
+        .click()
+        .then(() => {
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-description").should(
         "have.value",
         "User's unique ID"
@@ -72,8 +74,11 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset collection with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-collection").click();
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("modify-collection")
+        .click()
+        .then(() => {
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-description").should(
         "have.value",
         "User information"
@@ -85,8 +90,11 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("modify-dataset")
+        .click()
+        .then(() => {
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
       cy.getByTestId("input-description").should(
         "have.value",
