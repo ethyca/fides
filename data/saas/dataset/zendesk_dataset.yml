@@ -8,6 +8,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: integer
           - name: url
             data_categories: [system.operations]
@@ -149,6 +150,10 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: boolean
+          - name: user_fields
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
       - name: user_identities
         fields:
           - name: url
@@ -204,6 +209,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: integer
           - name: external_id
             data_categories: [system.operations]
@@ -427,5 +433,9 @@ dataset:
                       data_type: string
                   - name: longitude
                     data_categories: [user.derived.identifiable.location]
+                    fidesops_meta:
+                      data_type: string
+                  - name: custom
+                    data_categories: [system.operations]
                     fidesops_meta:
                       data_type: string
