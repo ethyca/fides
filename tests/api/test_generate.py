@@ -27,7 +27,8 @@ EXTERNAL_CONFIG_BODY = {
 
 @pytest.mark.external
 @pytest.mark.parametrize(
-    "generate_type, generate_target", [("systems", "aws"), ("systems", "okta"), ("datasets", "db")]
+    "generate_type, generate_target",
+    [("systems", "aws"), ("systems", "okta"), ("datasets", "db")],
 )
 def test_generate(
     test_config: FidesctlConfig,

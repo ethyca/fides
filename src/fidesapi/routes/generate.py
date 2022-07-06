@@ -63,7 +63,11 @@ class Generate(BaseModel):
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
         target_type = (values.get("target"), values.get("type"))
-        valid_target_types = [("aws", "systems"), ("okta", "systems"), ("db", "datasets")]
+        valid_target_types = [
+            ("aws", "systems"),
+            ("okta", "systems"),
+            ("db", "datasets"),
+        ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
         return values
@@ -160,6 +164,7 @@ def generate_aws(
 
     return [i.dict(exclude_none=True) for i in aws_systems]
 
+
 @route_requires_okta_connector
 async def generate_okta(
     okta_config: OktaConfig, organization: Organization
@@ -172,6 +177,7 @@ async def generate_okta(
         organization=organization, okta_config=okta_config
     )
     return [i.dict(exclude_none=True) for i in okta_systems]
+
 
 def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     """
