@@ -319,6 +319,7 @@ class TestGetSaaSConfig:
             == saas_example_connection_config.get_saas_config().fides_key
         )
         assert len(response_body["endpoints"]) == 7
+        assert response_body["type"] == "custom"
 
 
 @pytest.mark.unit_saas

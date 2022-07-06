@@ -92,7 +92,7 @@ Some common Alembic commands are listed below. For a comprehensive guide see: ht
 
 The commands will need to be run inside a shell on your Docker containers, which can be opened with `make server-shell`.
 
-In the `/src` directory:
+In the `/src/fidesops` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
 - Get revision id of previous migration: `alembic current`

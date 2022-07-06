@@ -7,7 +7,6 @@ from fidesops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.schemas.saas import saas_config
 from fidesops.schemas.saas.saas_config import SaaSConfig
 from fidesops.util.text import to_snake_case
 
@@ -140,3 +139,10 @@ class TestConnectionConfigModel:
         # does not override any user-defined values
         connection_config.update_saas_config(db, saas_config=saas_config)
         assert connection_config.secrets["domain"] == saas_example_secrets["domain"]
+
+    def test_default_value_saas_config_invalid_type(
+        self, db, saas_example_config, saas_example_secrets
+    ):
+        saas_example_config["type"] = "invalid"
+        with pytest.raises(ValueError):
+            SaaSConfig(**saas_example_config)

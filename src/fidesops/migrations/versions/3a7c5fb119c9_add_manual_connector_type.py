@@ -16,7 +16,17 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("alter type connectiontype add value 'manual'")
+    op.execute("alter type connectiontype rename to connectiontype_old")
+    op.execute(
+        "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', 'snowflake', 'redshift', 'mssql', 'mariadb', 'bigquery', 'saas', 'manual')"
+    )
+    op.execute(
+        (
+            "alter table connectionconfig alter column connection_type type connectiontype using "
+            "connection_type::text::connectiontype"
+        )
+    )
+    op.execute("drop type connectiontype_old")
     op.execute("alter type executionlogstatus add value 'paused'")
 
 

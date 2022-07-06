@@ -1,6 +1,7 @@
 saas_config:
   fides_key: zendesk_connector_example
   name: Zendesk SaaS Config
+  type: zendesk
   description: A sample schema representing the Zendesk connector for Fidesops
   version: 0.0.1
 

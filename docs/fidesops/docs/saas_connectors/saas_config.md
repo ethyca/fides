@@ -20,6 +20,7 @@ The following is an example SaaS config for Mailchimp:
 saas_config:
   fides_key: mailchimp_connector_example
   name: Mailchimp SaaS Config
+  type: mailchimp
   description: A sample schema representing the Mailchimp connector for Fidesops
   version: 0.0.1
 
@@ -113,6 +114,7 @@ A SaaS config schema contains the following metadata fields:
 
 - `fides_key` Used to uniquely identify the connector, this field is used to link a SaaS config to a dataset.
 - `name` A human-readable name for the connector.
+- `type` Type of SaaS connector. Choose from `hubspot`, `mailchimp`, `outreach`, `segment`, `sentry`, `stripe`, `zendesk` or use `custom` for other types.
 - `description` Used to add a useful description.
 - `version` Used to track different versions of the SaaS config.
 
