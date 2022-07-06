@@ -40,6 +40,8 @@ The types of changes are:
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
 
+* Make running a worker node optional [#770](https://github.com/ethyca/fidesops/pull/770)
+
 ### Changed
 * Base64 encode passwords on frontend [#749](https://github.com/ethyca/fidesops/pull/749)
 
