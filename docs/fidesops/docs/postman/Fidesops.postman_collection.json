@@ -72,7 +72,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3835,6 +3835,38 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"retry"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ConnectionType",
+			"item": [
+				{
+					"name": "Get available connectors",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection_type",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection_type"
 							]
 						}
 					},

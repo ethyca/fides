@@ -23,6 +23,7 @@ The types of changes are:
 * Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 * Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
+* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
 
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
@@ -55,7 +56,6 @@ The types of changes are:
 * Fix console warning in disable connection modal [#750](https://github.com/ethyca/fidesops/pull/750)
 * Fix no such container error with docker-compose [#758](https://github.com/ethyca/fidesops/pull/758)
 * Fixed issue with extending the configuration [#721](https://github.com/ethyca/fidesops/pull/721)
-
 
 ## [1.6.0](https://github.com/ethyca/fidesops/compare/1.5.3...1.6.0)
 
