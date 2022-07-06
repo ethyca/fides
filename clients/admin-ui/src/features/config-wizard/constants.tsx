@@ -25,6 +25,8 @@ export const STEPS = [
   },
 ];
 
+export const REVIEW_STEPS = 5;
+
 export const HORIZONTAL_STEPS = [
   {
     number: 1,

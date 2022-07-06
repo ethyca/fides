@@ -54,6 +54,16 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Dataset"],
     }),
+    // we accept 'unknown' as well since the user can paste anything in, and we rely
+    // on the backend to do the validation for us
+    createDataset: build.mutation<Dataset, Dataset | unknown>({
+      query: (dataset) => ({
+        url: `dataset/`,
+        method: "POST",
+        body: dataset,
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
     deleteDataset: build.mutation<DatasetDeleteResponse, FidesKey>({
       query: (key) => ({
         url: `dataset/${key}`,
@@ -69,6 +79,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useCreateDatasetMutation,
   useDeleteDatasetMutation,
 } = datasetApi;
 

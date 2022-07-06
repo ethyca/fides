@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
-  cy.get(`[data-testid="${selector}"]`, ...args)
+  cy.get(`[data-testid='${selector}']`, ...args)
 );
 
 declare global {
