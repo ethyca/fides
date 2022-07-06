@@ -66,7 +66,7 @@ export interface PrivacyRequestResponse {
 }
 
 export interface PrivacyRequestParams {
-  status?: PrivacyRequestStatus;
+  status?: PrivacyRequestStatus[];
   id: string;
   from: string;
   to: string;

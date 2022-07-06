@@ -19,6 +19,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.1...main)
 ### Added
+* [Admin UI] Update Subject Request status filter to be a multiselect dropdown [#513](https://github.com/ethyca/fidesops/pull/764)
 * Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 

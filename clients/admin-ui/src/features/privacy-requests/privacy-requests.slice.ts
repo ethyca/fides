@@ -37,7 +37,7 @@ export function mapFiltersToSearchParams({
 
   return {
     include_identities: "true",
-    ...(status ? { status } : {}),
+    ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
@@ -65,8 +65,9 @@ export const privacyRequestApi = createApi({
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
-        url: `privacy-request`,
-        params: mapFiltersToSearchParams(filters),
+        url: `privacy-request?${decodeURIComponent(
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+        )}`,
       }),
       providesTags: () => ["Request"],
     }),
@@ -150,7 +151,7 @@ export const requestCSVDownload = async ({
 // Subject requests state (filters, etc.)
 interface SubjectRequestsState {
   revealPII: boolean;
-  status?: PrivacyRequestStatus;
+  status?: PrivacyRequestStatus[];
   id: string;
   from: string;
   to: string;
@@ -176,7 +177,10 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       revealPII: action.payload,
     }),
-    setRequestStatus: (state, action: PayloadAction<PrivacyRequestStatus>) => ({
+    setRequestStatus: (
+      state,
+      action: PayloadAction<PrivacyRequestStatus[]>
+    ) => ({
       ...state,
       page: initialState.page,
       status: action.payload,
