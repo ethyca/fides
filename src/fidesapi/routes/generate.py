@@ -15,9 +15,11 @@ from fidesapi.sql_models import sql_model_map
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
+    DatabaseConfig,
     OktaConfig,
 )
 from fidesctl.core.system import generate_aws_systems
+from fidesctl.core.dataset import generate_db_datasets
 
 
 class ValidTargets(str, Enum):
@@ -26,7 +28,7 @@ class ValidTargets(str, Enum):
     """
 
     AWS = "aws"
-
+    DB = "db"
 
 class GenerateTypes(str, Enum):
     """
@@ -43,7 +45,7 @@ class Generate(BaseModel):
     Defines attributes for generating resources included in a request.
     """
 
-    config: Union[AWSConfig, OktaConfig]
+    config: Union[AWSConfig, OktaConfig, DatabaseConfig]
     target: ValidTargets
     type: GenerateTypes
 
@@ -55,7 +57,7 @@ class Generate(BaseModel):
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
         target_type = (values.get("target"), values.get("type"))
-        valid_target_types = [("aws", "systems")]
+        valid_target_types = [("aws", "systems"), ("db", "datasets")]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
         return values
@@ -115,12 +117,22 @@ async def generate(
     organization = await get_resource(
         sql_model_map["organization"], generate_request_payload.organization_key
     )
-    if generate_request_payload.generate.target.lower() == "aws":
-        generated_systems = generate_aws(
-            aws_config=AWSConfig(**generate_request_payload.generate.config.dict()),
-            organization=organization,
+    try:
+        if generate_request_payload.generate.target.lower() == "aws":
+            generate_results = generate_aws(
+                aws_config=AWSConfig(**generate_request_payload.generate.config.dict()),
+                organization=organization,
+            )
+        elif generate_request_payload.generate.target.lower() == "db":
+            generate_results = generate_db(
+                db_config=generate_request_payload.generate.config,
+            )
+    except ConnectorAuthFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
         )
-    return GenerateResponse(generate_results=generated_systems)
+    return GenerateResponse(generate_results=generate_results)
 
 
 @route_requires_aws_connector
@@ -130,16 +142,22 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
-    log.info("Setting config for AWS")
-    try:
-        log.info("Generating systems from AWS")
-        aws_systems = generate_aws_systems(
-            organization=organization, aws_config=aws_config
-        )
-    except ConnectorAuthFailureException as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        )
+    log.info("Generating systems from AWS")
+    aws_systems = generate_aws_systems(
+        organization=organization, aws_config=aws_config
+    )
 
     return [i.dict(exclude_none=True) for i in aws_systems]
+
+def generate_db(
+    db_config: DatabaseConfig
+) -> List[Dict[str, str]]:
+    """
+    Returns a list of datasets found in a database.
+    """
+    log.info("Generating datasets from database")
+    db_datasets = generate_db_datasets(
+        connection_string=db_config.connection_string
+    )
+
+    return [i.dict(exclude_none=True) for i in db_datasets]
