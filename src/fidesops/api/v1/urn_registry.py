@@ -61,6 +61,9 @@ POLICY_POST_WEBHOOK_DETAIL = (
     "/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
 
+# Connection Type URLs
+CONNECTION_TYPES = "/connection_type"
+
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"

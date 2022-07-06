@@ -9,6 +9,8 @@ POLICY_CREATE_OR_UPDATE = "policy:create_or_update"
 POLICY_READ = "policy:read"
 POLICY_DELETE = "policy:delete"
 
+CONNECTION_TYPE_READ = "connection_type:read"
+
 CONNECTION_CREATE_OR_UPDATE = "connection:create_or_update"
 CONNECTION_READ = "connection:read"
 CONNECTION_DELETE = "connection:delete"
@@ -65,6 +67,7 @@ SCOPE_REGISTRY = [
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_AUTHORIZE,
+    CONNECTION_TYPE_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,

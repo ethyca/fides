@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from fidesops.api.v1.endpoints import (
     config_endpoints,
     connection_endpoints,
+    connection_type_endpoints,
     dataset_endpoints,
     drp_endpoints,
     encryption_endpoints,
@@ -20,6 +21,7 @@ from fidesops.api.v1.endpoints import (
 
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
+api_router.include_router(connection_type_endpoints.router)
 api_router.include_router(connection_endpoints.router)
 api_router.include_router(dataset_endpoints.router)
 api_router.include_router(drp_endpoints.router)
