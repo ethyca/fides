@@ -23,8 +23,8 @@ The types of changes are:
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 
 ### Fixed
-* Resolve issue with MyPy seeing files in fidesops as missing imports [719](https://github.com/ethyca/fidesops/pull/719)
-
+* Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
+* Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
 ### Added

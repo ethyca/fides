@@ -44,7 +44,7 @@ from fidesops.util.data_category import DataCategory
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 15
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
 @mock.patch("fidesops.service.privacy_request.request_runner_service.upload")
