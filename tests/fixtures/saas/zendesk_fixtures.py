@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
 from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,8 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.util import cryptographic_util
+from fidesops.util.saas_util import format_body
 from tests.fixtures.application_fixtures import load_dataset
 from tests.fixtures.saas_example_fixtures import load_config
 
@@ -35,6 +38,11 @@ def zendesk_identity_email():
     return pydash.get(saas_config, "zendesk.identity_email") or os.environ.get(
         "ZENDESK_IDENTITY_EMAIL"
     )
+
+
+@pytest.fixture(scope="function")
+def zendesk_erasure_identity_email() -> str:
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -87,3 +95,44 @@ def zendesk_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def zendesk_create_erasure_data(
+    zendesk_connection_config: ConnectionConfig, zendesk_erasure_identity_email: str
+) -> None:
+
+    zendesk_secrets = zendesk_connection_config.secrets
+    auth = zendesk_secrets["username"], zendesk_secrets["api_key"]
+    base_url = f"https://{zendesk_secrets['domain']}"
+
+    # user
+    body = {
+        "user": {
+            "name": "Ethyca Test Erasure",
+            "email": zendesk_erasure_identity_email,
+            "verified": "true",
+        }
+    }
+
+    users_response = requests.post(url=f"{base_url}/api/v2/users", auth=auth, json=body)
+    user = users_response.json()["user"]
+    user_id = user["id"]
+
+    # ticket
+    ticket_data = {
+        "ticket": {
+            "comment": {"body": "Test Comment"},
+            "priority": "urgent",
+            "subject": "Test Ticket",
+            "requester_id": user_id,
+            "submitter_id": user_id,
+            "description": "Test Description",
+        }
+    }
+    response = requests.post(
+        url=f"{base_url}/api/v2/tickets", auth=auth, json=ticket_data
+    )
+    ticket = response.json()["ticket"]
+    ticket_id = ticket["id"]
+    yield ticket, user
