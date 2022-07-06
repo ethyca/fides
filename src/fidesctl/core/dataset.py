@@ -243,7 +243,7 @@ def scan_dataset_db(
     )
 
     # Generate the collections and fields for the target database
-    db_datasets = generate_db_datasets(connection_string = connection_string)
+    db_datasets = generate_db_datasets(connection_string=connection_string)
     uncategorized_fields, db_field_count = find_all_uncategorized_dataset_fields(
         existing_datasets=manifest_datasets + server_datasets,
         source_datasets=db_datasets,
@@ -263,11 +263,10 @@ def scan_dataset_db(
     )
 
 
-def generate_db_datasets(
-    connection_string: str) -> List[Dataset]:
+def generate_db_datasets(connection_string: str) -> List[Dataset]:
     """
     Given a database connection string, extract all tables/fields from it
-    and generate corresponding datasets. 
+    and generate corresponding datasets.
     """
     db_engine = get_db_engine(connection_string)
     db_schemas = get_db_schemas(engine=db_engine)
@@ -298,7 +297,7 @@ def generate_dataset_db(
     Given a database connection string, extract all tables/fields from it
     and write out a boilerplate dataset manifest, excluding optional null attributes.
     """
-    db_datasets = generate_db_datasets(connection_string = connection_string)
+    db_datasets = generate_db_datasets(connection_string=connection_string)
     write_dataset_manifest(
         file_name=file_name, include_null=include_null, datasets=db_datasets
     )

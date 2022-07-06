@@ -18,8 +18,8 @@ from fidesctl.connectors.models import (
     DatabaseConfig,
     OktaConfig,
 )
-from fidesctl.core.system import generate_aws_systems
 from fidesctl.core.dataset import generate_db_datasets
+from fidesctl.core.system import generate_aws_systems
 
 
 class ValidTargets(str, Enum):
@@ -29,6 +29,7 @@ class ValidTargets(str, Enum):
 
     AWS = "aws"
     DB = "db"
+
 
 class GenerateTypes(str, Enum):
     """
@@ -143,21 +144,16 @@ def generate_aws(
     Returns a list of Systems found in AWS.
     """
     log.info("Generating systems from AWS")
-    aws_systems = generate_aws_systems(
-        organization=organization, aws_config=aws_config
-    )
+    aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
     return [i.dict(exclude_none=True) for i in aws_systems]
 
-def generate_db(
-    db_config: DatabaseConfig
-) -> List[Dict[str, str]]:
+
+def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     """
     Returns a list of datasets found in a database.
     """
     log.info("Generating datasets from database")
-    db_datasets = generate_db_datasets(
-        connection_string=db_config.connection_string
-    )
+    db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
 
     return [i.dict(exclude_none=True) for i in db_datasets]
