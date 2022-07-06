@@ -24,6 +24,7 @@ The types of changes are:
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 * Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
 * Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
+* Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)

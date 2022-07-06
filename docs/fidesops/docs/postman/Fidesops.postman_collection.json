@@ -3871,6 +3871,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get connection secrets schema",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection_type/outreach/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection_type",
+								"outreach",
+								"secret"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
