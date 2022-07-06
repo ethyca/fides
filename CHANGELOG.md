@@ -36,6 +36,7 @@ The types of changes are:
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
+* Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 
 ### Changed
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
