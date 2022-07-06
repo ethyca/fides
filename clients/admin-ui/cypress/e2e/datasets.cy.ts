@@ -238,7 +238,7 @@ describe("Dataset", () => {
       });
     });
 
-    it.only("Can interact with the checkbox tree properly", () => {
+    it("Can interact with the checkbox tree properly", () => {
       cy.visit("/dataset/demo_users");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
@@ -261,6 +261,52 @@ describe("Dataset", () => {
       cy.get("[data-testid='checkbox-Account Data'] > span").should(
         "have.attr",
         "data-checked"
+      );
+      // the children's children should be disabled and checked since the parent is selected
+      cy.get("[data-testid='checkbox-Account City'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      cy.get("[data-testid='checkbox-Account City'] > span").should(
+        "have.attr",
+        "data-disabled"
+      );
+      cy.getByTestId("done-btn").click();
+      const expectedSelected = [
+        "account.contact",
+        "account.payment",
+        "user.derived.identifiable.unique_id",
+      ];
+      expectedSelected.forEach((e) => {
+        cy.getByTestId("selected-categories").should("contain", e);
+      });
+    });
+
+    it("Should be able to clear selected", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("checkbox-Account Data").click();
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "contain",
+        "user.derived.identifiable.unique_id"
+      );
+      cy.getByTestId("selected-categories").should("contain", "account");
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("clear-btn").click();
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "not.have.attr",
+        "data-checked"
+      );
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "not.contain",
+        "user.derived.identifiable.unique_id"
       );
     });
   });
