@@ -200,6 +200,7 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
     saas_config = {
         "fides_key": "oauth2_connector",
         "name": "OAuth2 Connector",
+        "type": "custom",
         "description": "Generic OAuth2 connector for testing",
         "version": "0.0.1",
         "connector_params": [{"name": item} for item in secrets.keys()],

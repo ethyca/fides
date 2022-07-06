@@ -44,6 +44,7 @@ PATCH api/v1/connection/{saas_key}/saas_config
 {
     "fides_key": "mailchimp_connector_example",
     "name": "Mailchimp SaaS Config",
+    "type": "mailchimp",
     "description": "A sample schema representing the Mailchimp connector for Fidesops"
     ...
 ```

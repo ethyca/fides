@@ -15,8 +15,17 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("alter type connectiontype add value 'redshift'")
-    op.execute("alter type connectiontype add value 'snowflake'")
+    op.execute("alter type connectiontype rename to connectiontype_old")
+    op.execute(
+        "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', 'redshift', 'snowflake')"
+    )
+    op.execute(
+        (
+            "alter table connectionconfig alter column connection_type type connectiontype using "
+            "connection_type::text::connectiontype"
+        )
+    )
+    op.execute("drop type connectiontype_old")
 
 
 def downgrade():

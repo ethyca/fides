@@ -1,6 +1,7 @@
 saas_config:
   fides_key: segment_connector_example
   name: Segment SaaS Config
+  type: segment
   description: A sample schema representing the Segment connector for Fidesops
   version: 0.0.1
 
