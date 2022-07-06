@@ -15,17 +15,22 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import type { NextPage } from "next";
 import React from "react";
 
-import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
-import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useGetOrganizationByFidesKeyQuery } from "~/features/organization";
 
-const ReviewSystemForm: NextPage<{
-  handleChangeReviewStep: Function;
-  handleCancelSetup: Function;
-  systemFidesKey: string;
-}> = ({ handleCancelSetup, handleChangeReviewStep, systemFidesKey }) => {
+import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
+import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
+
+const ReviewSystemForm = ({
+  handleCancelSetup,
+}: {
+  handleCancelSetup: () => void;
+}) => {
+  const systemFidesKey = useAppSelector(selectSystemFidesKey);
+  const dispatch = useAppDispatch();
+
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     "default_organization"
@@ -42,7 +47,7 @@ const ReviewSystemForm: NextPage<{
   };
 
   const handleSubmit = () => {
-    handleChangeReviewStep(3);
+    dispatch(changeReviewStep());
   };
 
   return (

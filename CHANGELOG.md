@@ -19,20 +19,25 @@ The types of changes are:
 
 ### Added
 
+* Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
 * Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+* Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
 
 ### Changed
 
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
 * Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
+* Initial configuration wizard UI view
+  * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
+* Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 
 ### Changed
 

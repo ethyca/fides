@@ -2,9 +2,9 @@ import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import type { NextPage } from "next";
 import React, { useState } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 
 import {
@@ -15,20 +15,17 @@ import {
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { useCreateSystemMutation } from "../system/system.slice";
 import { System } from "../system/types";
+import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
 type FormValues = Partial<System>;
 
-const DescribeSystemsForm: NextPage<{
-  handleChangeStep: Function;
-  handleChangeReviewStep: Function;
-  handleCancelSetup: Function;
-  handleSystemFidesKey: Function;
-}> = ({
+const DescribeSystemsForm = ({
   handleCancelSetup,
-  handleChangeStep,
-  handleChangeReviewStep,
-  handleSystemFidesKey,
+}: {
+  handleCancelSetup: () => void;
 }) => {
+  const dispatch = useAppDispatch();
+
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,9 +79,8 @@ const DescribeSystemsForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleSystemFidesKey(values.fides_key);
-        handleChangeReviewStep(1);
-        handleChangeStep(4);
+        dispatch(setSystemFidesKey(values.fides_key ?? ""));
+        dispatch(changeReviewStep());
       }
     };
 
