@@ -60,6 +60,7 @@ describe("Dataset", () => {
       cy.getByTestId("field-row-uuid")
         .click()
         .then(() => {
+          cy.wait("@getDataset");
           cy.getByTestId("edit-drawer-content");
         });
       cy.getByTestId("input-description").should(
@@ -77,6 +78,7 @@ describe("Dataset", () => {
       cy.getByTestId("modify-collection")
         .click()
         .then(() => {
+          cy.wait("@getDataset");
           cy.getByTestId("edit-drawer-content");
         });
       cy.getByTestId("input-description").should(
@@ -93,6 +95,7 @@ describe("Dataset", () => {
       cy.getByTestId("modify-dataset")
         .click()
         .then(() => {
+          cy.wait("@getDataset");
           cy.getByTestId("edit-drawer-content");
         });
       cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
@@ -156,13 +159,16 @@ describe("Dataset", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("collection-select").select("products");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("input-description").clear().type(newDescription);
-      cy.getByTestId("save-btn").click({ force: true });
-      cy.wait("@putDataset").then((interception) => {
-        const { body } = interception.request;
-        expect(body.description).to.eql(newDescription);
-      });
+      cy.getByTestId("modify-dataset")
+        .click()
+        .then(() => {
+          cy.getByTestId("input-description").clear().type(newDescription);
+          cy.getByTestId("save-btn").click({ force: true });
+          cy.wait("@putDataset").then((interception) => {
+            const { body } = interception.request;
+            expect(body.description).to.eql(newDescription);
+          });
+        });
     });
   });
 
