@@ -21,6 +21,7 @@ const DataCategoryTag = ({ name, onClose }: Props) => {
       display="flex"
       justifyContent="space-between"
       width="fit-content"
+      data-testid={`data-category-${name}`}
     >
       <TagLabel>{name}</TagLabel>
       <TagCloseButton onClick={onClose} color="white" />

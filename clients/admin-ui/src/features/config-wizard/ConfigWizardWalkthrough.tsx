@@ -1,13 +1,19 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
 
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
+import {
+  changeStep,
+  selectReviewStep,
+  selectStep,
+} from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
@@ -18,34 +24,13 @@ import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const router = useRouter();
-  const [step, setStep] = useState<number>(1);
-  const [reviewStep, setReviewStep] = useState<number>(1);
-  const [systemFidesKey, setSystemFidesKey] = useState("");
+
+  const step = useAppSelector(selectStep);
+  const reviewStep = useAppSelector(selectReviewStep);
+  const dispatch = useAppDispatch();
 
   const handleCancelSetup = () => {
     router.push("/");
-  };
-
-  const handleChangeStep = (formStep: number) => {
-    if (formStep && step !== STEPS.length) {
-      setStep(formStep + 1);
-    }
-  };
-
-  const handleChangeReviewStep = (rStep: number) => {
-    if (rStep) {
-      if (rStep === 5) {
-        setReviewStep(1);
-      } else {
-        setReviewStep(rStep + 1);
-      }
-    }
-  };
-
-  const handleSystemFidesKey = (key: string) => {
-    if (key) {
-      setSystemFidesKey(key);
-    }
   };
 
   return (
@@ -68,16 +53,12 @@ const ConfigWizardWalkthrough = () => {
             <Box>
               <Stepper
                 activeStep={step}
-                setActiveStep={setStep}
+                setActiveStep={(s) => dispatch(changeStep(s))}
                 steps={STEPS}
               />
             </Box>
-            {step === 1 ? (
-              <OrganizationInfoForm handleChangeStep={handleChangeStep} />
-            ) : null}
-            {step === 2 ? (
-              <AddSystemForm handleChangeStep={handleChangeStep} />
-            ) : null}
+            {step === 1 ? <OrganizationInfoForm /> : null}
+            {step === 2 ? <AddSystemForm /> : null}
             {step === 3 ? <AuthenticateScanner /> : null}
             {step === 5 ? (
               <Stack direction="column">
@@ -88,34 +69,17 @@ const ConfigWizardWalkthrough = () => {
                   />
                 ) : null}
                 {reviewStep === 1 && (
-                  <DescribeSystemsForm
-                    handleChangeStep={handleChangeStep}
-                    handleCancelSetup={handleCancelSetup}
-                    handleChangeReviewStep={handleChangeReviewStep}
-                    handleSystemFidesKey={handleSystemFidesKey}
-                  />
+                  <DescribeSystemsForm handleCancelSetup={handleCancelSetup} />
                 )}
                 {reviewStep === 2 && (
                   <PrivacyDeclarationForm
                     handleCancelSetup={handleCancelSetup}
-                    handleChangeReviewStep={handleChangeReviewStep}
-                    systemFidesKey={systemFidesKey}
                   />
                 )}
                 {reviewStep === 3 && (
-                  <ReviewSystemForm
-                    handleCancelSetup={handleCancelSetup}
-                    handleChangeReviewStep={handleChangeReviewStep}
-                    systemFidesKey={systemFidesKey}
-                  />
+                  <ReviewSystemForm handleCancelSetup={handleCancelSetup} />
                 )}
-                {reviewStep === 4 && (
-                  <SuccessPage
-                    handleChangeStep={handleChangeStep}
-                    handleChangeReviewStep={handleChangeReviewStep}
-                    systemFidesKey={systemFidesKey}
-                  />
-                )}
+                {reviewStep === 4 && <SuccessPage />}
               </Stack>
             ) : null}
             {step === 6 ? <ViewYourDataMapPage /> : null}

@@ -10,7 +10,11 @@ from loguru import logger as log
 from pydantic import BaseModel, root_validator
 
 from fidesapi.routes.crud import get_resource
-from fidesapi.routes.util import API_PREFIX, route_requires_aws_connector
+from fidesapi.routes.util import (
+    API_PREFIX,
+    route_requires_aws_connector,
+    route_requires_okta_connector,
+)
 from fidesapi.sql_models import sql_model_map
 from fidesctl.connectors.models import (
     AWSConfig,
@@ -19,7 +23,7 @@ from fidesctl.connectors.models import (
     OktaConfig,
 )
 from fidesctl.core.dataset import generate_db_datasets
-from fidesctl.core.system import generate_aws_systems
+from fidesctl.core.system import generate_aws_systems, generate_okta_systems
 
 
 class ValidTargets(str, Enum):
@@ -29,6 +33,7 @@ class ValidTargets(str, Enum):
 
     AWS = "aws"
     DB = "db"
+    OKTA = "okta"
 
 
 class GenerateTypes(str, Enum):
@@ -58,7 +63,7 @@ class Generate(BaseModel):
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
         target_type = (values.get("target"), values.get("type"))
-        valid_target_types = [("aws", "systems"), ("db", "datasets")]
+        valid_target_types = [("aws", "systems"), ("okta", "systems"), ("db", "datasets")]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
         return values
@@ -107,10 +112,10 @@ async def generate(
 
     Currently generates Fides resources for the following:
     * AWS: Systems
+    * Okta: Systems
 
     In the future, this will include options for other Systems & Datasets,
     examples include:
-    * Okta: Systems
     * Snowflake: Datasets
 
     All production deployments should implement HTTPS for security purposes
@@ -127,6 +132,13 @@ async def generate(
         elif generate_request_payload.generate.target.lower() == "db":
             generate_results = generate_db(
                 db_config=generate_request_payload.generate.config,
+                aws_config=generate_request_payload.generate.config,
+                organization=organization,
+            )
+        elif generate_request_payload.generate.target.lower() == "okta":
+            generate_results = await generate_okta(
+                okta_config=generate_request_payload.generate.config,
+                organization=organization,
             )
     except ConnectorAuthFailureException as error:
         raise HTTPException(
@@ -148,6 +160,18 @@ def generate_aws(
 
     return [i.dict(exclude_none=True) for i in aws_systems]
 
+@route_requires_okta_connector
+async def generate_okta(
+    okta_config: OktaConfig, organization: Organization
+) -> List[Dict[str, str]]:
+    """
+    Returns a list of Systems found in Okta.
+    """
+    log.info("Generating systems from Okta")
+    okta_systems = await generate_okta_systems(
+        organization=organization, okta_config=okta_config
+    )
+    return [i.dict(exclude_none=True) for i in okta_systems]
 
 def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     """

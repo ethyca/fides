@@ -25,10 +25,13 @@ The types of changes are:
   * System scanning step: AWS credentials form and initial `generate` API usage.
 * Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
-* Add db support to generate endpoint [849](https://github.com/ethyca/fides/pull/849)
+* Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
+* Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Initial configuration wizard UI view
+  * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Fixed
 

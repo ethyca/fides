@@ -51,6 +51,7 @@ export const CustomTextInput = ({
           <InputGroup size="sm" mr="2">
             <Input
               {...field}
+              data-testid={`input-${field.name}`}
               type={type}
               placeholder={placeholder}
               pr={isPassword ? "10" : "3"}
@@ -91,6 +92,7 @@ interface SelectProps {
   isSearchable?: boolean;
   isClearable?: boolean;
   size?: Size;
+  "data-testid"?: string;
 }
 export const CustomSelect = ({
   label,
@@ -112,7 +114,11 @@ export const CustomSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Box display="flex" alignItems="center">
+        <Box
+          display="flex"
+          alignItems="center"
+          data-testid={`input-${field.name}`}
+        >
           <Select
             options={options}
             onBlur={(option) => {
@@ -184,7 +190,11 @@ export const CustomMultiSelect = ({
         <FormLabel htmlFor={props.id || props.name} size="sm">
           {label}
         </FormLabel>
-        <Box display="flex" alignItems="center">
+        <Box
+          display="flex"
+          alignItems="center"
+          data-testid={`input-${field.name}`}
+        >
           <Select
             options={options}
             onBlur={(option) => {

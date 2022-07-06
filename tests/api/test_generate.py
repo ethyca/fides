@@ -18,12 +18,16 @@ EXTERNAL_CONFIG_BODY = {
     "db": {
         "connection_string": "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
     },
+    "okta": {
+        "orgUrl": "https://dev-78908748.okta.com",
+        "token": getenv("OKTA_CLIENT_TOKEN", ""),
+    },
 }
 
 
 @pytest.mark.external
 @pytest.mark.parametrize(
-    "generate_type, generate_target", [("systems", "aws"), ("datasets", "db")]
+    "generate_type, generate_target", [("systems", "aws"), ("systems", "okta"), ("datasets", "db")]
 )
 def test_generate(
     test_config: FidesctlConfig,
