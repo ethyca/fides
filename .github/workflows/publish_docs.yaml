@@ -6,16 +6,18 @@ on:
       - main
     paths:
       - "docs/**"
-  
+
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          cache: "pip"
       - run: pip install -r docs/fidesops/requirements.txt
       - name: Build docs
         run: make docs-build
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fidesops/mkdocs.yml --force
-        
