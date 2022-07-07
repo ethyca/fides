@@ -38,6 +38,7 @@ The types of changes are:
 * `fidesops worker` command for running a Celery worker [#673](https://github.com/ethyca/fidesops/pull/673/)
 
 ### Developer Experience
+* Add fixture to clear tables between test [#680](https://github.com/ethyca/fidesops/pull/680)
 * Reduce the size of the docker image [#707](https://github.com/ethyca/fidesops/pull/707)
 * Parallelize CI safe checks to reduce run time [#717](https://github.com/ethyca/fidesops/pull/717)
 * Add dependabot to keep dependencies up to date [#718](https://github.com/ethyca/fidesops/pull/718)
