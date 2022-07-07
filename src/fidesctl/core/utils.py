@@ -122,16 +122,15 @@ def sanitize_fides_key(proposed_fides_key: str) -> str:
     return sanitized_fides_key
 
 
-def check_if_git_is_dirty(dir_to_check: str = ".") -> bool:
+def git_is_dirty(dir_to_check: str = ".") -> bool:
     """
-    Checks to see if the local git repo is dirty.
-    Can also specify a directory to check for dirtiness.
+    Checks to see if the local repo has unstaged changes.
+    Can also specify a directory to check.
     """
     repo = Repo()
     git_session = repo.git()
 
-    dirty_phrases = ["Changes not staged for commit"]
+    dirty_phrase = "Changes not staged for commit"
     git_status = git_session.status(dir_to_check).split("\n")
-    comparison = [phrase in git_status for phrase in dirty_phrases]
-    is_dirty = True in comparison
+    is_dirty = dirty_phrase in git_status
     return is_dirty

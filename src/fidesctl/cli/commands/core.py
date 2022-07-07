@@ -7,13 +7,13 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fidesctl.cli.utils import pretty_echo, print_divider, with_analytics
+from fidesctl.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
 from fidesctl.core import apply as _apply
 from fidesctl.core import audit as _audit
 from fidesctl.core import evaluate as _evaluate
 from fidesctl.core import parse as _parse
 from fidesctl.core import sync as _sync
-from fidesctl.core.utils import check_if_git_is_dirty
+from fidesctl.core.utils import git_is_dirty
 
 
 @click.command()
@@ -147,7 +147,9 @@ def sync(ctx: click.Context, manifests_dir: str) -> None:
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the sync process
     _parse.parse(manifests_dir)
-    check_if_git_is_dirty(manifests_dir)
+    if git_is_dirty(manifests_dir):
+        echo_red("There are unstaged changes in git, aborting sync!")
+        raise SystemExit(1)
     _sync.sync(
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
