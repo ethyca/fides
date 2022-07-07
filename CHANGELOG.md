@@ -33,6 +33,9 @@ The types of changes are:
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
 
+### Docs
+* recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
+
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
