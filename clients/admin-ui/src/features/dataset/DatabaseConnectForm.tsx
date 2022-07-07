@@ -1,14 +1,12 @@
-import { Button, Stack, Text } from "@fidesui/react";
+import { Box, Button, Text } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { DATABASE_OPTIONS } from "./constants";
+import { CustomTextInput } from "../common/form/inputs";
 
-const initialValues = { type: "", url: "" };
+const initialValues = { url: "" };
 
 const ValidationSchema = Yup.object().shape({
-  type: Yup.string().required().label("Database type"),
   url: Yup.string().required().label("Database URL"),
 });
 
@@ -32,14 +30,9 @@ const DatabaseConnectForm = () => {
             have received this URL from a colleague or your Ethyca developer
             support engineer.
           </Text>
-          <Stack mb={8} spacing={4}>
-            <CustomSelect
-              name="type"
-              label="Database type"
-              options={DATABASE_OPTIONS}
-            />
+          <Box mb={8}>
             <CustomTextInput name="url" label="Database URL" />
-          </Stack>
+          </Box>
           <Button
             size="sm"
             colorScheme="primary"

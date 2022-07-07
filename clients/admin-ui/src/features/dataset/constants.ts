@@ -26,17 +26,6 @@ export const DATA_QUALIFIERS = [
   },
 ];
 
-// Taken from the sqlalchemy supported dialects, may need to alter once backend is set up
-// https://docs.sqlalchemy.org/en/14/dialects/
-export const DATABASE_OPTIONS = [
-  { value: "postgresql", label: "PostgreSQL" },
-  { value: "mysql", label: "MySQL" },
-  { value: "mariadb", label: "MariaDB" },
-  { value: "sqlite", label: "SQLite" },
-  { value: "oracle", label: "Oracle" },
-  { value: "microsoft", label: "Microsoft SQL Server" },
-];
-
 /**
  * Tooltip copy, from https://ethyca.github.io/fides/1.6.1/language/resources/dataset/
  * These definitions could be expanded to include more metadata about the schema.
