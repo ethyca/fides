@@ -75,12 +75,20 @@ def generate_dataset_db(
     )
 
 
-@generate_dataset.command(name="bigquery")
+@generate_dataset.group(name="gcp")
+@click.pass_context
+def generate_dataset_gcp(ctx: click.Context) -> None:
+    """
+    Generate fidesctl Dataset resources for Google Cloud Platform
+    """
+
+
+@generate_dataset_gcp.command(name="bigquery")
 @click.pass_context
 @click.argument("dataset_name", type=str)
 @click.argument("output_filename", type=str)
 @credentials_id_option
-@click.option("--keyfile-path", type=str, default=".fides/bigquery.json")
+@click.option("--keyfile-path", type=str)
 @include_null_flag
 @with_analytics
 def generate_dataset_bigquery(
