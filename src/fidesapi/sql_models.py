@@ -43,6 +43,7 @@ class FidesBase(SqlModelBase):
 
     fides_key = Column(String, primary_key=True, index=True, unique=True)
     organization_fides_key = Column(Text)
+    tags = Column(ARRAY(String))
     name = Column(Text)
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
