@@ -148,7 +148,9 @@ def sync(ctx: click.Context, manifests_dir: str) -> None:
     # Do this to validate the manifests since they won't get parsed during the sync process
     _parse.parse(manifests_dir)
     if git_is_dirty(manifests_dir):
-        echo_red("There are unstaged changes in git, aborting sync!")
+        echo_red(
+            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting sync!"
+        )
         raise SystemExit(1)
     _sync.sync(
         url=config.cli.server_url,
