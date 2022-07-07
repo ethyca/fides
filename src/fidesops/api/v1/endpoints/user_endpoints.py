@@ -1,9 +1,10 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Security
+from fideslib.cryptography.cryptographic_util import b64_str_to_str
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.schemas.user import UserResponse, UserUpdate
+from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -16,7 +17,7 @@ from fidesops.api import deps
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.schemas.user import UserPasswordReset
+from fidesops.core.config import config
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
@@ -83,12 +84,14 @@ def update_user_password(
     """
     _validate_current_user(user_id, current_user)
 
-    if not current_user.credentials_valid(data.old_password):
+    if not current_user.credentials_valid(
+        b64_str_to_str(data.old_password), config.security.ENCODING
+    ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
         )
 
-    current_user.update_password(db=db, new_password=data.new_password)
+    current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
 
     logger.info(f"Updated user with id: '{current_user.id}'.")
     return current_user
