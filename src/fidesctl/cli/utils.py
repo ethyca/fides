@@ -101,17 +101,17 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
             user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
         )
 
-    is_analytics_opt_out = ctx.obj["CONFIG"].user.analytics_opt_out is False
-    is_analytics_opt_out_file_empty = get_config_from_file(
+    is_analytics_opt_out = ctx.obj["CONFIG"].user.analytics_opt_out
+    is_analytics_opt_out_config_empty = get_config_from_file(
         config_path,
         "cli",
         "analytics_id",
     ) in ("", None)
-    is_analytics_opt_out_env_var_empty = getenv("FIDESCTL__CLI__ANALYTICS_ID")
+    is_analytics_opt_out_env_var_set = getenv("FIDESCTL__CLI__ANALYTICS_ID")
     if (
-        is_analytics_opt_out is False
-        and is_analytics_opt_out_file_empty
-        and not is_analytics_opt_out_env_var_empty
+        not is_analytics_opt_out
+        and is_analytics_opt_out_config_empty
+        and not is_analytics_opt_out_env_var_set
     ):
         config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
 
