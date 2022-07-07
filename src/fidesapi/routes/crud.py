@@ -43,7 +43,6 @@ for resource_type, resource_model in model_map.items():
         return await create_resource(sql_model, resource.dict())
 
     @router.get("/", response_model=List[resource_model], name="List")
-    @router.get("", response_model=List[resource_model], name="List")
     async def ls(  # pylint: disable=invalid-name
         resource_type: str = get_resource_type(router),
     ) -> List:
@@ -51,7 +50,7 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         return await list_resource(sql_model)
 
-    @router.get("/{fides_key}/", response_model=resource_model)
+    @router.get("/{fides_key}", response_model=resource_model)
     async def get(
         fides_key: str, resource_type: str = get_resource_type(router)
     ) -> Dict:
