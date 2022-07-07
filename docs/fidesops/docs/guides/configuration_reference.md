@@ -40,8 +40,10 @@ The `fidesops.toml` file should specify the following variables:
 | Redis Variables |---|---|---|---|---|
 | `HOST` | `FIDESOPS__REDIS__HOST` | string | redis.internal | N/A | The networking address for the Fidesops application Redis cache |
 | `PORT` | `FIDESOPS__REDIS__PORT` | int | 6379 | 6379 | The port at which the Fidesops application cache will be accessible |
+| `USER` | `FIDESOPS__REDIS__USER` | string | testuser | N/A | The user with which to login to the Redis cache |
 | `PASSWORD` | `FIDESOPS__REDIS__PASSWORD` | string | anotherpassword | N/A | The password with which to login to the Fidesops application cache |
-| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | 0 | The Fidesops application will use this index in the Redis cache to cache data |
+| `DB_INDEX` | `FIDESOPS__REDIS__DB_INDEX` | int | 0 | N/A | The Fidesops application will use this index in the Redis cache to cache data |
+| `CONNECTION_URL` | `FIDESOPS__REDIS__CONNECTION_URL` | string | redis://:testpassword@redis:6379/0 | N/A | If not specified this URL is automatically assembled from the `HOST`, `PORT`, `PASSWORD` and `DB_INDEX` specified above |
 | `DEFAULT_TTL_SECONDS` | `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` | int | 3600 | 604800 | The number of seconds for which data will live in Redis before automatically expiring |
 | `ENABLED` | `FIDESOPS__REDIS__ENABLED` | bool | True | True | Whether the application's redis cache should be enabled. Only set to false for certain narrow uses of the application that do not require a backing redis cache. |
 | Security Variables |---|---|---|---|---|
