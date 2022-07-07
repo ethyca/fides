@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
+from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
@@ -116,6 +117,7 @@ def prepare_and_log_request(
 
 
 app.include_router(api_router)
+app.include_router(user_router, tags=["Users"], prefix=f"{V1_URL_PREFIX}")
 app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
