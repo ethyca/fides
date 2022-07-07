@@ -2,6 +2,7 @@
 ## Local Development
 
 To test the UI locally, clone the [FidesOps repository](https://github.com/ethyca/fidesops/), and ensure you have [Node.js](https://nodejs.org/en/download/) installed to run the application.
+
 ### Creating the root user
 
 In the top-level `fidesops` directory, run `make user`.
@@ -32,3 +33,19 @@ will automatically pick up:
 ```bash
 echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
 ```
+
+## Backend deployment
+
+Fidesops automatically serves a version of the UI when running `make server`. 
+
+To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
+
+```sh
+    cd clients/admin-ui
+    npm install
+    npm run prod-export
+```
+
+This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
+
+To test the UI, run `make server` from the root directory, and visit `http://0.0.0.0:8080/static/index.html`.
