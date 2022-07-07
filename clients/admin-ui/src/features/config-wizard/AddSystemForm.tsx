@@ -29,7 +29,7 @@ const AddSystemForm = () => {
   const dispatch = useAppDispatch();
 
   return (
-    <chakra.form w="100%">
+    <chakra.form w="100%" data-testid="add-system-form">
       <Stack ml="100px" spacing={10}>
         <Heading as="h3" size="lg">
           Add a system
@@ -73,6 +73,7 @@ const AddSystemForm = () => {
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
                 onClick={() => dispatch(changeStep())}
+                data-testid="aws-btn"
               />
               <Text>Infrastructure Scan (AWS)</Text>
               <Tooltip

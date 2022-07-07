@@ -97,7 +97,7 @@ const AuthenticateAwsForm = () => {
       onSubmit={handleSubmit}
     >
       {({ isValid, dirty }) => (
-        <Form>
+        <Form data-testid="authenticate-aws-form">
           <Stack ml="100px" spacing={10}>
             <Heading as="h3" size="lg">
               Add a system
@@ -171,6 +171,7 @@ const AuthenticateAwsForm = () => {
                 variant="primary"
                 isDisabled={!dirty || !isValid}
                 isLoading={isLoading}
+                data-testid="submit-btn"
               >
                 Save and Continue
               </Button>

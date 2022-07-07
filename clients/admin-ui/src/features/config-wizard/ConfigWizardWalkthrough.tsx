@@ -19,6 +19,7 @@ import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
+import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
@@ -60,6 +61,7 @@ const ConfigWizardWalkthrough = () => {
             {step === 1 ? <OrganizationInfoForm /> : null}
             {step === 2 ? <AddSystemForm /> : null}
             {step === 3 ? <AuthenticateScanner /> : null}
+            {step === 4 ? <ScanResultsForm /> : null}
             {step === 5 ? (
               <Stack direction="column">
                 {reviewStep <= 3 ? (
