@@ -146,6 +146,7 @@ def sync(ctx: click.Context, manifests_dir: str) -> None:
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the sync process
     _parse.parse(manifests_dir)
+    # Check for any uncomitted files
     _sync.sync(
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
