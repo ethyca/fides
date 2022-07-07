@@ -28,7 +28,7 @@ def get_fides_log_record_factory() -> Any:
     ) -> logging.LogRecord:
         env_log_pii: bool = os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"
         new_args = args
-        if not env_log_pii:
+        if not env_log_pii and not name.startswith("uvicorn"):
             new_args = tuple(_mask_pii_for_logs(arg) for arg in args)
         return logging.LogRecord(
             name=name,
