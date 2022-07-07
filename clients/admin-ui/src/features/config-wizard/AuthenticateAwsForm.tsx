@@ -13,11 +13,21 @@ import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
-import { GenerateResponse, GenerateTypes, ValidTargets } from "~/types/api";
+import {
+  Dataset,
+  GenerateResponse,
+  GenerateTypes,
+  System,
+  ValidTargets,
+} from "~/types/api";
 
-import { selectOrganizationFidesKey } from "./config-wizard.slice";
+import {
+  changeStep,
+  selectOrganizationFidesKey,
+  setSystemsForReview,
+} from "./config-wizard.slice";
 import {
   AWS_REGION_OPTIONS,
   DOCS_URL_AWS_PERMISSIONS,
@@ -29,6 +39,8 @@ import { useGenerateMutation } from "./scanner.slice";
 const DocsLink = (props: React.ComponentProps<typeof Link>) => (
   <Link isExternal color="complimentary.500" {...props} />
 );
+
+const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   aws_access_key_id: "",
@@ -46,12 +58,18 @@ const ValidationSchema = Yup.object().shape({
 
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
+  const dispatch = useAppDispatch();
 
-  const handleResults: (
-    results: GenerateResponse["generate_results"]
-  ) => void = () => {};
+  const handleResults = (results: GenerateResponse["generate_results"]) => {
+    const systems: System[] = (results ?? []).filter(isSystem);
+    dispatch(setSystemsForReview(systems));
+    dispatch(changeStep());
+  };
+  // TODO(#864): Show detailed error log.
   const handleError: (error: unknown) => void = () => {};
-  const handleCancel = () => {};
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
 
   const [generate, { isLoading }] = useGenerateMutation();
 
