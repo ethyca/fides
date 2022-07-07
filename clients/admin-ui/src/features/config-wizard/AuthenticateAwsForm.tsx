@@ -98,7 +98,7 @@ const AuthenticateAwsForm = () => {
     >
       {({ isValid, dirty }) => (
         <Form data-testid="authenticate-aws-form">
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               Add a system
             </Heading>

@@ -51,7 +51,7 @@ const ConfigWizardWalkthrough = () => {
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" maxW="60%">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
-            <Box>
+            <Box flexShrink={0}>
               <Stepper
                 activeStep={step}
                 setActiveStep={(s) => dispatch(changeStep(s))}

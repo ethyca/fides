@@ -210,7 +210,7 @@ const PrivacyDeclarationForm = ({
     >
       {({ resetForm, values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Privacy Declaration for {existingSystem?.name}

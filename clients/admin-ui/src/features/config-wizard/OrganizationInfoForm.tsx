@@ -140,7 +140,7 @@ const OrganizationInfoForm = () => {
       w="100%"
       data-testid="organization-info-form"
     >
-      <Stack ml="100px" spacing={10}>
+      <Stack spacing={10}>
         <Heading as="h3" size="lg">
           Tell us about your business
         </Heading>
