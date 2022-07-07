@@ -3,6 +3,9 @@ import {
   FidesBase,
   FidesKey,
 } from "~/features/common/fides-types";
+import { DatasetCollection, DatasetField } from "~/types/api";
+
+export type { DatasetCollection, DatasetField } from "~/types/api";
 
 interface DatasetMetadata {
   resource_id?: string;
@@ -25,24 +28,6 @@ export interface FidesLangBase {
   description?: string;
   data_categories?: string[];
   data_qualifier: string;
-  retention?: string;
-  fields: DatasetField[];
-}
-
-export interface DatasetField {
-  name: string;
-  description?: string;
-  data_categories?: FidesKey[];
-  data_qualifier: FidesKey;
-  retention?: string;
-  fields?: DatasetField[];
-}
-
-export interface DatasetCollection {
-  name: string;
-  description?: string;
-  data_categories?: FidesKey[];
-  data_qualifier: FidesKey;
   retention?: string;
   fields: DatasetField[];
 }

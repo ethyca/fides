@@ -64,7 +64,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
                     if (c.attribute === "data_qualifier") {
                       return (
                         <IdentifiabilityTag
-                          dataQualifierName={field[c.attribute]}
+                          dataQualifierName={field[c.attribute] ?? ""}
                         />
                       );
                     }
