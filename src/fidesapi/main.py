@@ -34,7 +34,6 @@ ROUTERS = (
 
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."
-    routers = crud.routers + visualize.routers
     for router in ROUTERS:
         app.include_router(router)
 
