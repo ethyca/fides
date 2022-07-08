@@ -2,7 +2,7 @@
 
 Fidesctl supports two methods of configuration. The first is via a toml file, and the second is via environment variables. They can also be used in tandem, with the environment variables overriding the toml configuration values.
 
-By default the fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however so it is recommended to always configure your settings properly.
+The fidesctl CLI doesn't require a config file and will instead leverage the default values. These are very likely to be wrong however, so it is recommended to always configure your settings properly.
 
 
 ## Configuration file
